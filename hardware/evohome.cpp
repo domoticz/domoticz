@@ -72,7 +72,7 @@ const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
 	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
 }
 
-CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate) :
+CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
 	m_ZoneNames(m_nMaxZones),
 	m_ZoneOverrideLocal(m_nMaxZones)
 {
@@ -110,6 +110,11 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 	{
 		m_bScriptOnly=true;
 		m_bSkipReceiveCheck = true;
+	}
+	if (!UserContID.empty())
+	{
+		std::stringstream s_strid(UserContID);
+		s_strid >> std::hex >> m_UControllerID;
 	}
 	
 	RegisterDecoder(cmdZoneTemp,boost::bind(&CEvohome::DecodeZoneTemp,this, _1));
@@ -173,15 +178,42 @@ bool CEvohome::StartHardware()
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
+			
 		if (result.size()>0)
 		{
 			std::vector<std::string> sd=result[0];
 			std::stringstream s_strid;
 			s_strid << std::hex << sd[1];
-			s_strid >> m_nDevID;
+			if (s_strid.str().size() != 0)  // Check whether the controller's DeviceID has been set
+			{
+				s_strid >> m_nDevID;
+				SetControllerID(m_nDevID);
+				Log(true, LOG_STATUS, "evohome: Controller ID (0x%x)", GetControllerID());
+			}
+			else
+			{
+				if (m_UControllerID)  // Check whether controller ID has been entered on hardware settings page
+				{
+					SetControllerID(m_UControllerID); 
+					Log(true, LOG_STATUS, "evohome: Controller ID specified (0x%x)", m_UControllerID);
+				}				
+				else
+					SetControllerID(0xFFFFFF);  // Dummy value to allow detection of multiple controllers
+			}
 			m_nControllerMode=atoi(sd[2].c_str());
 		}
+		else
+		{
+			if (m_UControllerID)
+			{
+				SetControllerID(m_UControllerID);
+				Log(true, LOG_STATUS, "evohome: Controller ID specified (0x%x)", m_UControllerID);
+			}
+			else
+				SetControllerID(0xFFFFFF);  // Dummy valueto allow detection of multiple controllers
+		}
+
 		//we'll put our custom relays in this range
 		result = m_sql.safe_query("SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", m_HwdID, (int)pTypeEvohomeRelay);
 		m_RelayCheck.clear();
@@ -208,7 +240,8 @@ bool CEvohome::StopHardware()
 	else
 	{
 		m_stoprequested=true;
-		m_thread->join();
+		if (m_thread != NULL)
+			m_thread->join();	
 		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
 		sleep_milliseconds(10);
 		terminate();
@@ -301,13 +334,34 @@ void CEvohome::Do_Work()
 						InitControllerName();
 						InitZoneNames();
 
-						startup = false;
+						if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
+						{
+							uint8_t MultiControllerCount = 0;
+							for (uint8_t i = 0; i < 5; i++)
+								if (MultiControllerID[i] != 0)
+									MultiControllerCount++;
+							if (MultiControllerCount > 1) // If multiple controllers detected then stop and user required to set controller ID on hardware settings page
+							{
+								_log.Log(LOG_ERROR, "evohome: multiple controllers detected!  Please set controller ID in hardware settings.");
+								StopHardware();
+							}
+							else if (MultiControllerCount == 1) // If only 1 controller detected then proceed, otherwise continue searching for controller
+							{
+								Log(true, LOG_STATUS, "evohome: Multi-controller check passed. Controller ID: 0x%x", MultiControllerID[0]);
+								SetControllerID(MultiControllerID[0]);
+								startup = false;
+							}						
+							RequestCurrentState(); //and also get startup info as this should only happen during initial setup
+						}
+						else
+							startup = false;
 					}
 					else//Request each individual zone temperature every 300s as the controller omits multi-room zones
 					{
 						uint8_t nZoneCount = GetZoneCount();
 						for (uint8_t i = 0; i < nZoneCount; i++)
 							RequestZoneTemp(i);
+						RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
 					}
 					if (AllSensors == false) // Check whether individual zone sensors has been activated 
 					{
@@ -819,15 +873,25 @@ void CEvohome::ProcessMsg(const char * rawmsg)
 	Log(rawmsg,msg);
 	if(msg.IsValid())
 	{
-		if(!GetControllerID())//no controller id ..just use the 1st one we find
+		if (GetControllerID()== 0xFFFFFF) // If we still have a dummy controller update the controller DeviceID list
 		{
-			for(int n=0;n<3;n++)
+			for (int n = 0; n<3; n++)
 			{
-				if(msg.id[n].GetIDType()==CEvohomeID::devController)//id type 1 is for controllers 
+				if (msg.id[n].GetIDType() == CEvohomeID::devController)//id type 1 is for controllers 
 				{
-					SetControllerID(msg.GetID(n));
-					RequestCurrentState(); //and also get startup info as this should only happen during initial setup
-					break;
+					for (uint8_t i = 0; i < 5; i++)
+					{
+						if (MultiControllerID[i] == msg.GetID(n))
+							break;
+						else if (MultiControllerID[i] == 0)
+						{
+							MultiControllerID[i] = msg.GetID(n);
+							_log.Log(LOG_STATUS, "evohome: controller detected, ID:0x%x", MultiControllerID[i]);
+							break;
+						}
+
+					}
+						
 				}
 			}
 		}
@@ -963,6 +1027,9 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 {	
 	char tag[] = "ZONE_SETPOINT";
 	
+	if (msg.GetID(0) != GetControllerID() && msg.GetID(2) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+	
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone %d",tag, msg.payload[0]);
 		return true;
@@ -1015,6 +1082,9 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 {
 	char tag[] = "ZONE_SETPOINT_MODE";
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
 
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone %d",tag, msg.payload[0]);
@@ -1076,6 +1146,16 @@ bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 {
 	char tag[] = "ZONE_TEMP";
+	std::vector<std::vector<std::string> > result;
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+	{
+		std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));  
+		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_HwdID, zstrid.c_str());
+		if (result.size() == 0) // Check whether DeviceID has already been registered
+			return true;
+	}
+
 
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone temp %d",tag, msg.payload[0]);
@@ -1170,7 +1250,10 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 {
 	char tag[] = "DHW_STATE";
-	
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for DHW state %d",tag, msg.payload[0]);
 		return true;	
@@ -1190,8 +1273,8 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 	tsen.EVOHOME2.zone = msg.payload[0]+1;////NA to DHW...controller is 0 so let our zones start from 1...
 	tsen.EVOHOME2.updatetype = updSetPoint;//state
 	tsen.EVOHOME2.temperature = msg.payload[1];//just on or off for DHW
-	if(tsen.EVOHOME2.temperature == 0x7F)//FIXME this is just a guess?
-		return false;
+	if(tsen.EVOHOME2.temperature == 0xFF)// temperature = 255 if DHW not installed
+		return true;
 	int nMode=ConvertMode(m_evoToDczOverrideMode,msg.payload[2]);
 	if(nMode==-1)
 	{
@@ -1217,6 +1300,12 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 {
 	char tag[] = "DHW_TEMP";
+
+	// Filter out messages from other controllers
+	// This also filters out messages sent direct from sensor as can't uniquely identify its DeviceID so added workaround of regularly requesting temp from controller
+	if (msg.GetID(0) != GetControllerID()) 
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for DHW temp %d",tag, msg.payload[0]);
 		return true;
@@ -1249,7 +1338,7 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 		tsen.EVOHOME2.zone = msg.payload[i]+1;//we're using zone 0 to trigger a lookup on ID rather than zone number (not relevant for DHW)
 		tsen.EVOHOME2.temperature = msg.payload[i + 1] << 8 | msg.payload[i + 2];
 		Log(true,LOG_STATUS,"evohome: %s: DHW sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
-		if(tsen.EVOHOME2.temperature!=0x7FFF)//afaik this is the error value just ignore it right now as we have no way to report errors...also perhaps could be returned if DHW is not installed?
+		if(tsen.EVOHOME2.temperature!=0x7FFF)// DHW is not installed, discard value
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW Temp", -1);
 	}
 
@@ -1259,6 +1348,10 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 {
 	char tag[] = "CONTROLLER_MODE";
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for controller mode %d",tag, msg.payload[0]);
 		return true;
@@ -1296,6 +1389,10 @@ bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 bool CEvohome::DecodeSysInfo(CEvohomeMsg &msg)//10e0
 {
 	char tag[] = "SYSINFO";
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for sysinfo %d",tag, msg.payload[0]);
 		return true;
@@ -1318,7 +1415,10 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_NAME";
 	std::vector<std::vector<std::string> > result;
-
+	
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+	
 	if (msg.payloadsize == 2){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone name %d",tag, msg.payload[0]);
 		return true;
@@ -1355,6 +1455,10 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 bool CEvohome::DecodeZoneInfo(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_INFO";
+
+	if (msg.GetID(0) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone info %d",tag, msg.payload[0]);
 		return true;
@@ -1387,6 +1491,10 @@ bool CEvohome::DecodeZoneInfo(CEvohomeMsg &msg)
 bool CEvohome::DecodeZoneWindow(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_WINDOW";
+
+	if (msg.GetID(0) != GetControllerID() && msg.GetID(2) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+
 	if (msg.payloadsize == 1){
 		Log(true,LOG_STATUS,"evohome: %s: Request for zone window %d",tag, msg.payload[0]);
 		return true;
@@ -1420,7 +1528,7 @@ bool CEvohome::DecodeZoneWindow(CEvohomeMsg &msg)
 		Log(true,LOG_STATUS,"evohome: %s: Unexpected zone state Window=%d",tag,nWindow);
 	if(nMisc!=0)
 		Log(true,LOG_STATUS,"evohome: %s: Unexpected zone state nMisc=%d",tag,nMisc);
-	Log(true,LOG_STATUS,"evohome: %s: %d: Window %d",tag,tsen.EVOHOME2.zone,nWindow);
+	Log(true, LOG_STATUS, "evohome: %s: %d: Window %d", tag, tsen.EVOHOME2.zone, nWindow);
 	
 	if (msg.GetID(0) == GetControllerID())
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "Zone Window", -1);
@@ -1477,6 +1585,10 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 {
 	//there is an interesting page on temperature control @ http://newton.ex.ac.uk/teaching/cdhw/Feedback/ControlTypes.html
 	char tag[] = "HEAT_DEMAND";
+	
+	if (msg.GetID(0) != GetControllerID() && msg.GetID(2) != GetControllerID()) // Filter out messages from other controllers
+		return true;
+	
 	if (msg.payloadsize != 2){
 		Log(false,LOG_ERROR,"evohome: %s: Error decoding heat demand, unknown packet size: %d", tag, msg.payloadsize);
 		return false;
@@ -1489,17 +1601,17 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 		//Demand (0x0008 for relays) is handled as a % (i.e. nDemand/200*100) (200=0xc8) where 200/200 corresponds to 100% of the cycle period (start of period determined by 3B00 ACTUATOR_CHECK message)
 		//So where 100% is always on then 50% is half on half off per cycle i.e. 6 cycles per hour = 10 minutes per cycle with 5 mins on & 5 mins off etc,
 		//presumably there are some settings (0x1100) that give the number of cycles per hour which would determine the length of each period
-		if(msg.GetID(0)==GetControllerID())
-			szSourceType="Controller";
-		else if(msg.GetID(0)==GetGatewayID())
-			szSourceType="Gateway";
+		if (msg.GetID(0) == GetControllerID())
+			szSourceType = "Controller";
+		else if (msg.GetID(0) == GetGatewayID())
+			szSourceType = "Gateway";
 	}
 	else if(msg.command==0x3150) //heat demand for zone is also a % (as above) of the proportional band (a temperature difference) so if the proportional band is 2 degrees and we are 1 degree from set point the demand is 50%
-	{
+	{		
 		if (nDevNo <= 12)
 			nDevNo++; //Need to add 1 to give correct zone numbers
 		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand), msg.GetID(0)); // adding DeviceID creates multiple devices for zones with mutiple sensors
-		szSourceType="Zone";
+		szSourceType = "Zone";
 	}
 	
 	if(nDevNo==0xfc)//252...afaik this is also some sort of broadcast channel so maybe there is more to this device number than representing the boiler
@@ -1605,6 +1717,10 @@ bool CEvohome::DecodeDeviceInfo(CEvohomeMsg &msg)
 bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 {
 	char tag[] = "BATTERY_INFO";
+	
+	if ((msg.GetID(2) != GetControllerID()) && (msg.id[0].GetIDType() != CEvohomeID::devSensor)) // Filter out messages from other controllers
+		return true;
+	
 	if (msg.payloadsize != 3){
 		Log(false,LOG_ERROR,"evohome: %s: Error decoding command, unknown packet size: %d", tag, msg.payloadsize);
 		return false;
@@ -1674,7 +1790,6 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 		RFX_SETID3(GetControllerID(), tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3); 
 		sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, "DHW Temp", nBattery);  // Update DHW Zone sensor
 	}
-	
 	Log(true,LOG_STATUS,"evohome: %s: %s=%d charge=%d(%%) level=%d (%s)",tag,szType.c_str(),nDevNo,nBattery,nLowBat,(nLowBat==0)?"Low":"OK");
 	
 	return true;
