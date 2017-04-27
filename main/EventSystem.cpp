@@ -2196,78 +2196,15 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 
 
-static int numargs=0;
-
-/*
-// Python module methods
-static PyObject*
-PyDomoticz_log(PyObject *self, PyObject *args)
-{
-        char* msg;
-        int type;
-
-    // _log.Log(LOG_STATUS, "EventSystem - Python: Calling log");
-
-    if(!PyArg_ParseTuple(args, "is", &type, &msg))
-        return NULL;
-        _log.Log((_eLogLevel)type, msg);
-        Py_RETURN_NONE;
-}
-
-
-static PyMethodDef DomoticzMethods[] = {
-    {"log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz."},
-    {NULL, NULL, 0, NULL}
-};
-
-// Module defs and init
-static struct PyModuleDef eventModuledef = {
-        PyModuleDef_HEAD_INIT,
-        "DomoticzEvents",
-        "Domtoticz Events Python module",
-        -1,
-        DomoticzMethods,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-};
-
-PyMODINIT_FUNC PyInit_DomoticzEvents(void)
-{
-    _log.Log(LOG_STATUS, "EventSystem - Python: Initalizing module");
-    return PyModule_Create(&eventModuledef);
-}
-
-*/
-// from https://gist.github.com/octavifs/5362297
-
-/*
-template <class K, class V>
-boost::python::dict toPythonDict(std::map<K, V> map) {
-    typename std::map<K, V>::iterator iter;
-	boost::python::dict dictionary;
-	for (iter = map.begin(); iter != map.end(); ++iter) {
-		dictionary[iter->first] = iter->second;
-	}
-	return dictionary;
-}
-*/
-
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
-// Status of setup
-bool PythonInitDone = false;
 
-
-
-// Python EventModule
+// Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
     ScheduleEvent(ID, Action,eventName);
     return true;
 }
-
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
@@ -2355,6 +2292,51 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                Py_DECREF(aDevice);
                Py_DECREF(pKey);
            }
+
+           // Time related
+
+           int intRise = getSunRiseSunSetMinutes("Sunrise");
+           int intSet = getSunRiseSunSetMinutes("Sunset");
+
+           // Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+           time_t now = mytime(NULL);
+           struct tm ltime;
+           localtime_r(&now, &ltime);
+           int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "minutes_since_midnight", Plugins::PyLong_FromLong(minutesSinceMidnight)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intRise)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSet)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
+           }
+
+           PyObject* dayTimeBool = Py_False;
+           PyObject* nightTimeBool = Py_False;
+
+           if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+               dayTimeBool = Py_True;
+           }
+           else {
+               nightTimeBool = Py_True;
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", (PyObject*)dayTimeBool) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", (PyObject*)nightTimeBool) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+           }
+
+
+           Py_DECREF(dayTimeBool);
+           Py_DECREF(nightTimeBool);
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
 

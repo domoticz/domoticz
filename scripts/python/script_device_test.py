@@ -26,6 +26,18 @@ if DE.changed_device_name == "Test":
     if DE.Devices["Test_Target"].n_value_string == "Off":
         DE.Command("Test_Target", "On")
 
+
+
+if DE.is_daytime:
+    DE.Log("Python: It's daytime!")
+
+if DE.is_nighttime:
+    DE.Log("Python: It's nighttime!")
+
+DE.Log("Python: Sunrise in minutes: " + str(DE.sunrise_in_minutes))
+DE.Log("Python: Sunset in minutes: " + str(DE.sunset_in_minutes))
+DE.Log("Python: Minutes since midnight: " + str(DE.minutes_since_midnight))
+
 #changed_device = DE.Devices[DE.changed_device_name]
 
 #DE.Log("Python: " + DE.changed_device.Describe())
