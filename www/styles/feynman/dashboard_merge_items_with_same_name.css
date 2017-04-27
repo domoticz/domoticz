@@ -1,0 +1,16 @@
+/* This is an experimental feature that merges items that have the same name before a dash, and then takes the part after that dash as the senser output name.
+
+So:
+MiFlora plant 1 - Moisture
+MiFlora plant 1 - Light level
+MiFlora plant 1 - fertility
+
+..would be merged into one item with the new name "MiFlora", and all the values would become its status outputs.
+
+The feature will also only merge items with just one data value.
+
+ */
+
+
+/* This acts as a signal to javascript that this feature has been enabled. Javascript does the rest.*/
+#copyright{z-index:1;opacity:98}

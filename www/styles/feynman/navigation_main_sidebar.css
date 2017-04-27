@@ -244,8 +244,8 @@
     
     #appnavbar ul.dropdown-menu a img {
         margin:5px;
-        height:16px;
-        width:16px;
+        height:32px;
+        width:32px;
     }
 
     .navbar ul.dropdown-menu li{ 
@@ -363,6 +363,18 @@
         display:none!important; /* these buttons are no longer needed */
         text-align:right;
     }
+    
+    /*  FLIP HARDWARE IMAGE - just for fun*/
+    /*
+    #appnavbar #cHardware img {
+        -moz-transform: scaleY(-1);
+        -o-transform: scaleY(-1);
+        -webkit-transform: scaleY(-1);
+        transform: scaleY(-1);
+        filter: FlipV;
+        -ms-filter: "FlipV";
+    }
+    *
 
 
     /* third tier */
@@ -597,14 +609,31 @@
 
     #main-view > .container {width:100%!important}
    
-    div.ui-draggable,
+    div.ui-draggable:not(.ui-dialog),
     .span4{
         width:calc(100% / 3 - 20px)!important;
         -webkit-box-sizing: content-box;
         -moz-box-sizing: content-box;
         box-sizing: content-box;    
-    } 
+    }
+    
+
     
     
     #main-view > .container {width:100%}
+}
+
+
+@media all and (min-width: 768px) and (max-width: 900px){
+
+    /*  Overrides the rule above, to go from 3 columns to 2 columns on narrower screens if the new CSS3 flexible display is available. */
+
+    .CSS3 div.ui-draggable,
+    .CSS3 .span4 {
+        width:calc(50% - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
 }

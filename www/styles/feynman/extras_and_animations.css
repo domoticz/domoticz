@@ -43,24 +43,28 @@ body.dashboard div.item.Fan.onn .img1 img:hover{
 }
 
 
-/*  BAROMETER EFFECTS  */
+/*  BAROMETER EFFECTS 
 
-/*
+    STABLE = 0,            // "Stable Weather Pattern"
+    SUNNY = 1,            // "Slowly rising Good Weather", "Clear/Sunny "
+    CLOUDY = 2,            // "Slowly falling L-Pressure ", "Cloudy/Rain "
+    UNSTABLE = 3,        // "Quickly rising H-Press",     "Not Stable"
+    THUNDERSTORM = 4,    // "Quickly falling L-Press",    "Thunderstorm"
+    UNKNOWN = 5            // "Unknown (More Time needed)
 
-domoticz.BARO_STABLE
-domoticz.BARO_SUNNY
-domoticz.BARO_CLOUDY
-domoticz.BARO_UNSTABLE
-domoticz.BARO_THUNDERSTORM
-domoticz.BARO_UNKNOWN
-domoticz.BARO_CLOUDY_RAIN
+    Domoticz has these values:
+
+    domoticz.BARO_STABLE
+    domoticz.BARO_SUNNY
+    domoticz.BARO_CLOUDY
+    domoticz.BARO_UNSTABLE
+    domoticz.BARO_THUNDERSTORM
+    domoticz.BARO_UNKNOWN
+    domoticz.BARO_CLOUDY_RAIN
+
+Although I've also seen "some clouds". But that may come from a MySensors custom sensor.
 
 */
-
-
-/* "some clouds" also exists. Perhaps:
-
-div.item[id=*cloud]
 
 */
 
@@ -75,17 +79,11 @@ div.item[id=*cloud]
       -webkit-transform:rotate(0deg);
       transition:rotate(0deg) 
   }
-
-  50% {
-      -moz-transform:rotate(-30deg);
-      -webkit-transform:rotate(-30deg);
-      transition:rotate(-30deg) 
-  }    
     
   to {
-      -moz-transform:rotate(30deg);
-      -webkit-transform:rotate(30deg);
-      transition:rotate(30deg) 
+      -moz-transform:rotate(90deg);
+      -webkit-transform:rotate(90deg);
+      transition:rotate(90deg) 
   }
 }
 
@@ -103,7 +101,7 @@ div.item[id=*cloud]
   }    
 }
 
-@keyframes loading {
+@keyframes baro-unknown-loading {
   from {
     -webkit-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
     -moz-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
@@ -115,58 +113,24 @@ div.item[id=*cloud]
     box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
   }    
 }
-@keyframes loading2 {
-  from {
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%);
-
-  }
-  to {
-      background: radial-gradient(ellipse at center, rgba(0,0,0,1) 0,rgba(0,0,0,0) 100%);
-
-  }    
-}
 
 
 
-/*  UNKNOWN  */
-/*#dashcontent #dashWeather div.item[id*=unknown] tr .img1::after,
-#dashcontent div.item.Barometer#unknown tr #img::after,
-#dashcontent div.item.Pressure#unknown tr #img::after,
-#dashcontent div.item.TempHumidityBaro#unknown tr #img::after,
-#dashcontent div.item.WeatherStation##unknown tr #img::after{
-    content: "?";
-    font-weight: bolder;
-    color: white;
-    font-size: 20px;
-    position: relative;
-    background-color: rgba(0,255,0,0.5);
-    border-radius: 50%;
-    padding: 5px 9px 3px 9.5px;
-    top: -12px;
-    left: -35px;
-    line-height: 1.0em;
-    z-index: 1;
-}*/
 #dashcontent #dashWeather #unknown tr .img1 img{
-    animation: 10s infinite loading;
+    animation: 10s infinite baro-unknown-loading;
     border-radius:50%!important;
     padding:5px;
     opacity:50;
 }
 
 
-/*  UNSTABLE  */
-#dashcontent #dashWeather #unstable tr{
-    background-image:none;
-    background-image: url('/images/baro-unstable.png') no-repeat right top!important; 
-}
-
+/*  UNSTABLE  - quicky rising high pressure */
 #dashcontent #dashWeather #unstable tr .img1 img,
 #dashcontent div.item.Barometer#unstable tr .img1 img,
 #dashcontent div.item.Pressure#unstable tr .img1 img,
 #dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
 #dashcontent div.item.WeatherStation#unstable tr .img1 img{
-    animation: 3s infinite unstable;
+    animation: 10s infinite unstable;
 }
 
 
@@ -192,25 +156,10 @@ div.item[id=*cloud]
 #dashcontent div#cloudy tr{
     background-image:none;
     background: rgba(250,250,250,0.1) url('/images/baro-cloudy.png') no-repeat right top!important; 
-    /*background-color: rgba(250,250,250,0.1)!important;*/
 }
-/*
-#dashcontent div.item.Barometer#cloudy tr .img1 img,
-#dashcontent div.item.Pressure#cloudy tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#cloudy tr .img1 img,
-#dashcontent div.item.WeatherStation#cloudy tr .img1 img,
-#dashcontent div.item.Barometer#someclouds tr .img1 img,
-#dashcontent div.item.Pressure#someclouds tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#someclouds tr .img1 img,
-#dashcontent div.item.WeatherStation#someclouds tr .img1 img{
-    -moz-transform:rotate(-10deg);
-    -webkit-transform:rotate(-10deg);
-    transition:rotate(-10deg);
-}*/
-
 
 /*  RAINY  */
-#dashcontent #dashWeather div.item.#rain tr{
+#dashcontent #dashWeather div.item#rain tr{
     background-image:none;
     background: rgba(250,250,250,0.1) url('/images/baro-rain.png') no-repeat right top!important; 
 }
@@ -247,8 +196,6 @@ div.item[id=*cloud]
 #dashcontent div.item.WeatherStation[id*=sun] tr{
     background-image:none;
     background: rgba(250,250,250,0.1) url('/images/baro-sunny.png') no-repeat right top!important; 
-    /*background-color: rgba(250,250,250,0.1)!important;*/
-    /*background-size: 70%;*/
 }
 #dashcontent div.item.Barometer[id*=sun] tr .img1 img,
 #dashcontent div.item.Barometer#sunny tr .img1 img,
@@ -260,117 +207,26 @@ div.item[id=*cloud]
     transition:rotate(45deg);}
 
 
-/*  STABLE  */
+/*  STABLE - very sunny, very dry weather */
 #dashcontent #dashWeather div.item[id*=stable] tr,
 #dashcontent div.item.Barometer#stable tr,
 #dashcontent div.item.Pressure#stable tr,
 #dashcontent div.item.TempHumidityBaro#ustable tr,
 #dashcontent div.item.WeatherStation#stable tr{
     background-image:none;
-    background: url('/images/baro-stable.png') no-repeat right top!important; 
-    background-color: rgba(250,250,250,0.1)!important;
-    
-    /*background-size: 70%;*/
+    background: rgba(250,250,250,0.1) url('/images/baro-stable.png') no-repeat right top!important;     
 }
 #dashcontent div.item.Barometer#stable tr .img1 img,
 #dashcontent div.item.Pressure#stable tr .img1 img,
 #dashcontent div.item.TempHumidityBaro#stable tr .img1 img,
 #dashcontent div.item.WeatherStation#stable tr .img1 img{
-    -moz-transform:rotate(90deg);
-    -webkit-transform:rotate(90deg);
-    transition:rotate(90deg);
+    -moz-transform:rotate(80deg);
+    -webkit-transform:rotate(80deg);
+    transition:rotate(80deg);
 }
 
 
 
-
-/*
-background: rgba(252,234,187,1);
-background: -moz-radial-gradient(center, ellipse cover, rgba(252,234,187,1) 0%, rgba(252,205,77,1) 50%, rgba(248,181,0,1) 51%, rgba(251,223,147,1) 100%);
-background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(252,234,187,1)), color-stop(50%, rgba(252,205,77,1)), color-stop(51%, rgba(248,181,0,1)), color-stop(100%, rgba(251,223,147,1)));
-background: -webkit-radial-gradient(center, ellipse cover, rgba(252,234,187,1) 0%, rgba(252,205,77,1) 50%, rgba(248,181,0,1) 51%, rgba(251,223,147,1) 100%);
-background: -o-radial-gradient(center, ellipse cover, rgba(252,234,187,1) 0%, rgba(252,205,77,1) 50%, rgba(248,181,0,1) 51%, rgba(251,223,147,1) 100%);
-background: -ms-radial-gradient(center, ellipse cover, rgba(252,234,187,1) 0%, rgba(252,205,77,1) 50%, rgba(248,181,0,1) 51%, rgba(251,223,147,1) 100%);
-background: radial-gradient(ellipse at center, rgba(252,234,187,1) 0%, rgba(252,205,77,1) 50%, rgba(248,181,0,1) 51%, rgba(251,223,147,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fceabb', endColorstr='#fbdf93', GradientType=1 );
-background-position
-
-
-background-image: radial-gradient(75% 19%, ellipse cover, #ababab, #2e0580 33%)
-*/
-
-
-/*
-.xoverlay {
-    background: linear-gradient(left, #00BBFF, #00BBFF 14.3%, #2EB5E5 14.3%, #2EB5E5 28.6%, #E6E6E6 28.6%, #E6E6E6 42.9%, #F3D166 42.9%, #F3D166 57.2%, #222233 57.2%, #222233 71.5%, #444444 71.5%, #444444 85.8%, #85DB8C 85.8%);
-    transform: scale(.9);
-    width: 1200px;
-    position: absolute;
-    height: 210px;
-    left: 50%;
-    top: 50%;
-    margin: -65px -600px;
-}
-
-
- .nothing:before {
-    animation: rainy_rain .7s infinite linear;
-    content: '';
-    background: #CCCCCC;
-    border-radius: 50%;
-    display: block;
-    height: 6px;
-    width: 3px;
-    opacity: 0.3;
-    transform: scale(.9);
-    transform:translate(100px, -20px);
-}
-
-.xoverlay:after {
-    animation: rainy_shadow 5s ease-in-out infinite 1s;
-    background: #000000;
-    border-radius: 50%;
-    content: '';
-    height: 15px;
-    width: 120px;
-    opacity: 0.2;
-    position: absolute;
-    left: 5px;
-    bottom: -60px;
-    transform: scale(.7);
-}
-*/
-
-
-/*
-    STABLE = 0,            // "Stable Weather Pattern"
-    SUNNY = 1,            // "Slowly rising Good Weather", "Clear/Sunny "
-    CLOUDY = 2,            // "Slowly falling L-Pressure ", "Cloudy/Rain "
-    UNSTABLE = 3,        // "Quickly rising H-Press",     "Not Stable"
-    THUNDERSTORM = 4,    // "Quickly falling L-Press",    "Thunderstorm"
-    UNKNOWN = 5            // "Unknown (More Time needed)
-
-
-
-    STABLE
-    SUNNY
-    CLOUDY
-    UNSTABLE
-    THUNDERSTORM
-    UNKNOWN
-
-
-             domoticz.BARO_STABLE
-            domoticz.BARO_SUNNY
-            domoticz.BARO_CLOUDY
-            domoticz.BARO_UNSTABLE
-            domoticz.BARO_THUNDERSTORM
-            domoticz.BARO_UNKNOWN
-            domoticz.BARO_CLOUDY_RAIN
-
-
-div.item[id=*rain] tr
-*/
 
 
 /*
@@ -453,7 +309,7 @@ body{
 
 
 
-/*  CHECKBOX  */
+/*  FANCY CHECKBOXES  */
 
 #settings input[type='checkbox']{
     position:relative;

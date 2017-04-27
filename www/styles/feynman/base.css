@@ -309,6 +309,7 @@ p.ng-binding {
 
 #dashcontent > section {margin-bottom:20px;}
 
+.prebannav, #prebannav{margin-bottom:10px;}
 #prebannav #timesun + td{padding:0}
 #prebannav #timesun + td > span {color:#ddd;padding:0}
 #timesun + td {color:#ddd!important;}
@@ -942,12 +943,13 @@ body .item tr > #name {
     height:0;
 }
 
-#dashcontent .item.withstatus #status .spanwrapper{
+#dashcontent .item.withstatus #status .wrapper{
     height:0;
     width:100%;
     overflow:visible;
     display:flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap:wrap;
     margin:0;
     padding:0;
 }
@@ -1375,7 +1377,7 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     width:auto;
 }
 #settingscontent div.row-fluid.related .span2 img{
-    padding-right: 3px;
+    margin-right: 3px;
 }
 
 #settingscontent input{
@@ -1601,6 +1603,8 @@ table.display thead th div.DataTables_sort_wrapper span:hover{background-color:r
 
 table.dataTable tbody img{
     vertical-align: middle;
+    width:16px;
+    height:16px;
 }
 
 .dataTables_wrapper .ui-toolbar{
@@ -1946,15 +1950,15 @@ div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!
 
 #aboutcontent{color:#fff;}
 
-body.temperature #tempwidgets img:hover,
-body.weather #weatherwidgets img:hover,
-#utilitycontent img:hover{
+body.temperature #tempwidgets .img1 img:hover,
+body.weather #weatherwidgets .img1 img:hover,
+#utilitycontent .img1 img:hover{
     background-color:transparent!important;
     cursor:move!important;
 }
-#utilitycontent div.item.SetPoint img:hover{background-color:background-color:#43A4D3!important;cursor:pointer!important;}
+#utilitycontent div.item.SetPoint .img1 img:hover{background-color:background-color:#43A4D3!important;cursor:pointer!important;}
 
-/*  fun  */
+/*  embelishments  */
 #lightcontent #ProtectionDiv input[type=checkbox]:checked::after{
     content : "";
     display: inline-block;
@@ -1977,6 +1981,23 @@ body.weather #weatherwidgets img:hover,
 
 body.dashboard .item td.dataviz{height:0;overflow:hidden}
 .item td.overlay{display:none}
+.item td.overlay > div{width:0}
+
+
+/* experimental features */
+
+.divider{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* merging items */
+#dashcontent div.item.bandleader.withstatus tr td#bigtext{right:10px;}
+#dashcontent div.item.bandleader.withstatus tr td#status{left:10px!important}
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > img{height:30px;width:30px;position: relative;top: 3px;box-shadow:inset 0 0 18px 0px rgba(100, 100, 100, 0.2);}
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > span {width:calc(50% - 30px);}
+
 
 
 
@@ -2114,9 +2135,6 @@ body.dashMobile table.mobileitem td#status > span > span:only-child{box-shadow: 
 }
 
 
-
-
-
 /* and now for the second mobile row (with colspan=2) */
 
 td[colspan]:not([colspan="1"]){
@@ -2206,7 +2224,6 @@ td[colspan]:not([colspan="1"])
         /*color:#333!important;*/
     }
     
-    
     input[type=checkbox] {
         /*transform: scale(1.5);*/
     }
@@ -2215,8 +2232,6 @@ td[colspan]:not([colspan="1"])
     
     
     /*  better options buttons (which are somehow reaching back to style.css a lot.. */
-    
-
     
 }
 
@@ -2269,8 +2284,6 @@ td[colspan]:not([colspan="1"])
         padding-top:3px;
     }
     
-    
-    
     /*  some mobile fixes  */
     
     #bigtext
@@ -2291,14 +2304,9 @@ td[colspan]:not([colspan="1"])
         clear:both
     }
     
-    
-    
-    
-    
-    
-    
 }
 
+/*  A lot of optimising data-outputon smaller screens, to avoid things overlapping */
 @media screen and (min-width: 768px) and (max-width: 980px){
     
     #name,
@@ -2353,16 +2361,10 @@ td[colspan]:not([colspan="1"])
     #bigtext{float:right;}
 }
     
-@media all and (min-width: 1200px){
-    
-    /*
-    textarea,
-    input.text{
-        min-width:210px;
-        margin-right:3px
-    }*/
 
-    /* items with lots of data outputs, let's keep them from getting too freakishly tall */
+@media all and (min-width: 1200px){
+
+    /* let's keep items with lots of data outputs from getting too tall */
     #dashcontent div.item.withstatus tr td#status > .wrapper {
         display:flex; 
         flex-wrap: wrap;
@@ -2386,8 +2388,11 @@ td[colspan]:not([colspan="1"])
 }
 
 
+/*  on medium-sized screens a lot of space is wasted by bootstrap (which is designed for document display and not interface dashbards). Let's override that. */
 @media all and (min-width: 768px) and (max-width: 1300px){
 
+    body.dashboard #main-view > .container {width:100%!important}
+    
     body.dashboard .span4{
         width:calc(100% / 3 - 20px)!important;
         -webkit-box-sizing: content-box;
@@ -2401,17 +2406,19 @@ td[colspan]:not([colspan="1"])
         -moz-box-sizing: content-box;
         box-sizing: content-box;    
     }
-    
-    body.dashboard #main-view > .container {width:100%!important}
-    
-    /*#beforebannav,#bannav{padding-left:10px;padding-right:10px}
-    .navbar{padding-left: 30px; padding-right:30px;}*/
+        
 }
+/*  On CSS3 browsers, if the new divider-free display has been enabled (IF..), then be more flexible about displaying items, and override the above general rule.*/
+@media all and (min-width: 768px) and (max-width: 900px){
+    body.dashboard .span4{width:calc(100% / 2 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 3 - 20px)!important;}
+}
+/* A 4-columns display could also be added here for wider screens. */
 
 
 
 
-/* Poor man's columns */
+/* Poor man's columns on the mobile option. Great for people who want a lot of info on their display. */
 
 @media only screen and (min-width: 1100px){
 
@@ -2444,5 +2451,13 @@ td[colspan]:not([colspan="1"])
     
 }
 
+/* larger main menu icon size */
+@media all and (min-width: 480px) and (max-width: 980px){
+    .navbar .nav > li > a{padding: 2px 10px 2px 10px; }
+    .navbar .nav > li > a> img{height:32px;width:32px }
+}
 
 
+
+
+.test {background-color:purple!important;}
