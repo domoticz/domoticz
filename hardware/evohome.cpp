@@ -191,11 +191,7 @@ bool CEvohome::StartHardware()
 			Log(true, LOG_STATUS, "evohome: #Controllers=%d", ctrlrCount);
 		}
 		
-		//Debug: workaround in case multiple controllers exist in device list
-		if (m_UControllerID)
-			result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (DeviceID == %d)", m_HwdID, m_UControllerID);
-		else
-			result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
 		
 		if (result.size()>0)
 		{
