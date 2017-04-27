@@ -178,7 +178,7 @@ bool CEvohome::StartHardware()
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
 			
 		if (result.size()>0)
 		{
