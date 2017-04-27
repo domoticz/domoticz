@@ -1,21 +1,4 @@
-import Domoticz
-
 import DomoticzEvents as DE
-
-#import reloader
-#reloader.auto_reload(__name__)
-
-# similar to http://www.domoticz.com/wiki/Smart_Lua_Scripts
-# name is PIR <options> <switch controlled>
-# options can be day/night/all
-# example names:
-# Pir day-night Slaapkamer groot
-# PIR all Slaapkamer groot
-# PIR night Slaapkamer groot
-
-#DomoticzEvents.log(0, "Test")
-
-# Domoticz.Log(0, "Testing")
 
 DE.Log("Python: Changed: " + DE.changed_device.Describe())
 
@@ -26,23 +9,10 @@ if DE.changed_device_name == "Test":
     if DE.Devices["Test_Target"].n_value_string == "Off":
         DE.Command("Test_Target", "On")
 
+DE.Log("Python: Number of user_variables: " + str(len(DE.user_variables)))
 
+# All user_variables are treated as strings, convert as necessary
+for key, value in DE.user_variables.items():
+    DE.Log("Python: User-variable '{0}' has value: {1}".format(key, value))
 
-if DE.is_daytime:
-    DE.Log("Python: It's daytime!")
-
-if DE.is_nighttime:
-    DE.Log("Python: It's nighttime!")
-
-DE.Log("Python: Sunrise in minutes: " + str(DE.sunrise_in_minutes))
-DE.Log("Python: Sunset in minutes: " + str(DE.sunset_in_minutes))
-DE.Log("Python: Minutes since midnight: " + str(DE.minutes_since_midnight))
-
-#changed_device = DE.Devices[DE.changed_device_name]
-
-#DE.Log("Python: " + DE.changed_device.Describe())
-
-#for aDeviceKey in DE.Devices:
-#    DE.Log("Python: " + DE.Devices[aDeviceKey].Describe())
-#test = DE.PDevice(name="Test")
-#DE.Log("Python: " + DE.Devices["Test"].n_value_string)
+# Description of Device_object should go here...
