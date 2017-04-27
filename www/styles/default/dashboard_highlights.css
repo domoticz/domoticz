@@ -123,19 +123,21 @@
         width:100%;
         min-height:100px;
         display: flex;
-        flex-direction: column;
-        flex-wrap:nowrap;
+        flex-direction: row;
+        flex-wrap: wrap;
         flex-grow: 1;
         justify-content: space-around;
         min-height: 100px;
     }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
         box-shadow:inset 0px -2px 1px -1px rgba(50, 50, 50, 0.1);
         color:#fff;
         padding: 3px 10px 0 5px;
         line-height: 1em;
         height:auto;
-        width:100%!important;
+        width:80%;
+        width:calc(100% - 30px);
         white-space: normal;
         background:none;
         background-image:none;
@@ -632,7 +634,17 @@
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #img img{display:none}
     
+    
+    /*  MERGED ITEMS */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:90%;width:calc(100% - 10px);}
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount4 td#status > .wrapper > img{height:24px;width:24px;}
+   
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount5 td#status > .wrapper > img{height:16px;width:16px;top:8px}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount5 td#status > .wrapper > span {width:calc(50% - 16px);font-size:14px;padding: 0 0 0 5px}
 
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status
     
     
     

@@ -463,8 +463,9 @@ div.dataTables_wrapper .ui-toolbar, div.dataTables_wrapper .ui-widget-header{
 
 /*  DIALOGS  */
 
-ui-dialog-content{
-
+body .ui-dialog, body .ui-dialog-content{
+    color:#fff;
+    background-color:#11213d;
 }
 
 

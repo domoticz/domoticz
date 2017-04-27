@@ -609,7 +609,7 @@
 
     #main-view > .container {width:100%!important}
    
-    div.ui-draggable,
+    div.ui-draggable:not(.ui-dialog),
     .span4{
         width:calc(100% / 3 - 20px)!important;
         -webkit-box-sizing: content-box;

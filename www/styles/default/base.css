@@ -943,12 +943,13 @@ body .item tr > #name {
     height:0;
 }
 
-#dashcontent .item.withstatus #status .spanwrapper{
+#dashcontent .item.withstatus #status .wrapper{
     height:0;
     width:100%;
     overflow:visible;
     display:flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap:wrap;
     margin:0;
     padding:0;
 }
@@ -1991,8 +1992,11 @@ body.dashboard .item td.dataviz{height:0;overflow:hidden}
     flex-wrap: wrap;
 }
 
-
-
+/* merging items */
+#dashcontent div.item.bandleader.withstatus tr td#bigtext{right:10px;}
+#dashcontent div.item.bandleader.withstatus tr td#status{left:10px!important}
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > img{height:30px;width:30px;position: relative;top: 3px;box-shadow:inset 0 0 18px 0px rgba(100, 100, 100, 0.2);}
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > span {width:calc(50% - 30px);}
 
 
 
