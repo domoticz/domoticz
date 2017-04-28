@@ -179,13 +179,13 @@ bool CEvohome::StartHardware()
 		
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
-		
-		if (result.size()>0)
+			
+		if (!result.empty())
 		{
 			std::vector<std::string> sd=result[0];
 			std::stringstream s_strid;
 			s_strid << std::hex << sd[1];
-			if (s_strid.str().size() != 0)  // Check whether the controller's DeviceID has been set
+			if (!s_strid.str().empty())  // Check whether the controller's DeviceID has been set
 			{
 				s_strid >> m_nDevID;
 				SetControllerID(m_nDevID);
@@ -368,11 +368,11 @@ void CEvohome::Do_Work()
 					if (AllSensors == false) // Check whether individual zone sensors has been activated 
 					{
 						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit >= 13) AND (Unit <= 24)", m_HwdID, (int)pTypeEvohomeZone);						
-						if (result.size() != 0)
+						if (!result.empty())
 							AllSensors = true;	
 						// Check if the dummy sensor exists and delete
 						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == 'FFFFFF') AND (Type==%d) AND (Unit == 13)", m_HwdID, (int)pTypeEvohomeZone);
-						if (result.size() != 0)
+						if (!result.empty())
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
 					}
 					if (nStarts < 20)
@@ -462,7 +462,7 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 	REVOBUF *tsen=(REVOBUF*)pdata;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
-	if (result.size()>0)
+	if (!result.empty())
 	{
 		unsigned long ID;
 		std::vector<std::string> sd=result[0];
@@ -644,11 +644,11 @@ void CEvohome::SendExternalSensor()
 	double dbTemp=0.0,dbUV=0.0;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Name=='Outside')");//There could be different types depending on how data is received from WU etc.
-	if (result.size()>0)
+	if (!result.empty())
 	{
 		std::vector<std::string> strarray;
 		StringSplit(result[0][0], ";", strarray);
-		if (strarray.size() >= 1)
+		if (!strarray.empty())
 			dbTemp=atof(strarray[0].c_str());
 		else
 			return;
@@ -658,7 +658,7 @@ void CEvohome::SendExternalSensor()
 	
 	//FIXME no light level data available UV from WU is only thing vaguely close (on dev system) without a real sensor 
 	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (Type==%d)", (int)pTypeUV);
-	if (result.size()>0)
+	if (!result.empty())
 		dbUV=atof(result[0][0].c_str());
 	else
 		return;
@@ -677,7 +677,7 @@ void CEvohome::SendZoneSensor()
 	result = m_sql.safe_query("SELECT Max(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", m_HwdID, (int)pTypeEvohomeZone);
 	
 	int nDevCount = 0;
-	if (result.size() > 0)
+	if (!result.empty())
 	{
 		nDevCount = atoi(result[0][0].c_str());
 	}
@@ -685,7 +685,7 @@ void CEvohome::SendZoneSensor()
 	for (int i = 40; i <= nDevCount; ++i)
 	{
 		result = m_sql.safe_query("SELECT DeviceID, Name  FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit==%d)", m_HwdID, (int)pTypeEvohomeZone, i); // Get Zone Name and DeviceID
-		if (result.size() > 0) //Check that sensor number exists - this allows for deletion
+		if (!result.empty()) //Check that sensor number exists - this allows for deletion
 		{
 			//std::vector<std::string> sd = result[0];
 			std::stringstream s_strid;
@@ -698,7 +698,7 @@ void CEvohome::SendZoneSensor()
 			{
 				std::vector<std::string> strarray;
 				StringSplit(result[0][0], ";", strarray);
-				if (strarray.size() >= 1)
+				if (!strarray.empty())
 					dbTemp = atof(strarray[0].c_str());
 				Log(true, LOG_STATUS, "evohome: Send Temp Zone msg Zone: %d DeviceID: 0x%x Name:%s Temp:%f ", i, ID, SensorName.c_str(), dbTemp);
 				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf, 0, ID, cmdZoneTemp).Add((uint8_t)0).Add(static_cast<int16_t>(dbTemp*100.0)));
@@ -1004,7 +1004,7 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 		
 		result = m_sql.safe_query("SELECT MAX(DeviceID) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", m_HwdID, (int)pTypeEvohomeZone);
 		unsigned int ID = 0;
-		if (result.size() > 0)
+		if (!result.empty())
 		{
 			std::stringstream s_strid; 
 			s_strid << std::hex << result[0][0].c_str();
@@ -1162,7 +1162,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 	{
 		std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));  
 		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_HwdID, zstrid.c_str());
-		if (result.size() == 0) // Check whether DeviceID has already been registered
+		if (result.empty()) // Check whether DeviceID has already been registered
 			return true;
 	}
 
@@ -1225,7 +1225,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 			std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
 
 			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
-			if (result.size() != 0) // Update existing temp sensor with value directly from sensor
+			if (!result.empty()) // Update existing temp sensor with value directly from sensor
 			{
 				tsen.EVOHOME2.zone = atoi(result[0][0].c_str());
 				Log(true, LOG_STATUS, "evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
@@ -1234,7 +1234,7 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 			else // If matching relay with same deviceID then create a new Zone Temp sensor with zone number offset by 12
 			{
 				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeRelay);
-				if (result.size() != 0) 
+				if (!result.empty()) 
 				{
 					tsen.EVOHOME2.zone = atoi(result[0][0].c_str()) + 12;
 					sprintf(zstrname, "Zone %d", atoi(result[0][0].c_str()));
@@ -1453,10 +1453,10 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 
 	// Update any zone names which are still the defaults
 	result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone Temp')) OR ((HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Setpoint'))", m_HwdID, (int)pTypeEvohomeZone, nZone, m_HwdID, (int)pTypeEvohomeZone, nZone);
-	if (result.size() != 0)
+	if (!result.empty())
 		m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", (const char*)&msg.payload[2], m_HwdID, (int)pTypeEvohomeZone, nZone);
 	result = m_sql.safe_query("SELECT Name FROM Devicestatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d) AND (Name == 'Zone')", m_HwdID, (int)pTypeEvohomeRelay, nZone);
-	if (result.size() != 0)
+	if (!result.empty())
 		m_sql.safe_query("UPDATE Devicestatus SET Name='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (Unit == %d)", (const char*)&msg.payload[2], m_HwdID, (int)pTypeEvohomeRelay, nZone);
 
 	return true;
@@ -2034,7 +2034,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
 			unsigned long nid = 1; //could be the first device ever
 
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nid = atol(result[0][0].c_str());
 			}
@@ -2046,7 +2046,7 @@ namespace http {
 			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
 
 			int nDevCount = 0;
-			if (result.size() > 0)
+			if (!result.empty())
 			{
 				nDevCount = atol(result[0][0].c_str());
 			}
@@ -2119,7 +2119,7 @@ namespace http {
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", HwdID, (int)pTypeEvohomeRelay);
 				int nDevCount = 0;
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					nDevCount = atol(result[0][0].c_str());
 				}
@@ -2141,7 +2141,7 @@ namespace http {
 				// Check if All Sensors has already been activated, if not create a temporary dummy sensor				
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
-				if (result.size() == 0)
+				if (result.empty())
 				{
 					std::string devname = "Zone Temp";
 					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
@@ -2157,7 +2157,7 @@ namespace http {
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT MAX(Unit) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", HwdID,(int)pTypeEvohomeZone);
 				int nDevCount = 0;
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					nDevCount = atoi(result[0][0].c_str());
 				}
@@ -2186,7 +2186,7 @@ namespace http {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HwdID, devid.c_str());
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					root["status"] = "ERR";
 					root["message"] = "Device already exists";
@@ -2206,7 +2206,7 @@ namespace http {
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", HwdID, ID);
-				if (result.size() > 0)
+				if (!result.empty())
 				{
 					root["status"] = "ERR";
 					root["message"] = "Device already exists";
