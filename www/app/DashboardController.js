@@ -2748,8 +2748,8 @@ define(['app'], function(app) {
 										'\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
                                     xhtm += imghtml;
 									xhtm +=
-										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n' +
-										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
+										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n';
+										
 									if (item.SwitchType == "Dimmer") {
 										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {} else {
 											xhtm += '<td class="widget"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
@@ -2785,8 +2785,10 @@ define(['app'], function(app) {
 											});
 											xhtm += '</select>';
 											xhtm += '</div></td>';
+                                            
 										}
 									}
+                                    xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
 									xhtm +=
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
