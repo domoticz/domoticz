@@ -968,8 +968,9 @@ body:not(.dashboard) td#status > span > span.separator{padding-right:3px;}
 
 #dashcontent .item.withstatus #status > .wrapper > span{
     display:flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     width:100%;
     padding:13px 10px 10px 15px;
     flex: 1 1 auto;
@@ -2468,10 +2469,22 @@ td[colspan]:not([colspan="1"])
 
 
 
+/*  WORKSPACE  */
+
 .test {background-color:purple!important;}
 
 
+#dashcontent .withstatus #status,
+#dashcontent .withstatus #status .wrapper{height:auto!important;top:0!important}
+#dashcontent .withstatus #lastupdate{height:auto!important;top:0!important}
 
-.withstatus #status,
-.withstatus #status .wrapper{height:auto!important;top:0!important}
-.withstatus #lastupdate{height:auto!important;top:0!important}
+
+#dashcontent .withstatus #name{height: 35px}
+#dashcontent .span4 .withstatus #name{padding: 10px 0 0 10px;}
+#dashcontent .span4 .withstatus #bigtext {top: -28px;}
+#dashcontent .span4 .withstatus #img{top: -32px;width:32px;;right:10px;}
+#dashcontent .span4 .withstatus #img img{width:32px;height:32px;}
+
+
+
+    
