@@ -110,6 +110,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
+        <script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script>
 
 		<script data-main="app/main" src="js/require.js"></script>
 <script type="text/javascript" charset="utf-8" id="init-code">
@@ -275,19 +276,6 @@ $(document).ready(function() {
 		DashboardType: 0,
 		isproxied: false
 	};
-	if (typeof sessionStorage.title == 'undefined') {
-		sessionStorage.title = "Domoticz";
-		$.ajax({ 
-	             	url: "json.htm?type=command&param=gettitle",
-	        	async: false,
-		     	dataType: 'json',
-	          	success: function(data) {
-				if (typeof data.Title != 'undefined')
-					sessionStorage.title = data.Title;
-				  }
-		})
-	}
-	document.title = sessionStorage.title;
 
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
@@ -1706,15 +1694,28 @@ $(document).ready(function() {
 			</div>
 		</div>
 		<div id="holder">
-					<div class="container-fluid">
-							<div id="notification" style="display: none;"></div>
-							<div class="bannercontent">
-								<div id="main-view" ng-view></div>
-							</div>
-							<div id="copyright" style="display: none;" has-User>
-									<p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
-							</div>
-					</div> <!-- /container -->
+            <div class="container-fluid">
+                <div id="notification" style="display: none;"></div>
+                <div class="bannercontent">
+                    <div id="main-view" ng-view></div>
+                </div>
+                <div id="copyright" style="display: none;" has-User>
+                    <p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
+                </div>
+                <div id="themestatus" has-User>
+                    <div id="themeinfo"></div>
+                    <div id="themeoption1"></div>
+                    <div id="themeoption2"></div>
+                    <div id="themeoption3"></div>
+                    <div id="themeoption4"></div>
+                    <div id="themeoption5"></div>
+                    <div id="themeoption6"></div>
+                    <div id="themeoption7"></div>
+                    <div id="themeoption8"></div>
+                    <div id="themeoption9"></div>
+                    <div id="themeoption10"></div>
+                </div>
+            </div> <!-- /container -->
 		</div>
 	</body>
 </html>
