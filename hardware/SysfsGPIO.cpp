@@ -192,25 +192,29 @@ bool CSysfsGPIO::StopHardware()
 
 bool CSysfsGPIO::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	bool bOk = true;
-
+	bool bOk = false;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pSen->ICMND.packettype;
+	int gpio_pin = pSen->LIGHTING2.unitcode;
 
-	if (packettype == pTypeLighting2)
+	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
-		int output_pin = pSen->LIGHTING2.unitcode;
-
-		if (pSen->LIGHTING2.cmnd == light2_sOn)
+		if ((GpioSavedState[i].pin_number == gpio_pin) &&
+			(GpioSavedState[i].direction == GPIO_OUT) && 
+			(packettype == pTypeLighting2))
 		{
-			GPIOWrite(output_pin, true);
-		}
-		else
-		{
-			GPIOWrite(output_pin, false);
+			if (pSen->LIGHTING2.cmnd == light2_sOn)
+			{
+				GPIOWrite(gpio_pin, true);
+			}
+			else
+			{
+				GPIOWrite(gpio_pin, false);
+			}
+			bOk = true;
+			break;
 		}
 	}
-
 	return bOk;
 }
 
@@ -383,8 +387,8 @@ void CSysfsGPIO::CreateDomoticzDevices()
 		if (GpioSavedState[i].direction == GPIO_IN)
 		{
 			/* Inputs */
-			result = m_sql.safe_query("SELECT Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
-				m_HwdID, szIdx, GpioSavedState[i].pin_number);
+			result = m_sql.safe_query("SELECT Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+				m_HwdID, szIdx, GpioSavedState[i].pin_number); 
 
 			if (result.empty())
 			{
@@ -396,7 +400,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[3].c_str()) != 0) /* check if previous db device was an input */
+					if (atoi(sd[0].c_str()) != 0) /* delete if previous db device was an output */
 					{
 						m_sql.safe_query(
 							"DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
@@ -418,7 +422,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 		else
 		{	
 			/* Outputs */
-			result = m_sql.safe_query("SELECT Name,nValue,sValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", 
+			result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 				m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 			if (result.empty())
@@ -431,24 +435,22 @@ void CSysfsGPIO::CreateDomoticzDevices()
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[3].c_str()) != 1) /* check if previous db device was an output */
+					if (atoi(sd[1].c_str()) != 1) /* delete if previous db device was an input */
 					{
 						m_sql.safe_query(
-							"DELETE FROM DeviceStatus  WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+							"DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 							m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 						createNewDevice = true;
 					}
+
+					if (atoi(sd[0].c_str()) == 1) /* write actual db state to hardware */
+					{
+						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
+					}
 					else
 					{
-						if (atoi(sd[1].c_str()) == 1) /* write actual db state to hardware */
-						{
-							GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
-						}
-						else
-						{
-							GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? true : false);
-						}
+						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? true : false);
 					}
 				}
 			}
@@ -499,18 +501,18 @@ void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 
 			if ((GpioSavedState[i].db_state != state) || (forceUpdate))
 			{
-				result = m_sql.safe_query("SELECT Name,nValue,sValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+				result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 					m_HwdID, szIdx, GpioSavedState[i].pin_number);
 
 				if ((!result.empty()) && (result.size() > 0))
 				{
 					std::vector<std::string> sd = result[0];
 
-					if (atoi(sd[3].c_str()) == 1) /* Check if device is used */
+					if (atoi(sd[1].c_str()) == 1) /* Check if device is used */
 					{
 						int db_state = 1;
 
-						if (atoi(sd[1].c_str()) == 0) /* determine database state*/
+						if (atoi(sd[0].c_str()) == 0) /* determine database state*/
 						{
 							db_state = 0;
 						}
