@@ -114,8 +114,6 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
   }    
 }
 
-
-
 #dashcontent #dashWeather #unknown tr .img1 img{
     animation: 10s infinite baro-unknown-loading;
     border-radius:50%!important;
@@ -123,15 +121,6 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
     opacity:50;
 }
 
-
-/*  UNSTABLE  - quicky rising high pressure */
-#dashcontent #dashWeather #unstable tr .img1 img,
-#dashcontent div.item.Barometer#unstable tr .img1 img,
-#dashcontent div.item.Pressure#unstable tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
-#dashcontent div.item.WeatherStation#unstable tr .img1 img{
-    animation: 10s infinite unstable;
-}
 
 
 /*  STORM  */
@@ -208,7 +197,6 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
 
 
 /*  STABLE - very sunny, very dry weather */
-#dashcontent #dashWeather div.item[id*=stable] tr,
 #dashcontent div.item.Barometer#stable tr,
 #dashcontent div.item.Pressure#stable tr,
 #dashcontent div.item.TempHumidityBaro#ustable tr,
@@ -226,6 +214,16 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
 }
 
 
+/*  UNSTABLE  - quicky rising high pressure */
+#dashcontent #dashWeather #unstable tr{background-image:none;}
+
+#dashcontent #dashWeather #unstable tr .img1 img,
+#dashcontent div.item.Barometer#unstable tr .img1 img,
+#dashcontent div.item.Pressure#unstable tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
+#dashcontent div.item.WeatherStation#unstable tr .img1 img{
+    animation: 10s infinite baro-unstable;
+}
 
 
 

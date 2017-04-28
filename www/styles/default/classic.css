@@ -477,15 +477,25 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 
 
+
+@media all and (max-width: 600px){
+
+    #dashcontent .item.withstatus #status .wrapper span{background-color:#D4E1EE!important}
+    
+}
+
 /*  status indicators */
 
 
-@media only screen and (max-width: 767px){
+@media all and (max-width: 767px){
     
     div.item.statusNormal td#name{
         color:#333;
     }
-    
+    div.item.statusProtected #name span{
+        color: #333;
+        background-color:#A4B1EE;
+    }
     div.item.statusProtected td#lastupdate{
         background-color: transparent;
         -moz-box-shadow: inset 0 -4px 8px -2px #A4B1EE;
@@ -494,6 +504,7 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
     }
 
     div.item.statusTimeout td#name{
+        color: #fff;
         background-color: #DF2D3A; /* #d4741e;*/ /*#dcdf2d;*/
     }
     div.item.statusTimeout td#lastupdate{
@@ -501,14 +512,29 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
         -webkit-box-shadow: inset 0 -5px 8px -4px #DF2D3A;
         box-shadow: inset 0 -5px 8px -4px #DF2D3A;
     }
+    
+    div.item.statusLowBattery td#name{
+        color:#fff; 
+        background-color:#df982d
+    }    
     div.item.statusLowBattery td#lastupdate{
         -moz-box-shadow: inset 0 -1px 10px 0px #df982d;
         -webkit-box-shadow: inset 0 -1px 10px 0px #df982d;
         box-shadow: inset 0 -1px 10px 0px #df982d;
     }
+    
+    #someclouds #name span,#sunny #name span,
+    #thunderstorm #name span,#unknown #name span,
+    #stable #name span,#unstable #name span,#cloudy,
+    #rain #name span{color:#fff;}
+    
+    #dashcontent .item.withstatus #status .wrapper{display: flex;height:auto;}
+    /*
+    #dashcontent .item.withstatus #status .wrapper{position:relative;top:20px!important};*/
+
 }
 
-@media only screen and (min-width: 768px){
+@media all and (min-width: 768px){
     div.item.statusProtected td#name{
         -moz-box-shadow: inset 0 -3px 0px 0px #A4B1EE;
         -webkit-box-shadow: inset 0 -3px 0px 0px #A4B1EE;
