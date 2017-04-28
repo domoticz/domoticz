@@ -169,8 +169,6 @@ input{margin-right:3px}
     min-width: 120px;
 }
 
-
-/*#settingscontent .ui-widget-content,*/
 #settingscontent input.text{
     min-width: 120px;
     width:calc(100% - 75px)!important;
@@ -275,14 +273,9 @@ p.ng-binding {
 .selectorlevels .ui-button:not(.ui-state-active){
     background-color:#D4E1EE;
 }
-/*
-.ui-state-default, 
-.selectorlevels .ui-widget-content .ui-state-default, 
-.selectorlevels .ui-widget-header .ui-state-default
-*/
+
 
 /* HEADER CONTENT*/
-
 
 #temptophtm .bannav{
     /*position:relative; 
@@ -290,20 +283,6 @@ p.ng-binding {
     width:auto;
     margin-bottom:1em;
 }
-
-/*
-#temptophtm td:last-of-type span{
-    top: 2px;
-    background-color: #eee;
-    padding: 2px 10px 1px 10px;
-    right: -11px;
-    position: relative;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    border-top: 1px solid #999;
-    border-left: 1px solid #999;
-    border-bottom: 1px solid #999;
-}*/
 
 #temptophtm td:last-of-type select{width:100px!important;}
 
@@ -326,6 +305,7 @@ p.ng-binding {
     line-height: 1.2em;
     height: 20px;
 }
+
 
 /*  LOGO & MAIN NAVIGATION  */
 
@@ -518,7 +498,6 @@ p.ng-binding {
 #floorplancontent #BulletGroup:hover #BulletImages{
     padding-top:10px;
 }
-
 
 
 /*  HEADERS  */
@@ -1024,7 +1003,7 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     font-size: 11.5px;
 }
 
-.widget{height:0}
+/*.widget{height:0}*/
 
 
 
@@ -1891,10 +1870,8 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     text-align:left;
 }
 .ui-dialog td label,
-.ui-dialog td{display:inline;text-align:left;important;}
+.ui-dialog td{display:inline;text-align:left;}
 .ui-dialog input, .ui-dialog textarea{margin-bottom:10px}
-
-
 
 
 
@@ -1905,9 +1882,6 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     padding:20px    
 }
 
-/*
-#utilitycontent {margin-top:30px}
-*/
 
 /* LOG */
 
@@ -1948,6 +1922,8 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 
 
 /*  PAGE SPECIFIC OVERRIDES  */
+
+body section.dashSwitches div.item{margin-bottom:25px}
 
 body.dashboard item.utility td#status{
     font-size:15px;
@@ -2495,7 +2471,7 @@ td[colspan]:not([colspan="1"])
 
 #dashcontent .withstatus #name{padding: 10px 0 0 10px;}
 #dashcontent .withstatus #bigtext {top: -28px;}
-#dashcontent .withstatus #img{top: -32px;width:32px;;right:10px;}
+#dashcontent .withstatus #img{top: -32px;width:32px;}
 #dashcontent .withstatus #img img{width:32px;height:32px;}
 
 #dashcontent .span3 .withstatus #img img{margin-top:0!important;}
