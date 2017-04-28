@@ -494,7 +494,6 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
     }
     div.item.statusProtected #name span{
         color: #333;
-        background-color:#A4B1EE;
     }
     div.item.statusProtected td#lastupdate{
         background-color: transparent;
@@ -559,6 +558,11 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
         -webkit-box-shadow: inset 0 -1px 10px 0px #df982d;
         box-shadow: inset 0 -1px 10px 0px #df982d;
     }
+
+    /*#dashcontent .withstatus #status .wrapper{background:linear-gradient(to bottom, rgba(0, 158, 255, 0.18) 0%,rgba(121, 54, 195, 0.1) 100%);}*/
+    
+    #dashcontent .item tr{background:linear-gradient(to bottom, rgba(0, 158, 255, 0.18) 0%,rgba(121, 54, 195, 0.1) 100%);
+
 }
 
 /*  footer  */

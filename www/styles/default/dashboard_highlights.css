@@ -111,6 +111,8 @@
         position:relative;
         border:0;
     }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader tr #status{left:0;top:0;}
+    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
@@ -637,8 +639,7 @@
     
     
     /*  MERGED ITEMS */
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:90%;width:calc(100% - 10px);}
-    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:100%;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount4 td#status > .wrapper > img{height:24px;width:24px;}
    
     

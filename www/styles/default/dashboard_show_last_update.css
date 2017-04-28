@@ -93,7 +93,7 @@
     
     
     /* grow a bit bigger if there is data ouput*/
-    
+    /*
     #dashcontent div.item.withstatus.statuscount1 tr{min-height:105px}  
     #dashcontent div.item.withstatus.statuscount2 tr{min-height:135px}
     #dashcontent div.item.withstatus.statuscount3 tr{min-height:165px}
@@ -108,7 +108,7 @@
     
     #dashcontent #lastupdate > span{
         padding-top:4px;
-    }
+    }*/
 } 
 
 

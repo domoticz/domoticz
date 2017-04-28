@@ -2324,20 +2324,23 @@ td[colspan]:not([colspan="1"])
         padding-left:10px;
     }
     
-    #bigtext{
+    div.item:not(.bandleader):not(.withstatus) #bigtext{
         float:left;
         text-align: left;
         top: -20px;
         left: 32px; /* was 35px, but bigtext now has apdding of 3 default, to deal with overlapping situations. */
     }
-    #dashcontent .span4 #bigtext{
+    #dashcontent .span4 .item:not(.bandleader):not(.withstatus) #bigtext{
         top: -28px;
         left: 10px;
     }
-    #dashcontent .span3 #bigtext{
+    #dashcontent .span3 .item:not(.bandleader):not(.withstatus) #bigtext{
         top: -24px;
         left: 10px;
     }
+    
+    #dashcontent .span4 .withstatus:not(.bandleader) #bigtext{top:-18px}
+    #dashcontent .span3 .withstatus:not(.bandleader) #bigtext{top:-18px}
     
     #bigtext > span{
         font-size:13px;
@@ -2480,11 +2483,14 @@ td[colspan]:not([colspan="1"])
 
 
 #dashcontent .withstatus #name{height: 35px}
-#dashcontent .span4 .withstatus #name{padding: 10px 0 0 10px;}
-#dashcontent .span4 .withstatus #bigtext {top: -28px;}
-#dashcontent .span4 .withstatus #img{top: -32px;width:32px;;right:10px;}
-#dashcontent .span4 .withstatus #img img{width:32px;height:32px;}
+
+#dashcontent .withstatus #name{padding: 10px 0 0 10px;}
+#dashcontent .withstatus #bigtext {top: -28px;}
+#dashcontent .withstatus #img{top: -32px;width:32px;;right:10px;}
+#dashcontent .withstatus #img img{width:32px;height:32px;}
+
+#dashcontent .span3 .withstatus #img img{margin-top:0;}
+
+.bandleader .overlay{display:none!important}
 
 
-
-    
