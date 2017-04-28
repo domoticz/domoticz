@@ -109,6 +109,7 @@
         justify-content: center;
         background-color:transparent;
         position:relative;
+        border:0;
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
@@ -127,7 +128,7 @@
         flex-wrap: wrap;
         flex-grow: 1;
         justify-content: space-around;
-        min-height: 100px;
+        min-height: 108px;
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
@@ -536,7 +537,7 @@
         top: 108px;
         position: relative;
         left: 0;
-        height:0;
+        height:20px;
         width: 100%;
     }
     

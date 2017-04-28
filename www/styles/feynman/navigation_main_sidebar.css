@@ -15,7 +15,7 @@
         /*display:block!important;
         margin: 0;
         padding:0;*/
-        z-index:120;
+        z-index:1120;
         height:30px;
         /*background-color: #eee;*/
         overflow:visible;
@@ -85,8 +85,8 @@
     }    
 
     #holder{
-        width: calc(100% - 77px);
-        left: 67px;
+        width: calc(100% - 66px);
+        left: 52px;
         }
 
     .navbar{
@@ -575,6 +575,7 @@
     .navbar-fixed-top .navbar-inner, 
     .navbar-static-top .navbar-inner {
         padding: 10px 20px 0 0;
+        display:flex;
     }
     
 }

@@ -1,22 +1,33 @@
+/*  
 
-if($("#copyright").css("z-index") == 1){
-console.log("BINGO BONGO");
-    alert("merging much?");
+Dear themer 
+
+You can use this file to add your own javascript functions to your theme. 
+
+Some useful things to get you started:
+
+1.
+To find out which classes are available to you, have a look at the page on the WIKI about theming.
+http://domoticz.com/wiki/How_to_theme_Domoticz
+
+
+2.
+Here are some snippets you may find useful:
+
+// This would target all the air quality items onthe dashboard in the utilities section:
+$('body.columns3 section#dashUtility .AirQuality').each(function(){
+    console.log("hello air quality sensor");
 }
-//alert("bongo");
 
-console.log("JS LOADED HOERA!");
+// check if the user is on a mobile device:
+if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+    console.log("User has chosen the mobile display as the dashboard, or is on a mobile phone.");
+}
 
-$("body").css("background-color:red!important;background-image:none!important");
-$("#name span").css("background-color:red!important");
-
-//http://192.168.1.34:8080/json.htm?type=graph&sensor=temp&idx=202&range=day
-
-
-/*
-$( "p" ).click(function() {
-  $( this ).slideUp();
-});
+// Avoiding grouped items (if this feature has made it into Domoticz). This code does a double check: 
+- only select the first three items of each section
+- don't select items called 'bandleader' (grouped items are called 'bands' in the code).
+if ($("section#"+ section + " #"+theid).is($("#dashcontent h2 + div.divider .span4:nth-child(-n+3)")) && !$("section#"+ section + " #" + theid + " div").hasClass('bandleader')) { 
 
 
 
