@@ -994,7 +994,7 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 		
 		result = m_sql.safe_query("SELECT MAX(DeviceID) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=40) AND (Unit<52)", m_HwdID, (int)pTypeEvohomeZone);
 		unsigned int ID = 0;
-		if (!result.empty)
+		if (!result.empty())
 		{
 			std::stringstream s_strid; 
 			s_strid << std::hex << result[0][0].c_str();
@@ -2103,7 +2103,7 @@ namespace http {
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", HwdID, (int)pTypeEvohomeRelay);
 				int nDevCount = 0;
-				if !(result.empty())
+				if (!result.empty())
 				{
 					nDevCount = atol(result[0][0].c_str());
 				}
