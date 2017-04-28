@@ -648,7 +648,7 @@
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status
     
-    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr .widget{position: relative;top:-20px}
     
 
 }   /* closing of the media query  */
