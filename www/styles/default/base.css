@@ -1001,6 +1001,12 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     margin-left:5px;
 }
 
+
+
+
+/*   TYPE  */
+
+
 #type:before {
     font-style: normal!important;
 }
@@ -1017,6 +1023,9 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     overflow:visible;
     font-size: 11.5px;
 }
+
+.widget{height:0}
+
 
 
 /*  status updates indicators (icons for timeout, protected, low battery) */
@@ -2489,7 +2498,7 @@ td[colspan]:not([colspan="1"])
 #dashcontent .withstatus #img{top: -32px;width:32px;;right:10px;}
 #dashcontent .withstatus #img img{width:32px;height:32px;}
 
-#dashcontent .span3 .withstatus #img img{margin-top:0;}
+#dashcontent .span3 .withstatus #img img{margin-top:0!important;}
 
 .bandleader .overlay{display:none!important}
 
