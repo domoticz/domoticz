@@ -5,41 +5,39 @@ define(['app'], function(app) {
 
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
-        
-        
-        
-        /* A feature like this should ideally be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
+
+        /* Adds Data Visualisations to the first three items of each section. They will only be shown if highlights are enabled.  A feature like this could also be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
         addDataviz = function(){
-            if ($("#copyright").css("z-index") == 1){ // Only do all this if the dataviz option has been enabled in theme settings.
+            if ($scope.config.DashboardType == 0 && $("#appnavbar").css('z-index') == 1031){ // Only do all this on normal display, and if the dataviz option has been enabled in theme settings.
                 console.log("Dataviz is enabled");
                 setTimeout(function() { // small delay to make sure the main html has been generated, and to lower the burden on the system.
                     
                     /* temperature */
-                    $('body.3column section#dashTemperature > .divider:first-of-type .Temp, body.3column section#dashTemperature > .divider:first-of-type .TempHumidityBaro').each(function(){
+                    $('body.columns3 section#dashTemperature > .divider:first-of-type .Temp, body.columns3 section#dashTemperature > .divider:first-of-type .TempHumidityBaro').each(function(){
                         var theid = '' + $(this).parent().attr('id');
                         generateDataviz("dashTemperature","graph","temp","te", theid, "day");   
                     });
                     
                     /*  general */
-                    $('body.3column section#dashUtility > .divider:first-of-type .CustomSensor').each(function(){
+                    $('body.columns3 section#dashUtility > .divider:first-of-type .CustomSensor').each(function(){
                         var theid = '' + $(this).parent().attr('id');
                         generateDataviz("dashUtility","graph","Percentage","any", theid, "day");   
                     });
                     
                     /*  Lux */
-                    $('body.3column section#dashUtility > .divider:first-of-type .Lux').each(function(){
+                    $('body.columns3 section#dashUtility > .divider:first-of-type .Lux').each(function(){
                         var theid = '' + $(this).parent().attr('id');
                         generateDataviz("dashUtility","graph","counter","lux", theid, "day");   
                     });
                     
                     /*  Co2 */
-                    $('body.3column section#dashUtility > .divider:first-of-type .AirQuality').each(function(){
+                    $('body.columns3 section#dashUtility > .divider:first-of-type .AirQuality').each(function(){
                         var theid = '' + $(this).parent().attr('id');
                         generateDataviz("dashUtility","graph","counter","any", theid, "day");   
                     });
                     
                     /*  Energy */
-                    $('body.3column section#dashUtility > .divider:first-of-type .Energy').each(function(){
+                    $('body.columns3 section#dashUtility > .divider:first-of-type .Energy').each(function(){
                         var theid = '' + $(this).parent().attr('id');
                         generateDataviz("dashUtility","graph","counter","any", theid, "day");   
                     });
@@ -49,179 +47,141 @@ define(['app'], function(app) {
             }
         }
         
-        
-        generateDataviz = function(section,type,sensor,thekey,theid,range) { 
-            
-            
+        generateDataviz = function(section,type,sensor,thekey,theid,range) {
             var agent = '' + theid;
-            console.log('making dataviz for item: ' + agent);
             var n = agent.lastIndexOf('_');
             var idx = agent.substring(n + 1);
-            console.log(idx);
-            var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx+ '&range=' + range;
-            console.log("JSONurl: " + urltoload);
-            var el = $('<td class="dataviz"><div></div></td>');
-            $('#'+theid).find('tr').append(el);
-            var showData = $('section#'+ section + ' #'+theid).find('.dataviz > div');
-            console.log("Showdata: " + showData);
-            var datavizArray = [];
-            $.getJSON(urltoload, function(data) {
-                console.log( "Dataviz - JSON load success" );
-                if (typeof data.result != "undefined") {
-                    console.log("length = " + data.result.length);
-                    var modulo = 1
-                    if(data.result.length > 100){modulo = 2;}
-                    if(data.result.length > 200){modulo = 4;}
-                    if(data.result.length > 300){modulo = 6;}
-                    if(data.result.length > 400){modulo = 8;}
-                    if(data.result.length > 500){modulo = 10;}
-                    if(data.result.length > 600){modulo = 16;}    
-                    console.log("modulo = " + modulo);
-                    for(var i in data.result){
-                        var key = i;
-                        var val = data.result[i];
-                        
-                        if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
-                       
-                            for(var j in val){
-                                var readytobreak = 0;
-                                var key2 = j;
-                                //console.log("key2:" + key2);
-                                var val2 = val[j];
-                                //console.log("val2:" + val2);
-                                
-                                if(thekey != 'any'){
-                                    if(key2 == thekey){
-                                        //console.log("adding data");
-                                        var addme =  Math.round( val2 * 10 ) / 10;
+            if ($("section#"+ section + " #"+theid).is($("#dashcontent h2 + div.divider .span4:nth-child(-n+3)")) && !$("section#"+ section + " #" + theid + " div").hasClass('bandleader')) {  // avoid doing this for grouped items
+                console.log('making dataviz for item: ' + agent);
+                var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx+ '&range=' + range;
+                $('<td class="dataviz"><div></div></td>').insertBefore("#"+theid+" .status");
+                var showData = $('section#'+ section + ' #'+theid).find('.dataviz > div');
+                var datavizArray = [];
+                $.getJSON(urltoload, function(data) {
+                    //console.log( "Dataviz - JSON load success" );
+                    if (typeof data.result != "undefined") {
+                        var modulo = 1
+                        if(data.result.length > 100){modulo = 2;}
+                        if(data.result.length > 200){modulo = 4;}
+                        if(data.result.length > 300){modulo = 6;}
+                        if(data.result.length > 400){modulo = 8;}
+                        if(data.result.length > 500){modulo = 10;}
+                        if(data.result.length > 600){modulo = 16;}
+                        for(var i in data.result){
+                            var key = i;
+                            var val = data.result[i];
+                            if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
+                                for(var j in val){
+                                    var readytobreak = 0;
+                                    var key2 = j;
+                                    var val2 = val[j];
+                                    if(thekey != 'any'){
+                                        if(key2 == thekey){
+                                            //console.log("adding data");
+                                            var addme =  Math.round( val2 * 10 ) / 10;
+                                            datavizArray.push(addme);
+                                        }
+                                    }else if(key2 != 'd'){
+                                        var addme = Math.round( val2 * 10 ) / 10;
                                         datavizArray.push(addme);
+                                        readytobreak = 0
                                     }
-                                }else if(key2 != 'd'){
-                                    var addme = Math.round( val2 * 10 ) / 10;
-                                    datavizArray.push(addme);
-                                    readytobreak = 0
+                                    if(readytobreak == 1){break;} // if grabbing "any" value, then break after the first one.
                                 }
-                                if(readytobreak == 1){break;}
                             }
                         }
-                        //if(typeup val.te != "undefined")addme = val.te;
-                        //addme = val.te;
-                        
-                        /* 
-                        
-                        obj[Object.keys(obj)[0]]; 
-                        
-                        var first;
-                        
-                        for (var j in val) {
-                            if (val.hasOwnProperty(i) && typeof(i) !== 'function') {
-                                first = val[i];
-                                break;
-                            }
-                        }
-                        
-                        
-                        */
-                        //addme = val[0];
-                         //    datavizArray.push(addme);
-                        //}
-                    }
-                    
-                    console.log("data array: " + datavizArray);
-
-                    if(datavizArray.length > 0){
-                        showData.highcharts({    
-                            chart: {
-                                type: 'line',
-                                backgroundColor:'transparent',
-                                plotBorderWidth: null,
-                                marginTop: 0,
-                                height:40,
-                                marginBottom: 0,
-                                marginLeft:0,
-                                plotShadow: false,
-                                borderWidth: 0,
-                                plotBorderWidth: 0,
-                                marginRight:0
-                            },
-                             tooltip: {
-                                userHTML: true,
-                                style: {
-                                    padding: 5,
-                                    width: 100,
-                                    height: 30,
-                                    backgroundColor: '#FCFFC5',
-                                    borderColor: 'black',
-                                    borderRadius: 10,
-                                    borderWidth: 3, 
-                                 },
-                                formatter: function() {
-                                    return '<b>' + this.y + '</b> ('+ range + ')';// 
+                        // Attach the datavizualisation
+                        if(datavizArray.length > 0){
+                            showData.highcharts({    
+                                chart: {
+                                    type: 'line',
+                                    backgroundColor:'transparent',
+                                    plotBorderWidth: null,
+                                    marginTop: 0,
+                                    height:40,
+                                    marginBottom: 0,
+                                    marginLeft:0,
+                                    plotShadow: false,
+                                    borderWidth: 0,
+                                    plotBorderWidth: 0,
+                                    marginRight:0
                                 },
-                                height: 30,
-                                width: 30
-                             },
-                            title: {
-                                text: ''
-                            },
-                            xAxis: {
-                                gridLineWidth: 0,
-                                minorGridLineWidth: 0,
-                                enabled:false,
-                                showEmpty:false,
-                            },
-                            yAxis: {
-                                gridLineWidth: 0,
-                                minorGridLineWidth: 0,
+                                 tooltip: {
+                                    userHTML: true,
+                                    style: {
+                                        padding: 5,
+                                        width: 100,
+                                        height: 30,
+                                        backgroundColor: '#FCFFC5',
+                                        borderColor: 'black',
+                                        borderRadius: 10,
+                                        borderWidth: 3, 
+                                     },
+                                    formatter: function() {
+                                        return '<b>' + this.y + '</b> ('+ range + ')';// 
+                                    },
+                                    height: 30,
+                                    width: 30
+                                 },
                                 title: {
                                     text: ''
                                 },
-                                showEmpty:true,
-                                enabled:true
-                            },
-                            credits: {
-                                enabled: false
-                            },
-                            legend: {
-                                enabled:false
-                            },
-                            plotOptions: {
-                                line:{
-                                    lineWidth:1.5,
-                                    lineColor:'#cccccc',
+                                xAxis: {
+                                    gridLineWidth: 0,
+                                    minorGridLineWidth: 0,
+                                    enabled:false,
+                                    showEmpty:false,
                                 },
-                                 showInLegend: true,
-                                 tooltip: {
-                                 }
-                            },
-                            exporting: {
-                                buttons: {
-                                    contextButton: {
-                                        enabled: false
-                                    }    
-                                }
-                            },
-                            series: [{
-                                     marker: {
-                                        enabled: false
+                                yAxis: {
+                                    gridLineWidth: 0,
+                                    minorGridLineWidth: 0,
+                                    title: {
+                                        text: ''
                                     },
-                                animation:true,
-                                name: '24h',
-                                data: datavizArray //[19.5,20,17]      // datavizArray //    
-                            }]
-                        });    
+                                    showEmpty:true,
+                                    enabled:true
+                                },
+                                credits: {
+                                    enabled: false
+                                },
+                                legend: {
+                                    enabled:false
+                                },
+                                plotOptions: {
+                                    line:{
+                                        lineWidth:1.5,
+                                        lineColor:'#cccccc',
+                                    },
+                                     showInLegend: true,
+                                     tooltip: {
+                                     }
+                                },
+                                exporting: {
+                                    buttons: {
+                                        contextButton: {
+                                            enabled: false
+                                        }    
+                                    }
+                                },
+                                series: [{
+                                         marker: {
+                                            enabled: false
+                                        },
+                                    animation:true,
+                                    name: '24h',
+                                    data: datavizArray //[19.5,20,17]  
+                                }]
+                            });    
+                        }
                     }
-                }
-            });
+                });
+            }
         };
         
-           
-        
-		MobilePhoneDetection = function() {
-			// mobile device detection
+		MobilePhoneDetection = function() { // advanced and more complete mobile device detection
 			if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
 				/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4))) {
-				$("body").prop('id', 'Mobile');
+				$("body").prop('id', 'mobile');
 			} else {
 				$("body").prop('id', 'notMobile');
 			}
@@ -354,8 +314,21 @@ define(['app'], function(app) {
 						if (typeof data.ActTime != 'undefined') {
 							$scope.LastUpdateTime = parseInt(data.ActTime);
 						}
+                        
+                        // Check if the merger feature is selected.
+                        var mergeItems = false;
+                        if ($("#copyright").css("z-index") == 1 && $('body').hasClass('CSS3')){ // Only do all this if the merger option has been enabled in theme settings.
+                            
+                            // is mobile check toevoegen.
+                            console.log("merging items data");
+                            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)){}else{
+                                mergeItems = true;
+                            }
+                        }
+                        
+                        
+//Scenes    
 						$.each(data.result, function(i, item) {
-//Scenes
 							if (
 								(item.Type.indexOf('Scene') == 0) ||
 								(item.Type.indexOf('Group') == 0)
@@ -390,7 +363,6 @@ define(['app'], function(app) {
 												streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 												bigtext += "&nbsp;" + streamurl;
 											}
-                                            /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
                                             if(typeof item.Status != 'undefined'){
                                                 if ((item.Status == 'On') || (item.Status == 'Group On')) {
                                                     $(id + " div.item").addClass('onn');
@@ -416,9 +388,6 @@ define(['app'], function(app) {
 												$(id + " #img2").html(img2);
 											}
 											if ($(id + " #bigtext > span").html() != TranslateStatus(item.Status)) {
-                                                console.log(status);
-                                                console.log(" - that was status, and bigtext is:");
-                                                console.log(bigtext);
 												$(id + " #bigtext > span").html(bigtext);
 											}
 											if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
@@ -435,8 +404,9 @@ define(['app'], function(app) {
 							}
 						}); //Scene devices
 
-						$.each(data.result, function(i, item) {
 //Lights/switches
+						$.each(data.result, function(i, item) {
+
 							var isdimmer = false;
 							if (
 								(
@@ -1370,6 +1340,7 @@ define(['app'], function(app) {
 								}
 							}
 						}); //weather devices
+
 //security devices
 						$.each(data.result, function(i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
@@ -1632,6 +1603,7 @@ define(['app'], function(app) {
 											$(id + " #status > span.wrapper").html(status);
 										}
 									} else {
+                                        // normal and compact displays
 										var status = "";
 										var bigtext = "";
 										var img = "";
@@ -1654,7 +1626,7 @@ define(['app'], function(app) {
 										} else if (item.SubType == "Percentage") {
 											status = item.Data;
 											bigtext = item.Data;
-                                            if ($("#copyright").css("z-index") == 1){
+                                            if ($("#copyright a:first-of-type").css("z-index") == 2){
                                                 $(id + " .overlay > div").width(item.Data);
                                             }
 										} else if (item.SubType == "Custom Sensor") {
@@ -1728,6 +1700,21 @@ define(['app'], function(app) {
 												}
 											}
 										}
+                                        
+                                        if(mergeItems == true){
+                                            var values = item.Name.split('-');
+                                            if (values.length > 1){ // a dash has been spotted in the name.
+                                                prefix=values[0].trim().toUpperCase();
+                                                prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                                postfix=values[1].trim().toLowerCase();
+                                                postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                                $("#utilityDivider .bandleader." + prefixClass + " span." + postfixClass).html(postfix+ ': ' + status);
+                                                
+                                                if($(id + " div.item").hasClass('bandleader')){
+                                                    return true;
+                                                }
+                                            }
+                                        }
 
 										$(id + " > div.item").addClass('statusNormal');
 										if (item.HaveTimeout == true) {
@@ -1785,6 +1772,9 @@ define(['app'], function(app) {
 			var bHaveAddedDivider = false;
 			var htmlcontent = "";
 			var bShowRoomplan = false;
+            var mergeItems = false;
+            var bandList = [];
+            var bands = {};
 			$.RoomPlans = [];
 
 			$("body").removeClass();
@@ -1821,7 +1811,14 @@ define(['app'], function(app) {
 					bFavorites = 0;
 				}
 			}
-
+            var CSS3 = false;
+            if('columns' in document.body.style)
+            {
+                CSS3 = true;
+                $('body').addClass("CSS3");
+                console.log("Browser supports CSS3");
+            }
+            
 			$.ajax({
 				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
@@ -1837,10 +1834,10 @@ define(['app'], function(app) {
 					}
 
 					var rowItems = 3;
-					$("body").addClass("3column");
+					$("body").addClass("columns3");
 					if ($scope.config.DashboardType == 1) {
 						rowItems = 4;
-						$("body").removeClass("3column").addClass("4column");
+						$("body").removeClass("columns3").addClass("columns4");
 					}
 					if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 						rowItems = 1000;
@@ -1848,8 +1845,44 @@ define(['app'], function(app) {
 					}
 
 					if (typeof data.result != 'undefined') {
+                    
 
-						//Scenes
+                        var suntext = "";
+                        if (bShowRoomplan == false) {
+                            suntext =
+                                '<div class="beforebannav">' +
+                                '\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+                                '\t<tr>\n' +
+                                '\t  <td align="left" valign="top" id="timesun"></td>\n' +
+                                '\t</tr>\n' +
+                                '\t</table>\n' +
+                                '\t</div>\n';
+                        } else {
+                            suntext =
+                                '<div class="beforebannav">' +
+                                '<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
+                                '<tr>' +
+                                '<td align="left" valign="top" id="timesun"></td>' +
+                                '<td align="right">' +
+                                '<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
+                                '<option value="0" data-i18n="All">All</option>' +
+                                '</select>' +
+                                '</td>' +
+                                '</tr>' +
+                                '</table>' +
+                                '</div>';
+                        }
+                        
+                        // Check if the merger feature is selected.
+                        console.log("CSS3 = "+CSS3);
+                        console.log("copyright z-index is " + $("#copyright").css("z-index"));
+                        if ($("#copyright").css("z-index") == 1 && CSS3 == true){ // Only do all this if the merger option has been enabled in theme settings, and the browser supports CSS3.
+                            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)){}else{
+                                console.log("MERGING ITEMS IS ENABLED");
+                                mergeItems = true;
+                            }
+                        }
+//Scenes
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -1991,7 +2024,11 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-								jj += 1;
+                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+                                    jj = 1; 
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                }
 							}
 						}); //scenes
 						if (bHaveAddedDivider == true) {
@@ -2757,7 +2794,12 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-								jj += 1;
+                                
+                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns. Useful for special themes.
+                                    jj = 1; 
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                }
 							}
 						}); //light devices
 						if (bHaveAddedDivider == true) {
@@ -2931,8 +2973,12 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-								jj += 1;
-
+                                
+                                if(CSS3){ // In newer webbrowsers this keeps everything in the same divider and lets flexbox/CSS take care of columns.
+                                    jj = 1; 
+                                } else{ // older webbrowsers
+                                    jj += 1;
+                                }
 							}
 						}); //temp devices                    
 						if (bHaveAddedDivider == true) {
@@ -2945,7 +2991,6 @@ define(['app'], function(app) {
 						if (jj > 0) {
 							htmlcontent += '</section>';
 						}
-
 
 //Weather Sensors
 						jj = 0;
@@ -3184,7 +3229,13 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-								jj += 1;
+                                
+                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+                                    jj = 1; 
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                }
+                                
 							}
 						}); //weather devices    
 						if (bHaveAddedDivider == true) {
@@ -3340,7 +3391,11 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-								jj += 1;
+                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+                                    jj = 1; 
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                }
 							}
 						}); //security devices                    
 						if (bHaveAddedDivider == true) {
@@ -3432,7 +3487,11 @@ define(['app'], function(app) {
 									}
 								}
 								htmlcontent += xhtm;
-								jj += 1;
+                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+                                    jj = 1; 
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                }
 							}
 						}); //evohome devices
 						if (bHaveAddedDivider == true) {
@@ -3447,6 +3506,9 @@ define(['app'], function(app) {
 						}
 
 //Utility Sensors
+                        $('#dashcontent').html(suntext + htmlcontent); // attach everything so far.
+                        htmlcontent = "";
+                        
 						jj = 0;
 						bHaveAddedDivider = false;
 						$.each(data.result, function(i, item) {
@@ -3484,9 +3546,27 @@ define(['app'], function(app) {
 								(item.Favorite != 0)
 							) {
 								totdevices += 1;
+                                
+                                var bandLeaderID = "";
+                                var bandmember = false;
+                                var bandsign = false;
+                                var newspanhtml = "";
+                                var values = [];
+                                var prefix = "";
+                                var postfix = "";
+                                var prefixClass = "";
+                                var postfixClass = "";
+								var count = 0;
+                                
 								if (jj == 0) {
 									//first time
-									htmlcontent += '<section class="dashCategory" id="dashUtility">';
+                                    
+                                    if(mergeItems){
+									   $('#dashcontent').append('<section class="dashCategory CSS3" id="dashUtility"><h2>' + $.t('Utility Sensors') + ':</h2><div class="row divider" id="utilityDivider"></div></section>');
+                                    }else{
+                                        htmlcontent += '<section class="dashCategory" id="dashUtility">';
+                                    }
+
 									// mobile util start                  
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 										if (htmlcontent != "") {
@@ -3642,50 +3722,21 @@ define(['app'], function(app) {
 										'\t      <td id="status" class="status"><span class="wrapper"><span>' + status + '</span></span></td>\n' +
 										'\t    </tr>\n';
 								}
-								// end of mobile utilities                 
 								else {
-                                    // normal/compact display
+                                    // utilities normal/compact display
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="utility_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="utility_' + item.idx + '">\n';
 									}
-									/* add classes for type of device */
-									var itemtypeclass = "";
-									var itemsubtypeclass = "";
-									if (typeof item.Type != 'undefined') {
-										var itemtypeclass = ' ' + item.Type.slice(0);
-                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-									}
-									if (typeof item.SubType != 'undefined') {
-										var itemsubtypeclass = item.SubType.split(' ').join('');
-										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-									}
-									/* add classes for generate protected/timeout/lowbattery status */
-									var backgroundClass = "statusNormal";
-									if (item.HaveTimeout == true) {
-										backgroundClass = "statusTimeout";
-									} else {
-										var BatteryLevel = parseInt(item.BatteryLevel);
-										if (BatteryLevel != 255) {
-											if (BatteryLevel <= 10) {
-												backgroundClass = "statusLowBattery";
-											}
-										}
-									}
 									/* generate bigtext html */
-									var bigtexthtml = "<span>";
+									var bigtexthtml = "";
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 										bigtexthtml += item.Usage;
 									} else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 										if (item.Usage.charAt(0) != 0) {
 											bigtexthtml += item.Usage;
 										}
-										// if (item.UsageDeliv.charAt(0) != 0) {
-										// xhtm+='</span><span>' + item.UsageDeliv;
-										// }
-
-										// a small test addition, tring to get wattage into bigtext
 										if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
 											bigtexthtml += item.Usage;
 										}
@@ -3729,12 +3780,34 @@ define(['app'], function(app) {
 											bigtexthtml += item.Data;
 										}
 									}
-									bigtexthtml += '</span>';
+
+									/* add classes for type of device */
+									var itemtypeclass = "";
+									var itemsubtypeclass = "";
+									if (typeof item.Type != 'undefined') {
+										var itemtypeclass = ' ' + item.Type.slice(0);
+                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+									}
+									if (typeof item.SubType != 'undefined') {
+										var itemsubtypeclass = item.SubType.split(' ').join('');
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+									}
+									/* add classes for generate protected/timeout/lowbattery status */
+									var backgroundClass = "statusNormal";
+									if (item.HaveTimeout == true) {
+										backgroundClass = "statusTimeout";
+									} else {
+										var BatteryLevel = parseInt(item.BatteryLevel);
+										if (BatteryLevel != 255) {
+											if (BatteryLevel <= 10) {
+												backgroundClass = "statusLowBattery";
+											}
+										}
+									}
 
 									/*  generate image and status html  */
 									var statushtml = "";
 									var imagehtml = '<img src="images/';
-
 									if (typeof item.Counter != 'undefined') {
 										if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter")) {
 											if (item.SwitchTypeVal == 1) {
@@ -3832,7 +3905,6 @@ define(['app'], function(app) {
 										imagehtml += 'Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Data;
 									}
-
 									if (typeof item.Usage != 'undefined') {
 										if (item.Type != "P1 Smart Meter") {
 											if ($scope.config.DashboardType == 0) {
@@ -3854,11 +3926,49 @@ define(['app'], function(app) {
 											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
-									statushtml = '<span>' + statushtml + '</span>';
+                                    
+                                    var overlayStyle= "";
+                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#appnavbar").css("z-index") == 1031){
+                                        overlayStyle = 'style="width:' + item.Data + '"';
+                                    }
 
-									/* Checking the generated html for even more classes, then fill in the HTML */
-									var count = 0;
-									count = (statushtml.match(/<span/g) || []).length;
+
+									count = (statushtml.match(/<span/g) || []).length + 1; // Count how many status data outputs this item has, by counting the separators.
+
+                                    // Merger feature.
+                                    if(mergeItems == true && count == 1){
+                                        //console.log("Found a simple item..");
+                                        values=item.Name.split('-');
+                                        if (values.length > 1){ // a dash in the name has been spotted.
+                                            //console.log("It is a merger candidate..");
+                                            bandsign = true;
+                                            prefix=values[0].trim().toUpperCase();
+                                            console.log("band:" + prefix);
+                                            prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                            postfix=values[1].trim().toLowerCase();
+                                            console.log("skill:" + postfix);
+                                            postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                            if(bandList.indexOf(prefix.trim()) > -1){ // There is a previous band member on record.
+                                                console.log("Adding band member to band!");
+                                                bandmember = true;
+                                                bandLeaderID = bands[prefix.trim()];
+                                                newspanhtml = '<span class="' + postfixClass + '">' + postfix + ': ' + statushtml + '</span>';
+                                                $("#utilityDivider #utility_" + bandLeaderID + " #status .wrapper").append(imagehtml + newspanhtml);
+                                                //$(imagehtml).insertAfter()
+                                                //$("#utilityDivider #utility_" + bandLeaderID + " .img1").append();
+                                                $('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass("bandleader"); // tag the leader so we can add classes to it afterwards.
+                                                $('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass(prefixClass);
+                                                return true;
+                                            }else{
+                                                bands[prefix] = item.idx; // save the ID, it may turn out to be a band leader later.
+                                                bandList.push(prefix); // for quick lookup, keep a list of possible band names (prefixes).
+                                            }
+                                        }
+                                    }
+                                    
+                                    bigtexthtml = '<span>' + bigtexthtml + '</span>';
+									statushtml = '<span>' + statushtml + '</span>';
+                                    
 									if (statushtml.length != bigtexthtml.length) {
 										xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
 									} else {
@@ -3870,20 +3980,31 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
-                                    var extraStyling = "";
-                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#copyright").css("z-index") == 1){extraStyle = 'style="width:' + item.Data + '"';} //z-index signals that the user has chosen to see data visualisations.
-                                    xhtm += '\t      <td class="overlay"><div ' + extraStyling + '></div></td>';   
+                                    xhtm += '\t      <td class="overlay"><div ' + overlayStyle + '></div></td>';   
 									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div>\n' +
 										'\t</div>\n';
-								}
+                                    
+								} // end of normal/compact xhtm creation
 
-								htmlcontent += xhtm;
-								jj += 1;
+                                if(CSS3){
+                                    jj = 1; // keeps everything in the same divider, and let CSS create rows.
+                                    
+                                } else{ // older webbrowser.
+                                    jj += 1;
+                                    
+                                }
+                                if(mergeItems == true){
+                                    $('#utilityDivider').append(xhtm);// Each item is immediately added to the dom to make merging items easier via jQuery. 
+                                }else{
+                                    htmlcontent += xhtm;   
+                                }
+                                
 							}
 						}); //Utility devices
+                        
 						if (bHaveAddedDivider == true) {
 							//close previous divider
 							htmlcontent += '</div>\n';
@@ -3894,14 +4015,34 @@ define(['app'], function(app) {
 						if (jj > 0) {
 							htmlcontent += '</section>';
 						}
-                        
-                        addDataviz(); 
-                        
+
+                        if(mergeItems == true){ // optimise the merged item.
+                            $('#utilityDivider .bandleader').each(function() {
+                                var bandmembercount = "statuscount" + $(this).find('#status > .wrapper > span').length;
+                                console.log("bandmembercount = " + bandmembercount);
+                                $(this).removeClass("statuscount0");
+                                $(this).removeClass("statuscount1");
+                                $(this).addClass(bandmembercount);
+                                $(this).removeClass("withoutstatus");
+                                $(this).addClass("withstatus");
+                                $(this).find('.bigtext > span').text($.t('group'));
+                                var oldname = $(this).find('.name > span').text();
+                                var oldnamearray=oldname.split('-');
+                                $(this).find('.name > span').text(oldnamearray[0]);
+                                var postfix=oldnamearray[1].trim().toLowerCase();
+                                var postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+                                $(this).find('.status > .wrapper > span:first-of-type').addClass(postfixClass);
+                                $(this).find('.status > .wrapper > span:first-of-type').text(postfix+ ': ' + $(this).find('.status > .wrapper > span:first-of-type').text()); 
+                                var targetspan = $(this).find('#status .wrapper > span:first-of-type')
+                                $(this).find('.img1 img').insertBefore(targetspan);
+                            });
+                        }
+                        addDataviz();
 					}
 				}
 			});
 
-			if (htmlcontent == "") {
+			if (totdevices == 0) {
 				htmlcontent = '<h2>' +
 					$.t('No favorite devices defined ... (Or communication Lost!)') +
 					'</h2><p>\n' +
@@ -3912,41 +4053,19 @@ define(['app'], function(app) {
 			} else {
 				htmlcontent += "<br>";
 			}
-
-			var suntext = "";
-			if (bShowRoomplan == false) {
-				suntext =
-					'<div class="beforebannav">' +
-					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-					'\t<tr>\n' +
-					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'\t</tr>\n' +
-					'\t</table>\n' +
-					'\t</div>\n';
-			} else {
-				suntext =
-					'<div class="beforebannav">' +
-					'<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
-					'<tr>' +
-					'<td align="left" valign="top" id="timesun"></td>' +
-					'<td align="right">' +
-					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
-					'<option value="0" data-i18n="All">All</option>' +
-					'</select>' +
-					'</td>' +
-					'</tr>' +
-					'</table>' +
-					'</div>';
+            
+			if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true) || mergeItems == false || totdevices == 0) {
+				$('#dashcontent').append(htmlcontent);
 			}
-
-
-			$('#dashcontent').html(suntext + htmlcontent + EvohomeAddJS());
+            
+            $('#dashcontent').append(EvohomeAddJS());
+			//$('#dashcontent').html(suntext + htmlcontent + EvohomeAddJS());
 			$('#dashcontent').i18n();
 
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function(i, item) {
 					var option = $('<option />');
-					option.attr('value', item.idx).text(item.name);
+					option.attr('value', item.idx).text(item.Name);
 					$("#dashcontent #comboroom").append(option);
 				});
 				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
@@ -3958,7 +4077,6 @@ define(['app'], function(app) {
 					ShowFavorites();
 				});
 			}
-
 
 			// Store variables
 			var accordion_head = $('#dashcontent .accordion > li > a'),
@@ -4065,7 +4183,8 @@ define(['app'], function(app) {
 					if (dtype == "relay")
 						SetDimValue(idx, ui.value);
                     if ($scope.config.ShowUpdatedEffect == true) {
-                        $(id + " #name").effect("highlight", {
+                        $(this).find("#name").effect("highlight", {
+                        //$(id + " #name").effect("highlight", {
                             color: '#EEFFEE'
                         }, 1000);
                     }
@@ -4210,7 +4329,7 @@ define(['app'], function(app) {
 
 			width = $("#dashcontent .widget").width() - 40;
 			//width=$(".span4").width()-118;
-            console.log(width);
+            
 			$("#dashcontent .span4 .dimslidersmall").width(width);
 			//width=$(".span3").width()-112;
 			$("#dashcontent .span3 .dimslidersmall").width(width);
