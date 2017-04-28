@@ -194,22 +194,7 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 		  $('#modal').show();
-            
-            $('body').removeClass();
-            $('body').addClass('temperature').addClass('frontStage');   
-            /* This creates an error, no idea why.. oh well. */
-            /*if ($scope.config.DashboardType == 0) {   
-                $('body').addClass('3column');
-            }
-            if ($scope.config.DashboardType == 1) {
-                $('body').addClass('4column');
-            }                    
-            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-                $('body').addClass('dashMobile');    
-            }    
-            if ($scope.config.DashboardType == 3) {
-                $('body').addClass('dashFloorplan');*/
-            
+
 			// TODO should belong to a global controller
 			ctrl.isNotMobile = function() {
 				return $window.myglobals.ismobile == false;
@@ -600,24 +585,7 @@ define(['app'], function (app) {
 				controller: function($scope, $element, $attrs, permissions) {
 					var ctrl = this;
 					var item = ctrl.item;
-                    
-                    var backgroundClass = "statusNormal";
-                    if (item.Protected == true) {
-                        backgroundClass = "statusProtected";
-                    }
-                    else if (item.HaveTimeout == true) {
-                        backgroundClass = "statusTimeout";
-                    } 
-                    else {
-                        var BatteryLevel = parseInt(item.BatteryLevel);
-                        if (BatteryLevel != 255) {
-                            if (BatteryLevel <= 10) {
-                                backgroundClass = "statusLowBattery";
-                            }
-                        }
-                    }
-                    $scope.statusClass = backgroundClass;
-                    
+
 					ctrl.sHeatMode = function() {
 						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
 							return item.Status;
@@ -626,7 +594,7 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.nbackcolor = function() { // this can stay for now because EvoSetPointColor seems to use it?
+					ctrl.nbackcolor = function() {
 						var nbackcolor="#D4E1EE";
 						if (item.HaveTimeout==true) {
 							nbackcolor="#DF2D3A";
