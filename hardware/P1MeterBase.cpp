@@ -28,9 +28,10 @@ typedef enum {
 #define P1VOLTL3		"1-0:72.7.0" // voltage L3 (DSMRv5)
 #define P1GTS			"0-1:24.3.0" // timestamp gas usage sample
 #define P1GTSME382		"0-2:24.3.0" // timestamp gas usage sample
-#define P1GUDSMR4		"0-1:24.2.1" // gas usage sample
-#define P1GUGYRE350		"0-2:24.2.1" // gas usage sample
-#define P1GUDSMR5		"0-3:24.2.1" // gas usage sample
+#define P1GUDSMR4C1		"0-1:24.2.1" // DSMR4 gas usage sample - channel 1
+#define P1GUDSMR4C2		"0-2:24.2.1" // DSMR4 gas usage sample - channel 2
+#define P1GUDSMR4C3		"0-3:24.2.1" // DSMR4 gas usage sample - channel 3
+#define P1GUDSMR4C4		"0-4:24.2.1" // DSMR4 gas usage sample - channel 4
 
 typedef enum {
 	P1TYPE_SMID=0,
@@ -47,9 +48,10 @@ typedef enum {
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASTIMESTAMPME382,
 	P1TYPE_GASUSAGE,
-	P1TYPE_GASUSAGEDSMR4,
-	P1TYPE_GASUSAGEGYRE350,
-	P1TYPE_GASUSAGEDSMR5,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL1,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL2,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL3,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL4,
 	P1TYPE_END,
 } P1Type;
 
@@ -77,9 +79,10 @@ Match matchlist[] = {
 	{LINE17,	P1TYPE_GASTIMESTAMP,			P1GTS,			"gastimestamp",		11, 12},
 	{LINE17,	P1TYPE_GASTIMESTAMPME382,		P1GTSME382,		"gastimestamp",		11, 12},
 	{LINE18,	P1TYPE_GASUSAGE,			"(",			"gasusage",		 1,  9},
-	{STD,		P1TYPE_GASUSAGEDSMR4,			P1GUDSMR4,		"gasusage",	 	26,  8},
-	{STD,		P1TYPE_GASUSAGEGYRE350,			P1GUGYRE350,		"gasusage", 		26,  8},
-	{STD,		P1TYPE_GASUSAGEDSMR5,			P1GUDSMR5,		"gasusage", 		26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL1,		P1GUDSMR4C1,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL2,		P1GUDSMR4C2,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL3,		P1GUDSMR4C3,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL4,		P1GUDSMR4C4,		"gasusage",	 	26,  8},
 	{EXCLMARK,	P1TYPE_END,				"!",			"",			 0,  0}
 };
 
@@ -299,9 +302,10 @@ bool P1MeterBase::MatchLine()
 			case P1TYPE_GASTIMESTAMPME382:
 				break;
 			case P1TYPE_GASUSAGE:
-			case P1TYPE_GASUSAGEDSMR4:
-			case P1TYPE_GASUSAGEGYRE350:
-			case P1TYPE_GASUSAGEDSMR5:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL1:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL2:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL3:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL4:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;
