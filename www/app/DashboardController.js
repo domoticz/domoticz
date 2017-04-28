@@ -4067,7 +4067,7 @@ define(['app'], function(app) {
 			if (bShowRoomplan == true) {
 				$.each($.RoomPlans, function(i, item) {
 					var option = $('<option />');
-					option.attr('value', item.idx).text(item.Name);
+					option.attr('value', item.idx).text(item.name);
 					$("#dashcontent #comboroom").append(option);
 				});
 				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
