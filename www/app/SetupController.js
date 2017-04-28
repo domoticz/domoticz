@@ -230,21 +230,6 @@ define(['app'], function (app) {
 			$("#sunriseset").html(suntext);
 		  }
 
-            
-            $("body").removeClass();
-            $("body").addClass("settings").addClass("backStage");  
-            /*if ($scope.config.DashboardType == 0) {   
-                $("body").addClass("3column");
-            }
-            if ($scope.config.DashboardType == 1) {
-                $("body").addClass("4column");
-            }                    
-            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-                $("body").addClass("dashMobile");    
-            }    
-            if ($scope.config.DashboardType == 3) {
-                $("body").addClass("dashFloorplan");*/
-            
 		  //Get Themes
 		  var actTheme="default";
 		  $.ajax({
