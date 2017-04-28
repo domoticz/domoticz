@@ -2749,6 +2749,7 @@ define(['app'], function(app) {
                                     xhtm += imghtml;
 									xhtm +=
 										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n';
+                                    xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
 										
 									if (item.SwitchType == "Dimmer") {
 										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {} else {
@@ -2788,7 +2789,7 @@ define(['app'], function(app) {
                                             
 										}
 									}
-                                    xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
+                                    
 									xhtm +=
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
