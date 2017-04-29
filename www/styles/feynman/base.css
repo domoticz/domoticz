@@ -2248,6 +2248,19 @@ td[colspan]:not([colspan="1"])
         
     }
     
+    #appnavbar > li > a{
+        padding: 2px 4px;
+    }
+    
+    .navbar .nav > li > a> img,  
+    #appnavbar > li > a > img{
+        width:32px;
+        height:32px;
+    }
+    
+    .navbar .nav li a {text-align:left}
+    
+    
 }
 
 
@@ -2297,6 +2310,13 @@ td[colspan]:not([colspan="1"])
     .options{
         float:left;
         clear:both
+    }
+    
+    
+    
+#copyright{
+    left: -22px;
+    right: -42px;
     }
     
 }
@@ -2359,6 +2379,14 @@ td[colspan]:not([colspan="1"])
     #bigtext{float:right;}
 }
     
+
+@media all and (max-width: 1200px){
+    
+    .navbar-static-top .container, 
+    .navbar-fixed-top .container, 
+    .navbar-fixed-bottom .container {width:100%!important}
+}
+
 
 @media all and (min-width: 1200px){
 
@@ -2454,12 +2482,14 @@ td[colspan]:not([colspan="1"])
 }
 
 /* larger main menu icon size */
-@media all and (min-width: 480px) and (max-width: 980px){
-    .navbar .nav > li > a{padding: 2px 10px 2px 10px; }
-    .navbar .nav > li > a> img{height:32px;width:32px }
+@media all and (max-width: 980px){
+    .navbar .nav > li > a{padding: 2px 10px 2px 10px!important; }
+    .navbar .nav > li > a > img{height:32px;width:32px }
 }
 
-
+@media all and (max-width: 480px){
+    .navbar .nav > li > a{padding: 2px!important; }
+}
 
 
 /*  WORKSPACE  */

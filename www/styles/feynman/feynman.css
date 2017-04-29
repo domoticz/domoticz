@@ -49,8 +49,7 @@ body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body tab
 
 #appnavbar li a{
     font-family: "Lato";
-    font-size: 110%;
-    padding:10px 12px
+    padding:10px 10px
 }
 
 /*
@@ -136,10 +135,6 @@ body table#itemtablenotype tr td:first-child{
 }
 #dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
     background-color:#D4E1EE;
-   /* background: -moz-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);   
-    background: -webkit-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%); 
-    background: linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);    
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#D4E1EE',GradientType=0 );*/
     border-radius:2px!important;
 }
 
@@ -434,7 +429,7 @@ a.btnsmall {
 .relatedIcon{
     box-sizing: content-box;
     border: 5px solid white;
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(250,250,250,0.4);
     width: 32px!important;
     height: 32px!important;    
     margin: 10px;
@@ -549,6 +544,15 @@ body:hover .ui-dialog {
     }
     
     .item #bigtex .swrapper{background-color:transparent}
+    
+    
+    #dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
+    background: -moz-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);   
+    background: -webkit-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%); 
+    background: linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);    
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#D4E1EE',GradientType=0 );
+    }
+    
 }
 
 
