@@ -928,6 +928,7 @@ body .item tr > #name {
     display:flex;
     flex-direction: row;
     flex-wrap:wrap;
+    align-items: center;
     margin:0;
     padding:0;
 }
@@ -2365,6 +2366,7 @@ td[colspan]:not([colspan="1"])
     #dashcontent div.item.withstatus tr td#status > .wrapper {
         display:flex; 
         flex-wrap: wrap;
+        align-items: center;
     } 
     
     #dashcontent div.item.withstatus td#status > .wrapper > span{
@@ -2434,7 +2436,10 @@ td[colspan]:not([colspan="1"])
     
     body.dashMobile #dashcontent section:not(last-of-type) {
         display: inline-block;
-                width:100%;
+        width:100%;
+        -webkit-column-width: 250px; /* Chrome, Safari, Opera */
+        -moz-column-width: 250px; /* Firefox */
+        column-width: 250px;
     }
     
     body.dashMobile #dashcontent .mobileitem{

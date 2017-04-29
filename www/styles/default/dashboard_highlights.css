@@ -124,6 +124,7 @@
         flex-wrap: wrap;
         flex-grow: 1;
         justify-content: space-around;
+        align-items: center;
         min-height: 108px;
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
