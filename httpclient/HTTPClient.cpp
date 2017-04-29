@@ -142,9 +142,9 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
                                 case 503:
                                         _log.Log(LOG_ERROR,"HTTP 503: Service Unavailable");
                                         break;
-				defautl:
-					_log.Log(LOG_ERROR,"HTTP return code is: %i", response_code);
-					break;
+                                default:
+                                        _log.Log(LOG_ERROR,"HTTP return code is: %i", response_code);
+                                        break;
                         }
                 }
 		curl_easy_cleanup(curl);
