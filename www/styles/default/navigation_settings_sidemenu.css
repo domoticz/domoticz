@@ -33,4 +33,9 @@
         margin-left: 180px;
     }
     
+    #settingscontent .sub-tabs a:not(.sub-tabs-apply){
+        margin-top:0;
+        margin-bottom:0;
+    }
+    
 }

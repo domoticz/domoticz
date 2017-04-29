@@ -15,12 +15,14 @@ This can give a nice effect with background images. */
     #dashcontent #lastupdate,
     #dashcontent .item .name,
     #dashcontent #name{
-            background-color: rgba(250,250,250,0.1)!important;
+        background-color: rgba(250,250,250,0.1)!important;
         /*background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.2) 100%); 
         background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.2) 100%); 
         background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.2) 100%); 
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=0 );*/
     }
+    #dashcontent .item .name{color:#fff;}
+    #dashcontent #lastupdate{color:#ccc;}   
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate > span{
         background-color:rgba(250,250,250,0.1)!important;
