@@ -345,7 +345,7 @@ p.ng-binding {
     position:relative;
     top: -10px;
     left: -20px;
-    color: rgba(50,50,50,0.5);
+    color: rgba(50,50,50,0.65);
     visibility: hidden;
 }
 
@@ -1280,8 +1280,8 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     margin-top: 10px;
     border: none;
     height:auto;
-    left: 11px;
-    right: -10px;    
+    left: -2px;
+    right: -22px;  
 }
 
 #copyright p {
@@ -2475,7 +2475,7 @@ td[colspan]:not([colspan="1"])
 #dashcontent .withstatus #name{height: 35px}
 
 #dashcontent .withstatus #name{padding: 10px 0 0 10px;}
-#dashcontent .withstatus #bigtext {top: -28px;}
+#dashcontent .withstatus #bigtext {top: -28px;right:40px}
 #dashcontent .withstatus #img{top: -32px;width:32px;}
 #dashcontent .withstatus #img img{width:32px;height:32px;}
 

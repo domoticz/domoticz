@@ -130,7 +130,6 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
         box-shadow:inset 0px -2px 1px -1px rgba(50, 50, 50, 0.1);
-        color:#fff;
         padding: 3px 10px 0 5px;
         line-height: 1em;
         height:auto;

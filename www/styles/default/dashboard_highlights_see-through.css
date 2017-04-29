@@ -8,7 +8,7 @@ This can give a nice effect with background images. */
 
     #dashcontent .ui-draggable:not(.ui-dialog) tr:hover,
     #dashcontent .ui-draggable:not(.ui-dialog) tr{
-        /*background-image:none!important;*/
+        background-image:none;
         background-color:transparent;
     }
 
@@ -169,6 +169,9 @@ This can give a nice effect with background images. */
     #dashcontent .ui-slider-range{
         background-color: rgba(73,175,205,0.6);
     }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span {color:#fff}
+    
     
     
     /*  non-dashboard see through options.*/
