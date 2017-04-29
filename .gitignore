@@ -6,7 +6,7 @@ msbuild
 *.bak
 appversion.h
 appversion.h.txt
-!Makefile
+Makefile
 CMakeFiles
 *.cmake
 *.a

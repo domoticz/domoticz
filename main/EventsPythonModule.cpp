@@ -94,7 +94,7 @@
 
             _log.Log(LOG_STATUS, "Python EventSystem: Initalizing event module.");
 
-            PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
+            PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);            
             return pModule;
         }
 
