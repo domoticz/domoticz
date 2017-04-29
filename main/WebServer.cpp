@@ -1086,7 +1086,7 @@ namespace http {
                                 if (htype == HTYPE_TeleinfoMeter) {
                                         // Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
                                         // Domoticz instance are very low as both are national standards (NL and FR)
-                                        UpdatePreferencesVar("SmartMeterType", 0);
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
                                 }		
 			}
 			else if (
@@ -1115,7 +1115,7 @@ namespace http {
                                 if (htype == HTYPE_ECODEVICES) {
                                         // EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
                                         // Domoticz instance are very low as both are national standards (NL and FR)
-                                        UpdatePreferencesVar("SmartMeterType", 0);
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
                                 }
 			}
 			else if (htype == HTYPE_DomoticzInternal)	{
