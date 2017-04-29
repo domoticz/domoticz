@@ -128,7 +128,6 @@
     .navbar #appnavbar{
         width:auto; 
         height:100%;
-        top:21px;
         clear:both;
 
         list-style-type:none;
@@ -288,7 +287,6 @@
         /*flex-direction:column-reverse;
         justify-content: flex-end;
         flex-wrap: wrap!important;  */
-        padding-top:50px;
         box-shadow: none;
         border-left:none;
         border-radius: 0;
@@ -599,6 +597,18 @@
     margin-left:35px;
     transform: scale(0.9, 0.9);
 }
+
+
+
+
+@media all and (min-width: 768px){
+    
+    .navbar #appnavbar{top:21px;}
+    
+    #appnavbar > li > .dropdown-menu.pull-right{padding-top:50px;}
+
+}
+
 
 
 /*  This is important. It makes room for the side-menu. It does this by completely taking over from Bootstrap. */
