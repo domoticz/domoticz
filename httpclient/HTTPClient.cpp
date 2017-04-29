@@ -128,7 +128,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
                                         _log.Log(LOG_ERROR,"HTTP 400: Bad Request");
                                         break;
                                 case 401:
-                                        _log.Log(LOG_ERROR,"HTTP 401: Unauthorized. Authentication is required and has failed or has not yet been provided");
+                                        _log.Log(LOG_ERROR,"HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
                                         break;
                                 case 403:
                                         _log.Log(LOG_ERROR,"HTTP 403: Forbidden. The request is valid, but the server is refusing action");
@@ -142,6 +142,9 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
                                 case 503:
                                         _log.Log(LOG_ERROR,"HTTP 503: Service Unavailable");
                                         break;
+				defautl:
+					_log.Log(LOG_ERROR,"HTTP return code is: %i", response_code);
+					break;
                         }
                 }
 		curl_easy_cleanup(curl);
