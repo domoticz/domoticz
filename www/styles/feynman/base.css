@@ -169,8 +169,6 @@ input{margin-right:3px}
     min-width: 120px;
 }
 
-
-/*#settingscontent .ui-widget-content,*/
 #settingscontent input.text{
     min-width: 120px;
     width:calc(100% - 75px)!important;
@@ -275,14 +273,9 @@ p.ng-binding {
 .selectorlevels .ui-button:not(.ui-state-active){
     background-color:#D4E1EE;
 }
-/*
-.ui-state-default, 
-.selectorlevels .ui-widget-content .ui-state-default, 
-.selectorlevels .ui-widget-header .ui-state-default
-*/
+
 
 /* HEADER CONTENT*/
-
 
 #temptophtm .bannav{
     /*position:relative; 
@@ -290,20 +283,6 @@ p.ng-binding {
     width:auto;
     margin-bottom:1em;
 }
-
-/*
-#temptophtm td:last-of-type span{
-    top: 2px;
-    background-color: #eee;
-    padding: 2px 10px 1px 10px;
-    right: -11px;
-    position: relative;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    border-top: 1px solid #999;
-    border-left: 1px solid #999;
-    border-bottom: 1px solid #999;
-}*/
 
 #temptophtm td:last-of-type select{width:100px!important;}
 
@@ -326,6 +305,7 @@ p.ng-binding {
     line-height: 1.2em;
     height: 20px;
 }
+
 
 /*  LOGO & MAIN NAVIGATION  */
 
@@ -365,7 +345,7 @@ p.ng-binding {
     position:relative;
     top: -10px;
     left: -20px;
-    color: rgba(50,50,50,0.5);
+    color: rgba(50,50,50,0.65);
     visibility: hidden;
 }
 
@@ -518,7 +498,6 @@ p.ng-binding {
 #floorplancontent #BulletGroup:hover #BulletImages{
     padding-top:10px;
 }
-
 
 
 /*  HEADERS  */
@@ -949,6 +928,7 @@ body .item tr > #name {
     display:flex;
     flex-direction: row;
     flex-wrap:wrap;
+    align-items: center;
     margin:0;
     padding:0;
 }
@@ -968,8 +948,9 @@ body:not(.dashboard) td#status > span > span.separator{padding-right:3px;}
 
 #dashcontent .item.withstatus #status > .wrapper > span{
     display:flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     width:100%;
     padding:13px 10px 10px 15px;
     flex: 1 1 auto;
@@ -1000,6 +981,12 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     margin-left:5px;
 }
 
+
+
+
+/*   TYPE  */
+
+
 #type:before {
     font-style: normal!important;
 }
@@ -1016,6 +1003,9 @@ div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
     overflow:visible;
     font-size: 11.5px;
 }
+
+/*.widget{height:0}*/
+
 
 
 /*  status updates indicators (icons for timeout, protected, low battery) */
@@ -1290,8 +1280,8 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     margin-top: 10px;
     border: none;
     height:auto;
-    left: 11px;
-    right: -10px;    
+    left: -2px;
+    right: -22px;  
 }
 
 #copyright p {
@@ -1881,10 +1871,8 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     text-align:left;
 }
 .ui-dialog td label,
-.ui-dialog td{display:inline;text-align:left;important;}
+.ui-dialog td{display:inline;text-align:left;}
 .ui-dialog input, .ui-dialog textarea{margin-bottom:10px}
-
-
 
 
 
@@ -1895,9 +1883,6 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     padding:20px    
 }
 
-/*
-#utilitycontent {margin-top:30px}
-*/
 
 /* LOG */
 
@@ -1938,6 +1923,8 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 
 
 /*  PAGE SPECIFIC OVERRIDES  */
+
+body section.dashSwitches div.item{margin-bottom:25px}
 
 body.dashboard item.utility td#status{
     font-size:15px;
@@ -2323,20 +2310,23 @@ td[colspan]:not([colspan="1"])
         padding-left:10px;
     }
     
-    #bigtext{
+    div.item:not(.bandleader):not(.withstatus) #bigtext{
         float:left;
         text-align: left;
         top: -20px;
         left: 32px; /* was 35px, but bigtext now has apdding of 3 default, to deal with overlapping situations. */
     }
-    #dashcontent .span4 #bigtext{
+    #dashcontent .span4 .item:not(.bandleader):not(.withstatus) #bigtext{
         top: -28px;
         left: 10px;
     }
-    #dashcontent .span3 #bigtext{
+    #dashcontent .span3 .item:not(.bandleader):not(.withstatus) #bigtext{
         top: -24px;
         left: 10px;
     }
+    
+    #dashcontent .span4 .withstatus:not(.bandleader) #bigtext{top:-18px}
+    #dashcontent .span3 .withstatus:not(.bandleader) #bigtext{top:-18px}
     
     #bigtext > span{
         font-size:13px;
@@ -2376,6 +2366,7 @@ td[colspan]:not([colspan="1"])
     #dashcontent div.item.withstatus tr td#status > .wrapper {
         display:flex; 
         flex-wrap: wrap;
+        align-items: center;
     } 
     
     #dashcontent div.item.withstatus td#status > .wrapper > span{
@@ -2445,7 +2436,10 @@ td[colspan]:not([colspan="1"])
     
     body.dashMobile #dashcontent section:not(last-of-type) {
         display: inline-block;
-                width:100%;
+        width:100%;
+        -webkit-column-width: 250px; /* Chrome, Safari, Opera */
+        -moz-column-width: 250px; /* Firefox */
+        column-width: 250px;
     }
     
     body.dashMobile #dashcontent .mobileitem{
@@ -2468,10 +2462,25 @@ td[colspan]:not([colspan="1"])
 
 
 
+/*  WORKSPACE  */
+
 .test {background-color:purple!important;}
 
 
+#dashcontent .withstatus #status,
+#dashcontent .withstatus #status .wrapper{height:auto!important;top:0!important}
+#dashcontent .withstatus #lastupdate{height:auto!important;top:0!important}
 
-.withstatus #status,
-.withstatus #status .wrapper{height:auto!important;top:0!important}
-.withstatus #lastupdate{height:auto!important;top:0!important}
+
+#dashcontent .withstatus #name{height: 35px}
+
+#dashcontent .withstatus #name{padding: 10px 0 0 10px;}
+#dashcontent .withstatus #bigtext {top: -28px;right:40px}
+#dashcontent .withstatus #img{top: -32px;width:32px;}
+#dashcontent .withstatus #img img{width:32px;height:32px;}
+
+#dashcontent .span3 .withstatus #img img{margin-top:0!important;}
+
+.bandleader .overlay{display:none!important}
+
+

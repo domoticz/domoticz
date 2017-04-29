@@ -1,7 +1,6 @@
 /* THIS MAKES 3 ITEMS AT THE TOP OF EACH CATEGORY TWICE AS BIG  */
 
 @media all and (min-width: 768px){
-
     
     /*  increasing container height  */
     
@@ -66,12 +65,7 @@
     }   
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:first-of-type{padding-right:10px;}
-    /*
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:nth-child(2){
-        padding-left:10px; 
-        padding-right:10px;
-    }*/
-    
+
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #bigtext{
         display:inline-block;
         float:right;
@@ -111,6 +105,8 @@
         position:relative;
         border:0;
     }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader tr #status{left:0;top:0;}
+    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
@@ -128,12 +124,12 @@
         flex-wrap: wrap;
         flex-grow: 1;
         justify-content: space-around;
+        align-items: center;
         min-height: 108px;
     }
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
         box-shadow:inset 0px -2px 1px -1px rgba(50, 50, 50, 0.1);
-        color:#fff;
         padding: 3px 10px 0 5px;
         line-height: 1em;
         height:auto;
@@ -300,8 +296,6 @@
         border-right:none!important;
         box-sizing: border-box;
     }
-    
-
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img,
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1{
@@ -473,25 +467,6 @@
         border-bottom-right-radius: 0;    
     }
 
-    /*
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout tr:after{
-        content : "";
-        display: block;
-        position: relative;
-        top: 0;
-        right: 5px;
-        float:right;
-        background: url(/images/Alert48_2.png) no-repeat center center; 
-        -webkit-background-size: 16px;
-        -moz-background-size: 16px
-        -o-background-size: 16px;
-        background-size: 16px;
-        width: 32px;
-        height: 32px;
-        opacity : 0.8;
-        z-index: 1;
-    }*/
-
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery{box-shadow:none}
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery td#name{
         background-color: transparent;    
@@ -529,6 +504,7 @@
         display:block;
     }    
     
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item tr .widget{position: relative;top:-20px}
     
 
 /*  showing the last update data  */
@@ -637,8 +613,7 @@
     
     
     /*  MERGED ITEMS */
-    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:90%;width:calc(100% - 10px);}
-    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:100%;}    
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount4 td#status > .wrapper > img{height:24px;width:24px;}
    
     
@@ -646,9 +621,6 @@
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount5 td#status > .wrapper > span {width:calc(50% - 16px);font-size:14px;padding: 0 0 0 5px}
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status
-    
-    
-    
 
 }   /* closing of the media query  */
 

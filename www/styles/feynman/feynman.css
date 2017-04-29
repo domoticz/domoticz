@@ -135,11 +135,11 @@ body table#itemtablenotype tr td:first-child{
     border-radius:2px!important;
 }
 #dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
-    background-color:transparent!important;
-    background: -moz-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);   
+    background-color:#D4E1EE;
+   /* background: -moz-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);   
     background: -webkit-linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%); 
     background: linear-gradient(to bottom, #D4E1EE 0% ,#D4E1EE 100%);    
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#D4E1EE',GradientType=0 );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#D4E1EE',GradientType=0 );*/
     border-radius:2px!important;
 }
 

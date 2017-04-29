@@ -87,13 +87,14 @@
         box-shadow: inset 0px 0px 8px 0px rgba(130, 130, 130, 0.2); 
     }
     
+    /*
     #dashcontent .item.withstatus{
-        border-bottom:20px solid transparent; /*little trick to push it down*/
-    }   
+        border-bottom:20px solid transparent;
+    } */  
     
     
     /* grow a bit bigger if there is data ouput*/
-    
+    /*
     #dashcontent div.item.withstatus.statuscount1 tr{min-height:105px}  
     #dashcontent div.item.withstatus.statuscount2 tr{min-height:135px}
     #dashcontent div.item.withstatus.statuscount3 tr{min-height:165px}
@@ -108,7 +109,7 @@
     
     #dashcontent #lastupdate > span{
         padding-top:4px;
-    }
+    }*/
 } 
 
 
