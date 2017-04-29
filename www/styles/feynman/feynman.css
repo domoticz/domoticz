@@ -326,6 +326,14 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
     color:#fff;
 }
 
+.ui-draggable:not(.ui-dialog) tr td.options a.btnsmall-sel{
+    /*color:#af2aaf;*/ /* #446cce*/
+    background-image:none;
+    border-bottom:2px solid #af2aaf;
+    border-radius: 0;
+    color: #53b4e3;
+}
+
 .item .options img.favorite{top:-28px}
 
 
@@ -379,7 +387,8 @@ button,
 
 
 .selectorlevels .ui-button span.ui-button-text{
-    color:#ccc;
+    color:#666;
+    height: 1.7em;
 }
 .selectorlevels .ui-button.ui-state-active {
     box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.5);
@@ -426,16 +435,18 @@ a.btnsmall {
     box-sizing: content-box;
     border: 5px solid white;
     background-color: rgba(0,0,0,0.2);
-    width: 48px;
+    width: 32px!important;
+    height: 32px!important;    
     margin: 10px;
+    margin-right: 10px!important;
     border-radius:50%;
-    image-rendering: -moz-crisp-edges;
+    /*image-rendering: -moz-crisp-edges;
     image-rendering: -moz-crisp-edges;
     image-rendering: -o-crisp-edges;
     image-rendering: -webkit-optimize-contrast;
     -ms-interpolation-mode: nearest-neighbor;
     filter: contrast(1);
-    image-rendering: pixelated;
+    image-rendering: pixelated;*/
     box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
 }
 

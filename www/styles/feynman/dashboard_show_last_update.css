@@ -54,13 +54,15 @@
 }
 
 
+@media screen and (max-width: 600px){
+    background-color:#d4e1ee;
+}
 
 @media screen and (max-width: 768px){
 
     #dashcontent #lastupdate{
         display:block;
         height:20px;
-        background-color:#d4e1ee;
 
     }
     #dashcontent #lastupdate > span{
