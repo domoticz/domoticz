@@ -35,6 +35,7 @@ extern "C" {
 #ifdef ENABLE_PYTHON
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
+extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 
@@ -44,8 +45,6 @@ using namespace boost::python;
 #endif
 
 extern std::string szUserDataFolder;
-
-extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 CEventSystem::CEventSystem(void)
 {
