@@ -2328,28 +2328,26 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
            }
 
-           PyObject* dayTimeBool = Py_False;
-           PyObject* nightTimeBool = Py_False;
+           //PyObject* dayTimeBool = Py_False;
+           //PyObject* nightTimeBool = Py_False;
+
+           bool isDaytime = false;
+           bool isNightime = false;
 
            if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-               dayTimeBool = Py_True;
+               isDaytime = true;
            }
            else {
-               nightTimeBool = Py_True;
+               isNightime = true;
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", (PyObject*)dayTimeBool) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", PyBool_FromLong(isDaytime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", (PyObject*)nightTimeBool) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", PyBool_FromLong(isNightime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
-
-
-           Py_DECREF(dayTimeBool);
-           Py_DECREF(nightTimeBool);
-
 
            // UserVariables
            PyObject* m_uservariablesDict = Plugins::PyDict_New();
