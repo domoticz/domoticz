@@ -2,11 +2,11 @@
 
 #include "RFXNames.h"
 #include "EventSystem.h"
-#include "../hardware/plugins/DelayedLink.h"
-
-#include "structmember.h"
 
 #ifdef ENABLE_PYTHON
+    #include "../hardware/plugins/DelayedLink.h"
+    #include "structmember.h"
+
     namespace Plugins {
       typedef struct {
           PyObject_HEAD

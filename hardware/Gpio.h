@@ -47,7 +47,6 @@ private:
 	bool StopHardware();
 	void Do_Work();
 	void Poller();
-	void DelayedStartup();
 	void UpdateDeviceStates(bool forceUpdate);
 	void ProcessInterrupt(int gpioId);
 	void UpdateState(int gpioId, bool forceUpdate);
@@ -56,6 +55,7 @@ private:
 	static std::vector<CGpioPin> pins;
 
 	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_thread_poller;
 	volatile bool m_stoprequested;
 	tRBUF IOPinStatusPacket;
 };
