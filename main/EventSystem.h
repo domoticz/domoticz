@@ -95,6 +95,8 @@ public:
 
 	void exportDeviceStatesToLua(lua_State *lua_state);
 
+    bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
+
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;

@@ -568,7 +568,7 @@ namespace Plugins {
 	}
 
 
-	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) : 
+	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) :
 		m_stoprequested(false),
 		m_pProtocol(NULL),
 		m_pTransport(NULL),
@@ -1587,7 +1587,7 @@ namespace Plugins {
 			}
 		}
 
-		// Use uploaded and custom images 
+		// Use uploaded and custom images
 		int	posCustom = (int)ExtraData.find("|CustomImage=");
 		if (posCustom >= 0)
 		{

@@ -261,6 +261,8 @@ main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
+main/EventsPythonModule.cpp
+main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp
@@ -382,6 +384,7 @@ hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
+hardware/SysfsGPIO.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -501,7 +504,8 @@ set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
 IF(USE_PYTHON AND PYTHONLIBS_FOUND)
-  find_package(Boost REQUIRED COMPONENTS thread date_time system python)
+  # find_package(Boost REQUIRED COMPONENTS thread date_time system python)
+  find_package(Boost REQUIRED COMPONENTS thread date_time system)
 else()
   find_package(Boost REQUIRED COMPONENTS thread date_time system)
 endif(USE_PYTHON AND PYTHONLIBS_FOUND)
@@ -657,6 +661,14 @@ else()
   message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
   message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
 ENDIF(WiringPi)
+
+IF(EXISTS /sys/class/gpio)
+	message(STATUS "Sysfs GPIO available")
+	add_definitions(-DWITH_SYSFS_GPIO)
+ELSE()
+	message(STATUS "Sysfs GPIO not available")
+ENDIF()
+
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)

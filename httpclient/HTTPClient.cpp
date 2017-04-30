@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "HTTPClient.h"
 #include <curl/curl.h>
+#include "../main/Logger.h"
 
 #include <iostream>
 #include <fstream>
@@ -115,7 +116,37 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		res = curl_easy_perform(curl);
+                curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
+                res = curl_easy_perform(curl);
+                if(res == CURLE_HTTP_RETURNED_ERROR)
+                {
+                        long response_code;
+                        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+                        switch(response_code)
+                        {
+                                case 400:
+                                        _log.Log(LOG_ERROR,"HTTP 400: Bad Request");
+                                        break;
+                                case 401:
+                                        _log.Log(LOG_ERROR,"HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
+                                        break;
+                                case 403:
+                                        _log.Log(LOG_ERROR,"HTTP 403: Forbidden. The request is valid, but the server is refusing action");
+                                        break;
+                                case 404:
+                                        _log.Log(LOG_ERROR,"HTTP 404: Not Found");
+                                        break;
+                                case 500:
+                                        _log.Log(LOG_ERROR,"HTTP 500: Internal Server Error");
+                                        break;
+                                case 503:
+                                        _log.Log(LOG_ERROR,"HTTP 503: Service Unavailable");
+                                        break;
+                                default:
+                                        _log.Log(LOG_ERROR,"HTTP return code is: %i", response_code);
+                                        break;
+                        }
+                }
 		curl_easy_cleanup(curl);
 
 		if (headers!=NULL) {
