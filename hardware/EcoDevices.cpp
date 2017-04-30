@@ -8,11 +8,12 @@ http://gce-electronics.com/en/nos-produits/409-module-teleinfo-eco-devices.html
 Detailed information on the API can be found at
 http://www.touteladomotique.com/index.php?option=com_content&id=985:premiers-pas-avec-leco-devices-sur-la-route-de-la-maitrise-de-lenergie&Itemid=89#.WKcK0zi3ik5
 
-Version 3.1
+Version 3.2
 Author Blaise Thauvin
 
 Version history
 
+3.2   12-04-2017 Added support for authentication when connecting to EcoDevices
 3.1   01-04-2017 Added basic support for recently launched EcoDevices RT2
 3.0   15-03-2017 Merge Teleinfo protocol processing with other hardware using common class CTeleinfoBase
 2.2   05-03-2017 Move from JSON to XML API on EcoDevices in order to retreive more Teleinfo variables (current, alerts...)
@@ -33,6 +34,8 @@ Version history
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
 #include <../tinyxpath/xpath_static.h>
+#include "../webserver/Base64.h"
+#include "../json/json.h"
 #include <sstream>
 
 #ifdef _DEBUG
@@ -49,17 +52,26 @@ Version history
 #define MINOR_RT2 0
 #define RELEASE_RT2 29
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const unsigned int model, const int ratelimit)
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, 
+	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit)
+
 {
 	m_HwdID = ID;
 	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
+	m_username = username;
+	m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
-
 	m_iRateLimit = ratelimit;
-	if (m_iRateLimit < 2)
-		m_iRateLimit = 2; // system seems unstable if going too fast
+	m_iDataTimeout = datatimeout;
+	
+ 	// system seems unstable if going too fast
+	if (m_iRateLimit < 2) m_iRateLimit = 2;
+
+        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
+	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake
+        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }
@@ -74,8 +86,17 @@ void CEcoDevices::Init()
 {
 	m_stoprequested = false;
 	m_bFirstRun = true;
-}
 
+	// Is the device we poll password protected?
+	m_ssURL.str("");
+	if ((m_username.size() > 0) && (m_password.size() > 0))
+        	m_ssURL << "http://" << m_username << ":" << m_password << "@";
+        else
+                m_ssURL <<"http://";
+
+        m_ssURL << m_szIPAddress << ":" << m_usIPPort;
+
+}
 
 bool CEcoDevices::StartHardware()
 {
@@ -86,7 +107,6 @@ bool CEcoDevices::StartHardware()
 	sOnConnected(this);
 	return (m_thread != NULL);
 }
-
 
 bool CEcoDevices::StopHardware()
 {
@@ -100,11 +120,9 @@ bool CEcoDevices::StopHardware()
 	return true;
 }
 
-
-
 void CEcoDevices::Do_Work()
 {
-	unsigned int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
+	int sec_counter = m_iRateLimit - 2; // Make sure we update once soon after restart
 	_log.Log(LOG_STATUS, "(%s): Worker started...", Name.c_str());
 	while (!m_stoprequested)
 	{
@@ -123,12 +141,10 @@ void CEcoDevices::Do_Work()
 	_log.Log(LOG_STATUS, "(%s): Worker stoped...", Name.c_str());
 }
 
-
 bool CEcoDevices::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	return true;
 }
-
 
 void CEcoDevices::DecodeXML2Teleinfo(const std::string &sResult, Teleinfo &teleinfo)
 {
@@ -191,7 +207,8 @@ void CEcoDevices::GetMeterDetails()
 	int min_major = MAJOR, min_minor = MINOR, min_release = RELEASE;
 
 	// Check EcoDevices firmware version and process pulse counters
-	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/status.xml";
+	sstr << m_ssURL.str() << "/status.xml";
+	
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
@@ -199,7 +216,7 @@ void CEcoDevices::GetMeterDetails()
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "(%s) Error getting status.xml!", Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) Error getting data from: %s", Name.c_str(), sstr.str().c_str());
 		return;
 	}
 
@@ -245,7 +262,7 @@ void CEcoDevices::GetMeterDetails()
 		}
 		// Process Counter 1
 		if ((m_status.index1 > 0) && ((m_status.index1 != m_status.pindex1) || (m_status.flow1 != m_status.pflow1) \
-			|| (difftime(atime, m_status.time1) >= 300)))
+			|| (difftime(atime, m_status.time1) >= m_iDataTimeout - 10)))
 		{
 			m_status.pindex1 = m_status.index1;
 			m_status.pflow1 = m_status.flow1;
@@ -256,7 +273,7 @@ void CEcoDevices::GetMeterDetails()
 
 		// Process Counter 2
 		if ((m_status.index2 > 0) && ((m_status.index2 != m_status.pindex2) || (m_status.flow2 != m_status.pflow2) \
-			|| (difftime(atime, m_status.time2) >= 300)))
+			|| (difftime(atime, m_status.time2) >= m_iDataTimeout - 10)))
 		{
 			m_status.pindex2 = m_status.index2;
 			m_status.pflow2 = m_status.flow2;
@@ -280,7 +297,8 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp(m_status.t1_ptec.c_str(), "----") != 0)
 	{
 		sstr.str("");
-		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo1.xml";
+		sstr << m_ssURL.str() << "/protect/settings/teleinfo1.xml";
+
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 1 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -304,7 +322,8 @@ void CEcoDevices::GetMeterDetails()
 	if (strcmp(m_status.t2_ptec.c_str(), "----") != 0)
 	{
 		sstr.str("");
-		sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/protect/settings/teleinfo2.xml";
+		sstr << m_ssURL.str() << "/protect/settings/teleinfo2.xml";
+		
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -345,12 +364,48 @@ void CEcoDevices::GetMeterRT2Details()
 	int   i, major, minor, release;
 	int min_major = MAJOR_RT2, min_minor = MINOR_RT2, min_release = RELEASE_RT2;
 
-	// Check EcoDevices firmware version and process pulse counters
-	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/admin/status.xml";
-	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
+	// Check EcoDevices firmware version and hostname from JSON API
+	sstr << m_ssURL.str() << "/admin/system.json";
+
+	//Get Data
+	std::string sURL = sstr.str();
+	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "(%s) Error getting system information from: %s", Name.c_str(), sstr.str().c_str());
+		return;
+	}
+
+	Json::Value root;
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json", Name.c_str());
+		return;
+	}
+	if (root["confighostname"].empty() == true)
+	{
+		_log.Log(LOG_ERROR, "(%s) Invalid JSON data received from /admin/system.json, hostname missing", Name.c_str());
+	}
+	else
+	{
+		m_status.hostname = root["confighostname"].asString();
+		stdstring_rtrim(m_status.hostname);
+		// Update hardware name if this is first run
+		if (m_bFirstRun)
+		{
+			m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
+			m_bFirstRun = false;
+		}
+	}
+
+	// Get Teleinfo meter data and process pulse counters
+	sstr.str("");
+	sstr << m_ssURL.str() << "/admin/status.xml";
+
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_NORM, "(%s) Fetching data", Name.c_str());
+		_log.Log(LOG_NORM, "(%s) Fetching data from /admin/status.xml", Name.c_str());
 	}
 	else
 	{
@@ -397,15 +452,6 @@ void CEcoDevices::GetMeterRT2Details()
 		return;
 	}
 
-	// Update hardware name if this is first run
-	if (m_bFirstRun)
-	{
-		m_status.hostname = S_xpath_string(XMLdoc.RootElement(), "/response/hostname/text()").c_str();
-		if (m_status.hostname == "") m_status.hostname = "EcoDevices RT2";
-		m_sql.safe_query("UPDATE Hardware SET Name = '%s' WHERE ID = %i", m_status.hostname.c_str(), m_HwdID);
-		m_bFirstRun = false;
-	}
-
 	//Measured voltage on power supply 
 	m_status.voltage = i_xpath_int(XMLdoc.RootElement(), "/response/vmesure/text()");
 	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
@@ -449,7 +495,7 @@ void CEcoDevices::GetMeterRT2Details()
 	_log.Log(LOG_NORM, "DEBUG: PTEC:    '%s'", m_teleinfo1.PTEC.c_str());
 	_log.Log(LOG_NORM, "DEBUG: DEMAIN:  '%s'", m_teleinfo1.DEMAIN.c_str());
 #endif
-	ProcessTeleinfo("Teleinfo RT2", 1, m_teleinfo1);
+	ProcessTeleinfo(m_status.hostname.c_str(), 1, m_teleinfo1);
 
 	// 8 internal counters (postes) processing
 	for (i = 0; i < 8; i++)

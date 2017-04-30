@@ -311,7 +311,7 @@ void RelayNet::Init()
 	BYTE id4 = m_HwdID & 0xFF;
 
 	/* 	Prepare packet for LIGHTING2 relay status packet  */
-	memset(&Packet, 0, sizeof(RBUF));
+	memset(&m_Packet, 0, sizeof(m_Packet));
 
 	if (m_HwdID > 0xFF)
 	{
@@ -323,18 +323,18 @@ void RelayNet::Init()
 		id3 = (m_HwdID >> 16) & 0xFF;
 	}
 
-	Packet.LIGHTING2.packetlength = sizeof(Packet.LIGHTING2) - 1;
-	Packet.LIGHTING2.packettype = pTypeLighting2;
-	Packet.LIGHTING2.subtype = sTypeAC;
-	Packet.LIGHTING2.unitcode = 0;
-	Packet.LIGHTING2.id1 = id1;
-	Packet.LIGHTING2.id2 = id2;
-	Packet.LIGHTING2.id3 = id3;
-	Packet.LIGHTING2.id4 = id4;
-	Packet.LIGHTING2.cmnd = 0;
-	Packet.LIGHTING2.level = 0;
-	Packet.LIGHTING2.filler = 0;
-	Packet.LIGHTING2.rssi = 12;
+	m_Packet.LIGHTING2.packetlength = sizeof(m_Packet.LIGHTING2) - 1;
+	m_Packet.LIGHTING2.packettype = pTypeLighting2;
+	m_Packet.LIGHTING2.subtype = sTypeAC;
+	m_Packet.LIGHTING2.unitcode = 0;
+	m_Packet.LIGHTING2.id1 = id1;
+	m_Packet.LIGHTING2.id2 = id2;
+	m_Packet.LIGHTING2.id3 = id3;
+	m_Packet.LIGHTING2.id4 = id4;
+	m_Packet.LIGHTING2.cmnd = 0;
+	m_Packet.LIGHTING2.level = 0;
+	m_Packet.LIGHTING2.filler = 0;
+	m_Packet.LIGHTING2.rssi = 12;
 
 	SetupDevices();
 }
@@ -347,10 +347,10 @@ void RelayNet::SetupDevices()
 	char szIdx[10];
 
 	sprintf(szIdx, "%X%02X%02X%02X",
-		Packet.LIGHTING2.id1,
-		Packet.LIGHTING2.id2,
-		Packet.LIGHTING2.id3,
-		Packet.LIGHTING2.id4);
+		m_Packet.LIGHTING2.id1,
+		m_Packet.LIGHTING2.id2,
+		m_Packet.LIGHTING2.id3,
+		m_Packet.LIGHTING2.id4);
 
 	if (m_relay_count)
 	{
@@ -497,10 +497,10 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 	char szIdx[10];
 
 	sprintf(szIdx, "%X%02X%02X%02X",
-		Packet.LIGHTING2.id1,
-		Packet.LIGHTING2.id2,
-		Packet.LIGHTING2.id3,
-		Packet.LIGHTING2.id4);
+		m_Packet.LIGHTING2.id1,
+		m_Packet.LIGHTING2.id2,
+		m_Packet.LIGHTING2.id3,
+		m_Packet.LIGHTING2.id4);
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, 100 + InputNumber);
 
@@ -524,19 +524,19 @@ void RelayNet::UpdateDomoticzInput(int InputNumber, bool State)
 	{
 		if (State)
 		{
-			Packet.LIGHTING2.cmnd = light2_sOn;
-			Packet.LIGHTING2.level = 100;
+			m_Packet.LIGHTING2.cmnd = light2_sOn;
+			m_Packet.LIGHTING2.level = 100;
 		}
 		else
 		{
-			Packet.LIGHTING2.cmnd = light2_sOff;
-			Packet.LIGHTING2.level = 0;
+			m_Packet.LIGHTING2.cmnd = light2_sOff;
+			m_Packet.LIGHTING2.level = 0;
 		}
-		Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
-		Packet.LIGHTING2.seqnbr++;
+		m_Packet.LIGHTING2.unitcode = 100 + (char) InputNumber;
+		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Input", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
 	}
 }
 
@@ -549,10 +549,10 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 	char szIdx[10];
 
 	sprintf(szIdx, "%X%02X%02X%02X",
-		Packet.LIGHTING2.id1,
-		Packet.LIGHTING2.id2,
-		Packet.LIGHTING2.id3,
-		Packet.LIGHTING2.id4);
+		m_Packet.LIGHTING2.id1,
+		m_Packet.LIGHTING2.id2,
+		m_Packet.LIGHTING2.id3,
+		m_Packet.LIGHTING2.id4);
 
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, RelayNumber);
 
@@ -576,19 +576,19 @@ void RelayNet::UpdateDomoticzRelay(int RelayNumber, bool State)
 	{
 		if (State)
 		{
-			Packet.LIGHTING2.cmnd = light2_sOn;
-			Packet.LIGHTING2.level = 100;
+			m_Packet.LIGHTING2.cmnd = light2_sOn;
+			m_Packet.LIGHTING2.level = 100;
 		}
 		else
 		{
-			Packet.LIGHTING2.cmnd = light2_sOff;
-			Packet.LIGHTING2.level = 0;
+			m_Packet.LIGHTING2.cmnd = light2_sOff;
+			m_Packet.LIGHTING2.level = 0;
 		}
-		Packet.LIGHTING2.unitcode = (char) RelayNumber;
-		Packet.LIGHTING2.seqnbr++;
+		m_Packet.LIGHTING2.unitcode = (char) RelayNumber;
+		m_Packet.LIGHTING2.seqnbr++;
 
 		/* send packet to Domoticz */
-		sDecodeRXMessage(this, (const unsigned char *)&Packet.LIGHTING2, "Relay", 255);
+		sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Relay", 255);
 	}
 }
 

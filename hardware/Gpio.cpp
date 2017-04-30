@@ -58,7 +58,8 @@ Connection information:
 #include "../main/SQLHelper.h"
 
 #define NO_INTERRUPT	-1
-#define MAX_GPIO	31
+#define MAX_GPIO		31
+#define	DELAYED_STARTUP_SECONDS 30
 
 bool m_bIsInitGPIOPins=false;
 bool interruptHigh[MAX_GPIO+1]={ false };
@@ -106,43 +107,6 @@ CGpio::CGpio(const int ID, const int debounce, const int period, const int polli
 
 CGpio::~CGpio(void)
 {
-}
-
- /*
-  * interrupt timer functions:
-	*********************************************************************************
-  */
-int getclock(struct timeval *tv) {
-#ifdef CLOCK_MONOTONIC
-	struct timespec ts;
-		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
-			tv->tv_sec = ts.tv_sec;
-			tv->tv_usec = ts.tv_nsec / 1000;
-			return 0;
-		}
-#endif
-	return gettimeofday(tv, NULL);
-}
-int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
-	/* Perform the carry for the later subtraction by updating y. */
-  if (x->tv_usec < y->tv_usec) {
-		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
-    y->tv_usec -= 1000000 * nsec;
-    y->tv_sec += nsec;
-  }
-  if (x->tv_usec - y->tv_usec > 1000000) {
-    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
-    y->tv_usec += 1000000 * nsec;
-    y->tv_sec -= nsec;
-  }
-
-  /* Compute the time remaining to wait.
-     tv_usec is certainly positive. */
-  result->tv_sec = x->tv_sec - y->tv_sec;
-  result->tv_usec = x->tv_usec - y->tv_usec;
-
-  /* Return 1 if result is negative. */
-  return x->tv_sec < y->tv_sec;
 }
 
 /*
@@ -228,6 +192,9 @@ bool CGpio::StartHardware()
 #endif
 	m_stoprequested=false;
 
+	//  Read all exported GPIO ports and set the device status accordingly.
+	UpdateDeviceStates(false);
+
 	//  Start worker thread that will be responsible for interrupt handling
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Do_Work, this)));
 
@@ -275,26 +242,7 @@ bool CGpio::StartHardware()
 		}
 	}
 
-	//  Read all exported GPIO ports and set the device status accordingly.
-	UpdateDeviceStates(false);
-
-	//  No need for delayed startup and force update when no masters are able to connect.
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
-	if (result.size()>0)
-	{
-		//  Wait 250 milli seconds to make sure all are set before initialising
-		//  the remainder of domoticz.
-		sleep_milliseconds(250);
-
-		//  Start thread to do a delayed setup of initial state
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::DelayedStartup, this)));
-	}
-
-	if (m_pollinterval > 0)
-	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
-	}
+	m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
 
 	_log.Log(LOG_NORM, "GPIO: WiringPi is now initialized");
 #endif
@@ -303,13 +251,18 @@ bool CGpio::StartHardware()
 	return (m_thread != NULL);
 }
 
-
 bool CGpio::StopHardware()
 {
+	m_stoprequested = true;
+
 	if (m_thread != NULL) {
-		m_stoprequested=true;
 		interruptCondition.notify_one();
 		m_thread->join();
+	}
+
+	if (m_thread_poller != NULL) 
+	{
+		m_thread_poller->join();
 	}
 
 	m_bIsStarted=false;
@@ -402,10 +355,10 @@ void CGpio::Do_Work()
 		mytime(&m_LastHeartbeat);
 
 #ifndef WIN32
-		
+
 		/* Interrupt handling */
-		boost::mutex::scoped_lock lock(interruptQueueMutex);	
-		if (interruptCondition.timed_wait(lock, duration)) 
+		boost::mutex::scoped_lock lock(interruptQueueMutex);
+		if (interruptCondition.timed_wait(lock, duration))
 		{
 			while (!gpioInterruptQueue.empty()) {
 				interruptNumber = gpioInterruptQueue.front();
@@ -437,26 +390,58 @@ void CGpio::Do_Work()
 void CGpio::Poller()
 {
 	//
-	//	This code has been added for robustness like for example when gpio is 
-	//	used in alarm systems. In case a state change event (interrupt) is 
+	//	This code has been added for robustness like for example when gpio is
+	//	used in alarm systems. In case a state change event (interrupt) is
 	//	missed this code will make up for it.
 	//
 	int sec_counter = 0;
+	bool delayed_startup = false;
 
-	_log.Log(LOG_STATUS, "GPIO: %d-second poller started", m_pollinterval);
+	std::vector<std::vector<std::string> > result = 
+		m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
+	if (result.size() > 0)
+	{
+		delayed_startup = true;
+	}
+
+	if (m_pollinterval)
+	{
+		_log.Log(LOG_STATUS, "GPIO: %d-second poller started", m_pollinterval);
+	}
 
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
 
-		if ((sec_counter % m_pollinterval == 0) && (!m_stoprequested))
+		if (m_stoprequested)
 		{
-			UpdateDeviceStates(false);
+			break;
+		}
+
+		if (delayed_startup && (sec_counter == DELAYED_STARTUP_SECONDS))
+		{
+			_log.Log(LOG_NORM, "GPIO: Update Master Domoticz GPIO status");
+			UpdateDeviceStates(true);
+
+			if (m_pollinterval == 0)
+			{
+				break;
+			}
+		}
+		else
+		{
+			if ((m_pollinterval > 0) && (sec_counter % m_pollinterval == 0))
+			{
+				UpdateDeviceStates(false);
+			}
 		}
 	}
 
-	_log.Log(LOG_STATUS, "GPIO: %d-second poller stopped", m_pollinterval);
+	if (m_pollinterval)
+	{
+		_log.Log(LOG_STATUS, "GPIO: %d-second poller stopped", m_pollinterval);
+	}
 }
 
 /*
@@ -644,22 +629,6 @@ CGpioPin* CGpio::GetPPinById(int id)
 		}
 	}
 	return NULL;
-}
-
-void CGpio::DelayedStartup()
-{
-	//
-	//	This runs to better support Raspberry Pi as domoticz slave device.
-	//
-	//  Delay 30 seconds to make sure master domoticz has connected. Then
-	//	copy the GPIO ports states to the switches one more time so the
-	//	master will see the actual states also after it has connected.
-	//
-	sleep_milliseconds(30000);
-	_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
-	UpdateDeviceStates(true);
-
-	// _log.Log(LOG_NORM, "GPIO: DelayedStartup - done");
 }
 
 void CGpio::UpdateDeviceStates(bool forceUpdate)
