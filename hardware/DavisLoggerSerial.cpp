@@ -19,8 +19,8 @@
 	//#define DEBUG_DAVIS
 #endif
 
-#define RETRY_DELAY 15
-#define DAVIS_READ_INTERVAL 4
+#define RETRY_DELAY 30
+#define DAVIS_READ_INTERVAL 30
 
 #define round(a) ( int ) ( a + .5 )
 
