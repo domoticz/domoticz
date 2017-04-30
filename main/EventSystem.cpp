@@ -2199,6 +2199,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
+bool PythonEventsInitalized = false;
 
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
@@ -2211,16 +2212,24 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
-	std::stringstream python_DirT;
-
-#ifdef WIN32
-	python_DirT << szUserDataFolder << "scripts\\python\\";
-#else
-	python_DirT << szUserDataFolder << "scripts/python/";
-#endif
-	std::string python_Dir = python_DirT.str();
+    std::string ssPath;
 
    if (Plugins::Py_IsInitialized()) {
+
+       if (!PythonEventsInitalized) {
+            #ifdef WIN32
+                ssPath  = szUserDataFolder + "scripts\\python\\;";
+            #else
+                ssPath  = szUserDataFolder + "scripts/python/:";
+            #endif
+
+            std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
+
+            sPath += Plugins::Py_GetPath();
+    		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
+
+            PythonEventsInitalized = true;
+       }
 
        PyObject* pModule = Plugins::GetEventModule();
        if (pModule) {
@@ -2252,7 +2261,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            }
 
            // Mutex
-           // boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+           boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
            typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
            for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2295,7 +2304,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                Py_DECREF(aDevice);
                Py_DECREF(pKey);
            }
-           // devicestatesMutexLock1.unlock();
+           devicestatesMutexLock1.unlock();
 
            // Time related
 
@@ -2353,7 +2362,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            }
            Py_DECREF(m_uservariablesDict);
 
-           // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock1 (m_uservariablesMutex);
+           // This doesn't work
+           // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
 
            typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
            for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
@@ -2361,7 +2371,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(), Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
            }
 
-           // uservariablesMutexLock1.unlock();
+           // uservariablesMutexLock2.unlock();
 
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
 
