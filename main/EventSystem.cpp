@@ -2198,7 +2198,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
-bool PythonEventsInitalized = false;
+int PythonEventsInitalized = 0;
 
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
@@ -2211,11 +2211,21 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
-    std::string ssPath;
+    if (PythonEventsInitalized == -1) {
+        // Failed to load library
+        return;
+    }
+
+    if (!Plugins::Py_LoadLibrary())
+    {
+        _log.Log(LOG_STATUS, "EventSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+        PythonEventsInitalized = -1;
+        return;
+    }
 
    if (Plugins::Py_IsInitialized()) {
-
-       if (!PythonEventsInitalized) {
+       if (PythonEventsInitalized==0) {
+           std::string ssPath;
             #ifdef WIN32
                 ssPath  = szUserDataFolder + "scripts\\python\\;";
             #else
@@ -2227,7 +2237,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
             sPath += Plugins::Py_GetPath();
     		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
 
-            PythonEventsInitalized = true;
+            PythonEventsInitalized = 1;
        }
 
        PyObject* pModule = Plugins::GetEventModule();
