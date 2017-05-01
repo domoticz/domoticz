@@ -35,6 +35,7 @@ extern "C" {
 #ifdef ENABLE_PYTHON
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
+extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 
@@ -44,8 +45,6 @@ using namespace boost::python;
 #endif
 
 extern std::string szUserDataFolder;
-
-extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
 CEventSystem::CEventSystem(void)
 {
@@ -2199,7 +2198,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
 
-bool PythonEventsInitalized = false;
+int PythonEventsInitalized = 0;
 
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
@@ -2212,11 +2211,21 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
-    std::string ssPath;
+    if (PythonEventsInitalized == -1) {
+        // Failed to load library
+        return;
+    }
+
+    if (!Plugins::Py_LoadLibrary())
+    {
+        _log.Log(LOG_STATUS, "EventSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+        PythonEventsInitalized = -1;
+        return;
+    }
 
    if (Plugins::Py_IsInitialized()) {
-
-       if (!PythonEventsInitalized) {
+       if (PythonEventsInitalized==0) {
+           std::string ssPath;
             #ifdef WIN32
                 ssPath  = szUserDataFolder + "scripts\\python\\;";
             #else
@@ -2228,7 +2237,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
             sPath += Plugins::Py_GetPath();
     		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
 
-            PythonEventsInitalized = true;
+            PythonEventsInitalized = 1;
        }
 
        PyObject* pModule = Plugins::GetEventModule();
@@ -2329,28 +2338,26 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
            }
 
-           PyObject* dayTimeBool = Py_False;
-           PyObject* nightTimeBool = Py_False;
+           //PyObject* dayTimeBool = Py_False;
+           //PyObject* nightTimeBool = Py_False;
+
+           bool isDaytime = false;
+           bool isNightime = false;
 
            if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-               dayTimeBool = Py_True;
+               isDaytime = true;
            }
            else {
-               nightTimeBool = Py_True;
+               isNightime = true;
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", (PyObject*)dayTimeBool) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", PyBool_FromLong(isDaytime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", (PyObject*)nightTimeBool) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", PyBool_FromLong(isNightime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
-
-
-           Py_DECREF(dayTimeBool);
-           Py_DECREF(nightTimeBool);
-
 
            // UserVariables
            PyObject* m_uservariablesDict = Plugins::PyDict_New();
@@ -3248,6 +3255,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
 
+		int devType = atoi(dtype.c_str());
+		int subType = atoi(dsubtype.c_str());
+
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -3255,16 +3265,14 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		char szLastUpdate[40];
 		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
+//		m_mainworker.UpdateDevice(atoi(hid.c_str()), did, atoi(dunit.c_str()), devType, subType, atoi(nvalue.c_str()), svalue, 12, 255, true);
+
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
 			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
-
 
 		uint64_t ulIdx = 0;
 		std::stringstream s_str(idx);
 		s_str >> ulIdx;
-
-		int devType = atoi(dtype.c_str());
-		int subType = atoi(dsubtype.c_str());
 
 		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
