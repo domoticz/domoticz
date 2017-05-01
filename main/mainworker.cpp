@@ -12648,7 +12648,8 @@ void MainWorker::HandleLogNotifications()
 	else
 	{
 		itt = _loglines.begin();
-		sTopic = "Domoticz: " + itt->logmessage;
+		sTopic = "Domoticz: Error received";
+		sstr << "The following error is received:<br><br>";
 	}
 
 	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
