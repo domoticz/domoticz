@@ -1,0 +1,26 @@
+/*  This moves the Sun-up and sun-down indicator to the footer. */
+
+#timesun {
+    display:inline-block;
+    height:0!important;
+}
+
+#timesun div {
+    color:#aaa;
+    z-index:100;
+    position:absolute;
+    left:20px;
+    bottom:0;
+}
+
+
+@media only screen and (max-width: 640px) {
+    #timesun div {display:none}
+    }
+
+
+
+/*  is this part of it?  s*/
+#dashcontent > table:first-of-type{
+    /*display:none;*/
+}

@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 //
-//	MultiChannelAssociation.h
+//	MultiInstanceAssociation.h
 //
-//	Implementation of the Z-Wave COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION
+//	Implementation of the Z-Wave COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION
 //
 //	Copyright (c) 2010 Mal Lansell <openzwave@lansell.org>
 //
@@ -25,8 +25,8 @@
 //
 //-----------------------------------------------------------------------------
 
-#ifndef _MultiChannelAssociation_H
-#define _MultiChannelAssociation_H
+#ifndef _MultiInstanceAssociation_H
+#define _MultiInstanceAssociation_H
 
 #include <vector>
 #include "Group.h"
@@ -34,18 +34,18 @@
 
 namespace OpenZWave
 {
-	/** \brief Implements COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION (0x8E), a Z-Wave device command class.
+	/** \brief Implements COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION (0x8E), a Z-Wave device command class.
 	 */
-	class MultiChannelAssociation: public CommandClass
+	class MultiInstanceAssociation: public CommandClass
 	{
 		friend class Group;
 		
 	public:
-		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new MultiChannelAssociation( _homeId, _nodeId ); }
-		virtual ~MultiChannelAssociation(){}
+		static CommandClass* Create( uint32 const _homeId, uint8 const _nodeId ){ return new MultiInstanceAssociation( _homeId, _nodeId ); }
+		virtual ~MultiInstanceAssociation(){}
 
 		static uint8 const StaticGetCommandClassId(){ return 0x8e; }		
-		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION"; }
+		static string const StaticGetCommandClassName(){ return "COMMAND_CLASS_MULTI_INSTANCE_ASSOCIATION"; }
 
 		// From CommandClass
 		virtual void ReadXML( TiXmlElement const* _ccElement );
@@ -61,7 +61,7 @@ namespace OpenZWave
 		void Remove( uint8 const _group, uint8 const _nodeId, uint8 const _instance );
 
 	private:
-		MultiChannelAssociation( uint32 const _homeId, uint8 const _nodeId );
+		MultiInstanceAssociation( uint32 const _homeId, uint8 const _nodeId );
 		void QueryGroup( uint8 _groupIdx, uint32 const _requestFlags );
 		void AutoAssociate();
 
