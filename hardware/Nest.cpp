@@ -16,6 +16,7 @@ const std::string NEST_LOGIN_PATH = "https://home.nest.com/user/login";
 const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";
 const std::string NEST_SET_STRUCTURE = "/v2/put/structure.";
+const std::string NEST_SET_DEVICE = "/v2/put/device.";
 
 #ifdef _DEBUG
 	//#define DEBUG_NextThermostatR
@@ -273,6 +274,12 @@ bool CNest::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		//Away
 		return SetAway(node_id, bIsOn);
+	}
+
+	if (node_id % 4 == 0)
+	{
+		//Manual Eco Mode
+		return SetManualEcoMode(node_id, bIsOn);
 	}
 
 	return false;
@@ -631,6 +638,15 @@ void CNest::GetMeterDetails()
 				bool bIsAway = nstructure["away"].asBool();
 				SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, Name + " Away");
 			}
+
+			//Manual Eco mode
+			if (!ndevice["eco"]["mode"].empty())
+			{
+				std::string sCurrentHvacMode = ndevice["eco"]["mode"].asString();
+				bool bIsManualEcoMode = (sCurrentHvacMode == "manual-eco");
+				SendSwitch((iThermostat * 3) + 4, 1, 255, bIsManualEcoMode, 0, Name + " Manual Eco Mode");
+			}
+
 			iThermostat++;
 		}
 	}
@@ -717,6 +733,51 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting away mode!");
+		m_bDoLogin = true;
+		return false;
+	}
+	return true;
+}
+
+bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMode)
+{
+	if (m_UserName.size() == 0)
+		return false;
+	if (m_Password.size() == 0)
+		return false;
+
+	if (m_bDoLogin == true)
+	{
+		if (!Login())
+			return false;
+	}
+
+	size_t iThermostat = (Idx - 4) / 3;
+	if (iThermostat > m_thermostats.size())
+		return false;
+
+	std::vector<std::string> ExtraHeaders;
+
+	ExtraHeaders.push_back("user-agent:Nest/1.1.0.10 CFNetwork/548.0.4");
+	ExtraHeaders.push_back("Authorization:Basic " + m_AccessToken);
+	ExtraHeaders.push_back("X-nl-protocol-version:1");
+
+	Json::Value root;
+	Json::Value eco;
+
+	eco["mode"] = (bIsManualEcoMode ? "manual-eco" : "schedule");
+	root["eco"] = eco;
+
+	std::string sResult;
+
+	// If thermostat information has not yet been read we can't do anything so let's fail.
+	if (m_thermostats[iThermostat].Serial.empty())
+		return false;
+
+	std::string sURL = m_TransportURL + NEST_SET_DEVICE + m_thermostats[iThermostat].Serial;
+	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "Nest: Error setting manual eco mode!");
 		m_bDoLogin = true;
 		return false;
 	}
