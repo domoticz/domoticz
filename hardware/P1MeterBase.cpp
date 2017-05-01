@@ -208,7 +208,7 @@ bool P1MeterBase::MatchLine()
 					localtime_r(&atime, &tma);
 					// ...but don't accept new values in the last four minutes of the hour
 					// to correct for possible (hasty) clock skew in the gas meter.
-					if (tma.min<56){
+					if (tma.tm_min<56){
 						m_lastSharedSendGas=atime;
 						m_lastgasusage=m_p1gas.gasusage;
 						sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
