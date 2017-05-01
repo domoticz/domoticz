@@ -204,9 +204,15 @@ bool P1MeterBase::MatchLine()
 					)
 				{
 					//only update gas when there is a new value, or 5 minutes are passed
-					m_lastSharedSendGas=atime;
-					m_lastgasusage=m_p1gas.gasusage;
-					sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+					struct tm tma;
+					localtime_r(&atime, &tma)
+					// ...but don't accept new values in the last four minutes of the hour
+					// to correct for possible (hasty) clock skew in the gas meter.
+					if (tma.min<56){
+						m_lastSharedSendGas=atime;
+						m_lastgasusage=m_p1gas.gasusage;
+						sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+					}
 				}
 			}
 			m_linecount=0;
