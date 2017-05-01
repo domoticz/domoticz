@@ -205,7 +205,7 @@ bool P1MeterBase::MatchLine()
 				{
 					//only update gas when there is a new value, or 5 minutes are passed
 					struct tm tma;
-					localtime_r(&atime, &tma)
+					localtime_r(&atime, &tma);
 					// ...but don't accept new values in the last four minutes of the hour
 					// to correct for possible (hasty) clock skew in the gas meter.
 					if (tma.min<56){
