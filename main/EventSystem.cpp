@@ -2351,11 +2351,11 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
                isNightime = true;
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", PyBool_FromLong(isDaytime)) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", Plugins::PyBool_FromLong(isDaytime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
 
-           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", PyBool_FromLong(isNightime)) == -1) {
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", Plugins::PyBool_FromLong(isNightime)) == -1) {
                _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
            }
 
@@ -2383,7 +2383,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
            FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
 
             // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-            PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+            Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
 
         	if (PythonScriptFile!=NULL)
         		fclose(PythonScriptFile);

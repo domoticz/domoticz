@@ -255,9 +255,30 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					//					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
 					{
-						bIos_required = true;
+						//						bIos_required = true;
+						break;
+					}
+				}
+
+				if (bIos_required)
+				{
+					ios.reset();
+					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
+					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				}
+			}
+
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
+			{
+				bool bIos_required = false;
+				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
+				{
+					CPlugin*	pPlugin = (CPlugin*)itt->second;
+//					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					{
+//						bIos_required = true;
 						break;
 					}
 				}
@@ -386,7 +407,7 @@ namespace http {
 				XmlDoc.Parse(it_type->second.c_str());
 				if (XmlDoc.Error())
 				{
-					_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+					_log.Log(LOG_ERROR, "%s: Parsing '%s', '%s' at line %d column %d in XML '%s'.", __func__, it_type->first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
 				}
 				else
 				{

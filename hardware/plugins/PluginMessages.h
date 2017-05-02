@@ -56,6 +56,21 @@ namespace Plugins {
 		};
 	};
 
+	// Handles lifecycle management of the Python Connection object
+	class CHasConnection
+	{
+	public:
+		CHasConnection(PyObject* Connection) : m_pConnection(Connection)
+		{
+			Py_XINCREF(m_pConnection);
+		};
+		~CHasConnection()
+		{
+			Py_XDECREF(m_pConnection);
+		}
+		PyObject*	m_pConnection;
+	};
+
 	class InitializeMessage : public CPluginMessage
 	{
 	public:
@@ -68,11 +83,11 @@ namespace Plugins {
 		StartMessage(int HwdID) : CPluginMessage(PMT_Start, HwdID) {};
 	};
 
-	class ConnectedMessage : public CPluginMessage
+	class ConnectedMessage : public CPluginMessage, public CHasConnection
 	{
 	public:
-		ConnectedMessage(int HwdID) : CPluginMessage(PMT_Connected, HwdID) {};
-		ConnectedMessage(int HwdID, const int Code, const std::string Text) : CPluginMessage(PMT_Connected, HwdID)
+		ConnectedMessage(int HwdID, PyObject* Connection) : CPluginMessage(PMT_Connected, HwdID), CHasConnection(Connection) {};
+		ConnectedMessage(int HwdID, PyObject* Connection, const int Code, const std::string Text) : CPluginMessage(PMT_Connected, HwdID), CHasConnection(Connection)
 		{
 			m_Status = Code;
 			m_Text = Text;
@@ -81,10 +96,10 @@ namespace Plugins {
 		std::string				m_Text;
 	};
 
-	class ReadMessage : public CPluginMessage
+	class ReadMessage : public CPluginMessage, public CHasConnection
 	{
 	public:
-		ReadMessage(int HwdID, const int ByteCount, const unsigned char* Data) : CPluginMessage(PMT_Read, HwdID)
+		ReadMessage(int HwdID, PyObject* Connection, const int ByteCount, const unsigned char* Data) : CPluginMessage(PMT_Read, HwdID), CHasConnection(Connection)
 		{
 			m_Buffer.reserve(ByteCount);
 			m_Buffer.assign(Data, Data + ByteCount);
@@ -98,10 +113,10 @@ namespace Plugins {
 		HeartbeatMessage(int HwdID) : CPluginMessage(PMT_Heartbeat, HwdID) {};
 	};
 
-	class DisconnectMessage : public CPluginMessage
+	class DisconnectMessage : public CPluginMessage, public CHasConnection
 	{
 	public:
-		DisconnectMessage(int HwdID) : CPluginMessage(PMT_Disconnect, HwdID) {};
+		DisconnectMessage(int HwdID, PyObject* Connection) : CPluginMessage(PMT_Disconnect, HwdID), CHasConnection(Connection) {};
 	};
 
 	class CommandMessage : public CPluginMessage
@@ -129,19 +144,19 @@ namespace Plugins {
 		float					m_fLevel;
 	};
 
-	class ReceivedMessage : public CPluginMessage
+	class ReceivedMessage : public CPluginMessage, public CHasConnection
 	{
 	public:
-		ReceivedMessage(int HwdID, const std::string& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(int HwdID, PyObject* Connection, const std::string& Buffer) : CPluginMessage(PMT_Message, HwdID), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
 		{
 			m_Buffer.reserve(Buffer.length());
 			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
 		};
-		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(int HwdID, PyObject* Connection, const std::vector<byte>& Buffer) : CPluginMessage(PMT_Message, HwdID), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
 		{
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CPluginMessage(PMT_Message, HwdID)
+		ReceivedMessage(int HwdID, PyObject* Connection, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CPluginMessage(PMT_Message, HwdID), CHasConnection(Connection)
 		{
 			m_Buffer = Buffer;
 			m_Status = Status;
@@ -195,28 +210,29 @@ namespace Plugins {
 		CDirectiveMessage(ePluginDirectiveType dType, int HwdID) : CPluginMessage(PMT_Directive, dType, HwdID) {};
 	};
 
-	class SettingsDirective : public CDirectiveMessage
+	class ProtocolDirective : public CDirectiveMessage, public CHasConnection
 	{
 	public:
-		SettingsDirective(int HwdID) : CDirectiveMessage(PDT_Settings, HwdID) {};
+		ProtocolDirective(int HwdID, PyObject* Connection) : CDirectiveMessage(PDT_Protocol, HwdID), CHasConnection(Connection) {};
 	};
 
-	class ConnectDirective : public CDirectiveMessage
+	class ConnectDirective : public CDirectiveMessage, public CHasConnection
 	{
 	public:
-		ConnectDirective(int HwdID) : CDirectiveMessage(PDT_Connect, HwdID) {};
+		ConnectDirective(int HwdID, PyObject* Connection) : CDirectiveMessage(PDT_Connect, HwdID), CHasConnection(Connection) {};
 	};
 
-	class DisconnectDirective : public CDirectiveMessage
+	class DisconnectDirective : public CDirectiveMessage, public CHasConnection
 	{
 	public:
-		DisconnectDirective(int HwdID) : CDirectiveMessage(PDT_Disconnect, HwdID) {};
+		DisconnectDirective(int HwdID, PyObject* Connection) : CDirectiveMessage(PDT_Disconnect, HwdID), CHasConnection(Connection) {};
 	};
 
-	class WriteDirective : public CDirectiveMessage
+	class WriteDirective : public CDirectiveMessage, public CHasConnection
 	{
 	public:
-		WriteDirective(int HwdID, const Py_buffer* Buffer, const char* URL, const char* Verb, PyObject*	pHeaders, const int Delay) : CDirectiveMessage(PDT_Write, HwdID)
+		WriteDirective(int HwdID, PyObject* Connection, const Py_buffer* Buffer, const char* URL, const char* Verb, PyObject*	pHeaders, const int Delay) : 
+				CDirectiveMessage(PDT_Write, HwdID), CHasConnection(Connection)
 		{
 			if (Buffer)
 			{
@@ -240,14 +256,10 @@ namespace Plugins {
 		PyObject*				m_Object;
 	};
 
-	class ProtocolDirective : public CDirectiveMessage
+	class SettingsDirective : public CDirectiveMessage
 	{
 	public:
-		ProtocolDirective(int HwdID, const char* Protocol) : CDirectiveMessage(PDT_Protocol, HwdID)
-		{
-			m_Protocol = Protocol;
-		};
-		std::string		m_Protocol;
+		SettingsDirective(int HwdID) : CDirectiveMessage(PDT_Settings, HwdID) {};
 	};
 
 	class PollIntervalDirective : public CDirectiveMessage
@@ -270,20 +282,5 @@ namespace Plugins {
 		std::string		m_Name;
 	};
 
-	class TransportDirective : public CDirectiveMessage
-	{
-	public:
-		TransportDirective(int HwdID, const char* Transport, const char* Address, const char* Port, int Baud) : CDirectiveMessage(PDT_Transport, HwdID)
-		{
-			m_Transport = Transport;
-			m_Address = Address;
-			if (Port) m_Port = Port;
-			m_Baud = Baud;
-		};
-		std::string				m_Transport;
-		std::string				m_Address;
-		std::string				m_Port;
-		int						m_Baud;
-	};
 }
 
