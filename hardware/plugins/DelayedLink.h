@@ -96,6 +96,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyBool_FromLong, long);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -185,6 +186,7 @@ namespace Plugins {
 #ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
+					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -337,4 +339,5 @@ extern	SharedLibraryProxy* pythonLib;
 
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
 #define _Py_NoneStruct			pythonLib->_Py_NoneStruct
+#define PyBool_FromLong			pythonLib->PyBool_FromLong
 }
