@@ -10,9 +10,8 @@ typedef unsigned char byte;
 namespace Plugins {
 
 	class CPluginMessage;
-	class CPluginProtocol;
-	class CPluginTransport;
 	class CPluginNotifier;
+	class CPluginTransport;
 
 	class CPlugin : public CDomoticzHardwareBase
 	{
@@ -22,12 +21,11 @@ namespace Plugins {
 		void*			m_PyInterpreter;
 		void*			m_PyModule;
 
-		std::string		m_Username;
-		std::string		m_Password;
 		std::string		m_Version;
 		std::string		m_Author;
 
 		CPluginNotifier*	m_Notifier;
+		std::vector<CPluginTransport*>	m_Transports;
 
 		boost::shared_ptr<boost::thread> m_thread;
 
@@ -53,8 +51,8 @@ namespace Plugins {
 		void SendCommand(const int Unit, const std::string &command, const float level);
 
 		std::string			m_PluginKey;
-		CPluginProtocol*	m_pProtocol;
-		CPluginTransport*	m_pTransport;
+		std::string			m_Username;
+		std::string			m_Password;
 		void*				m_DeviceDict;
 		void*				m_ImageDict;
 		void*				m_SettingsDict;

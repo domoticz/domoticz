@@ -85,7 +85,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;USE_PYTHON_PLUGINS;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;USE_PYTHON_PLUGINS;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_63_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -438,6 +438,7 @@
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
+    <ClInclude Include="..\hardware\SysfsGPIO.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
     <ClInclude Include="..\hardware\HEOS.h" />
     <ClInclude Include="..\hardware\HttpPoller.h" />
@@ -679,6 +680,7 @@
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
+    <ClCompile Include="..\hardware\SysfsGPIO.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
     <ClCompile Include="..\hardware\HEOS.cpp" />
     <ClCompile Include="..\hardware\HttpPoller.cpp" />

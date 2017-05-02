@@ -68,7 +68,7 @@
 		</Value>
 
 		<Value type="byte" genre="config" instance="1" index="14" label="Associations in Z-Wave network security mode" min="0" max="15" value="0" size="1">
-			<Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It doesnt apply to 1st Lifeline group.
+			<Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It doesn't apply to 1st Lifeline group.
 				Available settings: 0 - 15
 				0 - all groups sent as non-secure
 				1 - 2nd group sent as secure

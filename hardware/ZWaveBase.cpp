@@ -697,7 +697,9 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
-		SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendRainSensor(NodeID, BatLevel, pDevice->floatValue*1000.0f, "Water");
+		//SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{
@@ -763,6 +765,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		char szTmp[100];
 		sprintf(szTmp, "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice, szTmp, BatLevel);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_CUSTOM)
+	{
+		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, pDevice->label, pDevice->custom_label);
 	}
 }
 

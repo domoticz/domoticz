@@ -38,11 +38,12 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 
 public:
-	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username);
+	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll);
 	~CPhilipsHue(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
+	int m_poll_interval;
 	std::string m_IPAddress;
 	unsigned short m_Port;
 	std::string m_UserName;
