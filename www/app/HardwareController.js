@@ -1374,6 +1374,7 @@ define(['app'], function (app) {
             }
             else if (
 				(text.indexOf("Domoticz") >= 0) ||
+				(text.indexOf("Eco Devices") >= 0) ||
 				(text.indexOf("ETH8020") >= 0) ||
 				(text.indexOf("Daikin") >= 0) ||
 				(text.indexOf("Sterbox") >= 0) ||
@@ -1413,6 +1414,16 @@ define(['app'], function (app) {
                 else if (text.indexOf("MQTT") >= 0) {
                     extra = encodeURIComponent($("#hardwarecontent #divmqtt #filename").val());
                     mode1 = $("#hardwarecontent #divmqtt #combotopicselect").val();
+                }
+                if (text.indexOf("Eco Devices") >= 0)
+                {
+                    Mode1 = $("#hardwarecontent #divmodelecodevices #combomodelecodevices option:selected").val();
+                    var ratelimitp1=$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if (ratelimitp1=="")
+                    {
+                        ratelimitp1 = "60";
+                    }
+                    Mode2 = ratelimitp1;
                 }
                 $.ajax({
                      url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&address=" + address + "&port=" + port + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&extra=" + encodeURIComponent(extra) + "&mode1=" + mode1,

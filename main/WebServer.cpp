@@ -1082,6 +1082,12 @@ namespace http {
 				//USB/System
 				if (sport.empty())
 					return; //need to have a serial port
+
+                                if (htype == HTYPE_TeleinfoMeter) {
+                                        // Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
+                                        // Domoticz instance are very low as both are national standards (NL and FR)
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+                                }		
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -1106,6 +1112,11 @@ namespace http {
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
+                                if (htype == HTYPE_ECODEVICES) {
+                                        // EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
+                                        // Domoticz instance are very low as both are national standards (NL and FR)
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+                                }
 			}
 			else if (htype == HTYPE_DomoticzInternal)	{
 				// DomoticzInternal cannot be added manually
