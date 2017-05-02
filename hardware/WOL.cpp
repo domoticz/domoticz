@@ -7,7 +7,7 @@
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../webserver/cWebem.h"
-#include "../json/json.h"
+#include "../main/json.h"
 
 CWOL::CWOL(const int ID, const std::string &BroadcastAddress, const unsigned short Port):
 m_broadcast_address(BroadcastAddress)

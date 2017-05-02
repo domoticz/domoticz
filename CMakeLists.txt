@@ -40,6 +40,28 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
+option(USE_BUILTIN_JSONCPP "Use builtin JsonCPP" YES)
+IF(USE_BUILTIN_JSONCPP)
+  MESSAGE(STATUS "Using builtin JsonCPP")
+  set (domoticz_jsoncpp_SRCS 
+       json/json_reader.cpp
+       json/json_value.cpp
+       json/json_writer.cpp
+      )
+ELSE(USE_BUILTIN_JSONCPP)
+  MESSAGE(STATUS "Using external JsonCPP")
+  find_package(PkgConfig)
+  pkg_check_modules(JSONCPP jsoncpp)
+  IF(JSONCPP_FOUND)
+    INCLUDE_DIRECTORIES(${JSONCPP_INCLUDE_DIRS})
+    add_definitions(-DWITH_EXTERNAL_JSONCPP)
+    link_directories(${JSONCPP_LIBRARY_DIRS})
+    MESSAGE(STATUS "JsonCPP Found at ${JSONCPP_INCLUDE_DIRS} and ${JSONCPP_LIBRARY_DIRS}")
+  ELSE(JSONCPP_FOUND)
+    MESSAGE(FATAL_ERROR "JsonCPP not found but USE_BUILTIN_LUA=NO")
+  ENDIF(JSONCPP_FOUND)
+ENDIF(USE_BUILTIN_JSONCPP)
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -438,9 +460,6 @@ webserver/request_parser.cpp
 webserver/server.cpp
 webserver/proxycommon.cpp
 webserver/proxyclient.cpp
-json/json_reader.cpp
-json/json_value.cpp
-json/json_writer.cpp
 tinyxpath/action_store.cpp
 tinyxpath/htmlutil.cpp
 tinyxpath/lex_util.cpp
@@ -458,7 +477,7 @@ tinyxpath/xpath_stack.cpp
 tinyxpath/xpath_static.cpp
 tinyxpath/xpath_syntax.cpp
 )
-add_executable(domoticz ${domoticz_SRCS})
+add_executable(domoticz ${domoticz_SRCS} ${domoticz_jsoncpp_SRCS})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
@@ -680,9 +699,9 @@ else()
 endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${JSONCPP_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES} ${JSONCPP_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
