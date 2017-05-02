@@ -94,7 +94,7 @@
 
             _log.Log(LOG_STATUS, "Python EventSystem: Initalizing event module.");
 
-            PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);            
+            PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
             return pModule;
         }
 
@@ -106,7 +106,7 @@
                 return pModule;
             } else {
                 _log.Log(LOG_STATUS, "Python EventSystem: Module not found - Trying to initialize.");
-                PyRun_SimpleString("import DomoticzEvents");
+                Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", NULL);
                 pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
                 if (pModule) {

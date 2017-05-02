@@ -12,9 +12,15 @@
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "PythonObjects.h"
+#include "PluginMessages.h"
+#include "PluginProtocols.h"
+#include "PluginTransports.h"
 
 namespace Plugins {
 
+	extern boost::mutex PluginMutex;	// controls accessto the message queue
+	extern std::queue<CPluginMessage*>	PluginMessageQueue;
+	extern boost::asio::io_service ios;
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
 
@@ -868,7 +874,7 @@ namespace Plugins {
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
 		return pRetVal;
 	}
-
+/*
 	static PyModuleDef CDevice_module = {
 		PyModuleDef_HEAD_INIT,
 		"Device",
@@ -876,5 +882,280 @@ namespace Plugins {
 		-1,
 		NULL, NULL, NULL, NULL, NULL
 	};
+*/
+	void CConnection_dealloc(CConnection * self)
+	{
+		if (self->pPlugin->m_bDebug)
+		{
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object to %s:%s.", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+		}
+
+		Py_XDECREF(self->Address);
+		Py_XDECREF(self->Port);
+		Py_XDECREF(self->LastSeen);
+		Py_XDECREF(self->Transport);
+		Py_XDECREF(self->Protocol);
+
+		if (self->pTransport)
+		{
+			delete self->pTransport;
+			self->pTransport = NULL;
+		}
+		if (self->pProtocol)
+		{
+			delete self->pProtocol;
+			self->pProtocol = NULL;
+		}
+
+		Py_TYPE(self)->tp_free((PyObject*)self);
+	}
+
+	PyObject * CConnection_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
+	{
+		CConnection *self = (CConnection *)type->tp_alloc(type, 0);
+
+		try
+		{
+			if (self == NULL) {
+				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
+			}
+			else {
+				self->Address = PyUnicode_FromString("");
+				if (self->Address == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Port = PyUnicode_FromString("");
+				if (self->Port == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->LastSeen = PyUnicode_FromString("");
+				if (self->LastSeen == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Transport = PyUnicode_FromString("");
+				if (self->Transport == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Protocol = PyUnicode_FromString("");
+				if (self->Protocol == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->pPlugin = NULL;
+				self->pTransport = NULL;
+				self->pProtocol = NULL;
+			}
+		}
+		catch (std::exception e)
+		{
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+		}
+
+		return (PyObject *)self;
+	}
+
+	int CConnection_init(CConnection * self, PyObject * args, PyObject * kwds)
+	{
+		char*		pTransport = NULL;
+		char*		pProtocol = NULL;
+		char*		pAddress = NULL;
+		char*		pPort = NULL;
+		int			iBaud = -1;
+		static char *kwlist[] = { "Transport", "Protocol", "Address", "Port", "Baud", NULL };
+
+		try
+		{
+			PyObject*	pModule = PyState_FindModule(&DomoticzModuleDef);
+			if (!pModule)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, unable to find module for current interpreter.", __func__);
+				return 0;
+			}
+
+			module_state*	pModState = ((struct module_state*)PyModule_GetState(pModule));
+			if (!pModState)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
+				return 0;
+			}
+
+			if (!pModState->pPlugin)
+			{
+				_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+				return 0;
+			}
+
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|ssi", kwlist, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			{
+				self->pPlugin = pModState->pPlugin;
+				if (pAddress) {
+					Py_XDECREF(self->Address);
+					self->Address = PyUnicode_FromString(pAddress);
+				}
+				if (pPort) {
+					Py_XDECREF(self->Port);
+					self->Port = PyUnicode_FromString(pPort);
+				}
+				if (iBaud) self->Baud = iBaud;
+				if (pTransport)
+				{
+					Py_XDECREF(self->Transport);
+					self->Transport = PyUnicode_FromString(pTransport);
+				}
+				if (pProtocol)
+				{
+					Py_XDECREF(self->Protocol);
+					self->Protocol = PyUnicode_FromString(pProtocol);
+					ProtocolDirective*	Message = new ProtocolDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+			}
+			else
+			{
+				CPlugin* pPlugin = NULL;
+				if (pModState) pPlugin = pModState->pPlugin;
+				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Connection(Transport=\"<Transport>\", Protocol=\"<Protocol>\", Address=\"<IP-Address>\", Port=\"<Port>\", Baud=0)");
+				LogPythonException(pPlugin, __func__);
+			}
+		}
+		catch (std::exception e)
+		{
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
+		}
+
+		return 0;
+	}
+
+	PyObject * CConnection_connect(CConnection * self)
+	{
+		if (!self->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			//	Add connect command to message queue unless already connected
+			if (self->pPlugin->m_stoprequested)
+			{
+				_log.Log(LOG_NORM, "%s, connection request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+			}
+			else
+				if ((self->pTransport) && (!self->pTransport->IsConnected()))
+				{
+					_log.Log(LOG_ERROR, "%s, connection request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
+				}
+				else
+				{
+					ConnectDirective*	Message = new ConnectDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
+	PyObject * CConnection_listen(CConnection * self)
+	{
+		return nullptr;
+	}
+
+	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
+	{
+		if (!self->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else if (self->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+		}
+		else
+		{
+			Py_buffer	PyBuffer;
+			char*		szMessage = NULL;
+			char*		szVerb = NULL;
+			char*		szURL = NULL;
+			PyObject*	pHeaders = NULL;
+			int			iDelay = 0;
+			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s*|ssOi", kwlist, &PyBuffer, &szVerb, &szURL, &pHeaders, &iDelay))
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", self->pPlugin->Name.c_str());
+				LogPythonException(self->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				//	Add start command to message queue
+				WriteDirective*	Message = new WriteDirective(self->pPlugin->m_HwdID, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+			}
+			Py_XDECREF(PyBuffer.obj);
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
+	PyObject * CConnection_disconnect(CConnection * self)
+	{
+		if (self->pTransport)
+		{
+			if (self->pTransport->IsConnected())
+			{
+				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+			else
+				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connected.", __func__, self->pPlugin->Name.c_str());
+		}
+		else
+			_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, self->pPlugin->Name.c_str());
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
+	PyObject * CConnection_bytes(CConnection * self)
+	{
+		return PyLong_FromLong(self->pTransport->TotalBytes());
+	}
+
+	PyObject * CConnection_isconnected(CConnection * self)
+	{
+		if (self->pTransport)
+		{
+			return PyBool_FromLong(self->pTransport->IsConnected());
+		}
+
+		return PyBool_FromLong(0);
+	}
+
+	PyObject * CConnection_str(CConnection * self)
+	{
+		PyObject*	pRetVal = PyUnicode_FromFormat("Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
+													self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+													(self->pTransport ? self->pTransport->TotalBytes() : -1),
+													(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
+		return pRetVal;
+	}
 }
 #endif
