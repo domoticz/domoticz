@@ -2989,8 +2989,10 @@ namespace http {
 				return;
 			std::string script_params = request::findValue(&req, "scriptparams");
 			std::string strparm = szUserDataFolder;
-			if (script_params != "")
+			if (!script_params.empty())
 			{
+				if (!IsArgumentSecure(script_params))
+					return;
 				if (strparm.size() > 0)
 					strparm += " " + script_params;
 				else
@@ -7641,11 +7643,17 @@ namespace http {
 			}
 			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
-				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+			{
+				if (IsArgumentSecure(RaspCamParams))
+					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+			}
 
 			std::string UVCParams = request::findValue(&req, "UVCParams");
 			if (UVCParams != "")
-				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+			{
+				if (IsArgumentSecure(UVCParams))
+					m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+			}
 
 			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
