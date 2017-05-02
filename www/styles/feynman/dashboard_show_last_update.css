@@ -1,0 +1,172 @@
+/* LastUpdate on the dashboard. */
+
+
+/*  Last Update fade in  */
+
+/*
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    
+}  
+@keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+}*/
+
+#dashcontent .divider tr,
+#dashcontent .item tr{
+    display:block;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    /*border-bottom:20px solid transparent;
+    border-color:transparent!important;*/
+    height:auto;
+    min-height:75px;
+}
+
+
+
+#dashcontent #lastupdate{
+    display:block;
+    clear:both;
+    width:100%;
+    left:0;
+    top: 0;
+    height:20px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+/*
+#dashcontent #lastupdate:hover:before{
+    content:"Last seen: ";
+    transition: all 0.5s ease-in;
+    transition-delay: 2s;
+}
+*/
+
+#dashcontent #lastupdate > span{
+    height: 20px;
+    padding: 3px 3px 0px 0px;  
+    width:100%;
+    display:inline-block;
+}
+
+
+@media screen and (max-width: 600px){
+    background-color:#d4e1ee;
+}
+
+@media screen and (max-width: 768px){
+
+    #dashcontent #lastupdate{
+        display:block;
+        height:20px;
+
+    }
+    #dashcontent #lastupdate > span{
+        display:inline-block;
+        padding-left:10px;
+    }    
+    
+    #dashcontent .item.withstatus{
+        /*background-color:#D4E1EE;*/
+        /*border-bottom:20px solid transparent; /*little trick to push it down*/
+    }   
+    
+}
+
+@media screen and (min-width: 768px) and (max-width: 980px){
+
+    #dashcontent .divider tr, 
+    #dashcontent .item tr {
+        min-height: 75px;
+    }
+    
+    #dashcontent #lastupdate > span {
+        padding-left:10px;
+        box-shadow: inset 0px 0px 8px 0px rgba(130, 130, 130, 0.2); 
+    }
+    
+    /*
+    #dashcontent .item.withstatus{
+        border-bottom:20px solid transparent;
+    } */  
+    
+    
+    /* grow a bit bigger if there is data ouput*/
+    /*
+    #dashcontent div.item.withstatus.statuscount1 tr{min-height:105px}  
+    #dashcontent div.item.withstatus.statuscount2 tr{min-height:135px}
+    #dashcontent div.item.withstatus.statuscount3 tr{min-height:165px}
+    #dashcontent div.item.withstatus.statuscount4 tr{min-height:195px}
+    #dashcontent div.item.withstatus.statuscount5 tr{min-height:225px}
+    #dashcontent div.item.withstatus.statuscount6 tr{min-height:255px}
+    #dashcontent div.item.withstatus.statuscount7 tr{min-height:285px}
+    #dashcontent div.item.withstatus.statuscount8 tr{min-height:305px}
+    #dashcontent div.item.withstatus.statuscount9 tr{min-height:335px}
+    #dashcontent div.item.withstatus.statuscount10 tr{min-height:365px}   
+    
+    
+    #dashcontent #lastupdate > span{
+        padding-top:4px;
+    }*/
+} 
+
+
+
+
+
+
+
+
+
+
+
+@media screen and (min-width: 981px){
+    
+    #dashcontent .divider tr, #dashcontent .item tr {
+        min-height: 55px;
+        border-radius:3px;
+    }
+    
+    #dashcontent /*.item:not(.withstatus)*/ #name{
+        padding:10px 0 0 15px/*!important*/;
+    }
+
+    #dashcontent #lastupdate{
+        background-image:none;
+        position:relative;
+        height:0;
+        overflow:visible;
+        top: -23px;
+        padding:0;
+        left:0px;
+        background-color:transparent;
+        background-image:none;
+    }
+    #dashcontent #lastupdate > span {padding-left:15px;}
+
+    #dashcontent #itemtablesmalltrippleicon #lastupdate{
+        top:-48px;
+    }
+    
+}    
+
+@media screen and (min-width: 1100px){
+
+/* a little experiment to make data fit together like a jigsaw inside the items when scaling to small item sizes. */
+   /* #dashcontent #lastupdate{top: -23px;}
+    #dashcontent #bigtext {top: -35px;}*/
+
+    #dashcontent #itemtablesmalltrippleicon #lastupdate{
+        top:-53px;
+    }
+    
+}
+
+
+
+
+

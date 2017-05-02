@@ -110,6 +110,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
+        <script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script>
 
 		<script data-main="app/main" src="js/require.js"></script>
 <script type="text/javascript" charset="utf-8" id="init-code">
@@ -275,19 +276,6 @@ $(document).ready(function() {
 		DashboardType: 0,
 		isproxied: false
 	};
-	if (typeof sessionStorage.title == 'undefined') {
-		sessionStorage.title = "Domoticz";
-		$.ajax({ 
-	             	url: "json.htm?type=command&param=gettitle",
-	        	async: false,
-		     	dataType: 'json',
-	          	success: function(data) {
-				if (typeof data.Title != 'undefined')
-					sessionStorage.title = data.Title;
-				  }
-		})
-	}
-	document.title = sessionStorage.title;
 
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
@@ -1627,7 +1615,7 @@ $(document).ready(function() {
 			 <div class="navbar-inner">
 				<div class="container">
 					<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
-						<ul class="nav" id="appnavbar">
+						<ul class="nav level1" id="appnavbar">
 							<li ng-show="config.EnableTabProxy" class="clDashboard"><a id="cProxy" href="/mydomoticz/dashboard"><img src="images/proxy.png"> <span class="hidden-phone hidden-tablet" data-i18n="Proxy">Proxy</span></a></li>
 							<li ng-show="config.EnableTabDashboard" class="divider-vertical clDashboard"></li>
 							<li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
@@ -1643,6 +1631,8 @@ $(document).ready(function() {
 							<li ng-show="config.EnableTabWeather" ng-class="{'current_page_item':getClass('/Weather')}" class="clWeather"><a id="cWeather" href="#Weather"><img src="images/rain.png"> <span class="hidden-phone hidden-tablet" data-i18n="Weather">Weather</span></a></li>
 							<li ng-show="config.EnableTabUtility" class="divider-vertical clUtility"></li>
 							<li ng-show="config.EnableTabUtility" ng-class="{'current_page_item':getClass('/Utility')}" class="clUtility"><a id="cUtility" href="#Utility"><img src="images/utility.png"> <span class="hidden-phone hidden-tablet" data-i18n="Utility">Utility</span></a></li>
+							<li ng-show="config.EnableTabEvents" class="divider-vertical clEvents"></li>
+							<li ng-show="config.EnableTabEvents" ng-class="{'current_page_item':getClass('/Events')}" class="clEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span class="hidden-phone hidden-tablet" data-i18n="Events">Events</span></a></li>
 							<li ng-show="config.EnableTabCustom" class="divider-vertical clcustommenu"></li>
 							<li ng-show="config.EnableTabCustom" class="dropdown clcustommenu">
 								<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/devices.png"> <span class="hidden-phone hidden-tablet" data-i18n="Custom">Custom</span> <b class="caret hidden-phone hidden-tablet"></b></a>
@@ -1651,21 +1641,15 @@ $(document).ready(function() {
 							<li class="divider-vertical" style="display: none;" has-permission="Admin"></li>
 							<li class="dropdown" style="display: none;" has-permission="Admin">
 								<a class="dropdown-toggle lcursor" data-toggle="dropdown"><img src="images/setup.png"> <span class="hidden-phone hidden-tablet" data-i18n="Setup">Setup</span> <b class="caret hidden-phone hidden-tablet"></b></a>
-								<ul class="dropdown-menu pull-right">
-									<li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
-									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
-									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
-									<li id="dUpdate" class="divider"></li>
-									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
-									<li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+								<ul class="dropdown-menu pull-right level2">
 									<li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
-										<ul class="dropdown-menu pull-left">
-											<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Edit Users">Edit Users</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
-											<li ng-class="{'current_page_item':getClass('/CustomIcons')}" id="mCustomIcons"><a id="cCustomIcons" href="#CustomIcons"><img src="images/customicons.png"> <span data-i18n="Custom Icons">Custom Icons</span></a></li>
-											<li class="dropdown-submenu">
+										<ul class="dropdown-menu pull-left level3">
+											<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
+                                            <li ng-class="{'current_page_item':getClass('/Users')}" id="mUsers"><a id="cUsers" href="#Users"><img src="images/users.png"> <span data-i18n="Users">Users</span></a></li>
+											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
+											<li class="divider"></li>
+                                            <li class="dropdown-submenu level4a">
 												<a id="cPlans" tabindex="-1"><img src="images/house.png"> <span data-i18n="Plans">Plans</span></a>
 												<ul class="dropdown-menu pull-right">
 													<li ng-class="{'current_page_item':getClass('/Roomplan')}" id="mRoomplan"><a id="cRoomplan" href="#Roomplan"> <span data-i18n="Roomplan">Roomplan</span></a></li>
@@ -1673,31 +1657,37 @@ $(document).ready(function() {
 													<li ng-class="{'current_page_item':getClass('/Timerplan')}" id="mTimerplan"><a id="cTimerplan" href="#Timerplan"> <span data-i18n="Timerplan">Timerplan</span></a></li>
 												</ul>
 											</li>
-											<li ng-class="{'current_page_item':getClass('/UserVariables')}" id="mUserVariables"><a id="cUserVariables" href="#UserVariables"><img src="images/variables.png"> <span data-i18n="User variables">User variables</span></a></li>
-											<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
+                                            <li class="divider"></li>
+                                            <li ng-class="{'current_page_item':getClass('/CustomIcons')}" id="mCustomIcons"><a id="cCustomIcons" href="#CustomIcons"><img src="images/customicons.png"> <span data-i18n="Custom Icons">Custom Icons</span></a></li>
 											<li ng-class="{'current_page_item':getClass('/Notification')}" id="mNotification"><a id="cNotification" href="#Notification"><img src="images/notification.png"> <span data-i18n="Send Notification">Send Notification</span></a></li>
 											<li class="divider"></li>
 											<li class="dropdown-submenu">
 												<a id="cDataPush" tabindex="-1"><img src="images/contact.png"> <span data-i18n="Data push">Data push</span></a>
-												<ul class="dropdown-menu pull-right">
+												<ul class="dropdown-menu pull-right level4b">
 													<li ng-class="{'current_page_item':getClass('/DPFibaro')}" id="mDPFibaro"><a id="cDPFibaro" href="#DPFibaro"> <span data-i18n="FibaroLink">FibaroLink</span></a></li>
 													<li ng-class="{'current_page_item':getClass('/DPHttp')}" id="mDPHttp"><a id="cDPHttp" href="#DPHttp"> <span data-i18n="HTTP">HTTP</span></a></li>
 													<li ng-class="{'current_page_item':getClass('/DPGooglePubSub')}" id="mDPGooglePubSub"><a id="cDPGooglePubSub" href="#DPGooglePubSub"> <span data-i18n="GooglePubSub">Google PubSub</span></a></li>
 													<li ng-class="{'current_page_item':getClass('/DPInflux')}" id="mDPInflux"><a id="cDPInflux" href="#DPInflux"> <span>InfluxDB</span></a></li>
 												</ul>
 											</li>
-											<li class="divider"></li>
-											<li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
+											<li id="dUpdate" class="divider"></li>
+											<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+                                            <li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+                                            <li id="mRestart"><a id="cRestart" href="javascript:SwitchLayout('Restart')"><img src="images/restart.png"> <span data-i18n="Restart System">Restart System</span></a></li>
 											<li id="mShutdown"><a id="cShutdown" href="javascript:SwitchLayout('Shutdown')"><img src="images/shutdown.png"> <span data-i18n="Shutdown System">Shutdown System</span></a></li>
 										</ul>
 									</li>
-									<li class="divider"></li>
+                                    <li class="divider"></li>
+                                    <li ng-class="{'current_page_item':getClass('/Hardware')}" id="mHardware"><a id="cHardware" href="#Hardware"><img src="images/hardware.png"> <span data-i18n="Hardware">Hardware</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
+									<li ng-class="{'current_page_item':getClass('/Cam')}" id="mCam"><a id="cCam" href="#Cam"><img src="images/camera-web.png"> <span data-i18n="Cameras">Cameras</span></a></li>
+				                    <li ng-class="{'current_page_item':getClass('/Events')}" id="mEvents"><a id="cEvents" href="#Events"><img src="images/events.png"> <span data-i18n="Events">Events</span></a></li>
+								    <li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Log')}" id="mLog"><a id="cLog" href="#Log"><img src="images/log.png"> <span data-i18n="Log">Log</span></a></li>
-									<li class="divider"></li>
-									<li ng-class="{'current_page_item':getClass('/About')}" id="mAbout"><a id="cAbout" href="#About"><img src="images/about.png"> <span data-i18n="About">About</span></a></li>
-									<li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
+									<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
+                                    <li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
 									<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
-								</ul>
+								    				</ul>
 							</li>
 							<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
 							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>
@@ -1706,15 +1696,28 @@ $(document).ready(function() {
 			</div>
 		</div>
 		<div id="holder">
-					<div class="container-fluid">
-							<div id="notification" style="display: none;"></div>
-							<div class="bannercontent">
-								<div id="main-view" ng-view></div>
-							</div>
-							<div id="copyright" style="display: none;" has-User>
-									<p>&copy; 2012-{{currentyear}} Domoticz | WWW: <a href="http://domoticz.com/">Domoticz.com</a></p>
-							</div>
-					</div> <!-- /container -->
+            <div class="container-fluid">
+                <div id="notification" style="display: none;"></div>
+                <div class="bannercontent">
+                    <div id="main-view" ng-view></div>
+                </div>
+                <div id="copyright" style="display: none;" has-User>
+                    <p>&copy; 2012-{{currentyear}} Domoticz | <a href="http://domoticz.com/">www.domoticz.com</a></p>
+                </div>
+                <div id="themestatus">
+                    <div id="themeinfo"></div>
+                    <div id="themeoption1"></div>
+                    <div id="themeoption2"></div>
+                    <div id="themeoption3"></div>
+                    <div id="themeoption4"></div>
+                    <div id="themeoption5"></div>
+                    <div id="themeoption6"></div>
+                    <div id="themeoption7"></div>
+                    <div id="themeoption8"></div>
+                    <div id="themeoption9"></div>
+                    <div id="themeoption10"></div>
+                </div>
+            </div> <!-- /container -->
 		</div>
 	</body>
 </html>

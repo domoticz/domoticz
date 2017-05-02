@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1382
+# ref 1383
 
 CACHE:
 # CSS
@@ -97,6 +97,14 @@ images/back_enabled.png
 images/back_enabled_hover.png
 images/background.png
 images/baro48.png
+images/baro-change.png
+images/baro-cloudy.png
+images/baro-rain.png
+images/baro-stable.png
+images/baro-sunny.png
+images/baro-thunderstorm.png
+images/baro-unknown.png
+images/baro-unstable.png
 images/battery.png
 images/battery-low.png
 images/battery-ok.png
@@ -310,6 +318,7 @@ images/unknown.png
 images/up.png
 images/Up48.png
 images/Up48_2.png
+images/update.png
 images/users.png
 images/utility.png
 images/uv.png
@@ -551,6 +560,7 @@ js/ZeroClipboard.js
 secpanel/js/less.js
 secpanel/js/ion.sound.min.js
 ozwcp/cp.js
+acttheme/custom.js
 
 #Dynamic theme
 #ThemeFiles

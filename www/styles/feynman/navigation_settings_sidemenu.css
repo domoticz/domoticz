@@ -1,0 +1,41 @@
+/* Creates a Settings sidebar and thinner items menu on big screens */
+
+@media only screen and (min-width:1200px) and (min-height:600px){    
+
+    /* Sidebar menu */
+    
+    #settingscontent #tabs{
+        position: fixed;
+        width: 160px;
+        border-bottom:0;
+        overflow:hidden;
+    }
+    
+    #settingscontent .nav-tabs > li{
+        width:160px;
+    }
+    
+    #settingscontent .nav-tabs > li > a{
+        border-radius:0;
+    }    
+    
+    #settingscontent .sub-tabs-apply{
+        position:inherit;
+        margin-top:20px;
+        text-align:center;
+        border-radius:5px;
+    }
+    
+    #settingscontent .tab-content{
+        width:84%;
+        width: calc(100% - 200px);
+        overflow: inherit;
+        margin-left: 180px;
+    }
+    
+    #settingscontent .sub-tabs a:not(.sub-tabs-apply){
+        margin-top:0;
+        margin-bottom:0;
+    }
+    
+}
