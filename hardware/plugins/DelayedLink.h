@@ -99,8 +99,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyBool_FromLong, long);
 
 #ifdef ENABLE_PYTHON
-        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleString, const char*);
-        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFile, FILE* COMMA const char*);
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleStringFlags, const char* COMMA PyCompilerFlags*);
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFileExFlags, FILE* COMMA const char* COMMA int COMMA PyCompilerFlags*);
 #endif
 
 #ifdef _DEBUG
@@ -193,8 +193,8 @@ namespace Plugins {
 #endif
 
 #ifdef ENABLE_PYTHON
-                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFile);
-                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleString);
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFileExFlags);
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleStringFlags);
 #endif
 					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
 				}
@@ -351,8 +351,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define _Py_NoneStruct			pythonLib->_Py_NoneStruct
 
 #ifdef ENABLE_PYTHON
-// #define PyRun_SimpleString      pythonLib->PyRun_SimpleString
-// #define PyRun_SimpleFile        pythonLib->PyRun_SimpleFile
+#define PyRun_SimpleStringFlags      pythonLib->PyRun_SimpleStringFlags
+#define PyRun_SimpleFileExFlags pythonLib->PyRun_SimpleFileExFlags
 #endif
 
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
