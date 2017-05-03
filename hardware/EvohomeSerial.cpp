@@ -1,3 +1,5 @@
+
+
 /**
  * Evohome class for HGI80 gateway, evohome control, monitoring and integration with Domoticz
  *
@@ -12,7 +14,7 @@
  * and details available at http://www.domoticaforum.eu/viewtopic.php?f=7&t=5806&start=90#p72564
  */
 #include "stdafx.h"
-#include "evohome.h"
+#include "EvohomeSerial.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
@@ -33,48 +35,22 @@
 #include <boost/algorithm/string.hpp>
 
 
+extern std::string szUserDataFolder;
+
 #include <ctime>
 
 #define RETRY_DELAY 30
 
-extern std::string szUserDataFolder;
-
-std::ofstream *CEvohome::m_pEvoLog=NULL;
-#ifdef _DEBUG
-bool CEvohome::m_bDebug=true;
-#else
-bool CEvohome::m_bDebug=false;
-#endif
-
-const char CEvohome::m_szControllerMode[7][20]={"Normal","Economy","Away","Day Off","Custom","Heating Off","Unknown"};
-const char CEvohome::m_szWebAPIMode[7][20]={"Auto","AutoWithEco","Away","DayOff","Custom","HeatingOff","Unknown"};
-const char  CEvohome::m_szNameErr[18]={0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
-const char CEvohome::m_szZoneMode[7][20]={"Auto","PermanentOverride","TemporaryOverride","OpenWindow","LocalOverride","RemoteOverride","Unknown"};
-const int CEvohome::m_evoToDczControllerMode[8]={0,5,1,2,3,-1,-1,4};//are the hidden modes actually valid?
-const int  CEvohome::m_evoToDczOverrideMode[5]={zmAuto,-1,zmPerm,-1,zmTmp};//are the hidden modes actually valid?
-const uint8_t CEvohome::m_dczToEvoZoneMode[3]={0,2,4};
-const uint8_t CEvohome::m_dczToEvoControllerMode[6]={0,2,3,4,7,1};
+const char  CEvohomeSerial::m_szNameErr[18]={0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F,0x7F};
+const int CEvohomeSerial::m_evoToDczControllerMode[8]={0,5,1,2,3,-1,-1,4};//are the hidden modes actually valid?
+const int  CEvohomeSerial::m_evoToDczOverrideMode[5]={zmAuto,-1,zmPerm,-1,zmTmp};//are the hidden modes actually valid?
+const uint8_t CEvohomeSerial::m_dczToEvoZoneMode[3]={0,2,4};
+const uint8_t CEvohomeSerial::m_dczToEvoControllerMode[6]={0,2,3,4,7,1};
 
 char const CEvohomeMsg::szPacketType[5][8]={"Unknown","I","RQ","RP","W"};
 
-const char* CEvohome::GetControllerModeName(uint8_t nControllerMode)
-{
-	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion otherwise windef.h macros will conflict here
-}
 
-const char* CEvohome::GetWebAPIModeName(uint8_t nControllerMode)
-{
-	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
-}
-
-const char* CEvohome::GetZoneModeName(uint8_t nZoneMode)
-{
-	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
-}
-
-CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID) :
-	m_ZoneNames(m_nMaxZones),
-	m_ZoneOverrideLocal(m_nMaxZones)
+CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, const int baudrate, const std::string &UserContID)
 {
 	m_HwdID=ID;
 	m_nDevID=0;
@@ -117,145 +93,145 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 		s_strid >> std::hex >> m_UControllerID;
 	}
 	
-	RegisterDecoder(cmdZoneTemp,boost::bind(&CEvohome::DecodeZoneTemp,this, _1));
-	RegisterDecoder(cmdSetPoint,boost::bind(&CEvohome::DecodeSetpoint,this, _1));
-	RegisterDecoder(cmdSetpointOverride,boost::bind(&CEvohome::DecodeSetpointOverride,this, _1));
-	RegisterDecoder(cmdDHWState,boost::bind(&CEvohome::DecodeDHWState,this, _1));
-	RegisterDecoder(cmdDHWTemp,boost::bind(&CEvohome::DecodeDHWTemp,this, _1));
-	RegisterDecoder(cmdControllerMode,boost::bind(&CEvohome::DecodeControllerMode,this, _1));
-	RegisterDecoder(cmdSysInfo,boost::bind(&CEvohome::DecodeSysInfo,this, _1));
-	RegisterDecoder(cmdZoneName,boost::bind(&CEvohome::DecodeZoneName,this, _1));
-	RegisterDecoder(cmdZoneHeatDemand,boost::bind(&CEvohome::DecodeHeatDemand,this, _1));
-	RegisterDecoder(cmdZoneInfo,boost::bind(&CEvohome::DecodeZoneInfo,this, _1));
-	RegisterDecoder(cmdControllerHeatDemand,boost::bind(&CEvohome::DecodeHeatDemand,this, _1));
-	RegisterDecoder(cmdBinding,boost::bind(&CEvohome::DecodeBinding,this, _1));
-	RegisterDecoder(cmdActuatorState,boost::bind(&CEvohome::DecodeActuatorState,this, _1));
-	RegisterDecoder(cmdActuatorCheck,boost::bind(&CEvohome::DecodeActuatorCheck,this, _1));
-	RegisterDecoder(cmdZoneWindow,boost::bind(&CEvohome::DecodeZoneWindow,this, _1));
-	RegisterDecoder(cmdExternalSensor,boost::bind(&CEvohome::DecodeExternalSensor,this, _1));
-	RegisterDecoder(cmdDeviceInfo,boost::bind(&CEvohome::DecodeDeviceInfo,this, _1));
-	RegisterDecoder(cmdBatteryInfo,boost::bind(&CEvohome::DecodeBatteryInfo,this, _1));
+	RegisterDecoder(cmdZoneTemp,boost::bind(&CEvohomeSerial::DecodeZoneTemp,this, _1));
+	RegisterDecoder(cmdSetPoint,boost::bind(&CEvohomeSerial::DecodeSetpoint,this, _1));
+	RegisterDecoder(cmdSetpointOverride,boost::bind(&CEvohomeSerial::DecodeSetpointOverride,this, _1));
+	RegisterDecoder(cmdDHWState,boost::bind(&CEvohomeSerial::DecodeDHWState,this, _1));
+	RegisterDecoder(cmdDHWTemp,boost::bind(&CEvohomeSerial::DecodeDHWTemp,this, _1));
+	RegisterDecoder(cmdControllerMode,boost::bind(&CEvohomeSerial::DecodeControllerMode,this, _1));
+	RegisterDecoder(cmdSysInfo,boost::bind(&CEvohomeSerial::DecodeSysInfo,this, _1));
+	RegisterDecoder(cmdZoneName,boost::bind(&CEvohomeSerial::DecodeZoneName,this, _1));
+	RegisterDecoder(cmdZoneHeatDemand,boost::bind(&CEvohomeSerial::DecodeHeatDemand,this, _1));
+	RegisterDecoder(cmdZoneInfo,boost::bind(&CEvohomeSerial::DecodeZoneInfo,this, _1));
+	RegisterDecoder(cmdControllerHeatDemand,boost::bind(&CEvohomeSerial::DecodeHeatDemand,this, _1));
+	RegisterDecoder(cmdBinding,boost::bind(&CEvohomeSerial::DecodeBinding,this, _1));
+	RegisterDecoder(cmdActuatorState,boost::bind(&CEvohomeSerial::DecodeActuatorState,this, _1));
+	RegisterDecoder(cmdActuatorCheck,boost::bind(&CEvohomeSerial::DecodeActuatorCheck,this, _1));
+	RegisterDecoder(cmdZoneWindow,boost::bind(&CEvohomeSerial::DecodeZoneWindow,this, _1));
+	RegisterDecoder(cmdExternalSensor,boost::bind(&CEvohomeSerial::DecodeExternalSensor,this, _1));
+	RegisterDecoder(cmdDeviceInfo,boost::bind(&CEvohomeSerial::DecodeDeviceInfo,this, _1));
+	RegisterDecoder(cmdBatteryInfo,boost::bind(&CEvohomeSerial::DecodeBatteryInfo,this, _1));
 }
-
-CEvohome::~CEvohome(void)
+CEvohomeSerial::~CEvohomeSerial(void)
 {
 	m_bIsStarted=false;
 }
 
-void CEvohome::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder)
+void CEvohomeSerial::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder)
 {
 	m_Decoders.insert( std::pair<int, fnc_evohome_decode >( cmd, fndecoder ) );
 }
 
-void CEvohome::Init()
+void CEvohomeSerial::Init()
 {
 
 }
 
-bool CEvohome::StartHardware()
+bool CEvohomeSerial::StartHardware()
 {
-	if(m_bScriptOnly)
+  if(m_bScriptOnly)
+  {
+    Init();
+    m_bIsStarted=true;
+    sOnConnected(this);
+    return true;
+  }
+  else
+  {
+	if (m_bDebug && !m_pEvoLog)
 	{
-		Init();
-		m_bIsStarted=true;
-		sOnConnected(this);
-		return true;
-	}
-	else
-	{
-		if (m_bDebug && !m_pEvoLog)
+		try
 		{
-			try
-			{
-				std::string debug_file = szUserDataFolder + "evoraw.log";
-				m_pEvoLog = new std::ofstream(debug_file.c_str(), std::ios::out | std::ios::app);
-			}
-			catch (...)
-			{
-				_log.Log(LOG_ERROR, "EvoHome: Could not open debug file!");
-			}
+			std::string debug_file = szUserDataFolder + "evoraw.log";
+			m_pEvoLog = new std::ofstream(debug_file.c_str(), std::ios::out | std::ios::app);
 		}
-		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
-		
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
-			
-		if (!result.empty())
+		catch (...)
 		{
-			std::vector<std::string> sd=result[0];
-			std::stringstream s_strid;
-			s_strid << std::hex << sd[1];
-			if (!s_strid.str().empty())  // Check whether the controller's DeviceID has been set
-			{
-				s_strid >> m_nDevID;
-				SetControllerID(m_nDevID);
-				Log(true, LOG_STATUS, "evohome: Controller ID (0x%x)", GetControllerID());
-			}
-			else
-			{
-				if (m_UControllerID)  // Check whether controller ID has been entered on hardware settings page
-				{
-					SetControllerID(m_UControllerID); 
-					Log(true, LOG_STATUS, "evohome: Controller ID specified (0x%x)", m_UControllerID);
-				}				
-				else
-					SetControllerID(0xFFFFFF);  // Dummy value to allow detection of multiple controllers
-			}
-			m_nControllerMode=atoi(sd[2].c_str());
+			_log.Log(LOG_ERROR, "EvoHome: Could not open debug file!");
+		}
+	}
+	m_retrycntr=RETRY_DELAY; //will force reconnect first thing
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
+
+	if (!result.empty())
+	{
+		std::vector<std::string> sd=result[0];
+		std::stringstream s_strid;
+		s_strid << std::hex << sd[1];
+		if (!s_strid.str().empty())  // Check whether the controller's DeviceID has been set
+		{
+			s_strid >> m_nDevID;
+			SetControllerID(m_nDevID);
+			Log(true, LOG_STATUS, "evohome: Controller ID (0x%x)", GetControllerID());
 		}
 		else
 		{
-			if (m_UControllerID)
+			if (m_UControllerID)  // Check whether controller ID has been entered on hardware settings page
 			{
-				SetControllerID(m_UControllerID);
+				SetControllerID(m_UControllerID); 
 				Log(true, LOG_STATUS, "evohome: Controller ID specified (0x%x)", m_UControllerID);
-			}
+			}				
 			else
-				SetControllerID(0xFFFFFF);  // Dummy valueto allow detection of multiple controllers
+				SetControllerID(0xFFFFFF);  // Dummy value to allow detection of multiple controllers
 		}
-
-		//we'll put our custom relays in this range
-		result = m_sql.safe_query("SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", m_HwdID, (int)pTypeEvohomeRelay);
-		m_RelayCheck.clear();
-		for (int i = 0; i<static_cast<int>(result.size()); i++)
-		{
-			Log(true,LOG_STATUS,"evohome: Relay: devno=%d demmand=%d",atoi(result[i][0].c_str()),atoi(result[i][4].c_str()));
-			m_RelayCheck.insert( tmap_relay_check_pair( static_cast<uint8_t>(atoi(result[i][0].c_str())),_tRelayCheck(boost::get_system_time()-boost::posix_time::minutes(19),static_cast<uint8_t>(atoi(result[i][4].c_str()))) ) ); //allow 1 minute for startup before trying to restore demand
-		}
-		
-		//Start worker thread
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohome::Do_Work, this)));
-
-		return (m_thread!=NULL);
-	}
-}
-
-bool CEvohome::StopHardware()
-{
-	if(m_bScriptOnly)
-	{
-		m_bIsStarted=false;
-		return true;
+		m_nControllerMode=atoi(sd[2].c_str());
 	}
 	else
 	{
-		m_stoprequested=true;
-		if (m_thread != NULL)
-			m_thread->join();	
-		// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
-		sleep_milliseconds(10);
-		terminate();
-		m_bIsStarted=false;
-		if(m_bDebug && m_pEvoLog)
+		if (m_UControllerID)
 		{
-			delete m_pEvoLog;
-			m_pEvoLog=NULL;
+			SetControllerID(m_UControllerID);
+			Log(true, LOG_STATUS, "evohome: Controller ID specified (0x%x)", m_UControllerID);
 		}
-		return true;
+		else
+			SetControllerID(0xFFFFFF);  // Dummy valueto allow detection of multiple controllers
 	}
+
+	//we'll put our custom relays in this range
+	result = m_sql.safe_query("SELECT  Unit,Name,DeviceID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit>=64) AND (Unit<96)", m_HwdID, (int)pTypeEvohomeRelay);
+	m_RelayCheck.clear();
+	for (int i = 0; i<static_cast<int>(result.size()); i++)
+	{
+		Log(true,LOG_STATUS,"evohome: Relay: devno=%d demmand=%d",atoi(result[i][0].c_str()),atoi(result[i][4].c_str()));
+		m_RelayCheck.insert( tmap_relay_check_pair( static_cast<uint8_t>(atoi(result[i][0].c_str())),_tRelayCheck(boost::get_system_time()-boost::posix_time::minutes(19),static_cast<uint8_t>(atoi(result[i][4].c_str()))) ) ); //allow 1 minute for startup before trying to restore demand
+	}
+
+	//Start worker thread
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeSerial::Do_Work, this)));
+
+	return (m_thread!=NULL);
+  }
 }
 
-bool CEvohome::OpenSerialDevice()
+bool CEvohomeSerial::StopHardware()
+{
+  if(m_bScriptOnly)
+  {
+    m_bIsStarted=false;
+    return true;
+  }
+  else
+  {
+	m_stoprequested=true;
+	if (m_thread != NULL)
+		m_thread->join();	
+	// Wait a while. The read thread might be reading. Adding this prevents a pointer error in the async serial class.
+	sleep_milliseconds(10);
+	terminate();
+	m_bIsStarted=false;
+	if(m_bDebug && m_pEvoLog)
+	{
+		delete m_pEvoLog;
+		m_pEvoLog=NULL;
+	}
+	return true;
+  }	
+}
+
+
+bool CEvohomeSerial::OpenSerialDevice()
 {
 	//Try to open the Serial Port
 	try
@@ -280,12 +256,13 @@ bool CEvohome::OpenSerialDevice()
 	}
 	m_nBufPtr=0;
 	m_bIsStarted=true;
-	setReadCallback(boost::bind(&CEvohome::ReadCallback, this, _1, _2));
+	setReadCallback(boost::bind(&CEvohomeSerial::ReadCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
 }
 	
-void CEvohome::Do_Work()
+
+void CEvohomeSerial::Do_Work()
 {
 	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
@@ -391,6 +368,7 @@ void CEvohome::Do_Work()
 	_log.Log(LOG_STATUS,"evohome: Serial Worker stopped...");
 } 
 
+
 std::string CEvohomeMsg::Encode()
 {
 	std::string szRet;
@@ -406,7 +384,8 @@ std::string CEvohomeMsg::Encode()
 	return szRet;
 }
 
-bool CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
+
+bool CEvohomeSerial::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if(!pdata)
 		return false;
@@ -445,7 +424,7 @@ bool CEvohome::WriteToHardware(const char *pdata, const unsigned char length)
 	return true;
 }
 
-void CEvohome::RunScript(const char *pdata, const unsigned char length)
+void CEvohomeSerial::RunScript(const char *pdata, const unsigned char length)
 {
 	if(!pdata)
 		return;
@@ -509,47 +488,56 @@ void CEvohome::RunScript(const char *pdata, const unsigned char length)
 	}
 }
 
-void CEvohome::RequestZoneTemp(uint8_t nZone)
+
+void CEvohomeSerial::RequestZoneTemp(uint8_t nZone)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdZoneTemp).Add(nZone));
 }
 
-void CEvohome::RequestZoneName(uint8_t nZone)
+
+void CEvohomeSerial::RequestZoneName(uint8_t nZone)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdZoneName).Add(nZone).Add(uint8_t(0)));
 }
 
-void CEvohome::RequestZoneInfo(uint8_t nZone)
+
+void CEvohomeSerial::RequestZoneInfo(uint8_t nZone)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdZoneInfo).Add(nZone));
 }
 
-void CEvohome::RequestSetPointOverride(uint8_t nZone)
+
+void CEvohomeSerial::RequestSetPointOverride(uint8_t nZone)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdSetpointOverride).Add(nZone));
 }
 
-void CEvohome::RequestDHWState()
+
+void CEvohomeSerial::RequestDHWState()
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdDHWState).Add(uint8_t(0)));
 }
 
-void CEvohome::RequestDHWTemp()
+
+void CEvohomeSerial::RequestDHWTemp()
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdDHWTemp).Add(uint8_t(0)));
 }
 
-void CEvohome::RequestControllerMode()
+
+void CEvohomeSerial::RequestControllerMode()
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdControllerMode).Add(uint8_t(0xFF)));
 }
 
-void CEvohome::RequestSysInfo()
+
+void CEvohomeSerial::RequestSysInfo()
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdSysInfo).Add(uint8_t(0)));
 }
 
-void CEvohome::RequestZoneStartupInfo(uint8_t nZone)
+
+void CEvohomeSerial::RequestZoneStartupInfo(uint8_t nZone)
 {
 	RequestZoneTemp(nZone);
 	RequestSetPointOverride(nZone);
@@ -557,7 +545,8 @@ void CEvohome::RequestZoneStartupInfo(uint8_t nZone)
 	RequestZoneName(nZone);
 }
 
-void CEvohome::RequestCurrentState()
+
+void CEvohomeSerial::RequestCurrentState()
 {
 	RequestSysInfo();
 	RequestControllerMode();
@@ -567,7 +556,8 @@ void CEvohome::RequestCurrentState()
 	RequestDeviceInfo(0);
 }
 
-void CEvohome::RequestZoneState()
+
+void CEvohomeSerial::RequestZoneState()
 {
 	uint8_t nZoneCount=GetZoneCount();
 	for(uint8_t i=0;i<nZoneCount;i++)
@@ -578,30 +568,34 @@ void CEvohome::RequestZoneState()
 	SendZoneSensor();
 }
 
-void CEvohome::RequestZoneNames()
+
+void CEvohomeSerial::RequestZoneNames()
 {
 	uint8_t nZoneCount=GetZoneCount();
 	for(uint8_t i=0;i<nZoneCount;i++)
 		RequestZoneName(i);
 }
 
-void CEvohome::RequestDeviceInfo(uint8_t nAddr)
+
+void CEvohomeSerial::RequestDeviceInfo(uint8_t nAddr)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktreq,GetControllerID(),cmdDeviceInfo).Add(uint8_t(0)).Add(uint8_t(0)).Add(nAddr));
 }
 
-void CEvohome::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+
+void CEvohomeSerial::SendRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdControllerHeatDemand).Add(nDevNo).Add(nDemand));
 }
 
-void CEvohome::UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+void CEvohomeSerial::UpdateRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	SendRelayHeatDemand(nDevNo,nDemand);
 	m_RelayCheck[nDevNo]=_tRelayCheck(boost::get_system_time(),nDemand);
 }
 
-void CEvohome::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
+
+void CEvohomeSerial::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 {
 	if(nDevNo<64 || nDevNo>=96 || GetGatewayID()==0) //atm no reason to interfere with non custom relays
 		return;
@@ -609,7 +603,8 @@ void CEvohome::SetRelayHeatDemand(uint8_t nDevNo, uint8_t nDemand)
 	UpdateRelayHeatDemand(nDevNo,nDemand);
 }
 
-void CEvohome::CheckRelayHeatDemand()
+
+void CEvohomeSerial::CheckRelayHeatDemand()
 {
 	for(tmap_relay_check_it it = m_RelayCheck.begin(); it != m_RelayCheck.end(); ++it)
 	{
@@ -621,13 +616,15 @@ void CEvohome::CheckRelayHeatDemand()
 	}
 }
 
-void CEvohome::SendRelayKeepAlive()
+
+void CEvohomeSerial::SendRelayKeepAlive()
 {
 	Log(true,LOG_STATUS,"evohome: Relay: Sending keep alive");
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdActuatorCheck).Add((uint8_t)0xFC).Add((uint8_t)0xC8));
 }
 
-void CEvohome::SendExternalSensor()
+
+void CEvohomeSerial::SendExternalSensor()
 {
 	if(GetGatewayID()==0)
 		return;
@@ -656,7 +653,8 @@ void CEvohome::SendExternalSensor()
 	AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktinf,0,GetGatewayID(),cmdExternalSensor).Add((uint8_t)0).Add(static_cast<uint16_t>(dbUV*39)).Add((uint8_t)2).Add((uint8_t)2).Add(static_cast<int16_t>(dbTemp*100.0)).Add((uint8_t)1));
 }
 
-void CEvohome::SendZoneSensor()
+
+void CEvohomeSerial::SendZoneSensor()
 {
 	unsigned int ID;
 	
@@ -707,7 +705,8 @@ void CEvohome::SendZoneSensor()
 	}
 }
 
-void CEvohome::ReadCallback(const char *data, size_t len)
+
+void CEvohomeSerial::ReadCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	try
@@ -725,7 +724,8 @@ void CEvohome::ReadCallback(const char *data, size_t len)
 	}
 }
 
-bool CEvohome::HandleLoopData(const char *data, size_t len)
+
+bool CEvohomeSerial::HandleLoopData(const char *data, size_t len)
 {
 	if(m_nBufPtr+len>=m_nBufSize)
 	{
@@ -739,7 +739,8 @@ bool CEvohome::HandleLoopData(const char *data, size_t len)
 	return true;
 }
 
-int CEvohome::ProcessBuf(char * buf, int size)
+
+int CEvohomeSerial::ProcessBuf(char * buf, int size)
 {
 	int start = 0;
 
@@ -767,6 +768,7 @@ int CEvohome::ProcessBuf(char * buf, int size)
 	return size - start;
 }
 
+
 bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 {
 	int cmdidx=0;
@@ -789,17 +791,17 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 		{
 			if(!GetFlag(flgps))
 			{
-				CEvohome::Log(false,LOG_ERROR,"evohome: no payload size - possible corrupt message");
+				CEvohomeSerial::Log(false,LOG_ERROR,"evohome: no payload size - possible corrupt message");
 				return false;
 			}
 			if(tkn.length()%2)
 			{
-				CEvohome::Log(false,LOG_ERROR,"evohome: uneven payload - possible corrupt message");
+				CEvohomeSerial::Log(false,LOG_ERROR,"evohome: uneven payload - possible corrupt message");
 				return false;
 			}
 			if(tkn.length()/2>m_nBufSize)
 			{
-				CEvohome::Log(false,LOG_ERROR,"evohome: payload exceeds max buffer size");
+				CEvohomeSerial::Log(false,LOG_ERROR,"evohome: payload exceeds max buffer size");
 				return false;
 			}
 			int ps=0;
@@ -815,7 +817,7 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 			}
 			else
 			{
-				CEvohome::Log(false,LOG_ERROR,"evohome: payload size does not match specified size from packet header");
+				CEvohomeSerial::Log(false,LOG_ERROR,"evohome: payload size does not match specified size from packet header");
 				return false;
 			}
 			
@@ -850,7 +852,7 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 			{
 				if(nid>=3)
 				{
-					CEvohome::Log(false,LOG_ERROR,"evohome: too many message ids - possible corrupt message");
+					CEvohomeSerial::Log(false,LOG_ERROR,"evohome: too many message ids - possible corrupt message");
 					continue;
 				}
 				if(tkn.find('-')==std::string::npos)
@@ -861,13 +863,14 @@ bool CEvohomeMsg::DecodePacket(const char * rawmsg)
 				nid++;
 			}
 			else
-				CEvohome::Log(false,LOG_STATUS,"evohome: WARNING unrecognised message structure - possible corrupt message '%s' (%d)",tkn.c_str(),i);
+				CEvohomeSerial::Log(false,LOG_STATUS,"evohome: WARNING unrecognised message structure - possible corrupt message '%s' (%d)",tkn.c_str(),i);
 		}
 	}
 	return IsValid();
 }
 
-void CEvohome::ProcessMsg(const char * rawmsg)
+
+void CEvohomeSerial::ProcessMsg(const char * rawmsg)
 {
 	CEvohomeMsg msg(rawmsg);
 	Log(rawmsg,msg);
@@ -908,7 +911,8 @@ void CEvohome::ProcessMsg(const char * rawmsg)
 		Log(true,LOG_ERROR,"evohome: invalid message structure - possible corrupt message");
 }
 
-bool CEvohome::DecodePayload(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodePayload(CEvohomeMsg &msg)
 {
 	std::map < unsigned int, fnc_evohome_decode >::iterator pf = m_Decoders.find( msg.command );
 	if (pf!=m_Decoders.end())
@@ -922,7 +926,8 @@ bool CEvohome::DecodePayload(CEvohomeMsg &msg)
 	return false;
 }
 
-bool CEvohome::DumpMessage(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DumpMessage(CEvohomeMsg &msg)
 {
 	char tag[] = "DUMP_MSG";
 	Log(true,LOG_STATUS,"evohome: %s: CMD=%04x Len=%d",tag, msg.command,msg.payloadsize);
@@ -939,7 +944,8 @@ bool CEvohome::DumpMessage(CEvohomeMsg &msg)
 	return true;
 }
 
-int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devType atm but there could be additional specialisations
+
+int CEvohomeSerial::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devType atm but there could be additional specialisations
 {
 	int nGatewayID=GetGatewayID();
 	if(nGatewayID==0)
@@ -1023,7 +1029,8 @@ int CEvohome::Bind(uint8_t nDevNo, unsigned char nDevType)//use CEvohomeID::devT
 	return 0;
 }
 
-bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
+
+bool CEvohomeSerial::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 {	
 	char tag[] = "ZONE_SETPOINT";
 	
@@ -1079,7 +1086,8 @@ bool CEvohome::DecodeSetpoint(CEvohomeMsg &msg)//0x2309
 	return true;
 }
 
-bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
+
+bool CEvohomeSerial::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 {
 	char tag[] = "ZONE_SETPOINT_MODE";
 
@@ -1143,7 +1151,8 @@ bool CEvohome::DecodeSetpointOverride(CEvohomeMsg &msg)//0x2349
 	return true;
 }
 
-bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
+
+bool CEvohomeSerial::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 {
 	char tag[] = "ZONE_TEMP";
 	std::vector<std::vector<std::string> > result;
@@ -1247,7 +1256,8 @@ bool CEvohome::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 	return true;
 }
 
-bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
+
+bool CEvohomeSerial::DecodeDHWState(CEvohomeMsg &msg)//1F41
 {
 	char tag[] = "DHW_STATE";
 
@@ -1297,7 +1307,8 @@ bool CEvohome::DecodeDHWState(CEvohomeMsg &msg)//1F41
 	return true;
 }
 
-bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
+
+bool CEvohomeSerial::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 {
 	char tag[] = "DHW_TEMP";
 
@@ -1345,7 +1356,8 @@ bool CEvohome::DecodeDHWTemp(CEvohomeMsg &msg)//1260
 	return true;
 }
 
-bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
+
+bool CEvohomeSerial::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 {
 	char tag[] = "CONTROLLER_MODE";
 
@@ -1386,7 +1398,8 @@ bool CEvohome::DecodeControllerMode(CEvohomeMsg &msg)//2E04
 	return true;
 }
 
-bool CEvohome::DecodeSysInfo(CEvohomeMsg &msg)//10e0
+
+bool CEvohomeSerial::DecodeSysInfo(CEvohomeMsg &msg)//10e0
 {
 	char tag[] = "SYSINFO";
 
@@ -1411,7 +1424,8 @@ bool CEvohome::DecodeSysInfo(CEvohomeMsg &msg)//10e0
 	return true;
 }
 
-bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeZoneName(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_NAME";
 	std::vector<std::vector<std::string> > result;
@@ -1452,7 +1466,8 @@ bool CEvohome::DecodeZoneName(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeZoneInfo(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeZoneInfo(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_INFO";
 
@@ -1488,7 +1503,8 @@ bool CEvohome::DecodeZoneInfo(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeZoneWindow(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeZoneWindow(CEvohomeMsg &msg)
 {
 	char tag[] = "ZONE_WINDOW";
 
@@ -1536,7 +1552,8 @@ bool CEvohome::DecodeZoneWindow(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeBinding(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeBinding(CEvohomeMsg &msg)
 {
 	char tag[] = "BINDING";
 	if (msg.payloadsize < 6) {
@@ -1567,7 +1584,8 @@ bool CEvohome::DecodeBinding(CEvohomeMsg &msg)
 	return true;
 }
 
-void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
+
+void CEvohomeSerial::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
 {
 	REVOBUF tsen;
 	memset(&tsen,0,sizeof(REVOBUF));
@@ -1577,11 +1595,11 @@ void CEvohome::RXRelay(uint8_t nDevNo, uint8_t nDemand, int nID)
 	RFX_SETID3(nID,tsen.EVOHOME3.id1,tsen.EVOHOME3.id2,tsen.EVOHOME3.id3);
 	tsen.EVOHOME3.devno=nDevNo;
 	tsen.EVOHOME3.demand=nDemand;
-	tsen.EVOHOME3.updatetype = CEvohome::updDemand;
+	tsen.EVOHOME3.updatetype = CEvohomeSerial::updDemand;
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, NULL, -1);
 }
 
-bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
+bool CEvohomeSerial::DecodeHeatDemand(CEvohomeMsg &msg)
 {
 	//there is an interesting page on temperature control @ http://newton.ex.ac.uk/teaching/cdhw/Feedback/ControlTypes.html
 	char tag[] = "HEAT_DEMAND";
@@ -1635,7 +1653,8 @@ bool CEvohome::DecodeHeatDemand(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeActuatorCheck(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeActuatorCheck(CEvohomeMsg &msg)
 {
 	char tag[] = "ACTUATOR_CHECK"; //this is used to synchronise time periods for each relay bound to a controller i.e. all relays get this message and use it to determine when to start each cycle (demand is just a % of the cycle length)
 	if (msg.payloadsize != 2){
@@ -1653,7 +1672,8 @@ bool CEvohome::DecodeActuatorCheck(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeActuatorState(CEvohomeMsg &msg)
 {
 	char tag[] = "ACTUATOR_STATE";
 	if (msg.payloadsize != 3){
@@ -1669,7 +1689,8 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeExternalSensor(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeExternalSensor(CEvohomeMsg &msg)
 {
 	char tag[] = "EXTERNAL_SENSOR";
 	if (msg.payloadsize < 4) {
@@ -1689,7 +1710,8 @@ bool CEvohome::DecodeExternalSensor(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeDeviceInfo(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeDeviceInfo(CEvohomeMsg &msg)
 {
 	char tag[] = "DEVICE_INFO";
 	if (msg.payloadsize == 3){
@@ -1714,7 +1736,8 @@ bool CEvohome::DecodeDeviceInfo(CEvohomeMsg &msg)
 	return true;
 }
 
-bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
+
+bool CEvohomeSerial::DecodeBatteryInfo(CEvohomeMsg &msg)
 {
 	char tag[] = "BATTERY_INFO";
 	
@@ -1767,7 +1790,7 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 			RFX_SETID3(msg.GetID(0), tsen.EVOHOME3.id1, tsen.EVOHOME3.id2, tsen.EVOHOME3.id3);
 			tsen.EVOHOME3.devno = nDevNo;
 			tsen.EVOHOME3.demand = 0;
-			tsen.EVOHOME3.updatetype = CEvohome::updBattery;
+			tsen.EVOHOME3.updatetype = CEvohomeSerial::updBattery;
 			tsen.EVOHOME3.battery_level = nBattery;
 			sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME3, NULL, nBattery);
 		}
@@ -1795,13 +1818,15 @@ bool CEvohome::DecodeBatteryInfo(CEvohomeMsg &msg)
 	return true;
 }
 
-void CEvohome::AddSendQueue(const CEvohomeMsg &msg)
+
+void CEvohomeSerial::AddSendQueue(const CEvohomeMsg &msg)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxSend);
 	m_SendQueue.push_back(msg);//may throw bad_alloc
 }
 
-void CEvohome::PopSendQueue(const CEvohomeMsg &msg)
+
+void CEvohomeSerial::PopSendQueue(const CEvohomeMsg &msg)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxSend);
 	if(!m_SendQueue.empty())
@@ -1816,7 +1841,8 @@ void CEvohome::PopSendQueue(const CEvohomeMsg &msg)
 	}
 }
 
-void CEvohome::Do_Send()
+
+void CEvohomeSerial::Do_Send()
 {
 	boost::lock_guard<boost::mutex> rl(readQueueMutex);//ideally we need some way to send only if we're not in the middle of receiving a packet but as everything is buffered i'm not sure if this will be effective
 	if(m_nBufPtr>0)
@@ -1835,248 +1861,10 @@ void CEvohome::Do_Send()
 	}
 }
 
-bool CEvohome::SetZoneCount(uint8_t nZoneCount)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	bool bRet=(m_nZoneCount!=nZoneCount);
-	m_nZoneCount=nZoneCount;
-	return bRet;
-}
-
-bool CEvohome::SetMaxZoneCount(uint8_t nZoneCount)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount); //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
-	bool bRet=(m_nZoneCount!=nMaxZones);
-	m_nZoneCount=nMaxZones;
-	return bRet;
-}
-
-uint8_t CEvohome::GetZoneCount()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	return m_nZoneCount; //return value is constructed before the lock is released
-}
-
-bool CEvohome::SetControllerMode(uint8_t nControllerMode)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerMode);
-	bool bRet=(m_nControllerMode!=nControllerMode);
-	m_nControllerMode=nControllerMode;
-	return bRet;
-}
-
-uint8_t CEvohome::GetControllerMode()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerMode);
-	return m_nControllerMode; //return value is constructed before the lock is released
-}
-
-void CEvohome::InitControllerName()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
-	if(m_szControllerName.empty())
-		m_szControllerName="EvoTouch Colour";
-}
-
-void CEvohome::SetControllerName(std::string szName)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
-	m_szControllerName=szName;
-}
-
-std::string CEvohome::GetControllerName()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
-	return m_szControllerName;
-}
-
-void CEvohome::InitZoneNames()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
-	char szTmp[1024];
-	for(int i=0;i<(int)m_ZoneNames.size();i++)
-	{
-		if(m_ZoneNames[i].empty())
-		{
-			sprintf(szTmp,"Zone %d",i+1);
-			m_ZoneNames[i]=szTmp;
-		}
-	}
-}
-
-void CEvohome::SetZoneName(uint8_t nZone, std::string szName)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
-	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones
-		return;
-	m_ZoneNames[nZone]=szName;
-}
-
-std::string CEvohome::GetZoneName(uint8_t nZone)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
-	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones
-		return "Out of bounds";
-	return m_ZoneNames[nZone];
-}
-
-int CEvohome::GetControllerID()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerID);
-	return m_nDevID;
-}
-
-void CEvohome::SetControllerID(int nID)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxControllerID);
-	m_nDevID=nID;
-}
-
-int CEvohome::GetGatewayID()
-{
-	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
-	return m_nMyID;
-}
-
-void CEvohome::SetGatewayID(int nID)
-{
-	boost::lock_guard<boost::mutex> l(m_mtxGatewayID);
-	m_nMyID=nID;
-}
-
-void CEvohome::LogDate()
-{
-        char szTmp[256];
-	time_t atime = mytime(NULL);
-        struct tm ltime;
-        localtime_r(&atime, &ltime);
-        
-        strftime (szTmp,256,"%Y-%m-%d %H:%M:%S ",&ltime);
-        *m_pEvoLog << szTmp;
-}
-
-void CEvohome::Log(const char *szMsg, CEvohomeMsg &msg)
-{
-	if(m_bDebug && m_pEvoLog)
-	{
-		LogDate();
-		*m_pEvoLog << szMsg;
-		*m_pEvoLog << " (";
-		for(int i=0;i<msg.payloadsize;i++)
-		{
-			unsigned char c = msg.payload[i];
-			if (c < 0x20 || c > 0x7E) c = '.';
-			*m_pEvoLog << c;
-		}
-		*m_pEvoLog << ")";
-		*m_pEvoLog << std::endl;
-	}
-}
-
-void CEvohome::Log(bool bDebug, int nLogLevel, const char* format, ... )
-{
-        va_list argList;
-        char cbuffer[1024];
-        va_start(argList, format);
-        vsnprintf(cbuffer, 1024, format, argList);
-        va_end(argList);
-
-	if(!bDebug || m_bDebug)
-		_log.Log(static_cast<_eLogLevel>(nLogLevel),cbuffer);
-	if(m_bDebug && m_pEvoLog)
-	{
-		LogDate();
-		*m_pEvoLog << cbuffer;
-		*m_pEvoLog << std::endl;
-	}
-}
 
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateEvohomeSensor(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string idx = request::findValue(&req, "idx");
-			std::string ssensortype = request::findValue(&req, "sensortype");
-			if ((idx == "") || (ssensortype == ""))
-				return;
-
-			bool bCreated = false;
-			int iSensorType = atoi(ssensortype.c_str());
-
-			int HwdID = atoi(idx.c_str());
-
-			//Make a unique number for ID
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
-			unsigned long nid = 1; //could be the first device ever
-
-			if (!result.empty())
-			{
-				nid = atol(result[0][0].c_str());
-			}
-			nid += 92000;
-			char ID[40];
-			sprintf(ID, "%lu", nid);
-
-			//get zone count
-			result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d)", HwdID, (int)iSensorType);
-
-			int nDevCount = 0;
-			if (!result.empty())
-			{
-				nDevCount = atol(result[0][0].c_str());
-			}
-
-			std::string devname;
-
-			switch (iSensorType)
-			{
-			case pTypeEvohome: //Controller...should be 1 controller per hardware
-				if (nDevCount >= 1)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of controllers reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, 0, pTypeEvohome, sTypeEvohome, 10, 255, 0, "Normal", devname);
-				bCreated = true;
-				break;
-			case pTypeEvohomeZone://max of 12 zones
-				if (nDevCount >= CEvohome::m_nMaxZones)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of supported zones reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, nDevCount + 1, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
-				bCreated = true;
-				break;
-			case pTypeEvohomeWater://DHW...should be 1 per hardware
-				if (nDevCount >= 1)
-				{
-					root["status"] = "ERR";
-					root["message"] = "Maximum number of DHW zones reached";
-					return;
-				}
-				m_sql.UpdateValue(HwdID, ID, 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", devname);
-				bCreated = true;
-				break;
-			}
-			if (bCreated)
-			{
-				root["status"] = "OK";
-				root["title"] = "CreateEvohomeSensor";
-			}
-		}
-
 		void CWebServer::RType_BindEvohome(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -2093,7 +1881,7 @@ namespace http {
 				return;
 			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
 				return;
-			CEvohome *pEvoHW = reinterpret_cast<CEvohome*>(pHardware);
+			CEvohomeSerial *pEvoHW = reinterpret_cast<CEvohomeSerial*>(pHardware);
 
 			int nDevNo = 0;
 			int nID = 0;
@@ -2125,7 +1913,7 @@ namespace http {
 				// Check if All Sensors has already been activated, if not create a temporary dummy sensor				
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit > 12) AND (Unit <= 24)", HwdID, (int)pTypeEvohomeZone);
-				if (result.empty())
+				if (result.size() == 0)
 				{
 					std::string devname = "Zone Temp";
 					m_sql.UpdateValue(HwdID, "FFFFFF", 13, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", devname);
@@ -2208,3 +1996,4 @@ namespace http {
 		}
 	}
 }
+
