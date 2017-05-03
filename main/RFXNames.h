@@ -156,7 +156,7 @@ enum _eHardwareTypes {
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
-	HTYPE_FITBIT,				//75
+	HTYPE_AVAILABLE_FOR_USAGE,	//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_DenkoviSmartdenLan,	//78
@@ -183,6 +183,7 @@ enum _eHardwareTypes {
 	HTYPE_IntergasInComfortLAN2RF,			//99
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
+	HTYPE_SysfsGPIO,			//102
 	HTYPE_END
 };
 

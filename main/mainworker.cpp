@@ -100,7 +100,6 @@
 #include "../hardware/OpenWebNetTCP.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
-#include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
 #include "../hardware/AccuWeather.h"
@@ -120,6 +119,7 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
+#include "../hardware/SysfsGPIO.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -658,7 +658,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
-		pHardware = new CTeleinfoSerial(ID, SerialPort, Mode1, (Mode2 != 0), Mode3);
+		pHardware = new CTeleinfoSerial(ID, SerialPort, DataTimeout, Mode1, (Mode2 != 0), Mode3);
 		break;
 	case HTYPE_MySensorsUSB:
 		pHardware = new MySensorsSerial(ID, SerialPort, Mode1);
@@ -684,7 +684,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohome(ID,SerialPort,Mode1);
+		pHardware = new CEvohome(ID,SerialPort,Mode1,Filename);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -790,7 +790,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_ECODEVICES:
 		//LAN
-		pHardware = new CEcoDevices(ID, Address, Port, Mode1, Mode2);
+		pHardware = new CEcoDevices(ID, Address, Port, Username, Password, DataTimeout, Mode1, Mode2);
 		break;
 	case HTYPE_1WIRE:
 		//1-Wire file system
@@ -885,11 +885,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
-#ifdef _DEBUG
-	case HTYPE_FITBIT:
-		pHardware = new CFitbit(ID, Username, Password);
-		break;
-#endif
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
 		break;
@@ -929,7 +924,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID,"",0);
+		pHardware = new CEvohome(ID,"",0,"");
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -941,6 +936,11 @@ bool MainWorker::AddHardwareFromParams(
 		//Raspberry Pi GPIO port access
 #ifdef WITH_GPIO
 		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
+#endif
+		break;
+	case HTYPE_SysfsGPIO:
+#ifdef WITH_SYSFS_GPIO
+		pHardware = new CSysfsGPIO(ID);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
@@ -11885,7 +11885,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
-		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)

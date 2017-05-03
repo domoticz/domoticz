@@ -408,7 +408,7 @@ float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
    return ansRoot.get("Illuminescence",0.0f).asFloat();
 }
 
-unsigned int C1WireForWindows::GetWiper(const _t1WireDevice& device) const
+int C1WireForWindows::GetWiper(const _t1WireDevice& device) const
 {
 	Json::Value ansRoot;
 	try
@@ -417,9 +417,9 @@ unsigned int C1WireForWindows::GetWiper(const _t1WireDevice& device) const
 	}
 	catch (C1WireForWindowsReadException&)
 	{
-		return -1000.0;
+		return -1;
 	}
-	return ansRoot.get("Wiper", 0.0f).asUInt();
+	return ansRoot.get("Wiper", -1).asUInt();
 }
 
 void C1WireForWindows::StartSimultaneousTemperatureRead()
