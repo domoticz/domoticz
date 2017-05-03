@@ -27,9 +27,11 @@ typedef enum {
 #define P1VOLTL2		"1-0:52.7.0" // voltage L2 (DSMRv5)
 #define P1VOLTL3		"1-0:72.7.0" // voltage L3 (DSMRv5)
 #define P1GTS			"0-1:24.3.0" // timestamp gas usage sample
-#define P1GTSDSMRv4		"0-1:24.2.1" // gas usage sample
-#define P1GTSGyrE350	"0-2:24.2.1" // gas usage sample
 #define P1GTSME382		"0-2:24.3.0" // timestamp gas usage sample
+#define P1GUDSMR4C1		"0-1:24.2.1" // DSMR4 gas usage sample - channel 1
+#define P1GUDSMR4C2		"0-2:24.2.1" // DSMR4 gas usage sample - channel 2
+#define P1GUDSMR4C3		"0-3:24.2.1" // DSMR4 gas usage sample - channel 3
+#define P1GUDSMR4C4		"0-4:24.2.1" // DSMR4 gas usage sample - channel 4
 
 typedef enum {
 	P1TYPE_SMID=0,
@@ -46,8 +48,10 @@ typedef enum {
 	P1TYPE_GASTIMESTAMP,
 	P1TYPE_GASTIMESTAMPME382,
 	P1TYPE_GASUSAGE,
-	P1TYPE_GASUSAGEDSMRv4,
-	P1TYPE_GASUSAGEGyrE350,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL1,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL2,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL3,
+	P1TYPE_GASUSAGEDSMR4_CHANNEL4,
 	P1TYPE_END,
 } P1Type;
 
@@ -61,23 +65,25 @@ typedef struct _tMatch {
 } Match;
 
 Match matchlist[] = {
-	{ID,		P1TYPE_SMID,				P1_SMID,		"", 			0, 0},
-	{STD,		P1TYPE_POWERUSAGE1,			P1PU1,			"powerusage1",	10, 9},
-	{STD,		P1TYPE_POWERUSAGE2,			P1PU2,			"powerusage2",	10, 9},
-	{STD,		P1TYPE_POWERDELIV1,			P1PD1,			"powerdeliv1",	10, 9},
-	{STD,		P1TYPE_POWERDELIV2,			P1PD2,			"powerdeliv2",	10, 9},
-	{STD,		P1TYPE_TARIFF,				P1TIP,			"tariff",		12, 4},
-	{STD,		P1TYPE_USAGECURRENT,		P1PUC,			"powerusagec",	10, 7},
-	{STD,		P1TYPE_DELIVCURRENT,		P1PDC,			"powerdelivc",	10, 7},
-	{STD,		P1TYPE_VOLTAGEL1,			P1VOLTL1,		"voltagel1",	11, 5},
-	{STD,		P1TYPE_VOLTAGEL2,			P1VOLTL2,		"voltagel2",	11, 5},
-	{STD,		P1TYPE_VOLTAGEL3,			P1VOLTL3,		"voltagel3",	11, 5},
-	{LINE17,	P1TYPE_GASTIMESTAMP,		P1GTS,			"gastimestamp",	11, 12},
-	{LINE17,	P1TYPE_GASTIMESTAMPME382,	P1GTSME382,		"gastimestamp",	11, 12},
-	{LINE18,	P1TYPE_GASUSAGE,			"(",			"gasusage",		1, 9},
-	{STD,		P1TYPE_GASUSAGEDSMRv4,		P1GTSDSMRv4,	"gasusage", 	26, 8},
-	{STD,		P1TYPE_GASUSAGEGyrE350,		P1GTSGyrE350,	"gasusage", 	26, 8},
-	{EXCLMARK,	P1TYPE_END,					"!",			"",				0, 0}
+	{ID,		P1TYPE_SMID,				P1_SMID,		"", 			 0,  0},
+	{STD,		P1TYPE_POWERUSAGE1,			P1PU1,			"powerusage1",		10,  9},
+	{STD,		P1TYPE_POWERUSAGE2,			P1PU2,			"powerusage2",		10,  9},
+	{STD,		P1TYPE_POWERDELIV1,			P1PD1,			"powerdeliv1",		10,  9},
+	{STD,		P1TYPE_POWERDELIV2,			P1PD2,			"powerdeliv2",		10,  9},
+	{STD,		P1TYPE_TARIFF,				P1TIP,			"tariff",		12,  4},
+	{STD,		P1TYPE_USAGECURRENT,			P1PUC,			"powerusagec",		10,  7},
+	{STD,		P1TYPE_DELIVCURRENT,			P1PDC,			"powerdelivc",		10,  7},
+	{STD,		P1TYPE_VOLTAGEL1,			P1VOLTL1,		"voltagel1",		11,  5},
+	{STD,		P1TYPE_VOLTAGEL2,			P1VOLTL2,		"voltagel2",		11,  5},
+	{STD,		P1TYPE_VOLTAGEL3,			P1VOLTL3,		"voltagel3",		11,  5},
+	{LINE17,	P1TYPE_GASTIMESTAMP,			P1GTS,			"gastimestamp",		11, 12},
+	{LINE17,	P1TYPE_GASTIMESTAMPME382,		P1GTSME382,		"gastimestamp",		11, 12},
+	{LINE18,	P1TYPE_GASUSAGE,			"(",			"gasusage",		 1,  9},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL1,		P1GUDSMR4C1,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL2,		P1GUDSMR4C2,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL3,		P1GUDSMR4C3,		"gasusage",	 	26,  8},
+	{STD,		P1TYPE_GASUSAGEDSMR4_CHANNEL4,		P1GUDSMR4C4,		"gasusage",	 	26,  8},
+	{EXCLMARK,	P1TYPE_END,				"!",			"",			 0,  0}
 };
 
 P1MeterBase::P1MeterBase(void)
@@ -296,8 +302,10 @@ bool P1MeterBase::MatchLine()
 			case P1TYPE_GASTIMESTAMPME382:
 				break;
 			case P1TYPE_GASUSAGE:
-			case P1TYPE_GASUSAGEDSMRv4:
-			case P1TYPE_GASUSAGEGyrE350:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL1:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL2:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL3:
+			case P1TYPE_GASUSAGEDSMR4_CHANNEL4:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
 				m_p1gas.gasusage = temp_usage;
 				break;

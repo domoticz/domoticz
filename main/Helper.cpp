@@ -870,3 +870,17 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
   /* Return 1 if result is negative. */
   return x->tv_sec < y->tv_sec;
 }
+
+bool IsArgumentSecure(const std::string &arg)
+{
+	std::string larg(arg);
+	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
+
+	return (
+		(larg.find("-c") == std::string::npos)
+		&& (larg.find("import") == std::string::npos)
+		&& (larg.find("socket") == std::string::npos)
+		&& (larg.find("process") == std::string::npos)
+		&& (larg.find("os") == std::string::npos)
+		);
+}
