@@ -128,19 +128,19 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
                                         _log.Log(LOG_ERROR,"HTTP 400: Bad Request. Called URL: '%s'", url.c_str());
                                         break;
                                 case 401:
-                                        _log.Log(LOG_ERROR,"HTTP 401: Unauthorized. Authentication is required, has failed or has not been providedt. Called URL: '%s'", url.c_str());
+                                        _log.Log(LOG_ERROR,"HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided. Called URL: '%s'", url.c_str());
                                         break;
                                 case 403:
-                                        _log.Log(LOG_ERROR,"HTTP 403: Forbidden. The request is valid, but the server is refusing actiont. Called URL: '%s'", url.c_str());
+                                        _log.Log(LOG_ERROR,"HTTP 403: Forbidden. The request is valid, but the server is refusing action. Called URL: '%s'", url.c_str());
                                         break;
                                 case 404:
-                                        _log.Log(LOG_ERROR,"HTTP 404: Not Foundt. Called URL: '%s'", url.c_str());
+                                        _log.Log(LOG_ERROR,"HTTP 404: Not Found. Called URL: '%s'", url.c_str());
                                         break;
                                 case 500:
-                                        _log.Log(LOG_ERROR,"HTTP 500: Internal Server Errort. Called URL: '%s'", url.c_str());
+                                        _log.Log(LOG_ERROR,"HTTP 500: Internal Server Error. Called URL: '%s'", url.c_str());
                                         break;
                                 case 503:
-                                        _log.Log(LOG_ERROR,"HTTP 503: Service Unavailablet. Called URL: '%s'", url.c_str());
+                                        _log.Log(LOG_ERROR,"HTTP 503: Service Unavailable. Called URL: '%s'", url.c_str());
                                         break;
                                 default:
                                         _log.Log(LOG_ERROR,"HTTP return code is: %i. Called URL: '%s'", response_code, url.c_str());
