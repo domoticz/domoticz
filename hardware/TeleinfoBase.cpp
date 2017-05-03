@@ -22,7 +22,7 @@ History :
 #include "TeleinfoBase.h"
 #include "../main/Logger.h"
 #include "../main/localtime_r.h"
-#include <bitset>				 // This is necessary to compile on Windows
+#include <bitset>			 // This is necessary to compile on Windows
 
 #ifdef _DEBUG
 #define DEBUG_TeleinfoBase
