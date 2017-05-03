@@ -28,8 +28,6 @@ public:
 
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-	bool m_bScriptOnly;
-
 
 	typedef boost::function< bool(CEvohomeMsg &msg) > fnc_evohome_decode;
 
@@ -175,9 +173,5 @@ private:
 	tmap_relay_check m_RelayCheck;
 
 	bool m_bStartup[2];
-
-	// ToDo: move to separate source file
-	void RunScript(const char *pdata, const unsigned char length);
-
 };
 

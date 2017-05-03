@@ -66,6 +66,7 @@
 #include "../hardware/HarmonyHub.h"
 #include "../hardware/EcoDevices.h"
 #include "../hardware/EvohomeBase.h"
+#include "../hardware/EvohomeScript.h"
 #include "../hardware/EvohomeSerial.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
@@ -925,7 +926,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohomeSerial(ID,"",0,"");
+		pHardware = new CEvohomeScript(ID);
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -6155,6 +6156,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	if (result.size()<1 && !pEvo->EVOHOME2.zone)
 		return;
 
+	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
 	bool bNewDev=false;
 	std::string name,szDevID;
 	std::stringstream szID;
@@ -6182,7 +6184,6 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
 		szDevID = szID.str();
 
-		CEvohomeSerial *pEvoHW = reinterpret_cast<CEvohomeSerial*>(GetHardware(HwdID));
 		if(!pEvoHW)
 			return;
 		if(dType==pTypeEvohomeWater)
@@ -6200,7 +6201,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		BatteryLevel=pEvo->EVOHOME2.battery_level;
 	else
 	{
-		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==CEvohomeBase::updSetPoint)
+		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==pEvoHW->updSetPoint)
 			sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
 		else
 			sprintf(szTmp,"%.2f",pEvo->EVOHOME2.temperature/100.0f);
@@ -6209,19 +6210,19 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		StringSplit(szUpdateStat, ";", strarray);
 		if (strarray.size() >= 3)
 		{
-			if(pEvo->EVOHOME2.updatetype==CEvohomeBase::updSetPoint)//SetPoint
+			if(pEvo->EVOHOME2.updatetype==pEvoHW->updSetPoint)//SetPoint
 			{
 				strarray[1]=szTmp;
-				if(pEvo->EVOHOME2.mode<=CEvohomeBase::zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+				if(pEvo->EVOHOME2.mode<=pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
 				{
 					int nControllerMode=pEvo->EVOHOME2.controllermode;
-					if(dType==pTypeEvohomeWater && (nControllerMode==CEvohomeBase::cmEvoHeatingOff || nControllerMode==CEvohomeBase::cmEvoAutoWithEco || nControllerMode==CEvohomeBase::cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
-						nControllerMode=CEvohomeBase::cmEvoAuto;
-					if(pEvo->EVOHOME2.mode==CEvohomeBase::zmAuto || nControllerMode==CEvohomeBase::cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
-						strarray[2]=CEvohomeSerial::GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
+					if(dType==pTypeEvohomeWater && (nControllerMode==pEvoHW->cmEvoHeatingOff || nControllerMode==pEvoHW->cmEvoAutoWithEco || nControllerMode==pEvoHW->cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
+						nControllerMode=pEvoHW->cmEvoAuto;
+					if(pEvo->EVOHOME2.mode==pEvoHW->zmAuto || nControllerMode==pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+						strarray[2]=pEvoHW->GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
 					else
-						strarray[2]=CEvohomeSerial::GetZoneModeName(pEvo->EVOHOME2.mode);
-					if(pEvo->EVOHOME2.mode==CEvohomeBase::zmTmp)
+						strarray[2]=pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
+					if(pEvo->EVOHOME2.mode==pEvoHW->zmTmp)
 					{
 						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
 						if(strarray.size()<4) //add or set until
@@ -6234,9 +6235,9 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 							strarray.resize(3);
 				}
 			}
-			else if(pEvo->EVOHOME2.updatetype==CEvohomeBase::updOverride)
+			else if(pEvo->EVOHOME2.updatetype==pEvoHW->updOverride)
 			{
-				strarray[2]=CEvohomeSerial::GetZoneModeName(pEvo->EVOHOME2.mode);
+				strarray[2]=pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
 				if(strarray.size()>=4) //remove until
 					strarray.resize(3);
 			}
@@ -6263,10 +6264,10 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeEvohome;
 	unsigned char subType=pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
-		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
-	else
+	if (HwdType==HTYPE_EVOHOME_SERIAL)
 		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	else //GB3: web based evohome uses decimal device ID's
+		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
 	std::string ID(szID.str());
 	unsigned char Unit=0;
 	unsigned char cmnd=pEvo->EVOHOME1.status;
@@ -6276,6 +6277,8 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	std::string szUntilDate;
 	if(pEvo->EVOHOME1.mode==CEvohomeBase::cmTmp)//temporary
 		szUntilDate=CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
+
+	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
 
 	//FIXME A similar check is also done in switchmodal do we want to forward the ooc flag and rely on this check entirely?
 	std::vector<std::vector<std::string> > result;
@@ -6293,7 +6296,6 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	else
 	{
 		bNewDev=true;
-		CEvohomeSerial *pEvoHW = reinterpret_cast<CEvohomeSerial*>(GetHardware(HwdID));
 		if(!pEvoHW)
 			return;
 		name=pEvoHW->GetControllerName();
@@ -6325,15 +6327,15 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		if (HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
-		else
+		if (HwdType==HTYPE_EVOHOME_SERIAL)
 			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
+		else //GB3: web based evohome uses decimal device ID's
+			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
 		WriteMessage(szTmp);
 		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
 		WriteMessage(szTmp);
 		WriteMessage("status        = ");
-		WriteMessage(CEvohomeSerial::GetControllerModeName(pEvo->EVOHOME1.status));
+		WriteMessage(pEvoHW->GetControllerModeName(pEvo->EVOHOME1.status));
 
 		WriteMessageEnd();
 	}

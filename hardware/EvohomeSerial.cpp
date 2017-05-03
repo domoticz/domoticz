@@ -77,16 +77,8 @@ CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, co
 	  // allow migration of hardware created before baud rate was configurable
 	  m_iBaudRate=115200;
 	}
-	if(!szSerialPort.empty())
-	{
-		m_szSerialPort=szSerialPort;
-		m_bScriptOnly=false;
-	}
-	else
-	{
-		m_bScriptOnly=true;
-		m_bSkipReceiveCheck = true;
-	}
+	m_szSerialPort=szSerialPort;
+
 	if (!UserContID.empty())
 	{
 		std::stringstream s_strid(UserContID);
@@ -112,10 +104,13 @@ CEvohomeSerial::CEvohomeSerial(const int ID, const std::string &szSerialPort, co
 	RegisterDecoder(cmdDeviceInfo,boost::bind(&CEvohomeSerial::DecodeDeviceInfo,this, _1));
 	RegisterDecoder(cmdBatteryInfo,boost::bind(&CEvohomeSerial::DecodeBatteryInfo,this, _1));
 }
+
+
 CEvohomeSerial::~CEvohomeSerial(void)
 {
 	m_bIsStarted=false;
 }
+
 
 void CEvohomeSerial::RegisterDecoder(unsigned int cmd, fnc_evohome_decode fndecoder)
 {
@@ -127,17 +122,9 @@ void CEvohomeSerial::Init()
 
 }
 
+
 bool CEvohomeSerial::StartHardware()
 {
-  if(m_bScriptOnly)
-  {
-    Init();
-    m_bIsStarted=true;
-    sOnConnected(this);
-    return true;
-  }
-  else
-  {
 	if (m_bDebug && !m_pEvoLog)
 	{
 		try
@@ -202,18 +189,11 @@ bool CEvohomeSerial::StartHardware()
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeSerial::Do_Work, this)));
 
 	return (m_thread!=NULL);
-  }
 }
+
 
 bool CEvohomeSerial::StopHardware()
 {
-  if(m_bScriptOnly)
-  {
-    m_bIsStarted=false;
-    return true;
-  }
-  else
-  {
 	m_stoprequested=true;
 	if (m_thread != NULL)
 		m_thread->join();	
@@ -227,7 +207,6 @@ bool CEvohomeSerial::StopHardware()
 		m_pEvoLog=NULL;
 	}
 	return true;
-  }	
 }
 
 
@@ -395,97 +374,25 @@ bool CEvohomeSerial::WriteToHardware(const char *pdata, const unsigned char leng
 		case pTypeEvohome:
 			if (length<sizeof(REVOBUF::_tEVOHOME1))
 				return false;
-			if(!m_bScriptOnly)//This is a switch so the on action script will be run anyway
-				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdControllerMode).Add(ConvertMode(m_dczToEvoControllerMode,tsen->EVOHOME1.status)).Add((tsen->EVOHOME1.mode==1)?CEvohomeDateTime(tsen->EVOHOME1):CEvohomeDateTime()).Add(tsen->EVOHOME1.mode));
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdControllerMode).Add(ConvertMode(m_dczToEvoControllerMode,tsen->EVOHOME1.status)).Add((tsen->EVOHOME1.mode==1)?CEvohomeDateTime(tsen->EVOHOME1):CEvohomeDateTime()).Add(tsen->EVOHOME1.mode));
 			break;
 		case pTypeEvohomeZone:
 			if (length<sizeof(REVOBUF::_tEVOHOME2))
 				return false;
-			if(!m_bScriptOnly)
-				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdSetpointOverride).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add(tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0xFFFF).Add((uint8_t)0xFF).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
-			else
-				RunScript(pdata,length);
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdSetpointOverride).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add(tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0xFFFF).Add((uint8_t)0xFF).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
 			break;
 		case pTypeEvohomeWater:
 			if (length<sizeof(REVOBUF::_tEVOHOME2))
 				return false;
-			if(!m_bScriptOnly)
-				AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdDHWState).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add((uint8_t)tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0).Add((uint8_t)0).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
-			else
-				RunScript(pdata,length);
+			AddSendQueue(CEvohomeMsg(CEvohomeMsg::pktwrt,GetControllerID(),cmdDHWState).Add((uint8_t)(tsen->EVOHOME2.zone-1)).Add((uint8_t)tsen->EVOHOME2.temperature).Add(ConvertMode(m_dczToEvoZoneMode,tsen->EVOHOME2.mode)).Add((uint16_t)0).Add((uint8_t)0).Add_if(CEvohomeDateTime(tsen->EVOHOME2),(tsen->EVOHOME2.mode==2)));
 			break;
 		case pTypeEvohomeRelay:
 			if (length<sizeof(REVOBUF::_tEVOHOME3))
 				return false;
-			if(!m_bScriptOnly)//Only supported by HGI80
-				SetRelayHeatDemand(tsen->EVOHOME3.devno,tsen->EVOHOME3.demand);
+			SetRelayHeatDemand(tsen->EVOHOME3.devno,tsen->EVOHOME3.demand);
 			break;
 	}
 	return true;
-}
-
-void CEvohomeSerial::RunScript(const char *pdata, const unsigned char length)
-{
-	if(!pdata)
-		return;
-	REVOBUF *tsen=(REVOBUF*)pdata;
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT  HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d)",	m_HwdID, (int)tsen->EVOHOME2.zone, (int)tsen->EVOHOME2.type);
-	if (!result.empty())
-	{
-		unsigned long ID;
-		std::vector<std::string> sd=result[0];
-		std::stringstream s_strid;
-		s_strid << std::hex << sd[1];
-		s_strid >> ID;
-		
-		std::string OnAction(sd[6]);
-		if (OnAction.find("script://")!=std::string::npos)
-		{
-			s_strid.clear();
-			s_strid.str("");
-			s_strid << ID;
-			boost::replace_all(OnAction, "{deviceid}", s_strid.str());
-			s_strid.clear();
-			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.zone;
-			boost::replace_all(OnAction, "{unit}", s_strid.str());
-			s_strid.clear();
-			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.mode;
-			boost::replace_all(OnAction, "{mode}", s_strid.str());
-			s_strid.clear();
-			s_strid.str("");
-			s_strid << tsen->EVOHOME2.temperature / 100.0f;
-			boost::replace_all(OnAction, "{setpoint}", s_strid.str());
-			s_strid.clear();
-			s_strid.str("");
-			s_strid << (int)tsen->EVOHOME2.temperature;
-			boost::replace_all(OnAction, "{state}", s_strid.str());
-			boost::replace_all(OnAction, "{until}", CEvohomeDateTime::GetISODate(tsen->EVOHOME2));
-			//Execute possible script
-			std::string scriptname = OnAction.substr(9);
-#if !defined WIN32
-			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + "scripts/" + scriptname;
-#endif
-			std::string scriptparams="";
-			//Add parameters
-			int pindex=scriptname.find(' ');
-			if (pindex!=std::string::npos)
-			{
-				scriptparams=scriptname.substr(pindex+1);
-				scriptname=scriptname.substr(0,pindex);
-			}
-			
-			if (file_exist(scriptname.c_str()))
-			{
-				m_sql.AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
-			}
-			else
-				_log.Log(LOG_ERROR,"evohome: Error script not found '%s'",scriptname.c_str());
-		}
-	}
 }
 
 
