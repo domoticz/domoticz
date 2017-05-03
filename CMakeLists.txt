@@ -313,7 +313,6 @@ hardware/EnOceanESP3.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/evohome.cpp
 hardware/ETH8020.cpp
-hardware/Fitbit.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
