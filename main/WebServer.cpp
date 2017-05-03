@@ -2989,8 +2989,6 @@ namespace http {
 			std::string strparm = szUserDataFolder;
 			if (!script_params.empty())
 			{
-				if (!IsArgumentSecure(script_params))
-					return;
 				if (strparm.size() > 0)
 					strparm += " " + script_params;
 				else
