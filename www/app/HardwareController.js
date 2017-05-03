@@ -644,6 +644,30 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Nest_NewApi") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestnewapi #apikey").val();
+			    if (apikey == "") {
+			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
+			        return;
+			    }
+
+			    $.ajax({
+			        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(apikey) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&datatimeout=" + datatimeout,
+			        async: false,
+			        dataType: 'json',
+			        success: function (data) {
+			            RefreshHardwareTable();
+			        },
+			        error: function () {
+			            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+			        }
+			    });
+			}
 			else if (text.indexOf("SBFSpot") >= 0) {
 				var configlocation = $("#hardwarecontent #divlocation #location").val();
 				if (configlocation == "") {
@@ -1522,6 +1546,28 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
+			}
+			else if (text.indexOf("Nest_NewApi") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestnewapi #apikey").val();
+			    if (apikey == "") {
+			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
+			        return;
+			    }
+			    $.ajax({
+			        url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+                       "&name=" + encodeURIComponent(name) +
+                       "&username=" + encodeURIComponent(apikey) +
+                       "&enabled=" + bEnabled +
+                       "&datatimeout=" + datatimeout,
+			        async: false,
+			        dataType: 'json',
+			        success: function (data) {
+			            RefreshHardwareTable();
+			        },
+			        error: function () {
+			            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+			        }
+			    });
 			}
 			else if (text.indexOf("Toon") >= 0) {
 				var username = $("#hardwarecontent #divlogin #username").val();
@@ -4965,6 +5011,9 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("SolarEdge via") >= 0) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
 						}
+						else if (data["Type"].indexOf("Nest_NewApi") >= 0) {
+						    $("#hardwarecontent #hardwareparamsnestnewapi #apikey").val(data["Username"]);
+						}
 						else if (data["Type"].indexOf("Toon") >= 0) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
 						}
@@ -5105,6 +5154,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
+			$("#hardwarecontent #divnestnewapi").hide();
 			$("#hardwarecontent #divenecotoon").hide();
 			$("#hardwarecontent #div1wire").hide();
 			$("#hardwarecontent #divgoodweweb").hide();
@@ -5238,6 +5288,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
+			}
+			else if (text.indexOf("Nest_NewApi") >= 0) {
+			    $("#hardwarecontent #divnestnewapi").show();
+			    $("#hardwarecontent #divremote").hide();
+			    $("#hardwarecontent #divserial").hide();
+			    $("#hardwarecontent #divunderground").hide();
+			    $("#hardwarecontent #divhttppoller").hide();
+			    $("#hardwarecontent #divlogin").hide();
 			}
 			else if (text.indexOf("Toon") >= 0) {
 				$("#hardwarecontent #divlogin").show();

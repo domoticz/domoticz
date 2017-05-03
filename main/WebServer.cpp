@@ -1218,7 +1218,10 @@ namespace http {
 					)
 					return;
 			}
-			else if (htype == HTYPE_SolarEdgeAPI)
+			else if (
+				(htype == HTYPE_SolarEdgeAPI) ||
+				(htype == HTYPE_NEST_NEWAPI)
+				)
 			{
 				if (
 					(username == "")
@@ -1564,7 +1567,10 @@ namespace http {
 					)
 					return;
 			}
-			else if (htype == HTYPE_SolarEdgeAPI)
+			else if (
+				(htype == HTYPE_SolarEdgeAPI) ||
+				(htype == HTYPE_NEST_NEWAPI)
+				)
 			{
 				if (
 					(username == "")

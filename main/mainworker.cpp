@@ -81,6 +81,7 @@
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
+#include "../hardware/NestNewApi.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
@@ -899,6 +900,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_NEST:
 		pHardware = new CNest(ID, Username, Password);
+		break;
+	case HTYPE_NEST_NEWAPI:
+		pHardware = new CNestNewApi(ID, Username);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
@@ -11919,6 +11923,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNest *pGateway = reinterpret_cast<CNest*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
+		else if (pHardware->HwdType == HTYPE_NEST_NEWAPI)
+		{
+			CNestNewApi *pGateway = reinterpret_cast<CNestNewApi*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
 		{
 			CAnnaThermostat *pGateway = reinterpret_cast<CAnnaThermostat*>(pHardware);
@@ -12188,6 +12197,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	else if (pHardware->HwdType == HTYPE_NEST)
 	{
 		CNest *pGateway = reinterpret_cast<CNest*>(pHardware);
+		pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_NEST_NEWAPI)
+	{
+		CNestNewApi *pGateway = reinterpret_cast<CNestNewApi*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
