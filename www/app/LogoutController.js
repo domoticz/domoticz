@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('LogoutController', [ 'permissions', '$scope', '$rootScope', '$location', '$http', '$interval', function (permissions, $scope, $rootScope, $location, $http, $interval) {
+	app.controller('LogoutController', ['permissions', '$scope', '$rootScope', '$location', '$http', '$interval', function (permissions, $scope, $rootScope, $location, $http, $interval) {
 
 		(function init() {
 			var permissionList = {
@@ -9,12 +9,12 @@ define(['app'], function (app) {
 			permissions.setPermissions(permissionList);
 			$.ajax({
 				url: "json.htm?type=command&param=dologout",
-				async: true, 
+				async: true,
 				dataType: 'json',
 				success: function (data) {
 					$.ajax({
 						url: "json.htm?type=command&param=getauth",
-						async: false, 
+						async: false,
 						dataType: 'json',
 						success: function (data) {
 							if (data.status === "OK") {

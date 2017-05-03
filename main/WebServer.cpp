@@ -1082,6 +1082,12 @@ namespace http {
 				//USB/System
 				if (sport.empty())
 					return; //need to have a serial port
+
+                                if (htype == HTYPE_TeleinfoMeter) {
+                                        // Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
+                                        // Domoticz instance are very low as both are national standards (NL and FR)
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+                                }		
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -1106,6 +1112,11 @@ namespace http {
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
+                                if (htype == HTYPE_ECODEVICES) {
+                                        // EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
+                                        // Domoticz instance are very low as both are national standards (NL and FR)
+                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+                                }
 			}
 			else if (htype == HTYPE_DomoticzInternal)	{
 				// DomoticzInternal cannot be added manually
@@ -1198,8 +1209,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo) ||
-				(htype == HTYPE_FITBIT)
+				(htype == HTYPE_Netatmo)
 				)
 			{
 				if (
@@ -1545,8 +1555,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo) ||
-				(htype == HTYPE_FITBIT)
+				(htype == HTYPE_Netatmo)
 				)
 			{
 				if (
@@ -2978,8 +2987,10 @@ namespace http {
 				return;
 			std::string script_params = request::findValue(&req, "scriptparams");
 			std::string strparm = szUserDataFolder;
-			if (script_params != "")
+			if (!script_params.empty())
 			{
+				if (!IsArgumentSecure(script_params))
+					return;
 				if (strparm.size() > 0)
 					strparm += " " + script_params;
 				else
@@ -7630,11 +7641,17 @@ namespace http {
 			}
 			std::string RaspCamParams = request::findValue(&req, "RaspCamParams");
 			if (RaspCamParams != "")
-				m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+			{
+				if (IsArgumentSecure(RaspCamParams))
+					m_sql.UpdatePreferencesVar("RaspCamParams", RaspCamParams.c_str());
+			}
 
 			std::string UVCParams = request::findValue(&req, "UVCParams");
 			if (UVCParams != "")
-				m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+			{
+				if (IsArgumentSecure(UVCParams))
+					m_sql.UpdatePreferencesVar("UVCParams", UVCParams.c_str());
+			}
 
 			std::string EnableNewHardware = request::findValue(&req, "AcceptNewHardware");
 			int iEnableNewHardware = (EnableNewHardware == "on" ? 1 : 0);
@@ -10915,10 +10932,6 @@ namespace http {
 					_eHardwareTypes hType = (_eHardwareTypes)atoi(sd[3].c_str());
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
-#ifndef _DEBUG
-					if (hType == HTYPE_FITBIT)
-						continue;
-#endif
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
