@@ -942,7 +942,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_SysfsGPIO:
 #ifdef WITH_SYSFS_GPIO
-		pHardware = new CSysfsGPIO(ID);
+		pHardware = new CSysfsGPIO(ID, Mode1);
 #endif
 		break;
 	case HTYPE_Comm5TCP:

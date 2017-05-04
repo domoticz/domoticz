@@ -3600,25 +3600,26 @@ namespace http {
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						switch (Type)
+
+						if ((Type == HTYPE_RFXLAN) ||
+							(Type == HTYPE_RFXtrx315) ||
+							(Type == HTYPE_RFXtrx433) ||
+							(Type == HTYPE_RFXtrx868) ||
+							(Type == HTYPE_EnOceanESP2) ||
+							(Type == HTYPE_EnOceanESP3) ||
+							(Type == HTYPE_Dummy) ||
+							(Type == HTYPE_Tellstick) ||
+							(Type == HTYPE_EVOHOME_SCRIPT) ||
+							(Type == HTYPE_EVOHOME_SERIAL) ||
+							(Type == HTYPE_RaspberryGPIO) ||
+							(Type == HTYPE_RFLINKUSB) ||
+							(Type == HTYPE_RFLINKTCP) ||
+							(Type == HTYPE_ZIBLUEUSB) ||
+							(Type == HTYPE_ZIBLUETCP) ||
+							(Type == HTYPE_OpenWebNetTCP) ||
+							(Type == HTYPE_OpenWebNetUSB) ||
+							(Type == HTYPE_SysfsGPIO))
 						{
-						case HTYPE_RFXLAN:
-						case HTYPE_RFXtrx315:
-						case HTYPE_RFXtrx433:
-						case HTYPE_RFXtrx868:
-						case HTYPE_EnOceanESP2:
-						case HTYPE_EnOceanESP3:
-						case HTYPE_Dummy:
-						case HTYPE_Tellstick:
-						case HTYPE_EVOHOME_SCRIPT:
-						case HTYPE_EVOHOME_SERIAL:
-						case HTYPE_RaspberryGPIO:
-						case HTYPE_RFLINKUSB:
-						case HTYPE_RFLINKTCP:
-						case HTYPE_ZIBLUEUSB:
-						case HTYPE_ZIBLUETCP:
-						case HTYPE_OpenWebNetTCP:
-						case HTYPE_OpenWebNetUSB:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -3646,6 +3647,33 @@ namespace http {
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
 						ii++;
+					}
+				}
+#else
+				root["status"] = "OK";
+				root["result"][0]["idx"] = 0;
+				root["result"][0]["Name"] = "N/A";
+#endif
+			}
+			else if (cparam == "getsysfsgpio")
+			{
+				//used by Add Manual Light/Switch dialog
+				root["title"] = "GetSysfsGpio";
+#ifdef WITH_SYSFS_GPIO
+				std::vector<int> gpio_ids = CSysfsGPIO::GetGpioIds();
+				std::vector<std::string> gpio_names = CSysfsGPIO::GetGpioNames();
+
+				if (gpio_ids.size() == 0) {
+					root["status"] = "ERROR";
+					root["result"][0]["idx"] = 0;
+					root["result"][0]["Name"] = "No sysfs-gpio exports";
+				}
+				else {
+					for (int ii = 0; ii < gpio_ids.size(); ii++)
+					{
+						root["status"] = "OK";
+						root["result"][ii]["idx"] = gpio_ids[ii];
+						root["result"][ii]["Name"] = gpio_names[ii];
 					}
 				}
 #else
@@ -4036,6 +4064,7 @@ namespace http {
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
+
 				if (
 					(hwdid == "") ||
 					(sswitchtype == "") ||
@@ -4118,6 +4147,50 @@ namespace http {
 					if (pPin->GetIsInput()) {
 						root["status"] = "ERROR";
 						root["message"] = "Given pin is not configured for output";
+						return;
+					}
+#else
+					root["status"] = "ERROR";
+					root["message"] = "GPIO support is disabled";
+					return;
+#endif
+				}
+				else if (lighttype == 69)
+				{
+#ifdef WITH_SYSFS_GPIO
+
+					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
+					int unitcode = atoi(sunitcode.c_str());
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					std::string sswitchtype = request::findValue(&req, "switchtype");
+					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					
+					std::string id = request::findValue(&req, "id");
+					if ((id == "") || (sunitcode == ""))
+					{
+						return;
+					}
+					devid = id;
+
+					if (sunitcode == "") 
+					{
+						root["status"] = "ERROR";
+						root["message"] = "No GPIO number given";
+						return;
+					}
+
+					CSysfsGPIO *pSysfsGpio = (CSysfsGPIO *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+
+					if (pSysfsGpio == NULL) {
+						root["status"] = "ERROR";
+						root["message"] = "Could not retrieve SysfsGPIO hardware pointer";
+						return;
+					}
+
+					if (pSysfsGpio->HwdType != HTYPE_SysfsGPIO) {
+						root["status"] = "ERROR";
+						root["message"] = "Given hardware is not SysfsGPIO";
 						return;
 					}
 #else
@@ -4616,6 +4689,35 @@ namespace http {
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
 					if (pPin == NULL) {
+						return;
+					}
+#else
+					return;
+#endif
+				}
+				else if (lighttype == 69)
+				{
+#ifdef WITH_SYSFS_GPIO
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					devid = "0";
+					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
+					int unitcode = atoi(sunitcode.c_str());
+					std::string sswitchtype = request::findValue(&req, "switchtype");
+					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					std::string id = request::findValue(&req, "id");
+					CSysfsGPIO::RequestDbUpdate(unitcode);
+
+					if ((id == "") || (sunitcode == ""))
+					{
+						return;
+					}
+					devid = id;
+
+					CSysfsGPIO *pSysfsGPIO = (CSysfsGPIO *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					
+					if ((pSysfsGPIO == NULL) || (pSysfsGPIO->HwdType != HTYPE_SysfsGPIO))
+					{
 						return;
 					}
 #else

@@ -6,24 +6,35 @@
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
 
+struct gpio_info
+{
+	int	pin_number;		// GPIO Pin number
+	int	value;			// GPIO pin Value
+	int	direction;		// GPIO IN or OUT
+	int	active_low;		// GPIO ActiveLow
+	int	edge;			// GPIO int Edge
+	int	read_value_fd;	// Fast read fd
+	int	db_state;		// Database Value
+	int id1;			// Device id1
+	int id2;			// Device id2
+	int id3;			// Device id3
+	int id4;			// Device id4
+	int id_valid;		// Device valid
+	int request_update; // Request update
+};
+
 class CSysfsGPIO : public CDomoticzHardwareBase
 {
-	struct gpio_info
-	{
-		int	pin_number;		// GPIO Pin number
-		int	value;			// GPIO pin Value
-		int	db_state;		// Database Value
-		int	direction;		// GPIO IN or OUT
-		int	active_low;		// GPIO ActiveLow
-		int	edge;			// GPIO int Edge
-		int	read_value_fd;	// Fast read fd
-	};
 
 public:
-	CSysfsGPIO(const int ID);
+
+	CSysfsGPIO(const int ID, const int ManualDevices);
 	~CSysfsGPIO();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
+	static std::vector<int> GetGpioIds();
+	static std::vector<std::string> GetGpioNames();
+	static void RequestDbUpdate(int pin);
 
 private:
 	bool StartHardware();
@@ -34,12 +45,19 @@ private:
 	void PollGpioInputs();
 	void CreateDomoticzDevices();
 	void UpdateDomoticzInputs(bool forceUpdate);
+	void UpdateDomoticzDatabase();
+	void UpdateGpioOutputs();
+	void UpdateDeviceID(int pin);
+	std::vector<std::string> GetGpioDeviceId();
 	int GPIORead(int pin, const char* param);
 	int GPIOReadFd(int fd);
 	int GPIOWrite(int pin, int value);
 	int GetReadResult(int bytecount, char* value_str);
 	boost::shared_ptr<boost::thread> m_thread;
-	std::vector<gpio_info> GpioSavedState;
+	static std::vector<gpio_info> GpioSavedState;
+	static int sysfs_hwdid;
+	static int sysfs_req_update;
 	volatile bool m_stoprequested;
+	int m_auto_configure_devices;
 	tRBUF m_Packet;
 };
