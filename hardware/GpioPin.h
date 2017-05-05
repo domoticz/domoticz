@@ -50,11 +50,11 @@ public:
 private:
 	std::string m_label;
 	bool m_isExported;
-	int	m_pin_number;		// GPIO Pin number
-	int	m_value;			// GPIO pin Value
-	int	m_direction;		// GPIO IN or OUT
+	int m_pin_number;		// GPIO Pin number
+	int m_value;			// GPIO pin Value
+	int m_direction;		// GPIO IN or OUT
 	int m_edge;
-	int	m_active_low;		// GPIO ActiveLow
-	int	m_read_value_fd;	// Fast read fd
+	int m_active_low;		// GPIO ActiveLow
+	int m_read_value_fd;	// Fast read fd
 	bool m_db_state;		// Database Value
 };

@@ -85,7 +85,7 @@ bool CGpioPin::SetDBState(int db_state)
 
 bool CGpioPin::GetIsInput()
 {
-	return (m_direction == 0 ? true : false);
+	return (m_direction == 0);
 }
 
 std::string CGpioPin::ToString()

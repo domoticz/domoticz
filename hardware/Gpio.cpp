@@ -42,12 +42,10 @@ Connection information:
 
 	Note: If you wire a pull-up, make sure you use 3.3V from P1-01, NOT the 5V pin ! The inputs are 3.3V max !
 */
-#ifndef WIN32
-#include "stdafx.h"
 #ifdef WITH_GPIO
+#include "stdafx.h"
 #include "Gpio.h"
 #include "GpioPin.h"
-#endif
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -647,3 +645,4 @@ void CGpio::GetSchedPriority(int *s, int *pri)
 }
 
 #endif
+
