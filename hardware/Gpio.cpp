@@ -574,7 +574,6 @@ int CGpio::GPIOWrite(int gpio_pin, bool value)
 	int fd;
 	bool new_state = false;
 	int active_low = -1;
-	_log.Log(LOG_NORM, "GPIO: GPIOWrite pin: %d value: %d.", gpio_pin, value);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetPin() == gpio_pin)
