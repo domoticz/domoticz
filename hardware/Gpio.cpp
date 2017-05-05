@@ -42,8 +42,9 @@ Connection information:
 
 	Note: If you wire a pull-up, make sure you use 3.3V from P1-01, NOT the 5V pin ! The inputs are 3.3V max !
 */
-#ifdef WITH_GPIO
 #include "stdafx.h"
+#ifndef WIN32
+#ifdef WITH_GPIO
 #include "Gpio.h"
 #include "GpioPin.h"
 #include "../main/Helper.h"
@@ -54,9 +55,9 @@ Connection information:
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include <sys/syscall.h>
+#include <sys/resource.h>
 #include <poll.h>
 #include <sched.h>
-#include <sys/resource.h>
 
 #define NO_INTERRUPT		-1
 #define DELAYED_STARTUP_SEC	30
@@ -280,12 +281,7 @@ bool CGpio::StartHardware()
 
 bool CGpio::StopHardware()
 {
-
 	m_stoprequested=true;
-	//interruptCondition.notify_one();
-
-//	if (m_thread != NULL)
-//		m_thread->join();
 
 	if (m_thread_poller != NULL)
 		m_thread_poller->join();
@@ -365,9 +361,9 @@ bool CGpio::CreateDomoticzDevices()
 			if (result.size() > 0) /* input found */
 			{
 				std::vector<std::string> sd = result[0];
-				bool options = (atoi(sd[2].c_str()) == 0);
-				if ((!options && it->GetIsInput()) ||
-					(options && !it->GetIsInput()))
+				bool bIsInput = (atoi(sd[2].c_str()) == 0);
+				if ((!bIsInput && it->GetIsInput()) ||
+					(bIsInput && !it->GetIsInput()))
 				{
 					m_sql.safe_query(
 						"DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
@@ -452,16 +448,14 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 
 bool CGpio::InitPins()
 {
-	m_pins_mutex.lock();
-	pins.clear();
-	m_pins_mutex.unlock();
-
 	int fd;
 	bool db_state = false;
 	char path[GPIO_MAX_PATH];
 	char szIdx[10];
 	char label[12];
 	std::vector<std::vector<std::string> > result;
+	boost::mutex::scoped_lock lock(m_pins_mutex);
+	pins.clear();
 
 	for (int gpio_pin = GPIO_PIN_MIN; gpio_pin <= GPIO_PIN_MAX; gpio_pin++)
 	{
@@ -476,17 +470,13 @@ bool CGpio::InitPins()
 				db_state = atoi(result[0][0].c_str());
 
 			snprintf(label, sizeof(label), "GPIO pin %d", gpio_pin);
-			m_pins_mutex.lock();
 			pins.push_back(CGpioPin(gpio_pin, label, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"),	GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), -1, db_state));
 			//_log.Log(LOG_NORM, "GPIO: Pin %d added (value: %d, direction: %d, edge: %d, active_low: %d, db_state: %d)",
 			//	gpio_pin, GPIORead(gpio_pin, "value"), GPIORead(gpio_pin, "direction"), GPIORead(gpio_pin, "edge"), GPIORead(gpio_pin, "active_low"), db_state);
 			close(fd);
 
 			if (GPIORead(gpio_pin, "direction") != 0)
-			{
-				m_pins_mutex.unlock();
 				continue;
-			}
 
 			snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, gpio_pin);
 			fd = pins.back().SetReadValueFd(open(path, O_RDWR)); // O_RDWR seems mandatory to clear interrupt (not sure why?)
@@ -498,7 +488,6 @@ bool CGpio::InitPins()
 				while (pinPass != -1)
 					sleep_milliseconds(1);
 			}
-			m_pins_mutex.unlock();
 		}
 	}
 	return (pins.size() > 0);
@@ -644,4 +633,4 @@ void CGpio::GetSchedPriority(int *s, int *pri)
 }
 
 #endif
-
+#endif
