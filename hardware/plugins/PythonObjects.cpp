@@ -1071,7 +1071,8 @@ namespace Plugins {
 
 	PyObject * CConnection_listen(CConnection * self)
 	{
-		return nullptr;
+		Py_INCREF(Py_None);
+		return Py_None;
 	}
 
 	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
