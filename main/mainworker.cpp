@@ -100,7 +100,6 @@
 #include "../hardware/OpenWebNetTCP.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
-#include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
 #include "../hardware/AccuWeather.h"
@@ -886,11 +885,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
-#ifdef _DEBUG
-	case HTYPE_FITBIT:
-		pHardware = new CFitbit(ID, Username, Password);
-		break;
-#endif
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
 		break;
@@ -11891,7 +11885,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
-		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)

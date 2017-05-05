@@ -156,7 +156,7 @@ enum _eHardwareTypes {
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
-	HTYPE_FITBIT,				//75
+	HTYPE_AVAILABLE_FOR_USAGE,	//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_DenkoviSmartdenLan,	//78
