@@ -1206,7 +1206,7 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 	std::stringstream sstr;
 	sstr << "SID=none";
 	// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
-	sstr << "; Expires=" << make_web_time(0);
+	sstr << "; HttpOnly; Expires=" << make_web_time(0);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1265,7 +1265,7 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires=" << make_web_time(session.expires);
+	sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 

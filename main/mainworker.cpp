@@ -100,7 +100,6 @@
 #include "../hardware/OpenWebNetTCP.h"
 #include "../hardware/AtagOne.h"
 #include "../hardware/Sterbox.h"
-#include "../hardware/Fitbit.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
 #include "../hardware/AccuWeather.h"
@@ -685,7 +684,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohome(ID,SerialPort,Mode1);
+		pHardware = new CEvohome(ID,SerialPort,Mode1,Filename);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -886,11 +885,6 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
-#ifdef _DEBUG
-	case HTYPE_FITBIT:
-		pHardware = new CFitbit(ID, Username, Password);
-		break;
-#endif
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID,Username);
 		break;
@@ -930,7 +924,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif //WITH_TELLDUSCORE
 	case HTYPE_EVOHOME_SCRIPT:
-		pHardware = new CEvohome(ID,"",0);
+		pHardware = new CEvohome(ID,"",0,"");
 		break;
 	case HTYPE_PiFace:
 		pHardware = new CPiFace(ID);
@@ -11891,7 +11885,6 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
-		(pHardware->HwdType == HTYPE_FITBIT) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		)
