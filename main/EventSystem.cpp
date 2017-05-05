@@ -15,6 +15,7 @@
 #include "SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "WebServer.h"
+#include "../main/WebServerHelper.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #define __STDC_FORMAT_MACROS
@@ -41,6 +42,49 @@ using namespace boost::python;
 #endif
 
 extern std::string szUserDataFolder;
+extern http::server::CWebServerHelper m_webservers;
+
+
+// Mapping array from JSON fields to LUA fields
+std::map<std::string, std::string> jsonfields =
+{
+	{ "Barometer",			"barometer" },
+	{ "Chill",				"chill" },
+	{ "Counter",			"counter" },
+	{ "CounterDeliv",		"counterDeliv" },
+	{ "CounterDelivToday",	"counterDelivToday" },
+	{ "CounterToday",		"counterToday" },
+	{ "Current",			"current" },
+	{ "DewPoint",			"dewPoint" },
+	{ "Direction",			"direction" },
+	{ "DirectionStr",		"directionStr" },
+	{ "Forecast",			"forecast" },
+	{ "ForecastStr",		"forecastStr" },
+	{ "Humidity",			"humidity" },
+	{ "LevelActions",		"levelActions" },
+	{ "LevelNames",			"levelNames" },
+	{ "LevelOffHidden",		"levelOffHidden" },
+	{ "MaxDimLevel",		"maxDimLevel" },
+	{ "Moisture",			"moisture" },
+	{ "Pressure",			"pressure" },
+	{ "Quality",			"quality" },
+	{ "Radiation",			"radiation" },
+	{ "Rain",				"rain" },
+	{ "RainRate",			"rainRate" },
+	{ "SensorType",			"sensorType" },
+	{ "SensorUnit",			"sensorUnit" },
+	{ "SetPoint",			"setPoint" },
+	{ "Speed",				"speed" },
+	{ "Temp",				"temp" },
+	{ "TypeImg",			"typeImage" },
+	{ "Usage",				"usage" },
+	{ "UsageDeliv",			"usageDeliv" },
+	{ "ValueQuantity",		"valueQuantity" },
+	{ "ValueUnits",			"valueUnits" },
+	{ "Visibility",			"visibility" },
+	{ "Voltage",			"voltage" }
+};
+
 
 CEventSystem::CEventSystem(void)
 {
@@ -2448,8 +2492,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	//Get All Hardware ID's/Names, need them later
 	std::vector<std::vector<std::string> > result;
-	CWebServer server;
-
+	
 	std::map<int, _tHardwareListInt> _hardwareNames;
 	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
 	if (result.size() > 0)
@@ -2473,7 +2516,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			// TODO remove comments
 			//			else
 			//			{
-			//				tlist.HardwareType = server.PluginHardwareDesc(ID);
+			//				tlist.HardwareType = m_webservers.PluginHardwareDesc(ID);
 			//			}
 			_hardwareNames[ID] = tlist;
 		}
@@ -2492,6 +2535,11 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 		additional_lines = 0;
 		data_lines = 0;
+
+		Json::Value tempjson;
+		std::stringstream sstr;
+		sstr << sitem.ID;
+		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 		result = m_sql.safe_query(
@@ -2512,7 +2560,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		timed_out = (now - checktime >= SensorTimeOut * 60);
 
-		_log.Log(LOG_STATUS, "Device %s, diff =  %d", sitem.deviceName, (now-checktime));
+		//_log.Log(LOG_STATUS, "Device %s, diff =  %d", sitem.deviceName.c_str(), (now-checktime));
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -2620,6 +2668,27 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 
+		// Lux does not have it's own field yet.
+		if (("Lux" == dev_type) && ("Lux" == sub_type))
+		{
+			lua_pushstring(lua_state, "lux");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("General" == dev_type) && ("kWh" == sub_type))
+		{
+			lua_pushstring(lua_state, "whTotal");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "whActual");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		// This next bit *should* be superceeded by data from the JSON call,
+		// co comment out for now.
+/*
 		if (("Heating" == dev_type) && ("Zone" == sub_type))
 		{
 			lua_pushstring(lua_state, "setPoint");
@@ -2630,12 +2699,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_rawset(lua_state, -3);
 		}
 
-		if (("Lux" == dev_type) && ("Lux" == sub_type))
-		{
-			lua_pushstring(lua_state, "lux");
-			lua_pushstring(lua_state, strarray[0].c_str());
-			lua_rawset(lua_state, -3);
-		}
 
 		if (("General" == dev_type) && ("kWh" == sub_type))
 		{
@@ -2821,6 +2884,25 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 				lua_pushstring(lua_state, "zwaveAlarm");
 				lua_pushnumber(lua_state, (lua_Number)it->second);
 				lua_rawset(lua_state, -3);
+			}
+		}
+*/
+
+		// Now see if we have additional fields from the JSON data
+		Json::ArrayIndex rsize = tempjson["result"].size();
+		if (rsize > 0)
+		{
+			std::map<std::string, std::string>::const_iterator itt;
+
+			for (itt = jsonfields.begin(); itt != jsonfields.end(); ++itt)
+			{
+				if (tempjson["result"][0][itt->first] != Json::Value::null)
+				{
+					std::string value = tempjson["result"][0][itt->first].asString();
+					lua_pushstring(lua_state, itt->second.c_str());
+					lua_pushstring(lua_state, value.c_str());
+					lua_rawset(lua_state, -3);
+				}
 			}
 		}
 
