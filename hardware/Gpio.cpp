@@ -223,13 +223,11 @@ int CGpio::waitForInterrupt(int fd, const int mS)
 void CGpio::UpdateSwitch(const int pin, const bool value)
 {
 	value ? IOPinStatusPacket.LIGHTING1.cmnd = light1_sOn : IOPinStatusPacket.LIGHTING1.cmnd = light1_sOff;
-
-	unsigned char seqnr = IOPinStatusPacket.LIGHTING1.seqnbr;
-	seqnr++;
-	IOPinStatusPacket.LIGHTING1.seqnbr = seqnr;
+	IOPinStatusPacket.LIGHTING1.seqnbr++;
 	IOPinStatusPacket.LIGHTING1.unitcode = pin;
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
 		if (it->GetPin() == pin)
@@ -247,11 +245,12 @@ bool CGpio::StartHardware()
 
 	if (InitPins())
 	{
+		/* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
 		 if (!CreateDomoticzDevices())
 		 {
 		 	_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
 		 	m_stoprequested=true;
-		 }
+		 }*/
 		 if (!m_stoprequested)
 		 {
 			//  Read all exported GPIO ports and set the device status accordingly.
@@ -354,6 +353,7 @@ void CGpio::Poller()
 	_log.Log(LOG_STATUS, "GPIO: Poller stopped", (pid_t)syscall(SYS_gettid));
 }
 
+/* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
 bool CGpio::CreateDomoticzDevices()
 {
 	std::vector<std::vector<std::string> > result;
@@ -366,7 +366,7 @@ bool CGpio::CreateDomoticzDevices()
 			createNewDevice = true;
 		else
 		{
-			if (result.size() > 0) /* input found */
+			if (result.size() > 0) // input found
 			{
 				std::vector<std::string> sd = result[0];
 				bool bIsInput = (atoi(sd[2].c_str()) == 0);
@@ -393,7 +393,7 @@ bool CGpio::CreateDomoticzDevices()
 			return false;
 	}
 	return true;
-}
+}*/
 
 /* static */
 std::vector<CGpioPin> CGpio::GetPinList()
