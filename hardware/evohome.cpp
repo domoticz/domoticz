@@ -91,7 +91,10 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 	m_MaxDeviceID = 0;
 
 	AllSensors = false;
+	AllRelays = true;
 
+	//Debug
+	Log(true, LOG_STATUS, "evohome: Starting with parameters (%d:%s:%d:%s)", ID, szSerialPort.c_str(), baudrate, UserContID.c_str());
 	if(baudrate!=0)
 	{
 	  m_iBaudRate=baudrate;
@@ -178,6 +181,16 @@ bool CEvohome::StartHardware()
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::vector<std::vector<std::string> > result;
+
+		//Debug: get controller count
+		result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
+		int ctrlrCount = 0;
+		if (result.size() > 0)
+		{
+			ctrlrCount = atol(result[0][0].c_str());
+			Log(true, LOG_STATUS, "evohome: #Controllers=%d", ctrlrCount);
+		}
+		
 		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
 			
 		if (!result.empty())
@@ -1675,11 +1688,8 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 	//The relay does not appear to always announce its state but this is probably due to the wireless signal and collisions etc
 	
 	Log(true,LOG_STATUS,"evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
-	if (nDevNo == 0)
-	{
-		nDevNo = 13; // nDevNo appears to always be 0 so recode to 13 to avoid conflict with controller messages 
+	if (AllRelays)
 		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
-	}		
 	else
 		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand));
 	return true;
