@@ -91,7 +91,6 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 	m_MaxDeviceID = 0;
 
 	AllSensors = false;
-	AllRelays = true;
 
 	//Debug
 	Log(true, LOG_STATUS, "evohome: Starting with parameters (%d:%s:%d:%s)", ID, szSerialPort.c_str(), baudrate, UserContID.c_str());
@@ -1688,10 +1687,7 @@ bool CEvohome::DecodeActuatorState(CEvohomeMsg &msg)
 	//The relay does not appear to always announce its state but this is probably due to the wireless signal and collisions etc
 	
 	Log(true,LOG_STATUS,"evohome: %s: ID:0x%06x (%s) DevNo 0x%02x: %d", tag, msg.GetID(0), msg.GetStrID(0).c_str(), nDevNo, nDemand);
-	if (AllRelays)
-		RXRelay(static_cast<uint8_t>(nDevNo),static_cast<uint8_t>(nDemand), msg.GetID(0));
-	else
-		RXRelay(static_cast<uint8_t>(nDevNo), static_cast<uint8_t>(nDemand));
+	RXRelay(static_cast<uint8_t>(0xFF),static_cast<uint8_t>(nDemand));//devno is always 0 and therefore not valid
 	return true;
 }
 
