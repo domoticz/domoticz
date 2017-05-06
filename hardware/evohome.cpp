@@ -92,8 +92,6 @@ CEvohome::CEvohome(const int ID, const std::string &szSerialPort, const int baud
 
 	AllSensors = false;
 
-	//Debug
-	Log(true, LOG_STATUS, "evohome: Starting with parameters (%d:%s:%d:%s)", ID, szSerialPort.c_str(), baudrate, UserContID.c_str());
 	if(baudrate!=0)
 	{
 	  m_iBaudRate=baudrate;
@@ -181,15 +179,6 @@ bool CEvohome::StartHardware()
 		
 		std::vector<std::vector<std::string> > result;
 
-		//Debug: get controller count
-		result = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0)", m_HwdID);
-		int ctrlrCount = 0;
-		if (result.size() > 0)
-		{
-			ctrlrCount = atol(result[0][0].c_str());
-			Log(true, LOG_STATUS, "evohome: #Controllers=%d", ctrlrCount);
-		}
-		
 		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
 			
 		if (!result.empty())
