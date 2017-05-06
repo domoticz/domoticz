@@ -43,32 +43,24 @@ C1Wire::~C1Wire()
 {
 }
 
-bool C1Wire::Have1WireSystem()
-{
-#ifdef WIN32
-	return (C1WireForWindows::IsAvailable());
-#else // WIN32
-	return true;
-#endif // WIN32
-}
-
 void C1Wire::DetectSystem()
 {
-#ifdef WIN32
-	if (!m_system && C1WireForWindows::IsAvailable())
-		m_system = new C1WireForWindows();
-#else // WIN32
-
 	// Using the both systems at same time results in conflicts,
 	// see http://owfs.org/index.php?page=w1-project.
-	if (m_path.length() != 0) {
-		m_system=new C1WireByOWFS(m_path);
-	} else if (C1WireByKernel::IsAvailable()) {
-		m_system=new C1WireByKernel();
-	} else {
-		m_system=new C1WireByOWFS(m_path);
+	if (m_path.length() != 0)
+	{
+		m_system = new C1WireByOWFS(m_path);
 	}
+	else
+	{
+#ifdef WIN32
+		if (C1WireForWindows::IsAvailable())
+			m_system = new C1WireForWindows();
+#else // WIN32
+		if (C1WireByKernel::IsAvailable())
+			m_system = new C1WireByKernel();
 #endif // WIN32
+	}
 }
 
 bool C1Wire::StartHardware()
