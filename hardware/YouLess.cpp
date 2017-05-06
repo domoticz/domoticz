@@ -118,8 +118,10 @@ bool CYouLess::GetP1Details()
 	}
 
 	if (!HTTPClient::GET(szURL, sResult))
+	{
+		_log.Log(LOG_ERROR, "YouLess: Error getting meter details!");
 		return false;
-
+	}
 	Json::Value root;
 
 	Json::Reader jReader;
