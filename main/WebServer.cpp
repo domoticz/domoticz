@@ -7901,7 +7901,7 @@ namespace http {
 					isAlpha = false;
 				}
 			}
-			if ((order == "") || (!isAlpha)) {
+			if (order.empty() || (!isAlpha)) {
 				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 			}
 			else
@@ -8140,7 +8140,7 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 
-					if (order == "" || (!isAlpha))
+					if (order.empty() || (!isAlpha))
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
@@ -8258,7 +8258,7 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 
-					if (order == "" || (!isAlpha))
+					if (order.empty() || (!isAlpha))
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
