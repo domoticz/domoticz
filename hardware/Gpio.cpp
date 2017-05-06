@@ -230,6 +230,14 @@ void CGpio::UpdateSwitch(const int pin, const bool value)
 	IOPinStatusPacket.LIGHTING1.unitcode = pin;
 
 	sDecodeRXMessage(this, (const unsigned char *)&IOPinStatusPacket, NULL, 255);
+	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+	{
+		if (it->GetPin() == pin)
+		{
+			it->SetDBState(value);
+			break;
+		}
+	}
 }
 
 bool CGpio::StartHardware()
@@ -396,11 +404,9 @@ std::vector<CGpioPin> CGpio::GetPinList()
 /* static */
 CGpioPin* CGpio::GetPPinById(int id)
 {
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it) {
-		if (it->GetPin() == id) {
+	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
+		if (it->GetPin() == id)
 			return &(*it);
-		}
-	}
 	return NULL;
 }
 
@@ -419,7 +425,7 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 			else if (GPIORead(it->GetPin(), "value") == 1)
 				state = true;
 
-			if (it->GetDBState() != state)
+			if (it->GetDBState() != state || updateDatabase)
 			{
 				std::vector<std::vector<std::string> > result;
 				char szIdx[10];
@@ -436,10 +442,10 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 						bool db_state = (atoi(sd[1].c_str()) == 1);
 						if (db_state != state)
 							updateDatabase = true;
-						it->SetDBState(state);
+
+						if (updateDatabase)
+							UpdateSwitch(it->GetPin(), state);
 					}
-					if (updateDatabase)
-						UpdateSwitch(it->GetPin(), state);
 				}
 			}
 		}
