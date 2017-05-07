@@ -415,14 +415,17 @@ void CGpio::UpdateDeviceStates(bool forceUpdate)
 	boost::mutex::scoped_lock lock(m_pins_mutex);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
 	{
-		if ((it->GetIsInput() && (GPIORead(it->GetPin(), "value") != -1)))
+		if (it->GetIsInput())
 		{
+			int value = GPIOReadFd(it->GetReadValueFd());
+			if (value == -1)
+				continue;
 			bool updateDatabase = forceUpdate;
 			bool state = false;
 
-			if (it->GetActiveLow() && (GPIORead(it->GetPin(), "value") == 0))
+			if (it->GetActiveLow() && !value)
 				state = true;
-			else if (GPIORead(it->GetPin(), "value") == 1)
+			else if (value)
 				state = true;
 
 			if (it->GetDBState() != state || updateDatabase)
