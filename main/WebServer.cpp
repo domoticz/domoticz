@@ -7893,7 +7893,7 @@ namespace http {
 			}
 
 			char szOrderBy[50];
-			char szQuery[1000];
+			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order.c_str();
 			for(int i = 0; i < orderBy.size(); i++) {
@@ -7906,7 +7906,6 @@ namespace http {
 			}
 			else
 			{
-				//sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 				sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 			}
 
@@ -7969,14 +7968,14 @@ namespace http {
 							" AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							floorID.c_str());
 					else
-						strncpy(szQuery,
+						szQuery = (
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" ORDER BY ", 1000);
-						strncat(szQuery, szOrderBy, 50);
-						result = m_sql.safe_query(szQuery, order.c_str());
+							" ORDER BY ");
+						szQuery += szOrderBy;
+						result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 
 					if (result.size() > 0)
 					{
@@ -8144,12 +8143,11 @@ namespace http {
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
-						//sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					if(hardwareid != "") {
-						strncpy(szQuery,
+						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
 							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
@@ -8160,12 +8158,12 @@ namespace http {
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"WHERE (A.HardwareID == %q) "
-							"ORDER BY ", 1000);
-						strncat(szQuery, szOrderBy, 50);
-                                                result = m_sql.safe_query(szQuery, hardwareid.c_str(), order.c_str());
+							"ORDER BY ");
+						szQuery += szOrderBy;
+                                                result = m_sql.safe_query(szQuery.c_str(), hardwareid.c_str(), order.c_str());
 					}
 					else {
-						strncpy(szQuery,
+						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
 							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
@@ -8175,9 +8173,9 @@ namespace http {
 							" A.Options "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-							"ORDER BY ", 1000);
-						strncat(szQuery, szOrderBy, 50);
-                                                result = m_sql.safe_query(szQuery, order.c_str());
+							"ORDER BY ");
+						szQuery += szOrderBy;
+                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 					}
 				}
 			}
@@ -8262,11 +8260,10 @@ namespace http {
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
-						//sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
 						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
-					strncpy(szQuery,
+					szQuery = (
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
@@ -8279,9 +8276,9 @@ namespace http {
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY ", 1000);
-					strncat(szQuery, szOrderBy, 50);
-                                        result = m_sql.safe_query(szQuery, m_users[iUser].ID, order.c_str());
+						" AND (B.SharedUserID==%lu) ORDER BY ");
+					szQuery += szOrderBy;
+                                        result = m_sql.safe_query(szQuery.c_str(), m_users[iUser].ID, order.c_str());
 				}
 			}
 
