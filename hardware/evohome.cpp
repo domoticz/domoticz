@@ -178,6 +178,7 @@ bool CEvohome::StartHardware()
 		m_retrycntr=RETRY_DELAY; //will force reconnect first thing
 		
 		std::vector<std::vector<std::string> > result;
+
 		result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
 			
 		if (!result.empty())
@@ -289,6 +290,7 @@ void CEvohome::Do_Work()
 {
 	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
+	int nStarts = 0;
 	int sec_counter = 0;
 	bool startup = true;
 	std::vector<std::vector<std::string> > result;
@@ -333,6 +335,7 @@ void CEvohome::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
+						RequestZoneNames();
 
 						if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 						{
@@ -373,7 +376,15 @@ void CEvohome::Do_Work()
 						if (!result.empty())
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
 					}
+					if (nStarts < 20)
+						nStarts++;
+					else if (nStarts == 20) // After 1h all devices should have been detected so re-request zone names and trigger device naming
+					{
+						RequestZoneNames();
+						nStarts++;
+					}
 					nStartup = 0;
+					
 				}
 			}
 			boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
