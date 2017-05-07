@@ -1,9 +1,10 @@
 define(['app'], function (app) {
     app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', '$window', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, $window, livesocket) {
         livesocket.Init();
-        // livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name"); // debug
+        //livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name"); // debug
 
-		var ctrl = this;
+        var ctrl = this;
+        ctrl.temperatures = [];
 
 		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
@@ -194,7 +195,8 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+/*
+            livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
 			    if (typeof data == "string") {
 			        data = JSON.parse(data);
 			    }
@@ -208,7 +210,7 @@ define(['app'], function (app) {
 			        ctrl.temperatures = [];
 			    }
 			});
-/*
+*/
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
@@ -225,8 +227,8 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-*/
-		  $('#modal').hide();
+
+          $('#modal').hide();
 			$('#temptophtm').show();
 			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
@@ -266,7 +268,7 @@ define(['app'], function (app) {
 			});
 		};
 
-		init();
+        init();
 
 		function init() {
 			//global var

@@ -193,7 +193,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					            notifyMe('From Domoticz', msg.Text);
 					            return;
                         }
-					    var requestid = msg.requestid;
+                        var requestid = msg.requestid;
 						if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
