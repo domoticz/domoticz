@@ -288,14 +288,17 @@ void MainWorker::StartDomoticzHardware()
 
 void MainWorker::StopDomoticzHardware()
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	boost::lock_guard<boost::mutex> l2(m_stoppinghardwaremutex);
 	{
-		(*itt)->Stop();
-		delete (*itt);
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::vector<CDomoticzHardwareBase*>::iterator itt;
+		for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+		{
+			(*itt)->Stop();
+			delete (*itt);
+		}
+		m_hardwaredevices.clear();
 	}
-	m_hardwaredevices.clear();
 }
 
 void MainWorker::GetAvailableWebThemes()
@@ -362,6 +365,8 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 	{
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	}
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return;
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	pHardware->sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2, _3, _4 ) );
 	pHardware->sOnConnected.connect( boost::bind( &MainWorker::OnHardwareConnected, this, _1 ) );
@@ -370,6 +375,9 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return;
+
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
@@ -403,6 +411,8 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardware(int HwdId)
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return -1;
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
@@ -417,6 +427,9 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 
 int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return -1;
+
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
@@ -431,6 +444,9 @@ int MainWorker::FindDomoticzHardwareByType(const _eHardwareTypes HWType)
 
 CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return NULL;
+
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
@@ -458,6 +474,9 @@ CDomoticzHardwareBase* MainWorker::GetHardwareByIDType(const std::string &HwdId,
 
 CDomoticzHardwareBase* MainWorker::GetHardwareByType(const _eHardwareTypes HWType)
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return NULL;
+
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
@@ -1586,16 +1605,20 @@ void MainWorker::Do_Work()
 				if (ltime.tm_hour == 4)
 				{
 					//Heal the OpenZWave network
-					boost::lock_guard<boost::mutex> l(m_devicemutex);
-					std::vector<CDomoticzHardwareBase*>::iterator itt;
-					for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+					if (m_stoppinghardwaremutex.try_lock())
 					{
-						CDomoticzHardwareBase *pHardware = (*itt);
-						if (pHardware->HwdType == HTYPE_OpenZWave)
+						boost::lock_guard<boost::mutex> l(m_devicemutex);
+						std::vector<CDomoticzHardwareBase*>::iterator itt;
+						for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 						{
-							COpenZWave *pZWave = (COpenZWave *)pHardware;
-							pZWave->NightlyNodeHeal();
+							CDomoticzHardwareBase *pHardware = (*itt);
+							if (pHardware->HwdType == HTYPE_OpenZWave)
+							{
+								COpenZWave *pZWave = (COpenZWave *)pHardware;
+								pZWave->NightlyNodeHeal();
+							}
 						}
+						m_stoppinghardwaremutex.unlock();
 					}
 				}
 #endif
@@ -12681,6 +12704,9 @@ void MainWorker::HeartbeatRemove(const std::string &component)
 
 void MainWorker::HeartbeatCheck()
 {
+	boost::mutex::scoped_lock lock(m_stoppinghardwaremutex, boost::try_to_lock);
+	if (!lock) return;
+
 	boost::lock_guard<boost::mutex> l(m_heartbeatmutex);
 	boost::lock_guard<boost::mutex> l2(m_devicemutex);
 
