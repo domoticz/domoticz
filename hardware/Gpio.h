@@ -52,7 +52,7 @@ private:
 	bool InitPins();
 	bool StartHardware();
 	bool StopHardware();
-	bool CreateDomoticzDevices();
+	//bool CreateDomoticzDevices();
 	void InterruptHandler();
 	void Poller();
 	void UpdateDeviceStates(bool forceUpdate);
