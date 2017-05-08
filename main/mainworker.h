@@ -11,7 +11,7 @@
 #include "../tcpserver/TCPServer.h"
 #include "concurrent_queue.h"
 #include "../webserver/server_settings.hpp"
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 #	include "../hardware/plugins/PluginManager.h"
 #endif
 
@@ -118,7 +118,7 @@ public:
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	Plugins::CPluginSystem m_pluginsystem;
 #endif
 	CCameraHandler m_cameras;

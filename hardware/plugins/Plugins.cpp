@@ -3,7 +3,7 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "Plugins.h"
 #include "PluginMessages.h"

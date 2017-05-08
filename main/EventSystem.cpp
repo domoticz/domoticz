@@ -38,12 +38,6 @@ extern "C" {
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
-
-#ifdef ENABLE_PYTHON_DECAP
-#include <boost/python.hpp>
-using namespace boost::python;
-#endif
-
 extern std::string szUserDataFolder;
 
 CEventSystem::CEventSystem(void)
@@ -2380,15 +2374,13 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
            // uservariablesMutexLock2.unlock();
 
-           FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+           FILE* PythonScriptFile = fopen(filename.c_str(), "r");
 
             // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
             Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
 
         	if (PythonScriptFile!=NULL)
         		fclose(PythonScriptFile);
-
-
         } else {
             _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
         }
