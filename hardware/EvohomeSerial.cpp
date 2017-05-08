@@ -290,7 +290,7 @@ void CEvohomeSerial::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
-K						RequestZoneNames();
+						RequestZoneNames();
 
 						if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 						{
