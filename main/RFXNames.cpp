@@ -2,7 +2,7 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
-#include "../hardware/evohome.h"
+#include "../hardware/EvohomeBase.h"
 #include "Helper.h"
 #include <boost/algorithm/string.hpp>
 #include "Logger.h"
@@ -1834,7 +1834,7 @@ void GetLightStatus(
 		break;
 	case pTypeEvohome:
 		llevel=0;
-		lstatus=CEvohome::GetWebAPIModeName(nValue);
+		lstatus=CEvohomeBase::GetWebAPIModeName(nValue);
 		break;
 	case pTypeEvohomeRelay:
 		bHaveDimmer=true;
