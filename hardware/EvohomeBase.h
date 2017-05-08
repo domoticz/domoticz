@@ -30,6 +30,9 @@
 
 class CEvohomeDataType
 {
+	friend class EvohomeSerial;
+	friend class EvohomeScript;
+
 public:
 	//uint24_t may occasionally be defined but is not portable etc.
 	struct uint24_t {
