@@ -443,14 +443,9 @@ void CSysfsGPIO::CreateDomoticzDevices()
 
 						createNewDevice = true;
 					}
-
-					if (atoi(sd[0].c_str()) == 1) /* write actual db state to hardware */
-					{
-						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
-					}
 					else
 					{
-						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? true : false);
+						GPIOWrite(GpioSavedState[i].pin_number, atoi(sd[0].c_str()));
 					}
 				}
 			}
