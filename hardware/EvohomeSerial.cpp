@@ -245,6 +245,7 @@ void CEvohomeSerial::Do_Work()
 {
 	boost::system_time stLastRelayCheck(boost::posix_time::min_date_time);
 	int nStartup=0;
+	int nStarts = 0;
 	int sec_counter = 0;
 	bool startup = true;
 	std::vector<std::vector<std::string> > result;
@@ -289,6 +290,7 @@ void CEvohomeSerial::Do_Work()
 					{
 						InitControllerName();
 						InitZoneNames();
+K						RequestZoneNames();
 
 						if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 						{
@@ -323,11 +325,18 @@ void CEvohomeSerial::Do_Work()
 					{
 						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit >= 13) AND (Unit <= 24)", m_HwdID, (int)pTypeEvohomeZone);						
 						if (!result.empty())
-							AllSensors = true;	
+							AllSensors = true;
 						// Check if the dummy sensor exists and delete
 						result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == 'FFFFFF') AND (Type==%d) AND (Unit == 13)", m_HwdID, (int)pTypeEvohomeZone);
 						if (!result.empty())
 							m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
+					}
+					if (nStarts < 20)
+						nStarts++;
+					else if (nStarts == 20) // After 1h all devices should have been detected so re-request zone names and trigger device naming
+					{
+						RequestZoneNames();
+						nStarts++;
 					}
 					nStartup = 0;
 				}

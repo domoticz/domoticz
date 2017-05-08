@@ -91,6 +91,7 @@ public:
 		devController=1,
 		devZone=4,
 		devSensor=7, //includes DHW and outdoor sensor
+		devBridge=10, // OT Bridge
 		devRelay=13,
 		devGateway=18,
 		devRemote=30,
