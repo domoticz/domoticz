@@ -139,26 +139,26 @@
 							</div>
 							<div class="row-fluid">
 								<div class="span6">
-									<h2><span data-i18n="User Interface"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="languagetable">
-										<tr>
-											<td><label for="Language">Language:</label></td>
-											<td><select class="combobox ui-corner-all" id="combolanguage" name="Language">
-												<!--#embed combolanguage -->
-												</select></td>
-										</tr>
+									<h2><span data-i18n="User Interface">User Interface</span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="dashmodetable">
 										<tr>
 											<td><label for="Themes"><span data-i18n="Theme"></span>:</label></td>
 											<td><select class="combobox ui-corner-all" id="combothemes" name="Themes">
 												</select></td>
 										</tr>
-									</table>
-								</div>
-								<div class="span6">
-									<h2><span data-i18n="Dashboard"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="dashmodetable">
-										<tr>
-											<td><label><span data-i18n="Mode"></span>:</label></td>
+                                        <tr>
+											<td><label><span data-i18n="Mobile"></span>:</label></td>
+											<td><select class="combobox ui-corner-all" id="combosmobiletype" name="MobileType">
+												<option data-i18n="Mobile" value="0">
+													Mobile
+												</option>
+												<option data-i18n="Dashboard" value="1">
+													Dashboard
+												</option>
+												</select></td>
+										</tr>
+                                        <tr>
+											<td><label><span data-i18n="Dashboard"></span>:</label></td>
 											<td><select class="combobox ui-corner-all" id="combosdashtype" name="DashboardType">
 												<option data-i18n="Normal" value="0">
 													Normal
@@ -180,9 +180,7 @@
 										</tr>
 									</table>
 								</div>
-							</div>
-							<div class="row-fluid">
-								<div class="span6" id="ActiveTabs">
+                                <div class="span6" id="ActiveTabs">
                                     <h2><span data-i18n="ActiveMenus"></span></h2>
                                     <table border="0" cellpadding="0" cellspacing="0" class="display" id="activemenustable">
                                         <tr>
@@ -203,23 +201,11 @@
                                         </tr>
                                     </table>
 								</div>
-								<div class="span6">
-									<h2><span data-i18n="Mobile"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="mobilemodetable">
-										<tr>
-											<td><label><span data-i18n="Mode"></span>:</label></td>
-											<td><select class="combobox ui-corner-all" id="combosmobiletype" name="MobileType">
-												<option data-i18n="Mobile" value="0">
-													Mobile
-												</option>
-												<option data-i18n="Dashboard" value="1">
-													Dashboard
-												</option>
-												</select></td>
-										</tr>
-									</table>
-								</div>
-							</div>
+                            </div>
+                            <div id="themesettingscontainer"></div>
+                            
+
+
 							<div class="page-header-small">
 								<h1 data-i18n="Floorplan">Floorplan</h1>
 							</div>
@@ -350,8 +336,11 @@
 								<h1 data-i18n="Related options">Related options</h1>
 							</div>
 							<div class="row-fluid related">
+                                <div class="span2">
+				                    			<a class="btn btn-info" href="#tabLocalization"><img class="relatedIcon" src="images/localization.png"><span data-i18n="Localization">Localization</span></a>
+								</div>
 								<div class="span2">
-                                    					<a class="btn btn-info" href="#Roomplan"><img class="relatedIcon" src="images/house.png"><span data-i18n="Room plan">Room plan</span></a>
+                                    			<a class="btn btn-info" href="#Roomplan"><img class="relatedIcon" src="images/house.png"><span data-i18n="Room plan">Room plan</span></a>
 								</div>
 								<div class="span2">
 				                    			<a class="btn btn-info" href="#Floorplanedit"><img class="relatedIcon" src="images/house.png"><span data-i18n="Floor plan">Floor plan</span></a>
@@ -979,29 +968,16 @@
 								<h1 data-i18n="Localization">Localization</h1>
 							</div>
 							<div class="row-fluid">
-								<div class="span6">
-									<h2><span data-i18n="Temperature"></span></h2>
-									<table border="0" cellpadding="0" cellspacing="0" class="display" id="temperaturetable">
+                                <div class="span6">
+									<h2><span data-i18n="Language">Language</span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="languagetable">
 										<tr>
-											<td><label><span data-i18n="Display"></span>:</label></td>
-											<td><select class="combobox ui-corner-all" id="comboTempUnit" name="TempUnit">
-												<option value="0">
-													Celsius
-												</option>
-												<option value="1">
-													Fahrenheit
-												</option>
-												</select>
-                                            </td>
-										</tr>
-										<tr>
-											<td><label><span data-i18n="Degree Days"></span>:</label></td>
-											<td><input class="text ui-widget-content ui-corner-all" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" type="input">
-                                            <p class="inlinetip">(<span data-i18n="Base Temperature"></span>)</p>
-                                            </td>
+											<td><label for="Interface">Interface:</label></td>
+											<td><select class="combobox ui-corner-all" id="combolanguage" name="Language">
+												<!--#embed combolanguage -->
+												</select></td>
 										</tr>
 									</table>
-									
 								</div>
 								<div class="span6">
 									<h2><span data-i18n="Wind Meter"></span></h2>
@@ -1024,7 +1000,8 @@
 												<option value="4">
 													Beaufort
 												</option>
-												</select></td>
+												</select>
+                                            </td>
 										</tr>
 									</table>
 								</div>
@@ -1046,9 +1023,32 @@
 											<td><input class="text ui-widget-content ui-corner-all" id="Longitude" name="Longitude" type="text"></td>
 										</tr>
 									</table>
-                                    <p>
+                                    <p class="tip">
                                         <span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a>
                                     </p>
+                                </div>
+                                <div class="span6">
+									<h2><span data-i18n="Temperature"></span></h2>
+									<table border="0" cellpadding="0" cellspacing="0" class="display" id="temperaturetable">
+										<tr>
+											<td><label><span data-i18n="Display"></span>:</label></td>
+											<td><select class="combobox ui-corner-all" id="comboTempUnit" name="TempUnit">
+												<option value="0">
+													Celsius
+												</option>
+												<option value="1">
+													Fahrenheit
+												</option>
+												</select>
+                                            </td>
+										</tr>
+										<tr>
+											<td><label><span data-i18n="Degree Days"></span>:</label></td>
+											<td><input class="text ui-widget-content ui-corner-all" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" type="input">
+                                            <p class="inlinetip">(<span data-i18n="Base Temperature"></span>)</p>
+                                            </td>
+										</tr>
+									</table>
 								</div>
 							</div>
 						</section>
