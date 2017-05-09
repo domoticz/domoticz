@@ -457,6 +457,8 @@ p.ng-binding {
     margin-right:0;
 }
 
+.nav-tabs > li{margin-bottom:0}
+
 .sub-tabs-apply {
 /*    position:absolute;
     bottom:60px;
@@ -2380,7 +2382,7 @@ td[colspan]:not([colspan="1"])
 }
     
 
-@media all and (max-width: 1200px){
+@media all  and (min-width: 600px) and (max-width: 1200px){
     
     .navbar-static-top .container, 
     .navbar-fixed-top .container, 
