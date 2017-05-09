@@ -25,9 +25,9 @@ private:
 	unsigned char m_exclmarkfound;
 	unsigned char m_CRfound;
 
-	float m_voltagel1;
-	float m_voltagel2;
-	float m_voltagel3;
+	float m_p1voltagel1;
+	float m_p1voltagel2;
+	float m_p1voltagel3;
 
 	void Init();
 	bool MatchLine();
@@ -43,8 +43,8 @@ private:
 
 	unsigned char m_p1version;
 	unsigned char m_p1gmbchan;
-	std::string m_gasprefix;
+	std::string m_p1gasprefix;
 	std::string m_p1gasts;
-	double m_gasclockskew;
-	time_t m_gasoktime;
+	double m_p1gasclockskew;
+	time_t m_p1gasoktime;
 };

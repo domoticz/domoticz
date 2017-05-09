@@ -104,9 +104,10 @@ void P1MeterBase::Init()
 	m_lastgasusage=0;
 	m_lastSharedSendGas=0;
 	m_lastUpdateTime=0;
-	m_voltagel1=0;
-	m_voltagel2=0;
-	m_voltagel3=0;
+
+	m_p1voltagel1=0;
+	m_p1voltagel2=0;
+	m_p1voltagel3=0;
 
 	memset(&m_buffer,0,sizeof(m_buffer));
 	memset(&l_buffer,0,sizeof(l_buffer));
@@ -127,10 +128,10 @@ void P1MeterBase::Init()
 
 	m_p1version=2; // initialize DSMR version @2
 	m_p1gmbchan=0;
-	m_gasprefix="0-n";
+	m_p1gasprefix="0-n";
 	m_p1gasts="";
-	m_gasclockskew=0;
-	m_gasoktime=0;
+	m_p1gasclockskew=0;
+	m_p1gasoktime=0;
 }
 
 bool P1MeterBase::MatchLine()
@@ -177,14 +178,14 @@ bool P1MeterBase::MatchLine()
 			}
 			break;
 		case GAS:
-			if(strncmp((m_gasprefix+(t->key+3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0){
+			if(strncmp((m_p1gasprefix+(t->key+3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0){
 				found=1;
 			}
 			if (m_p1version>=4)
 				i+=100; // skip matches with any DSMR v2 gas lines
 			break;
 		case LINE17:
-			if(strncmp((m_gasprefix+(t->key+3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0){
+			if(strncmp((m_p1gasprefix+(t->key+3)).c_str(), (const char*)&l_buffer, strlen(t->key)) == 0){
 				m_linecount = 17;
 				found=1;
 			}
@@ -203,20 +204,20 @@ bool P1MeterBase::MatchLine()
 			if (difftime(atime,m_lastUpdateTime)>=m_ratelimit) {
 				m_lastUpdateTime=atime;
 				sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Power", 255);
-				if (m_voltagel1) {
-					SendVoltageSensor(0, 1, 255, m_voltagel1, "Voltage L1");
-					if (m_voltagel2)
-						SendVoltageSensor(0, 2, 255, m_voltagel2, "Voltage L2");
-					if (m_voltagel3)
-						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
+				if (m_p1voltagel1) {
+					SendVoltageSensor(0, 1, 255, m_p1voltagel1, "Voltage L1");
+					if (m_p1voltagel2)
+						SendVoltageSensor(0, 2, 255, m_p1voltagel2, "Voltage L2");
+					if (m_p1voltagel3)
+						SendVoltageSensor(0, 3, 255, m_p1voltagel3, "Voltage L3");
 				}
 				if ( (m_p1gas.gasusage>0)&&( (m_p1gas.gasusage!=m_lastgasusage)||(difftime(atime,m_lastSharedSendGas)>=300) ) ){
 					//only update gas when there is a new value, or 5 minutes are passed
-					if (m_gasclockskew>=300){ // just accept it - we cannot sync to our clock
+					if (m_p1gasclockskew>=300){ // just accept it - we cannot sync to our clock
 						m_lastSharedSendGas=atime;
 						m_lastgasusage=m_p1gas.gasusage;
 					}
-					else if (atime>=m_gasoktime){
+					else if (atime>=m_p1gasoktime){
 						struct tm ltime;
 						localtime_r(&atime, &ltime);
 						char myts[13];
@@ -226,7 +227,7 @@ bool P1MeterBase::MatchLine()
 						if (strncmp((const char*)&myts,m_p1gasts.c_str(),m_p1gasts.length())>=0){
 							m_lastSharedSendGas=atime;
 							m_lastgasusage=m_p1gas.gasusage;
-							m_gasoktime+=300;
+							m_p1gasoktime+=300;
 						}
 						else // gas clock is ahead
 						{
@@ -245,13 +246,13 @@ bool P1MeterBase::MatchLine()
 								gastm.tm_isdst = 1;
 
 							time_t gtime=mktime(&gastm);
-							m_gasclockskew=difftime(gtime,atime);
-							if (m_gasclockskew>=300){
+							m_p1gasclockskew=difftime(gtime,atime);
+							if (m_p1gasclockskew>=300){
 								_log.Log(LOG_ERROR, "unable to synchronize to the gas meter clock because it is more than 5 minutes ahead of my time");
 							}
 							else {
-								m_gasoktime=gtime;
-								_log.Log(LOG_STATUS, "Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_gasclockskew);
+								m_p1gasoktime=gtime;
+								_log.Log(LOG_STATUS, "Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_p1gasclockskew);
 							}
 						}
 					}
@@ -301,7 +302,7 @@ bool P1MeterBase::MatchLine()
 				temp_usage = (unsigned long)(strtod(value,&validate));
 				if (temp_usage == 3) {
 					m_p1gmbchan = (char)l_buffer[2];
-					m_gasprefix[2]=m_p1gmbchan;
+					m_p1gasprefix[2]=m_p1gmbchan;
 				_log.Log(LOG_STATUS,"P1: Found gas meter on M-Bus channel %c", m_p1gmbchan);
 				}
 				break;
@@ -338,17 +339,17 @@ bool P1MeterBase::MatchLine()
 			case P1TYPE_VOLTAGEL1:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_voltagel1 = temp_volt; //Voltage L1;
+					m_p1voltagel1 = temp_volt; //Voltage L1;
 				break;
 			case P1TYPE_VOLTAGEL2:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_voltagel2 = temp_volt; //Voltage L2;
+					m_p1voltagel2 = temp_volt; //Voltage L2;
 				break;
 			case P1TYPE_VOLTAGEL3:
 				temp_volt = strtof(value,&validate);
 				if (temp_volt < 300)
-					m_voltagel3 = temp_volt; //Voltage L3;
+					m_p1voltagel3 = temp_volt; //Voltage L3;
 				break;
 			case P1TYPE_GASTIMESTAMP:
 				m_p1gasts = std::string(value);
