@@ -39,4 +39,12 @@ private:
 	unsigned char l_exclmarkfound;
 
 	bool CheckCRC();
+
+
+	unsigned char m_p1version;
+	unsigned char m_p1gmbchan;
+	std::string m_gasprefix;
+	std::string m_p1gasts;
+	double m_gasclockskew;
+	time_t m_gasoktime;
 };
