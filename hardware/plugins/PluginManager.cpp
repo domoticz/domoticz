@@ -63,7 +63,7 @@ namespace Plugins {
 #endif // ENABLE_PYTHON
 
 	boost::mutex PluginMutex;	// controls accessto the message queue
-	std::queue<CPluginMessage*>	PluginMessageQueue;
+	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -255,30 +255,9 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					//					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					if (pPlugin && pPlugin->IoThreadRequired())
 					{
-						//						bIos_required = true;
-						break;
-					}
-				}
-
-				if (bIos_required)
-				{
-					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Restarting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
-				}
-			}
-
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
-			{
-				bool bIos_required = false;
-				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
-				{
-					CPlugin*	pPlugin = (CPlugin*)itt->second;
-//					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
-					{
-//						bIos_required = true;
+						bIos_required = true;
 						break;
 					}
 				}
@@ -295,14 +274,14 @@ namespace Plugins {
 			bool	bProcessed = true;
 			while (bProcessed)
 			{
-				CPluginMessage* Message = NULL;
+				CPluginMessageBase* Message = NULL;
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					CPluginMessage* FrontMessage = PluginMessageQueue.front();
+					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
 					if (FrontMessage->m_When <= Now)
 					{
@@ -314,25 +293,16 @@ namespace Plugins {
 					PluginMessageQueue.push(FrontMessage);
 				}
 
-				if (Message && Message->m_Type != PMT_NULL)
+				if (Message)
 				{
 					bProcessed = true;
-					if (!m_pPlugins.count(Message->m_HwdID))
+					try
 					{
-						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message->m_HwdID);
+						Message->Process();
 					}
-					else
+					catch(...)
 					{
-						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message->m_HwdID];
-						if (pPlugin)
-						{
-							pPlugin->HandleMessage(Message);
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message->m_HwdID);
-						}
-
+						_log.Log(LOG_ERROR, "PluginSystem: Exception processing message.");
 					}
 				}
 				// Free the memory for the message
@@ -382,7 +352,7 @@ namespace Plugins {
 		{
 			if (itt->second)
 			{
-				SettingsDirective*	Message = new SettingsDirective(itt->second->m_HwdID);
+				SettingsDirective*	Message = new SettingsDirective((CPlugin*)itt->second);
 				PluginMessageQueue.push(Message);
 			}
 			else

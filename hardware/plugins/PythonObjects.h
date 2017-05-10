@@ -5,6 +5,8 @@
 
 namespace Plugins {
 
+	void PythonObjectsInit();
+
 	typedef struct {
 		PyObject_HEAD
 		int			ImageID;
@@ -204,13 +206,13 @@ namespace Plugins {
 	PyObject* CConnection_disconnect(CConnection* self);
 	PyObject* CConnection_bytes(CConnection* self);
 	PyObject* CConnection_isconnected(CConnection* self);
+	PyObject* CConnection_timestamp(CConnection* self);
 	PyObject* CConnection_str(CConnection* self);
 
 	static PyMemberDef CConnection_members[] = {
 		{ "Address", T_OBJECT,	offsetof(CConnection, Address), READONLY, "Address" },
 		{ "Port", T_OBJECT,	offsetof(CConnection, Port), READONLY, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
-		{ "LastSeen", T_OBJECT, offsetof(CConnection, LastSeen), READONLY, "Last seen timestamp" },
 		{ NULL }  /* Sentinel */
 	};
 
@@ -221,6 +223,7 @@ namespace Plugins {
 		{ "Disconnect", (PyCFunction)CConnection_disconnect, METH_NOARGS, "Disconnect connection or stop listening." },
 		{ "BytesTransferred", (PyCFunction)CConnection_bytes, METH_NOARGS, "Bytes transferred since connection was opened." },
 		{ "Connected", (PyCFunction)CConnection_isconnected, METH_NOARGS, "Connection status." },
+		{ "LastSeen", (PyCFunction)CConnection_timestamp, METH_NOARGS, "Last seen timestamp." },
 		{ NULL }  /* Sentinel */
 	};
 

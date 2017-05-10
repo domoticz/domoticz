@@ -12,7 +12,6 @@
 #include <Python.h>
 #include <structmember.h>
 #include <frameobject.h>
-
 #include "../../main/Helper.h"
 
 namespace Plugins {
@@ -99,6 +98,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyBool_FromLong, long);
         DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleStringFlags, const char* COMMA PyCompilerFlags*);
         DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFileExFlags, FILE* COMMA const char* COMMA int COMMA PyCompilerFlags*);
+		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -113,15 +113,18 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
@@ -191,6 +194,7 @@ namespace Plugins {
                     RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFileExFlags);
                     RESOLVE_PYTHON_SYMBOL(PyRun_SimpleStringFlags);
 					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
+					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -346,4 +350,5 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyRun_SimpleStringFlags pythonLib->PyRun_SimpleStringFlags
 #define PyRun_SimpleFileExFlags pythonLib->PyRun_SimpleFileExFlags
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
+#define PyCapsule_Import		pythonLib->PyCapsule_Import
 }
