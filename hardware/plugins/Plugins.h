@@ -9,7 +9,8 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
-	class CPluginMessage;
+	class CDirectiveBase;
+	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
 
@@ -32,23 +33,37 @@ namespace Plugins {
 		bool StartHardware();
 		void Do_Work();
 		bool StopHardware();
+
 		void LogPythonException();
 		void LogPythonException(const std::string &);
-		bool HandleInitialise();
-		bool HandleStart();
-		bool LoadSettings();
-		void WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
 
 	public:
 		CPlugin(const int HwdID, const std::string &Name, const std::string &PluginKey);
 		~CPlugin(void);
 
-		void HandleMessage(const CPluginMessage* Message);
+		bool	IoThreadRequired();
+		int		PollInterval(int Interval = -1);
+		void	Notifier(std::string Notifier = "");
 
-		bool WriteToHardware(const char *pdata, const unsigned char length);
-		void Restart();
-		void SendCommand(const int Unit, const std::string &command, const int level, const int hue);
-		void SendCommand(const int Unit, const std::string &command, const float level);
+		bool	Initialise();
+		bool	LoadSettings();
+		bool	Start();
+		void	ConnectionProtocol(CDirectiveBase*);
+		void	ConnectionConnect(CDirectiveBase*);
+		void	ConnectionListen(CDirectiveBase*);
+		void	ConnectionRead(CPluginMessageBase*);
+		void	ConnectionWrite(CDirectiveBase*);
+		void	ConnectionDisconnect(CDirectiveBase*);
+		void	ConnectionDisconnected();
+		void	Callback(std::string sHandler, void* pParams);
+		void	Stop();
+
+		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
+
+		bool	WriteToHardware(const char *pdata, const unsigned char length);
+		void	Restart();
+		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
+		void	SendCommand(const int Unit, const std::string &command, const float level);
 
 		std::string			m_PluginKey;
 		std::string			m_Username;
@@ -64,9 +79,9 @@ namespace Plugins {
 	class CPluginNotifier : public CNotificationBase
 	{
 	private:
-		const int	m_Hwd_ID;
+		CPlugin*	m_pPlugin;
 	public:
-		CPluginNotifier(const int Hwd_ID, const std::string & );
+		CPluginNotifier(CPlugin* pPlugin, const std::string & );
 		~CPluginNotifier();
 		virtual bool IsConfigured();
 		std::string	 GetIconFile(const std::string &ExtraData);

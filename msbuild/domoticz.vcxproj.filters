@@ -2005,6 +2005,12 @@
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2669,6 +2675,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
