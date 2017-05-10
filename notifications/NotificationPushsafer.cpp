@@ -40,7 +40,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 		std::vector<unsigned char> camimage;
 		std::vector<std::string> ExtraHeadersBinary;
 
-		if (HTTPClient::GETBinary(_apiuser.c_str(), ExtraHeadersBinary, camimage, 10))
+		if (HTTPClient::GETBinary(CURLEncode::URLDecode(_apiuser.c_str()), ExtraHeadersBinary, camimage, 10))
 		{
 			std::string base64ImageString(camimage.begin(), camimage.end());
 			base64ImageString = base64_encode((const unsigned char*)base64ImageString.c_str(), base64ImageString.size());
