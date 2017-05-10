@@ -2,9 +2,15 @@
 
 #include "Logger.h"
 #include "EventsPythonModule.h"
+#include "EventsPythonDevice.h"
+#include "EventSystem.h"
 #include "mainworker.h"
+#include "localtime_r.h"
 
 #ifdef ENABLE_PYTHON
+
+    extern std::string szUserDataFolder;
+
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
@@ -117,6 +123,198 @@
                     return NULL;
                 }
             }
+        }
+
+        int PythonEventsInitalized = 0;
+
+        void ProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables) {
+
+            if (PythonEventsInitalized == -1) {
+                // Failed to load library
+                return;
+            }
+
+            if (!Plugins::Py_LoadLibrary())
+            {
+                _log.Log(LOG_STATUS, "EventSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+                PythonEventsInitalized = -1;
+                return;
+            }
+
+           if (Plugins::Py_IsInitialized()) {
+               if (PythonEventsInitalized==0) {
+                   std::string ssPath;
+                    #ifdef WIN32
+                        ssPath  = szUserDataFolder + "scripts\\python\\;";
+                    #else
+                        ssPath  = szUserDataFolder + "scripts/python/:";
+                    #endif
+
+                    std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
+
+                    sPath += Plugins::Py_GetPath();
+            		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
+
+                    PythonEventsInitalized = 1;
+               }
+
+               PyObject* pModule = Plugins::GetEventModule();
+               if (pModule) {
+
+                   PyObject* pModuleDict = Plugins::PyModule_GetDict((PyObject*)pModule); // borrowed referece
+
+                   if (!pModuleDict) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
+                       return;
+                   }
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(m_devicestates[DeviceID].deviceName.c_str())) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to set changed_device_name.");
+                       return;
+                   }
+
+                   PyObject* m_DeviceDict = Plugins::PyDict_New();
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
+                   {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
+                       return;
+                   }
+                   Py_DECREF(m_DeviceDict);
+
+                   if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
+                       return;
+                   }
+
+                   // Mutex
+                   // boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+
+                   typedef std::map<uint64_t, CEventSystem::_tDeviceStatus>::iterator it_type;
+                   for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+                   {
+                       CEventSystem::_tDeviceStatus sitem = iterator->second;
+                       // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
+                       // devices[sitem.deviceName] = deviceStatus;
+
+                       Plugins::PDevice* aDevice = (Plugins::PDevice*)Plugins::PDevice_new(&Plugins::PDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+                       PyObject* pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+
+                       if (sitem.ID == DeviceID) {
+                           if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", (PyObject*)aDevice) == -1) {
+                               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' as changed_device.", sitem.deviceName.c_str());
+                           }
+                       }
+
+                       if (Plugins::PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)aDevice) == -1)
+                       {
+                           _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.", sitem.deviceName.c_str());
+                       } else {
+
+                           // _log.Log(LOG_ERROR, "Python EventSystem: nValueWording '%s' - done. ", sitem.nValueWording.c_str());
+
+                           std::string temp_n_value_string = sitem.nValueWording;
+
+                           // If nValueWording contains %, unicode fails?
+
+                           aDevice->id = sitem.ID;
+                           aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+                           aDevice->type = sitem.devType;
+                           aDevice->sub_type = sitem.subType;
+                           aDevice->switch_type = sitem.switchtype;
+                           aDevice->n_value = sitem.nValue;
+                           aDevice->n_value_string = Plugins::PyUnicode_FromString(temp_n_value_string.c_str());
+                           aDevice->s_value = Plugins::PyUnicode_FromString(sitem.sValue.c_str());
+                           aDevice->last_update_string = Plugins::PyUnicode_FromString(sitem.lastUpdate.c_str());
+                           // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s added to device dictionary", sitem.deviceName.c_str());
+                       }
+                       Py_DECREF(aDevice);
+                       Py_DECREF(pKey);
+                   }
+                   // devicestatesMutexLock1.unlock();
+
+                   // Time related
+
+                   // int intRise = getSunRiseSunSetMinutes("Sunrise");
+                   // int intSet = getSunRiseSunSetMinutes("Sunset");
+
+                   int intRise = 0;
+                   int intSet = 0;
+
+                   // Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+                   time_t now = mytime(NULL);
+                   struct tm ltime;
+                   localtime_r(&now, &ltime);
+                   int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "minutes_since_midnight", Plugins::PyLong_FromLong(minutesSinceMidnight)) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
+                   }
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intRise)) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
+                   }
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSet)) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
+                   }
+
+                   //PyObject* dayTimeBool = Py_False;
+                   //PyObject* nightTimeBool = Py_False;
+
+                   bool isDaytime = false;
+                   bool isNightime = false;
+
+                   if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+                       isDaytime = true;
+                   }
+                   else {
+                       isNightime = true;
+                   }
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", Plugins::PyBool_FromLong(isDaytime)) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+                   }
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", Plugins::PyBool_FromLong(isNightime)) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+                   }
+
+                   // UserVariables
+                   PyObject* m_uservariablesDict = Plugins::PyDict_New();
+
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", (PyObject*)m_uservariablesDict) == -1)
+                   {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
+                       return;
+                   }
+                   Py_DECREF(m_uservariablesDict);
+
+                   // This doesn't work
+                   // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
+
+                   typedef std::map<uint64_t, CEventSystem::_tUserVariable>::iterator it_var;
+                   for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
+                       CEventSystem::_tUserVariable uvitem = iterator->second;
+                       Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(), Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
+                   }
+
+                   // uservariablesMutexLock2.unlock();
+
+                   FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+
+                    // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+                    Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
+
+                	if (PythonScriptFile!=NULL)
+                		fclose(PythonScriptFile);
+                } else {
+                    _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
+                }
+            } else {
+                _log.Log(LOG_ERROR, "EventSystem: Python not initalized");
+            }
+
         }
     }
 #endif
