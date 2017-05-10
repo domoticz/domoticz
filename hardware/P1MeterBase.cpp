@@ -216,6 +216,7 @@ bool P1MeterBase::MatchLine()
 					if (m_p1gasclockskew>=300){ // just accept it - we cannot sync to our clock
 						m_lastSharedSendGas=atime;
 						m_lastgasusage=m_p1gas.gasusage;
+						sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);						}
 					}
 					else if (atime>=m_p1gasoktime){
 						struct tm ltime;
@@ -228,7 +229,7 @@ bool P1MeterBase::MatchLine()
 							m_lastSharedSendGas=atime;
 							m_lastgasusage=m_p1gas.gasusage;
 							m_p1gasoktime+=300;
-						}
+							sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);						}
 						else // gas clock is ahead
 						{
 							struct tm gastm;
