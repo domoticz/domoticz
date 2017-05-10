@@ -17,6 +17,12 @@ Some Information
 - Share / Use external devices
 - Designed for simplicity
 
+## Support
+
+Your first place for support is the [Domoticz Forum](http://www.domoticz.com/forum)
+
+The Github issue tracker is NOT for end-user support.
+
 # More information
 * Website: http://www.domoticz.com
 * Forum http://www.domoticz.com/forum

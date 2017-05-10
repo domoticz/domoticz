@@ -3,7 +3,7 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
@@ -15,11 +15,12 @@
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
+#include <datetime.h>
 
 namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessage*>	PluginMessageQueue;
+	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
@@ -28,6 +29,11 @@ namespace Plugins {
 		CPlugin*	pPlugin;
 		PyObject*	error;
 	};
+
+	void PythonObjectsInit()
+	{
+		PyDateTime_IMPORT;
+	}
 
 	void CImage_dealloc(CImage* self)
 	{
@@ -265,15 +271,6 @@ namespace Plugins {
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Base: '%U', Name: %U, Description: '%U'", self->ImageID, self->Base, self->Name, self->Description);
 		return pRetVal;
 	}
-
-	static PyModuleDef CImage_module = {
-		PyModuleDef_HEAD_INIT,
-		"Image",
-		"Domoticz Image",
-		-1,
-		NULL, NULL, NULL, NULL, NULL
-	};
-
 
 	void CDevice_dealloc(CDevice* self)
 	{
@@ -695,7 +692,7 @@ namespace Plugins {
 
 						m_sql.safe_query(
 							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', '%q', %d)",
+							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
 							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
 					}
 					else
@@ -874,15 +871,7 @@ namespace Plugins {
 		PyObject*	pRetVal = PyUnicode_FromFormat("ID: %d, Name: '%U', nValue: %d, sValue: '%U'", self->ID, self->Name, self->nValue, self->sValue);
 		return pRetVal;
 	}
-/*
-	static PyModuleDef CDevice_module = {
-		PyModuleDef_HEAD_INIT,
-		"Device",
-		"Domoticz Device",
-		-1,
-		NULL, NULL, NULL, NULL, NULL
-	};
-*/
+
 	void CConnection_dealloc(CConnection * self)
 	{
 		if (self->pPlugin->m_bDebug)
@@ -1014,7 +1003,7 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					ProtocolDirective*	Message = new ProtocolDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+					ProtocolDirective*	Message = new ProtocolDirective(self->pPlugin, (PyObject*)self);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
@@ -1050,16 +1039,16 @@ namespace Plugins {
 			//	Add connect command to message queue unless already connected
 			if (self->pPlugin->m_stoprequested)
 			{
-				_log.Log(LOG_NORM, "%s, connection request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+				_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
 			}
 			else
 				if ((self->pTransport) && (!self->pTransport->IsConnected()))
 				{
-					_log.Log(LOG_ERROR, "%s, connection request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
+					_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
 				}
 				else
 				{
-					ConnectDirective*	Message = new ConnectDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+					ConnectDirective*	Message = new ConnectDirective(self->pPlugin, (PyObject*)self);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
@@ -1071,7 +1060,32 @@ namespace Plugins {
 
 	PyObject * CConnection_listen(CConnection * self)
 	{
-		return nullptr;
+		if (!self->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+		}
+		else
+		{
+			//	Add connect command to message queue unless already connected
+			if (self->pPlugin->m_stoprequested)
+			{
+				_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+			}
+			else
+				if ((self->pTransport) && (!self->pTransport->IsConnected()))
+				{
+					_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
+				}
+				else
+				{
+					ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
 	}
 
 	PyObject * CConnection_send(CConnection * self, PyObject * args, PyObject * kwds)
@@ -1101,7 +1115,7 @@ namespace Plugins {
 			else
 			{
 				//	Add start command to message queue
-				WriteDirective*	Message = new WriteDirective(self->pPlugin->m_HwdID, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
+				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -1120,7 +1134,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnected())
 			{
-				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin->m_HwdID, (PyObject*)self);
+				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin, (PyObject*)self);
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
@@ -1149,13 +1163,31 @@ namespace Plugins {
 		return PyBool_FromLong(0);
 	}
 
+	PyObject * CConnection_timestamp(CConnection * self)
+	{
+		if (self->pTransport && false)
+		{
+			time_t	tLastSeen = self->pTransport->LastSeen();
+			struct tm ltime;
+			localtime_r(&tLastSeen, &ltime);
+			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
+			if (PyDateTime_CheckExact(pLastSeen))
+				return pLastSeen;
+		}
+		_log.Log(LOG_ERROR, "%s, LastSeen request from '%s' ignored. Not implemented yet.", __func__, self->pPlugin->Name.c_str());
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
 	PyObject * CConnection_str(CConnection * self)
 	{
 		PyObject*	pRetVal = PyUnicode_FromFormat("Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
-													self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
-													(self->pTransport ? self->pTransport->TotalBytes() : -1),
-													(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
+			self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+			(self->pTransport ? self->pTransport->TotalBytes() : -1),
+			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
 		return pRetVal;
 	}
+
 }
 #endif

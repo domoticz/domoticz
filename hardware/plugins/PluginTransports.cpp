@@ -3,12 +3,14 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "PluginMessages.h"
 #include "PluginTransports.h"
+#include "PythonObjects.h"
 
 #include "../main/Logger.h"
+#include "../main/localtime_r.h"
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
@@ -16,7 +18,7 @@
 namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessage*>	PluginMessageQueue;
+	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
@@ -34,7 +36,7 @@ namespace Plugins {
 		// If the Python CConecction object reference count ever drops to one the the connection is out of scope so shut it down
 		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
 		{
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(m_HwdID, m_pConnection);
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
@@ -73,7 +75,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, -1, std::string(e.what()));
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -97,7 +99,7 @@ namespace Plugins {
 			m_Socket = NULL;
 
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, err.value(), err.message());
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
@@ -111,6 +113,7 @@ namespace Plugins {
 		if (!err)
 		{
 			m_bConnected = true;
+			m_tLastSeen = time(0);
 			m_Socket->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
 				boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
@@ -127,7 +130,7 @@ namespace Plugins {
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, err.value(), err.message());
+		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
 	}
@@ -136,12 +139,13 @@ namespace Plugins {
 	{
 		if (!e)
 		{
-			ReadMessage*	Message = new ReadMessage(m_HwdID, m_pConnection, bytes_transferred, m_Buffer);
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
 
+			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
 			//ready for next read
@@ -161,7 +165,7 @@ namespace Plugins {
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(m_HwdID, m_pConnection);
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
@@ -191,6 +195,7 @@ namespace Plugins {
 
 	bool CPluginTransportTCP::handleDisconnect()
 	{
+		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
 			if (m_Socket)
@@ -259,7 +264,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, -1, std::string(e.what()));
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -283,7 +288,7 @@ namespace Plugins {
 			m_Socket = NULL;
 
 			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, err.value(), err.message());
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
@@ -313,7 +318,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, err.value(), err.message());
+		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
 	}
@@ -322,12 +327,13 @@ namespace Plugins {
 	{
 		if (!e)
 		{
-			ReadMessage*	Message = new ReadMessage(m_HwdID, m_pConnection, bytes_transferred, m_Buffer);
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
 
+			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
 			//ready for next read
@@ -347,7 +353,7 @@ namespace Plugins {
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(m_HwdID, m_pConnection);
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(DisconnectMessage);
@@ -376,6 +382,7 @@ namespace Plugins {
 
 	bool CPluginTransportUDP::handleDisconnect()
 	{
+		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
 			if (m_Socket)
@@ -423,17 +430,18 @@ namespace Plugins {
 					boost::asio::serial_port_base::flow_control(boost::asio::serial_port_base::flow_control::none),
 					boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
 
+				m_tLastSeen = time(0);
 				m_bConnected = isOpen();
 
 				ConnectedMessage*	Message = NULL;
 				if (m_bConnected)
 				{
-					Message = new ConnectedMessage(m_HwdID, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully.");
+					Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully.");
 					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
 				}
 				else
 				{
-					Message = new ConnectedMessage(m_HwdID, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details.");
+					Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details.");
 				}
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -441,7 +449,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			ConnectedMessage*	Message = new ConnectedMessage(m_HwdID, m_pConnection, -1, std::string(e.what()));
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -454,12 +462,13 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
-			ReadMessage*	Message = new ReadMessage(m_HwdID, m_pConnection, bytes_transferred, (const unsigned char*)data);
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
 
+			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 		}
 		else
@@ -475,6 +484,7 @@ namespace Plugins {
 
 	bool CPluginTransportSerial::handleDisconnect()
 	{
+		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
 			if (isOpen())
