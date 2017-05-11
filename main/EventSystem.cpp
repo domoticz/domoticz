@@ -45,51 +45,55 @@ extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
 
-// Mapping array from JSON fields to LUA fields
-std::map<std::string, std::string> jsonfields =
-{
-	{ "Barometer",			"barometer" },
-	{ "Chill",				"chill" },
-	{ "Counter",			"counter" },
-	{ "CounterDeliv",		"counterDeliv" },
-	{ "CounterDelivToday",	"counterDelivToday" },
-	{ "CounterToday",		"counterToday" },
-	{ "Current",			"current" },
-	{ "DewPoint",			"dewPoint" },
-	{ "Direction",			"direction" },
-	{ "DirectionStr",		"directionStr" },
-	{ "Forecast",			"forecast" },
-	{ "ForecastStr",		"forecastStr" },
-	{ "Humidity",			"humidity" },
-	{ "LevelActions",		"levelActions" },
-	{ "LevelNames",			"levelNames" },
-	{ "LevelOffHidden",		"levelOffHidden" },
-	{ "MaxDimLevel",		"maxDimLevel" },
-	{ "Moisture",			"moisture" },
-	{ "Pressure",			"pressure" },
-	{ "Quality",			"quality" },
-	{ "Radiation",			"radiation" },
-	{ "Rain",				"rain" },
-	{ "RainRate",			"rainRate" },
-	{ "SensorType",			"sensorType" },
-	{ "SensorUnit",			"sensorUnit" },
-	{ "SetPoint",			"setPoint" },
-	{ "Speed",				"speed" },
-	{ "Temp",				"temp" },
-	{ "TypeImg",			"typeImage" },
-	{ "Usage",				"usage" },
-	{ "UsageDeliv",			"usageDeliv" },
-	{ "ValueQuantity",		"valueQuantity" },
-	{ "ValueUnits",			"valueUnits" },
-	{ "Visibility",			"visibility" },
-	{ "Voltage",			"voltage" }
-};
 
 
 CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
 	m_bEnabled = true;
+
+	// Mapping array from JSON fields to LUA fields
+	m_jsonFieldsToLua =
+	{
+		{ "Barometer",			"barometer" },
+		{ "Chill",				"chill" },
+		{ "Counter",			"counter" },
+		{ "CounterDeliv",		"counterDeliv" },
+		{ "CounterDelivToday",	"counterDelivToday" },
+		{ "CounterToday",		"counterToday" },
+		{ "Current",			"current" },
+		{ "DewPoint",			"dewPoint" },
+		{ "Direction",			"direction" },
+		{ "DirectionStr",		"directionStr" },
+		{ "Forecast",			"forecast" },
+		{ "ForecastStr",		"forecastStr" },
+		{ "Humidity",			"humidity" },
+		{ "LevelActions",		"levelActions" },
+		{ "LevelNames",			"levelNames" },
+		{ "LevelOffHidden",		"levelOffHidden" },
+		{ "MaxDimLevel",		"maxDimLevel" },
+		{ "Moisture",			"moisture" },
+		{ "Pressure",			"pressure" },
+		{ "Quality",			"quality" },
+		{ "Radiation",			"radiation" },
+		{ "Rain",				"rain" },
+		{ "RainRate",			"rainRate" },
+		{ "SensorType",			"sensorType" },
+		{ "SensorUnit",			"sensorUnit" },
+		{ "SetPoint",			"setPoint" },
+		{ "Speed",				"speed" },
+		{ "Temp",				"temp" },
+		{ "TypeImg",			"typeImage" },
+		{ "Usage",				"usage" },
+		{ "UsageDeliv",			"usageDeliv" },
+		{ "ValueQuantity",		"valueQuantity" },
+		{ "ValueUnits",			"valueUnits" },
+		{ "Visibility",			"visibility" },
+		{ "Voltage",			"voltage" }
+	};
+
+
+
 }
 
 
@@ -2894,7 +2898,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			std::map<std::string, std::string>::const_iterator itt;
 
-			for (itt = jsonfields.begin(); itt != jsonfields.end(); ++itt)
+			for (itt = m_jsonFieldsToLua.begin(); itt != m_jsonFieldsToLua.end(); ++itt)
 			{
 				if (tempjson["result"][0][itt->first] != Json::Value::null)
 				{
