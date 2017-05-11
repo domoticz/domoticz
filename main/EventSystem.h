@@ -187,8 +187,6 @@ private:
 	std::map<uint64_t, float> m_windgustValuesByID;
 	std::map<uint64_t, int> m_zwaveAlarmValuesByID;
 
-	std::map<std::string, std::string> m_jsonFieldsToLua;
-
 	void reportMissingDevice(const int deviceID, const std::string &EventName, const uint64_t eventID);
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);

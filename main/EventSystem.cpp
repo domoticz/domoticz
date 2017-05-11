@@ -44,56 +44,56 @@ using namespace boost::python;
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
+struct _tJsonLuaMap {
+	const char* szOriginal;
+	const char* szNew;
+};
 
+static const _tJsonLuaMap JsonLuaMap[] =
+{
+	{ "Barometer",			"barometer" },
+	{ "Chill",				"chill" },
+	{ "Counter",			"counter" },
+	{ "CounterDeliv",		"counterDeliv" },
+	{ "CounterDelivToday",	"counterDelivToday" },
+	{ "CounterToday",		"counterToday" },
+	{ "Current",			"current" },
+	{ "DewPoint",			"dewPoint" },
+	{ "Direction",			"direction" },
+	{ "DirectionStr",		"directionStr" },
+	{ "Forecast",			"forecast" },
+	{ "ForecastStr",		"forecastStr" },
+	{ "Humidity",			"humidity" },
+	{ "LevelActions",		"levelActions" },
+	{ "LevelNames",			"levelNames" },
+	{ "LevelOffHidden",		"levelOffHidden" },
+	{ "MaxDimLevel",		"maxDimLevel" },
+	{ "Moisture",			"moisture" },
+	{ "Pressure",			"pressure" },
+	{ "Quality",			"quality" },
+	{ "Radiation",			"radiation" },
+	{ "Rain",				"rain" },
+	{ "RainRate",			"rainRate" },
+	{ "SensorType",			"sensorType" },
+	{ "SensorUnit",			"sensorUnit" },
+	{ "SetPoint",			"setPoint" },
+	{ "Speed",				"speed" },
+	{ "Temp",				"temp" },
+	{ "TypeImg",			"typeImage" },
+	{ "Usage",				"usage" },
+	{ "UsageDeliv",			"usageDeliv" },
+	{ "ValueQuantity",		"valueQuantity" },
+	{ "ValueUnits",			"valueUnits" },
+	{ "Visibility",			"visibility" },
+	{ "Voltage",			"voltage" },
+	{ NULL,					NULL }
+};
 
 
 CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
 	m_bEnabled = true;
-
-	// Mapping array from JSON fields to LUA fields
-	m_jsonFieldsToLua =
-	{
-		{ "Barometer",			"barometer" },
-		{ "Chill",				"chill" },
-		{ "Counter",			"counter" },
-		{ "CounterDeliv",		"counterDeliv" },
-		{ "CounterDelivToday",	"counterDelivToday" },
-		{ "CounterToday",		"counterToday" },
-		{ "Current",			"current" },
-		{ "DewPoint",			"dewPoint" },
-		{ "Direction",			"direction" },
-		{ "DirectionStr",		"directionStr" },
-		{ "Forecast",			"forecast" },
-		{ "ForecastStr",		"forecastStr" },
-		{ "Humidity",			"humidity" },
-		{ "LevelActions",		"levelActions" },
-		{ "LevelNames",			"levelNames" },
-		{ "LevelOffHidden",		"levelOffHidden" },
-		{ "MaxDimLevel",		"maxDimLevel" },
-		{ "Moisture",			"moisture" },
-		{ "Pressure",			"pressure" },
-		{ "Quality",			"quality" },
-		{ "Radiation",			"radiation" },
-		{ "Rain",				"rain" },
-		{ "RainRate",			"rainRate" },
-		{ "SensorType",			"sensorType" },
-		{ "SensorUnit",			"sensorUnit" },
-		{ "SetPoint",			"setPoint" },
-		{ "Speed",				"speed" },
-		{ "Temp",				"temp" },
-		{ "TypeImg",			"typeImage" },
-		{ "Usage",				"usage" },
-		{ "UsageDeliv",			"usageDeliv" },
-		{ "ValueQuantity",		"valueQuantity" },
-		{ "ValueUnits",			"valueUnits" },
-		{ "Visibility",			"visibility" },
-		{ "Voltage",			"voltage" }
-	};
-
-
-
 }
 
 
@@ -2897,16 +2897,17 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (rsize > 0)
 		{
 			std::map<std::string, std::string>::const_iterator itt;
-
-			for (itt = m_jsonFieldsToLua.begin(); itt != m_jsonFieldsToLua.end(); ++itt)
+			int ii = 0;
+			while (JsonLuaMap[ii].szOriginal != NULL)
 			{
-				if (tempjson["result"][0][itt->first] != Json::Value::null)
+				if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
 				{
-					std::string value = tempjson["result"][0][itt->first].asString();
-					lua_pushstring(lua_state, itt->second.c_str());
+					std::string value = tempjson["result"][0][JsonLuaMap[ii].szOriginal].asString();
+					lua_pushstring(lua_state, JsonLuaMap[ii].szNew);
 					lua_pushstring(lua_state, value.c_str());
 					lua_rawset(lua_state, -3);
 				}
+				ii ++ ;
 			}
 		}
 
