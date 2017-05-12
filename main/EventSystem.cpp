@@ -36,6 +36,7 @@ extern "C" {
 #endif
 }
 
+
 #ifdef ENABLE_PYTHON
 #include <boost/python.hpp>
 using namespace boost::python;
@@ -3632,9 +3633,23 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	char szTmp[10];
 	sprintf(szTmp, "%.02f", 1.23f);
 	sprintf(szTmp, "%c", szTmp[1]);
-	lua_pushstring(lua_state, "radix_seperator");
+	lua_pushstring(lua_state, "radix_separator");
 	lua_pushstring(lua_state, szTmp);
 	lua_rawset(lua_state, -3);
+
+	sprintf(szTmp, "%.02f", 1234.56f);
+	lua_pushstring(lua_state, "group_separator");
+	if (szTmp[1] == '2')
+	{
+		lua_pushstring(lua_state, "");
+	}
+	else
+	{
+		sprintf(szTmp, "%c", szTmp[1]);
+		lua_pushstring(lua_state, szTmp);
+	}
+	lua_rawset(lua_state, -3);
+
 
 	lua_setglobal(lua_state, "globalvariables");
 
