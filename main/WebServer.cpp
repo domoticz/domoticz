@@ -1173,7 +1173,7 @@ namespace http {
 			else if (htype == HTYPE_Tellstick) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB) {
+			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_PiFace) {
@@ -1209,7 +1209,8 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_EVOHOME_WEB)
 				)
 			{
 				if (
@@ -1519,7 +1520,7 @@ namespace http {
 			else if (htype == HTYPE_Dummy) {
 				//All fine here
 			}
-			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB) {
+			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL) {
 				//All fine here
 			}
 			else if (htype == HTYPE_PiFace) {
@@ -1555,7 +1556,8 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
-				(htype == HTYPE_Netatmo)
+				(htype == HTYPE_Netatmo) ||
+				(htype == HTYPE_EVOHOME_WEB)
 				)
 			{
 				if (

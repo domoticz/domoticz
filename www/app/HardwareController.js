@@ -854,6 +854,23 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var mode1 = "";
+				var mode2 = "";
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&idx=" + idx +	"&datatimeout=" + datatimeout + "&mode1=" + mode1 + "&mode2=" + mode2,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 		}
 
 		AddHardware = function () {
@@ -1585,6 +1602,23 @@ define(['app'], function (app) {
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var mode1 = "";
+				var mode2 = "";
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&mode1=" + mode1 + "&mode2=" + mode2,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4702,7 +4736,7 @@ define(['app'], function (app) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("Evohome") >= 0) {
-								if (HwTypeStr.indexOf("script") >= 0)
+								if (HwTypeStr.indexOf("via") >= 0)
 									HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Devices") + '</span>';
 								else {
 									HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
@@ -5024,6 +5058,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
+						if (data["Type"].indexOf("Evohome via Web") >= 0) {
+							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+						}
 
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
@@ -5093,6 +5131,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lblusername").show();
 
 			$("#hardwarecontent #divevohome").hide();
+			$("#hardwarecontent #divevohomeweb").hide();
 			$("#hardwarecontent #divbaudratemysensors").hide();
 			$("#hardwarecontent #divbaudratep1").hide();
 			$("#hardwarecontent #divbaudrateteleinfo").hide();
@@ -5361,6 +5400,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
+			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				$("#hardwarecontent #divevohomeweb").show();
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
