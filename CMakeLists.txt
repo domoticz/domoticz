@@ -314,6 +314,7 @@ hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeScript.cpp
 hardware/EvohomeSerial.cpp
+hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp

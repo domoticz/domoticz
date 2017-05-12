@@ -435,6 +435,7 @@
     <ClInclude Include="..\hardware\EvohomeBase.h" />
     <ClInclude Include="..\hardware\EvohomeScript.h" />
     <ClInclude Include="..\hardware\EvohomeSerial.h" />
+    <ClInclude Include="..\hardware\EvohomeWeb.h" />
     <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
@@ -678,6 +679,7 @@
     <ClCompile Include="..\hardware\EvohomeBase.cpp" />
     <ClCompile Include="..\hardware\EvohomeScript.cpp" />
     <ClCompile Include="..\hardware\EvohomeSerial.cpp" />
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />

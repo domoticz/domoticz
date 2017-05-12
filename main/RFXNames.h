@@ -184,6 +184,7 @@ enum _eHardwareTypes {
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
 	HTYPE_SysfsGPIO,			//102
+	HTYPE_EVOHOME_WEB,			//103
 	HTYPE_END
 };
 

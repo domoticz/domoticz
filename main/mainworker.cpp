@@ -68,6 +68,7 @@
 #include "../hardware/EvohomeBase.h"
 #include "../hardware/EvohomeScript.h"
 #include "../hardware/EvohomeSerial.h"
+#include "../hardware/EvohomeWeb.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MySensorsMQTT.h"
@@ -990,6 +991,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_IntergasInComfortLAN2RF:
 		pHardware = new CInComfort(ID, Address, Port);
+		break;
+	case HTYPE_EVOHOME_WEB:
+		pHardware = new CEvohomeWeb(ID);
 		break;
 	}
 
@@ -11703,10 +11707,10 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
-		s_strid << std::hex << std::dec << sd[1];
-	else
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
 		s_strid << std::hex << sd[1];
+	else  //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
+		s_strid << std::hex << std::dec << sd[1];
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
@@ -11815,7 +11819,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	if (pHardware==NULL)
 		return false;
 
-	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
 	{
 		REVOBUF tsen;
 		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
@@ -11892,6 +11896,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
@@ -11947,7 +11952,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNefitEasy *pGateway = reinterpret_cast<CNefitEasy*>(pHardware);
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
 		}
