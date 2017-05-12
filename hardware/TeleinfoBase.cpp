@@ -144,12 +144,12 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	#ifdef DEBUG_TeleinfoBase
 	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
 	#endif
-	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 300))
+	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
 	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
-		//Send data at mamximum rate specified in settings, and at least every 5mn
-		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 300))
+		//Send data at mamximum rate specified in settings, and at least every 5mn minus 10s as a grace period for the watchdog
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 290))
 		{
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;
