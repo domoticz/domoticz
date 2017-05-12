@@ -49,6 +49,10 @@ struct _tJsonLuaMap {
 	const char* szNew;
 };
 
+
+// This table specifies which JSON fields are passed to the LUA scripts.
+// If new return fields are added in  CWebServer::GetJSonDevices, they should
+// be added to this table.
 static const _tJsonLuaMap JsonLuaMap[] =
 {
 	{ "Barometer",			"barometer" },
@@ -64,6 +68,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Forecast",			"forecast" },
 	{ "ForecastStr",		"forecastStr" },
 	{ "Humidity",			"humidity" },
+	{ "HumidityStatus",		"humidityStatus" },
 	{ "LevelActions",		"levelActions" },
 	{ "LevelNames",			"levelNames" },
 	{ "LevelOffHidden",		"levelOffHidden" },
@@ -3013,7 +3018,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			//Float
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
-			vtype = "float";
+			vtype = (char*)"float";
 		}
 		else 
 		{
@@ -3021,29 +3026,29 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			if (uvitem.variableType == 2)
 			{
-				vtype = "string";
+				vtype = (char*)"string";
 			}
 			else if (uvitem.variableType == 3)
 			{
-				vtype = "date";
+				vtype = (char*)"date";
 			}
 			else if (uvitem.variableType == 4)
 			{
-				vtype = "time";
+				vtype = (char*)"time";
 			}
 			else 
 			{
-				vtype = "unknown";
+				vtype = (char*)"unknown";
 			}
 		}
 		lua_rawset(lua_state, -3);
 
 		lua_settable(lua_state, -3); // data table
-
+		
 		lua_pushstring(lua_state, "variableType");
 		lua_pushstring(lua_state, vtype);
 		lua_rawset(lua_state, -3);
-
+		
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
@@ -3622,6 +3627,13 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_reason");
 	lua_pushstring(lua_state, reason.c_str());
+	lua_rawset(lua_state, -3);
+
+	char szTmp[10];
+	sprintf(szTmp, "%.02f", 1.23f);
+	sprintf(szTmp, "%c", szTmp[1]);
+	lua_pushstring(lua_state, "radix_seperator");
+	lua_pushstring(lua_state, szTmp);
 	lua_rawset(lua_state, -3);
 
 	lua_setglobal(lua_state, "globalvariables");
