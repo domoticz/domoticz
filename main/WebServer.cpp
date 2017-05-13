@@ -7967,7 +7967,7 @@ namespace http {
 							" WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID)"
 							" AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							floorID.c_str());
-					else
+					else {
 						szQuery = (
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
@@ -7976,6 +7976,7 @@ namespace http {
 							" ORDER BY ");
 						szQuery += szOrderBy;
 						result = m_sql.safe_query(szQuery.c_str(), order.c_str());
+					}
 
 					if (result.size() > 0)
 					{
