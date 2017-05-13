@@ -9,11 +9,12 @@
 
 #ifdef ENABLE_PYTHON
 
-    extern std::string szUserDataFolder;
-
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
+        void*   m_PyInterpreter;
+        bool ModuleInitalized = false;
+        
         struct eventModule_state {
             PyObject*	error;
         };
@@ -56,7 +57,6 @@
         }
 
         static PyObject*	PyDomoticz_EventsCommand(PyObject *self, PyObject *args) {
-            char* msg;
             char* action;
             char* device;
 
@@ -103,8 +103,58 @@
             PyObject* pModule = PyModule_Create2(&DomoticzEventsModuleDef, PYTHON_API_VERSION);
             return pModule;
         }
+        
+        int PythonEventsInitalized = 0;
 
-        PyObject* GetEventModule (void) {
+        bool PythonEventsInitialize(std::string szUserDataFolder) {
+            
+            if (!Plugins::Py_LoadLibrary())
+            {
+                _log.Log(LOG_STATUS, "EventSystem - Python: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+                return false;
+            }
+            
+            if (!Plugins::Py_IsInitialized()) {
+                _log.Log(LOG_STATUS, "EventSystem - Python: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+                return false;
+            }
+            
+            m_PyInterpreter = Py_NewInterpreter();
+            if (!m_PyInterpreter)
+            {
+                _log.Log(LOG_ERROR, "EventSystem - Python: Failed to create interpreter.");
+                return false;
+            }
+            
+            std::string ssPath;
+#ifdef WIN32
+            ssPath  = szUserDataFolder + "scripts\\python\\;";
+#else
+            ssPath  = szUserDataFolder + "scripts/python/:";
+#endif
+            
+            std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
+            
+            sPath += Plugins::Py_GetPath();
+            Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
+            
+            PythonEventsInitalized = 1;
+            
+            PyObject* pModule = Plugins::PythonEventsGetModule();
+            if (!pModule) {
+                _log.Log(LOG_ERROR, "EventSystem - Python: Failed to initialize module.");
+                return false;
+            }
+            ModuleInitalized = true;
+            return true;
+        }
+        
+        bool PythonEventsStop() {
+            if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+            return true;
+        }
+        
+        PyObject* PythonEventsGetModule (void) {
             PyObject* pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
             if (pModule) {
@@ -125,40 +175,25 @@
             }
         }
 
-        int PythonEventsInitalized = 0;
+       
 
-        void ProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables) {
+        void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet) {
 
-            if (PythonEventsInitalized == -1) {
-                // Failed to load library
+       
+            if (!ModuleInitalized) {
                 return;
             }
-
-            if (!Plugins::Py_LoadLibrary())
-            {
-                _log.Log(LOG_STATUS, "EventSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
-                PythonEventsInitalized = -1;
-                return;
-            }
+            
 
            if (Plugins::Py_IsInitialized()) {
-               if (PythonEventsInitalized==0) {
-                   std::string ssPath;
-                    #ifdef WIN32
-                        ssPath  = szUserDataFolder + "scripts\\python\\;";
-                    #else
-                        ssPath  = szUserDataFolder + "scripts/python/:";
-                    #endif
-
-                    std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
-
-                    sPath += Plugins::Py_GetPath();
-            		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
-
-                    PythonEventsInitalized = 1;
-               }
-
-               PyObject* pModule = Plugins::GetEventModule();
+               
+               if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+               
+               /*{
+                   _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");
+               }*/
+            
+               PyObject* pModule = Plugins::PythonEventsGetModule();
                if (pModule) {
 
                    PyObject* pModuleDict = Plugins::PyModule_GetDict((PyObject*)pModule); // borrowed referece
@@ -235,12 +270,6 @@
 
                    // Time related
 
-                   // int intRise = getSunRiseSunSetMinutes("Sunrise");
-                   // int intSet = getSunRiseSunSetMinutes("Sunset");
-
-                   int intRise = 0;
-                   int intSet = 0;
-
                    // Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
                    time_t now = mytime(NULL);
                    struct tm ltime;
@@ -251,11 +280,11 @@
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
                    }
 
-                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intRise)) == -1) {
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intSunRise)) == -1) {
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
                    }
 
-                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSet)) == -1) {
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSunSet)) == -1) {
                        _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
                    }
 
@@ -265,7 +294,7 @@
                    bool isDaytime = false;
                    bool isNightime = false;
 
-                   if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+                   if ((minutesSinceMidnight > intSunRise) && (minutesSinceMidnight < intSunSet)) {
                        isDaytime = true;
                    }
                    else {
