@@ -3,7 +3,7 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "PluginManager.h"
 #include "Plugins.h"
@@ -131,7 +131,7 @@ namespace Plugins {
 			{
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
 				return false;
-			} 
+			}
 #endif //ENABLE_PYTHON
 
 			Py_Initialize();
