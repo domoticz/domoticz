@@ -1,9 +1,10 @@
-// Nest "New Api"
+// Nest OAuth API
+//
 // This plugin uses the proper public Nest Developer API as 
 // opposed to the old plugin which used the mobile interface API.
 
 #include "stdafx.h"
-#include "NestNewApi.h"
+#include "NestOAuthAPI.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -16,71 +17,37 @@
 
 #define round(a) ( int ) ( a + .5 )
 
-const std::string NEST_NEWAPI_BASE = "https://developer-api.nest.com/";
+// Base URL of API including trailing slash
+const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
 
-#ifdef _DEBUG
-	#define DEBUG_NextThermostatR
-	#define DEBUG_NextThermostatW
-#endif
-
-#ifdef DEBUG_NextThermostatW
-void SaveString2Disk(std::string str, std::string filename)
-{
-	FILE *fOut = fopen(filename.c_str(), "wb+");
-	if (fOut)
-	{
-		fwrite(str.c_str(), 1, str.size(), fOut);
-		fclose(fOut);
-	}
-}
-#endif
-#ifdef DEBUG_NextThermostatR
-std::string ReadFile(std::string filename)
-{
-	std::ifstream file;
-	std::string sResult = "";
-	file.open(filename.c_str());
-	if (!file.is_open())
-		return "";
-	std::string sLine;
-	while (!file.eof())
-	{
-		getline(file, sLine);
-		sResult += sLine;
-	}
-	file.close();
-	return sResult;
-}
-#endif
-
-CNestNewApi::CNestNewApi(const int ID, const std::string &APIKey) :
+CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &APIKey) :
 	m_NewApiAccessToken(APIKey)
 {
 	m_HwdID=ID;
 	Init();
 }
 
-CNestNewApi::~CNestNewApi(void)
+CNestOAuthAPI::~CNestOAuthAPI(void)
 {
 }
 
-void CNestNewApi::Init()
+void CNestOAuthAPI::Init()
 {
 	m_stoprequested = false;
 	m_bDoLogin = true;
 }
 
-bool CNestNewApi::StartHardware()
+bool CNestOAuthAPI::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNestNewApi::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CNestOAuthAPI::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
 
-bool CNestNewApi::StopHardware()
+bool CNestOAuthAPI::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
@@ -96,9 +63,9 @@ bool CNestNewApi::StopHardware()
 
 #define NEST_POLL_INTERVAL 30
 
-void CNestNewApi::Do_Work()
+void CNestOAuthAPI::Do_Work()
 {
-	_log.Log(LOG_STATUS,"NestNewApi: Worker started...");
+	_log.Log(LOG_STATUS,"NestOAuthAPI: Worker started...");
 	int sec_counter = NEST_POLL_INTERVAL-5;
 	while (!m_stoprequested)
 	{
@@ -115,10 +82,10 @@ void CNestNewApi::Do_Work()
 		}
 
 	}
-	_log.Log(LOG_STATUS,"NestNewApi: Worker stopped...");
+	_log.Log(LOG_STATUS,"NestOAuthAPI: Worker stopped...");
 }
 
-void CNestNewApi::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
+void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
 	thermos.subtype=sTypeThermSetpoint;
@@ -134,7 +101,7 @@ void CNestNewApi::SendSetPointSensor(const unsigned char Idx, const float Temp, 
 }
 
 // Creates and updates switch used to log Heating and/or Colling.
-void CNestNewApi::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
 	char szIdx[10];
@@ -180,24 +147,24 @@ void CNestNewApi::UpdateSwitch(const unsigned char Idx, const bool bOn, const st
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-bool CNestNewApi::Login()
+bool CNestOAuthAPI::Login()
 {
 	if (m_NewApiAccessToken.empty())
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: NewApiAccessToken not supplied. Cannot login.");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: NewApiAccessToken not supplied. Cannot login.");
 		Logout();
 		return false;
 	}
 
 	// Let's get a list of structures to see if the supplied Access Token works
-	std::string sURL = NEST_NEWAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
-	// _log.Log(LOG_NORM, ("NestNewApi: Trying to access api on " + sURL).c_str());
+	// _log.Log(LOG_NORM, ("NestOAuthAPI: Trying to access api on " + sURL).c_str());
 
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR,"NestNewApi: Error login!");
+		_log.Log(LOG_ERROR,"NestOAuthAPI: Error login!");
 		return false;
 	}
 
@@ -206,12 +173,12 @@ bool CNestNewApi::Login()
 	bool bRet = jReader.parse(sResult, root);
 	if ((!bRet) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Invalid data received, or invalid access token!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid data received, or invalid access token!");
 		return false;
 	}
 	if (root.size() == 0)
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Invalid data received, or invalid access token!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid data received, or invalid access token!");
 		return false;
 	}
 
@@ -221,25 +188,25 @@ bool CNestNewApi::Login()
 	
 	if (oFirstElement["name"].empty())
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Did not get name for first structure!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Did not get name for first structure!");
 		return false;
 	}
-	// _log.Log(LOG_NORM, ("NestNewApi: Got first structure name: "+oFirstElement["name"].asString()).c_str());
+	// _log.Log(LOG_NORM, ("NestOAuthAPI: Got first structure name: "+oFirstElement["name"].asString()).c_str());
 
-	_log.Log(LOG_NORM, "NestNewApi: Access token appears to be valid.");
+	_log.Log(LOG_NORM, "NestOAuthAPI: Access token appears to be valid.");
 
 	m_bDoLogin = false;
 	return true;
 }
 
-void CNestNewApi::Logout()
+void CNestOAuthAPI::Logout()
 {
 	if (m_bDoLogin)
 		return; //we are not logged in
 	m_bDoLogin = true;
 }
 
-bool CNestNewApi::WriteToHardware(const char *pdata, const unsigned char length)
+bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	if (m_NewApiAccessToken.size() == 0)
 		return false;
@@ -261,7 +228,7 @@ bool CNestNewApi::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-void CNestNewApi::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname)
+void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
 	char szIdx[10];
@@ -337,7 +304,7 @@ void CNestNewApi::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, con
 		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-void CNestNewApi::GetMeterDetails()
+void CNestOAuthAPI::GetMeterDetails()
 {
 	std::string sResult;
 	if (m_bDoLogin)
@@ -355,11 +322,11 @@ void CNestNewApi::GetMeterDetails()
 	bool bRet;
 
 	// Get Data for structures
-	sURL = NEST_NEWAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
+	sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
 
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Error getting structures!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error getting structures!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -367,17 +334,17 @@ void CNestNewApi::GetMeterDetails()
 	bRet = jReader.parse(sResult, structureRoot);
 	if ((!bRet) || (!structureRoot.isObject()))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Invalid structures data received!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid structures data received!");
 		m_bDoLogin = true;
 		return;
 	}
 
 
 	//Get Data for devices
-	sURL = NEST_NEWAPI_BASE + "devices.json?auth=" + m_NewApiAccessToken;
+	sURL = NEST_OAUTHAPI_BASE + "devices.json?auth=" + m_NewApiAccessToken;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Error getting devices!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error getting devices!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -385,7 +352,7 @@ void CNestNewApi::GetMeterDetails()
 	bRet = jReader.parse(sResult, deviceRoot);
 	if ((!bRet) || (!deviceRoot.isObject()))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Invalid devices data received!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid devices data received!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -394,7 +361,7 @@ void CNestNewApi::GetMeterDetails()
 
 	if ((!bHaveThermostats) && (!bHaveSmokeDetects))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: request not successful 1 (no thermostat or protect was received), restarting..!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: request not successful 1 (no thermostat or protect was received), restarting..!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -404,14 +371,14 @@ void CNestNewApi::GetMeterDetails()
 	{
 		if (deviceRoot["smoke_co_alarms"].size() < 1)
 		{
-			_log.Log(LOG_ERROR, "NestNewApi: smoke detectors request not successful, restarting..!");
+			_log.Log(LOG_ERROR, "NestOAuthAPI: smoke detectors request not successful, restarting..!");
 			m_bDoLogin = true;
 			return;
 		}
 		Json::Value::Members members = deviceRoot["smoke_co_alarms"].getMemberNames();
 		if (members.size() < 1)
 		{
-			_log.Log(LOG_ERROR, "NestNewApi: smoke detectors request not successful, restarting..!");
+			_log.Log(LOG_ERROR, "NestOAuthAPI: smoke detectors request not successful, restarting..!");
 			m_bDoLogin = true;
 			return;
 		}
@@ -469,7 +436,7 @@ void CNestNewApi::GetMeterDetails()
 		if (bHaveSmokeDetects)
 			return;
 
-		_log.Log(LOG_ERROR, "NestNewApi: request not successful 2 (no thermostat or protect was received), restarting..!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: request not successful 2 (no thermostat or protect was received), restarting..!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -502,7 +469,7 @@ void CNestNewApi::GetMeterDetails()
 			Json::Value ndevice = deviceRoot["thermostats"][devID];
 			if (!ndevice.isObject())
 			{
-				_log.Log(LOG_ERROR, ("NestNewApi: Structure referenced thermostat " + devID + " but it was not found.").c_str());
+				_log.Log(LOG_ERROR, ("NestOAuthAPI: Structure referenced thermostat " + devID + " but it was not found.").c_str());
 				continue;
 			}
 
@@ -557,7 +524,7 @@ void CNestNewApi::GetMeterDetails()
 	}
 }
 
-void CNestNewApi::SetSetpoint(const int idx, const float temp)
+void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 {
 	if (m_NewApiAccessToken.size() == 0)
 		return;
@@ -574,7 +541,7 @@ void CNestNewApi::SetSetpoint(const int idx, const float temp)
 
 	if (m_thermostats[iThermostat].Serial.empty())
 	{
-		_log.Log(LOG_NORM, "NestNewApi: Thermostat has not been initialized yet. Try again later.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Thermostat has not been initialized yet. Try again later.");
 		return;
 	}
 
@@ -594,10 +561,10 @@ void CNestNewApi::SetSetpoint(const int idx, const float temp)
 
 	std::string sResult;
 
-	std::string sURL = NEST_NEWAPI_BASE + "devices/thermostats/" + m_thermostats[iThermostat].Serial;
+	std::string sURL = NEST_OAUTHAPI_BASE + "devices/thermostats/" + m_thermostats[iThermostat].Serial;
 	if (!HTTPClient::PUT(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Error setting setpoint!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error setting setpoint!");
 		m_bDoLogin = true;
 		return;
 	}
@@ -605,7 +572,7 @@ void CNestNewApi::SetSetpoint(const int idx, const float temp)
 	GetMeterDetails();
 }
 
-bool CNestNewApi::SetAway(const unsigned char Idx, const bool bIsAway)
+bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 {
 	if (m_NewApiAccessToken.size() == 0)
 		return false;
@@ -622,7 +589,7 @@ bool CNestNewApi::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	if (m_thermostats[iThermostat].Serial.empty())
 	{
-		_log.Log(LOG_NORM, "NestNewApi: Thermostat has not been initialized yet. Try again later.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Thermostat has not been initialized yet. Try again later.");
 		return false;
 	}
 
@@ -636,17 +603,17 @@ bool CNestNewApi::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	std::string sResult;
 
-	std::string sURL = NEST_NEWAPI_BASE + "structures" + "/" + m_thermostats[iThermostat].StructureID;
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures" + "/" + m_thermostats[iThermostat].StructureID;
 	if (!HTTPClient::PUT(sURL, root.toStyledString(), ExtraHeaders, sResult))
 	{
-		_log.Log(LOG_ERROR, "NestNewApi: Error setting away mode!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error setting away mode!");
 		m_bDoLogin = true;
 		return false;
 	}
 	return true;
 }
 
-void CNestNewApi::SetProgramState(const int newState)
+void CNestOAuthAPI::SetProgramState(const int newState)
 {
 	if (m_NewApiAccessToken.size() == 0)
 		return;

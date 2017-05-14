@@ -5,7 +5,7 @@
 #include "hardwaretypes.h"
 #include <map>
 
-class CNestNewApi : public CDomoticzHardwareBase
+class CNestOAuthAPI : public CDomoticzHardwareBase
 {
 	struct _tNestThemostat
 	{
@@ -14,8 +14,8 @@ class CNestNewApi : public CDomoticzHardwareBase
 		std::string Name;
 	};
 public:
-	CNestNewApi(const int ID, const std::string &APIKey);
-	~CNestNewApi(void);
+	CNestOAuthAPI(const int ID, const std::string &APIKey);
+	~CNestOAuthAPI(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
 	void SetProgramState(const int newState);
