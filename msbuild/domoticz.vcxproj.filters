@@ -465,6 +465,9 @@
     <Filter Include="Devices\SysfsGPIO">
       <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{defd3c2e-ea16-4ca4-92fc-0ccb8f4530e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2002,6 +2005,9 @@
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2663,6 +2669,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
