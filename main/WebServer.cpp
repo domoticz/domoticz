@@ -1220,7 +1220,7 @@ namespace http {
 			}
 			else if (
 				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_NEST_NEWAPI)
+				(htype == HTYPE_Nest_OAuthAPI)
 				)
 			{
 				if (
@@ -1569,7 +1569,7 @@ namespace http {
 			}
 			else if (
 				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_NEST_NEWAPI)
+				(htype == HTYPE_Nest_OAuthAPI)
 				)
 			{
 				if (

@@ -644,8 +644,8 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("Nest_NewApi") >= 0) {
-			    var apikey = $("#hardwarecontent #divnestnewapi #apikey").val();
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
 			    if (apikey == "") {
 			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
 			        return;
@@ -718,7 +718,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0)
@@ -1547,8 +1547,8 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("Nest_NewApi") >= 0) {
-			    var apikey = $("#hardwarecontent #divnestnewapi #apikey").val();
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
 			    if (apikey == "") {
 			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
 			        return;
@@ -1594,7 +1594,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0) ||
@@ -5011,8 +5011,8 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("SolarEdge via") >= 0) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
 						}
-						else if (data["Type"].indexOf("Nest_NewApi") >= 0) {
-						    $("#hardwarecontent #hardwareparamsnestnewapi #apikey").val(data["Username"]);
+						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
+						    $("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
 						}
 						else if (data["Type"].indexOf("Toon") >= 0) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
@@ -5054,7 +5054,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Eco Devices") >= 0) ||
 							(data["Type"].indexOf("Toon") >= 0) ||
 							(data["Type"].indexOf("Atag") >= 0) ||
-							(data["Type"].indexOf("Nest Th") >= 0) ||
+							(data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") === -1) ||
 							(data["Type"].indexOf("PVOutput") >= 0) ||
 							(data["Type"].indexOf("ETH8020") >= 0) ||
 							(data["Type"].indexOf("Daikin") >= 0) ||
@@ -5154,7 +5154,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
-			$("#hardwarecontent #divnestnewapi").hide();
+			$("#hardwarecontent #divnestoauthapi").hide();
 			$("#hardwarecontent #divenecotoon").hide();
 			$("#hardwarecontent #div1wire").hide();
 			$("#hardwarecontent #divgoodweweb").hide();
@@ -5289,8 +5289,8 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
-			else if (text.indexOf("Nest_NewApi") >= 0) {
-			    $("#hardwarecontent #divnestnewapi").show();
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    $("#hardwarecontent #divnestoauthapi").show();
 			    $("#hardwarecontent #divremote").hide();
 			    $("#hardwarecontent #divserial").hide();
 			    $("#hardwarecontent #divunderground").hide();
@@ -5318,7 +5318,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0)
