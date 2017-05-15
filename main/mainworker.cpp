@@ -6257,6 +6257,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
 }
@@ -6314,6 +6315,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
 	}
 
 	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
