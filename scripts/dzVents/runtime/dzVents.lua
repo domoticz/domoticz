@@ -15,36 +15,36 @@ package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 
-local _ = require 'lodash'
+_ = require 'lodash' -- todo remove
 local persistence = require('persistence')
 
-_.print(domoticzData)
+-- _.print(domoticzData)
 persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 
-print('----------------------------')
-for idx, device in pairs(domoticzData) do
-
-	print(idx)
-
-	for i, attr in pairs(device) do
-
-
-
-		if (i == 'data' or i == 'rawData') then
-			_.print('>    >' .. i .. '=' .. tostring(attr))
-			for ii, attrr in pairs(attr) do
-				_.print('>         >' .. ii .. '=' .. tostring(attrr))
-			end
-		else
-			_.print('>    >' .. i .. '=' .. tostring(attr))
-		end
-
-
-	end
-
-
-end
-print('----------------------------')
+--print('----------------------------')
+--for idx, device in pairs(domoticzData) do
+--
+--	print(idx)
+--
+--	for i, attr in pairs(device) do
+--
+--
+--
+--		if (i == 'data' or i == 'rawData') then
+--			_.print('>    >' .. i .. '=' .. tostring(attr))
+--			for ii, attrr in pairs(attr) do
+--				_.print('>         >' .. ii .. '=' .. tostring(attrr))
+--			end
+--		else
+--			_.print('>    >' .. i .. '=' .. tostring(attr))
+--		end
+--
+--
+--	end
+--
+--
+--end
+--print('----------------------------')
 
 if triggerReason == "time" then
 	print ("Time trigger.")

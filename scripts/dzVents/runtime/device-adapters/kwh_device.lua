@@ -7,7 +7,8 @@ return {
 	name = 'kWh device adapter',
 
 	matches = function (device)
-		return (device.deviceType == 'General' and device.deviceSubType == 'kWh')
+		return false
+		--return (device.deviceType == 'General' and device.deviceSubType == 'kWh')
 	end,
 
 	process = function (device)
@@ -18,7 +19,7 @@ return {
 		device.addAttribute('WhTotal', tonumber(device.rawData[2]))
 		device.addAttribute('WActual', tonumber(device.rawData[1]))
 
-		local todayFormatted = httpDevice.CounterToday or ''
+		local todayFormatted = device.CounterToday or ''
 		-- risky business, we assume no decimals, just thousands separators
 		-- there is no raw value available for today
 		local s = string.gsub(todayFormatted, '%,', '')

@@ -64,6 +64,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Forecast",			"forecast" },
 	{ "ForecastStr",		"forecastStr" },
 	{ "Humidity",			"humidity" },
+	{ "HumidityStatus",		"humidityStatus" },
 	{ "LevelActions",		"levelActions" },
 	{ "LevelNames",			"levelNames" },
 	{ "LevelOffHidden",		"levelOffHidden" },
@@ -2479,7 +2480,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	bool timed_out = false;
 	const char* dev_type;
 	const char* sub_type;
-	
+
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
@@ -2488,7 +2489,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 
 	int SensorTimeOut = 60;
-	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut); 
+	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
 	_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
 
 	struct tm ntime;
@@ -2496,7 +2497,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	//Get All Hardware ID's/Names, need them later
 	std::vector<std::vector<std::string> > result;
-	
+
 	std::map<int, _tHardwareListInt> _hardwareNames;
 	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
 	if (result.size() > 0)
@@ -2961,7 +2962,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sgitem.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
-	
+
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
 
@@ -2978,7 +2979,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	// Now do the user variables.
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) 
+	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator)
 	{
 		_tUserVariable uvitem = iterator->second;
 
@@ -3003,19 +3004,19 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_createtable(lua_state, 0, 0);
 
 		lua_pushstring(lua_state, "_state");
-		if (uvitem.variableType == 0) 
+		if (uvitem.variableType == 0)
 		{
 			//Integer
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
 			vtype = "integer";
 		}
-		else if (uvitem.variableType == 1) 
+		else if (uvitem.variableType == 1)
 		{
 			//Float
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
 			vtype = "float";
 		}
-		else 
+		else
 		{
 			//String,Date,Time
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
@@ -3031,7 +3032,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			{
 				vtype = "time";
 			}
-			else 
+			else
 			{
 				vtype = "unknown";
 			}

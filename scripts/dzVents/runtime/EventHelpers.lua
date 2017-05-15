@@ -571,7 +571,7 @@ local function EventHelpers(settings, domoticz, mainMethod)
 
 		local allEventScripts = self.getEventBindings()
 
-		for idx, device in pairs(self.domoticz.changedDevices) do
+		self.domoticz.changedDevices.forEach( function(device)
 
 			utils.log('Event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
@@ -590,7 +590,8 @@ local function EventHelpers(settings, domoticz, mainMethod)
 				self.handleEvents(scriptsToExecute, device)
 			end
 
-		end
+		end)
+
 
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray

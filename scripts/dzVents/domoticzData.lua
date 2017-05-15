@@ -4,113 +4,120 @@ local multiRefObjects = {
 } -- multiRefObjects
 local obj1 = {
 	[1] = {
-		["hardwareName"] = "dummy";
-		["description"] = "";
-		["id"] = 1;
-		["baseType"] = "device";
-		["value"] = "On";
-		["data"] = {
-		};
-		["devType"] = "Light/Switch";
-		["deviceID"] = "00014051";
-		["signalLevel"] = 255;
-		["name"] = "s1";
-		["batteryLevel"] = 255;
-		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
-		["subType"] = "Switch";
-		["level"] = 61;
 		["switchTypeValue"] = 0;
+		["lastLevel"] = 61;
+		["hardwareName"] = "dummy";
 		["hardwareID"] = "2";
-		["changed"] = "true";
-		["lastUpdate"] = "2017-04-19 20:32:02";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "00014051";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "lightbulb";
+			["maxDimLevel"] = "100";
+			["_state"] = "On";
+		};
+		["name"] = "s1";
 		["rawData"] = {
 			[1] = "0";
 		};
-		["hardwareTypeID"] = 15;
-		["switchType"] = "On/Off";
+		["id"] = 1;
+		["lastUpdate"] = "2017-05-12 11:14:42";
+		["deviceType"] = "Light/Switch";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "Switch";
 	};
 	[2] = {
-		["hardwareName"] = "dummy";
-		["description"] = "";
-		["id"] = 2;
-		["baseType"] = "device";
-		["value"] = "0.0";
-		["data"] = {
-			["temperature"] = 0;
-		};
-		["devType"] = "Temp";
-		["deviceID"] = "82002";
-		["signalLevel"] = 255;
-		["name"] = "myTemp";
-		["batteryLevel"] = 255;
-		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
-		["subType"] = "LaCrosse TX3";
-		["level"] = 0;
 		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
 		["hardwareID"] = "2";
-		["changed"] = "false";
-		["lastUpdate"] = "2017-04-18 15:35:31";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "82002";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "temperature";
+			["temp"] = "0.0";
+			["_state"] = "0.0";
+		};
+		["name"] = "myTemp";
 		["rawData"] = {
 			[1] = "0.0";
 		};
-		["hardwareTypeID"] = 15;
-		["switchType"] = "On/Off";
+		["id"] = 2;
+		["lastUpdate"] = "2017-04-18 15:35:31";
+		["deviceType"] = "Temp";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "LaCrosse TX3";
 	};
 	[3] = {
-		["hardwareName"] = "dummy";
-		["description"] = "";
-		["id"] = 3;
-		["baseType"] = "device";
-		["value"] = "0.0;50;1";
-		["data"] = {
-			["humidity"] = 50;
-			["dewPoint"] = -9.1964807510376;
-			["temperature"] = 0;
-		};
-		["devType"] = "Temp + Humidity";
-		["deviceID"] = "82003";
-		["signalLevel"] = 255;
-		["name"] = "myTempHum";
-		["batteryLevel"] = 255;
-		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
-		["subType"] = "THGN122/123, THGN132, THGR122/228/238/268";
-		["level"] = 0;
 		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
 		["hardwareID"] = "2";
-		["changed"] = "false";
-		["lastUpdate"] = "2017-04-18 15:35:41";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "82003";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "temperature";
+			["humidityStatus"] = "Comfortable";
+			["_state"] = "0.0;50;1";
+			["humidity"] = "50";
+			["temp"] = "0.0";
+			["dewPoint"] = "-9.20";
+		};
+		["name"] = "myTempHum";
 		["rawData"] = {
 			[1] = "0.0";
 			[2] = "50";
 			[3] = "1";
 		};
-		["hardwareTypeID"] = 15;
-		["switchType"] = "On/Off";
+		["id"] = 3;
+		["lastUpdate"] = "2017-04-18 15:35:41";
+		["deviceType"] = "Temp + Humidity";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "THGN122/123, THGN132, THGR122/228/238/268";
 	};
 	[4] = {
-		["hardwareName"] = "dummy";
-		["description"] = "";
-		["id"] = 4;
-		["baseType"] = "device";
-		["value"] = "0.0;50;1;1010;1";
-		["data"] = {
-			["humidity"] = 50;
-			["dewPoint"] = -9.1964807510376;
-			["pressure"] = 1010;
-			["temperature"] = 0;
-		};
-		["devType"] = "Temp + Humidity + Baro";
-		["deviceID"] = "82004";
-		["signalLevel"] = 255;
-		["name"] = "myTempHumBaro";
-		["batteryLevel"] = 255;
-		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
-		["subType"] = "THB1 - BTHR918, BTHGN129";
-		["level"] = 0;
 		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
 		["hardwareID"] = "2";
-		["changed"] = "false";
-		["lastUpdate"] = "2017-04-18 15:35:51";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "82004";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "temperature";
+			["temp"] = "0.0";
+			["humidityStatus"] = "Comfortable";
+			["forecast"] = "1";
+			["dewPoint"] = "-9.20";
+			["_state"] = "0.0;50;1;1010;1";
+			["forecastStr"] = "Sunny";
+			["humidity"] = "50";
+			["barometer"] = "1010";
+		};
+		["name"] = "myTempHumBaro";
 		["rawData"] = {
 			[1] = "0.0";
 			[2] = "50";
@@ -118,70 +125,153 @@ local obj1 = {
 			[4] = "1010";
 			[5] = "1";
 		};
-		["hardwareTypeID"] = 15;
-		["switchType"] = "On/Off";
+		["id"] = 4;
+		["lastUpdate"] = "2017-04-18 15:35:51";
+		["deviceType"] = "Temp + Humidity + Baro";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "THB1 - BTHR918, BTHGN129";
 	};
 	[5] = {
-		["hardwareName"] = "dummy";
-		["description"] = "";
-		["id"] = 5;
-		["baseType"] = "device";
-		["value"] = "Hello World";
-		["data"] = {
-		};
-		["devType"] = "General";
-		["deviceID"] = "00082005";
-		["signalLevel"] = 255;
-		["name"] = "myText";
-		["batteryLevel"] = 255;
-		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
-		["subType"] = "Text";
-		["level"] = 0;
 		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
 		["hardwareID"] = "2";
-		["changed"] = "false";
-		["lastUpdate"] = "2017-04-19 15:59:52";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "00082005";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "text";
+			["_state"] = "Hello World";
+		};
+		["name"] = "myText";
 		["rawData"] = {
 			[1] = "Hello World";
 		};
-		["hardwareTypeID"] = 15;
-		["switchType"] = "On/Off";
+		["id"] = 5;
+		["lastUpdate"] = "2017-04-19 15:59:52";
+		["deviceType"] = "General";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "Text";
 	};
 	[6] = {
-		["id"] = 1;
-		["baseType"] = "scene";
-		["name"] = "scene1";
-		["value"] = "Off";
-		["lastUpdate"] = "2017-04-18 15:31:19";
+		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
+		["hardwareID"] = "2";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "82006";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["typeImage"] = "current";
+			["_state"] = "0";
+		};
+		["name"] = "myUsage";
+		["rawData"] = {
+			[1] = "0";
+		};
+		["id"] = 6;
+		["lastUpdate"] = "2017-05-12 10:15:46";
+		["deviceType"] = "Usage";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "Electric";
 	};
 	[7] = {
-		["id"] = 2;
-		["baseType"] = "group";
-		["name"] = "group1";
-		["value"] = "Off";
-		["lastUpdate"] = "2017-04-18 15:31:26";
+		["switchTypeValue"] = 0;
+		["lastLevel"] = 0;
+		["hardwareName"] = "dummy";
+		["hardwareID"] = "2";
+		["baseType"] = "device";
+		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
+		["hardwareTypeID"] = 15;
+		["deviceID"] = "00082007";
+		["timedOut"] = "true";
+		["switchType"] = "On/Off";
+		["data"] = {
+			["counterToday"] = "0.000 kWh";
+			["typeImage"] = "current";
+			["_state"] = "0;0.0";
+			["whActual"] = "0";
+			["whTotal"] = "0.0";
+			["usage"] = "0.0 Watt";
+		};
+		["name"] = "myElectric";
+		["rawData"] = {
+			[1] = "0";
+			[2] = "0.0";
+		};
+		["id"] = 7;
+		["lastUpdate"] = "2017-05-12 10:16:09";
+		["deviceType"] = "General";
+		["signalLevel"] = 255;
+		["description"] = "";
+		["batteryLevel"] = 255;
+		["changed"] = "false";
+		["subType"] = "kWh";
 	};
 	[8] = {
-		["id"] = 3;
+		["id"] = 1;
 		["baseType"] = "scene";
-		["name"] = "scene2";
-		["value"] = "Off";
-		["lastUpdate"] = "2017-04-19 20:31:50";
+		["data"] = {
+			["_state"] = "Off";
+		};
+		["name"] = "scene1";
+		["description"] = "";
+		["lastUpdate"] = "2017-04-18 15:31:19";
 	};
 	[9] = {
-		["id"] = 4;
+		["id"] = 2;
 		["baseType"] = "group";
-		["name"] = "group2";
-		["value"] = "Off";
-		["lastUpdate"] = "2017-04-19 20:31:57";
+		["data"] = {
+			["_state"] = "Off";
+		};
+		["name"] = "group1";
+		["description"] = "";
+		["lastUpdate"] = "2017-04-18 15:31:26";
 	};
 	[10] = {
+		["id"] = 3;
+		["baseType"] = "scene";
+		["data"] = {
+			["_state"] = "Off";
+		};
+		["name"] = "scene2";
+		["description"] = "";
+		["lastUpdate"] = "2017-04-19 20:31:50";
+	};
+	[11] = {
+		["id"] = 4;
+		["baseType"] = "group";
+		["data"] = {
+			["_state"] = "Off";
+		};
+		["name"] = "group2";
+		["description"] = "";
+		["lastUpdate"] = "2017-04-19 20:31:57";
+	};
+	[12] = {
 		["id"] = 1;
 		["baseType"] = "uservariable";
+		["data"] = {
+			["_state"] = 1;
+		};
+		["variableType"] = "integer";
 		["name"] = "myVar1";
 		["lastUpdate"] = "2017-04-18 15:31:36";
-		["variableType"] = "integer";
-		["value"] = 1;
 	};
 }
 return obj1
