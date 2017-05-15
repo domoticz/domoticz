@@ -443,14 +443,9 @@ void CSysfsGPIO::CreateDomoticzDevices()
 
 						createNewDevice = true;
 					}
-
-					if (atoi(sd[0].c_str()) == 1) /* write actual db state to hardware */
-					{
-						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? false : true);
-					}
 					else
 					{
-						GPIOWrite(GpioSavedState[i].pin_number, GpioSavedState[i].active_low ? true : false);
+						GPIOWrite(GpioSavedState[i].pin_number, atoi(sd[0].c_str()));
 					}
 				}
 			}
@@ -650,31 +645,6 @@ int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
 {
 	char path[GPIO_MAX_PATH];
 	int fd;
-	int new_state = 0;
-	int active_low = -1;
-
-	for (int i = 0; i < GpioSavedState.size(); i++)
-	{
-		if (GpioSavedState[i].pin_number == gpio_pin)
-		{
-			active_low = GpioSavedState[i].active_low;
-			break;
-		}
-	}
-
-	if (active_low == -1)
-	{
-		return -1;
-	}
-
-	if (active_low == 1)
-	{
-		value ? new_state = 0 : new_state = 1;
-	}
-	else
-	{
-		value ? new_state = 1 : new_state = 0;
-	}
 
 	snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, gpio_pin);
 	fd = open(path, O_WRONLY);
@@ -684,7 +654,7 @@ int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
 		return(-1);
 	}
 
-	if (1 != write(fd, GPIO_LOW == new_state ? "0" : "1", 1))
+	if (1 != write(fd, value ? "1" : "0", 1))
 	{
 		close(fd);
 		return(-1);
