@@ -591,7 +591,7 @@ endif()
 # try to find open-zwave, if found, include support
 option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 if(USE_STATIC_OPENZWAVE)
-  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
+  find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave" "../open-zwave/cpp/build")
   set(OPENZWAVE_LIB ${OpenZWave})
 else()
   pkg_check_modules(OPENZWAVE libopenzwave)
