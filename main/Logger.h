@@ -48,13 +48,12 @@ public:
 	void LogSequenceEnd(const _eLogLevel level);
 
 	void EnableLogTimestamps(const bool bEnableTimestamps);
-	bool IsLogTimestampsEnabled();
 
-	void SetFilterString(std::string &Filter);
-	bool isTraceEnabled();
-	bool TestFilter(const char *cbuffer);
+	void SetFilterString(std::string  &Filter);
+	bool isTraceEnable();
+	bool TestFilter(char * cbuffer);
 	void setLogVerboseLevel(int LogLevel);
-	void SetLogPreference(std::string LogFilter, std::string LogFileName, std::string LogLevel);
+	void SetLogPreference(std::string  LogFilter, std::string  LogFileName, std::string  LogLevel);
 	void GetLogPreference();
 	void SetLogDebug(bool debug);
 	bool GetLogDebug();
