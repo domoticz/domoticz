@@ -614,32 +614,23 @@ void XiaomiGateway::InsertUpdateSmoke(const std::string & nodeid, const std::str
 		}
 	}
 
-	//Send as Lighting 2
-	tRBUF lcmd;
-	memset(&lcmd, 0, sizeof(RBUF));
-	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-	lcmd.LIGHTING2.packettype = pTypeLighting2;
-	lcmd.LIGHTING2.subtype = sTypeAC;
-	lcmd.LIGHTING2.id1 = sID;
-	lcmd.LIGHTING2.unitcode = 1;
-	int level = 15;
-	if (!bOn)
-	{
-		level = 0;
-		lcmd.LIGHTING2.cmnd = light2_sOff;
+	_tGeneralSwitch xcmd;
+	xcmd.len = sizeof(_tGeneralSwitch) - 1;
+	xcmd.id = sID;
+	xcmd.type = pTypeGeneralSwitch;
+	xcmd.subtype = sSwitchGeneralSwitch;
+	xcmd.unitcode = 1;
+	
+	if (bOn) {
+		xcmd.cmnd = gswitch_sOn;
 	}
-	else
-	{
-		level = 15;
-		lcmd.LIGHTING2.cmnd = light2_sOn;
+	else {
+		xcmd.cmnd = gswitch_sOff;
 	}
-	lcmd.LIGHTING2.level = level;
-	lcmd.LIGHTING2.filler = 0;
-	lcmd.LIGHTING2.rssi = 12;
 
 	if (!bDeviceExits)
 	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
+		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), 255);
 		//Assign default name for device
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", Name.c_str(), m_HwdID, szTmp);
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szTmp);
@@ -649,7 +640,7 @@ void XiaomiGateway::InsertUpdateSmoke(const std::string & nodeid, const std::str
 		}
 	}
 	else
-		sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, Name.c_str(), 255);
+		sDecodeRXMessage(this, (const unsigned char *)&xcmd, Name.c_str(), 255);
 
 }
 
