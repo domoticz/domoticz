@@ -993,7 +993,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	case HTYPE_EVOHOME_WEB:
-		pHardware = new CEvohomeWeb(ID);
+		pHardware = new CEvohomeWeb(ID, Username, Password);
 		break;
 	}
 
@@ -11707,6 +11707,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	if (pHardware==NULL)
 		return false;
 
+
 	unsigned long ID;
 	std::stringstream s_strid;
 	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
@@ -11807,19 +11808,23 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	if (hindex==-1)
 		return false;
 
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+
 	unsigned long ID;
 	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+		s_strid << std::hex << sd[1];
+	else //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
+		s_strid << std::hex << std::dec << sd[1];
 	s_strid >> ID;
+
 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
 	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
-
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
-		return false;
 
 	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
 	{
