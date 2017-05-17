@@ -1218,13 +1218,17 @@ namespace http {
 					)
 					return;
 			}
-			else if (
-				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_Nest_OAuthAPI)
-				)
+			else if (htype == HTYPE_SolarEdgeAPI)
 			{
 				if (
 					(username == "")
+					)
+					return;
+			}
+			else if (htype == HTYPE_Nest_OAuthAPI) {
+				if (
+					(username == "") &&
+					(extra == "||")
 					)
 					return;
 			}
@@ -1567,13 +1571,17 @@ namespace http {
 					)
 					return;
 			}
-			else if (
-				(htype == HTYPE_SolarEdgeAPI) ||
-				(htype == HTYPE_Nest_OAuthAPI)
-				)
+			else if (htype == HTYPE_SolarEdgeAPI)
 			{
 				if (
 					(username == "")
+					)
+					return;
+			}
+			else if (htype == HTYPE_Nest_OAuthAPI) {
+				if (
+					(username == "") &&
+					(extra == "||")
 					)
 					return;
 			}

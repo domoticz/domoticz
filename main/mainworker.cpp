@@ -902,7 +902,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CNest(ID, Username, Password);
 		break;
 	case HTYPE_Nest_OAuthAPI:
-		pHardware = new CNestOAuthAPI(ID, Username);
+		pHardware = new CNestOAuthAPI(ID, Username, Filename);
 		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);

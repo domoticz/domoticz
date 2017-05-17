@@ -646,10 +646,17 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
 			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
-			    if (apikey == "") {
-			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
+			    var productid = $("#hardwarecontent #divnestoauthapi #productid").val();
+			    var productsecret = $("#hardwarecontent #divnestoauthapi #productsecret").val();
+			    var productpin = $("#hardwarecontent #divnestoauthapi #productpin").val();
+
+			    if (apikey == "" && (productid == "" || productsecret == "" || productpin == "")) {
+			        ShowNotify($.t('Please enter an API Key or a combination of Product Id, Product Secret and PIN!'), 2500, true);
 			        return;
 			    }
+
+			    var extra = btoa(productid) + "|" + btoa(productsecret) + "|" + btoa(productpin);
+			    console.log("Updating extra1: " + extra);
 
 			    $.ajax({
 			        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -657,6 +664,7 @@ define(['app'], function (app) {
                        "&name=" + encodeURIComponent(name) +
                        "&enabled=" + bEnabled +
                        "&idx=" + idx +
+                       "&extra=" + extra +
                        "&datatimeout=" + datatimeout,
 			        async: false,
 			        dataType: 'json',
@@ -1549,15 +1557,24 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
 			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
-			    if (apikey == "") {
-			        ShowNotify($.t('Please enter an API Key!'), 2500, true);
+			    var productid = $("#hardwarecontent #divnestoauthapi #productid").val();
+			    var productsecret = $("#hardwarecontent #divnestoauthapi #productsecret").val();
+			    var productpin = $("#hardwarecontent #divnestoauthapi #productpin").val();
+
+			    if (apikey == "" && (productid == "" || productsecret == "" || productpin == "")) {
+			        ShowNotify($.t('Please enter an API Key or a combination of Product Id, Product Secret and PIN!'), 2500, true);
 			        return;
 			    }
+
+			    var extra = btoa(productid) + "|" + btoa(productsecret) + "|" + btoa(productpin);
+			    console.log("Updating extra2: " + extra);
+
 			    $.ajax({
 			        url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
                        "&name=" + encodeURIComponent(name) +
                        "&username=" + encodeURIComponent(apikey) +
                        "&enabled=" + bEnabled +
+                       "&extra=" + extra +
                        "&datatimeout=" + datatimeout,
 			        async: false,
 			        dataType: 'json',
@@ -5012,7 +5029,16 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
 						}
 						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
+						    //console.log(data);
 						    $("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
+
+						    var tmp = data["Extra"];
+						    var tmparray = tmp.split("|");
+						    if (tmparray.length == 3) {
+						        $("#hardwarecontent #divnestoauthapi #productid").val(atob(tmparray[0]));
+						        $("#hardwarecontent #divnestoauthapi #productsecret").val(atob(tmparray[1]));
+						        $("#hardwarecontent #divnestoauthapi #productpin").val(atob(tmparray[2]));
+						    }
 						}
 						else if (data["Type"].indexOf("Toon") >= 0) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);

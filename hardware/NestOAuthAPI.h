@@ -14,7 +14,7 @@ class CNestOAuthAPI : public CDomoticzHardwareBase
 		std::string Name;
 	};
 public:
-	CNestOAuthAPI(const int ID, const std::string &APIKey);
+	CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata);
 	~CNestOAuthAPI(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
@@ -26,6 +26,8 @@ private:
 	bool SetAway(const unsigned char Idx, const bool bIsAway);
 	bool Login();
 	void Logout();
+	std::string FetchNestApiAccessToken(const std::string &productid, const std::string &secret, const std::string &pincode);
+	bool SetOAuthAccessToken(const unsigned int ID, std::string &newToken);
 
 	std::string m_UserName;
 	std::string m_Password;
@@ -39,7 +41,10 @@ private:
 	std::map<int, _tNestThemostat> m_thermostats;
 	bool m_bDoLogin;
 
-	std::string m_NewApiAccessToken;
+	std::string m_OAuthApiAccessToken;
+	std::string m_ProductId;
+	std::string m_ProductSecret;
+	std::string m_PinCode;
 
 	void Init();
 	bool StartHardware();

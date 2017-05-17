@@ -14,16 +14,27 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
 #include "../json/json.h"
+#include "../webserver/Base64.h"
+
 
 #define round(a) ( int ) ( a + .5 )
 
 // Base URL of API including trailing slash
 const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
 
-CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &APIKey) :
-	m_NewApiAccessToken(APIKey)
+CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata) : m_OAuthApiAccessToken(apikey)
 {
-	m_HwdID=ID;
+	// get the data from the extradata field
+	std::vector<std::string> strextra;
+	StringSplit(extradata, "|", strextra);
+	std::string script;
+	if (strextra.size() == 3)
+	{
+		m_ProductId = base64_decode(strextra[0]);
+		m_ProductSecret = base64_decode(strextra[1]);
+		m_PinCode = base64_decode(strextra[2]);
+	}
+
 	Init();
 }
 
@@ -149,15 +160,45 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 
 bool CNestOAuthAPI::Login()
 {
-	if (m_NewApiAccessToken.empty())
+	// If we don't have an access token available
+	if (m_OAuthApiAccessToken.size() == 0)
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: NewApiAccessToken not supplied. Cannot login.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: No OAuth API access token entered.");
+		// Check if we do have a productid, secret and pin code
+		if (m_ProductId.size() != 0 && m_ProductSecret.size() != 0 && m_PinCode.size() != 0) {
+			_log.Log(LOG_NORM, "NestOAuthAPI: Will request a token based on productid, productsecret and pincode.");
+
+			// Request the token
+			std::string sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
+
+			if (sTmpToken.size() > 0) {
+				_log.Log(LOG_NORM, ("NestOAuthAPI: Received a token to use for future requests: " + sTmpToken).c_str());
+
+				// Use the newly obtained access token
+				m_OAuthApiAccessToken = sTmpToken;
+
+				// Store the access token in the database
+				SetOAuthAccessToken(m_HwdID, sTmpToken);
+
+			}
+			else _log.Log(LOG_NORM, "NestOAuthAPI: API call to request a token did not succeed: failed to fetch a token.");
+		}
+		else _log.Log(LOG_NORM, "NestOAuthAPI: Will not attempt to request a token based on productid, productsecret and pincode since at least one of these is empty.");
+	}
+
+	// Check if we still don't have an access token available
+	if (m_OAuthApiAccessToken.size() == 0) 
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: API AccessToken was not supplied and failed to fetch an access token.");
 		Logout();
+		_log.Log(LOG_NORM, "NestOAuthAPI: Stopping hardware.");
+		m_stoprequested = true;
 		return false;
 	}
 
+
 	// Let's get a list of structures to see if the supplied Access Token works
-	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	// _log.Log(LOG_NORM, ("NestOAuthAPI: Trying to access api on " + sURL).c_str());
@@ -208,7 +249,7 @@ void CNestOAuthAPI::Logout()
 
 bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_NewApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.size() == 0)
 		return false;
 	
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -322,7 +363,7 @@ void CNestOAuthAPI::GetMeterDetails()
 	bool bRet;
 
 	// Get Data for structures
-	sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_NewApiAccessToken;
+	sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
 
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
@@ -341,7 +382,7 @@ void CNestOAuthAPI::GetMeterDetails()
 
 
 	//Get Data for devices
-	sURL = NEST_OAUTHAPI_BASE + "devices.json?auth=" + m_NewApiAccessToken;
+	sURL = NEST_OAUTHAPI_BASE + "devices.json?auth=" + m_OAuthApiAccessToken;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Error getting devices!");
@@ -526,7 +567,7 @@ void CNestOAuthAPI::GetMeterDetails()
 
 void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 {
-	if (m_NewApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.size() == 0)
 		return;
 
 	if (m_bDoLogin)
@@ -546,7 +587,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 	}
 
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Authorization:Bearer " + m_NewApiAccessToken);
+	ExtraHeaders.push_back("Authorization:Bearer " + m_OAuthApiAccessToken);
 	ExtraHeaders.push_back("Content-Type:application/json");
 	float tempDest = temp;
 
@@ -574,7 +615,7 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 
 bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 {
-	if (m_NewApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.size() == 0)
 		return false;
 	
 	if (m_bDoLogin == true)
@@ -595,7 +636,7 @@ bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	std::vector<std::string> ExtraHeaders;
 
-	ExtraHeaders.push_back("Authorization:Bearer " + m_NewApiAccessToken);
+	ExtraHeaders.push_back("Authorization:Bearer " + m_OAuthApiAccessToken);
 	ExtraHeaders.push_back("Content-Type: application/json");
 
 	Json::Value root;
@@ -615,7 +656,7 @@ bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 
 void CNestOAuthAPI::SetProgramState(const int newState)
 {
-	if (m_NewApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.size() == 0)
 		return;
 
 	if (m_bDoLogin)
@@ -623,4 +664,62 @@ void CNestOAuthAPI::SetProgramState(const int newState)
 		if (!Login())
 			return;
 	}
+}
+
+std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid, const std::string &secret, const std::string &pincode) {
+	// Check if there isn't already an access token
+	if (m_OAuthApiAccessToken.size() != 0) {
+		_log.Log(LOG_ERROR, "NestOAuthAPI: There is already an API access token configured for this hardware ID: no need to fetch a new token.");
+		return "";
+	}
+
+	// Check if we have a productid, secret and pin code
+	if (productid.size() == 0 || secret.size() == 0 || pincode.size() == 0) {
+		_log.Log(LOG_ERROR, "NestOAuthAPI: No access token supplied and no ProductId, Secret or PIN to obtain one either.");
+		return "";
+	}
+
+	std::string sURL = "https://api.home.nest.com/oauth2/access_token";
+	std::vector<std::string> ExtraHeaders;
+	std::string sResult;
+	std::ostringstream s;
+	s << "code=" << pincode << "&client_id=" << productid << "&client_secret=" << secret << "&grant_type=authorization_code";
+	std::string sPostData = s.str();
+
+	if (!HTTPClient::POST(sURL, sPostData, ExtraHeaders, sResult, true))
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error performing access token fetch request.");
+		return "";
+	}
+
+	Json::Value root;
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse JSON data or no data received.");
+		return false;
+	}
+	if (root.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: parsed JSON data contains no elements!");
+		return "";
+	}
+	
+	std::string sReceivedAccessToken = root["access_token"].asString();
+	_log.Log(LOG_NORM, ("NestOAuthAPI: Fetched access token: " + sReceivedAccessToken).c_str());
+	return sReceivedAccessToken;
+}
+
+bool CNestOAuthAPI::SetOAuthAccessToken(const unsigned int ID, std::string &newToken)
+{
+	_log.Log(LOG_NORM, ("NestOAuthAPI: Storing received access token " + newToken + " and clearing token request information.").c_str());
+
+	// std::vector<std::vector<std::string> > result;
+	m_sql.safe_query("UPDATE Hardware SET Username='%q', Extra='' WHERE (ID==%d)", newToken.c_str(), ID);
+
+	return true;
+
+	// TODO: check if update really happened.
+
 }
