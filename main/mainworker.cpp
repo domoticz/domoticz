@@ -11884,6 +11884,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_AtagOne) ||
 		(pHardware->HwdType == HTYPE_NEST) ||
+		(pHardware->HwdType == HTYPE_Nest_OAuthAPI) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||

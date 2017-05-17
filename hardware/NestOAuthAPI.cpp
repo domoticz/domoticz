@@ -24,6 +24,8 @@ const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
 
 CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata) : m_OAuthApiAccessToken(apikey)
 {
+	m_HwdID = ID;
+
 	// get the data from the extradata field
 	std::vector<std::string> strextra;
 	StringSplit(extradata, "|", strextra);
@@ -163,36 +165,40 @@ bool CNestOAuthAPI::Login()
 	// If we don't have an access token available
 	if (m_OAuthApiAccessToken.size() == 0)
 	{
-		_log.Log(LOG_NORM, "NestOAuthAPI: No OAuth API access token entered.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: No API key available.");
 		// Check if we do have a productid, secret and pin code
 		if (m_ProductId.size() != 0 && m_ProductSecret.size() != 0 && m_PinCode.size() != 0) {
-			_log.Log(LOG_NORM, "NestOAuthAPI: Will request a token based on productid, productsecret and pincode.");
+			_log.Log(LOG_NORM, "NestOAuthAPI: Will request an API key based on Product Id, Product Secret and PIN code.");
 
 			// Request the token
 			std::string sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
 
 			if (sTmpToken.size() > 0) {
-				_log.Log(LOG_NORM, ("NestOAuthAPI: Received a token to use for future requests: " + sTmpToken).c_str());
+				_log.Log(LOG_NORM, ("NestOAuthAPI: Received an API key to use for future requests: " + sTmpToken).c_str());
 
 				// Use the newly obtained access token
 				m_OAuthApiAccessToken = sTmpToken;
 
 				// Store the access token in the database
 				SetOAuthAccessToken(m_HwdID, sTmpToken);
-
 			}
-			else _log.Log(LOG_NORM, "NestOAuthAPI: API call to request a token did not succeed: failed to fetch a token.");
+			else _log.Log(LOG_NORM, "NestOAuthAPI: API call to request an API key failed.");
 		}
-		else _log.Log(LOG_NORM, "NestOAuthAPI: Will not attempt to request a token based on productid, productsecret and pincode since at least one of these is empty.");
+		else _log.Log(LOG_NORM, "NestOAuthAPI: Will not attempt to request an API key based on Product Id, Product Secret and PIN code since at least one of these is empty.");
 	}
 
 	// Check if we still don't have an access token available
 	if (m_OAuthApiAccessToken.size() == 0) 
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: API AccessToken was not supplied and failed to fetch an access token.");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: API Key was not supplied and failed to fetch one.");
 		Logout();
-		_log.Log(LOG_NORM, "NestOAuthAPI: Stopping hardware.");
-		m_stoprequested = true;
+
+		// Clear the retrieved tokens and secrets so we won't be 
+		// hammering the Nest API with logins which don't work anyway.
+		m_ProductId = "";
+		m_ProductSecret = "";
+		m_PinCode = "";
+
 		return false;
 	}
 
@@ -719,7 +725,4 @@ bool CNestOAuthAPI::SetOAuthAccessToken(const unsigned int ID, std::string &newT
 	m_sql.safe_query("UPDATE Hardware SET Username='%q', Extra='' WHERE (ID==%d)", newToken.c_str(), ID);
 
 	return true;
-
-	// TODO: check if update really happened.
-
 }
