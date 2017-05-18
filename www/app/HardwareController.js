@@ -857,10 +857,16 @@ define(['app'], function (app) {
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-				var mode1 = "";
-				var mode2 = "";
+
+				var mode1 = $("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val();
+				if ( (mode1 == "") || (mode1 == "0") ) {
+					mode1 = "60";
+				}
+
+				var mode2 = $("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked") ? 0 : 1;
+				var mode3 = $("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked") ? 1 : 0;
 				$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&idx=" + idx +	"&datatimeout=" + datatimeout + "&mode1=" + mode1 + "&mode2=" + mode2,
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&idx=" + idx +	"&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1615,10 +1621,15 @@ define(['app'], function (app) {
 			else if (text.indexOf("Evohome via Web") >= 0) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-				var mode1 = "";
-				var mode2 = "";
+				var mode1 = $("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val();
+				if ( (mode1 == "") || (mode1 == "0") ) {
+					mode1 = "60";
+				}
+
+				var mode2 = $("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked") ? 0 : 1;
+				var mode3 = $("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked");
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&mode1=" + mode1 + "&mode2=" + mode2,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5061,13 +5072,20 @@ define(['app'], function (app) {
 						if (data["Type"].indexOf("Evohome via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+							if ( (data["Mode1"] == "") || (data["Mode1"] == "0") ) {
+								data["Mode1"] = "60";
+							}
+
+							$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(data["Mode1"]);
+							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", data["Mode2"] == 0);
+							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked", data["Mode3"] == 1);
 						}
 
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Username").val(data["Username"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Password").val(data["Password"]);
-							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Address").val(data["Address"]);
+							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Address").val(data["Address"])
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Port").val(data["IntPort"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #SerialPort").val(data["Port"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode1").val(data["Mode1"]);

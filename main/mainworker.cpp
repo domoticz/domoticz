@@ -993,7 +993,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	case HTYPE_EVOHOME_WEB:
-		pHardware = new CEvohomeWeb(ID, Username, Password);
+		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	}
 
@@ -6233,6 +6233,19 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 							strarray.push_back(szISODate);
 						else
 							strarray[3]=szISODate;
+					}
+					else if ((pEvo->EVOHOME2.mode==pEvoHW->zmAuto) && (HwdType==HTYPE_EVOHOME_WEB) )
+					{
+						strarray[2]="FollowSchedule";
+						if( (pEvo->EVOHOME2.year!=0) && (pEvo->EVOHOME2.year!=0xFFFF) )
+						{
+							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+							if(strarray.size()<4) //add or set until
+								strarray.push_back(szISODate);
+							else
+								strarray[3]=szISODate;
+						}
+
 					}
 					else
 						if(strarray.size()>=4) //remove until
