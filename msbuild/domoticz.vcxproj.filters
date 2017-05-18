@@ -414,9 +414,6 @@
     <Filter Include="Pushers\FibaroLink">
       <UniqueIdentifier>{b108db7e-5f5a-44df-8dfd-bea4d48f48b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pushers\Gui">
-      <UniqueIdentifier>{8c91c3b7-d417-45a9-ba1d-b6c20bc7d16b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\BleBox">
       <UniqueIdentifier>{8dce5b0e-b964-4c67-9bf8-1922df7c8f70}</UniqueIdentifier>
     </Filter>
@@ -458,9 +455,6 @@
     </Filter>
     <Filter Include="Devices\ZWave\Control Panel">
       <UniqueIdentifier>{2467c1b1-dd49-4842-9931-bb5a12d729e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\views\temperatures">
-      <UniqueIdentifier>{08acdd3c-976f-4c6c-bbbf-58313652cf7c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Pushers\InfluxDB">
       <UniqueIdentifier>{2c9db333-1435-4a52-970c-2a53298e2689}</UniqueIdentifier>
@@ -1322,12 +1316,6 @@
     <None Include="..\www\views\floorplans.html">
       <Filter>www\views</Filter>
     </None>
-    <None Include="..\www\js\angular-websocket.js">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\views\temperatures\temperatureWidget.html">
-      <Filter>www\views\temperatures</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1903,14 +1891,11 @@
     <ClInclude Include="..\hardware\RFXBase.h">
       <Filter>Devices\RFXCom</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\S0MeterTCP.h">
-      <Filter>Devices\S0 Meter</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\RAVEn.h">
       <Filter>Devices\Raven</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Fitbit.h">
-      <Filter>Devices\Fitbit</Filter>
+    <ClInclude Include="..\hardware\S0MeterTCP.h">
+      <Filter>Devices\S0 Meter</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h">
       <Filter>Devices\Denkovi</Filter>
@@ -1923,18 +1908,6 @@
     </ClInclude>
     <ClInclude Include="..\push\HttpPush.h">
       <Filter>Pushers\HttpLink</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\WebsocketPush.h">
-      <Filter>Pushers\Gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\notifications\NotificationBrowser.h">
-      <Filter>Notifications</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\BleBox.h">
       <Filter>Devices\BleBox</Filter>
@@ -2018,7 +1991,6 @@
       <Filter>Pushers\FibaroLink</Filter>
     </ClInclude>
     <ClInclude Include="..\push\BasePush.h">
-    <ClInclude Include="..\push\Push.h">
       <Filter>Pushers</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RelayNet.h">
@@ -2590,14 +2562,11 @@
     <ClCompile Include="..\hardware\RFXBase.cpp">
       <Filter>Devices\RFXCom</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\S0MeterTCP.cpp">
-      <Filter>Devices\S0 Meter</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\RAVEn.cpp">
       <Filter>Devices\Raven</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Fitbit.cpp">
-      <Filter>Devices\Fitbit</Filter>
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp">
+      <Filter>Devices\S0 Meter</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp">
       <Filter>Devices\Denkovi</Filter>
@@ -2610,18 +2579,6 @@
     </ClCompile>
     <ClCompile Include="..\push\HttpPush.cpp">
       <Filter>Pushers\HttpLink</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\WebsocketPush.cpp">
-      <Filter>Pushers\Gui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
-      <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\BleBox.cpp">
       <Filter>Devices\BleBox</Filter>
