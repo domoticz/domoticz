@@ -393,9 +393,6 @@
     <Filter Include="Devices\HttpPoller">
       <UniqueIdentifier>{efe2b02b-141c-473d-b168-fd06058fe9d2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Fitbit">
-      <UniqueIdentifier>{db856641-3bbc-455d-8a88-9955fb74e49e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Raven">
       <UniqueIdentifier>{0854a79e-fd9c-4b55-a9fd-93077f3bad23}</UniqueIdentifier>
     </Filter>
@@ -1600,7 +1597,10 @@
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\evohome.h">
+    <ClInclude Include="..\hardware\EvohomeBase.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeSerial.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
@@ -1890,9 +1890,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\RFXBase.h">
       <Filter>Devices\RFXCom</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Fitbit.h">
-      <Filter>Devices\Fitbit</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RAVEn.h">
       <Filter>Devices\Raven</Filter>
@@ -2256,7 +2253,10 @@
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\evohome.cpp">
+    <ClCompile Include="..\hardware\EvohomeBase.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeSerial.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
@@ -2561,9 +2561,6 @@
     </ClCompile>
     <ClCompile Include="..\hardware\RFXBase.cpp">
       <Filter>Devices\RFXCom</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\Fitbit.cpp">
-      <Filter>Devices\Fitbit</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\RAVEn.cpp">
       <Filter>Devices\Raven</Filter>

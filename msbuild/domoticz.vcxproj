@@ -432,8 +432,9 @@
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\ETH8020.h" />
-    <ClInclude Include="..\hardware\evohome.h" />
-    <ClInclude Include="..\hardware\Fitbit.h" />
+    <ClInclude Include="..\hardware\EvohomeBase.h" />
+    <ClInclude Include="..\hardware\EvohomeScript.h" />
+    <ClInclude Include="..\hardware\EvohomeSerial.h" />
     <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
@@ -674,8 +675,9 @@
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\ETH8020.cpp" />
-    <ClCompile Include="..\hardware\evohome.cpp" />
-    <ClCompile Include="..\hardware\Fitbit.cpp" />
+    <ClCompile Include="..\hardware\EvohomeBase.cpp" />
+    <ClCompile Include="..\hardware\EvohomeScript.cpp" />
+    <ClCompile Include="..\hardware\EvohomeSerial.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
