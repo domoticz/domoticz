@@ -59,15 +59,15 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Barometer",			"barometer" },
 	{ "Chill",				"chill" },
 	{ "Counter",			"counter" },
-	{ "CounterDeliv",		"counterDeliv" },
-	{ "CounterDelivToday",	"counterDelivToday" },
+	{ "CounterDeliv",		"counterDelivered" },
+	{ "CounterDelivToday",	"counterDeliveredToday" },
 	{ "CounterToday",		"counterToday" },
 	{ "Current",			"current" },
 	{ "DewPoint",			"dewPoint" },
 	{ "Direction",			"direction" },
-	{ "DirectionStr",		"directionStr" },
+	{ "DirectionStr",		"directionString" },
 	{ "Forecast",			"forecast" },
-	{ "ForecastStr",		"forecastStr" },
+	{ "ForecastStr",		"forecastString" },
 	{ "Humidity",			"humidity" },
 	{ "HumidityStatus",		"humidityStatus" },
 	{ "LevelActions",		"levelActions" },
@@ -87,7 +87,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Temp",				"temp" },
 	{ "TypeImg",			"typeImage" },
 	{ "Usage",				"usage" },
-	{ "UsageDeliv",			"usageDeliv" },
+	{ "UsageDeliv",			"usageDelivered" },
 	{ "ValueQuantity",		"valueQuantity" },
 	{ "ValueUnits",			"valueUnits" },
 	{ "Visibility",			"visibility" },
@@ -3045,11 +3045,11 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 
 		lua_settable(lua_state, -3); // data table
-		
+
 		lua_pushstring(lua_state, "variableType");
 		lua_pushstring(lua_state, vtype);
 		lua_rawset(lua_state, -3);
-		
+
 		lua_settable(lua_state, -3); // end entry
 
 		index++;
