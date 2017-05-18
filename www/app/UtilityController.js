@@ -441,7 +441,8 @@ define(['app'], function (app) {
 							$("#utilitycontent #timerparamstable #rdays").hide();
 							$("#utilitycontent #timerparamstable #roccurence").show();
 							$("#utilitycontent #timerparamstable #rmonths").show();
-						} else {
+						}
+						else {
 							$("#utilitycontent #timerparamstable #rdate").hide();
 							$("#utilitycontent #timerparamstable #rnorm").show();
 							$("#utilitycontent #timerparamstable #rdays").hide();
@@ -477,9 +478,7 @@ define(['app'], function (app) {
 
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
-			if (!s) {
-				s = '0';
-			}
+			if (!s) { s = '0'; }
 			while (o.length < l) {
 				o = s + o;
 			}
@@ -589,7 +588,8 @@ define(['app'], function (app) {
 					$("#utilitycontent #timerparamstable #rdays").hide();
 					$("#utilitycontent #timerparamstable #roccurence").show();
 					$("#utilitycontent #timerparamstable #rmonths").show();
-				} else {
+				}
+				else {
 					$("#utilitycontent #timerparamstable #rdate").hide();
 					$("#utilitycontent #timerparamstable #rnorm").show();
 					$("#utilitycontent #timerparamstable #rdays").hide();
@@ -947,56 +947,6 @@ define(['app'], function (app) {
 									else {
 										status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 									}
-								} else if (item.SubType == "Percentage") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.Type == "Fan") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.Type == "Air Quality") {
-									status = item.Data + " (" + item.Quality + ")";
-									bigtext = item.Data;
-								} else if (item.SubType == "Soil Moisture") {
-									status = item.Data + " (" + item.Desc + ")";
-									bigtext = item.Data;
-								} else if (item.SubType == "Custom Sensor") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.SubType == "Leaf Wetness") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.SubType == "Text") {
-									status = item.Data;
-								} else if (item.SubType == "Alert") {
-									status = item.Data;
-									img = '<img src="images/Alert48_' + item.Level + '.png" height="48" width="48">';
-								} else if (item.Type == "Lux") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.Type == "Weight") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if (item.Type == "Usage") {
-									status = item.Data;
-									bigtext = item.Data;
-								} else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-									status = item.Data + '\u00B0 ' + $scope.config.TempSign;
-									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-								} else if (item.Type == "Radiator 1") {
-									status = item.Data + '\u00B0 ' + $scope.config.TempSign;
-									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
-								} else if (item.SubType == "Thermostat Clock") {
-									status = item.Data;
-								} else if (item.SubType == "Thermostat Mode") {
-									status = item.Data;
-								} else if (item.SubType == "Thermostat Fan Mode") {
-									status = item.Data;
-								} else if (item.SubType == "Waterflow") {
-									status = item.Data;
-									bigtext = item.Data;
 								}
 								else if (item.Type == "Current") {
 									status = item.Data;

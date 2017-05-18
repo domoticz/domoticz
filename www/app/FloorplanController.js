@@ -386,23 +386,6 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 
-            $("body").removeClass();
-            $("body").addClass("floorplan").addClass("frontStage");  
-            /*if ($scope.config.DashboardType == 0) {   
-                $("body").addClass("3column");
-            }
-            if ($scope.config.DashboardType == 1) {
-                $("body").addClass("4column");
-            }                    
-            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-                $("body").addClass("dashMobile");    
-            }    
-            if ($scope.config.DashboardType == 3) {
-                $("body").addClass("dashFloorplan");*/
-            
-            
-            
-            
 			var htmlcontent = "";
 			htmlcontent += $('#fphtmlcontent').html();
 			$('#floorplancontent').html($compile(htmlcontent)($scope));
