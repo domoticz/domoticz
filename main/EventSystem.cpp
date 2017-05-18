@@ -85,7 +85,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "SetPoint",			"setPoint" },
 	{ "Speed",				"speed" },
 	{ "Temp",				"temp" },
-	{ "TypeImg",			"typeImage" },
+	{ "TypeImg",			"icon" },
 	{ "Usage",				"usage" },
 	{ "UsageDeliv",			"usageDelivered" },
 	{ "ValueQuantity",		"valueQuantity" },
