@@ -396,7 +396,7 @@ local function Device(domoticz, data)
 
 		local adapter = adapters.getDeviceAdapter(self)
 
-		adapter.process(self)
+		adapter.process(self, data, domoticz)
 
 	elseif (data.baseType == 'group' or data.baseType == 'scene') then
 		state = data.data._state

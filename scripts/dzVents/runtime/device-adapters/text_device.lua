@@ -4,19 +4,18 @@ return {
 
 	baseType = 'device',
 
-	name = 'Lux device adapter',
+	name = 'Thermostat setpoint device adapter',
 
 	matches = function (device)
-		return (device.deviceType == 'Lux' and device.deviceSubType == 'Lux')
+		return (device.deviceSubType == 'Text')
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz)
 
 		-- first do the generic stuff
 		local generic = adapters.genericAdapter.process(device)
 
-		-- set the lux value
-		generic.addAttribute('lux', tonumber(device.rawData[1]))
+		generic.addAttribute('text', generic.rawData[1] or '')
 
 		return generic
 

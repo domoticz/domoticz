@@ -15,10 +15,10 @@ return {
 		-- first do the generic stuff
 		local generic = adapters.genericAdapter.process(device)
 
-		device.addAttribute('setPoint', tonumber(device.rawData[2]))
-		device.addAttribute('heatingMode', device.rawData[3])
+		generic.addAttribute('setPoint', tonumber(device.rawData[2]))
+		generic.addAttribute('heatingMode', generic.rawData[3])
 
-		return device
+		return generic
 
 	end
 

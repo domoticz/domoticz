@@ -7,27 +7,23 @@ return {
 	name = 'kWh device adapter',
 
 	matches = function (device)
-		return false
-		--return (device.deviceType == 'General' and device.deviceSubType == 'kWh')
+		return (device.deviceType == 'General' and device.deviceSubType == 'kWh')
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz)
 
 		-- first do the generic stuff
 		local generic = adapters.genericAdapter.process(device)
 
-		device.addAttribute('WhTotal', tonumber(device.rawData[2]))
-		device.addAttribute('WActual', tonumber(device.rawData[1]))
+		local todayFormatted = generic.counterToday or ''
+		local todayInfo = adapters.parseFormatted(todayFormatted, domoticz['radixSeparator'])
 
-		local todayFormatted = device.CounterToday or ''
-		-- risky business, we assume no decimals, just thousands separators
-		-- there is no raw value available for today
-		local s = string.gsub(todayFormatted, '%,', '')
-		--s = string.gsub(s, '%,', '')
-		s = string.gsub(s, ' kWh', '')
-		device.addAttribute('WhToday', tonumber(s))
+		-- as this is a kWh device we assume the value is in kWh
+		-- so we have to multiply it with 1000 to get it in W
 
-		return device
+		generic.addAttribute('WhToday', todayInfo['value'] * 1000)
+
+		return generic
 
 	end
 

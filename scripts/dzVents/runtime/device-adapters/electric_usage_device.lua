@@ -4,19 +4,18 @@ return {
 
 	baseType = 'device',
 
-	name = 'Lux device adapter',
+	name = 'Electric usage device adapter',
 
 	matches = function (device)
-		return (device.deviceType == 'Lux' and device.deviceSubType == 'Lux')
+		return (device.deviceType == 'Usage' and device.deviceSubType == 'Electric')
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz)
 
 		-- first do the generic stuff
 		local generic = adapters.genericAdapter.process(device)
 
-		-- set the lux value
-		generic.addAttribute('lux', tonumber(device.rawData[1]))
+		generic.addAttribute('WhActual', generic.rawData[1]  or 0)
 
 		return generic
 
