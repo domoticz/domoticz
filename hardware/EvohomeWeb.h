@@ -47,9 +47,11 @@ private:
 	int m_tzoffset;
 	int m_lastDST;
 	bool m_loggedon;
+	int m_logonfailures;
 	unsigned long m_zones [13];
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
+	static const std::string weekdays[7];
 	std::vector<std::string> LoginHeaders;
 	std::vector<std::string> SessionHeaders;
 
@@ -61,7 +63,7 @@ private:
 
 	// evohome web commands
 	bool StartSession();
-	void GetStatus();
+	bool GetStatus();
 	bool SetSystemMode(uint8_t sysmode);
 	bool SetSetpoint(const char *pdata);
 	bool SetDHWState(const char *pdata);
@@ -143,7 +145,7 @@ private:
 	std::string get_next_switchpoint(std::string zoneId);
 	std::string get_next_switchpoint(zone* hz);
 	std::string get_next_switchpoint(json_object *schedule);
-	std::string get_next_switchpoint_ex(json_object *schedule, std::string &current_temperature);
+	std::string get_next_switchpoint_ex(json_object *schedule, std::string &current_setpoint);
 
 	bool set_system_mode(std::string systemId, int mode, std::string date_until);
 	bool set_system_mode(std::string systemId, int mode);

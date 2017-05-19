@@ -24,6 +24,10 @@
 #include "../json/json.h"
 #include <string>
 
+
+#define LOGONFAILTRESHOLD 3
+#define MAXPOLINTERVAL 3600
+
 extern std::string szUserDataFolder;
 
 const uint8_t CEvohomeWeb::m_dczToEvoWebAPIMode[7]={0,2,3,4,6,1,5};
@@ -44,6 +48,7 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_loggedon=false;
 	m_tzoffset=-1;
 	m_lastDST=-1;
+	m_logonfailures=0;
 	
 	Init();
 }
@@ -67,9 +72,17 @@ void CEvohomeWeb::Init()
 
 bool CEvohomeWeb::StartSession()
 {
+	_log.Log(LOG_NORM, "EvohomeWeb: connect to Evohome server");
 	m_loggedon=false;
 	if (!login(m_username,m_password))
+	{
+		m_logonfailures++;
+		if (m_logonfailures > LOGONFAILTRESHOLD)
+			_log.Log(LOG_STATUS, "EvohomeWeb: logon fail treshold reached - trottling");
+		if ((m_logonfailures * m_refreshrate) > MAXPOLINTERVAL)
+			m_logonfailures--;
 		return false;
+	}
 	full_installation();
 	m_tcs = NULL;
 	if (is_single_heating_system())
@@ -77,6 +90,7 @@ bool CEvohomeWeb::StartSession()
 
 	m_zones[0] = 0;
 	m_loggedon=true;
+	m_logonfailures=0;
 	return true;
 }
 
@@ -110,6 +124,7 @@ bool CEvohomeWeb::StopHardware()
 void CEvohomeWeb::Do_Work()
 {
 	int sec_counter = m_refreshrate - 10;
+	int pollcounter = LOGONFAILTRESHOLD;
 	_log.Log(LOG_STATUS, "EvohomeWeb: Worker started...");
 	while (!m_stoprequested)
 	{
@@ -118,9 +133,10 @@ void CEvohomeWeb::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
-		if (sec_counter % m_refreshrate == 0)
+		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
 		{
-			GetStatus();
+			if (GetStatus())
+				int pollcounter = LOGONFAILTRESHOLD;
 		}
 	}
 	_log.Log(LOG_STATUS,"EvohomeWeb: Worker stopped...");
@@ -157,16 +173,14 @@ bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 }
 
 
-void CEvohomeWeb::GetStatus()
+bool CEvohomeWeb::GetStatus()
 {
 	if (!m_loggedon && !StartSession())
-		return;
+		return false;
 	if (!get_status(m_tcs->locationId))
 	{
-		//FIXME: should I distinguish between simple HTTP errors and session related errors?
-		_log.Log(LOG_ERROR,"Evohome: failed to retrieve status");
 		m_loggedon = false;
-		return;
+		return false;
 	}
 
 	// system status
@@ -179,6 +193,8 @@ void CEvohomeWeb::GetStatus()
 	// hot water status
 	if (has_dhw(m_tcs))
 		DecodeDHWState(m_tcs);
+
+	return true;
 }
 
 
@@ -186,10 +202,10 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 {
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
-		_log.Log(LOG_STATUS,"Evohome: changed system status to %s",GetControllerModeName(sysmode));
+		_log.Log(LOG_STATUS,"EvohomeWeb: changed system status to %s",GetControllerModeName(sysmode));
 		return true;
 	}	
-	_log.Log(LOG_ERROR,"Evohome: error changing system status");
+	_log.Log(LOG_ERROR,"EvohomeWeb: error changing system status");
 	m_loggedon = false;
 	return false;
 }
@@ -206,7 +222,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	zone* hz=get_zone_by_ID(zoneId);
 	if (hz == NULL) // zone number not known by installation (manually added?)
 	{
-		_log.Log(LOG_ERROR,"Evohome: attempt to change setpoint on unknown zone");
+		_log.Log(LOG_ERROR,"EvohomeWeb: attempt to change setpoint on unknown zone");
 		return false;
 	}
 
@@ -257,7 +273,7 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 {
 	if (!has_dhw(m_tcs)) // Installation has no Hot Water device
 	{
-		_log.Log(LOG_ERROR,"Evohome: attempt to set state on non existing Hot Water device");
+		_log.Log(LOG_ERROR,"EvohomeWeb: attempt to set state on non existing Hot Water device");
 		return false;
 	}
 
@@ -363,7 +379,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", zonedata["name"].c_str(), DevRowIdx);
 		if (sdevname.find("zone ")!=std::string::npos)
-			_log.Log(LOG_STATUS,"Evohome: register new zone '%c'", zonedata["name"].c_str());
+			_log.Log(LOG_STATUS,"EvohomeWeb: register new zone '%c'", zonedata["name"].c_str());
 	}
 }
 
@@ -470,7 +486,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				return row;
 			}
 		}
-		_log.Log(LOG_ERROR,"Evohome: cannot add new zone because you have no free zones left");
+		_log.Log(LOG_ERROR,"EvohomeWeb: cannot add new zone because you have no free zones left");
 	}
 	return -1;
 }
@@ -512,7 +528,7 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
 
 
 /*
- * Evohome client API
+ * Evohome client API starts here
  */
 
 /*
@@ -528,8 +544,8 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
 #define EVOHOME_HOST "https://tccna.honeywell.com"
 
 
-const std::string weekdays[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-//const std::string evo_modes[7] = {"Auto", "HeatingOff", "AutoWithEco", "Away", "DayOff", "", "Custom"};
+const std::string CEvohomeWeb::weekdays[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+//const std::string CEvohomeWeb::evo_modes[7] = {"Auto", "HeatingOff", "AutoWithEco", "Away", "DayOff", "", "Custom"};
 
 
 /************************************************************************
@@ -556,7 +572,7 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 	std::string s_res;
 	if (!HTTPClient::POST(EVOHOME_HOST"/Auth/OAuth/Token", pdata.str(), LoginHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"Evohome: HTTP client error at login!");
+		_log.Log(LOG_ERROR,"EvohomeWeb: HTTP client error at login!");
 		return false;
 	}
 
@@ -573,7 +589,7 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 			i++;
 			c = html[i];
 		}
-		_log.Log(LOG_ERROR,"Evohome: login failed with message: %s", edata.str().c_str());
+		_log.Log(LOG_ERROR,"EvohomeWeb: login failed with message: %s", edata.str().c_str());
 		return false;
 	}
 
@@ -581,7 +597,7 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 	json_object *j_msg;
 	if ( (json_object_object_get_ex(j_ret, "error", &j_msg)) || (json_object_object_get_ex(j_ret, "message", &j_msg)) )
 	{
-		_log.Log(LOG_ERROR,"Evohome: login failed with message: %s", json_object_get_string(j_msg));
+		_log.Log(LOG_ERROR,"EvohomeWeb: login failed with message: %s", json_object_get_string(j_msg));
 		return false;
 	}
 
@@ -612,7 +628,7 @@ bool CEvohomeWeb::user_account()
 	std::string s_res;
 	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"Evohome: HTTP client error at retrieve user account info!");
+		_log.Log(LOG_ERROR,"EvohomeWeb: HTTP client error at retrieve user account info!");
 		return false;
 	}
 	json_object *j_ret = json_tokener_parse(s_res.c_str());
@@ -642,16 +658,14 @@ void CEvohomeWeb::get_zones(int location, int gateway, int temperatureControlSys
 		for (i=0; i<l; i++)
 		{
 			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo = json_object_array_get_idx(j_list, i);
-
-			json_object *j_zoneId;
-			json_object_object_get_ex(locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo, "zoneId", &j_zoneId);
-			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = json_object_get_string(j_zoneId);
+			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = json_get_val(locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo,"zoneId");
 			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].systemId = locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].systemId;
 			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].gatewayId = locations[location].gateways[gateway].gatewayId;
 			locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].locationId = locations[location].locationId;
 		}
 	}
 }
+
 
 void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 {
@@ -666,13 +680,9 @@ void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 		for (i = 0; i < l; i++)
 		{
 			locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo = json_object_array_get_idx(j_list, i);
-
-			json_object *j_tcsId;
-			json_object_object_get_ex(locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo, "systemId", &j_tcsId);
-			locations[location].gateways[gateway].temperatureControlSystems[i].systemId = json_object_get_string(j_tcsId);
+			locations[location].gateways[gateway].temperatureControlSystems[i].systemId = json_get_val(locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo, "systemId");
 			locations[location].gateways[gateway].temperatureControlSystems[i].gatewayId = locations[location].gateways[gateway].gatewayId;
 			locations[location].gateways[gateway].temperatureControlSystems[i].locationId = locations[location].locationId;
-
 			get_zones(location, gateway, i);
 		}
 	}
@@ -691,13 +701,8 @@ void CEvohomeWeb::get_gateways(int location)
 		for (i = 0; i < l; i++)
 		{
 			locations[location].gateways[i].installationInfo = json_object_array_get_idx(j_list, i);
-
-			json_object *j_gwInfo, *j_gwId;
-			json_object_object_get_ex(locations[location].gateways[i].installationInfo, "gatewayInfo", &j_gwInfo);
-			json_object_object_get_ex(j_gwInfo, "gatewayId", &j_gwId);
-			locations[location].gateways[i].gatewayId = json_object_get_string(j_gwId);
+			locations[location].gateways[i].gatewayId = json_get_val(locations[location].gateways[i].installationInfo, "gatewayInfo", "gatewayId");
 			locations[location].gateways[i].locationId = locations[location].locationId;
-
 			get_temperatureControlSystems(location,i);
 		}
 	}
@@ -713,7 +718,7 @@ bool CEvohomeWeb::full_installation()
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"Evohome: HTTP client error at retrieve installation!");
+		_log.Log(LOG_ERROR,"EvohomeWeb: HTTP client error at retrieve installation!");
 		return false;
 	}
 
@@ -730,12 +735,7 @@ bool CEvohomeWeb::full_installation()
 	for (i=0; i<l; i++)
 	{
 		locations[i].installationInfo = json_object_array_get_idx(j_list, i);
-
-		json_object *j_locInfo, *j_locId;
-		json_object_object_get_ex(locations[i].installationInfo, "locationInfo", &j_locInfo);
-		json_object_object_get_ex(j_locInfo, "locationId", &j_locId);
-		locations[i].locationId = json_object_get_string(j_locId);
-
+		locations[i].locationId = json_get_val(locations[i].installationInfo, "locationInfo", "locationId");
 		get_gateways(i);
 	}
 	return true;
@@ -773,7 +773,7 @@ bool CEvohomeWeb::get_status(int location)
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"Evohome: HTTP client error at get status!");
+		_log.Log(LOG_ERROR,"EvohomeWeb: HTTP client error at get status!");
 		return false;
 	}
 	locations[location].status = json_tokener_parse(s_res.c_str());
@@ -817,6 +817,8 @@ bool CEvohomeWeb::get_status(int location)
 	else
 		valid_json = false;
 
+	if (!valid_json)
+		_log.Log(LOG_ERROR,"EvohomeWeb: status request did not return a valid response");
 	return valid_json;
 }
 
@@ -946,13 +948,14 @@ std::string CEvohomeWeb::get_next_switchpoint(CEvohomeWeb::temperatureControlSys
 			return "";
 	return get_next_switchpoint(tcs->zones[zone].schedule);
 }
-
+/*
 std::string CEvohomeWeb::get_next_switchpoint(std::string zoneId)
 {
 	if ( (get_zone_by_ID(zoneId)->schedule == NULL) && !get_schedule(zoneId) )
 			return "";
 	return get_next_switchpoint(get_zone_by_ID(zoneId)->schedule);
 }
+*/
 std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 {
 	if ( (hz->schedule == NULL) && !get_schedule(hz->zoneId) )
@@ -961,10 +964,10 @@ std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 }
 std::string CEvohomeWeb::get_next_switchpoint(json_object *schedule)
 {
-	std::string current_temperature;
-	return get_next_switchpoint_ex(schedule, current_temperature);
+	std::string current_setpoint;
+	return get_next_switchpoint_ex(schedule, current_setpoint);
 }
-std::string CEvohomeWeb::get_next_switchpoint_ex(json_object *schedule, std::string &current_temperature)
+std::string CEvohomeWeb::get_next_switchpoint_ex(json_object *schedule, std::string &current_setpoint)
 {
 	if (schedule == NULL)
 		return "";
@@ -1019,7 +1022,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(json_object *schedule, std::str
 			else
 			{
 				json_object_object_get_ex(j_sp, "temperature", &j_temp);
-				current_temperature = json_object_get_string(j_temp);
+				current_setpoint = json_object_get_string(j_temp);
 			}
 		}
 	}
@@ -1073,6 +1076,7 @@ std::string CEvohomeWeb::json_get_val(json_object *j_json, const char* key1, con
  *	Evohome overrides						*
  *									*
  ************************************************************************/
+
 
 bool CEvohomeWeb::verify_date(std::string date)
 {
@@ -1185,11 +1189,12 @@ bool CEvohomeWeb::set_temperature(std::string zoneId, std::string temperature, s
 		return true;
 	return false;
 }
+/*
 bool CEvohomeWeb::set_temperature(std::string zoneId, std::string temperature)
 {
 	return set_temperature(zoneId, temperature, "");
 }
-
+*/
 
 bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 {
@@ -1202,12 +1207,13 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 	return false;
 }
 
-
+/*
 bool CEvohomeWeb::has_dhw(int location, int gateway, int temperatureControlSystem)
 {
 	CEvohomeWeb::temperatureControlSystem *tcs = &locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem];
 	return has_dhw(tcs);
 }
+*/
 bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 {
 	json_object *j_dhw;
@@ -1253,8 +1259,9 @@ bool CEvohomeWeb::set_dhw_mode(std::string dhwId, std::string mode, std::string 
 		return true;
 	return false;
 }
+/*
 bool CEvohomeWeb::set_dhw_mode(std::string systemId, std::string mode)
 {
 	return set_dhw_mode(systemId, mode, "");
 }
-
+*/
