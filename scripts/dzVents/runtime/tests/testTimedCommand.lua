@@ -22,6 +22,7 @@ describe('timed commands', function()
 		_G.logLevel = 0
 		_G.globalvariables = {
 			Security = 'sec',
+			['radix_separator'] = '.',
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath
 		}

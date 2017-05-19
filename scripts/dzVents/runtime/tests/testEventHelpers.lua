@@ -5,7 +5,8 @@ local scriptPath = ''
 
 print(debug.getinfo(1).source)
 
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
+--package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local function keys(t)
 	local keys = _.keys(t)
@@ -27,6 +28,7 @@ describe('event helpers', function()
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
 		['settings'] = {},
+		['radixSeparator'] = '.',
 		['name'] = 'domoticz', -- used in script1
 		['devices'] = {
 			['device1'] = { name = '' },
@@ -48,6 +50,7 @@ describe('event helpers', function()
 
 		_G.globalvariables = {
 			Security = 'sec',
+			['radix_separator'] = '.',
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath
 		}
@@ -71,59 +74,6 @@ describe('event helpers', function()
 		utils = nil
 	end)
 
-	describe('Reverse find', function()
-		it('should find some string from behind', function()
-			local s = 'my_Sensor_Temperature'
-			local from, to = helpers.reverseFind(s, '_')
-			assert.are_same(from, 10)
-			assert.are_same(to, 10) -- lenght of _
-		end)
-
-		it('should find some string from behind (again)', function()
-			local s = 'a_b'
-			local from, to = helpers.reverseFind(s, 'b')
-			assert.are_same(from, 3)
-			assert.are_same(to, 3) -- lenght of _
-		end)
-
-		it('should find some string from behind (again)', function()
-			local s = 'a_bbbb_c'
-			local from, to = helpers.reverseFind(s, 'bb')
-			assert.are_same(from, 5)
-			assert.are_same(to, 6) -- lenght of _
-		end)
-
-		it('should return nil when not found', function()
-			local s = 'mySensor_Temperature'
-			local from, to = helpers.reverseFind(s, 'xx')
-			assert.is_nil(from)
-			assert.is_nil(to)
-		end)
-	end)
-
-	describe('Device by event name', function()
-		it('should return the device name without value extension', function()
-			local deviceName = helpers.getDeviceNameByEvent('mySensor')
-			assert.are_same(deviceName, 'mySensor')
-
-		end)
-
-		it('should return the device name with a known value extension', function()
-			local deviceName = helpers.getDeviceNameByEvent('mySensor_Temperature')
-			assert.are_same('mySensor', deviceName)
-		end)
-
-		it('should return the device name with underscores and value extensions', function()
-			local deviceName = helpers.getDeviceNameByEvent('my_Sensor_Temperature')
-			assert.are_same('my_Sensor',  deviceName)
-		end)
-
-		it('should return the device name with underscores', function()
-			local deviceName = helpers.getDeviceNameByEvent('my_Sensor_blaba')
-			assert.are_same('my_Sensor_blaba', deviceName)
-		end)
-
-	end)
 
 	describe('Loading modules', function()
 		it('should get a list of files in a folder', function()
@@ -382,46 +332,7 @@ describe('event helpers', function()
 		end)
 
 	end)
---
---	describe('Http data', function()
---		it('should fetch http data when timer trigger is met', function()
---			local requested = false
---			helpers.utils.requestDomoticzData = function(ip, port)
---				requested = true
---			end
---
---			helpers.evalTimeTrigger = function(interval)
---				return true
---			end
---
---			helpers.fetchHttpDomoticzData('0', '1', 'some trigger')
---			assert.is_true(requested)
---		end)
---
---		it('should log an error when passing wrong stuff', function()
---			local requested = false
---			local msg, level
---			helpers.utils.requestDomoticzData = function(ip, port)
---				requested = true
---			end
---
---			helpers.evalTimeTrigger = function(interval)
---				return true
---			end
---
---			utils.log = function(m, l)
---				msg = m
---				level = l
---			end
---
---			helpers.fetchHttpDomoticzData()
---			assert.is_false(requested)
---			assert.is_same('Invalid ip for contacting Domoticz', msg)
---			assert.is_same(utils.LOG_ERROR, level)
---
---		end)
---	end)
---
+
 	describe('Various', function()
 		it('should dump the command array', function()
 			local messages = {}
@@ -499,15 +410,37 @@ describe('event helpers', function()
 			local devices = {}
 			local dumped = false
 
+			local function getDummy(id, name, state, value)
+				return {
+					['id'] = id,
+					['name'] = name,
+					['state'] = state,
+					['value'] = value
+				}
+			end
+
 			local devicechanged = {
-				['onscript1'] = 10,
-				['onscript4'] = 20,
-				['wildcard'] = 30,
-				['someweirddevice'] = 40,
-				['on_script_5_Temperature'] = 50,
-				['on_script_5'] = 50, -- should be triggered only once
-				['mydevice'] = 60 --script 6 triggers by this device' id
+				['onscript1'] = getDummy(1, 'onscript1', 'state1', 10),
+				['onscript4'] = getDummy(2, 'onscript4', 'state2', 20),
+				['wildcard'] = getDummy(3, 'wildcard', 'state3', 30),
+				['someweirddevice'] = getDummy(4, 'someweirddevice', 'state4', 40),
+				--['8device'] = getDummy(8, '8device', 'state64', 404),
+				-- ['on_script_5_Temperature'] = 50,
+				--['on_script_5'] = 50, -- should be triggered only once
+				['mydevice'] = getDummy(8, 'mydevice', 'state5', 60), --script 6 triggers by this device' id,
 			}
+
+			devicechanged['forEach'] = function(func)
+				local res
+				for i, item in pairs(devicechanged) do
+					if (type(item) ~= 'function' and type(i) ~= 'number') then
+						res = func(item, i, devicechanged)
+						if (res == false) then -- abort
+							return
+						end
+					end
+				end
+			end
 
 			helpers.dumpCommandArray = function()
 				dumped = true
@@ -519,25 +452,23 @@ describe('event helpers', function()
 				end)
 				table.insert(devices, _device.name)
 			end
-
-			local res = helpers.dispatchDeviceEventsToScripts(devicechanged)
+			local res = helpers.dispatchDeviceEventsToScripts({['changedDevices'] = devicechanged})
 
 			table.sort(scripts)
 			table.sort(devices)
-
 			assert.is_same({
 				"script1",
 				"script3",
 				"script4",
-				"script5",
 				"script6",
 				"script_combined",
 				"script_wildcard1",
 				"script_wildcard2"
 			}, scripts)
+
+
 			assert.is_same({
 				"mydevice",
-				"on_script_5",
 				"onscript1",
 				"onscript4",
 				"someweirddevice",
@@ -550,9 +481,6 @@ describe('event helpers', function()
 		it('should dispatch all timer events', function()
 			local scripts = {}
 			local dumped = false
-			local fetched = false
-
-			helpers.settings['Enable http fetch'] = true
 
 			helpers.dumpCommandArray = function()
 				dumped = true
@@ -562,10 +490,6 @@ describe('event helpers', function()
 				_.forEach(_scripts, function(s)
 					table.insert(scripts, s.name)
 				end)
-			end
-
-			helpers.fetchHttpDomoticzData = function()
-				fetched = true
 			end
 
 			local res = helpers.dispatchTimerEventsToScripts()
@@ -579,25 +503,8 @@ describe('event helpers', function()
 			}, scripts)
 
 			assert.is_true(dumped)
-			assert.is_true(fetched)
 		end)
 
-		it('should auto fetch http data', function()
-			local fetched = false
-			helpers.fetchHttpDomoticzData = function()
-				fetched = true
-			end
 
-			helpers.settings['Enable http fetch'] = true
-
-			helpers.autoFetchHttpDomoticzData()
-			assert.is_true(fetched)
-
-			fetched = false
-			helpers.settings['Enable http fetch'] = false
-
-			helpers.autoFetchHttpDomoticzData()
-			assert.is_false(fetched) -- should still be false
-		end)
 	end)
 end)

@@ -3,7 +3,9 @@ local GLOBAL = false
 local LOCAL = true
 _G.TESMODE = true
 
-package.path = package.path .. ";../?.lua"
+--package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local clock = os.clock
 function sleep(n)  -- seconds
@@ -47,6 +49,12 @@ describe('event helper storage', function()
 		}
 
 		_G.TESTMODE = true
+
+		_G.globalvariables = {
+			Security = 'sec',
+			['radix_separator'] = '.',
+			['script_path'] = scriptPath
+		}
 
 		EventHelpers = require('EventHelpers')
 	end)

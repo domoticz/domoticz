@@ -205,14 +205,6 @@ local function Domoticz(settings)
 		dumpTable(device, '> ')
 	end
 
-	local function getValueFromFormatted(value, unit)
-		--local s = string.gsub(value, '%.', '')
-		local s = string.gsub(value, '%,', '') -- remove , (assume it is NOT a decimal separator)
-		s = string.gsub(s, ' ' .. unit, '')
-		return tonumber(s)
-	end
-
-
 	local function bootstrap()
 
 

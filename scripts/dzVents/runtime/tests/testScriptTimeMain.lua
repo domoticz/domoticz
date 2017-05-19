@@ -1,8 +1,10 @@
 local _ = require 'lodash'
 _G._ = require 'lodash'
 
-package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+--package.path = package.path .. ";../?.lua"
 package.path = package.path .. ";../../?.lua"  -- two folders up
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 describe('script_time_main', function()
 
@@ -17,6 +19,7 @@ describe('script_time_main', function()
 		}
 
 		_G.globalvariables = {
+			['radix_separator'] = '.',
 			Security = 'sec'
 		}
 		_G.devicechanged = {

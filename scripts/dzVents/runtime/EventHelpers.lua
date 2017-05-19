@@ -552,6 +552,7 @@ local function EventHelpers(settings, domoticz, mainMethod)
 				-- there is trigger for this changedDeviceName
 				return scripts
 			end
+
 			else
 				if (scriptTrigger == changedDeviceName) then
 					-- there is trigger for this changedDeviceName
@@ -571,13 +572,14 @@ local function EventHelpers(settings, domoticz, mainMethod)
 
 		local allEventScripts = self.getEventBindings()
 
-		self.domoticz.changedDevices.forEach( function(device)
+		domoticz.changedDevices.forEach( function(device)
 
 			utils.log('Event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
 			local scriptsToExecute
 
 			-- first search by name
+
 			scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
 
 			if (scriptsToExecute == nil) then
@@ -598,7 +600,6 @@ local function EventHelpers(settings, domoticz, mainMethod)
 	end
 
 	function self.dispatchTimerEventsToScripts()
-
 		local scriptsToExecute = self.getTimerHandlers()
 
 		self.handleEvents(scriptsToExecute)
