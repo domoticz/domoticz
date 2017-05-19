@@ -11,7 +11,11 @@
         PyMODINIT_FUNC PyInit_DomoticzEvents(void);
         static PyObject*    PyDomoticz_EventsLog(PyObject *self, PyObject *args);
         static PyObject*	PyDomoticz_EventsCommand(PyObject *self, PyObject *args);
-        PyObject* GetEventModule (void);
-        void ProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables);
+        
+        
+        PyObject* PythonEventsGetModule (void);
+        bool PythonEventsInitialize(std::string szUserDataFolder);
+        bool PythonEventsStop();
+        void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet);
     }
 #endif

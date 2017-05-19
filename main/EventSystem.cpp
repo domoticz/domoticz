@@ -69,7 +69,10 @@ void CEventSystem::StartEventSystem()
 
 	LoadEvents();
 	GetCurrentStates();
-
+#ifdef ENABLE_PYTHON
+    Plugins::PythonEventsInitialize(szUserDataFolder);
+#endif
+    
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -2205,7 +2208,8 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
-    Plugins::ProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables);
+    Plugins::PythonEventsProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
+        getSunRiseSunSetMinutes("Sunset"));
 
 
 	//Py_Finalize();
