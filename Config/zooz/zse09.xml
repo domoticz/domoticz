@@ -32,7 +32,7 @@
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="255"/>
         </Value>
-        <Value type="byte" genre="config" index="9" label="Light Report" size="2" min="0" max="255" value="100" units="lux">
+        <Value type="byte" genre="config" index="9" label="Light Report" size="1" min="0" max="255" value="100" units="lux">
             <Help>Change required to report to the controller, in lux.</Help>
         </Value>
         <Value type="list" genre="config" index="10" label="LED Notification" size="1" min="0" max="1" value="1">

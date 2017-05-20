@@ -186,14 +186,14 @@
                 1-32000 (0.1-32000s, 1s step) Default: 600 (10min)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="50" label="First channel - power reports" value="20" min="1" max="100" size="1">
+        <Value type="short" genre="config" instance="1" index="50" label="First channel - power reports" value="20" min="1" max="100" size="2">
             <Help>
                 This parameter determines the minimum change in consumed power
                 that will result in sending new power report to the main controller.
                 1-100 (%) Default 20 (20%)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="51" label="First channel - minimal time between power reports" value="10" min="1" max="120" size="1">
+        <Value type="short" genre="config" instance="1" index="51" label="First channel - minimal time between power reports" value="10" min="1" max="120" size="2">
             <Help>
                 This parameter determines minimum time that has to elapse before
                 sending new power report to the main controller.
@@ -207,14 +207,14 @@
                 1-32000 (0.01-320 kWh) Default 100 (1kWh)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="54" label="Second Channel - power reports" value="20" min="1" max="100" size="1">
+        <Value type="short" genre="config" instance="1" index="54" label="Second Channel - power reports" value="20" min="1" max="100" size="2">
             <Help>
                 This parameter determines the minimum change in consumed power
                 that will result in sending new power report to the main controller.
                 1-100 (%) Default 20 (20%)
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="55" label="Second channel - minimal time between power reports" value="10" min="1" max="120" size="1">
+        <Value type="short" genre="config" instance="1" index="55" label="Second channel - minimal time between power reports" value="10" min="1" max="120" size="2">
             <Help>
                 This parameter determines minimum time that has to elapse before
                 sending new power report to the main controller.

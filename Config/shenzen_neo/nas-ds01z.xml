@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Shenzhen NEO Electronics (NEO-CoolCam) Door Sensor
+  http://products.z-wavealliance.org/products/1782
+  -->
   <!-- Configuration Parameters -->
   <CommandClass id="112">
     <Value type="short" genre="config" instance="1" index="1" label="Configuring the OFF Delay" units="second" value="0" min="0" max="65536" size="2">

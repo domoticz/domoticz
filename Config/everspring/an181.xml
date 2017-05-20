@@ -31,7 +31,7 @@
         <Value type="short" index="6" genre="config" label="Value of Wattage surpassed" units="watts" min="0" max="2500" size="2" value="0">
             <Help>Auto report is sent when load surpasses the set value of wattage (0 = disabled)</Help>
         </Value>
-        <Value type="byte" index="7" genre="config" label="Change of Wattage surpassed" units="%" min="0" max="100" size="2" value="0">
+        <Value type="byte" index="7" genre="config" label="Change of Wattage surpassed" units="%" min="0" max="100" size="1" value="0">
             <Help>Auto report is sent when the change of wattage surpasses the set percentage (0 = disabled)</Help>
         </Value>
     </CommandClass>

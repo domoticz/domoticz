@@ -4,8 +4,6 @@ Aeotec Garage ZW062 Door Controller
 https://aeotec.freshdesk.com/helpdesk/attachments/6009584687
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- the Device Doesn't support Get for Basic Class -->
-	<CommandClass id="32" getsupported="false"/>
 	<!-- the Device Doesn't support Get for Alarm Class -->
 	<CommandClass id="113" getsupported="false"/>
 	<!-- Configuration Parameters -->
