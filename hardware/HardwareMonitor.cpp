@@ -20,6 +20,7 @@
 #ifdef __OpenBSD__
 	#include <sys/sysctl.h>
 	#include <sys/sched.h>
+	#include <sys/vmmeter.h>
 #endif
 	#include <iostream>
 	#include <fstream>
@@ -37,7 +38,7 @@
 		long long UsedBlocks;
 		long long AvailBlocks;
 	};
- 
+
 //USER_HZ detection, from openssl code
 #ifndef HZ
 # if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
@@ -160,7 +161,7 @@ void CHardwareMonitor::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
+	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");
 }
 
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
@@ -286,7 +287,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	if (!m_HwdID) {
 #ifdef _DEBUG
 		_log.Log(LOG_NORM,"Hardware Monitor: Id not found!");
-#endif		
+#endif
 		return;
 	}
 	int doffset = 0;
@@ -347,11 +348,11 @@ bool CHardwareMonitor::InitWMI()
 		m_pServicesSystem,                        // Indicates the proxy to set
 		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
 		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-		NULL,                        // Server principal name 
-		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
+		NULL,                        // Server principal name
+		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
 		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
 		NULL,                        // client identity
-		EOAC_NONE                    // proxy capabilities 
+		EOAC_NONE                    // proxy capabilities
 		);
 */
 	if (!IsOHMRunning())
@@ -383,20 +384,20 @@ bool CHardwareMonitor::IsOHMRunning()
 	bool bOHMRunning = false;
 	IEnumWbemClassObject* pEnumerator = NULL;
 	HRESULT hr;
-	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
-	if (SUCCEEDED(hr))  
+	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+	if (SUCCEEDED(hr))
 	{
-		IWbemClassObject *pclsObj=NULL;  
-		ULONG uReturn = 0;  
-		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);  
+		IWbemClassObject *pclsObj=NULL;
+		ULONG uReturn = 0;
+		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
 		if ((FAILED(hr)) || (0 == uReturn))
 		{
 			pEnumerator->Release();
 			return false;
 		}
-		VARIANT vtProp;  
-		VariantInit(&vtProp);  
-		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);  
+		VARIANT vtProp;
+		VariantInit(&vtProp);
+		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
 		int procId = static_cast<int>(vtProp.iVal);
 		if (procId) {
 			bOHMRunning = true;
@@ -418,7 +419,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	query.append(" WHERE SensorType = '");
 	query.append(qType);
 	query.append("'");
-	IEnumWbemClassObject* pEnumerator = NULL; 
+	IEnumWbemClassObject* pEnumerator = NULL;
 	hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 	if (!FAILED(hr))
 	{
@@ -522,23 +523,40 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 #ifdef __OpenBSD__
 	float GetMemUsageOpenBSD()
 	{
-		std::string cmd("top -b | grep \"^Memory\" | cut -d '/' -f 2,3 | cut -d ' ' -f 1,4");
-		std::vector<std::string> ret;
-		ret = ExecuteCommandAndReturn(cmd);
-		if (ret.empty())
+		int mibTotalMem[2] = {
+			CTL_HW,
+			HW_PHYSMEM64
+		};
+		int mibPageSize[2] = {
+			CTL_HW,
+			HW_PAGESIZE
+		};
+		int mibMemStats[2] = {
+			CTL_VM,
+			VM_METER
+		};
+		int pageSize;
+		int64_t totalMemBytes, usedMem;
+		size_t len = sizeof(totalMemBytes);
+		float percent;
+		struct vmtotal memStats;
+		if (sysctl(mibTotalMem, 2, &totalMemBytes,
+			   &len, NULL, 0) == -1){
 			return -1;
-		// ret[] is Something like "1337M 6480M\n"
-		std::string retline = ret[0];
-		size_t pos;
-		if ((pos = retline.find(" ")) == std::string::npos)
+		}
+		len = sizeof(pageSize);
+		if (sysctl(mibPageSize, 2, &pageSize,
+			   &len, NULL, 0) == -1){
 			return -1;
-		double used = atof(retline.substr(0, pos - 1).c_str()) * 1000000;
-		if (retline[pos - 1] == 'K')used /= 1000;//Not sure if it can be k or G
-			retline.erase(0, pos + 1);
-		pos = retline.length() - 1;
-		double total = atof(retline.substr(0, pos - 1).c_str()) * 1000000;
-		if (retline[pos] == 'K')total /= 1000; //Not sure if it can be k or G
-		return float(100.0 / total * used);
+		}
+		len = sizeof(memStats);
+		if (sysctl(mibMemStats, 2, &memStats,
+			   &len, NULL, 0) == -1){
+			return -1;
+		}
+		usedMem = memStats.t_arm * pageSize;//active real memory
+		percent = (100.0f / float(totalMemBytes))*usedMem;
+		return percent;
 	}
 #endif
 	void CHardwareMonitor::FetchUnixData()
@@ -606,7 +624,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			if (fIn!=NULL)
 			{
 				bool bFirstLine=true;
-				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL ) 
+				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
 				{
 					int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 					if ((bFirstLine)&&(ret==4)) {
@@ -731,4 +749,3 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		}
 	}
 #endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
-
