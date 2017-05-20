@@ -326,7 +326,7 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 
 bool CLogger::IsLogTimestampsEnabled()
 {
-	return m_bEnableLogTimestamps;
+	return (m_bEnableLogTimestamps && !g_bUseSyslog);
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
