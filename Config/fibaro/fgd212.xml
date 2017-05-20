@@ -16,22 +16,19 @@
     <Value type="byte" genre="config" instance="1" index="3" label="Incandescence level of dimmable compact fluorescent lamps" min="1" max="99" units="%" value="1">
       <Help>Virtual value set as a percentage level between parameters MIN (1%) and MAX. (99%). The Dimmer will set to this value after first switch on. It is required for warming up and switching dimmable compact fluorescent lamps and certain types of light sources. Options for changing parameter 1-99. Default 1.</Help>
     </Value>
-    <!-- size of two and max 255 seems off -->
-    <Value type="byte" size="2" genre="config" instance="1" index="4" label="Incandescence time of dimmable compact fluorescent lamps" min="0" max="255" units="sec" value="0">
+    <Value type="byte" size="1" genre="config" instance="1" index="4" label="Incandescence time of dimmable compact fluorescent lamps" min="0" max="255" units="sec" value="0">
       <Help>This parameter determines the time required for switching compact fluorescent lamps and certain types of light sources. Setting this parameter to 0 will disable the incandescence functionality. Available settings: 0-255 (0s - 25,5s)</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="5" label="The percentage of a dimming step at automatic control" min="1" max="99" units="%" value="1">
       <Help>Available settings: 1-99 Default: 1</Help>
-    </Value>
-    <!-- size of two and max 255 seems off -->
-    <Value type="byte" size="2" genre="config" instance="1" index="6" label="Time of a dimming step at automatic control" min="0" max="255" units="sec" value="1">
+    </Value>    
+    <Value type="byte" size="1" genre="config" instance="1" index="6" label="Time of a dimming step at automatic control" min="0" max="255" units="sec" value="1">
       <Help>Available settings: 0-255 (0s - 2,55s) Default setting: 1</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="7" label="The percentage of a dimming step at manual control" min="1" max="99" units="%" value="1">
       <Help>Available settings: 1-99 Default: 1</Help>
     </Value>
-    <!-- size of two and max 255 seems off -->
-    <Value type="byte" size="2" genre="config" instance="1" index="8" label="Time of a dimming step at manual control" min="0" max="255" units="sec" value="5">
+    <Value type="byte" size="1" genre="config" instance="1" index="8" label="Time of a dimming step at manual control" min="0" max="255" units="sec" value="5">
       <Help>Available settings: 0-255 (0s - 2,55s) Default setting: 1</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" size="1" value="1">
@@ -64,8 +61,7 @@
     <Value type="byte" genre="config" instance="1" index="15" label="Burnt out bulb detection" min="1" max="99" units="%" value="30">
       <Help>Function based on the sudden power variation of a specific value, interpreted as a LOAD ERROR. Available settings: 0 - function disabled; 1-99 - percentage value of power variation, compared to standard power consumption, measured during the calibration procedure (to be interpreted as load error/burnt out bulb) Default setting: 30</Help>
     </Value>
-    <!-- size of two and max 255 seems off -->
-    <Value type="byte" size="2" genre="config" instance="1" index="16" label="Time delay of a burnt out bulb" min="0" max="255" units="%" value="5">
+    <Value type="byte" size="1" genre="config" instance="1" index="16" label="Time delay of a burnt out bulb" min="0" max="255" units="%" value="5">
       <Help>Time of delay (in seconds) for power variation detection, interpreted as a LOAD ERROR or OVERLOAD detection (too much power connected to the Dimmer). Available settings: 0 - detection of a burnt out bulb disabled; 1-255 - delay time in seconds; Default setting: 5</Help>
     </Value>
     <Value type="byte" genre="config" instance="1" index="19" label="Forced switch on brightness level" min="0" max="99" units="%" value="0">
@@ -213,7 +209,7 @@ Default setting: 15</Help>
       <Item label="ALARM DIMMER OFF - device will turn OFF upon receipt of alarm frame" value="2"/>
       <Item label="ALARM FLASHING - device will turn ON and OFF periodically" value="3"/>
     </Value>
-	<Value type="byte" size="2" genre="config" instance="1" index="44" label="Time of alarm state" min="1" max="32767" units="sec" value="600">
+	<Value type="byte" size="1" genre="config" instance="1" index="44" label="Time of alarm state" min="1" max="32767" units="sec" value="600">
       <Help>Alarm state may be cancelled earlier, as a result of pressing the switches or sending the Z-Wave command frame.</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="45" label="OVERLOAD alarm report" size="1" value="1">
@@ -252,9 +248,8 @@ Default setting: 10 (10%)</Help>
 0 - periodic reports disabled;
 1-32767 (1-32767 seconds);
 Default setting: 3600 (3600s)</Help>
-    </Value>
-    <!-- size of two and max 255 seems off -->    
-    <Value type="byte" size="2" genre="config" instance="1" index="59" label="Energy reports" min="0" max="255" units="kWh" value="10">
+    </Value>  
+    <Value type="byte" size="1" genre="config" instance="1" index="59" label="Energy reports" min="0" max="255" units="kWh" value="10">
       <Help>Energy level change which will result in sending a new energy report. Available settings:
 0 - energy reports disabled; 
 1-255 (0,01 - 2,55 kWh) - report triggering threshold;

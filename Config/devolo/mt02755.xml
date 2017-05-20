@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Devolo Humidity Sensor MT02755
+    http://products.z-wavealliance.org/products/2226
+    -->
+    <!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="5" label="Operation Mode" size="1" value="0">
+            <Help>
+            </Help>
+            <Item label="Fahrenheit" value="0"/>
+            <Item label="Celsius" value="41"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="Costumer Function" units="" min="0" max="255" value="0">
+            <Help>
+                16 Notification Type, 0:Using Notification Report. 16:Using Sensor Binary Report.
+                32 Disable Multi CC in auto report.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="10" label="Auto Report Battery Time" units="" min="0" max="127" value="12">
+            <Help>
+                The interval time for auto report the battery level.
+                0 means turn off auto report.
+                The default value is 12.
+                The tick time can be set by the configuration No.20.
+            </Help>
+        </Value>
+        <Value type="byte" index="13" genre="config" label="Auto Report Temperature time" units="30 min" min="0" max="127" value="12">
+            <Help>
+                The interval time for auto report the temperature. 0 means turn off auto report temperature. The default value is 12. The tick time can setting by the configuration No.20.
+            </Help>
+        </Value>
+        <Value type="byte" index="14" genre="config" label="Auto Report Humidity time" units="30 min" min="0" max="127" value="12">
+            <Help>
+                The interval time for auto report the humidity. 0 means turn off auto report humidity. The default value is 12. The tick time can setting by the configuration No.20.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="20" label="Auto Report Tick Interval" units="minute" min="0" max="255" value="30">
+            <Help>
+                The interval time for auto report each tick.
+                Setting this configuration will effect configuration No.10, No.13, No.14.
+                Units of one minute.
+                Caution1: Setting to 0 means turn off all auto report function.
+                Caution2: The value is unsigned byte
+            </Help>
+        </Value>
+        <Value type="byte" index="21" genre="config" label="Temperature Differential Report" min="0" max="127" value="1">
+            <Help>
+                The temperature differential to report. 0 means turn off this function. The unit is Fahrenheit. Enable this function the device will detect every minutes. And when the temperature is over 140 degree Fahrenheit, it will continue report. Enable this functionality will cause some issue please see the detail in the "Temperature Report" section.
+            </Help>
+        </Value>
+        <Value type="byte" index="23" genre="config" label="Humidity Differential Report" units="%" min="0" max="60" value="1">
+            <Help>
+                The humidity differential to report. 0 means turn off this function. The unit is %.
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="8" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

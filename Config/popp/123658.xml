@@ -17,7 +17,7 @@
 			<Help>This is a warning when the wattage of load over the present threshold value, if the load wattage exceeds the setting value the device will send a warning alarm command to the controller. Min: 10, Max: 3000, Default: 3000</Help>
 		</Value>
 	
-		<Value type="short" genre="config" instance="1" index="5" label="Behaviour on Power Outages" size="1" min="0" max="2" value="1">
+		<Value type="short" genre="config" instance="1" index="5" label="Behaviour on Power Outages" size="2" min="0" max="2" value="1">
 			<Help>0 for Switch Off, 1 for Last Switch State (Default), 2 for Switch On</Help>
 		</Value>
 

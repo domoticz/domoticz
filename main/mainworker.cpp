@@ -2376,8 +2376,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
 		if (szDate[0] != 0)
-			sTmp << szDate;
-		sTmp << " (" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+			sTmp << szDate << " ";
+		sTmp << "(" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();

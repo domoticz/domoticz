@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+<!-- 
+Qubino:  ZMNHTDx Smart meter Z-Wave+
+SW version S1,S2 & S3
+ZMNHTD1 868,4 MHz
+ZMNHTD2 921,4 MHz
+ZMNHTD3 908,4 MHz
+ZMNHTD4 869,0 MHz
+ZMNHTD5 916,0 MHz
+-->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="7" label="Input 1 switch function selection" size="1" min="0" max="5" value="4">
+			<Help>Default value 4</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="IR external relay control - mono stable push button" value="2" />
+			<Item label="IR external relay control - bi stable switch" value="3" />
+			<Item label="External relay control - mono stable push button" value="4" />
+			<Item label="External relay control - bi stable switch" value="5" />
+		</Value>
+	
+		<Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+			<Help>Smart meter module responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.
+			Default value 255.</Help>
+			<Item label="ALL ON active, ALL OFF active" value="255" />
+			<Item label="ALL ON is not active, ALL OFF is not active" value="0" />
+			<Item label="ALL ON is not active, ALL OFF active" value="1" />
+			<Item label="ALL ON active, ALL OFF is not active" value="2" />
+		</Value>
+	
+		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off IR external relay output after set time" size="2" min="0" max="32536" value="0">
+			<Help>0 - Auto OFF disabled.
+			1 second to 32536 seconds Auto OFF enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value> 
+	
+		<Value type="short" genre="config" instance="1" index="12" label="Automatic turning on IR external relay output after set time" size="2" min="0" max="32535" value="0">
+			<Help>0 - Auto ON disabled.
+			1 second to 32535 seconds Auto ON enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value>
+		
+		<Value type="short" genre="config" instance="1" index="13" label="Automatic turning off External relay output after set time" size="2" min="0" max="32536" value="0">
+			<Help>0 - Auto OFF disabled.
+			1 second to 32536 seconds Auto OFF enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value> 
+	
+		<Value type="short" genre="config" instance="1" index="14" label="Automatic turning on External relay output after set time" size="2" min="0" max="32535" value="0">
+			<Help>0 - Auto ON disabled.
+			1 second to 32535 seconds Auto ON enabled with defined time, step is 1 second.
+			Default value 0.</Help>
+		</Value> 
+
+		<Value type="byte" genre="config" instance="1" index="40" label="Power reporting in Watts on power change" size="1" min="0" max="100" value="10">
+			<Help>Set value from 0 - 100 (0% - 100%).
+			0 - Reporting Disabled.
+			1 - 100 = 1% - 100% Reporting enabled.
+			Power report is send (push) only when actual power in Watts in real time change for more than set percentage comparing to previous actual power in Watts, step is 1%.
+			Default value 10.</Help>
+			</Value>
+	
+		<Value type="short" genre="config" instance="1" index="42" label="Power reporting in Watts by time interval" min="0" max="32767" value="0">
+			<Help>Set value means time interval (0 - 32767) in seconds, when power report is send.
+			0 - Reporting Disabled.
+			1 second to 32767 seconds reporting enabled.
+			Power report is send with time interval set by entered value.
+			Default value 0.</Help>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="45" label="Reset Power counters" size="1" min="0" max="15" value="0">
+			<Help>Default value 0</Help>
+			<Item label="No function" value="0" />
+			<Item label="Reset counter 1 - KWh" value="1" />
+			<Item label="Reset counter 2 - KVARh" value="2" />
+			<Item label="Reset counter 3 - KVAh" value="4" />
+			<Item label="Reset ALL counters" value="15" />
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="100" label="Enable /Disable endpoints IR external relay and External relay" size="1" min="0" max="3" value="0">
+			<Help>Enabling IR external relay and External relay or both of them, means that endpoint (IR external relay) and endpoint (External relay) or both will be prensent on UI. 
+				Disabling them will result in hiding endpoints according to parameter set value.Note that hiding endpoint has no impact on its functionality. 
+				Default value 0</Help>
+			<Item label="Endpoints IR external relay and External relay disabled" value="0" />
+			<Item label="Endpoints IR external relay disabled, External relay enabled" value="1" />
+			<Item label="Endpoints IR external relay enabled, External relay disabled" value="2" />
+			<Item label="Endpoints IR external relay and External relay enabled" value="3" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="5">
+			<Group index="1" max_associations="1" label="Lifeline"/>
+			<Group index="2" max_associations="16" label="Basic on/off (IR external relay)"/>
+			<Group index="3" max_associations="16" label="Switch binary report (IR external relay)"/>
+			<Group index="5" max_associations="16" label="Basic on/off (External relay)"/>
+			<Group index="6" max_associations="16" label="Switch binary report (External relay)"/>
+		</Associations>
+	</CommandClass>
+
+	<CommandClass id="142" ForceInstances="true" />
+
+	<!-- Remove COMMAND_CLASS_BASIC -->
+	<CommandClass id="32" action="remove" />
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints" />
+
+</Product>
