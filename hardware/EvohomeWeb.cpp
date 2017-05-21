@@ -12,16 +12,16 @@
  */
 #include "stdafx.h"
 #include "EvohomeWeb.h"
-#include "../main/Logger.h"
-#include "hardwaretypes.h"
-#include "../main/RFXtrx.h"
 #include "../main/Helper.h"
+#include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-
-#include "../httpclient/HTTPClient.h"
 #include "../json/json.h"
+#include "hardwaretypes.h"
+//#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include "../main/localtime_r.h"
+#include "../httpclient/HTTPClient.h"
 #include <string>
 
 
