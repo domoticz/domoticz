@@ -579,7 +579,7 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Sound Level")
 	{
-		sprintf(szData,"%d", nValue);
+		sprintf(szData,"%d", atoi(rawsendValue.c_str()));
 	}
 	
 	else if (vType == "Status")
