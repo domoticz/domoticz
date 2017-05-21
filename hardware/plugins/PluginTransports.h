@@ -26,6 +26,7 @@ namespace Plugins {
 			Py_INCREF(m_pConnection);
 		};
 		virtual	bool		handleConnect() { return false; };
+		virtual	bool		handleListen() { return false; };
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&) = 0;
@@ -54,17 +55,21 @@ namespace Plugins {
 	class CPluginTransportTCP : public CPluginTransportIP, boost::enable_shared_from_this<CPluginTransportTCP>
 	{
 	public:
-		CPluginTransportTCP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL) { };
+		CPluginTransportTCP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL), m_Acceptor(NULL) { };
 		virtual	bool		handleConnect();
+		virtual	bool		handleListen();
 		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
+		virtual void		handleAsyncAccept(boost::asio::ip::tcp::socket* pSocket, const boost::system::error_code & error);
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>& pMessage);
 		virtual	bool		handleDisconnect();
 		virtual bool		ThreadPoolRequired() { return true; };
-		~CPluginTransportTCP();
+		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
+
 	protected:
 		boost::asio::ip::tcp::resolver	*m_Resolver;
+		boost::asio::ip::tcp::acceptor	*m_Acceptor;
 		boost::asio::ip::tcp::socket	*m_Socket;
 	};
 

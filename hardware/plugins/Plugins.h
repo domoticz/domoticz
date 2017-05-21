@@ -44,6 +44,7 @@ namespace Plugins {
 		bool	IoThreadRequired();
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
+		void	AddConnection(CPluginTransport*);
 
 		bool	Initialise();
 		bool	LoadSettings();
@@ -54,7 +55,6 @@ namespace Plugins {
 		void	ConnectionRead(CPluginMessageBase*);
 		void	ConnectionWrite(CDirectiveBase*);
 		void	ConnectionDisconnect(CDirectiveBase*);
-		void	ConnectionDisconnected();
 		void	Callback(std::string sHandler, void* pParams);
 		void	Stop();
 

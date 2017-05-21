@@ -613,6 +613,11 @@ namespace Plugins {
 		m_Notifier = new CPluginNotifier(this, Notifier);
 	}
 
+	void CPlugin::AddConnection(CPluginTransport *pTransport)
+	{
+		m_Transports.push_back(pTransport);
+	}
+
 	bool CPlugin::StartHardware()
 	{
 		if (m_bIsStarted) StopHardware();
@@ -632,24 +637,28 @@ namespace Plugins {
 		try
 		{
 			m_stoprequested = true;
-			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+			// If we have connections queue disconnects
+			if (m_Transports.size())
 			{
-				CPluginTransport*	pPluginTransport = *itt;
-				// Tell transport to disconnect if required
-				if ((pPluginTransport) && (pPluginTransport->IsConnected()))
+				for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 				{
-					DisconnectDirective*	DisconnectMessage = new DisconnectDirective(this, pPluginTransport->Connection());
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(DisconnectMessage);
-				}
-				else
-				{
-					// otherwise just signal stop
-					StopMessage*	Message = new StopMessage(this);
+					CPluginTransport*	pPluginTransport = *itt;
+					// Tell transport to disconnect if required
+					if ((pPluginTransport) && (pPluginTransport->IsConnected()))
 					{
+						DisconnectDirective*	DisconnectMessage = new DisconnectDirective(this, pPluginTransport->Connection());
 						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(Message);
+						PluginMessageQueue.push(DisconnectMessage);
 					}
+				}
+			}
+			else
+			{
+				// otherwise just signal stop
+				StopMessage*	Message = new StopMessage(this);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
 				}
 			}
 
@@ -1018,7 +1027,7 @@ namespace Plugins {
 		}
 		if (pConnection->pTransport)
 		{
-			m_Transports.push_back(pConnection->pTransport);
+			AddConnection(pConnection->pTransport);
 		}
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
@@ -1039,6 +1048,42 @@ namespace Plugins {
 	{
 		ListenDirective*	pMessage = (ListenDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		if (sTransport == "TCP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+		}
+		else if (sTransport == "UDP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, "", sPort);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "(%s) Unknown transport type specified: '%s'.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			return;
+		}
+		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
+			return;
+		}
+		if (pConnection->pTransport)
+		{
+			m_Transports.push_back(pConnection->pTransport);
+		}
+		if (pConnection->pTransport->handleListen())
+		{
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, transport listen initiated successfully.", Name.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_NORM, "(%s) Listen directive received, transport listen initiation failed.", Name.c_str());
+		}
 	}
 
 	void CPlugin::ConnectionRead(CPluginMessageBase * pMess)
@@ -1114,18 +1159,16 @@ namespace Plugins {
 			}
 			delete pConnection->pTransport;
 			pConnection->pTransport = NULL;
-		}
-	}
 
-	void CPlugin::ConnectionDisconnected()
-	{
-		if (m_stoprequested) // Plugin exiting, forced stop
-		{
-			StopMessage*	Message = new StopMessage(this);
+			if (m_stoprequested && !m_Transports.size()) // Plugin exiting, forced stop
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				StopMessage*	Message = new StopMessage(this);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
 			}
+
 		}
 	}
 

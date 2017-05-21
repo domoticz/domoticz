@@ -901,7 +901,15 @@ namespace Plugins {
 
 	PyObject * CConnection_new(PyTypeObject * type, PyObject * args, PyObject * kwds)
 	{
-		CConnection *self = (CConnection *)type->tp_alloc(type, 0);
+		CConnection *self = NULL;
+		if ((CConnection *)type->tp_alloc)
+		{
+			self = (CConnection *)type->tp_alloc(type, 0);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "(%s) CConnection Type is not ready.", self->pPlugin->Name.c_str());
+		}
 
 		try
 		{
@@ -1078,6 +1086,9 @@ namespace Plugins {
 				}
 				else
 				{
+					Py_XDECREF(self->Address);
+					self->Address = PyUnicode_FromString("127.0.0.1");
+
 					ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
