@@ -4,3 +4,6 @@
 * hardwareType
 * how do we handle all the different value constructions of diff device types?
 * all attributes from EventSystem.cpp in help
+* detect time/data type for user variables (tests)
+* levelactions/name provide table
+* add variable type constants to docs
