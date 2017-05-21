@@ -276,16 +276,18 @@ local testData = {
 		[10] = {
 			["id"] = 1,
 			["name"] = "y",
+			["variableType"] = 'integer',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:16:23";
-			data = {value = '2'}
+			data = { ["value"] = 2 }
 		},
 		[11] = {
 			["id"] = 1,
 			["name"] = "z",
+			["variableType"] = 'string',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:16:23";
-			data = {value = 'some value'}
+			data = { ["value"] = 'some value'}
 		},
 
 		--- scenes and groups

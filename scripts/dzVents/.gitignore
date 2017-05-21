@@ -1,2 +1,3 @@
 # Created by .ignore support plugin (hsz.mobi)
 /domoticzData.lua
+scripts/*.lua
