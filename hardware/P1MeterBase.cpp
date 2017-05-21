@@ -198,15 +198,23 @@ bool P1MeterBase::MatchLine()
 					if (m_voltagel3)
 						SendVoltageSensor(0, 3, 255, m_voltagel3, "Voltage L3");
 				}
+				if (m_p1gas.gasusage>0){ // don't update gas if there is no gas meter
 				if (
 					(m_p1gas.gasusage!=m_lastgasusage)||
 					(difftime(atime,m_lastSharedSendGas)>=300)
 					)
 				{
 					//only update gas when there is a new value, or 5 minutes are passed
-					m_lastSharedSendGas=atime;
-					m_lastgasusage=m_p1gas.gasusage;
-					sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+					struct tm tma;
+					localtime_r(&atime, &tma);
+					// ...but don't accept new values in the last four minutes of the hour
+					// to correct for possible (hasty) clock skew in the gas meter.
+					if (tma.tm_min<58){
+						m_lastSharedSendGas=atime;
+						m_lastgasusage=m_p1gas.gasusage;
+						sDecodeRXMessage(this, (const unsigned char *)&m_p1gas, "Gas", 255);
+					}
+				}
 				}
 			}
 			m_linecount=0;
