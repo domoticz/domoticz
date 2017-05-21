@@ -97,7 +97,12 @@ local function Domoticz(settings)
 		['EVENT_TYPE_DEVICE'] = 'device',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
-		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride'
+		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
+		['INTEGER'] = 'integer',
+		['FLOAT'] = 'float',
+		['STRING'] = 'string',
+		['DATE'] = 'date',
+		['TIME'] = 'time'
 	}
 
 	local function setIterators(collection)
@@ -213,7 +218,6 @@ local function Domoticz(settings)
 			if (item.baseType == 'device') then
 
 				local newDevice = Device(self, item)
-
 				if (item.changed) then
 					self.changedDevices[item.name] = newDevice
 					self.changedDevices[item.id] = newDevice-- id lookup
