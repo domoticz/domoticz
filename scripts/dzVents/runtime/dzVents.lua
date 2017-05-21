@@ -15,11 +15,10 @@ package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 
-_ = require 'lodash' -- todo remove
 local persistence = require('persistence')
 
 -- _.print(domoticzData)
---persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 
 --print('----------------------------')
 --for idx, device in pairs(domoticzData) do
