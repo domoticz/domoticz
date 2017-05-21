@@ -372,6 +372,87 @@ void daemonize(const char *rundir, const char *pidfile)
 		sysctl(mib, 4, pathName, &cb, NULL, 0);
 		return cb;
 	}
+#elif defined(__OpenBSD__)
+#include <sys/sysctl.h>
+static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+{
+        int mib[4];
+        char **argv;
+        size_t len = 0;
+        const char *comm;
+
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC_ARGS;
+        mib[2] = getpid();
+        mib[3] = KERN_PROC_ARGV;
+        pathName[0] = '\0';
+        if (sysctl(mib, 4, NULL, &len, NULL, 0) < 0)
+        {
+                return 0;
+        }
+
+        if (!(argv = (char**)malloc(len)))
+        {
+                return 0;
+        }
+
+        if (sysctl(mib, 4, argv, &len, NULL, 0) < 0)
+        {
+                len = 0;
+                goto finally;
+        }
+
+	        len = 0;
+        comm = argv[0];
+
+        if (*comm == '/' || *comm == '.')
+        {
+                // In OpenBSD PATH_MAX is 1024
+                char * fullPath = (char*) malloc(PATH_MAX);
+                if(!fullPath)
+                {
+                        goto finally;
+                }
+
+                if (realpath(comm, fullPath))
+                {
+                        if(pathNameCapacity > strnlen(fullPath, PATH_MAX))
+                        {
+                                strlcpy(pathName, fullPath, pathNameCapacity);
+                                len = strnlen(pathName, pathNameCapacity);
+                                free(fullPath);
+                        }
+                }
+        }
+        else
+        {
+                char *sp;
+                char *xpath = strdup(getenv("PATH"));
+                char *path = strtok_r(xpath, ":", &sp);
+                struct stat st;
+
+		if (!xpath)
+                {
+                        goto finally;
+                }
+
+                while (path)
+                {
+                        snprintf(pathName, pathNameCapacity, "%s/%s", path, comm);
+                        if (!stat(pathName, &st) && (st.st_mode & S_IXUSR))
+                        {
+                                break;
+                        }
+                        pathName[0] = '\0';
+                        path = strtok_r(NULL, ":", &sp);
+                }
+                free(xpath);
+        }
+
+  finally:
+        free(argv);
+        return len;
+}
 #elif defined(__APPLE__) /* elif of: #elif defined(__linux__) */
 	#include <mach-o/dyld.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
@@ -582,6 +663,15 @@ int main(int argc, char**argv)
 		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalCurrent = true;
 	}
+#if defined (__OpenBSD__)
+
+	szInternalTemperatureCommand="sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
+	bHasInternalTemperature = true;
+	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
+	bHasInternalVoltage = true;
+	//bHasInternalCurrent = true;
+
+#endif
 	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
