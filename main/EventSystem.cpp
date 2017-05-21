@@ -48,6 +48,7 @@ extern http::server::CWebServerHelper m_webservers;
 struct _tJsonLuaMap {
 	const char* szOriginal;
 	const char* szNew;
+	const char* szType;
 };
 
 
@@ -56,43 +57,43 @@ struct _tJsonLuaMap {
 // be added to this table.
 static const _tJsonLuaMap JsonLuaMap[] =
 {
-	{ "Barometer",			"barometer" },
-	{ "Chill",				"chill" },
-	{ "Counter",			"counter" },
-	{ "CounterDeliv",		"counterDelivered" },
-	{ "CounterDelivToday",	"counterDeliveredToday" },
-	{ "CounterToday",		"counterToday" },
-	{ "Current",			"current" },
-	{ "DewPoint",			"dewPoint" },
-	{ "Direction",			"direction" },
-	{ "DirectionStr",		"directionString" },
-	{ "Forecast",			"forecast" },
-	{ "ForecastStr",		"forecastString" },
-	{ "Humidity",			"humidity" },
-	{ "HumidityStatus",		"humidityStatus" },
-	{ "LevelActions",		"levelActions" },
-	{ "LevelNames",			"levelNames" },
-	{ "LevelOffHidden",		"levelOffHidden" },
-	{ "MaxDimLevel",		"maxDimLevel" },
-	{ "Moisture",			"moisture" },
-	{ "Pressure",			"pressure" },
-	{ "Quality",			"quality" },
-	{ "Radiation",			"radiation" },
-	{ "Rain",				"rain" },
-	{ "RainRate",			"rainRate" },
-	{ "SensorType",			"sensorType" },
-	{ "SensorUnit",			"sensorUnit" },
-	{ "SetPoint",			"setPoint" },
-	{ "Speed",				"speed" },
-	{ "Temp",				"temp" },
-	{ "TypeImg",			"icon" },
-	{ "Usage",				"usage" },
-	{ "UsageDeliv",			"usageDelivered" },
-	{ "ValueQuantity",		"valueQuantity" },
-	{ "ValueUnits",			"valueUnits" },
-	{ "Visibility",			"visibility" },
-	{ "Voltage",			"voltage" },
-	{ NULL,					NULL }
+	{ "Barometer",			"barometer",				"float" },
+	{ "Chill",				"chill", 					"float" },
+	{ "Counter",			"counter", 					"string" },
+	{ "CounterDeliv",		"counterDelivered", 		"string" },
+	{ "CounterDelivToday",	"counterDeliveredToday",	"string"},
+	{ "CounterToday",		"counterToday", 			"string" },
+	{ "Current",			"current", 					"float" },
+	{ "DewPoint",			"dewPoint", 				"float" },
+	{ "Direction",			"direction",				"float" },
+	{ "DirectionStr",		"directionString",			"string" },
+	{ "Forecast",			"forecast", 				"integer" },
+	{ "ForecastStr",		"forecastString",			"string" },
+	{ "Humidity",			"humidity",					"integer" },
+	{ "HumidityStatus",		"humidityStatus",			"string" },
+	{ "LevelActions",		"levelActions",				"string" },
+	{ "LevelNames",			"levelNames",				"string" },
+	{ "LevelOffHidden",		"levelOffHidden",			"boolean" },
+	{ "MaxDimLevel",		"maxDimLevel",				"integer" },
+	{ "Moisture",			"moisture",					"string" },
+	{ "Pressure",			"pressure",					"float"  },
+	{ "Quality",			"quality",					"string"  },
+	{ "Radiation",			"radiation",				"float"  },
+	{ "Rain",				"rain",						"float"  },
+	{ "RainRate",			"rainRate",					"float"  },
+	{ "SensorType",			"sensorType",				"integer"  },
+	{ "SensorUnit",			"sensorUnit",				"string"  },
+	{ "SetPoint",			"setPoint",					"float"  },
+	{ "Speed",				"speed",					"float"  },
+	{ "Temp",				"temperature",				"float"  },
+	{ "TypeImg",			"icon",						"string"  },
+	{ "Usage",				"usage",					"string"  },
+	{ "UsageDeliv",			"usageDelivered",			"string"  },
+	{ "ValueQuantity",		"valueQuantity",			"string"  },
+	{ "ValueUnits",			"valueUnits",				"string"  },
+	{ "Visibility",			"visibility",				"float"  },
+	{ "Voltage",			"voltage",					"float"  },
+	{ NULL,					NULL,						"string"  }
 };
 
 
@@ -2606,21 +2607,21 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "changed");
 		if (sitem.ID == deviceID)
 		{
-			lua_pushstring(lua_state, "true");
+			lua_pushboolean(lua_state, true);
 		}
 		else
 		{
-			lua_pushstring(lua_state, "false");
+			lua_pushboolean(lua_state, false);
 		}
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "timedOut");
 		if (timed_out == true)
 		{
-			lua_pushstring(lua_state, "true");
+			lua_pushboolean(lua_state, true);
 		}
 		else
 		{
-			lua_pushstring(lua_state, "false");
+			lua_pushboolean(lua_state, false);
 		}
 		lua_rawset(lua_state, -3);
 
@@ -2682,17 +2683,17 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (("Lux" == dev_type) && ("Lux" == sub_type))
 		{
 			lua_pushstring(lua_state, "lux");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushnumber(lua_state, (lua_Number)atoi(strarray[0].c_str()));
 			lua_rawset(lua_state, -3);
 		}
 
 		if (("General" == dev_type) && ("kWh" == sub_type))
 		{
 			lua_pushstring(lua_state, "whTotal");
-			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_pushnumber(lua_state, atof(strarray[1].c_str()));
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "whActual");
-			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_pushnumber(lua_state, atof(strarray[0].c_str()));
 			lua_rawset(lua_state, -3);
 		}
 
@@ -2910,7 +2911,31 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 				{
 					std::string value = tempjson["result"][0][JsonLuaMap[ii].szOriginal].asString();
 					lua_pushstring(lua_state, JsonLuaMap[ii].szNew);
-					lua_pushstring(lua_state, value.c_str());
+
+					if (JsonLuaMap[ii].szType == "string")
+					{
+						lua_pushstring(lua_state, value.c_str());
+					}
+
+					if (JsonLuaMap[ii].szType == "float")
+					{
+						lua_pushnumber(lua_state, atof(value.c_str()));
+					}
+					if (JsonLuaMap[ii].szType == "integer")
+					{
+						lua_pushnumber(lua_state, atoi(value.c_str()));
+					}
+					if (JsonLuaMap[ii].szType == "boolean")
+					{
+						if (value.c_str() == "true")
+						{
+							lua_pushboolean(lua_state, true);
+						}
+						else
+						{
+							lua_pushboolean(lua_state, false);
+						}
+					}
 					lua_rawset(lua_state, -3);
 				}
 				ii ++ ;
@@ -3008,7 +3033,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
 
-		lua_pushstring(lua_state, "_state");
+		lua_pushstring(lua_state, "value");
 		if (uvitem.variableType == 0)
 		{
 			//Integer
