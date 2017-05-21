@@ -22,7 +22,6 @@
 #include <sstream>
 #include <string>
 #include <curl/curl.h>
-#include <json-c/json.h>
 #include <map>
 
 #include "../json/json.h"
