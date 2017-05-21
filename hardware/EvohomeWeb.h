@@ -25,6 +25,8 @@
 #include <json-c/json.h>
 #include <map>
 
+#include "../json/json.h"
+
 
 class CEvohomeWeb : public CEvohomeBase
 {
@@ -54,6 +56,11 @@ private:
 	static const std::string weekdays[7];
 	std::vector<std::string> LoginHeaders;
 	std::vector<std::string> SessionHeaders;
+
+	Json::Value j_fi;
+	Json::Value j_stat;
+	Json::Value j_sched;
+
 
 	// base functions
 	void Init();
@@ -90,9 +97,9 @@ private:
 		std::string gatewayId;
 		std::string systemId;
 		std::string zoneId;
-		json_object *installationInfo;
-		json_object *status;
-		json_object *schedule;
+		Json::Value *installationInfo;
+		Json::Value *status;
+		Json::Value schedule;
 	};
 
 	struct temperatureControlSystem
@@ -100,8 +107,8 @@ private:
 		std::string locationId;
 		std::string gatewayId;
 		std::string systemId;
-		json_object *installationInfo;
-		json_object *status;
+		Json::Value *installationInfo;
+		Json::Value *status;
 		std::map<int, zone> zones;
 	};
 
@@ -109,8 +116,8 @@ private:
 	{
 		std::string locationId;
 		std::string gatewayId;
-		json_object *installationInfo;
-		json_object *status;
+		Json::Value *installationInfo;
+		Json::Value *status;
 		std::map<int, temperatureControlSystem> temperatureControlSystems;
 	};
 
@@ -118,8 +125,8 @@ private:
 	struct location
 	{
 		std::string locationId;
-		json_object *installationInfo;
-		json_object *status;
+		Json::Value *installationInfo;
+		Json::Value *status;
 		std::map<int, gateway> gateways;
 	};
 
@@ -144,16 +151,16 @@ private:
 	std::string get_next_switchpoint(temperatureControlSystem* tcs, int zone);
 	std::string get_next_switchpoint(std::string zoneId);
 	std::string get_next_switchpoint(zone* hz);
-	std::string get_next_switchpoint(json_object *schedule);
-	std::string get_next_switchpoint_ex(json_object *schedule, std::string &current_setpoint);
+	std::string get_next_switchpoint(Json::Value schedule);
+	std::string get_next_switchpoint_ex(Json::Value schedule, std::string &current_setpoint);
 
 	bool set_system_mode(std::string systemId, int mode, std::string date_until);
 	bool set_system_mode(std::string systemId, int mode);
 
 	std::string json_get_val(std::string s_json, const char* key);
-	std::string json_get_val(json_object *j_json, const char* key);
+	std::string json_get_val(Json::Value *j_json, const char* key);
 	std::string json_get_val(std::string s_json, const char* key1, const char* key2);
-	std::string json_get_val(json_object *j_json, const char* key1, const char* key2);
+	std::string json_get_val(Json::Value *j_json, const char* key1, const char* key2);
 
 	bool set_temperature(std::string zoneId, std::string temperature, std::string time_until);
 	bool set_temperature(std::string zoneId, std::string temperature);
