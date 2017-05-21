@@ -28,6 +28,11 @@
 #define LOGONFAILTRESHOLD 3
 #define MAXPOLINTERVAL 3600
 
+#ifdef _WIN32
+#define gmtime_r(timep, result) gmtime_s(result, timep)
+#endif
+
+
 extern std::string szUserDataFolder;
 
 const uint8_t CEvohomeWeb::m_dczToEvoWebAPIMode[7]={0,2,3,4,6,1,5};
