@@ -114,7 +114,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "SysfsGPIO.h"
+#include "SysfsGpio.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
