@@ -90,9 +90,13 @@ bool CEvohomeWeb::StartSession()
 	}
 	full_installation();
 	m_tcs = NULL;
-// always choose the first available system for now
-//	if (is_single_heating_system())
+// FIXME: always choose the first available system for now
+	if (!is_single_heating_system())
+		_log.Log(LOG_STATUS, "EvohomeWeb: WARNING: you appear to have multiple heating systems assigned to your Evohome account. We can currently only support one - autoselecting the system at [0,0,0]");
+	
+
 		m_tcs = &locations[0].gateways[0].temperatureControlSystems[0];
+
 
 	m_zones[0] = 0;
 	m_loggedon=true;
@@ -357,13 +361,13 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::map<std::string, std::string> zonedata;
 	Json::Value::Members keys1, keys2;
 	keys1 = (*hz->status).getMemberNames();
-	for (uint8_t i = 0; i < keys1.size(); ++i) {
+	for (size_t i = 0; i < keys1.size(); ++i) {
 		if ( (keys1[i]=="zoneId") || (keys1[i]=="name") )
 			zonedata[keys1[i]] = (*hz->status)[keys1[i]].asString();
 		else if ( (keys1[i]=="temperatureStatus") || (keys1[i]=="heatSetpointStatus") )
 		{
 			keys2 = (*hz->status)[keys1[i]].getMemberNames();
-			for (uint8_t j = 0; j < keys2.size(); ++j) {
+			for (size_t j = 0; j < keys2.size(); ++j) {
 				zonedata[keys2[j]] = (*hz->status)[keys1[i]][keys2[j]].asString();
 			}
 		}
@@ -451,7 +455,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
  */
 uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 {
-	uint8_t row;
+	size_t row;
 	if (m_zones[0] == 0) // first run - construct 
 	{
 		std::vector<std::vector<std::string> > result;
@@ -488,7 +492,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				if (DevRowIdx == -1)
 					return -1;
 				char devname[8];
-				sprintf(devname, "zone %u", row);
+				sprintf(devname, "zone %zu", row);
 				sprintf(ID, "%lu", evoID);
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q',DeviceID='%q' WHERE (ID == %" PRIu64 ")", devname, ID, DevRowIdx);
 				m_zones[row] = evoID;
@@ -649,7 +653,7 @@ bool CEvohomeWeb::user_account()
 	bool ret=jReader.parse(s_res.c_str(),j_account);
 
 	Json::Value::Members keys = j_account.getMemberNames();
-	for (uint8_t i = 0; i < keys.size(); ++i) {
+	for (size_t i = 0; i < keys.size(); ++i) {
 		account_info[keys[i]] = j_account[keys[i]].asString();
 	}
 
@@ -671,11 +675,11 @@ void CEvohomeWeb::get_zones(int location, int gateway, int temperatureControlSys
 	if (!(*j_tcs)["zones"].isArray())
 		return;
 
-	int l = (*j_tcs)["zones"].size();
-	for (int i = 0; i < l; ++i)
+	size_t l = (*j_tcs)["zones"].size();
+	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo =  &(*j_tcs)["zones"][i];
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = (*j_tcs)["zones"][i]["zoneId"].asString();
+		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo =  &(*j_tcs)["zones"][(int)(i)];
+		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = (*j_tcs)["zones"][(int)(i)]["zoneId"].asString();
 
 
 		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].systemId = locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].systemId;
@@ -693,11 +697,11 @@ void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 	if (!(*j_gw)["temperatureControlSystems"].isArray())
 		return;
 
-	int l = (*j_gw)["temperatureControlSystems"].size();
-	for (int i = 0; i < l; ++i)
+	size_t l = (*j_gw)["temperatureControlSystems"].size();
+	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo = &(*j_gw)["temperatureControlSystems"][i];
-		locations[location].gateways[gateway].temperatureControlSystems[i].systemId = (*j_gw)["temperatureControlSystems"][i]["systemId"].asString();
+		locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo = &(*j_gw)["temperatureControlSystems"][(int)(i)];
+		locations[location].gateways[gateway].temperatureControlSystems[i].systemId = (*j_gw)["temperatureControlSystems"][(int)(i)]["systemId"].asString();
 		locations[location].gateways[gateway].temperatureControlSystems[i].gatewayId = locations[location].gateways[gateway].gatewayId;
 		locations[location].gateways[gateway].temperatureControlSystems[i].locationId = locations[location].locationId;
 
@@ -714,11 +718,11 @@ void CEvohomeWeb::get_gateways(int location)
 	if (!(*j_loc)["gateways"].isArray())
 		return;
 
-	int l = (*j_loc)["gateways"].size();
-	for (int i = 0; i < l; ++i)
+	size_t l = (*j_loc)["gateways"].size();
+	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[i].installationInfo = &(*j_loc)["gateways"][i];
-		locations[location].gateways[i].gatewayId = (*j_loc)["gateways"][i]["gatewayInfo"]["gatewayId"].asString();
+		locations[location].gateways[i].installationInfo = &(*j_loc)["gateways"][(int)(i)];
+		locations[location].gateways[i].gatewayId = (*j_loc)["gateways"][(int)(i)]["gatewayInfo"]["gatewayId"].asString();
 		locations[location].gateways[i].locationId = locations[location].locationId;
 
 		get_temperatureControlSystems(location,i);
@@ -748,11 +752,11 @@ bool CEvohomeWeb::full_installation()
 	if (!j_fi["locations"].isArray())
 		return false; // invalid return
 
-	int l = j_fi["locations"].size();
-	for (int i = 0; i < l; ++i)
+	size_t l = j_fi["locations"].size();
+	for (size_t i = 0; i < l; ++i)
 	{
-		locations[i].installationInfo = &j_fi["locations"][i];
-		locations[i].locationId = j_fi["locations"][i]["locationInfo"]["locationId"].asString();
+		locations[i].installationInfo = &j_fi["locations"][(int)(i)];
+		locations[i].locationId = j_fi["locations"][(int)(i)]["locationInfo"]["locationId"].asString();
 
 		get_gateways(i);
 	}
@@ -770,7 +774,7 @@ bool CEvohomeWeb::get_status(std::string locationId)
 {
 	if (locations.size() == 0)
 		return false;
-	int i;
+	size_t i;
 	for (i = 0; i < (int)locations.size(); i++)
 	{
 		if (locations[i].locationId == locationId)
@@ -802,28 +806,28 @@ bool CEvohomeWeb::get_status(int location)
 	// get gateway status
 	if ((*j_loc)["gateways"].isArray())
 	{
-		int lgw = (*j_loc)["gateways"].size();
-		for (int igw = 0; igw < lgw; ++igw)
+		size_t lgw = (*j_loc)["gateways"].size();
+		for (size_t igw = 0; igw < lgw; ++igw)
 		{
-			locations[location].gateways[igw].status = &(*j_loc)["gateways"][igw];
+			locations[location].gateways[igw].status = &(*j_loc)["gateways"][(int)(igw)];
 			j_gw = locations[location].gateways[igw].status;
 
 			// get temperatureControlSystem status
 			if ((*j_gw)["temperatureControlSystems"].isArray())
 			{
-				int ltcs = (*j_gw)["temperatureControlSystems"].size();
-				for (int itcs = 0; itcs < ltcs; itcs++)
+				size_t ltcs = (*j_gw)["temperatureControlSystems"].size();
+				for (size_t itcs = 0; itcs < ltcs; itcs++)
 				{
-					locations[location].gateways[igw].temperatureControlSystems[itcs].status = &(*j_gw)["temperatureControlSystems"][itcs];
+					locations[location].gateways[igw].temperatureControlSystems[itcs].status = &(*j_gw)["temperatureControlSystems"][(int)(itcs)];
 					j_tcs = locations[location].gateways[igw].temperatureControlSystems[itcs].status;
 
 					// get zone status
 					if ((*j_tcs)["zones"].isArray())
 					{
-						int lz = (*j_tcs)["zones"].size();
-						for (int iz = 0; iz < lz; iz++)
+						size_t lz = (*j_tcs)["zones"].size();
+						for (size_t iz = 0; iz < lz; iz++)
 						{
-							locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][iz];
+							locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][(int)(iz)];
 						}
 					}
 					else
@@ -853,7 +857,7 @@ CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	uint8_t l;
+	size_t l;
 	for (l = 0; l < locations.size(); l++)
 	{
 		if (locations[l].locationId == locationId)
@@ -867,7 +871,7 @@ CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	uint8_t l,g;
+	size_t l,g;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -884,7 +888,7 @@ CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem
 {
 	if (locations.size() == 0)
 		full_installation();
-	uint8_t l,g,t;
+	size_t l,g,t;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -904,7 +908,7 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	uint8_t l,g,t,z;
+	size_t l,g,t,z;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -925,7 +929,7 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 
 CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_zone_temperatureControlSystem(CEvohomeWeb::zone* zone)
 {
-	uint8_t l,g,t,z;
+	size_t l,g,t,z;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -1005,9 +1009,9 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 		std::string s_wday = (std::string)weekdays[wday];
 		Json::Value* j_day;
 // find day
-		for (uint8_t i = 0; ( (i < schedule["dailySchedules"].size()) && !found); i++)
+		for (size_t i = 0; ( (i < schedule["dailySchedules"].size()) && !found); i++)
 		{
-			j_day = &schedule["dailySchedules"][i];
+			j_day = &schedule["dailySchedules"][(int)(i)];
 			if ( ((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_wday) )
 				found = true;
 		}
@@ -1015,9 +1019,9 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 			continue;
 
 		found=false;
-		for (uint8_t i = 0; ( (i < (*j_day)["switchpoints"].size()) && !found); ++i)
+		for (size_t i = 0; ( (i < (*j_day)["switchpoints"].size()) && !found); ++i)
 		{
-			sztime = (*j_day)["switchpoints"][i]["timeOfDay"].asString();
+			sztime = (*j_day)["switchpoints"][(int)(i)]["timeOfDay"].asString();
 			ltime.tm_isdst = -1;
 			ltime.tm_year = year;
 			ltime.tm_mon = month;
@@ -1029,7 +1033,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 			if (ntime > now)
 				found = true;
 			else
-				current_setpoint = (*j_day)["switchpoints"][i]["temperature"].asString();
+				current_setpoint = (*j_day)["switchpoints"][(int)(i)]["temperature"].asString();
 		}
 	}
 	char rdata[30];
