@@ -1,7 +1,6 @@
 define(['app'], function (app) {
     app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', '$window', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, $window, livesocket) {
         livesocket.Init();
-        //livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name"); // debug
 
         var ctrl = this;
         ctrl.temperatures = [];
@@ -195,7 +194,6 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-/*
             livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
 			    if (typeof data == "string") {
 			        data = JSON.parse(data);
@@ -210,7 +208,9 @@ define(['app'], function (app) {
 			        ctrl.temperatures = [];
 			    }
 			});
-*/
+/*
+          // RK, this was the old ajax call. It is replaced by the getJson call above
+          //       This makes it receive update events
 		  $.ajax({
 			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
 			 async: false,
@@ -227,7 +227,7 @@ define(['app'], function (app) {
 			  }
 			 }
 		  });
-
+*/
           $('#modal').hide();
 			$('#temptophtm').show();
 			$('#temptophtm').i18n();
@@ -610,11 +610,11 @@ define(['app'], function (app) {
 					        var newitem = json.item;
 					        // Change updated items in temperatures list
 					        // TODO is there a better way to do this ?
-					        console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx);
+					        // console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx); // (debug info)
 					        if (ctrl.item.idx == newitem.idx) {
-					            console.log("item found");
+					            // console.log("item found"); // (debug info)
 					            ctrl.item = newitem;
-					            if (true || $scope.config.ShowUpdatedEffect == true) {
+                                if ($scope.$parent.config.ShowUpdatedEffect == true && $("#tempwidgets #" + newitem.idx).length > 0) {
 					                $("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 					            }
 					        }

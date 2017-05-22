@@ -141,7 +141,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 								$rootScope.$broadcast('jsonupdate', data);
 							};
 						}
-						var use_http = !(url.substr(0, 9) == "json.htm?"); // && url.match(/type=devices/));
+						var use_http = !(url.substr(0, 9) == "json.htm?");
 						if (use_http) {
 							// get via json get
 							url = "http://localhost:8080/" + url; // todo, test
@@ -184,23 +184,23 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					this.websocket.$on('$close', function () {
 					    // alert("websocket closed");
 					});
-					this.websocket.$on('$message', function (msg) {
+                    this.websocket.$on('$message', function (msg) {
 					    if (typeof msg == "string") {
 					        msg = JSON.parse(msg);
 					    }
 					    switch (msg.event) {
 					        case "notification":
-					            notifyMe('From Domoticz', msg.Text);
+					            notifyMe(msg.Subject, msg.Text);
 					            return;
                         }
                         var requestid = msg.requestid;
-						if (requestid >= 0) {
+                        if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
 							var data = msg.data || msg;
 							if (typeof data == "string") {
 							    data = JSON.parse(data);
-							}
+                            }
 							callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
 						}
 						else {
@@ -238,9 +238,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						fn.call(this, json);
 					});
 					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
-					var requestid = this.websocket.callbackqueue.length - 1;
-					var content = requestid + "/" + settings.url.substr(9);
-					this.Send(content);
+                    var requestid = this.websocket.callbackqueue.length - 1;
+                    var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
+                    var content = JSON.stringify(requestobj);
+					this.Send(requestobj);
 					return defer_object.promise();
 				}
 		}}]);

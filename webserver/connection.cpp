@@ -318,16 +318,19 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					request_.host_address = request_.host_address.substr(7);
 				}
 				request_handler_.handle_request(request_, reply_);
-				MyWrite(reply_.to_string(request_.method));
 				if (reply_.status == reply::switching_protocols) {
 					// this was an upgrade request
 					connection_type = connection_websocket;
 					// from now on we are a persistant connection
 					keepalive_ = true;
 					websocket_parser.Start();
-					// keep sessionid to access our session during websockets requests
-					// todo: websocket_handler.store_session_id(request_, reply_);
+					websocket_parser.GetHandler()->store_session_id(request_, reply_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
+				}
+				MyWrite(reply_.to_string(request_.method));
+				if (reply_.status == reply::switching_protocols) {
+					// this was an upgrade request, set this value after MyWrite to allow the 101 response to go out
+					connection_type = connection_websocket;
 				}
 				if (keepalive_) {
 					read_more();

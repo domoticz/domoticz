@@ -46,16 +46,17 @@ namespace http {
 		public:
 			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler);
 			~CWebsocket();
-			boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
-			void SendClose(const std::string &packet_data);
-			void SendPing();
-			void Start();
-			void Stop();
+			virtual boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
+			virtual void SendClose(const std::string &packet_data);
+			virtual void SendPing();
+			virtual void Start();
+			virtual void Stop();
+			virtual CWebsocketHandler *GetHandler();
 		private:
-			void OnReceiveText(const std::string &packet_data);
-			void OnReceiveBinary(const std::string &packet_data);
-			void OnPong(const std::string &packet_data);
-			void SendPong(const std::string &packet_data);
+			virtual void OnReceiveText(const std::string &packet_data);
+			virtual void OnReceiveBinary(const std::string &packet_data);
+			virtual void OnPong(const std::string &packet_data);
+			virtual void SendPong(const std::string &packet_data);
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;

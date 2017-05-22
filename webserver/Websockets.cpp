@@ -266,5 +266,10 @@ void CWebsocket::Stop()
 	handler->Stop();
 }
 
+CWebsocketHandler * CWebsocket::GetHandler()
+{
+	return handler;
+}
+
 }
 }

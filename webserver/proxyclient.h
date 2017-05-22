@@ -67,7 +67,7 @@ namespace http {
 			std::string compute_accept_header(const std::string &websocket_key);
 			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
-			void WS_Write(long requestid, const std::string &packet_data);
+			void WS_Write(long handlerid, const std::string &packet_data);
 			void SocketWrite(ProxyPdu *pdu);
 			/// make sure we only write one packet at a time
 			boost::mutex writeMutex;

@@ -19,9 +19,9 @@ namespace http {
 			virtual void Stop();
 			virtual void OnDeviceChanged(const unsigned long long DeviceRowIdx);
 			virtual void OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification);
+			virtual void store_session_id(const request &req, const reply &rep);
 		protected:
 			boost::function<void(const std::string &packet_data)> MyWrite;
-			void store_session_id(const request &req, const reply &rep);
 			std::string sessionid;
 			cWebem* myWebem;
 			CWebSocketPush m_Push;

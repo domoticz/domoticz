@@ -2,15 +2,13 @@
 #include "WebsocketHandler.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include "../main/localtime_r.h"
 #include "../push/WebsocketPush.h"
 #include "../json/json.h"
 #include "cWebem.h"
 
 namespace http {
 	namespace server {
-
-		// forward declaration
-		std::string CreateFrame(opcodes opcode, const std::string &payload);
 
 		CWebsocketHandler::CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : m_Push(this)
 		{
@@ -31,20 +29,28 @@ namespace http {
 			Json::StyledWriter writer;
 			// todo: we now assume the session (still) exists
 			WebEmSession session;
-			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(session.id);
+			std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sessionid);
 			if (itt != myWebem->m_sessions.end()) {
 				session = itt->second;
 			}
-			if (session.rights <= 0) {
-				// of course we wont want this in the production code
-				session.rights = 1;
+			else if (myWebem->m_userpasswords.size() == 0) {
+					session.rights = 2;
+			}
+			else {
+				// todo: check: AreWeInLocalNetwork(). If yes, then session.rights = 2 without a session being setup.
+				return false;
 			}
 			req.method = "GET";
-			// Expected format of packet_data: "requestid/query-string" (including the quotes)
-			std::string data = packet_data.substr(1, packet_data.length() - 2); // json-decode, todo: include json.h
-			size_t_t pos = data.find("/");
-			std::string requestid = data.substr(0, pos);
-			std::string querystring = data.substr(pos + 1);
+			Json::Reader reader;
+			Json::Value value;
+			if (!reader.parse(packet_data, value)) {
+				return true;
+			}
+			if (value["event"] != "request") {
+				return true;
+			}
+			std::string requestid = value["requestid"].asString();
+			std::string querystring = value["query"].asString();
 			req.uri = "/json.htm?" + querystring;
 			req.http_version_major = 1;
 			req.http_version_minor = 1;
@@ -52,9 +58,11 @@ namespace http {
 			req.content.clear();
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
-					// todo: json_encode
+					if (requestid != "-1") {
+						int a = 1;
+					}
 					jsonValue["event"] = "response";
-					jsonValue["requestid"] = requestid;
+					jsonValue["requestid"] = boost::lexical_cast<long>(requestid);
 					jsonValue["data"] = rep.content;
 					std::string response = writer.write(jsonValue);
 					MyWrite(response);
@@ -78,7 +86,7 @@ namespace http {
 		}
 
 
-		// todo: move this function to websocket handler
+		// todo: not sure 
 		void CWebsocketHandler::store_session_id(const request &req, const reply &rep)
 		{
 			//Check cookie if still valid
@@ -88,60 +96,38 @@ namespace http {
 				std::string sSID;
 				std::string sAuthToken;
 				std::string szTime;
+				bool expired = false;
 
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
-				int fpos = scookie.find("SID=");
+				size_t fpos = scookie.find("SID=");
 				if (fpos != std::string::npos)
 				{
 					scookie = scookie.substr(fpos);
 					fpos = 0;
-					size_t_t epos = scookie.find(';');
+					size_t epos = scookie.find(';');
 					if (epos != std::string::npos)
 					{
 						scookie = scookie.substr(0, epos);
 					}
 				}
-				int upos = scookie.find("_", fpos);
-				int ppos = scookie.find(".", upos);
-
+				size_t upos = scookie.find("_", fpos);
+				size_t ppos = scookie.find(".", upos);
+				time_t now = mytime(NULL);
 				if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
 				{
 					sSID = scookie.substr(fpos + 4, upos - fpos - 4);
 					sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
 					szTime = scookie.substr(ppos + 1);
 
-					sessionid = sSID;
-				}
+					time_t stime;
+					std::stringstream sstr;
+					sstr << szTime;
+					sstr >> stime;
 
-				if (sessionid.empty()) {
-					for (unsigned int i = 0; i < rep.headers.size(); i++) {
-						if (boost::iequals(rep.headers[i].name, "Set-Cookie")) {
-							// Parse session id and its expiration date
-							scookie = rep.headers[i].value;
-							int fpos = scookie.find("SID=");
-							if (fpos != std::string::npos)
-							{
-								scookie = scookie.substr(fpos);
-								fpos = 0;
-								size_t_t epos = scookie.find(';');
-								if (epos != std::string::npos)
-								{
-									scookie = scookie.substr(0, epos);
-								}
-							}
-							int upos = scookie.find("_", fpos);
-							int ppos = scookie.find(".", upos);
-
-							if ((fpos != std::string::npos) && (upos != std::string::npos) && (ppos != std::string::npos))
-							{
-								sSID = scookie.substr(fpos + 4, upos - fpos - 4);
-								sAuthToken = scookie.substr(upos + 1, ppos - upos - 1);
-								szTime = scookie.substr(ppos + 1);
-
-								sessionid = sSID;
-							}
-						}
+					expired = stime < now;
+					if (!expired) {
+						sessionid = sSID;
 					}
 				}
 			}
@@ -150,7 +136,12 @@ namespace http {
 		void CWebsocketHandler::OnDeviceChanged(const unsigned long long DeviceRowIdx)
 		{
 			std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
-			std::string packet = "\"-1/" + query + "\"";
+			Json::Value request;
+			Json::StyledWriter writer;
+			request["event"] = "request";
+			request["requestid"] = "-1";
+			request["query"] = query;
+			std::string packet = writer.write(request);
 			Handle(packet);
 		}
 
@@ -159,8 +150,12 @@ namespace http {
 			Json::Value json;
 
 			json["event"] = "notification";
+			json["Subject"] = Subject;
 			json["Text"] = Text;
-			// todo: other parameters
+			json["ExtraData"] = ExtraData;
+			json["Priority"] = Priority;
+			json["Sound"] = Sound;
+			json["bFromNotification"] = bFromNotification;
 			std::string response = json.toStyledString();
 			MyWrite(response);
 		}
