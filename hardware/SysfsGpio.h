@@ -10,18 +10,17 @@ struct gpio_info
 {
 	int		pin_number;		// GPIO Pin number
 	int		read_value_fd;	// Fast read fd
+	int8_t	request_update;	// Request update
+	int8_t	db_state;		// Database Value
 	int8_t	value;			// GPIO pin Value
 	int8_t	direction;		// GPIO IN or OUT
 	int8_t	active_low;		// GPIO ActiveLow
 	int8_t	edge;			// GPIO int Edge
-	int8_t	read_value_fd;	// Fast read fd
-	int8_t	db_state;		// Database Value
 	int8_t	id1;			// Device id1
 	int8_t	id2;			// Device id2
 	int8_t	id3;			// Device id3
 	int8_t	id4;			// Device id4
 	int8_t	id_valid;		// Device valid
-	int8_t	request_update;	// Request update
 };
 
 class CSysfsGpio : public CDomoticzHardwareBase
