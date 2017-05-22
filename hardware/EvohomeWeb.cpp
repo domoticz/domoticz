@@ -473,7 +473,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 		}
 		m_zones[0] = 1;
 	}
-	unsigned char unit=1;
+	unsigned char unit=0;
 	for (row=1; row <= m_nMaxZones; row++)
 	{
 		unit++;
@@ -482,7 +482,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 	}
 	if (m_updatedev) // create/update and return the first free unit
 	{
-		unit=1;
+		unit=0;
 		for (row=1; row <= m_nMaxZones; row++)
 		{
 			unit++;
