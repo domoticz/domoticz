@@ -663,10 +663,10 @@ else()
 ENDIF(WiringPi)
 
 IF(EXISTS /sys/class/gpio)
-	message(STATUS "Sysfs GPIO is available")
+	message(STATUS "Sysfs gpio is available")
 	add_definitions(-DWITH_SYSFS_GPIO)
 ELSE()
-	message(STATUS "Sysfs GPIO is not available")
+	message(STATUS "Sysfs gpio is not available")
 ENDIF()
 
 
