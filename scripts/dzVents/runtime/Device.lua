@@ -287,57 +287,6 @@ local function Device(domoticz, data)
 		end
 	end
 
-	function self.kodiSwitchOff()
-		--return TimedCommand(domoticz, self.name, 'Play')
-		domoticz.sendCommand(self.name, 'Off')
-	end
-
-	function self.kodiStop()
-		--return TimedCommand(domoticz, self.name, 'Stop')
-		domoticz.sendCommand(self.name, 'Stop')
-	end
-
-	function self.kodiPlay()
-		--return TimedCommand(domoticz, self.name, 'Play')
-		domoticz.sendCommand(self.name, 'Play')
-	end
-
-	function self.kodiPause()
-		--return TimedCommand(domoticz, self.name, 'Pause')
-		domoticz.sendCommand(self.name, 'Pause')
-	end
-
-	function self.kodiSetVolume(value)
-
-		if (value<0 or value > 100) then
-
-			utils.log('Volume must be between 0 and 100. Value = ' .. tostring(value) , utils.LOG_ERROR)
-
-		else
-			--return TimedCommand(domoticz, self.name, 'Pause')
-			domoticz.sendCommand(self.name, 'Set Volume ' .. tostring(value))
-		end
-
-	end
-
-	function self.kodiPlayPlaylist(name, position)
-		if (position == nil) then
-			position = 0
-		end
-		domoticz.sendCommand(self.name, 'Play Playlist ' .. tostring(name) .. ' ' .. tostring(position))
-	end
-
-	function self.kodiPlayFavorites(position)
-		if (position == nil) then
-			position = 0
-		end
-		domoticz.sendCommand(self.name, 'Play Favorites ' .. tostring(position))
-	end
-
-	function self.kodiExecuteAddOn(addonId)
-		domoticz.sendCommand(self.name, 'Execute ' .. tostring(addonId))
-	end
-
 	function self.attributeChanged(attribute)
 		-- returns true if an attribute is marked as changed
 		return (changedAttributes[attribute] == true)
@@ -385,7 +334,7 @@ local function Device(domoticz, data)
 		local adapter = adapters.getDeviceAdapter(self)
 
 		-- apply the adapter
-		adapter.process(self, data, domoticz)
+		adapter.process(self, data, domoticz, utils)
 
 	elseif (data.baseType == 'group' or data.baseType == 'scene') then
 		state = data.data._state

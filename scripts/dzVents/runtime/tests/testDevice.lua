@@ -11,7 +11,17 @@ local LOG_INFO = 2
 local LOG_DEBUG = 3
 local LOG_ERROR = 1
 
-local function getDevice_(domoticz, name, state, changed, type, subType, rawData, additionalRootData, additionalDataData)
+local function getDevice_(
+	domoticz,
+	name,
+	state,
+	changed,
+	type,
+	subType,
+	rawData,
+	additionalRootData,
+	additionalDataData,
+	hardwareType)
 
 	local Device = require('Device')
 
@@ -31,6 +41,10 @@ local function getDevice_(domoticz, name, state, changed, type, subType, rawData
 		additionalDataData = {}
 	end
 
+	if (hardwareType == nil) then
+		hardwareType = 'ht1'
+	end
+
 	local data = {
 		["id"] = 1,
 		["name"] = name,
@@ -40,7 +54,7 @@ local function getDevice_(domoticz, name, state, changed, type, subType, rawData
 		["deviceType"] = type and type or "someSubType",
 		["subType"] = subType and subType or "someDeviceType",
 		["hardwareName"] = "hw1",
-		["hardwareType"] = "ht1",
+		["hardwareType"] = hardwareType,
 		["hardwareTypeID"] = 0,
 		["hardwareTypeValue"] = 1,
 		["hardwareID"] = 1,
@@ -77,7 +91,8 @@ local function getDevice(domoticz, options)
 		options.subType,
 		options.rawData,
 		options.additionalRootData,
-		options.additionalDataData)
+		options.additionalDataData,
+		options.hardwareType)
 
 end
 
@@ -237,6 +252,88 @@ describe('device', function()
 			device.updateAirQuality(44)
 			assert.is_same({ { ["UpdateDevice"] = "1|44" } }, commandArray)
 		end)
+
+		describe('Kodi', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'bla',
+				['hardwareType'] = 'Kodi Media Server'
+			})
+
+			it('should switchOff', function()
+				device.kodiSwitchOff()
+				assert.is_same({ { ['myDevice'] = 'Off' } }, commandArray)
+			end)
+
+			it('should stop', function()
+				device.kodiStop()
+				assert.is_same({ { ['myDevice'] = 'Stop' } }, commandArray)
+			end)
+
+			it('should play', function()
+				device.kodiPlay()
+				assert.is_same({ { ['myDevice'] = 'Play' } }, commandArray)
+			end)
+
+			it('should pause', function()
+				device.kodiPause()
+				assert.is_same({ { ['myDevice'] = 'Pause' } }, commandArray)
+			end)
+
+			it('should set volume', function()
+				device.kodiSetVolume(22)
+				assert.is_same({ { ['myDevice'] = 'Set Volume 22' } }, commandArray)
+			end)
+
+			it('should not set volume if not in range', function()
+				local msg, tp
+				local utils = device._getUtilsInstance()
+
+				utils.log = function(message, type)
+					msg = message
+					tp = type
+				end
+				device.kodiSetVolume(101)
+
+				assert.is_same({}, commandArray)
+				assert.is_same('Volume must be between 0 and 100. Value = 101', msg)
+				assert.is_same(LOG_ERROR, tp)
+
+				tp = ''
+				msg = ''
+
+				device.kodiSetVolume(-1)
+				assert.is_same({}, commandArray)
+				assert.is_same('Volume must be between 0 and 100. Value = -1', msg)
+				assert.is_same(LOG_ERROR, tp)
+			end)
+
+			it('should play a playlist', function()
+				device.kodiPlayPlaylist('daList', 12)
+				assert.is_same({ { ['myDevice'] = 'Play Playlist daList 12' } }, commandArray)
+
+				commandArray = {}
+				device.kodiPlayPlaylist('daList')
+				assert.is_same({ { ['myDevice'] = 'Play Playlist daList 0' } }, commandArray)
+			end)
+
+			it('should play favorites', function()
+				device.kodiPlayFavorites(12)
+				assert.is_same({ { ['myDevice'] = 'Play Favorites 12' } }, commandArray)
+
+				commandArray = {}
+
+				device.kodiPlayFavorites()
+				assert.is_same({ { ['myDevice'] = 'Play Favorites 0' } }, commandArray)
+			end)
+
+			it('should execute an addon', function()
+				device.kodiExecuteAddOn('daAddOn')
+				assert.is_same({ { ['myDevice'] = 'Execute daAddOn' } }, commandArray)
+			end)
+		end)
+
 	end)
 
 	it('should instantiate', function()
@@ -355,81 +452,7 @@ describe('device', function()
 		assert.is_same({["myDevice"]="Set Level 15"}, cmd._latest)
 	end)
 
-	describe('Kodi', function()
 
-		it('should switchOff', function()
-			device.kodiSwitchOff()
-			assert.is_same({{['myDevice']='Off'}}, commandArray)
-		end)
-
-		it('should stop', function()
-			device.kodiStop()
-			assert.is_same({ { ['myDevice'] = 'Stop' } }, commandArray)
-		end)
-
-		it('should play', function()
-			device.kodiPlay()
-			assert.is_same({ { ['myDevice'] = 'Play' } }, commandArray)
-		end)
-
-		it('should pause', function()
-			device.kodiPause()
-			assert.is_same({ { ['myDevice'] = 'Pause' } }, commandArray)
-		end)
-
-		it('should set volume', function()
-			device.kodiSetVolume(22)
-			assert.is_same({ { ['myDevice'] = 'Set Volume 22' } }, commandArray)
-		end)
-
-		it('should not set volume if not in range', function()
-			local msg, tp
-			local utils = device._getUtilsInstance()
-
-			utils.log = function (message, type)
-				msg = message
-				tp = type
-			end
-			device.kodiSetVolume(101)
-
-			assert.is_same( {}, commandArray)
-			assert.is_same('Volume must be between 0 and 100. Value = 101', msg)
-			assert.is_same(LOG_ERROR, tp)
-
-			tp = ''
-			msg = ''
-
-			device.kodiSetVolume(-1)
-			assert.is_same({}, commandArray)
-			assert.is_same('Volume must be between 0 and 100. Value = -1', msg)
-			assert.is_same(LOG_ERROR, tp)
-		end)
-
-		it('should play a playlist', function()
-			device.kodiPlayPlaylist('daList', 12)
-			assert.is_same({ { ['myDevice'] = 'Play Playlist daList 12' } }, commandArray)
-
-			commandArray = {}
-			device.kodiPlayPlaylist('daList')
-			assert.is_same({ { ['myDevice'] = 'Play Playlist daList 0' } }, commandArray)
-		end)
-
-		it('should play favorites', function()
-			device.kodiPlayFavorites(12)
-			assert.is_same({ { ['myDevice'] = 'Play Favorites 12' } }, commandArray)
-
-			commandArray = {}
-
-			device.kodiPlayFavorites()
-			assert.is_same({ { ['myDevice'] = 'Play Favorites 0' } }, commandArray)
-		end)
-
-		it('should execute an addon', function()
-			device.kodiExecuteAddOn('daAddOn')
-			assert.is_same({ { ['myDevice'] = 'Execute daAddOn' } }, commandArray)
-		end)
-
-	end)
 
 	describe('Updating', function()
 		it('should send generic update commands', function()

@@ -9,7 +9,8 @@ local deviceAdapters = {
 	'thermostat_setpoint_device',
 	'text_device',
 	'rain_device',
-	'airquality_device'
+	'airquality_device',
+	'kodi_device'
 }
 local fallBackDeviceAdapter = genericAdapter
 
