@@ -357,13 +357,13 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::map<std::string, std::string> zonedata;
 	Json::Value::Members keys1, keys2;
 	keys1 = (*hz->status).getMemberNames();
-	for (int i = 0; i < keys1.size(); ++i) {
+	for (uint8_t i = 0; i < keys1.size(); ++i) {
 		if ( (keys1[i]=="zoneId") || (keys1[i]=="name") )
 			zonedata[keys1[i]] = (*hz->status)[keys1[i]].asString();
 		else if ( (keys1[i]=="temperatureStatus") || (keys1[i]=="heatSetpointStatus") )
 		{
 			keys2 = (*hz->status)[keys1[i]].getMemberNames();
-			for (int j = 0; j < keys2.size(); ++j) {
+			for (uint8_t j = 0; j < keys2.size(); ++j) {
 				zonedata[keys2[j]] = (*hz->status)[keys1[i]][keys2[j]].asString();
 			}
 		}
@@ -649,8 +649,7 @@ bool CEvohomeWeb::user_account()
 	bool ret=jReader.parse(s_res.c_str(),j_account);
 
 	Json::Value::Members keys = j_account.getMemberNames();
-	size_t n = keys.size();
-	for (int i = 0; i < keys.size(); ++i) {
+	for (uint8_t i = 0; i < keys.size(); ++i) {
 		account_info[keys[i]] = j_account[keys[i]].asString();
 	}
 
@@ -854,7 +853,7 @@ CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	unsigned int l;
+	uint8_t l;
 	for (l = 0; l < locations.size(); l++)
 	{
 		if (locations[l].locationId == locationId)
@@ -868,7 +867,7 @@ CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	unsigned int l,g;
+	uint8_t l,g;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -885,7 +884,7 @@ CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem
 {
 	if (locations.size() == 0)
 		full_installation();
-	unsigned int l,g,t;
+	uint8_t l,g,t;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -905,7 +904,7 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 {
 	if (locations.size() == 0)
 		full_installation();
-	unsigned int l,g,t,z;
+	uint8_t l,g,t,z;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -926,7 +925,7 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 
 CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_zone_temperatureControlSystem(CEvohomeWeb::zone* zone)
 {
-	unsigned int l,g,t,z;
+	uint8_t l,g,t,z;
 	for (l = 0; l < locations.size(); l++)
 	{
 		for (g = 0; g < locations[l].gateways.size(); g++)
@@ -996,19 +995,17 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 	int month = ltime.tm_mon;
 	int day = ltime.tm_mday;
 	std::string sztime;
-	int d, i;
 	bool found=false;
 	Json::Value* j_day;
 
-	for (d = 0; ((d < 7) && !found); d++)
+	for (uint8_t d = 0; ((d < 7) && !found); d++)
 	{
 
 		int wday = (ltime.tm_wday + d) % 7;
 		std::string s_wday = (std::string)weekdays[wday];
 		Json::Value* j_day;
 // find day
-		Json::Value::Members keys;
-		for (int i = 0; ( (i < schedule["dailySchedules"].size()) && !found); i++)
+		for (uint8_t i = 0; ( (i < schedule["dailySchedules"].size()) && !found); i++)
 		{
 			j_day = &schedule["dailySchedules"][i];
 			if ( ((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_wday) )
@@ -1018,7 +1015,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 			continue;
 
 		found=false;
-		for (int i = 0; ( (i < (*j_day)["switchpoints"].size()) && !found); ++i)
+		for (uint8_t i = 0; ( (i < (*j_day)["switchpoints"].size()) && !found); ++i)
 		{
 			sztime = (*j_day)["switchpoints"][i]["timeOfDay"].asString();
 			ltime.tm_isdst = -1;
