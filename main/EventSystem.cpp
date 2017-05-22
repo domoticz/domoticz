@@ -2632,7 +2632,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "rawData");
 		lua_createtable(lua_state, 0, 0);
 
-		for (int index2 = 0; index2<strarray.size(); index2++)
+		for (UINT8 index2 = 0; index2<strarray.size(); index2++)
 		{
 			lua_pushnumber(lua_state, (lua_Number)index2+1);
 			lua_pushstring(lua_state, strarray[index2].c_str());
