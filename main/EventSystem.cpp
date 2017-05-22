@@ -2477,7 +2477,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 #endif // ENABLE_PYTHON
 
 
-void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID)
+void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_devicestatesMutex);
 	int additional_lines = 0;
@@ -2496,7 +2496,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
-	_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
+	//_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
 
 	struct tm ntime;
 	time_t checktime;
@@ -2697,207 +2697,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_rawset(lua_state, -3);
 		}
 
-		// This next bit *should* be superceeded by data from the JSON call,
-		// co comment out for now.
-/*
-		if (("Heating" == dev_type) && ("Zone" == sub_type))
-		{
-			lua_pushstring(lua_state, "setPoint");
-			lua_pushstring(lua_state, strarray[1].c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "heatingMode");
-			lua_pushstring(lua_state, strarray[2].c_str());
-			lua_rawset(lua_state, -3);
-		}
-
-
-		if (("General" == dev_type) && ("kWh" == sub_type))
-		{
-			lua_pushstring(lua_state, "whTotal");
-			lua_pushstring(lua_state, strarray[1].c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "whActual");
-			lua_pushstring(lua_state, strarray[0].c_str());
-			lua_rawset(lua_state, -3);
-		}
-
-		if (("Usage" == dev_type) && ("Electric" == sub_type))
-		{
-			lua_pushstring(lua_state, "wActual");
-			lua_pushstring(lua_state, strarray[0].c_str());
-			lua_rawset(lua_state, -3);
-		}
-
-		if (("P1 Smart Meter" == dev_type) && ("Energy" == sub_type))
-		{
-			lua_pushstring(lua_state, "wActual");
-			lua_pushstring(lua_state, strarray[4].c_str());
-			lua_rawset(lua_state, -3);
-		}
-
-		if (("Thermostat" == dev_type) && ("SetPoint" == sub_type))
-		{
-			lua_pushstring(lua_state, "setPoint");
-			lua_pushstring(lua_state, strarray[0].c_str());
-			lua_rawset(lua_state, -3);
-		}
-
-		if (m_tempValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_tempValuesByID.find(sitem.ID);
-			if (it != m_tempValuesByID.end())
-			{
-				lua_pushstring(lua_state, "temperature");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_dewValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_dewValuesByID.find(sitem.ID);
-			if (it != m_dewValuesByID.end())
-			{
-				lua_pushstring(lua_state, "dewPoint");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_humValuesByID.size() > 0)
-		{
-			std::map<uint64_t, int>::iterator it;
-			it = m_humValuesByID.find(sitem.ID);
-			if (it != m_humValuesByID.end())
-			{
-				lua_pushstring(lua_state, "humidity");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_baroValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_baroValuesByID.find(sitem.ID);
-			if (it != m_baroValuesByID.end())
-			{
-				lua_pushstring(lua_state, "pressure");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_utilityValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_utilityValuesByID.find(sitem.ID);
-			if (it != m_utilityValuesByID.end())
-			{
-				lua_pushstring(lua_state, "utility");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_rainValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_rainValuesByID.find(sitem.ID);
-			if (it != m_rainValuesByID.end())
-			{
-				lua_pushstring(lua_state, "rain");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_rainLastHourValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_rainLastHourValuesByID.find(sitem.ID);
-			if (it != m_rainLastHourValuesByID.end())
-			{
-				lua_pushstring(lua_state, "rainLastHour");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_uvValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_uvValuesByID.find(sitem.ID);
-			if (it != m_uvValuesByID.end())
-			{
-				lua_pushstring(lua_state, "uv");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_winddirValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_winddirValuesByID.find(sitem.ID);
-			if (it != m_winddirValuesByID.end())
-			{
-				lua_pushstring(lua_state, "windDir");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_windspeedValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_windspeedValuesByID.find(sitem.ID);
-			if (it != m_windspeedValuesByID.end())
-			{
-				lua_pushstring(lua_state, "windSpeed");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_windgustValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_windgustValuesByID.find(sitem.ID);
-			if (it != m_windgustValuesByID.end())
-			{
-				lua_pushstring(lua_state, "windGust");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_weatherValuesByID.size() > 0)
-		{
-			std::map<uint64_t, float>::iterator it;
-			it = m_weatherValuesByID.find(sitem.ID);
-			if (it != m_weatherValuesByID.end())
-			{
-				lua_pushstring(lua_state, "weather");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-
-		if (m_zwaveAlarmValuesByID.size() > 0)
-		{
-			std::map<uint64_t, int>::iterator it;
-			it = m_zwaveAlarmValuesByID.find(sitem.ID);
-			if (it != m_zwaveAlarmValuesByID.end())
-			{
-				lua_pushstring(lua_state, "zwaveAlarm");
-				lua_pushnumber(lua_state, (lua_Number)it->second);
-				lua_rawset(lua_state, -3);
-			}
-		}
-*/
 
 		// Now see if we have additional fields from the JSON data
 		Json::ArrayIndex rsize = tempjson["result"].size();
@@ -2916,16 +2715,15 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 					{
 						lua_pushstring(lua_state, value.c_str());
 					}
-
-					if (JsonLuaMap[ii].szType == "float")
+					else if (JsonLuaMap[ii].szType == "float")
 					{
 						lua_pushnumber(lua_state, atof(value.c_str()));
 					}
-					if (JsonLuaMap[ii].szType == "integer")
+					else if (JsonLuaMap[ii].szType == "integer")
 					{
 						lua_pushnumber(lua_state, atoi(value.c_str()));
 					}
-					if (JsonLuaMap[ii].szType == "boolean")
+					else if (JsonLuaMap[ii].szType == "boolean")
 					{
 						if (value.c_str() == "true")
 						{
@@ -2935,6 +2733,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 						{
 							lua_pushboolean(lua_state, false);
 						}
+					}
+					else
+					{
+						lua_pushstring(lua_state, "unknown_type");
 					}
 					lua_rawset(lua_state, -3);
 				}
@@ -3028,6 +2830,16 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "changed");
+		if (uvitem.ID == varID)
+		{
+			lua_pushboolean(lua_state, true);
+		}
+		else
+		{
+			lua_pushboolean(lua_state, false);
+		}
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
@@ -3547,7 +3359,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	ExportDeviceStatesToLua(lua_state);
 
-	ExportDomoticzDataToLua(lua_state, DeviceID);
+	ExportDomoticzDataToLua(lua_state, DeviceID, varId);
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
