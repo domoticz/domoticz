@@ -473,22 +473,26 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 		}
 		m_zones[0] = 1;
 	}
+	unsigned char unit=1;
 	for (row=1; row <= m_nMaxZones; row++)
 	{
+		unit++;
 		if (m_zones[row] == evoID)
-			return row;
+			return (uint8_t)(unit);
 	}
 	if (m_updatedev) // create/update and return the first free unit
 	{
+		unit=1;
 		for (row=1; row <= m_nMaxZones; row++)
 		{
+			unit++;
 			if (m_zones[row] == 0)
 			{
 				std::string sdevname;
 				unsigned long nid=92000+row;
 				char ID[40];
 				sprintf(ID, "%lu", nid);
-				uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID,ID,row,pTypeEvohomeZone,sTypeEvohomeZone,10,255,0,"0.0;0.0;Auto",sdevname);
+				uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID,ID,unit,pTypeEvohomeZone,sTypeEvohomeZone,10,255,0,"0.0;0.0;Auto",sdevname);
 				if (DevRowIdx == -1)
 					return -1;
 				char devname[8];
@@ -496,7 +500,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				sprintf(ID, "%lu", evoID);
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q',DeviceID='%q' WHERE (ID == %" PRIu64 ")", devname, ID, DevRowIdx);
 				m_zones[row] = evoID;
-				return row;
+				return (uint8_t)(unit);
 			}
 		}
 		_log.Log(LOG_ERROR,"EvohomeWeb: cannot add new zone because you have no free zones left");
@@ -1000,11 +1004,9 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 	int day = ltime.tm_mday;
 	std::string sztime;
 	bool found=false;
-	Json::Value* j_day;
 
 	for (uint8_t d = 0; ((d < 7) && !found); d++)
 	{
-
 		int wday = (ltime.tm_wday + d) % 7;
 		std::string s_wday = (std::string)weekdays[wday];
 		Json::Value* j_day;
