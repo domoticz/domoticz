@@ -95,7 +95,7 @@
 	that will make poll(2) on the "value" file return.
 
 	This file exists only if the pin can be configured as an
-	interrupt generating input pin.
+	interrupt generating input pin.SysfsGpio
 
 	"active_low" ... reads as either 0 (false) or 1 (true). Write
 	any nonzero value to invert the value attribute both
@@ -236,7 +236,7 @@ void CSysfsGpio::Do_Work()
 		GpioSavedState[i].read_value_fd = open(path, O_RDONLY);
 	}
 
-	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller started, inputs:%d outputs:%d", input_count, output_count);
+	_log.Log(LOG_STATUS, "SysfsGpio: Input poller started, inputs:%d outputs:%d", input_count, output_count);
 
 	while (!m_stoprequested)
 	{
@@ -261,7 +261,7 @@ void CSysfsGpio::Do_Work()
 
 			if (result.size() > 0)
 			{
-				_log.Log(LOG_STATUS, "SysfsGPIO: Update master devices");
+				_log.Log(LOG_STATUS, "SysfsGpio: Update master devices");
 				UpdateDomoticzInputs(true);
 			}
 		}
@@ -287,7 +287,7 @@ void CSysfsGpio::Do_Work()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller stopped");
+	_log.Log(LOG_STATUS, "SysfsGpio: Input poller stopped");
 }
 
 void CSysfsGpio::Init()
