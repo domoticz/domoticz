@@ -162,7 +162,7 @@ define(['app'], function (app) {
 			}
 			$('#modal').show();
 
-            livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+            livesocket.getJson("json.htm?type=devices&filter=weather&used=true&order=Name", function (data) {
                 if (typeof data.result != 'undefined') {
                     if (typeof data.ActTime != 'undefined') {
                         $.LastUpdateTime = parseInt(data.ActTime);
