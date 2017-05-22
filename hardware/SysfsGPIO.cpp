@@ -236,7 +236,7 @@ void CSysfsGpio::Do_Work()
 		GpioSavedState[i].read_value_fd = open(path, O_RDONLY);
 	}
 
-	_log.Log(LOG_STATUS, "CSysfsGpio: Input poller started, inputs:%d outputs:%d", input_count, output_count);
+	_log.Log(LOG_STATUS, "CSysfsGpio: Input poller started, Inputs:%d Outputs:%d", input_count, output_count);
 
 	while (!m_stoprequested)
 	{
