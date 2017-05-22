@@ -37,7 +37,7 @@
         <Value type="byte" index="7" genre="config" label="Pulse Threshold high" units="" min="1" max="113" value="5" size="1">
             <Help>High detection threshold for wheel meters.</Help>
         </Value>
-        <Value type="int" index="8" genre="config" label="Wake up interval" units="seconds" min="0" max="113" value="3" size="2" read_only="true">
+        <Value type="int" index="8" genre="config" label="Wake up interval" units="seconds" min="0" max="113" value="3" size="4" read_only="true">
             <Help>Do not use. Set this value using WAKE_UP_INTERVAL_SET instead.</Help>
         </Value>
         <Value type="int" index="9" genre="config" label="Pulse count" units="" size="4" min="0" max="2147483647" value="0">
