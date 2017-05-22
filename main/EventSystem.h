@@ -100,7 +100,7 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
-	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID);
+	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 
 private:
