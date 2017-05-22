@@ -26,7 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
-#include "../hardware/SysfsGPIO.h"
+#include "../hardware/SysfsGpio.h"
 #include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -351,7 +351,7 @@ namespace http {
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
-                        RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
+			RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
@@ -886,16 +886,16 @@ namespace http {
 			}
 		}
 
-                void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
-                {
-                        std::string sValue;
+		void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string sValue;
 			root["status"] = "OK";
-                        root["title"] = "GetTitle";
-                        if (m_sql.GetPreferencesVar("Title", sValue))
-                                root["Title"] = sValue;
+			root["title"] = "GetTitle";
+			if (m_sql.GetPreferencesVar("Title", sValue))
+			root["Title"] = sValue;
 			else
 				root["Title"] = "Domoticz";
-                }
+		}
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -993,7 +993,7 @@ namespace http {
 				}
 #endif
 #ifndef WITH_SYSFS_GPIO
-				if (ii == HTYPE_SysfsGPIO)
+				if (ii == HTYPE_SysfsGpio)
 				{
 					bDoAdd = false;
 				}
@@ -1083,11 +1083,11 @@ namespace http {
 				if (sport.empty())
 					return; //need to have a serial port
 
-                                if (htype == HTYPE_TeleinfoMeter) {
-                                        // Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
-                                        // Domoticz instance are very low as both are national standards (NL and FR)
-                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
-                                }
+				if (htype == HTYPE_TeleinfoMeter) {
+					// Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
+					// Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -1112,11 +1112,11 @@ namespace http {
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
-                                if (htype == HTYPE_ECODEVICES) {
-                                        // EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
-                                        // Domoticz instance are very low as both are national standards (NL and FR)
-                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
-                                }
+				if (htype == HTYPE_ECODEVICES) {
+					// EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
+					// Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
 			}
 			else if (htype == HTYPE_DomoticzInternal)	{
 				// DomoticzInternal cannot be added manually
@@ -1257,7 +1257,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_SysfsGPIO) {
+			else if (htype == HTYPE_SysfsGpio) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
@@ -1589,7 +1589,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_SysfsGPIO) {
+			else if (htype == HTYPE_SysfsGpio) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -3618,7 +3618,7 @@ namespace http {
 							(Type == HTYPE_ZIBLUETCP) ||
 							(Type == HTYPE_OpenWebNetTCP) ||
 							(Type == HTYPE_OpenWebNetUSB) ||
-							(Type == HTYPE_SysfsGPIO))
+							(Type == HTYPE_SysfsGpio))
 						{
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
@@ -3660,8 +3660,8 @@ namespace http {
 				//used by Add Manual Light/Switch dialog
 				root["title"] = "GetSysfsGpio";
 #ifdef WITH_SYSFS_GPIO
-				std::vector<int> gpio_ids = CSysfsGPIO::GetGpioIds();
-				std::vector<std::string> gpio_names = CSysfsGPIO::GetGpioNames();
+				std::vector<int> gpio_ids = CSysfsGpio::GetGpioIds();
+				std::vector<std::string> gpio_names = CSysfsGpio::GetGpioNames();
 
 				if (gpio_ids.size() == 0) {
 					root["status"] = "ERROR";
@@ -4180,17 +4180,17 @@ namespace http {
 						return;
 					}
 
-					CSysfsGPIO *pSysfsGpio = (CSysfsGPIO *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					CSysfsGpio *pSysfsGpio = (CSysfsGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 
 					if (pSysfsGpio == NULL) {
 						root["status"] = "ERROR";
-						root["message"] = "Could not retrieve SysfsGPIO hardware pointer";
+						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
 						return;
 					}
 
-					if (pSysfsGpio->HwdType != HTYPE_SysfsGPIO) {
+					if (pSysfsGpio->HwdType != HTYPE_SysfsGpio) {
 						root["status"] = "ERROR";
-						root["message"] = "Given hardware is not SysfsGPIO";
+						root["message"] = "Given hardware is not SysfsGpio";
 						return;
 					}
 #else
@@ -4706,7 +4706,7 @@ namespace http {
 					std::string sswitchtype = request::findValue(&req, "switchtype");
 					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
 					std::string id = request::findValue(&req, "id");
-					CSysfsGPIO::RequestDbUpdate(unitcode);
+					CSysfsGpio::RequestDbUpdate(unitcode);
 
 					if ((id == "") || (sunitcode == ""))
 					{
@@ -4714,9 +4714,9 @@ namespace http {
 					}
 					devid = id;
 
-					CSysfsGPIO *pSysfsGPIO = (CSysfsGPIO *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					CSysfsGpio *pSysfsGpio = (CSysfsGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
 					
-					if ((pSysfsGPIO == NULL) || (pSysfsGPIO->HwdType != HTYPE_SysfsGPIO))
+					if ((pSysfsGpio == NULL) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
 					{
 						return;
 					}
@@ -7812,7 +7812,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
 			std::string Title = request::findValue(&req, "Title").c_str();
-                        m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
+			m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
@@ -12456,10 +12456,10 @@ namespace http {
 				else if (Key == "Language")
 				{
 					root["Language"] = sValue;
-				 }
-                                else if (Key == "Title")
-                                {
-                                        root["Title"] = sValue;
+				}
+				else if (Key == "Title")
+				{
+					root["Title"] = sValue;
 				}
 				else if (Key == "WindUnit")
 				{

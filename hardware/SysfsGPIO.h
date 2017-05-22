@@ -8,28 +8,29 @@
 
 struct gpio_info
 {
-	int	pin_number;		// GPIO Pin number
-	int	value;			// GPIO pin Value
-	int	direction;		// GPIO IN or OUT
-	int	active_low;		// GPIO ActiveLow
-	int	edge;			// GPIO int Edge
-	int	read_value_fd;	// Fast read fd
-	int	db_state;		// Database Value
-	int id1;			// Device id1
-	int id2;			// Device id2
-	int id3;			// Device id3
-	int id4;			// Device id4
-	int id_valid;		// Device valid
-	int request_update; // Request update
+	int		pin_number;		// GPIO Pin number
+	int		read_value_fd;	// Fast read fd
+	int8_t	value;			// GPIO pin Value
+	int8_t	direction;		// GPIO IN or OUT
+	int8_t	active_low;		// GPIO ActiveLow
+	int8_t	edge;			// GPIO int Edge
+	int8_t	read_value_fd;	// Fast read fd
+	int8_t	db_state;		// Database Value
+	int8_t	id1;			// Device id1
+	int8_t	id2;			// Device id2
+	int8_t	id3;			// Device id3
+	int8_t	id4;			// Device id4
+	int8_t	id_valid;		// Device valid
+	int8_t	request_update;	// Request update
 };
 
-class CSysfsGPIO : public CDomoticzHardwareBase
+class CSysfsGpio : public CDomoticzHardwareBase
 {
 
 public:
 
-	CSysfsGPIO(const int ID, const int ManualDevices);
-	~CSysfsGPIO();
+	CSysfsGpio(const int ID, const int ManualDevices);
+	~CSysfsGpio();
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	static std::vector<int> GetGpioIds();
