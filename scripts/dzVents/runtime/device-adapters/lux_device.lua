@@ -12,13 +12,12 @@ return {
 
 	process = function (device)
 
-		-- first do the generic stuff
-		local generic = adapters.genericAdapter.process(device)
-
 		-- set the lux value
-		generic.addAttribute('lux', tonumber(device.rawData[1]))
+		device['lux'] = tonumber(device.rawData[1])
 
-		return generic
+		device['updateLux'] = function (lux)
+			device.update(0, lux)
+		end
 
 	end
 

@@ -7,7 +7,9 @@ local deviceAdapters = {
 	'p1_smartmeter_device',
 	'electric_usage_device',
 	'thermostat_setpoint_device',
-	'text_device'
+	'text_device',
+	'rain_device',
+	'airquality_device'
 }
 local fallBackDeviceAdapter = genericAdapter
 

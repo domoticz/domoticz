@@ -177,10 +177,6 @@ local function Device(domoticz, data)
 		self.update(0, value)
 	end
 
-	function self.updateRain(rate, counter)
-		self.update(0, tostring(rate) .. ';' .. tostring(counter))
-	end
-
 	function self.updateWind(bearing, direction, speed, gust, temperature, chill)
 		local value = tostring(bearing) .. ';' ..
 				tostring(direction) .. ';' ..
@@ -225,10 +221,6 @@ local function Device(domoticz, data)
 		self.update(0, value)
 	end
 
-	function self.updateAirQuality(quality)
-		self.update(quality)
-	end
-
 	function self.updatePressure(pressure)
 		self.update(0, pressure)
 	end
@@ -246,16 +238,8 @@ local function Device(domoticz, data)
 		self.update(0, usage)
 	end
 
-	function self.updateLux(lux)
-		self.update(0, lux)
-	end
-
 	function self.updateVoltage(voltage)
 		self.update(0, voltage)
-	end
-
-	function self.updateText(text)
-		self.update(0, text)
 	end
 
 	function self.updateAlertSensor(level, text)
@@ -394,8 +378,13 @@ local function Device(domoticz, data)
 		self['lastUpdate'] = Time(data.lastUpdate)
 		self['rawData'] = data.rawData
 
+		-- process generic first
+		adapters.genericAdapter.process(self)
+
+		-- get a specific adapter for the current device
 		local adapter = adapters.getDeviceAdapter(self)
 
+		-- apply the adapter
 		adapter.process(self, data, domoticz)
 
 	elseif (data.baseType == 'group' or data.baseType == 'scene') then

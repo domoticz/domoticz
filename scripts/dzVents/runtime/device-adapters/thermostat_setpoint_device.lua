@@ -12,12 +12,7 @@ return {
 
 	process = function (device, data, domoticz)
 
-		-- first do the generic stuff
-		local generic = adapters.genericAdapter.process(device)
-
-		generic.addAttribute('SetPoint', generic.rawData[1] or 0)
-
-		return generic
+		device['SetPoint'] = device.rawData[1] or 0
 
 	end
 

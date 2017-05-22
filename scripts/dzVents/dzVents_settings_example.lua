@@ -12,7 +12,5 @@
 return {
 	['Domoticz ip'] = '10.0.0.8',
 	['Domoticz port'] = '8080',
-	['Fetch interval'] = 'every 30 minutes', -- see readme for timer settings
-	['Enable http fetch'] = true, -- only works on linux systems
 	['Log level'] = 2
 }

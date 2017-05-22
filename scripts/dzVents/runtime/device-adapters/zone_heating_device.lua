@@ -12,13 +12,8 @@ return {
 
 	process = function (device)
 
-		-- first do the generic stuff
-		local generic = adapters.genericAdapter.process(device)
-
-		generic.addAttribute('setPoint', tonumber(device.rawData[2]))
-		generic.addAttribute('heatingMode', generic.rawData[3])
-
-		return generic
+		device['setPoint'] =  tonumber(device.rawData[2])
+		device['heatingMode'] = device.rawData[3]
 
 	end
 

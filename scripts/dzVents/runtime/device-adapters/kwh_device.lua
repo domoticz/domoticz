@@ -12,18 +12,13 @@ return {
 
 	process = function (device, data, domoticz)
 
-		-- first do the generic stuff
-		local generic = adapters.genericAdapter.process(device)
-
-		local todayFormatted = generic.counterToday or ''
+		local todayFormatted = device.counterToday or ''
 		local todayInfo = adapters.parseFormatted(todayFormatted, domoticz['radixSeparator'])
 
 		-- as this is a kWh device we assume the value is in kWh
 		-- so we have to multiply it with 1000 to get it in W
 
-		generic.addAttribute('WhToday', todayInfo['value'] * 1000)
-
-		return generic
+		device['WhToday'] = todayInfo['value'] * 1000
 
 	end
 

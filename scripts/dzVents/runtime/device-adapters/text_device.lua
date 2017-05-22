@@ -4,7 +4,7 @@ return {
 
 	baseType = 'device',
 
-	name = 'Thermostat setpoint device adapter',
+	name = 'Text device',
 
 	matches = function (device)
 		return (device.deviceSubType == 'Text')
@@ -12,12 +12,11 @@ return {
 
 	process = function (device, data, domoticz)
 
-		-- first do the generic stuff
-		local generic = adapters.genericAdapter.process(device)
+		device['text'] = device.rawData[1] or ''
 
-		generic.addAttribute('text', generic.rawData[1] or '')
-
-		return generic
+		device['updateText'] = function (text)
+			device.update(0, text)
+		end
 
 	end
 
