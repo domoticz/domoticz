@@ -114,7 +114,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "SysfsGPIO.h"
+#include "SysfsGpio.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -150,11 +150,11 @@ master occurs once, 30 seconds after startup.
 #define GPIO_DEVICE_ID_BASE	0x030E0E00
 using namespace std;
 
-vector<gpio_info> CSysfsGPIO::GpioSavedState;
-int CSysfsGPIO::sysfs_hwdid;
-int CSysfsGPIO::sysfs_req_update;
+vector<gpio_info> CSysfsGpio::GpioSavedState;
+int CSysfsGpio::sysfs_hwdid;
+int CSysfsGpio::sysfs_req_update;
 
-CSysfsGPIO::CSysfsGPIO(const int ID, const int AutoConfigureDevices)
+CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices)
 {
 	m_stoprequested = false;
 	m_bIsStarted = false;
@@ -163,21 +163,21 @@ CSysfsGPIO::CSysfsGPIO(const int ID, const int AutoConfigureDevices)
 	m_auto_configure_devices = AutoConfigureDevices;
 }
 
-CSysfsGPIO::~CSysfsGPIO(void)
+CSysfsGpio::~CSysfsGpio(void)
 {
 }
 
-bool CSysfsGPIO::StartHardware()
+bool CSysfsGpio::StartHardware()
 {
 	Init();
 
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGPIO::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::Do_Work, this)));
 	m_bIsStarted = true;
 
 	return (m_thread != NULL);
 }
 
-bool CSysfsGPIO::StopHardware()
+bool CSysfsGpio::StopHardware()
 {
 	m_stoprequested = true;
 
@@ -197,7 +197,7 @@ bool CSysfsGPIO::StopHardware()
 	return true;
 }
 
-bool CSysfsGPIO::WriteToHardware(const char *pdata, const unsigned char length)
+bool CSysfsGpio::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	bool bOk = false;
 	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
@@ -221,7 +221,7 @@ bool CSysfsGPIO::WriteToHardware(const char *pdata, const unsigned char length)
 	return bOk;
 }
 
-void CSysfsGPIO::Do_Work()
+void CSysfsGpio::Do_Work()
 {
 	char path[GPIO_MAX_PATH];
 	int counter = 0;
@@ -236,7 +236,7 @@ void CSysfsGPIO::Do_Work()
 		GpioSavedState[i].read_value_fd = open(path, O_RDONLY);
 	}
 
-	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller started, inputs:%d outputs:%d", input_count, output_count);
+	_log.Log(LOG_STATUS, "CSysfsGpio: Input poller started, inputs:%d outputs:%d", input_count, output_count);
 
 	while (!m_stoprequested)
 	{
@@ -261,7 +261,7 @@ void CSysfsGPIO::Do_Work()
 
 			if (result.size() > 0)
 			{
-				_log.Log(LOG_STATUS, "SysfsGPIO: Update master devices");
+				_log.Log(LOG_STATUS, "CSysfsGpio: Update master devices");
 				UpdateDomoticzInputs(true);
 			}
 		}
@@ -287,10 +287,10 @@ void CSysfsGPIO::Do_Work()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "SysfsGPIO: Input poller stopped");
+	_log.Log(LOG_STATUS, "CSysfsGpio: Input poller stopped");
 }
 
-void CSysfsGPIO::Init()
+void CSysfsGpio::Init()
 {
 	int id = GPIO_DEVICE_ID_BASE + m_HwdID;
 	GpioSavedState.clear();
@@ -322,7 +322,7 @@ void CSysfsGPIO::Init()
 	UpdateGpioOutputs();
 }
 
-void CSysfsGPIO::FindGpioExports()
+void CSysfsGpio::FindGpioExports()
 {
 	GpioSavedState.clear();
 
@@ -359,7 +359,7 @@ void CSysfsGPIO::FindGpioExports()
 	}
 }
 
-void CSysfsGPIO::PollGpioInputs()
+void CSysfsGpio::PollGpioInputs()
 {
 	if (GpioSavedState.size())
 	{
@@ -373,7 +373,7 @@ void CSysfsGPIO::PollGpioInputs()
 	}
 }
 
-void CSysfsGPIO::CreateDomoticzDevices()
+void CSysfsGpio::CreateDomoticzDevices()
 {
 	vector<vector<string> > result;
 	vector<string> deviceid;
@@ -484,7 +484,7 @@ void CSysfsGPIO::CreateDomoticzDevices()
 	}
 }
 
-void CSysfsGPIO::UpdateDomoticzDatabase()
+void CSysfsGpio::UpdateDomoticzDatabase()
 {
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
@@ -513,7 +513,7 @@ void CSysfsGPIO::UpdateDomoticzDatabase()
 	}
 }
 
-void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
+void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 {
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
@@ -588,7 +588,7 @@ void CSysfsGPIO::UpdateDomoticzInputs(bool forceUpdate)
 	}
 }
 
-void CSysfsGPIO::UpdateDeviceID(int pin)
+void CSysfsGpio::UpdateDeviceID(int pin)
 {
 	int index;
 	bool pin_found = false;
@@ -646,7 +646,7 @@ void CSysfsGPIO::UpdateDeviceID(int pin)
 	}
 }
 
-void CSysfsGPIO::UpdateGpioOutputs()
+void CSysfsGpio::UpdateGpioOutputs()
 {
 	/* make sure actual gpio output values match database */
 	
@@ -674,7 +674,7 @@ void CSysfsGPIO::UpdateGpioOutputs()
 	}
 }
 
-vector<string> CSysfsGPIO::GetGpioDeviceId()
+vector<string> CSysfsGpio::GetGpioDeviceId()
 {
 	vector<string> gpio_deviceid;
 	char szIdx[10];
@@ -689,7 +689,7 @@ vector<string> CSysfsGPIO::GetGpioDeviceId()
 //---------------------------------------------------------------------------
 //	sysfs gpio helper functions
 //
-int CSysfsGPIO::GetReadResult(int bytecount, char* value_str)
+int CSysfsGpio::GetReadResult(int bytecount, char* value_str)
 {
 	int retval = -1;
 
@@ -737,7 +737,7 @@ int CSysfsGPIO::GetReadResult(int bytecount, char* value_str)
 	return (retval);
 }
 
-int CSysfsGPIO::GPIORead(int gpio_pin, const char *param)
+int CSysfsGpio::GPIORead(int gpio_pin, const char *param)
 {
 	char path[GPIO_MAX_PATH];
 	char value_str[GPIO_MAX_VALUE_SIZE];
@@ -765,7 +765,7 @@ int CSysfsGPIO::GPIORead(int gpio_pin, const char *param)
 	return(GetReadResult(bytecount, &value_str[0]));
 }
 
-int CSysfsGPIO::GPIOReadFd(int fd)
+int CSysfsGpio::GPIOReadFd(int fd)
 {
 	int bytecount = -1;
 	int retval = -1;
@@ -786,7 +786,7 @@ int CSysfsGPIO::GPIOReadFd(int fd)
 	return(GetReadResult(bytecount, &value_str[0]));
 }
 
-int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
+int CSysfsGpio::GPIOWrite(int gpio_pin, int value)
 {
 	char path[GPIO_MAX_PATH];
 	int fd;
@@ -812,7 +812,7 @@ int CSysfsGPIO::GPIOWrite(int gpio_pin, int value)
 //---------------------------------------------------------------------------
 //	Called by WebServer when devices are manually configured.
 //
-vector<int> CSysfsGPIO::GetGpioIds()
+vector<int> CSysfsGpio::GetGpioIds()
 {
 	vector<int> gpio_ids;
 
@@ -832,7 +832,7 @@ vector<int> CSysfsGPIO::GetGpioIds()
 	return gpio_ids;
 }
 
-vector<string> CSysfsGPIO::GetGpioNames()
+vector<string> CSysfsGpio::GetGpioNames()
 {
 	vector<string> gpio_names;
 
@@ -854,7 +854,7 @@ vector<string> CSysfsGPIO::GetGpioNames()
 	return gpio_names;
 }
 
-void CSysfsGPIO::RequestDbUpdate(int pin)
+void CSysfsGpio::RequestDbUpdate(int pin)
 {
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
