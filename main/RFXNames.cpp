@@ -248,7 +248,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
 		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
-		{ HTYPE_SysfsGpio, "Generic sysfs gpio" },
+		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
