@@ -50,11 +50,6 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
 
-	m_loggedon=false;
-	m_tzoffset=-1;
-	m_lastDST=-1;
-	m_logonfailures=0;
-	
 	Init();
 }
 
@@ -71,13 +66,20 @@ void CEvohomeWeb::Init()
 	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
 	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
 	LoginHeaders.push_back("charsets: utf-8");
+
+	m_loggedon=false;
+	m_tzoffset=-1;
+	m_lastDST=-1;
+	m_logonfailures=0;
+	m_bequiet=false;
 }
 
 
 
 bool CEvohomeWeb::StartSession()
 {
-	_log.Log(LOG_NORM, "EvohomeWeb: start new session with Evohome server");
+	if (!m_bequiet)
+		_log.Log(LOG_NORM, "EvohomeWeb: start new session with Evohome server");
 	m_loggedon=false;
 	if (!login(m_username,m_password))
 	{
@@ -91,7 +93,7 @@ bool CEvohomeWeb::StartSession()
 	full_installation();
 	m_tcs = NULL;
 // FIXME: always choose the first available system for now
-	if (!is_single_heating_system())
+	if ( (!is_single_heating_system()) && (!m_bequiet) )
 		_log.Log(LOG_STATUS, "EvohomeWeb: WARNING: you appear to have multiple heating systems assigned to your Evohome account. We can currently only support one - autoselecting the system at [0,0,0]");
 	
 
@@ -102,6 +104,7 @@ bool CEvohomeWeb::StartSession()
 	m_loggedon=true;
 	m_logonfailures=0;
 	m_sessiontimer = mytime(NULL) + 3600 - m_refreshrate; // Honeywell will drop our session after an hour
+	m_bequiet=false;
 	return true;
 }
 
@@ -143,8 +146,11 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
-			if (m_LastHeartbeat >= m_sessiontimer)
+			if (m_LastHeartbeat > m_sessiontimer) // discard our session with the honeywell server
+			{
 				m_loggedon = false;
+				m_bequiet = true;
+			}
 		}
 		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
 		{

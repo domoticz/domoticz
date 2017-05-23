@@ -51,6 +51,7 @@ private:
 	int m_logonfailures;
 	unsigned long m_zones [13];
 	time_t m_sessiontimer;
+	bool m_bequiet;
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
 	static const std::string weekdays[7];
