@@ -1501,7 +1501,11 @@ define(['app'], function (app) {
 													status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
 												}
 												else {
-													status = "-" + item.UsageDeliv;
+													status = "";
+													if (parseInt(item.UsageDeliv)>0) {
+														status = "-";
+													}
+													status += item.UsageDeliv;
 												}
 											}
 										}
@@ -3584,7 +3588,11 @@ define(['app'], function (app) {
 												status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
 											}
 											else {
-												status = "-" + item.UsageDeliv;
+												status = "";
+												if (parseInt(item.UsageDeliv)>0) {
+													status = "-";
+												}
+												status += item.UsageDeliv;
 											}
 										}
 									}
