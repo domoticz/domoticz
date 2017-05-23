@@ -1603,6 +1603,9 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeWeb.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
@@ -2257,6 +2260,9 @@
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
