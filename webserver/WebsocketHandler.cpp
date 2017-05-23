@@ -58,11 +58,8 @@ namespace http {
 			req.content.clear();
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
-					if (requestid != "-1") {
-						int a = 1;
-					}
 					jsonValue["event"] = "response";
-					jsonValue["requestid"] = boost::lexical_cast<long>(requestid);
+					jsonValue["requestid"] = boost::lexical_cast<Json::UInt64>(requestid);
 					jsonValue["data"] = rep.content;
 					std::string response = writer.write(jsonValue);
 					MyWrite(response);
