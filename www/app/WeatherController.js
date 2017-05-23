@@ -96,7 +96,7 @@ define(['app'], function (app) {
                             $.LastUpdateTime = parseInt(data.ActTime);
                         }
 
-                        // Change updated items in temperatures list
+                        // Change updated items in weather list
                         // TODO is there a better way to do this ?
                         data.result.forEach(function (newitem) {
                             ctrl.items.forEach(function (olditem, oldindex, oldarray) {
@@ -129,7 +129,7 @@ define(['app'], function (app) {
                             $.LastUpdateTime = parseInt(data.ActTime);
                         }
 
-                        // Change updated items in temperatures list
+                        // Change updated items in weatherlist
                         // TODO is there a better way to do this ?
                         data.result.forEach(function (newitem) {
                             ctrl.items.forEach(function (olditem, oldindex, oldarray) {
@@ -651,7 +651,7 @@ define(['app'], function (app) {
                     $scope.$on('jsonupdate', function (event, json) {
                         if (json.item) {
                             var newitem = json.item;
-                            // Change updated items in temperatures list
+                            // Change updated items in weather list
                             // TODO is there a better way to do this ?
                             // console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx); // (debug info)
                             if (ctrl.item.idx == newitem.idx) {
