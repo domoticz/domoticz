@@ -40,49 +40,49 @@
         <Value type="short" index="5" genre="config" label="Alarm 1 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="6" genre="config" label="Alarm 1 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="6" genre="config" label="Alarm 1 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="7" genre="config" label="Alarm 2 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="8" genre="config" label="Alarm 2 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="8" genre="config" label="Alarm 2 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="9" genre="config" label="Alarm 3 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="10" genre="config" label="Alarm 3 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="10" genre="config" label="Alarm 3 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="11" genre="config" label="Alarm 4 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="12" genre="config" label="Alarm 4 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="12" genre="config" label="Alarm 4 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="13" genre="config" label="Alarm 5 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="14" genre="config" label="Alarm 5 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="14" genre="config" label="Alarm 5 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="15" genre="config" label="Alarm 6 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="16" genre="config" label="Alarm 6 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="16" genre="config" label="Alarm 6 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="7" genre="config" label="Alarm 7 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="18" genre="config" label="Alarm 7 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="18" genre="config" label="Alarm 7 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
         <Value type="short" index="19" genre="config" label="Alarm 8 Type" size="2" min="0" max="65535" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
-        <Value type="short" index="20" genre="config" label="Alarm 8 Parameters" size="4" min="0" max="4294967295" value="0">
+        <Value type="int" index="20" genre="config" label="Alarm 8 Parameters" size="4" min="0" max="4294967295" value="0">
             <Help>see Appendix C - Description of Alarm Parameters</Help>
         </Value>
     </CommandClass>

@@ -26,7 +26,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
 #include "../hardware/RFLinkBase.h"
-#include "../hardware/SysfsGPIO.h"
+#include "../hardware/SysfsGpio.h"
 #include "../hardware/HEOS.h"
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
@@ -351,7 +351,7 @@ namespace http {
 
 			RegisterCommandCode("getlanguage", boost::bind(&CWebServer::Cmd_GetLanguage, this, _1, _2, _3), true);
 			RegisterCommandCode("getthemes", boost::bind(&CWebServer::Cmd_GetThemes, this, _1, _2, _3), true);
-                        RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
+			RegisterCommandCode("gettitle", boost::bind(&CWebServer::Cmd_GetTitle, this, _1, _2, _3), true);
 
 			RegisterCommandCode("logincheck", boost::bind(&CWebServer::Cmd_LoginCheck, this, _1, _2, _3), true);
 			RegisterCommandCode("getversion", boost::bind(&CWebServer::Cmd_GetVersion, this, _1, _2, _3), true);
@@ -886,16 +886,16 @@ namespace http {
 			}
 		}
 
-                void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
-                {
-                        std::string sValue;
+		void CWebServer::Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			std::string sValue;
 			root["status"] = "OK";
-                        root["title"] = "GetTitle";
-                        if (m_sql.GetPreferencesVar("Title", sValue))
-                                root["Title"] = sValue;
+			root["title"] = "GetTitle";
+			if (m_sql.GetPreferencesVar("Title", sValue))
+			root["Title"] = sValue;
 			else
 				root["Title"] = "Domoticz";
-                }
+		}
 
 		void CWebServer::Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -993,7 +993,7 @@ namespace http {
 				}
 #endif
 #ifndef WITH_SYSFS_GPIO
-				if (ii == HTYPE_SysfsGPIO)
+				if (ii == HTYPE_SysfsGpio)
 				{
 					bDoAdd = false;
 				}
@@ -1083,11 +1083,11 @@ namespace http {
 				if (sport.empty())
 					return; //need to have a serial port
 
-                                if (htype == HTYPE_TeleinfoMeter) {
-                                        // Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
-                                        // Domoticz instance are very low as both are national standards (NL and FR)
-                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
-                                }
+				if (htype == HTYPE_TeleinfoMeter) {
+					// Teleinfo always has decimals. Chances to have a P1 and a Teleinfo device on the same
+					// Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
 			}
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
@@ -1112,11 +1112,11 @@ namespace http {
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
-                                if (htype == HTYPE_ECODEVICES) {
-                                        // EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
-                                        // Domoticz instance are very low as both are national standards (NL and FR)
-                                        m_sql.UpdatePreferencesVar("SmartMeterType", 0);
-                                }
+				if (htype == HTYPE_ECODEVICES) {
+					// EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
+					// Domoticz instance are very low as both are national standards (NL and FR)
+					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
+				}
 			}
 			else if (htype == HTYPE_DomoticzInternal)	{
 				// DomoticzInternal cannot be added manually
@@ -1257,7 +1257,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_SysfsGPIO) {
+			else if (htype == HTYPE_SysfsGpio) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
@@ -1589,7 +1589,7 @@ namespace http {
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_SysfsGPIO) {
+			else if (htype == HTYPE_SysfsGpio) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -3600,26 +3600,28 @@ namespace http {
 						int ID = atoi(sd[0].c_str());
 						std::string Name = sd[1];
 						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[2].c_str());
-						switch (Type)
+
+						if ((Type == HTYPE_RFXLAN) ||
+							(Type == HTYPE_RFXtrx315) ||
+							(Type == HTYPE_RFXtrx433) ||
+							(Type == HTYPE_RFXtrx868) ||
+							(Type == HTYPE_EnOceanESP2) ||
+							(Type == HTYPE_EnOceanESP3) ||
+							(Type == HTYPE_Dummy) ||
+							(Type == HTYPE_Tellstick) ||
+							(Type == HTYPE_EVOHOME_SCRIPT) ||
+							(Type == HTYPE_EVOHOME_SERIAL) ||
+							(Type == HTYPE_EVOHOME_WEB)
+							(Type == HTYPE_RaspberryGPIO) ||
+							(Type == HTYPE_RFLINKUSB) ||
+							(Type == HTYPE_RFLINKTCP) ||
+							(Type == HTYPE_ZIBLUEUSB) ||
+							(Type == HTYPE_ZIBLUETCP) ||
+							(Type == HTYPE_OpenWebNetTCP) ||
+							(Type == HTYPE_OpenWebNetUSB) ||
+							(Type == HTYPE_SysfsGpio)
+							)
 						{
-						case HTYPE_RFXLAN:
-						case HTYPE_RFXtrx315:
-						case HTYPE_RFXtrx433:
-						case HTYPE_RFXtrx868:
-						case HTYPE_EnOceanESP2:
-						case HTYPE_EnOceanESP3:
-						case HTYPE_Dummy:
-						case HTYPE_Tellstick:
-						case HTYPE_EVOHOME_SCRIPT:
-						case HTYPE_EVOHOME_SERIAL:
-						case HTYPE_EVOHOME_WEB:
-						case HTYPE_RaspberryGPIO:
-						case HTYPE_RFLINKUSB:
-						case HTYPE_RFLINKTCP:
-						case HTYPE_ZIBLUEUSB:
-						case HTYPE_ZIBLUETCP:
-						case HTYPE_OpenWebNetTCP:
-						case HTYPE_OpenWebNetUSB:
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
@@ -3647,6 +3649,33 @@ namespace http {
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
 						ii++;
+					}
+				}
+#else
+				root["status"] = "OK";
+				root["result"][0]["idx"] = 0;
+				root["result"][0]["Name"] = "N/A";
+#endif
+			}
+			else if (cparam == "getsysfsgpio")
+			{
+				//used by Add Manual Light/Switch dialog
+				root["title"] = "GetSysfsGpio";
+#ifdef WITH_SYSFS_GPIO
+				std::vector<int> gpio_ids = CSysfsGpio::GetGpioIds();
+				std::vector<std::string> gpio_names = CSysfsGpio::GetGpioNames();
+
+				if (gpio_ids.size() == 0) {
+					root["status"] = "ERROR";
+					root["result"][0]["idx"] = 0;
+					root["result"][0]["Name"] = "No sysfs-gpio exports";
+				}
+				else {
+					for (int ii = 0; ii < gpio_ids.size(); ii++)
+					{
+						root["status"] = "OK";
+						root["result"][ii]["idx"] = gpio_ids[ii];
+						root["result"][ii]["Name"] = gpio_names[ii];
 					}
 				}
 #else
@@ -4037,6 +4066,7 @@ namespace http {
 				std::string hwdid = request::findValue(&req, "hwdid");
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
+
 				if (
 					(hwdid == "") ||
 					(sswitchtype == "") ||
@@ -4119,6 +4149,50 @@ namespace http {
 					if (pPin->GetIsInput()) {
 						root["status"] = "ERROR";
 						root["message"] = "Given pin is not configured for output";
+						return;
+					}
+#else
+					root["status"] = "ERROR";
+					root["message"] = "GPIO support is disabled";
+					return;
+#endif
+				}
+				else if (lighttype == 69)
+				{
+#ifdef WITH_SYSFS_GPIO
+
+					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
+					int unitcode = atoi(sunitcode.c_str());
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					std::string sswitchtype = request::findValue(&req, "switchtype");
+					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					
+					std::string id = request::findValue(&req, "id");
+					if ((id == "") || (sunitcode == ""))
+					{
+						return;
+					}
+					devid = id;
+
+					if (sunitcode == "") 
+					{
+						root["status"] = "ERROR";
+						root["message"] = "No GPIO number given";
+						return;
+					}
+
+					CSysfsGpio *pSysfsGpio = (CSysfsGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+
+					if (pSysfsGpio == NULL) {
+						root["status"] = "ERROR";
+						root["message"] = "Could not retrieve SysfsGpio hardware pointer";
+						return;
+					}
+
+					if (pSysfsGpio->HwdType != HTYPE_SysfsGpio) {
+						root["status"] = "ERROR";
+						root["message"] = "Given hardware is not SysfsGpio";
 						return;
 					}
 #else
@@ -4617,6 +4691,35 @@ namespace http {
 					}
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
 					if (pPin == NULL) {
+						return;
+					}
+#else
+					return;
+#endif
+				}
+				else if (lighttype == 69)
+				{
+#ifdef WITH_SYSFS_GPIO
+					dtype = pTypeLighting2;
+					subtype = sTypeAC;
+					devid = "0";
+					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
+					int unitcode = atoi(sunitcode.c_str());
+					std::string sswitchtype = request::findValue(&req, "switchtype");
+					_eSwitchType switchtype = (_eSwitchType)atoi(sswitchtype.c_str());
+					std::string id = request::findValue(&req, "id");
+					CSysfsGpio::RequestDbUpdate(unitcode);
+
+					if ((id == "") || (sunitcode == ""))
+					{
+						return;
+					}
+					devid = id;
+
+					CSysfsGpio *pSysfsGpio = (CSysfsGpio *)m_mainworker.GetHardware(atoi(hwdid.c_str()));
+					
+					if ((pSysfsGpio == NULL) || (pSysfsGpio->HwdType != HTYPE_SysfsGpio))
+					{
 						return;
 					}
 #else
@@ -7711,7 +7814,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme.c_str());
 			m_pWebEm->SetWebTheme(SelectedTheme);
 			std::string Title = request::findValue(&req, "Title").c_str();
-                        m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
+			m_sql.UpdatePreferencesVar("Title", (Title == "")?"Domoticz":Title);
 
 			m_sql.GetPreferencesVar("RandomTimerFrame", rnOldvalue);
 			rnvalue = atoi(request::findValue(&req, "RandomSpread").c_str());
@@ -12355,10 +12458,10 @@ namespace http {
 				else if (Key == "Language")
 				{
 					root["Language"] = sValue;
-				 }
-                                else if (Key == "Title")
-                                {
-                                        root["Title"] = sValue;
+				}
+				else if (Key == "Title")
+				{
+					root["Title"] = sValue;
 				}
 				else if (Key == "WindUnit")
 				{

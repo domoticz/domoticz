@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--MCOHome Thermostat fan coil MH8-FC-EU -->
+    <CommandClass id="67" base="0"/>
+    <!-- The thermostat does not properly report its operating modes -->
+    <CommandClass id="68" name="COMMAND_CLASS_THERMOSTAT_FAN_MODE" >
+        <Instance index="1"/>
+        <Value type="list" genre="user" instance="1" index="0" label="Fan Mode" units="" size="1">
+            <Item label="On Low" value="1"/>
+            <Item label="On High" value="3"/>
+            <Item label="On Medium" value="5"/>
+        </Value>
+        <SupportedModes>
+            <Mode index="1" label="On Low"/>
+            <Mode index="3" label="On High"/>
+            <Mode index="5" label="Unknown 5"/>
+        </SupportedModes>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

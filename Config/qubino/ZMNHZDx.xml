@@ -15,14 +15,14 @@
     <!-- Configuration -->
     <CommandClass id="112">
 
-        <Value type="short" genre="config" instance="1" index="1" label="Wind Gust Top Value" size="1" min="0" max="8800" value="1000">
+        <Value type="short" genre="config" instance="1" index="1" label="Wind Gust Top Value" size="2" min="0" max="8800" value="1000">
             <Help>
                 If the Wind Gust is Higher than the Parameter Value, a device triggers an Association.
                 0 to 8800 = value from 0.00 m/s to 88.00 m/s.
                 Default value 1000 (10,00 m/s).
             </Help>
         </Value>
-        <Value type="short" genre="config" instance="1" index="2" label="Rain Rate Top Value" size="1" min="0" max="30000" value="200">
+        <Value type="short" genre="config" instance="1" index="2" label="Rain Rate Top Value" size="2" min="0" max="30000" value="200">
             <Help>
                 If the Sensor Rain Rate is Higher than the Parameter Value, a device triggers an Association.
                 0 to 30000 = value from 0.00 mm/h to 300.00 mm/h.

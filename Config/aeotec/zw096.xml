@@ -36,14 +36,14 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584701
     	<Item label="When the state of the Switch changes, the LED will follow the status (on/off) of its load, but the LED will turn off after 5 seconds." value="1"/> 
     	<Item label="Night Light Mode" value="2" />
     </Value>
-    <Value type="int" index="83" genre="config" label="Night Light Color" units="" min="0" max="16777215" size="3" value="14524637" read_only="true">
+    <Value type="int" index="83" genre="config" label="Night Light Color" units="" min="0" max="16777215" size="4" value="14524637" read_only="true">
     	<Help>Configure the RGB Value when in Night Light Mode.
     	Byte 1: Red Color
     	Byte 2: Green Color
     	Byte 3: Blue Color
     	</Help>
     </Value>
-    <Value type="int" index="84" genre="config" label="RGB Brightness in Energy Mode" units="" min="0" max="16777215" size="3" value="5263440" read_only="true">
+    <Value type="int" index="84" genre="config" label="RGB Brightness in Energy Mode" units="" min="0" max="16777215" size="4" value="5263440" read_only="true">
     	<Help>Configure the brightness level of RGB LED (0%-100%) when it is in Energy Mode/momentary indicate mode.
     	Byte 1: Red Color
     	Byte 2: Green Color

@@ -313,7 +313,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		uint8_t msb = pData[13];
 		uint8_t lsb = pData[12];
 		
-		uint16_t temp16 = ((msb << 16) | lsb);
+		uint16_t temp16 = ((msb << 8) | lsb);
 		if (temp16 > 0x800) {
 			// Negative values, convert to float from two complements int
 			int temp_int = (temp16 | ~((1 << 16) - 1));

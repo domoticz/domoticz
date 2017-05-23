@@ -58,7 +58,7 @@
 			<Item label="Disabled" value="0" />
 			<Item label="Enabled" value="1" />
 		</Value>
-                <Value type="int" index="15" genre="config" label="Reset cycle" units="" min="0" max="110" size="2" value="2">
+                <Value type="int" index="15" genre="config" label="Reset cycle" units="" min="0" max="110" size="4" value="2">
     	          <Help>0 = disable
                   1 = 10 seconds
                   2 = 20 seconds
