@@ -1163,14 +1163,17 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
-
-	DirectoryListing(FileEntries, dzv_Dir, false, true);
-	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	
+	if (!m_sql.m_bDisableDzVentsSystem)
 	{
-		filename = *itt;
-		if (filename.find("dzVents") != std::string::npos)
+		DirectoryListing(FileEntries, dzv_Dir, false, true);
+		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 		{
-			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+			filename = *itt;
+			if (filename.find("dzVents") != std::string::npos)
+			{
+				EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+			}
 		}
 	}
 
@@ -3487,6 +3490,11 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 	lua_rawset(lua_state, -3);
 
+	int rnvalue = 0;
+	m_sql.GetPreferencesVar("DzVentsLogLevel", rnvalue);
+	lua_pushstring(lua_state, "dzVents_log_level");
+	lua_pushnumber(lua_state, (lua_Number)rnvalue);
+	lua_rawset(lua_state, -3);
 
 	lua_setglobal(lua_state, "globalvariables");
 

@@ -1150,6 +1150,30 @@
 										<tr>
 											<td><input id="LogEventScriptTrigger" name="LogEventScriptTrigger" type="checkbox"> <label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label></td>
 										</tr>
+                                        <tr>
+                                            <td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"> <label>dzVents <span data-i18n="Disabled"></span></label></td>
+                                        </tr>
+                                        <td><label>dzVents Log Level:</label></td>
+                                        <td>
+                                            <select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
+                                                <option data-i18n="Silent" value="0">
+                                                    Silent
+                                                </option>
+                                                <option data-i18n="Errors" value="1">
+                                                    Errors
+                                                </option>
+                                                <option data-i18n="Errors + info" value="1.5">
+                                                    Errors + info
+                                                </option>
+                                                <option data-i18n="Errors + more info" value="2">
+                                                    Errors + more info
+                                                </option>
+                                                <option data-i18n="Debug" value="3">
+                                                    Debug
+                                                </option>
+                                            </select>
+                                        </td>
+
 									</table>
 								</div>
 								<div class="span6">
