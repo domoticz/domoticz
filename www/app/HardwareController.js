@@ -5168,7 +5168,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divi2caddress").show();
 				}
 			}
-			else if ((text.indexOf("GPIO") >= 0) && (data["Type"].indexOf("sysfs GPIO") == -1)){
+			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				$("#hardwarecontent #divgpio").show();
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
