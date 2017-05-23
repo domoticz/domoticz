@@ -3661,17 +3661,17 @@ define(['app'], function (app) {
 									var bigtexthtml = "";
 									bigtexthtml += '<span class="value1">';
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-										bigtexthtml += item.Usage;
+										//bigtexthtml += item.Usage;
 									}
 									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-										if (item.Usage.charAt(0) != 0) {
+										if (parseInt(item.Usage) > 0) {
 											bigtexthtml += item.Usage;
 										}
-										if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
-											bigtexthtml += item.Usage;
+										else if (parseInt(item.UsageDeliv) > 0) {
+											bigtexthtml += "-" + item.UsageDeliv;
 										}
-										if (item.UsageDeliv.charAt(0) != 0) {
-											bigtexthtml += '</span><span class="value2">-' + item.UsageDeliv;
+										else {
+											bigtexthtml += item.Usage;
 										}
 									}
 									else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
@@ -3875,7 +3875,7 @@ define(['app'], function (app) {
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
 											statushtml += '</span><span class="value2">';
-											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
+											statushtml += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
 									statushtml = '<span class="value1">' + statushtml + '</span>';
