@@ -21,7 +21,8 @@ local function getDevice_(
 	rawData,
 	additionalRootData,
 	additionalDataData,
-	hardwareType)
+	hardwareType,
+	hardwaryTypeValue)
 
 	local Device = require('Device')
 
@@ -44,6 +45,9 @@ local function getDevice_(
 	if (hardwareType == nil) then
 		hardwareType = 'ht1'
 	end
+	if (hardwareTypeValue == nil) then
+		hardwareTypeValue = 'ht1'
+	end
 
 	local data = {
 		["id"] = 1,
@@ -56,7 +60,7 @@ local function getDevice_(
 		["hardwareName"] = "hw1",
 		["hardwareType"] = hardwareType,
 		["hardwareTypeID"] = 0,
-		["hardwareTypeValue"] = 1,
+		["hardwareTypeValue"] = hardwaryTypeValue,
 		["hardwareID"] = 1,
 		["timedOut"] = true,
 		["switchType"] = "Contact",
@@ -92,7 +96,8 @@ local function getDevice(domoticz, options)
 		options.rawData,
 		options.additionalRootData,
 		options.additionalDataData,
-		options.hardwareType)
+		options.hardwareType,
+		options.hardwareTypeValue)
 
 end
 
@@ -209,11 +214,23 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['type'] = 'Thermostat',
+				['hardwareTypeValue'] = 15,
 				['subType'] = 'SetPoint',
 				['rawData'] = { [1] = 12.5 }
 			})
 
 			assert.is_same(12.5, device.SetPoint)
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			device.updateSetPoint(14)
+
+			assert.is_same('http://10.0.0.10:123/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+
 		end)
 
 		it('should detect a text device', function()
@@ -251,6 +268,51 @@ describe('device', function()
 
 			device.updateAirQuality(44)
 			assert.is_same({ { ["UpdateDevice"] = "1|44" } }, commandArray)
+		end)
+
+		it('should detect an evohome device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Thermostat',
+				['subType'] = 'Zone',
+				['hardwareTypeValue'] = 39,
+				['rawData'] = { [1] = 12.5 }
+			})
+
+			local res;
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same(12.5, device.SetPoint)
+
+			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
+
+			assert.is_same('http://10.0.0.10:123/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
+		end)
+
+		it('should detect an opentherm setpoint device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Thermostat',
+				['hardwareTypeValue'] = 20,
+				['subType'] = 'SetPoint',
+				['rawData'] = { [1] = 12.5 }
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same(12.5, device.SetPoint)
+
+			device.updateSetPoint(14)
+
+			assert.is_same('http://10.0.0.10:123/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
 		end)
 
 		describe('Kodi', function()
@@ -544,54 +606,6 @@ describe('device', function()
 		it('should update a custom sensor', function()
 			device.updateCustomSensor(67)
 			assert.is_same({ { ["UpdateDevice"] = "100|0|67" } }, commandArray)
-		end)
-
-		it('should update dummy setpoint', function()
-			device.hardwareTypeVal = 15
-			device.deviceSubType = 'SetPoint'
-			device.setPoint = 10
-
-			local res;
-
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
-			device.updateSetPoint(14)
-
-			assert.is_same('http://10.0.0.10:123/json.htm?type=command&param=udevice&idx=100&nvalue=0&svalue=14', res)
-		end)
-
-		it('should update opentherm gateway setpoint', function()
-			device.hardwareTypeVal = 20
-			device.deviceSubType = 'SetPoint'
-			device.setPoint = 10
-
-			local res;
-
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
-			device.updateSetPoint(14)
-
-			assert.is_same('http://10.0.0.10:123/json.htm?type=command&param=udevice&idx=100&nvalue=0&svalue=14', res)
-		end)
-
-		it('should update evohome setpoint', function()
-			device.hardwareTypeVal = 39
-			device.deviceSubType = 'Zone'
-			device.setPoint = 10
-
-			local res;
-
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
-			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
-
-			assert.is_same('http://10.0.0.10:123/json.htm?type=setused&idx=100&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
 		end)
 
 

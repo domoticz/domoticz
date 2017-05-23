@@ -264,29 +264,6 @@ local function Device(domoticz, data)
 		self.update(0, value)
 	end
 
-	function self.updateSetPoint(setPoint, mode, untilDate)
-		if ((self.hardwareTypeVal == 15 or self.hardwareTypeVal == 20) and self.deviceSubType == 'SetPoint') then
-			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
-			local url = 'http://' .. domoticz.settings['Domoticz ip'] .. ':' .. domoticz.settings['Domoticz port'] ..
-					'/json.htm?type=command&param=udevice&idx=' .. self.id .. '&nvalue=0&svalue=' .. setPoint
-			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
-
-		elseif (self.hardwareTypeVal == 39 and self.deviceSubType == 'Zone') then --evohome
-			local url = 'http://' .. domoticz.settings['Domoticz ip'] .. ':' .. domoticz.settings['Domoticz port'] ..
-					'/json.htm?type=setused&idx=' .. self.id .. '&setpoint=' .. setPoint .. '&mode=' .. tostring(mode) .. '&used=true'
-
-			if (untilDate) then
-				url = url .. '&until=' .. tostring(untilDate)
-			end
-
-			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
-		else
-			utils.log('Setting setpoint not supported for this device.', utils.LOG_ERROR)
-		end
-	end
-
 	function self.attributeChanged(attribute)
 		-- returns true if an attribute is marked as changed
 		return (changedAttributes[attribute] == true)

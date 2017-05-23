@@ -10,7 +10,9 @@ local deviceAdapters = {
 	'text_device',
 	'rain_device',
 	'airquality_device',
-	'kodi_device'
+	'kodi_device',
+	'evohome_device',
+	'opentherm_gateway_device'
 }
 local fallBackDeviceAdapter = genericAdapter
 
