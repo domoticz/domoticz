@@ -121,7 +121,7 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
-#include "../hardware/SysfsGPIO.h"
+#include "../hardware/SysfsGpio.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -940,9 +940,9 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
 #endif
 		break;
-	case HTYPE_SysfsGPIO:
+	case HTYPE_SysfsGpio:
 #ifdef WITH_SYSFS_GPIO
-		pHardware = new CSysfsGPIO(ID);
+		pHardware = new CSysfsGpio(ID, Mode1);
 #endif
 		break;
 	case HTYPE_Comm5TCP:

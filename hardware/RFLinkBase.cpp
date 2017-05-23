@@ -129,6 +129,7 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "RFCustom", sSwitchTypeRFCustom },
 	{ "YW_Sensor", sSwitchTypeYW_Sensor },
 	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
+	{ "SysfsGpio", sSwitchTypeSysfsGpio },
 	{ "", -1 }
 };
 

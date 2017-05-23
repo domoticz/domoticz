@@ -183,7 +183,7 @@ enum _eHardwareTypes {
 	HTYPE_IntergasInComfortLAN2RF,			//99
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
-	HTYPE_SysfsGPIO,			//102
+	HTYPE_SysfsGpio,			//102
 	HTYPE_END
 };
 
