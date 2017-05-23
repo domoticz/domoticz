@@ -77,7 +77,7 @@ void CEvohomeWeb::Init()
 
 bool CEvohomeWeb::StartSession()
 {
-	_log.Log(LOG_NORM, "EvohomeWeb: connect to Evohome server");
+	_log.Log(LOG_NORM, "EvohomeWeb: start new session with Evohome server");
 	m_loggedon=false;
 	if (!login(m_username,m_password))
 	{
@@ -101,6 +101,7 @@ bool CEvohomeWeb::StartSession()
 	m_zones[0] = 0;
 	m_loggedon=true;
 	m_logonfailures=0;
+	m_sessiontimer = mytime(NULL) + 3600 - m_refreshrate; // Honeywell will drop our session after an hour
 	return true;
 }
 
@@ -142,6 +143,8 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
+			if (m_LastHeartbeat >= m_sessiontimer)
+				m_loggedon = false;
 		}
 		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
 		{
