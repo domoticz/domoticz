@@ -316,6 +316,7 @@ hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeScript.cpp
 hardware/EvohomeSerial.cpp
+hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
@@ -385,7 +386,7 @@ hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
-hardware/SysfsGPIO.cpp
+hardware/SysfsGpio.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -663,10 +664,10 @@ else()
 ENDIF(WiringPi)
 
 IF(EXISTS /sys/class/gpio)
-	message(STATUS "Sysfs GPIO available")
+	message(STATUS "Sysfs gpio is available")
 	add_definitions(-DWITH_SYSFS_GPIO)
 ELSE()
-	message(STATUS "Sysfs GPIO not available")
+	message(STATUS "Sysfs gpio is not available")
 ENDIF()
 
 
