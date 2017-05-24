@@ -109,8 +109,6 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	//Add the required Content Type
 	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
 	
-	_log.Log(LOG_ERROR, "Pushsafer: send message to: %s", CURLEncode::URLDecode(sPostData.str()));
-
 	bRet = HTTPClient::POST("https://www.pushsafer.com/api",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("\"success\":") != std::string::npos);
 	if (!bSuccess)
