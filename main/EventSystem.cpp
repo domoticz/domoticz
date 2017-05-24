@@ -3495,7 +3495,10 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
-
+	lua_pushstring(lua_state, "domoticz_listening_port");
+//	lua_pushstring(lua_state, "8080");
+	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 
 	int status = 0;
