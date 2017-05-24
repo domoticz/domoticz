@@ -83,6 +83,9 @@ void CEventSystem::StopEventSystem()
 		m_stoprequested = true;
 		m_thread->join();
 	}
+#ifdef ENABLE_PYTHON
+    Plugins::PythonEventsStop();
+#endif
 }
 
 void CEventSystem::SetEnabled(const bool bEnabled)
