@@ -413,7 +413,10 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 		if (level > 0) {
 			xcmd.level = level;
 		}
-	}	
+	}
+	else if (switchtype == STYPE_SMOKEDETECTOR) {
+		xcmd.level = level;
+	}
 	if (bIsOn) {
 		xcmd.cmnd = gswitch_sOn;
 	}
@@ -499,7 +502,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else {
-			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch")) {
+			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch") || (Name == "Xiaomi Smoke Detector")) {
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
@@ -559,89 +562,6 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 		float voltage = (float)VoltageLevel / 1000;
 		SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
 	}
-}
-
-void XiaomiGateway::InsertUpdateSmoke(const std::string & nodeid, const std::string & Name, const int SmokeLevel) {
-	if (nodeid.length() < 14) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
-	}
-	std::string str = nodeid.substr(6, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-
-	char szTmp[300];
-	if (sID == 1)
-		sprintf(szTmp, "%d", 1);
-	else
-		sprintf(szTmp, "%08X", (unsigned int)sID);
-
-	bool bOn = false;
-	if (SmokeLevel > 0)
-		bOn = true;
-
-	bool bDeviceExits = true;
-	
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szTmp);
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-	else
-	{
-		//check if we have a change, if not only update the LastUpdate field
-		bool bNoChange = false;
-		int nvalue = atoi(result[0][1].c_str());
-		if ((!bOn) && (nvalue == 0))
-			bNoChange = true;
-		else if ((bOn && (nvalue != 0)))
-			bNoChange = true;
-		if (bNoChange)
-		{
-			time_t now = time(0);
-			struct tm ltime;
-			localtime_r(&now, &ltime);
-
-			char szLastUpdate[40];
-			sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-
-			m_sql.safe_query("UPDATE DeviceStatus SET LastUpdate='%q' WHERE(HardwareID == %d) AND (DeviceID == '%q')",
-				szLastUpdate, m_HwdID, szTmp);
-			return;
-		}
-	}
-
-	_tGeneralSwitch xcmd;
-	xcmd.len = sizeof(_tGeneralSwitch) - 1;
-	xcmd.id = sID;
-	xcmd.type = pTypeGeneralSwitch;
-	xcmd.subtype = sSwitchGeneralSwitch;
-	xcmd.unitcode = 1;
-	
-	if (bOn) {
-		xcmd.cmnd = gswitch_sOn;
-	}
-	else {
-		xcmd.cmnd = gswitch_sOff;
-	}
-
-	if (!bDeviceExits)
-	{
-		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, Name.c_str(), 255);
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')", Name.c_str(), m_HwdID, szTmp);
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szTmp);
-		if (!result.empty())
-		{
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID=='%q')", STYPE_SMOKEDETECTOR, result[0][0].c_str());
-		}
-	}
-	else
-		sDecodeRXMessage(this, (const unsigned char *)&xcmd, Name.c_str(), 255);
-
 }
 
 void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
@@ -975,10 +895,22 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						std::string power_consumed = root2["power_consumed"].asString();
 						//Smoke Detector
 						std::string density = root2["density"].asString();
+						std::string alarm = root2["alarm"].asString();
 						bool on = false;
 						int level = -1;
 						if (model == "switch") {
 							level = 0;
+						}
+						else if (model == "smoke") {
+							if (alarm == "1") {
+								level = 0;
+								on = true;
+							}
+							else if (alarm == "0") {
+								level = 0;
+							}
+							if (density != "")
+								level = atoi(density.c_str());
 						}
 						if ((status == "motion") || (status == "open") || (status == "no_close") || (status == "on") || (no_close != "")) {
 							level = 0;
@@ -1044,10 +976,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								}
 								if (voltage != "") {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
-								}
-								if (density != "") {
-									m_XiaomiGateway->InsertUpdateSmoke(sid.c_str(), name, atoi(density.c_str()));
-								}
+								}								
 							}
 						}
 					}
