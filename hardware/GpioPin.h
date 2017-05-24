@@ -20,7 +20,7 @@ It must be installed beforehand following instructions at http://wiringpi.com/do
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA 02110-1301 USA.
 
-This is a derivative work based on the samples included with wiringPi where distributed 
+This is a derivative work based on the samples included with wiringPi where distributed
 under the GNU Lesser General Public License version 3
 Source: http://wiringpi.com
 */
@@ -31,22 +31,30 @@ Source: http://wiringpi.com
 class CGpioPin
 {
 public:
-	CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
+	//CGpioPin(const int id, const std::string &label, const bool isInput, const bool isOutput, const bool isExported);
+	CGpioPin(const int pin_number, const std::string &label, const int value, const bool direction, const int edge, const int active_low, const int read_value_fd, const bool db_state);
 	~CGpioPin();
-	
-	int GetId();
+
+	int GetPin();
 	std::string GetLabel();
 	bool GetIsInput();
-	bool GetIsOutput();
-	bool GetIsExported();
-
+	int GetReadValueFd();
+	int GetEdge();
+	bool GetDBState();
+	int GetActiveLow();
+	int SetReadValueFd(int value);
+	bool SetDBState(int db_state);
 	std::string ToString();
-	bool operator<(const CGpioPin& pin) const { return m_id < pin.m_id; };
+	bool operator<(const CGpioPin& pin) const { return m_pin_number < pin.m_pin_number; };
 
 private:
-	int m_id;
 	std::string m_label;
-	bool m_isInput;
-	bool m_isOutput;
 	bool m_isExported;
+	int m_pin_number;		// GPIO Pin number
+	int m_value;			// GPIO pin Value
+	int m_direction;		// GPIO IN or OUT
+	int m_edge;
+	int m_active_low;		// GPIO ActiveLow
+	int m_read_value_fd;	// Fast read fd
+	bool m_db_state;		// Database Value
 };

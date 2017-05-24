@@ -311,9 +311,10 @@ hardware/EcoDevices.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/Ec3kMeterTCP.cpp
-hardware/evohome.cpp
+hardware/EvohomeBase.cpp
+hardware/EvohomeScript.cpp
+hardware/EvohomeSerial.cpp
 hardware/ETH8020.cpp
-hardware/Fitbit.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
