@@ -874,7 +874,7 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin->m_bDebug)
+		if (self->pPlugin && self->pPlugin->m_bDebug)
 		{
 			_log.Log(LOG_NORM, "(%s) Deallocating connection object to %s:%s.", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
@@ -917,6 +917,11 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "%s: Self is NULL.", __func__);
 			}
 			else {
+				self->Name = PyUnicode_FromString("");
+				if (self->Name == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
 				self->Address = PyUnicode_FromString("");
 				if (self->Address == NULL) {
 					Py_DECREF(self);
@@ -961,12 +966,13 @@ namespace Plugins {
 
 	int CConnection_init(CConnection * self, PyObject * args, PyObject * kwds)
 	{
+		char*		pName = NULL;
 		char*		pTransport = NULL;
 		char*		pProtocol = NULL;
 		char*		pAddress = NULL;
 		char*		pPort = NULL;
 		int			iBaud = -1;
-		static char *kwlist[] = { "Transport", "Protocol", "Address", "Port", "Baud", NULL };
+		static char *kwlist[] = { "Name", "Transport", "Protocol", "Address", "Port", "Baud", NULL };
 
 		try
 		{
@@ -990,9 +996,13 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|ssi", kwlist, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "sss|ssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				self->pPlugin = pModState->pPlugin;
+				if (pName) {
+					Py_XDECREF(self->Address);
+					self->Name = PyUnicode_FromString(pName);
+				}
 				if (pAddress) {
 					Py_XDECREF(self->Address);
 					self->Address = PyUnicode_FromString(pAddress);
@@ -1020,7 +1030,7 @@ namespace Plugins {
 			{
 				CPlugin* pPlugin = NULL;
 				if (pModState) pPlugin = pModState->pPlugin;
-				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Connection(Transport=\"<Transport>\", Protocol=\"<Protocol>\", Address=\"<IP-Address>\", Port=\"<Port>\", Baud=0)");
+				_log.Log(LOG_ERROR, "Expected: myVar = Domoticz.Connection(Name=\"<Name>\", Transport=\"<Transport>\", Protocol=\"<Protocol>\", Address=\"<IP-Address>\", Port=\"<Port>\", Baud=0)");
 				LogPythonException(pPlugin, __func__);
 			}
 		}
@@ -1193,8 +1203,8 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
-		PyObject*	pRetVal = PyUnicode_FromFormat("Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
-			self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
+			self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
 			(self->pTransport ? self->pTransport->TotalBytes() : -1),
 			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
 		return pRetVal;

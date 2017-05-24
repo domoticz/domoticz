@@ -199,6 +199,8 @@ namespace Plugins {
 
 			// Configure Python Connection object
 			pConnection->pTransport = pTcpTransport;
+			Py_XDECREF(pConnection->Name);
+			pConnection->Name = PyUnicode_FromString(std::string(sAddress+":"+sPort).c_str());
 			Py_XDECREF(pConnection->Address);
 			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
 			Py_XDECREF(pConnection->Port);
