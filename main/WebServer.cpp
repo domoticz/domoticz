@@ -3627,7 +3627,6 @@ namespace http {
 							root["result"][ii]["idx"] = ID;
 							root["result"][ii]["Name"] = Name;
 							ii++;
-							break;
 						}
 					}
 				}
