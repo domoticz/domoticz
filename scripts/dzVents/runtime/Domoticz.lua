@@ -1,7 +1,5 @@
 local scriptPath = globalvariables['script_path']
 package.path = package.path .. ';' .. scriptPath .. '?.lua'
-
-local EventHelpers = require('EventHelpers')
 local Device = require('Device')
 local Variable = require('Variable')
 local Time = require('Time')

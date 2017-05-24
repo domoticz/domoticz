@@ -1,8 +1,8 @@
 local self = {
-	LOG_INFO = 2,
-	LOG_MODULE_EXEC_INFO = 1.5,
-	LOG_DEBUG = 3,
-	LOG_ERROR = 1
+	LOG_ERROR = 1,
+	LOG_MODULE_EXEC_INFO = 2,
+	LOG_INFO = 3,
+	LOG_DEBUG = 4,
 }
 
 function self.fileExists(name)

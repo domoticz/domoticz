@@ -11,7 +11,7 @@ local persistence = require('persistence')
 
 local HistoricalStorage = require('HistoricalStorage')
 
-local function EventHelpers(settings, domoticz, mainMethod)
+local function EventHelpers(domoticz, mainMethod)
 
 	local globalsDefinition
 
@@ -27,13 +27,10 @@ local function EventHelpers(settings, domoticz, mainMethod)
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
 	end
 
-	if (settings == nil) then
-		ok, settings = pcall(require, 'dzVents_settings')
-		if (not ok) then
-			utils.log('Error reading the settings file dzVents_settings.lua. Make sure you have it. You can rename dzVents_settings_example.lua and use that as an example.', utils.LOG_ERROR)
-			utils.log(settings, utils.LOG_ERROR)
-		end
-	end
+	local settings = {
+		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
+		['Domoticz url'] = globalvariables['domoticz_url'] or 'http://localhost:8080'
+	}
 
 	_G.logLevel = settings['Log level']
 

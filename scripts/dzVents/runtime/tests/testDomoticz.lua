@@ -31,10 +31,7 @@ describe('Domoticz', function()
 		_G.domoticzData = testData.domoticzData
 
 		settings = {
-			['Domoticz ip'] = '10.0.0.8',
-			['Domoticz port'] = '8080',
-			['Fetch interval'] = 'every 30 minutes',
-			['Enable http fetch'] = true,
+			['Domoticz url'] = 'http://10.0.0.8:8080',
 			['Log level'] = 2
 		}
 
@@ -148,9 +145,10 @@ describe('Domoticz', function()
 		end)
 
 		it('should have log constants', function()
-			assert.is_same(domoticz['LOG_INFO'], 2)
-			assert.is_same(domoticz['LOG_DEBUG'], 3)
+			assert.is_same(domoticz['LOG_INFO'], 3)
+			assert.is_same(domoticz['LOG_DEBUG'], 4)
 			assert.is_same(domoticz['LOG_ERROR'], 1)
+			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 		end)
 	end)
 

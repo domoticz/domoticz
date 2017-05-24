@@ -15,7 +15,7 @@ return {
 		device['SetPoint'] = device.rawData[1] or 0
 
 		function device.updateSetPoint(setPoint, mode, untilDate)
-			local url = 'http://' .. domoticz.settings['Domoticz ip'] .. ':' .. domoticz.settings['Domoticz port'] ..
+			local url = domoticz.settings['Domoticz url'] ..
 					'/json.htm?type=setused&idx=' .. device.id .. '&setpoint=' .. setPoint .. '&mode=' .. tostring(mode) .. '&used=true'
 
 			if (untilDate) then

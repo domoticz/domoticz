@@ -10,3 +10,4 @@
 * write more updaters in Device.lua for various types (when possible)
 * web ui for settings
 * changed for updating uservariables
+* remove settingsinfo from docs

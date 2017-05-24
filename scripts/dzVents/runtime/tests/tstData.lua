@@ -267,10 +267,11 @@ local testData = {
 		[9] = {
 			["id"] = 1,
 			["name"] = "x",
+			["variableType"] = 'integer',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:15:23";
 			data = {
-				value = 1
+				["value"] = 1
 			}
 		},
 		[10] = {

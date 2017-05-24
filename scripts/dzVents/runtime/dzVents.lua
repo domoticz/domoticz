@@ -20,7 +20,7 @@ local persistence = require('persistence')
 
 -- _.print(domoticzData)
 
-persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+--persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 
 --print('----------------------------')
 --for idx, device in pairs(domoticzData) do
@@ -48,10 +48,8 @@ persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 --print('----------------------------')
 
 if triggerReason == "time" then
-	print ("Time trigger.")
 	commandArray = helpers.dispatchTimerEventsToScripts()
 elseif triggerReason == "device" then
-	print ("Device trigger.")
 	commandArray = helpers.dispatchDeviceEventsToScripts()
 else
 	print ("Unknown trigger: ", triggerReason)

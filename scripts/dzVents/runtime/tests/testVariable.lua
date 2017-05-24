@@ -46,7 +46,7 @@ describe('variables', function()
 	it('should have properties', function()
 		local var = Variable(domoticz, testData.domoticzData[yVar])
 		assert.is_same(2, var.nValue)
-		assert.is_same('2', var.value)
+		assert.is_same(2, var.value)
 		assert.is_same('2017-04-18 20:16:23', var.lastUpdate.raw)
 	end)
 

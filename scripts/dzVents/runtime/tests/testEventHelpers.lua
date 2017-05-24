@@ -3,8 +3,6 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 
-print(debug.getinfo(1).source)
-
 --package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
@@ -52,7 +50,9 @@ describe('event helpers', function()
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
-			['script_path'] = scriptPath
+			['script_path'] = scriptPath,
+			['dzVents_log_level'] = 1,
+			['domoticz_url'] = 'http://localhost:8080'
 		}
 
 		EventHelpers = require('EventHelpers')
@@ -63,7 +63,7 @@ describe('event helpers', function()
 	end)
 
 	before_each(function()
-		helpers = EventHelpers(settings, domoticz)
+		helpers = EventHelpers(domoticz)
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
 		utils.activateDevicesFile = function() end

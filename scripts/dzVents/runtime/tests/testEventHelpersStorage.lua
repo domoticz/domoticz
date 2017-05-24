@@ -45,6 +45,7 @@ describe('event helper storage', function()
 
 	setup(function()
 		local settings = {
+			['Domoticz url'] = 'http://10.0.0.8:8080',
 			['Log level'] = 1
 		}
 
@@ -53,7 +54,9 @@ describe('event helper storage', function()
 		_G.globalvariables = {
 			Security = 'sec',
 			['radix_separator'] = '.',
-			['script_path'] = scriptPath
+			['script_path'] = scriptPath,
+			['dzVents_log_level'] = 1,
+			['domoticz_url'] = 'http://localhost:8080'
 		}
 
 		EventHelpers = require('EventHelpers')
@@ -64,7 +67,7 @@ describe('event helper storage', function()
 	end)
 
 	before_each(function()
-		helpers = EventHelpers(settings, domoticz)
+		helpers = EventHelpers(domoticz)
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
 		os.remove('../tests/scripts/storage/__data_script_data.lua')

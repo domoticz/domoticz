@@ -16,7 +16,7 @@ return {
 
 		function device.updateSetPoint(setPoint)
 			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
-			local url = 'http://' .. domoticz.settings['Domoticz ip'] .. ':' .. domoticz.settings['Domoticz port'] ..
+			local url = domoticz.settings['Domoticz url']..
 					'/json.htm?type=command&param=udevice&idx=' .. device.id .. '&nvalue=0&svalue=' .. setPoint
 			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
 			domoticz.openURL(url)
