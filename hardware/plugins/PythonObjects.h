@@ -186,6 +186,7 @@ namespace Plugins {
 
 	typedef struct {
 		PyObject_HEAD
+		PyObject*			Name;
 		PyObject*			Address;
 		PyObject*			Port;
 		int					Baud;
@@ -210,6 +211,7 @@ namespace Plugins {
 	PyObject* CConnection_str(CConnection* self);
 
 	static PyMemberDef CConnection_members[] = {
+		{ "Name", T_OBJECT,	offsetof(CConnection, Name), READONLY, "Name" },
 		{ "Address", T_OBJECT,	offsetof(CConnection, Address), READONLY, "Address" },
 		{ "Port", T_OBJECT,	offsetof(CConnection, Port), READONLY, "Port" },
 		{ "Baud", T_INT, offsetof(CConnection, Baud), READONLY, "Baud" },
