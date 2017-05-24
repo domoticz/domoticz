@@ -41,7 +41,6 @@ namespace http {
 				secureServer_.reset(new CWebServer());
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection.push_back(secureServer_);
-				our_listener_port = secure_web_settings.listening_port;
 			}
 #endif
 
