@@ -30,7 +30,7 @@
 class CEvohomeWeb : public CEvohomeBase
 {
 public:
-	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool updatedev, const bool showschedule);
+	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool updatedev, const bool showschedule, const bool showlocation, const unsigned int installation);
 	~CEvohomeWeb(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
@@ -52,6 +52,13 @@ private:
 	unsigned long m_zones [13];
 	time_t m_sessiontimer;
 	bool m_bequiet;
+	bool m_showlocation;
+	std::string m_szlocationName;
+
+	uint8_t m_locationId;
+	uint8_t m_gatewayId;
+	uint8_t m_systemId;
+
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
 	static const std::string weekdays[7];
