@@ -1,18 +1,20 @@
 local genericAdapter = require('generic_device')
 
 local deviceAdapters = {
-	'lux_device',
-	'zone_heating_device',
-	'kwh_device',
-	'p1_smartmeter_device',
+	'airquality_device',
 	'electric_usage_device',
+	'evohome_device',
+	'kwh_device',
+	'lux_device',
+	'opentherm_gateway_device',
+	'p1_smartmeter_device',
+	'rain_device',
 	'thermostat_setpoint_device',
 	'text_device',
-	'rain_device',
-	'airquality_device',
-	'kodi_device',
-	'evohome_device',
-	'opentherm_gateway_device'
+	'uv_device',
+	'wind_device',
+	'zone_heating_device',
+	'kodi_device'
 }
 local fallBackDeviceAdapter = genericAdapter
 
@@ -35,8 +37,11 @@ local function DeviceAdapters(utils)
 
 		name = 'Generic device adapter',
 
-		getDeviceAdapter = function(device)
-			-- find a matching adapter
+		getDeviceAdapters = function(device)
+			-- find a matching adapters
+
+			local adapters = {}
+
 			for i, adapterName in pairs(deviceAdapters) do
 
 				-- do a safe call and catch possible errors
@@ -46,15 +51,12 @@ local function DeviceAdapters(utils)
 				else
 					local matches = adapter.matches(device)
 					if (matches) then
-						return adapter
+						table.insert(adapters, adapter)
 					end
-
 				end
 			end
 
-			-- no adapter found
-			-- return the fallback
-			return genericAdapter
+			return adapters
 		end,
 
 		deviceAdapters = deviceAdapters,

@@ -2658,7 +2658,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, "hardwareName");
 			lua_pushstring(lua_state, _hardwareNames[hwID].Name.c_str());
 			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareTypeVal");
+			lua_pushstring(lua_state, "hardwareTypeValue");
 			lua_pushnumber(lua_state, (lua_Number)_hardwareNames[hwID].HardwareTypeVal);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "hardwareType");

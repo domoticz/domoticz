@@ -293,7 +293,7 @@ describe('device', function()
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
 		end)
 
-		it('should detect an opentherm setpoint device', function()
+		it('should detect an opentherm gateway device', function()
 
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -315,6 +315,44 @@ describe('device', function()
 
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
 		end)
+
+		it('should detect a wind device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Wind',
+				['rawData'] = {
+					[1] = "243";
+					[2] = "SE";
+					[3] = "660";
+					[4] = "120";
+					[5] = "33";
+					[6] = "32";
+				}
+			})
+			assert.is.same(12, device.gust)
+			assert.is.same(33, device.temperature)
+			assert.is.same(32, device.chill)
+
+			device.updateWind(1, 2, 3, 4, 5, 6)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|1;2;30;40;5;6" } }, commandArray)
+
+		end)
+
+		it('should detect a uv device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'UV',
+				['rawData'] = {
+					[1] = "123.55";
+					[2] = "0";
+				}
+			})
+			assert.is.same(123.55, device.uv)
+
+			device.updateUV(33.5)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|33.5;0" } }, commandArray)
+		end)
+
 
 		describe('Kodi', function()
 
@@ -515,8 +553,6 @@ describe('device', function()
 		assert.is_same({["myDevice"]="Set Level 15"}, cmd._latest)
 	end)
 
-
-
 	describe('Updating', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
@@ -546,16 +582,6 @@ describe('device', function()
 		it('should update temperature and humidity and barometer', function()
 			device.updateTempHumBaro(10, 20, 2, 5,7)
 			assert.is_same({{["UpdateDevice"]="100|0|10;20;2;5;7"}}, commandArray)
-		end)
-
-		it('should update wind', function()
-			device.updateWind(1,2,3,4,5,6)
-			assert.is_same({{["UpdateDevice"]="100|0|1;2;3;4;5;6"}}, commandArray)
-		end)
-
-		it('should update uv', function()
-			device.updateUV(12)
-			assert.is_same({{["UpdateDevice"]="100|0|12;0"}}, commandArray)
 		end)
 
 		it('should update counter', function()
@@ -592,7 +618,6 @@ describe('device', function()
 			device.updateVoltage(120)
 			assert.is_same({{["UpdateDevice"]="100|0|120"}}, commandArray)
 		end)
-
 
 		it('should update alert sensor', function()
 			device.updateAlertSensor(45, 'o dear')

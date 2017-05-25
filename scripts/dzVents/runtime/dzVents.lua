@@ -20,7 +20,9 @@ local persistence = require('persistence')
 
 -- _.print(domoticzData)
 
---persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+if (_G.TESTMODE == nil) then
+	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+end
 
 --print('----------------------------')
 --for idx, device in pairs(domoticzData) do

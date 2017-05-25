@@ -177,21 +177,6 @@ local function Device(domoticz, data)
 		self.update(0, value)
 	end
 
-	function self.updateWind(bearing, direction, speed, gust, temperature, chill)
-		local value = tostring(bearing) .. ';' ..
-				tostring(direction) .. ';' ..
-				tostring(speed) .. ';' ..
-				tostring(gust) .. ';' ..
-				tostring(temperature) .. ';' ..
-				tostring(chill)
-		self.update(0, value)
-	end
-
-	function self.updateUV(uv)
-		local value = tostring(uv) .. ';0'
-		self.update(0, value)
-	end
-
 	function self.updateCounter(value)
 		self.update(0, value)
 	end
@@ -292,7 +277,6 @@ local function Device(domoticz, data)
 		self['deviceType'] = data.deviceType
 		self['hardwareName'] = data.hardwareName
 		self['hardwareType'] = data.hardwareType
-		self['hardwareTypeId'] = data.hardwareTypeID -- todo ?
 		self['hardwareId'] = data.hardwareID
 		self['hardwareTypeVal'] = data.hardwareTypeValue
 		self['switchType'] = data.switchType
@@ -308,10 +292,10 @@ local function Device(domoticz, data)
 		adapters.genericAdapter.process(self)
 
 		-- get a specific adapter for the current device
-		local adapter = adapters.getDeviceAdapter(self)
-
-		-- apply the adapter
-		adapter.process(self, data, domoticz, utils)
+		local adapters = adapters.getDeviceAdapters(self)
+		for i, adapter in pairs(adapters) do
+			adapter.process(self, data, domoticz, utils)
+		end
 
 	elseif (data.baseType == 'group' or data.baseType == 'scene') then
 		state = data.data._state
