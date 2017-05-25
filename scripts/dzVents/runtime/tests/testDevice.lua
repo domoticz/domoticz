@@ -609,11 +609,6 @@ describe('device', function()
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
 		end)
 
-		it('should update temperature and humidity and barometer', function()
-			device.updateTempHumBaro(10, 20, 2, 5,7)
-			assert.is_same({{["UpdateDevice"]="100|0|10;20;2;5;7"}}, commandArray)
-		end)
-
 		it('should update counter', function()
 			device.updateCounter(22)
 			assert.is_same({{["UpdateDevice"]="100|0|22"}}, commandArray)

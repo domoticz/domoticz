@@ -81,10 +81,11 @@ local function Domoticz(settings)
 		['BARO_THUNDERSTORM'] = 4,
 		['BARO_UNKNOWN'] = 5,
 		['BARO_CLOUDY_RAIN'] = 6,
-		['BARO_NOINFO'] = 0,
-		['BARO_PARTLYCLOUDY'] = 2,
-		['BARO_CLOUDY'] = 3,
-		['BARO_RAIN'] = 4,
+
+--		['BARO_NOINFO'] = 0,
+--		['BARO_PARTLYCLOUDY'] = 2,
+--		['BARO_CLOUDY'] = 3,
+--		['BARO_RAIN'] = 4,
 
 
 		['ALERTLEVEL_GREY'] = 0,

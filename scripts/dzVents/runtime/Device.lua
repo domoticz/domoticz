@@ -135,15 +135,6 @@ local function Device(domoticz, data)
 	-- update specials
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
-	function self.updateTempHumBaro(temperature, humidity, status, pressure, forecast)
-		local value = tostring(temperature) .. ';' ..
-				tostring(humidity) .. ';' ..
-				tostring(status) .. ';' ..
-				tostring(pressure) .. ';' ..
-				tostring(forecast)
-		self.update(0, value)
-	end
-
 	function self.updateCounter(value)
 		self.update(0, value)
 	end
