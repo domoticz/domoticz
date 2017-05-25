@@ -353,6 +353,15 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|33.5;0" } }, commandArray)
 		end)
 
+		it('should detect a barometer device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Barometer',
+			})
+
+			device.updateBarometer(1024, 'Purple rain soon')
+			assert.is_same({ { ["UpdateDevice"] = "1|0|1024;Purple rain soon" } }, commandArray)
+		end)
 
 		describe('Kodi', function()
 
@@ -567,11 +576,6 @@ describe('device', function()
 		it('should update humidity', function()
 			device.updateHumidity(10, 1)
 			assert.is_same({{["UpdateDevice"]="100|10|1"}}, commandArray)
-		end)
-
-		it('should update barometer', function()
-			device.updateBarometer(10, 1)
-			assert.is_same({{["UpdateDevice"]="100|0|10;1"}}, commandArray)
 		end)
 
 		it('should update temperature and humidity', function()

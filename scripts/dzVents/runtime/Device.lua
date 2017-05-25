@@ -149,20 +149,6 @@ local function Device(domoticz, data)
 		self.update(humidity, status)
 	end
 
-	function self.updateBarometer(pressure, forecast)
-		--[[
-			forecast:
-			 domoticz.BARO_STABLE
-			domoticz.BARO_SUNNY
-			domoticz.BARO_CLOUDY
-			domoticz.BARO_UNSTABLE
-			domoticz.BARO_THUNDERSTORM
-			domoticz.BARO_UNKNOWN
-			domoticz.BARO_CLOUDY_RAIN
-		 ]]
-		self.update(0, tostring(pressure) .. ';' .. tostring(forecast))
-	end
-
 	function self.updateTempHum(temperature, humidity, status)
 		local value = tostring(temperature) .. ';' .. tostring(humidity) .. ';' .. tostring(status)
 		self.update(0, value)
