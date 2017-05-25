@@ -146,7 +146,7 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
-			if (m_LastHeartbeat > m_sessiontimer) // discard our session with the honeywell server
+			if ( m_loggedon && (m_LastHeartbeat > m_sessiontimer) ) // discard our session with the honeywell server
 			{
 				m_loggedon = false;
 				m_bequiet = true;
