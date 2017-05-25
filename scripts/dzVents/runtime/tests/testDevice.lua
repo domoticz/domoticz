@@ -379,9 +379,30 @@ describe('device', function()
 				['type'] = 'Humidity',
 			})
 
-			device.updateHumidity(66)
-			assert.is_same({ { ["UpdateDevice"] = "1|66" } }, commandArray)
+			device.updateHumidity(66, 'wet')
+			assert.is_same({ { ["UpdateDevice"] = "1|66|wet" } }, commandArray)
 		end)
+
+		it('should detect a temp+humidity device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Temp + Humidity',
+			})
+
+			device.updateTempHum(10, 12, 'wet')
+			assert.is_same({ { ["UpdateDevice"] = "1|0|10;12;wet" } }, commandArray)
+		end)
+
+		it('should detect a temp+humidity+barometer device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Temp + Humidity + Baro'
+			})
+
+			device.updateTempHumBaro(10, 12, 'wet', 1000, 'thunder')
+			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;thunder' } }, commandArray)
+		end)
+
 
 		describe('Kodi', function()
 
@@ -586,11 +607,6 @@ describe('device', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-
-		it('should update temperature and humidity', function()
-			device.updateTempHum(10, 20, 2)
-			assert.is_same({{["UpdateDevice"]="100|0|10;20;2"}}, commandArray)
 		end)
 
 		it('should update temperature and humidity and barometer', function()

@@ -72,6 +72,8 @@ local function Domoticz(settings)
 		['HUM_COMFORTABLE'] = 1,
 		['HUM_DRY'] = 2,
 		['HUM_WET'] = 3,
+
+		-- barometer constants are totally inconsistent
 		['BARO_STABLE'] = 0,
 		['BARO_SUNNY'] = 1,
 		['BARO_CLOUDY'] = 2,
@@ -79,6 +81,12 @@ local function Domoticz(settings)
 		['BARO_THUNDERSTORM'] = 4,
 		['BARO_UNKNOWN'] = 5,
 		['BARO_CLOUDY_RAIN'] = 6,
+		['BARO_NOINFO'] = 0,
+		['BARO_PARTLYCLOUDY'] = 2,
+		['BARO_CLOUDY'] = 3,
+		['BARO_RAIN'] = 4,
+
+
 		['ALERTLEVEL_GREY'] = 0,
 		['ALERTLEVEL_GREEN'] = 1,
 		['ALERTLEVEL_YELLOW'] = 2,

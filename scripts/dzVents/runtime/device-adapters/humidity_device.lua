@@ -21,7 +21,7 @@ return {
 				domoticz.HUM_WET
 			 ]]
 
-			if (state == nil) then
+			if (status == nil) then
 				-- when no status is provided, domoticz will not set the device obviously
 				utils.log('No status provided. Humidity not set', utils.LOG_ERROR)
 				return

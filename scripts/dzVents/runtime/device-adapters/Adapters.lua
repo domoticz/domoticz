@@ -13,6 +13,8 @@ local deviceAdapters = {
 	'rain_device',
 	'thermostat_setpoint_device',
 	'temperature_device',
+	'temperature_humidity_device',
+	'temperature_humidity_barometer_device',
 	'text_device',
 	'uv_device',
 	'wind_device',
