@@ -24,6 +24,7 @@ describe('timed commands', function()
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
+			['domoticz_listening_port'] = '8080',
 			['script_path'] = scriptPath
 		}
 		TimedCommand = require('TimedCommand')

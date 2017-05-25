@@ -21,7 +21,8 @@ describe('Event dispatching', function()
 
 		_G.globalvariables = {
 			['radix_separator'] = '.',
-			Security = 'sec',
+			['Security'] = 'sec',
+			['domoticz_listening_port'] = '8080',
 			['script_path'] = scriptPath
 		}
 

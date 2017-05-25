@@ -19,7 +19,8 @@ describe('event helpers', function()
 		_G.globalvariables = {
 			Security = 'sec',
 			['radix_separator'] = '.',
-			['script_path'] = scriptPath
+			['script_path'] = scriptPath,
+			['domoticz_listening_port'] = '8080'
 		}
 		utils = require('Utils')
 	end)

@@ -25,13 +25,14 @@ describe('Domoticz', function()
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
-			['script_path'] = scriptPath
+			['script_path'] = scriptPath,
+			['domoticz_listening_port'] = '8080'
 		}
 
 		_G.domoticzData = testData.domoticzData
 
 		settings = {
-			['Domoticz url'] = 'http://10.0.0.8:8080',
+			['Domoticz url'] = 'http://127.0.0.1:8080',
 			['Log level'] = 2
 		}
 

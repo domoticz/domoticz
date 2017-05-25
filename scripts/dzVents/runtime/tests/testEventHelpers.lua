@@ -41,7 +41,8 @@ describe('event helpers', function()
 
 	setup(function()
 		settings = {
-			['Log level'] = 1
+			['Log level'] = 1,
+
 		}
 
 		_G.TESTMODE = true
@@ -52,7 +53,7 @@ describe('event helpers', function()
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath,
 			['dzVents_log_level'] = 1,
-			['domoticz_url'] = 'http://localhost:8080'
+			['domoticz_listening_port'] = '8181'
 		}
 
 		EventHelpers = require('EventHelpers')
@@ -352,6 +353,11 @@ describe('event helpers', function()
 				"[2] = b: 2",
 				"====================================================="
 			}, messages)
+		end)
+		it('should have proper settings', function()
+
+			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
+
 		end)
 	end)
 

@@ -109,7 +109,7 @@ describe('device', function()
 
 	local domoticz = {
 		settings = {
-			['Domoticz url'] = 'http://10.0.0.8:8080',
+			['Domoticz url'] = 'http://127.0.0.1:8080',
 			['Log level'] = 2
 		},
 		['radixSeparator'] = '.',
@@ -126,7 +126,8 @@ describe('device', function()
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
-			['script_path'] = scriptPath
+			['script_path'] = scriptPath,
+			['domoticz_listening_port'] = '8080'
 		}
 
 		Device = require('Device')
@@ -229,7 +230,7 @@ describe('device', function()
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://10.0.0.8:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
 
 		end)
 
@@ -289,7 +290,7 @@ describe('device', function()
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
-			assert.is_same('http://10.0.0.8:8080/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
 		end)
 
 		it('should detect an opentherm setpoint device', function()
@@ -312,7 +313,7 @@ describe('device', function()
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://10.0.0.8:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
 		end)
 
 		describe('Kodi', function()

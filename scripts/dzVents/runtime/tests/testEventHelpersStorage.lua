@@ -56,7 +56,7 @@ describe('event helper storage', function()
 			['radix_separator'] = '.',
 			['script_path'] = scriptPath,
 			['dzVents_log_level'] = 1,
-			['domoticz_url'] = 'http://localhost:8080'
+			['domoticz_listening_port'] = '8080'
 		}
 
 		EventHelpers = require('EventHelpers')

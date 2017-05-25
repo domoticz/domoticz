@@ -27,9 +27,13 @@ local function EventHelpers(domoticz, mainMethod)
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
 	end
 
+	local domoticzPort = tostring(globalvariables['domoticz_listening_port'])
+	if (domoticzPort == nil) then domoticzPort = '8080' end
+	local url  = 'http://127.0.0.1:' .. domoticzPort
+
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
-		['Domoticz url'] = globalvariables['domoticz_url'] or 'http://localhost:8080'
+		['Domoticz url'] = url
 	}
 
 	_G.logLevel = settings['Log level']
