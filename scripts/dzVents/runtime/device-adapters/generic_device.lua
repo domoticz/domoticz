@@ -44,16 +44,16 @@ local function setStateAttribute(state, device)
 	end
 
 	if (level) then
-		device.addAttribute('level', tonumber(level))
+		device['level'] = tonumber(level)
 	end
 
 
 	if (state ~= nil) then -- not all devices have a state like sensors
 		if (type(state) == 'string') then -- just to be sure
-			device.addAttribute('state', state)
-			device.addAttribute('bState', stateToBool(state))
+			device['state'] = state
+			device['bState'] = stateToBool(state)
 		else
-			device.addAttribute('state', state)
+			device['state'] = state
 		end
 	end
 
@@ -77,7 +77,7 @@ return {
 		setStateAttribute(data._state, device)
 
 		for attribute, value in pairs(data) do
-			device.addAttribute(attribute, value)
+			device[attribute] = value
 		end
 
 		return device

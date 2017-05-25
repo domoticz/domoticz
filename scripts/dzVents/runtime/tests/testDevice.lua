@@ -176,14 +176,21 @@ describe('device', function()
 
 		it('should detect a kwh device', function()
 
-			local data = {
-				['counterToday'] = '1.234 kWh'
-			}
-
-			local device = getDevice_(domoticz, 'myDevice', nil, true, 'General', 'kWh', nil, nil, data)
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'kWh',
+				['additionalDataData'] = {
+					['counterToday'] = '1.234 kWh',
+					['usage'] = '654.44 Watt'
+				}
+			})
 
 			assert.is_same(1234, device.WhToday)
+			assert.is_same(1.234, device['counterToday'])
+			assert.is_same(654.44, device['usage'])
 
+			device.updateElectricity(220, 1000)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|220;1000" } }, commandArray)
 		end)
 
 		it('should detect an electric usage device', function()
@@ -403,6 +410,39 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;thunder' } }, commandArray)
 		end)
 
+		it('should detect a counter device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'RFXMeter counter',
+				['additionalDataData'] = {
+					["counterToday"] = "123.44 Watt";
+					["counter"] = "6.7894 kWh";
+				}
+			})
+			assert.is_same(123.44, device.counterToday)
+			assert.is_same(6.7894, device.counter)
+
+			device.updateCounter(555)
+			assert.is_same({ { ["UpdateDevice"] = '1|0|555' } }, commandArray)
+
+		end)
+
+		it('should detect an incremental counter device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Counter Incremental',
+				['additionalDataData'] = {
+					["counterToday"] = "123.44 Watt";
+					["counter"] = "6.7894 kWh";
+				}
+			})
+			assert.is_same(123.44, device.counterToday)
+			assert.is_same(6.7894, device.counter)
+
+			device.updateCounter(555)
+			assert.is_same({ { ["UpdateDevice"] = '1|0|555' } }, commandArray)
+		end)
+
 
 		describe('Kodi', function()
 
@@ -609,15 +649,6 @@ describe('device', function()
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
 		end)
 
-		it('should update counter', function()
-			device.updateCounter(22)
-			assert.is_same({{["UpdateDevice"]="100|0|22"}}, commandArray)
-		end)
-
-		it('should update electricity', function()
-			device.updateElectricity(220, 1000)
-			assert.is_same({{["UpdateDevice"]="100|0|220;1000"}}, commandArray)
-		end)
 
 		it('should update P1', function()
 			device.updateP1(1,2,3,4,5,6)

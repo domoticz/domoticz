@@ -34,40 +34,40 @@ local function Device(domoticz, data)
 		['all off'] = { b = false, inv = 'All On' },
 	}
 
-	-- some states will be 'booleanized'
-	local function stateToBool(state)
-		state = string.lower(state)
-		local info = _states[state]
-		local b
-		if (info) then
-			b = _states[state]['b']
-		end
-
-		if (b == nil) then b = false end
-		return b
-	end
-
-	function setStateAttribute(state)
-		local level;
-		if (state and string.find(state, 'Set Level')) then
-			level = string.match(state, "%d+") -- extract dimming value
-			state = 'On' -- consider the device to be on
-		end
-
-		if (level) then
-			self['level'] = tonumber(level)
-		end
-
-
-		if (state ~= nil) then -- not all devices have a state like sensors
-			if (type(state) == 'string') then -- just to be sure
-				self['state'] = state
-				self['bState'] = stateToBool(self['state'])
-			else
-				self['state'] = state
-			end
-		end
-	end
+--	-- some states will be 'booleanized'
+--	local function stateToBool(state)
+--		state = string.lower(state)
+--		local info = _states[state]
+--		local b
+--		if (info) then
+--			b = _states[state]['b']
+--		end
+--
+--		if (b == nil) then b = false end
+--		return b
+--	end
+--
+--	function setStateAttribute(state)
+--		local level;
+--		if (state and string.find(state, 'Set Level')) then
+--			level = string.match(state, "%d+") -- extract dimming value
+--			state = 'On' -- consider the device to be on
+--		end
+--
+--		if (level) then
+--			self['level'] = tonumber(level)
+--		end
+--
+--
+--		if (state ~= nil) then -- not all devices have a state like sensors
+--			if (type(state) == 'string') then -- just to be sure
+--				self['state'] = state
+--				self['bState'] = stateToBool(self['state'])
+--			else
+--				self['state'] = state
+--			end
+--		end
+--	end
 
 	-- extract dimming levels for dimming devices
 	local level
@@ -135,13 +135,6 @@ local function Device(domoticz, data)
 	-- update specials
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
-	function self.updateCounter(value)
-		self.update(0, value)
-	end
-
-	function self.updateElectricity(power, energy)
-		self.update(0, tostring(power) .. ';' .. tostring(energy))
-	end
 
 	function self.updateP1(usage1, usage2, return1, return2, cons, prod)
 		--[[
@@ -207,14 +200,10 @@ local function Device(domoticz, data)
 		self.update(0, value)
 	end
 
+	-- todo get rid of this (there's an example using it)
 	function self.attributeChanged(attribute)
 		-- returns true if an attribute is marked as changed
 		return (changedAttributes[attribute] == true)
-	end
-
-	function self.addAttribute(attribute, value)
-		-- add attribute to this device
-		self[attribute] = value
 	end
 
 	local state
@@ -259,7 +248,8 @@ local function Device(domoticz, data)
 		state = data.data._state
 		self['lastUpdate'] = Time(data.lastUpdate)
 		self['rawData'] = { [1]=data.state }
-		setStateAttribute(state)
+		adapters.genericAdapter.process(self)
+		--setStateAttribute(state)
 	end
 
 	--setStateAttribute(state)
@@ -274,8 +264,6 @@ local function Device(domoticz, data)
 			return utils
 		end
 	end
-
-
 
 
 	return self
