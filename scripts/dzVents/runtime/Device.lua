@@ -134,9 +134,6 @@ local function Device(domoticz, data)
 
 	-- update specials
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
-	function self.updateTemperature(temperature)
-		self.update(0, temperature)
-	end
 
 	function self.updateHumidity(humidity, status)
 		--[[

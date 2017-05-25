@@ -4,7 +4,7 @@ return {
 
 	baseType = 'device',
 
-	name = 'Wind device adapter',
+	name = 'Barometer device adapter',
 
 	matches = function (device)
 		return (device.deviceSubType == 'Barometer')
@@ -23,6 +23,7 @@ return {
 			domoticz.BARO_CLOUDY_RAIN
 		 ]]
 		function device.updateBarometer(pressure, forecast)
+			-- pressure in hPa
 			device.update(0, tostring(pressure) .. ';' .. tostring(forecast))
 		end
 

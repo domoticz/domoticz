@@ -11,13 +11,13 @@ local deviceAdapters = {
 	'p1_smartmeter_device',
 	'rain_device',
 	'thermostat_setpoint_device',
+	'temperature_device',
 	'text_device',
 	'uv_device',
 	'wind_device',
 	'zone_heating_device',
 	'kodi_device'
 }
-local fallBackDeviceAdapter = genericAdapter
 
 local _utils = require('Utils')
 
