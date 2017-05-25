@@ -5,6 +5,7 @@ local deviceAdapters = {
 	'barometer_device',
 	'electric_usage_device',
 	'evohome_device',
+	'humidity_device',
 	'kwh_device',
 	'lux_device',
 	'opentherm_gateway_device',
