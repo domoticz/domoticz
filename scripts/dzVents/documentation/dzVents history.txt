@@ -1,3 +1,7 @@
+* Add support for subsystem for domoticz.notify function
+* Add reduce iterator for devices, changedDevices and variables.
+
+
 [1.1.2]
 * More robust way of updating devices.lua
 * Added device level information for non-dimmer-like devices

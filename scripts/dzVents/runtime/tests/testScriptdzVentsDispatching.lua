@@ -119,7 +119,7 @@ describe('Event dispatching', function()
 		assert.is_same({
 			{ ["onscript1"] = "Off" },
 			{ ["onscript1"] = "Set Level 10" },
-			{ ["SendNotification"] = 'Yo##0#pushover' }
+			{ ["SendNotification"] = 'Yo##0#pushover##' }
 		}, main)
 	end)
 
@@ -130,7 +130,7 @@ describe('Event dispatching', function()
 		local main = require('dzVents')
 		assert.is_same({
 			{ ["onscript1"] = "Off" },
-			{ ["SendNotification"] = "Me#timer every minute#0#pushover" },
+			{ ["SendNotification"] = "Me#timer every minute#0#pushover##" },
 			{ ["Scene:scene 1"] = "On" }
 		}, main)
 	end)

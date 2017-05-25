@@ -12,7 +12,7 @@ return {
 	},
 	execute = function(domoticz)
 
-		local message
+		local message = ""
 
 		for i, deviceToCheck in pairs(devicesToCheck) do
 			local name = deviceToCheck['name']
