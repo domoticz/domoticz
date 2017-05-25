@@ -154,8 +154,8 @@ void CEvohomeWeb::Do_Work()
 		}
 		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
 		{
-			if (GetStatus())
-				int pollcounter = LOGONFAILTRESHOLD;
+			GetStatus();
+			int pollcounter = LOGONFAILTRESHOLD;
 		}
 	}
 	_log.Log(LOG_STATUS,"EvohomeWeb: Worker stopped...");
