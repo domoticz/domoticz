@@ -48,4 +48,6 @@ private:
 	void ParseData(const unsigned char *pData, const int Len, const bool disable_crc, int ratelimit);
 
 	bool CheckCRC();
+
+	bool hflogonce;
 };

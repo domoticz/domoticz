@@ -133,6 +133,8 @@ void P1MeterBase::Init()
 	m_gastimestamp="";
 	m_gasclockskew=0;
 	m_gasoktime=0;
+
+	hflogonce=true;
 }
 
 bool P1MeterBase::MatchLine()
@@ -222,11 +224,17 @@ bool P1MeterBase::MatchLine()
 					else if (atime>=m_gasoktime){
 						struct tm ltime;
 						localtime_r(&atime, &ltime);
-						char myts[13];
+						char myts[16];
 						sprintf(myts,"%02d%02d%02d%02d%02d%02dW",ltime.tm_year%100,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 						if (ltime.tm_isdst)
 						myts[12]='S';
-						if (strncmp((const char*)&myts,m_gastimestamp.c_str(),m_gastimestamp.length())>=0){
+						if (hflogonce && (m_gastimestamp.length()>13))
+						{
+							_log.Log(LOG_ERROR, "P1: The gas timestamp on this meter appears to have an unknown format.");
+							hflogonce = false;
+						}
+						if ( (m_gastimestamp.length()>13) || (strncmp((const char*)&myts,m_gastimestamp.c_str(),m_gastimestamp.length())>=0) )
+						{
 							m_lastSharedSendGas=atime;
 							m_lastgasusage=m_gas.gasusage;
 							m_gasoktime+=300;
