@@ -17,7 +17,7 @@ return {
 		local info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counterToday'] = info['value']
 
-		formatted = device.counter or ''
+		formatted = tostring(device.counter) or ''
 		info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counter'] = info['value']
 

@@ -12,6 +12,7 @@ local deviceAdapters = {
 	'lux_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',
+	'percentage_device',
 	'pressure_device',
 	'rain_device',
 	'thermostat_setpoint_device',
@@ -58,6 +59,7 @@ local function DeviceAdapters(utils)
 				else
 					local matches = adapter.matches(device)
 					if (matches) then
+						utils.log('Adapter found for ' .. device.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 						table.insert(adapters, adapter)
 					end
 				end

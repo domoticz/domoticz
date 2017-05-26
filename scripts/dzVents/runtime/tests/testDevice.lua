@@ -498,6 +498,18 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|567" } }, commandArray)
 		end)
 
+		it('should detect a percentage device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Percentage',
+				['rawData'] = { [1] = 99.98 }
+			})
+
+			assert.is_same( 99.98, device.percentage )
+			device.updatePercentage(12.55)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|12.55" } }, commandArray)
+		end)
+
 		describe('Kodi', function()
 
 			local device = getDevice(domoticz, {
@@ -702,12 +714,6 @@ describe('device', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
 		end)
-
-		it('should update percentage', function()
-			device.updatePercentage(88)
-			assert.is_same({{["UpdateDevice"]="100|0|88"}}, commandArray)
-		end)
-
 		it('should update voltage', function()
 			device.updateVoltage(120)
 			assert.is_same({{["UpdateDevice"]="100|0|120"}}, commandArray)

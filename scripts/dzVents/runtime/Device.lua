@@ -137,9 +137,6 @@ local function Device(domoticz, data)
 
 
 
-	function self.updatePercentage(percentage)
-		self.update(0, percentage)
-	end
 
 	function self.updateVoltage(voltage)
 		self.update(0, voltage)
@@ -208,6 +205,7 @@ local function Device(domoticz, data)
 		-- get a specific adapter for the current device
 		local adapters = adapters.getDeviceAdapters(self)
 		for i, adapter in pairs(adapters) do
+			utils.log('Processing adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 			adapter.process(self, data, domoticz, utils)
 		end
 
