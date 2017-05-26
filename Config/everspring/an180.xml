@@ -5,7 +5,7 @@
         <Value type="short" index="1" genre="config" label="Basic Set" min="0" max="255" size="2" value="255">
             <Help>Basic Set Command value</Help>
         </Value>
-        <Value type="short" index="2" genre="config" label="Delay" min="3" max="25" size="1" value="3">
+        <Value type="short" index="2" genre="config" label="Delay" min="3" max="25" size="2" value="3">
             <Help>
                 The delaying time to report to Group 1
             </Help>

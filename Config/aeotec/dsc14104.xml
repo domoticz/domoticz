@@ -9,13 +9,13 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6009584516
     <Value type="int" index="1" genre="config" label="Motor start delay time" units="ms" size="4" value="0">
       <Help>Motor start delay time (ms)</Help>
     </Value>
-	<Value type="short" index="5" genre="config" label="Opening time" units="ms" size="4" value="5000">
+	<Value type="short" index="5" genre="config" label="Opening time" units="ms" size="2" value="5000">
       <Help>
 	  Total time from endpoint of close go to endpoint of opening (ms).
 	  This value set 0x00000000, will use the time of last calibration.
 	  Default 5 seconds</Help>
     </Value>
-    <Value type="short" index="6" genre="config" label="Closing time" units="ms" size="4" value="5000">
+    <Value type="short" index="6" genre="config" label="Closing time" units="ms" size="2" value="5000">
       <Help>
 	  Total time from endpoint of opening go to endpoint of close (ms).
 	  This value set 0x00000000, will use the time of last calibration.

@@ -204,7 +204,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
   ENDIF()
-
+  IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  ENDIF()
   IF(CMAKE_COMPILER_IS_GNUCXX)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
@@ -314,6 +316,7 @@ hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeScript.cpp
 hardware/EvohomeSerial.cpp
+hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
@@ -383,7 +386,7 @@ hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
-hardware/SysfsGPIO.cpp
+hardware/SysfsGpio.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -661,10 +664,10 @@ else()
 ENDIF(WiringPi)
 
 IF(EXISTS /sys/class/gpio)
-	message(STATUS "Sysfs GPIO available")
+	message(STATUS "Sysfs gpio is available")
 	add_definitions(-DWITH_SYSFS_GPIO)
 ELSE()
-	message(STATUS "Sysfs GPIO not available")
+	message(STATUS "Sysfs gpio is not available")
 ENDIF()
 
 
@@ -682,6 +685,8 @@ endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 else()
   target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()

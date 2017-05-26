@@ -355,50 +355,62 @@ bool HTTPClient::GET(const std::string &url, std::string &response, const bool b
 	return true;
 }
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return false;
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse, bFollowRedirect))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!PUTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::Delete(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::Delete(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!DeleteBinary(url, postdata, ExtraHeaders, vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }

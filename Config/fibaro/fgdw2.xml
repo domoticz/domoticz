@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fibaro: FGK101 Door Opening Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" size="1" genre="config" instance="1" index="1" label="Door/window state" value="0">
+            <Help>This parameter allows to set in what state is door/window when the magnet is close to the sensor.</Help>
+            <Item label="Closed" value="0"/>
+            <Item label="Opened" value="1"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="Visual LED indications" value="6" min="1" max="7" size="1">
+            <Help>This parameter defines events indicated by the visual LED indicator.
+                Disabling events might extend battery life.
+                0 - no indications
+                1 - indication of opening/closing status change (input IN)
+                2 - indication of wake up (1 x click or periodical)
+                4 - indication of device tampering
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="3" label="Associations in Z-Wave network Security Mode" value="3" min="0" max="3" size="1">
+            <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure.
+                Parameter is active only in Z-Wave network security mode. It does not apply to 1st group Lifeline
+            </Help>
+            <Item label="None" value="0"/>
+            <Item label="Group 2" value="1"/>
+            <Item label="Group 3" value="2"/>
+            <Item label="Group 2 and 3" value="3"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="11" label="2nd association group triggers" value="0" size="1">
+            <Help>Parameter defines events which result in sending on/off commands to devices added to the 2nd association group.
+                These commands are sent alternately to switch the devices on and off.
+            </Help>
+            <Item label="Switch after opening and closing" value="0"/>
+            <Item label="Switch after opening" value="1"/>
+            <Item label="Switch after closing" value="2"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="12" label="Association for opening - value sent" value="255" min="0" max="255" size="2">
+            <Help>Value sent to devices in 2nd association group when opening is detected.
+                The value of 0 turns OFF the device, 255 turns it On.
+                In case of associating devices allowing smooth control, values 1-99 allow to set an associated device to a specified level.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="13" label="Association for closing - value sent" value="0" min="0" max="255" size="2">
+            <Help>Value sent to devices in 2nd association group when closing is detected.
+                The value of 0 turns OFF the device, 255 turns it On.
+                In case of associating devices allowing smooth control, values 1-99 allow to set an associated device to a specified level.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="14" label="Association for opening - time delay" value="0" min="0" max="32400" size="2" units="seconds">
+            <Help>Time that must elapse from opening to send the command frame to to devices in 2nd association group.</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="15" label="Association for closing - time delay" value="0" min="0" max="32400" size="2" units="seconds">
+            <Help>Time that must elapse from closing to send the command frame to devices in 2nd association group.</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="30" label="Tamper - alarm cancellation delay" value="5" min="0" max="32400" size="2" units="seconds">
+            <Help>Time period after which a tamper alarm will be cancelled.</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="31" label="Tamper - reporting alarm cancellation" min="0" max="1" value="0" size="1">
+            <Help>Reporting cancellation of tamper alarm to the controller and 3rd association group.</Help>
+            <Item label="Do not send tamper cancellation report" value="0"/>
+            <Item label="Send tamper cancellation report" value="1"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="50" label="Interval of temperature measurements" value="300" min="0" max="32400" size="2" units="seconds">
+            <Help>This parameter defines how often the temperature will be measured.
+                The shorter the time, the more frequently the temperature will be measured, but the battery life will shorten.
+                0 - temperature measurements disabled
+                5-32400 - time in seconds
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="51" label="Temperature reports threshold" value="10" min="0" max="300" size="2">
+            <Help>This parameter defines the change of temperature in comparison with last reported, resulting in temperature report being sent to the main controller.
+                0 - temperature reports based on threshold disabled
+                1-300 - temperature threshold (0.1-30C, 0.1C step)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="52" label="Interval of temperature reports" value="0" min="0" max="32400" size="2" units="seconds">
+            <Help>This parameter determines how often the temperature reports will be sent to the main controller.
+                0 - periodic temperature reports disabled
+                5-32400 - time in seconds
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="53" label="Temperature offset" value="0" min="-1000" max="1000" size="4">
+            <Help>The value to be added to the actual temperature, measured by the sensor (temperature compensation). (0,1C steps)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="54" label="Temperature alarm reports" value="0" size="1">
+            <Help>Temperature alarms reported to the Z-Wave controller.
+                Thresholds are set in parameters 55 and 56.
+            </Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="High temperature" value="1"/>
+            <Item label="Low temperature" value="2"/>
+            <Item label="High and low temperature" value="3"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="55" label="High temperature alarm threshold" value="350" min="0" max="600" size="2">
+            <Help>If temperature is higher than set value, overheat notification will be sent and high temperature scene will be triggered (if activated).
+                0-600 (0-60C, 0.1C step).
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="56" label="Low temperature alarm threshold" value="100" min="0" max="599" size="2">
+            <Help>If temperature is lower than the set value, underheat notification will be sent and low temperature scene will be triggered (if activated).
+                0-599 (0-59.9C, 0.1C step)
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="On/Off"/>
+            <Group index="3" max_associations="5" label="Sabotage"/>
+        </Associations>
+    </CommandClass>
+</Product>
