@@ -510,6 +510,18 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|12.55" } }, commandArray)
 		end)
 
+		it('should detect a voltage device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Voltage',
+				['additionalDataData'] = { ['voltage'] = 230.12 }
+			})
+
+			device.updateVoltage(123.55)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|123.55" } }, commandArray)
+		end)
+
+
 		describe('Kodi', function()
 
 			local device = getDevice(domoticz, {
@@ -713,10 +725,6 @@ describe('device', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-		it('should update voltage', function()
-			device.updateVoltage(120)
-			assert.is_same({{["UpdateDevice"]="100|0|120"}}, commandArray)
 		end)
 
 		it('should update alert sensor', function()
