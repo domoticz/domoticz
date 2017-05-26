@@ -457,10 +457,5 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
   return true;
 }
 
-cWebem* request_handler::Get_myWebem()
-{
-	return myWebem;
-}
-
 } // namespace server
 } // namespace http
