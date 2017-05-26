@@ -56,6 +56,7 @@ protected:
 
 	int m_IsEnabled;
 private:
+	boost::mutex SendMessageExMutex;
 	std::string _subsystemid;
 	std::map<std::string, std::string* > _configValues;
 	std::map<std::string, std::string* > _configValuesBase64;
