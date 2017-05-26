@@ -376,6 +376,7 @@ hardware/RFLinkTCP.cpp
 hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
+hardware/Rtl433.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
 hardware/S0MeterTCP.cpp

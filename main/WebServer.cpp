@@ -1145,6 +1145,9 @@ namespace http {
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Rtl433) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_Pinger) {
 				//all fine here!
 			}
@@ -1592,6 +1595,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_SysfsGpio) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Rtl433) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Daikin) {

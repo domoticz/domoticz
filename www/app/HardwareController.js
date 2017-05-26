@@ -990,7 +990,20 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
-			}
+			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+		        }
 			else if (
 				(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
