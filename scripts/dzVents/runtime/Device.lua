@@ -136,9 +136,6 @@ local function Device(domoticz, data)
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
 
-	function self.updatePressure(pressure)
-		self.update(0, pressure)
-	end
 
 	function self.updatePercentage(percentage)
 		self.update(0, percentage)

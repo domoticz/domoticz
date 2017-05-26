@@ -11,6 +11,7 @@ local deviceAdapters = {
 	'lux_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',
+	'pressure_device',
 	'rain_device',
 	'thermostat_setpoint_device',
 	'temperature_device',

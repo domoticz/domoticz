@@ -471,7 +471,15 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = '1|0|555' } }, commandArray)
 		end)
 
+		it('should detect a pressure device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Pressure'
+			})
 
+			device.updatePressure(567)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|567" } }, commandArray)
+		end)
 		describe('Kodi', function()
 
 			local device = getDevice(domoticz, {
@@ -675,11 +683,6 @@ describe('device', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-
-		it('should update pressure', function()
-			device.updatePressure(1200)
-			assert.is_same({{["UpdateDevice"]="100|0|1200"}}, commandArray)
 		end)
 
 		it('should update percentage', function()
