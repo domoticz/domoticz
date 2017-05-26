@@ -14,14 +14,16 @@ return {
 
 		function device.setState(newState)
 			-- generic state update method
-			return TimedCommand(domoticz, device.name, newState)
+			return domoticz.setScene(device.name, newState)
 		end
 
 		function device.switchOn()
-			return TimedCommand(domoticz, device.name, 'On')
+			return domoticz.setScene(device.name, 'On')
 		end
 
-
+		function device.switchOff()
+			return domoticz.setScene(device.name, 'Off')
+		end
 	end
 
 }

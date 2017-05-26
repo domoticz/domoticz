@@ -21,7 +21,7 @@ local persistence = require('persistence')
 -- _.print(domoticzData)
 
 if (_G.TESTMODE == nil) then
-	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+--	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 	print(triggerReason)
 end
 

@@ -7,7 +7,7 @@ package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 local testData = require('tstData')
 
 describe('timed commands', function()
-	local TimeCommand
+	local TimedCommand
 	local commandArray = {}
 	local cmd
 

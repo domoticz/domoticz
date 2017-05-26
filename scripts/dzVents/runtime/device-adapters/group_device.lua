@@ -19,7 +19,7 @@ return {
 				if (current ~= nil) then
 					inv = current.inv
 					if (inv ~= nil) then
-						return TimedCommand(domoticz, device.name, inv)
+						return domoticz.switchGroup(device.name, inv)
 					end
 				end
 			end
@@ -28,15 +28,15 @@ return {
 
 		function device.setState(newState)
 			-- generic state update method
-			return TimedCommand(domoticz, device.name, newState)
+			return domoticz.switchGroup(device.name, newState)
 		end
 
 		function device.switchOn()
-			return TimedCommand(domoticz, device.name, 'On')
+			return domoticz.switchGroup(device.name, 'On')
 		end
 
 		function device.switchOff()
-			return TimedCommand(domoticz, device.name, 'Off')
+			return domoticz.switchGroup(device.name, 'Off')
 		end
 
 	end

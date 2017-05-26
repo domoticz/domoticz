@@ -2,10 +2,10 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 
+
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local testData = require('tstData')
-
 
 local LOG_INFO = 2
 local LOG_DEBUG = 3
@@ -108,18 +108,26 @@ describe('device', function()
 	local commandArray = {}
 	local cmd
 	local device
-
+	local TimedCommand
+	local _d
 	local domoticz = {
 		settings = {
 			['Domoticz url'] = 'http://127.0.0.1:8080',
 			['Log level'] = 2
 		},
 		['radixSeparator'] = '.',
+		switchGroup = function(group, value)
+			return TimedCommand(_d, 'Group:' .. group, value)
+		end,
+		setScene = function(scene, value)
+			return TimedCommand(_d, 'Scene:' .. scene, value)
+		end,
 		sendCommand = function(command, value)
 			table.insert(commandArray, {[command] = value})
 			return commandArray[#commandArray], command, value
 		end
 	}
+	_d = domoticz
 
 	setup(function()
 		_G.logLevel = 1
@@ -131,6 +139,8 @@ describe('device', function()
 			['script_path'] = scriptPath,
 			['domoticz_listening_port'] = '8080'
 		}
+
+		TimedCommand = require('TimedCommand')
 
 		Device = require('Device')
 
@@ -652,7 +662,7 @@ describe('device', function()
 			})
 
 			scene.switchOn()
-			assert.is_same({ { ['myScene'] = 'On' } }, commandArray)
+			assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
 
 		end)
 
@@ -664,15 +674,15 @@ describe('device', function()
 			})
 
 			group.switchOn()
-			assert.is_same({ { ['myGroup'] = 'On' } }, commandArray)
+			assert.is_same({ { ['Group:myGroup'] = 'On' } }, commandArray)
 
 			commandArray = {}
 			group.toggleGroup()
-			assert.is_same({ { ['myGroup'] = 'Off' } }, commandArray)
+			assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
 
 			commandArray = {}
 			group.switchOff()
-			assert.is_same({ { ['myGroup'] = 'Off' } }, commandArray)
+			assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
 		end)
 
 		describe('Kodi', function()
