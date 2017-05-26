@@ -1,5 +1,13 @@
 local adapters = require('Adapters')()
 
+local constMapping = {
+	['noinfo'] = 0,
+	['sunny'] = 1,
+	['partlycloudy'] = 2,
+	['cloudy'] = 3,
+	['rain'] = 4
+}
+
 return {
 
 	baseType = 'device',
@@ -20,6 +28,7 @@ return {
 				return
 			end
 
+			forecast = forecast ~= nil and constMapping[forecast] or 5
 
 			local value = tostring(temperature) .. ';' ..
 					tostring(humidity) .. ';' ..

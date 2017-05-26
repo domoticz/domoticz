@@ -72,22 +72,16 @@ local function Domoticz(settings)
 		['HUM_COMFORTABLE'] = 1,
 		['HUM_DRY'] = 2,
 		['HUM_WET'] = 3,
-
-		-- barometer constants are totally inconsistent
-		['BARO_STABLE'] = 0,
-		['BARO_SUNNY'] = 1,
-		['BARO_CLOUDY'] = 2,
-		['BARO_UNSTABLE'] = 3,
-		['BARO_THUNDERSTORM'] = 4,
-		['BARO_UNKNOWN'] = 5,
-		['BARO_CLOUDY_RAIN'] = 6,
-
---		['BARO_NOINFO'] = 0,
---		['BARO_PARTLYCLOUDY'] = 2,
---		['BARO_CLOUDY'] = 3,
---		['BARO_RAIN'] = 4,
-
-
+		-- true mapping to numbers is done in the device adapters for
+		-- baro and temphumbaro devices
+		['BARO_STABLE'] = 'stable',
+		['BARO_SUNNY'] = 'sunny',
+		['BARO_CLOUDY'] = 'cloudy',
+		['BARO_UNSTABLE'] = 'unstable',
+		['BARO_THUNDERSTORM'] = 'thunderstorm',
+		['BARO_NOINFO'] = 'noinfo',
+		['BARO_PARTLYCLOUDY'] = 'partlycloudy',
+		['BARO_RAIN'] = 'rain',
 		['ALERTLEVEL_GREY'] = 0,
 		['ALERTLEVEL_GREEN'] = 1,
 		['ALERTLEVEL_YELLOW'] = 2,

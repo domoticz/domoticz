@@ -366,8 +366,8 @@ describe('device', function()
 				['subType'] = 'Barometer',
 			})
 
-			device.updateBarometer(1024, 'Purple rain soon')
-			assert.is_same({ { ["UpdateDevice"] = "1|0|1024;Purple rain soon" } }, commandArray)
+			device.updateBarometer(1024, 'thunderstorm')
+			assert.is_same({ { ["UpdateDevice"] = "1|0|1024;4" } }, commandArray)
 		end)
 
 		it('should detect a temperature device', function()
@@ -406,8 +406,8 @@ describe('device', function()
 				['type'] = 'Temp + Humidity + Baro'
 			})
 
-			device.updateTempHumBaro(10, 12, 'wet', 1000, 'thunder')
-			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;thunder' } }, commandArray)
+			device.updateTempHumBaro(10, 12, 'wet', 1000, 'rain')
+			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;4' } }, commandArray)
 		end)
 
 		it('should detect a counter device', function()

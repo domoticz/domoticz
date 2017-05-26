@@ -1,5 +1,13 @@
 local adapters = require('Adapters')()
 
+local constMapping = {
+	['stable'] = 0,
+	['sunny'] = 1,
+	['cloudy'] = 2,
+	['unstable'] = 3,
+	['thunderstorm'] = 4
+}
+
 return {
 
 	baseType = 'device',
@@ -12,22 +20,14 @@ return {
 
 	process = function (device, data, domoticz, utils)
 
-		--[[
-			forecast:
-			 domoticz.BARO_STABLE
-			domoticz.BARO_SUNNY
-			domoticz.BARO_CLOUDY
-			domoticz.BARO_UNSTABLE
-			domoticz.BARO_THUNDERSTORM
-			domoticz.BARO_UNKNOWN
-			domoticz.BARO_CLOUDY_RAIN
-		 ]]
 		function device.updateBarometer(pressure, forecast)
 			-- pressure in hPa
+
+			forecast = forecast ~= nil and constMapping[forecast] or 5
+
 			device.update(0, tostring(pressure) .. ';' .. tostring(forecast))
 		end
 
 	end
-
 
 }
