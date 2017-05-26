@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'Wind')
 	end,
 
-	process = function (device, data, domoticz, utils)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		device.gust = tonumber(device.rawData[4]) / 10
 		device.temperature = tonumber(device.rawData[5])

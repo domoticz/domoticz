@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,15 +8,15 @@ return {
 		return (device.deviceSubType == 'RFXMeter counter' or device.deviceSubType == 'Counter Incremental')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 
 		local valueFormatted = device.counterToday or ''
-		local info = adapters.parseFormatted(valueFormatted, domoticz['radixSeparator'])
+		local info = adapterManager.parseFormatted(valueFormatted, domoticz['radixSeparator'])
 		device['counterToday'] = info['value']
 
 		valueFormatted = device.counter or ''
-		info = adapters.parseFormatted(valueFormatted, domoticz['radixSeparator'])
+		info = adapterManager.parseFormatted(valueFormatted, domoticz['radixSeparator'])
 		device['counter'] = info['value']
 
 

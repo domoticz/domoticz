@@ -22,7 +22,8 @@ local function getDevice_(
 	additionalRootData,
 	additionalDataData,
 	hardwareType,
-	hardwaryTypeValue)
+	hardwaryTypeValue,
+	baseType)
 
 	local Device = require('Device')
 
@@ -69,7 +70,7 @@ local function getDevice_(
 		["data"] = {["_state"] = state,},
 		["deviceID"] = "",
 		["rawData"] = rawData,
-		["baseType"] = "device",
+		["baseType"] = baseType ~= nil and baseType or "device",
 		["changed"] = changed,
 		["changedAttribute"] = 'temperature' --tbd
 	}
@@ -90,14 +91,15 @@ local function getDevice(domoticz, options)
 	return getDevice_(domoticz,
 		options.name,
 		options.state,
-		options.change,
+		options.changed,
 		options.type,
 		options.subType,
 		options.rawData,
 		options.additionalRootData,
 		options.additionalDataData,
 		options.hardwareType,
-		options.hardwareTypeValue)
+		options.hardwareTypeValue,
+		options.baseType)
 
 end
 
@@ -139,8 +141,12 @@ describe('device', function()
 	end)
 
 	before_each(function()
-		device = getDevice_(domoticz, 'myDevice', 'On', true)
-		device.id = 100
+		device = getDevice(domoticz, {
+			['name'] = 'myDevice',
+			['type'] = 'Light/Switch',
+			['state'] = 'On',
+			['changed'] = true,
+		})
 		utils = device._getUtilsInstance()
 		utils.print = function()  end
 	end)
@@ -544,6 +550,130 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|3.14" } }, commandArray)
 		end)
 
+		it('should detect a custom sensor device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Custom Sensor'
+			})
+
+			device.updateCustomSensor(12)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|12" } }, commandArray)
+		end)
+
+		describe('Switch', function()
+
+			local switch
+			local commandArray = {}
+			local domoticz = {
+				settings = {
+					['Domoticz url'] = 'http://127.0.0.1:8080',
+					['Log level'] = 2
+				},
+				['radixSeparator'] = '.',
+				sendCommand = function(command, value)
+					table.insert(commandArray, { [command] = value })
+					return commandArray[#commandArray], command, value
+				end
+			}
+
+			before_each(function()
+				switch = getDevice(domoticz, {
+					['type'] = 'Light/Switch',
+					['name'] = 's1',
+					['state'] = 'On',
+				})
+			end)
+
+			after_each(function()
+				switch = nil
+				commandArray = {}
+			end)
+
+			it('should toggle the switch', function()
+				switch.toggleSwitch()
+				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+			end)
+
+			it('should switch on', function()
+				switch.switchOn()
+				assert.is_same({ { ["s1"] = "On" } }, commandArray)
+			end)
+
+			it('should switch off', function()
+				switch.switchOff()
+				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+			end)
+
+			it('should open', function()
+				switch.open()
+				assert.is_same({ { ["s1"] = "On" } }, commandArray)
+			end)
+
+			it('should close', function()
+				switch.close()
+				assert.is_same({ { ["s1"] = "Off" } }, commandArray)
+			end)
+
+			it('should stop', function()
+				switch.stop()
+				assert.is_same({ { ["s1"] = "Stop" } }, commandArray)
+			end)
+
+			it('should dim', function()
+				switch.dimTo(50)
+				assert.is_same({ { ["s1"] = "Set Level 50" } }, commandArray)
+			end)
+
+			it('should switch a selector', function()
+				switch.switchSelector(15)
+				assert.is_same({ {["s1"]="Set Level 15"}}, commandArray)
+			end)
+
+			it('should detect a selector', function()
+					local switch = getDevice(domoticz, {
+						['type'] = 'Light/Switch',
+						['name'] = 's1',
+						['state'] = 'On',
+						['additionalRootData'] = { ['switchType'] = 'Selector'},
+						['additionalDataData'] = {
+							levelName = "aa|bb|cc"
+						}
+				})
+
+				assert.is_same({'aa', 'bb', 'cc'},  _.values(switch.levelNames))
+
+			end)
+		end)
+
+		it('should detect a scene', function()
+			local scene = getDevice(domoticz, {
+				['baseType'] = 'scene',
+				['name'] = 'myScene',
+			})
+
+			scene.switchOn()
+			assert.is_same({ { ['myScene'] = 'On' } }, commandArray)
+
+		end)
+
+		it('should detect a group', function()
+			local group = getDevice(domoticz, {
+				['baseType'] = 'group',
+				['name'] = 'myGroup',
+				['state'] = 'On'
+			})
+
+			group.switchOn()
+			assert.is_same({ { ['myGroup'] = 'On' } }, commandArray)
+
+			commandArray = {}
+			group.toggleGroup()
+			assert.is_same({ { ['myGroup'] = 'Off' } }, commandArray)
+
+			commandArray = {}
+			group.switchOff()
+			assert.is_same({ { ['myGroup'] = 'Off' } }, commandArray)
+		end)
 
 		describe('Kodi', function()
 
@@ -688,71 +818,10 @@ describe('device', function()
 		assert.is_same({["myDevice"]="Off"}, cmd._latest)
 	end)
 
-	it('should switch on', function()
-		device = getDevice_(domoticz, 'myDevice', 'Off', false)
-
-		local cmd = device.switchOn()
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="On"}, cmd._latest)
-	end)
-
-	it('should switch off', function()
-		device = getDevice_(domoticz, 'myDevice', 'On', false)
-
-		local cmd = device.switchOff()
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Off"}, cmd._latest)
-	end)
-
-	it('should close', function()
-		device = getDevice_(domoticz, 'myDevice', 'Open', false)
-
-		local cmd = device.close()
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Closed"}, cmd._latest)
-	end)
-
-	it('should open', function()
-		device = getDevice_(domoticz, 'myDevice', 'Closed', false)
-
-		local cmd = device.open()
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Open"}, cmd._latest)
-	end)
-
-	it('should stop', function()
-		device = getDevice_(domoticz, 'myDevice', 'Closed', false)
-
-		local cmd = device.stop()
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Stop"}, cmd._latest)
-	end)
-
-	it('should dim to a level', function()
-		device = getDevice_(domoticz, 'myDevice', 'On', false)
-
-		local cmd = device.dimTo(5)
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Set Level 5"}, cmd._latest)
-	end)
-
-	it('should switch a selector', function()
-		device = getDevice_(domoticz, 'myDevice', 'On', false)
-
-		local cmd = device.switchSelector(15)
-		assert.is_table(cmd)
-		assert.is_same({["myDevice"]="Set Level 15"}, cmd._latest)
-	end)
-
 	describe('Updating', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
-			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-
-		it('should update a custom sensor', function()
-			device.updateCustomSensor(67)
-			assert.is_same({ { ["UpdateDevice"] = "100|0|67" } }, commandArray)
+			assert.is_same({{["UpdateDevice"]="1|1|2|3|4|5"}}, commandArray)
 		end)
 
 
@@ -763,25 +832,4 @@ describe('device', function()
 	end)
 
 
-	it('should toggle a switch', function()
-		local cmd = device.toggleSwitch()
-		assert.is_same({["myDevice"]="Off"}, cmd._latest)
-
-		device = getDevice_(domoticz, 'myDevice', 'Off', false)
-		cmd = device.toggleSwitch()
-		assert.is_same({["myDevice"]="On"}, cmd._latest)
-
-		device = getDevice_(domoticz, 'myDevice', 'Playing', false)
-		cmd = device.toggleSwitch()
-		assert.is_same({["myDevice"]="Pause"}, cmd._latest)
-
-		device = getDevice_(domoticz, 'myDevice', 'Chime', false)
-		cmd = device.toggleSwitch() -- shouldn't do anything
-		assert.is_nil(cmd)
-
-		device = getDevice_(domoticz, 'myDevice', 'All On', false)
-		cmd = device.toggleSwitch()
-		assert.is_same({["myDevice"]="All Off"}, cmd._latest)
-
-	end)
 end)

@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'Air Quality')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		-- todo this doesn't work just yet
 		device['co2'] = tonumber(device.state) -- co2 (ppm)

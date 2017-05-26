@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 local constMapping = {
 	['stable'] = 0,
 	['sunny'] = 1,
@@ -18,7 +16,7 @@ return {
 		return (device.deviceSubType == 'Barometer')
 	end,
 
-	process = function (device, data, domoticz, utils)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		function device.updateBarometer(pressure, forecast)
 			-- pressure in hPa

@@ -12,3 +12,4 @@
 * changed for updating uservariables
 * remove settingsinfo from docs
 * update constants in dox
+* scene active/inactive???

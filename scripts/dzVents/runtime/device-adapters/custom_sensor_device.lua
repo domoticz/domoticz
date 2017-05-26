@@ -2,20 +2,18 @@ return {
 
 	baseType = 'device',
 
-	name = 'UV device adapter',
+	name = 'Custom sensor device adapter',
 
 	matches = function (device)
-		return (device.deviceType == 'UV')
+		return (device.deviceSubType == 'Custom Sensor')
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device.uv = tonumber(device.rawData[1])
-
-		function device.updateUV(uv)
-			local value = tostring(uv) .. ';0'
+		function device.updateCustomSensor(value)
 			device.update(0, value)
 		end
+
 	end
 
 }

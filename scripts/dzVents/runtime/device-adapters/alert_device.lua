@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceSubType == 'Alert')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		function device.updateAlertSensor(level, text)
 			--[[ level can be

@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceSubType == 'Voltage')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, adapterManager)
 
 		function device.updateVoltage(voltage)
 			device.update(0, voltage)

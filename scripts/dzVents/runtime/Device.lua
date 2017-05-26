@@ -1,4 +1,3 @@
-local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
 local Time = require('Time')
 local Adapters = require('Adapters')
@@ -7,117 +6,10 @@ local function Device(domoticz, data)
 
 	local changedAttributes = {} -- storage for changed attributes
 
-	local self = {}
-
-	local _states = {
-		on = { b = true, inv = 'Off' },
-		open = { b = true, inv = 'Closed' },
-		['group on'] = { b = true },
-		panic = { b = true, inv = 'Off' },
-		normal = { b = true, inv = 'Alarm' },
-		alarm = { b = true, inv = 'Normal' },
-		chime = { b = true },
-		video = { b = true },
-		audio = { b = true },
-		photo = { b = true },
-		playing = { b = true, inv = 'Pause' },
-		motion = { b = true },
-		off = { b = false, inv = 'On' },
-		closed = { b = false, inv = 'Open' },
-		['group off'] = { b = false },
-		['panic end'] = { b = false },
-		['no motion'] = { b = false, inv = 'Off' },
-		stop = { b = false, inv = 'Open' },
-		stopped = { b = false },
-		paused = { b = false, inv = 'Play' },
-		['all on'] = { b = true, inv = 'All Off' },
-		['all off'] = { b = false, inv = 'All On' },
-	}
-
---	-- some states will be 'booleanized'
---	local function stateToBool(state)
---		state = string.lower(state)
---		local info = _states[state]
---		local b
---		if (info) then
---			b = _states[state]['b']
---		end
---
---		if (b == nil) then b = false end
---		return b
---	end
---
---	function setStateAttribute(state)
---		local level;
---		if (state and string.find(state, 'Set Level')) then
---			level = string.match(state, "%d+") -- extract dimming value
---			state = 'On' -- consider the device to be on
---		end
---
---		if (level) then
---			self['level'] = tonumber(level)
---		end
---
---
---		if (state ~= nil) then -- not all devices have a state like sensors
---			if (type(state) == 'string') then -- just to be sure
---				self['state'] = state
---				self['bState'] = stateToBool(self['state'])
---			else
---				self['state'] = state
---			end
---		end
---	end
-
 	-- extract dimming levels for dimming devices
 	local level
+	local self = {}
 
-	function self.toggleSwitch()
-		local current, inv
-		if (self.state ~= nil) then
-			current = _states[string.lower(self.state)]
-			if (current ~= nil) then
-				inv = current.inv
-				if (inv ~= nil) then
-					return TimedCommand(domoticz, self.name, inv)
-				end
-			end
-		end
-		return nil
-	end
-
-	function self.setState(newState)
-		-- generic state update method
-		return TimedCommand(domoticz, self.name, newState)
-	end
-
-	function self.switchOn()
-		return TimedCommand(domoticz, self.name, 'On')
-	end
-
-	function self.switchOff()
-		return TimedCommand(domoticz, self.name, 'Off')
-	end
-
-	function self.close()
-		return TimedCommand(domoticz, self.name, 'Closed')
-	end
-
-	function self.open()
-		return TimedCommand(domoticz, self.name, 'Open')
-	end
-
-	function self.stop() -- blinds
-		return TimedCommand(domoticz, self.name, 'Stop')
-	end
-
-	function self.dimTo(percentage)
-		return TimedCommand(domoticz, self.name, 'Set Level ' .. tostring(percentage))
-	end
-
-	function self.switchSelector(level)
-		return TimedCommand(domoticz, self.name, 'Set Level ' .. tostring(level))
-	end
 
 	function self.update(...)
 		-- generic update method for non-switching devices
@@ -132,13 +24,6 @@ local function Device(domoticz, data)
 		domoticz.sendCommand('UpdateDevice', command)
 	end
 
-	-- update specials
-	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
-
-	function self.updateCustomSensor(value)
-		self.update(0, value)
-	end
-
 	-- todo get rid of this (there's an example using it)
 	function self.attributeChanged(attribute)
 		-- returns true if an attribute is marked as changed
@@ -150,49 +35,20 @@ local function Device(domoticz, data)
 	self['name'] = data.name
 	self['id'] = data.id
 	self['_data'] = data
+	self['baseType'] = data.baseType
 
-	local adapters = Adapters()
+	local adapterManager = Adapters()
 
-	if (data.baseType == 'device') then
+	-- process generic first
+	adapterManager.genericAdapter.process(self, data, domoticz, utils, adapterManager)
 
-
-		--state = data.data._state
-		self['changed'] = data.changed
-		self['description'] = data.description
-		self['description'] = data.description
-		self['deviceType'] = data.deviceType
-		self['hardwareName'] = data.hardwareName
-		self['hardwareType'] = data.hardwareType
-		self['hardwareId'] = data.hardwareID
-		self['hardwareTypeVal'] = data.hardwareTypeValue
-		self['switchType'] = data.switchType
-		self['switchTypeValue'] = data.switchTypeValue
-		self['timedOut'] = data.timedOut
-		self['batteryLevel'] = data.batteryLevel
-		self['signalLevel'] = data.signalLevel
-		self['deviceSubType'] = data.subType
-		self['lastUpdate'] = Time(data.lastUpdate)
-		self['rawData'] = data.rawData
-
-		-- process generic first
-		adapters.genericAdapter.process(self)
-
-		-- get a specific adapter for the current device
-		local adapters = adapters.getDeviceAdapters(self)
-		for i, adapter in pairs(adapters) do
-			utils.log('Processing adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
-			adapter.process(self, data, domoticz, utils)
-		end
-
-	elseif (data.baseType == 'group' or data.baseType == 'scene') then
-		state = data.data._state
-		self['lastUpdate'] = Time(data.lastUpdate)
-		self['rawData'] = { [1]=data.state }
-		adapters.genericAdapter.process(self)
-		--setStateAttribute(state)
+	-- get a specific adapter for the current device
+	local adapters = adapterManager.getDeviceAdapters(self)
+	for i, adapter in pairs(adapters) do
+		utils.log('Processing adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
+		adapter.process(self, data, domoticz, utils, adapterManager)
 	end
 
-	--setStateAttribute(state)
 
 	-- tbd
 	if (data.changedAttribute) then

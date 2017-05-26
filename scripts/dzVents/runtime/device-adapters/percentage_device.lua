@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceSubType == 'Percentage')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		device.percentage = tonumber(device.rawData[1])
 

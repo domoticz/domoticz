@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 local constMapping = {
 	['noinfo'] = 0,
 	['sunny'] = 1,
@@ -18,7 +16,7 @@ return {
 		return (device.deviceType == 'Temp + Humidity + Baro')
 	end,
 
-	process = function (device, data, domoticz, utils)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		function device.updateTempHumBaro(temperature, humidity, status, pressure, forecast)
 

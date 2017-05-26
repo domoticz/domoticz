@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'P1 Smart Meter' and device.deviceSubType == 'Energy')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		device['WhActual'] = tonumber(device.rawData[5]) or 0
 
@@ -22,11 +20,11 @@ return {
 		device['usageDelivered'] = tonumber(device.rawData[6])
 
 		local formatted = device.counterDeliveredToday or ''
-		local info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		local info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counterDeliveredToday'] = info['value']
 
 		formatted = device.counterToday or ''
-		info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counterToday'] = info['value']
 
 		function device.updateP1(usage1, usage2, return1, return2, cons, prod)

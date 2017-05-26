@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'Temp')
 	end,
 
-	process = function (device, data, domoticz, utils)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		function device.updateTemperature(temperature)
 			device.update(0, temperature)

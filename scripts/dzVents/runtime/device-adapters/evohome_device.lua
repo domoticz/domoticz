@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.hardwareTypeVal == 39 and device.deviceSubType == 'Zone')
 	end,
 
-	process = function (device, data, domoticz, utils)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		device['SetPoint'] = device.rawData[1] or 0
 

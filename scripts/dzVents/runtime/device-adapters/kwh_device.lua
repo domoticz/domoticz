@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,9 +8,9 @@ return {
 		return (device.deviceSubType == 'kWh')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 		local formatted = device.counterToday or ''
-		local info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		local info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 
 		-- as this is a kWh device we assume the value is in kWh
 		-- so we have to multiply it with 1000 to get it in W
@@ -21,7 +19,7 @@ return {
 		device['counterToday'] = info['value']
 
 		formatted = device.usage or ''
-		info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 
 		device.usage = info['value']
 

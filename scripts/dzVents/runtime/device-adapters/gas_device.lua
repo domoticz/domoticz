@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,15 +8,15 @@ return {
 		return (device.deviceSubType == 'Gas')
 	end,
 
-	process = function (device, data, domoticz)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 
 		local formatted = device.counterToday or ''
-		local info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		local info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counterToday'] = info['value']
 
 		formatted = tostring(device.counter) or ''
-		info = adapters.parseFormatted(formatted, domoticz['radixSeparator'])
+		info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 		device['counter'] = info['value']
 
 		function device.updateGas(usage)

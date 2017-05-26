@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'Heating' and device.deviceSubType == 'Zone')
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		device['setPoint'] =  tonumber(device.rawData[2])
 		device['heatingMode'] = device.rawData[3]
