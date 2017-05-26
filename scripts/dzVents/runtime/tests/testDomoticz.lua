@@ -122,13 +122,15 @@ describe('Domoticz', function()
 		end)
 
 		it('should have barometer constants', function()
-			assert.is_same(domoticz['BARO_STABLE'], 0)
-			assert.is_same(domoticz['BARO_SUNNY'], 1)
-			assert.is_same(domoticz['BARO_CLOUDY'], 2)
-			assert.is_same(domoticz['BARO_UNSTABLE'], 3)
-			assert.is_same(domoticz['BARO_THUNDERSTORM'], 4)
-			assert.is_same(domoticz['BARO_UNKNOWN'], 5)
-			assert.is_same(domoticz['BARO_CLOUDY_RAIN'], 6)
+			assert.is_same(domoticz['BARO_STABLE'], 'stable')
+			assert.is_same(domoticz['BARO_SUNNY'], 'sunny')
+			assert.is_same(domoticz['BARO_CLOUDY'], 'cloudy')
+			assert.is_same(domoticz['BARO_UNSTABLE'], 'unstable')
+			assert.is_same(domoticz['BARO_THUNDERSTORM'], 'thunderstorm')
+			assert.is_same(domoticz['BARO_PARTLYCLOUDY'], 'partlycloudy')
+			assert.is_same(domoticz['BARO_RAIN'], 'rain')
+			assert.is_same(domoticz['BARO_NOINFO'], 'noinfo')
+
 		end)
 
 		it('should have alert level constants', function()
@@ -375,84 +377,5 @@ describe('Domoticz', function()
 		assert.is_true(logged)
 	end)
 
-	it('should have processed http data', function()
-		assert.is_same(10, d1.batteryLevel)
-		assert.is_same(20, d2.batteryLevel)
-		assert.is_same(30, d3.batteryLevel)
-		assert.is_same(40, d4.batteryLevel)
-		assert.is_same('Description 1', d1.description)
-		assert.is_same('Description 2', d2.description)
-		assert.is_same('Description 3', d3.description)
-		assert.is_same('Description 4', d4.description)
-
-		assert.is_same('10', d1.signalLevel)
-		assert.is_same('20', d2.signalLevel)
-		assert.is_same('30', d3.signalLevel)
-		assert.is_same('-', d4.signalLevel)
-
-		assert.is_same('Zone', d1.deviceSubType)
-		assert.is_same('Lux', d2.deviceSubType)
-		assert.is_same('Energy', d3.deviceSubType)
-		assert.is_same('SetPoint', d4.deviceSubType)
-
-		assert.is_same('Heating', d1.deviceType)
-		assert.is_same('Lux', d2.deviceType)
-		assert.is_same('P1 Smart Meter', d3.deviceType)
-		assert.is_same('Thermostat', d4.deviceType)
-
-		assert.is_same('hw1', d1.hardwareName)
-		assert.is_same('hw2', d2.hardwareName)
-		assert.is_same('hw3', d3.hardwareName)
-		assert.is_same('hw4', d4.hardwareName)
-
-		assert.is_same('ht1', d1.hardwareType)
-		assert.is_same('ht2', d2.hardwareType)
-		assert.is_same('ht3', d3.hardwareType)
-		assert.is_same('ht4', d4.hardwareType)
-
-		assert.is_same(1, d1.hardwareId)
-		assert.is_same(2, d2.hardwareId)
-		assert.is_same(3, d3.hardwareId)
-		assert.is_same(4, d4.hardwareId)
-
-		assert.is_same(1, d1.hardwareTypeVal)
-		assert.is_same(2, d2.hardwareTypeVal)
-		assert.is_same(3, d3.hardwareTypeVal)
-		assert.is_same(4, d4.hardwareTypeVal)
-
-		assert.is_same('Contact', d1.switchType)
-		assert.is_same('Motion Sensor', d2.switchType)
-		assert.is_same('On/Off', d3.switchType)
-		assert.is_same('Security', d4.switchType)
-
-		assert.is_same(2, d1.switchTypeValue)
-		assert.is_same(8, d2.switchTypeValue)
-		assert.is_same(0, d3.switchTypeValue)
-		assert.is_same(0, d4.switchTypeValue)
-
-		assert.is_true(d1.timedOut)
-		assert.is_false(d2.timedOut)
-		assert.is_false(d3.timedOut)
-		assert.is_false(d4.timedOut)
-
-		assert.is_same(2, d1.setPoint)
-		assert.is_same('3', d1.heatingMode)
-
-		assert.is_same(4, d2.lux)
-
-		local d5 = domoticz.devices['device5']
-		assert.is_same(14, d5.WhTotal)
-		assert.is_same(1234, d5.WhToday)
-		assert.is_same(13, d5.WActual)
-		assert.is_same('1.234 kWh', d5.counterToday)
-		assert.is_same('567 kWh', d5.counterTotal)
-		assert.is_same(10, d5.level)
-
-		assert.is_same(11, d3.WActual)
-
-		assert.is_same(10, d4.setPoint)
-
-		local d7 = domoticz.devices['device7']
-		assert.is_same(16.5, d7.WActual)
-	end)
+--
 end)
