@@ -1,9 +1,7 @@
 define(['app'], function (app) {
-    app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', '$window', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, $window, livesocket) {
-        livesocket.Init();
+	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
 
-        var ctrl = this;
-        ctrl.temperatures = [];
+		var ctrl = this;
 
 		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
@@ -171,11 +169,10 @@ define(['app'], function (app) {
 					}
 				}
 			});
-/*
+
 			$scope.mytimer = $interval(function () {
 				RefreshTemps();
 			}, 10000);
-*/
 		}
 
 		ShowForecast = function () {
@@ -194,41 +191,23 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-            livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
-			    if (typeof data == "string") {
-			        data = JSON.parse(data);
-			    }
-			    if (typeof data.result != 'undefined') {
-			        if (typeof data.ActTime != 'undefined') {
-			            $.LastUpdateTime = parseInt(data.ActTime);
-			        }
-			        ctrl.temperatures = data.result;
-                }
-			    else {
-			        ctrl.temperatures = [];
-			    }
-			});
-/*
-          // RK, this was the old ajax call. It is replaced by the getJson call above
-          //       This makes it receive update events
-		  $.ajax({
-			 url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
-			 async: false,
-			 dataType: 'json',
-			 success: function(data) {
-			  if (typeof data.result != 'undefined') {
-				if (typeof data.ActTime != 'undefined') {
-					$.LastUpdateTime=parseInt(data.ActTime);
-				}
+			$.ajax({
+				url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan=" + window.myglobals.LastPlanSelected,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						if (typeof data.ActTime != 'undefined') {
+							$.LastUpdateTime = parseInt(data.ActTime);
+						}
 
-				  ctrl.temperatures = data.result;
-			  } else {
-				  ctrl.temperatures = [];
-			  }
-			 }
-		  });
-*/
-          $('#modal').hide();
+						ctrl.temperatures = data.result;
+					} else {
+						ctrl.temperatures = [];
+					}
+				}
+			});
+			$('#modal').hide();
 			$('#temptophtm').show();
 			$('#temptophtm').i18n();
 			$('#tempwidgets').show();
@@ -268,7 +247,7 @@ define(['app'], function (app) {
 			});
 		};
 
-        init();
+		init();
 
 		function init() {
 			//global var
@@ -605,25 +584,10 @@ define(['app'], function (app) {
 						}
 					};
 
-					$scope.$on('jsonupdate', function (event, json) {
-					    if (json.item) {
-					        var newitem = json.item;
-					        // Change updated items in temperatures list
-					        // TODO is there a better way to do this ?
-					        // console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx); // (debug info)
-					        if (ctrl.item.idx == newitem.idx) {
-					            // console.log("item found"); // (debug info)
-					            ctrl.item = newitem;
-                                if ($scope.$parent.config.ShowUpdatedEffect == true && $("#tempwidgets #" + newitem.idx).length > 0) {
-					                $("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-					            }
-					        }
-					    }
-					});
-					ctrl.nbackcolor = function() { // this can stay for now because EvoSetPointColor seems to use it?
-						var nbackcolor="#D4E1EE";
-						if (item.HaveTimeout==true) {
-							nbackcolor="#DF2D3A";
+					ctrl.nbackcolor = function () {
+						var nbackcolor = "#D4E1EE";
+						if (item.HaveTimeout == true) {
+							nbackcolor = "#DF2D3A";
 						}
 						else {
 							var BatteryLevel = parseInt(item.BatteryLevel);

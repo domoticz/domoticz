@@ -3,8 +3,6 @@
 #include <map>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
 #include "server.hpp"
 #include "session_store.hpp"
 
@@ -123,9 +121,6 @@ namespace http {
 		private:
 			char *strftime_t(const char *format, const time_t rawtime);
 			bool CompressWebOutput(const request& req, reply& rep);
-			/// Websocket methods
-			bool is_upgrade_request(WebEmSession & session, const request& req, reply& rep);
-			std::string compute_accept_header(const std::string &websocket_key);
 			bool CheckAuthentication(WebEmSession & session, const request& req, reply& rep);
 			void send_authorization_request(reply& rep);
 			void send_remove_cookie(reply& rep);
@@ -219,7 +214,6 @@ namespace http {
 			_eAuthenticationMethod m_authmethod;
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
-			std::map<std::string, WebEmSession> m_sessions;
 			server_settings m_settings;
 		private:
 			/// store map between include codes and application functions
@@ -241,6 +235,7 @@ namespace http {
 			/// request handler specialized to handle webem requests
 			cWebemRequestHandler myRequestHandler;
 			/// sessions management
+			std::map<std::string,WebEmSession> m_sessions;
 			boost::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
@@ -251,3 +246,5 @@ namespace http {
 
 	}
 }
+
+
