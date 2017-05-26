@@ -135,13 +135,6 @@ local function Device(domoticz, data)
 	-- update specials
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
-	function self.updateDistance(distance)
-		--[[
-		 distance in cm or inches, can be in decimals. For example 12.6
-		 ]]
-		self.update(0, distance)
-	end
-
 	function self.updateCustomSensor(value)
 		self.update(0, value)
 	end

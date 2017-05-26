@@ -5,6 +5,7 @@ local deviceAdapters = {
 	'alert_device',
 	'barometer_device',
 	'counter_device',
+	'distance_device',
 	'electric_usage_device',
 	'evohome_device',
 	'gas_device',
