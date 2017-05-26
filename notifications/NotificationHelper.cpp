@@ -98,7 +98,7 @@ bool CNotificationHelper::SendMessageEx(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	bool bRet = (Priority != -100) ? false : true;
+	bool bRet = (Priority == -100) ? false : true;
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
