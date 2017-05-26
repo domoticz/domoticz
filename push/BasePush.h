@@ -13,6 +13,7 @@ protected:
 	bool m_bLinkActive;
 	uint64_t m_DeviceRowIdx;
 	boost::signals2::connection m_sConnection;
+	boost::signals2::connection m_sNotification;
 
 	std::string ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertype);
 	std::string getUnit(const int delpos, const int metertypein);
