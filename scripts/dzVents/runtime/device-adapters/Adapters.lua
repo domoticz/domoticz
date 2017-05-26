@@ -2,6 +2,7 @@ local genericAdapter = require('generic_device')
 
 local deviceAdapters = {
 	'airquality_device',
+	'alert_device',
 	'barometer_device',
 	'counter_device',
 	'electric_usage_device',
@@ -21,6 +22,7 @@ local deviceAdapters = {
 	'temperature_humidity_barometer_device',
 	'text_device',
 	'uv_device',
+	'voltage_device',
 	'wind_device',
 	'zone_heating_device',
 	'kodi_device'

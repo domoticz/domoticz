@@ -4,7 +4,7 @@ return {
 
 	baseType = 'device',
 
-	name = 'Gas device adapter',
+	name = 'Percentage device adapter',
 
 	matches = function (device)
 		return (device.deviceSubType == 'Percentage')

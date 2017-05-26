@@ -135,24 +135,6 @@ local function Device(domoticz, data)
 	-- update specials
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
-
-
-
-	function self.updateVoltage(voltage)
-		self.update(0, voltage)
-	end
-
-	function self.updateAlertSensor(level, text)
-		--[[ level can be
-			 domoticz.ALERTLEVEL_GREY
-			 domoticz.ALERTLEVEL_GREEN
-			domoticz.ALERTLEVEL_YELLOW
-			domoticz.ALERTLEVEL_ORANGE
-			domoticz.ALERTLEVEL_RED
-		]]
-		self.update(level, text)
-	end
-
 	function self.updateDistance(distance)
 		--[[
 		 distance in cm or inches, can be in decimals. For example 12.6

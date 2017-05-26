@@ -521,6 +521,16 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|123.55" } }, commandArray)
 		end)
 
+		it('should detect an alert device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Alert'
+			})
+
+			device.updateAlertSensor(0, 'Oh dear!')
+			assert.is_same({ { ["UpdateDevice"] = "1|0|Oh dear!" } }, commandArray)
+		end)
+
 
 		describe('Kodi', function()
 
@@ -725,11 +735,6 @@ describe('device', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-
-		it('should update alert sensor', function()
-			device.updateAlertSensor(45, 'o dear')
-			assert.is_same({{["UpdateDevice"]="100|45|o dear"}}, commandArray)
 		end)
 
 		it('should update distance', function()
