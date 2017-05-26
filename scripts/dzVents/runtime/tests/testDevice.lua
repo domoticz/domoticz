@@ -211,10 +211,38 @@ describe('device', function()
 				['name'] = 'myDevice',
 				['type'] = 'P1 Smart Meter',
 				['subType'] = 'Energy',
-				['rawData'] = { [5] = 12345 }
+				['rawData'] = {
+					[1] = "1",
+					[2] = "2",
+					[3] = "10",
+					[4] = "20",
+					[5] = "12345",
+					[6] = "280"
+				},
+				['additionalDataData'] = {
+					["counterDelivered"] = 0.03,
+					["usage"] = "840 Watt",
+					["usageDelivered"] = "280 Watt",
+					["counterToday"] = "5.6780 kWh",
+					["counter"] = "1.003",
+					["counterDeliveredToday"] = "5.789 kWh",
+				}
 			})
 
+			assert.is_same(1, device.usage1)
+			assert.is_same(2, device.usage2)
+			assert.is_same(10, device.return1)
+			assert.is_same(20, device.return2)
+			assert.is_same(12345, device.usage)
+			assert.is_same(280, device.usageDelivered)
+			assert.is_same(5.789, device.counterDeliveredToday)
+			assert.is_same(5.6780, device.counterToday)
 			assert.is_same(12345, device.WhActual)
+
+			device.updateP1(1, 2, 3, 4, 5, 6)
+			assert.is_same({ { ["UpdateDevice"] = '1|0|1;2;3;4;5;6' } }, commandArray)
+
+
 		end)
 
 		it('should detect a thermostat setpoint device', function()
@@ -647,12 +675,6 @@ describe('device', function()
 		it('should send generic update commands', function()
 			device.update(1,2,3,4,5)
 			assert.is_same({{["UpdateDevice"]="100|1|2|3|4|5"}}, commandArray)
-		end)
-
-
-		it('should update P1', function()
-			device.updateP1(1,2,3,4,5,6)
-			assert.is_same({{["UpdateDevice"]="100|0|1;2;3;4;5;6"}}, commandArray)
 		end)
 
 		it('should update pressure', function()

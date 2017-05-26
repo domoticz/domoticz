@@ -60,7 +60,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Barometer",			"barometer",				"float" },
 	{ "Chill",				"chill", 					"float" },
 	{ "Counter",			"counter", 					"string" },
-	{ "CounterDeliv",		"counterDelivered", 		"string" },
+	{ "CounterDeliv",		"counterDelivered", 		"float" },
 	{ "CounterDelivToday",	"counterDeliveredToday",	"string"},
 	{ "CounterToday",		"counterToday", 			"string" },
 	{ "Current",			"current", 					"float" },

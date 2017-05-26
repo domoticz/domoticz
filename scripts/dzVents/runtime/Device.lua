@@ -136,27 +136,6 @@ local function Device(domoticz, data)
 	-- see http://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s
 
 
-	function self.updateP1(usage1, usage2, return1, return2, cons, prod)
-		--[[
-			USAGE1= energy usage meter tariff 1
-			USAGE2= energy usage meter tariff 2
-			RETURN1= energy return meter tariff 1
-			RETURN2= energy return meter tariff 2
-			CONS= actual usage power (Watt)
-			PROD= actual return power (Watt)
-			USAGE and RETURN are counters (they should only count up).
-			For USAGE and RETURN supply the data in total Wh with no decimal point.
-			(So if your meter displays f.i. USAGE1= 523,66 KWh you need to send 523660)
-		 ]]
-		local value = tostring(usage1) .. ';' ..
-				tostring(usage2) .. ';' ..
-				tostring(return1) .. ';' ..
-				tostring(return2) .. ';' ..
-				tostring(cons) .. ';' ..
-				tostring(prod)
-		self.update(0, value)
-	end
-
 	function self.updatePressure(pressure)
 		self.update(0, pressure)
 	end
