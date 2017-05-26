@@ -480,6 +480,24 @@ describe('device', function()
 			device.updatePressure(567)
 			assert.is_same({ { ["UpdateDevice"] = "1|0|567" } }, commandArray)
 		end)
+
+		it('should detect a gas device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Gas',
+				['additionalDataData'] = {
+					["counterToday"] = "5.421 m3";
+					["counter"] = "123.445";
+				}
+			})
+
+			assert.is_same(5.421, device.counterToday)
+			assert.is_same(123.445, device.counter)
+
+			device.updateGas(567)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|567" } }, commandArray)
+		end)
+
 		describe('Kodi', function()
 
 			local device = getDevice(domoticz, {
@@ -688,11 +706,6 @@ describe('device', function()
 		it('should update percentage', function()
 			device.updatePercentage(88)
 			assert.is_same({{["UpdateDevice"]="100|0|88"}}, commandArray)
-		end)
-
-		it('should update gas', function()
-			device.updateGas(880)
-			assert.is_same({{["UpdateDevice"]="100|0|880"}}, commandArray)
 		end)
 
 		it('should update voltage', function()

@@ -141,15 +141,6 @@ local function Device(domoticz, data)
 		self.update(0, percentage)
 	end
 
-	function self.updateGas(usage)
-		--[[
-			USAGE= Gas usage in liter (1000 liter = 1 m³)
-			So if your gas meter shows f.i. 145,332 m³ you should send 145332.
-			The USAGE is the total usage in liters from start, not f.i. the daily usage.
-		 ]]
-		self.update(0, usage)
-	end
-
 	function self.updateVoltage(voltage)
 		self.update(0, voltage)
 	end
