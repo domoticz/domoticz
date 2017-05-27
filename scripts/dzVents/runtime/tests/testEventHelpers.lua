@@ -80,7 +80,7 @@ describe('event helpers', function()
 	describe('Loading modules', function()
 		it('should get a list of files in a folder', function()
 			local files = helpers.scandir('scandir')
-			local f = {'f1','f2','f3'}
+			local f = {'f1','f2','f3', 'lua' }
 			assert.are.same(f, files)
 		end)
 	end)

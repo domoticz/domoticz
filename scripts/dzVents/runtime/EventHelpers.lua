@@ -220,9 +220,9 @@ local function EventHelpers(domoticz, mainMethod)
 		t = {}
 		local pfile = popen(cmd)
 		for filename in pfile:lines() do
-			pos, len = string.find(filename, '.lua')
-
+			pos, len = string.find(filename, '.lua', 1, true)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
+
 				table.insert(t, string.sub(filename, 1, pos - 1))
 				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t], utils.LOG_DEBUG)
 			end
