@@ -256,7 +256,6 @@ Available on the collections: devices, variables, scenes, groups:
  - **windspeed**: Only when applicable.
 
 ## Device methods
- - **attributeChanged(attributeName)**: *Function*. Returns  a boolean (true/false) if the attribute was changed in this cycle. E.g. `device.attributeChanged('temperature')`.
  - **close()**: *Function*.  Set device to Close if it supports it. Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **dimTo(percentage)**: *Function*.  Switch a dimming device on and/or dim to the specified level. Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **kodiExecuteAddOn(addonId)**: *Function*. Will send an Execute Addon command sending no parameters. Addon IDs are embedded in the addon configuration and are not to be confused with the Addon Name. For example: http://forums.homeseer.com/showthread.php?p=1213403.

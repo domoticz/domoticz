@@ -837,9 +837,5 @@ describe('device', function()
 
 	end)
 
-	it('should mark an attribute as changed', function()
-		assert.is_true(device.attributeChanged('temperature'))
-	end)
-
 
 end)
