@@ -21,8 +21,12 @@ describe('variables', function()
 	local commandArray = {}
 
 	local domoticz = {
+		settings = { ['Domoticz url'] = 'url' },
 		sendCommand = function(key, value)
 			table.insert(commandArray, { [key] = tostring(value) })
+		end,
+		openURL = function(value)
+			table.insert(commandArray, { ['OpenURL'] = tostring(value) })
 		end
 	}
 
@@ -62,7 +66,7 @@ describe('variables', function()
 		local var = Variable(domoticz, testData.domoticzData[yVar])
 		var.set('dzVents rocks')
 		assert.is_same(1, _.size(commandArray))
-		assert.is_same({ ['Variable:y'] = 'dzVents rocks' }, commandArray[1])
+		assert.is_same({ ['OpenURL'] = 'url/json.htm?type=command&param=updateuservariable&vname=y&vtype=float&vvalue=dzVents rocks' }, commandArray[1])
 	end)
 
 	it('should not fail when trying to cast a string', function()

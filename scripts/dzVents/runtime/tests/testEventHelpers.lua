@@ -401,7 +401,9 @@ describe('event helpers', function()
 			local res = helpers.callEventHandler(myVar1,
 				nil,
 				{
-					name = 'myVar1'
+					name = 'myVar1',
+					set = function()
+					end
 				})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
