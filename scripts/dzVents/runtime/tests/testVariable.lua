@@ -13,6 +13,8 @@ local LOG_ERROR = 1
 local xVar = 9
 local yVar = 10
 local zVar = 11
+local aVar = 12
+local bVar = 13
 
 describe('variables', function()
 	local Variable
@@ -45,8 +47,8 @@ describe('variables', function()
 
 	it('should have properties', function()
 		local var = Variable(domoticz, testData.domoticzData[yVar])
-		assert.is_same(2, var.nValue)
-		assert.is_same(2, var.value)
+		assert.is_same(2.3, var.nValue)
+		assert.is_same(2.3, var.value)
 		assert.is_same('2017-04-18 20:16:23', var.lastUpdate.raw)
 	end)
 
@@ -68,5 +70,25 @@ describe('variables', function()
 		assert.is_same('some value', var.value)
 	end)
 
+	it('should have different types', function()
+		local var = Variable(domoticz, testData.domoticzData[zVar])
+		assert.is_same('string', var.type)
+		assert.is_same('string', type(var.value))
+	end)
+
+	it('should have a date type', function()
+		local var = Variable(domoticz, testData.domoticzData[aVar])
+		assert.is_same('date', var.type)
+		assert.is_same(2017, var.date.year)
+		assert.is_same(3, var.date.day)
+		assert.is_same(12, var.date.month)
+	end)
+
+	it('should have a time type', function()
+		local var = Variable(domoticz, testData.domoticzData[bVar])
+		assert.is_same('time', var.type)
+		assert.is_same(19, var.time.hour)
+		assert.is_same(34, var.time.min)
+	end)
 
 end)

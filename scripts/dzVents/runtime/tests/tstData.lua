@@ -267,6 +267,7 @@ local testData = {
 		[9] = {
 			["id"] = 1,
 			["name"] = "x",
+			["changed"] = true,
 			["variableType"] = 'integer',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:15:23";
@@ -275,24 +276,44 @@ local testData = {
 			}
 		},
 		[10] = {
-			["id"] = 1,
+			["id"] = 2,
 			["name"] = "y",
-			["variableType"] = 'integer',
+			["changed"] = false,
+			["variableType"] = 'float',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:16:23";
-			data = { ["value"] = 2 }
+			data = { ["value"] = 2.3 }
 		},
 		[11] = {
-			["id"] = 1,
+			["id"] = 3,
 			["name"] = "z",
+			["changed"] = true,
 			["variableType"] = 'string',
 			["baseType"] = "uservariable";
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = 'some value'}
 		},
+		[12] = {
+			["id"] = 4,
+			["name"] = "a",
+			["changed"] = true,
+			["variableType"] = 'date',
+			["baseType"] = "uservariable";
+			["lastUpdate"] = "2017-04-18 20:16:23";
+			data = { ["value"] = '3/12/2017' }
+		},
+		[13] = {
+			["id"] = 5,
+			["name"] = "b",
+			["changed"] = true,
+			["variableType"] = 'time',
+			["baseType"] = "uservariable";
+			["lastUpdate"] = "2017-04-18 20:16:23";
+			data = { ["value"] = '19:34' }
+		},
 
 		--- scenes and groups
-		[12] = {
+		[14] = {
 			["id"] = 1;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 1',
@@ -302,7 +323,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:19";
 		},
-		[13] = {
+		[15] = {
 			["id"] = 3;
 			["baseType"] = "group";
 			["description"] = 'Descr group 1',
@@ -312,7 +333,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:26";
 		},
-		[14] = {
+		[16] = {
 			["id"] = 2;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 2',
@@ -322,7 +343,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-19 20:31:50";
 		},
-		[15] = {
+		[17] = {
 			["id"] = 4;
 			["baseType"] = "group";
 			["description"] = 'Descr group 2',

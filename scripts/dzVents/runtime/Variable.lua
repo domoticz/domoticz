@@ -5,9 +5,9 @@ local Time = require('Time')
 local function Variable(domoticz, data)
 
 	local self = {
-		--['nValue'] = tonumber(data.data.value),
 		['value'] = data.data.value,
 		['type'] = data.variableType,
+		['changed'] = data.changed,
 		['lastUpdate'] = Time(data.lastUpdate)
 	}
 

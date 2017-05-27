@@ -350,7 +350,7 @@ describe('Domoticz', function()
 
 	it('should have created variables', function()
 		assert.is_same(1, domoticz.variables['x'].nValue)
-		assert.is_same(2, domoticz.variables['y'].nValue)
+		assert.is_same(2.3, domoticz.variables['y'].nValue)
 	end)
 
 	it('should have created scenes', function()

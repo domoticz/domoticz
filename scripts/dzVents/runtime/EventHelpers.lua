@@ -1,4 +1,3 @@
-local MAIN_METHOD = 'execute'
 local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
@@ -18,22 +17,18 @@ local function EventHelpers(domoticz, mainMethod)
 	local currentPath = globalvariables['script_path']
 
 	if (_G.TESTMODE) then
-
 		-- make sure you run the tests from the tests folder !!!!
-
 		scriptsFolderPath = currentPath .. 'scripts'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
-	end
 
-	local domoticzPort = tostring(globalvariables['domoticz_listening_port'])
-	if (domoticzPort == nil) then domoticzPort = '8080' end
-	local url  = 'http://127.0.0.1:' .. domoticzPort
+
+	end
 
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
-		['Domoticz url'] = url
+		['Domoticz url'] = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 	}
 
 	_G.logLevel = settings['Log level']
@@ -47,11 +42,13 @@ local function EventHelpers(domoticz, mainMethod)
 		['utils'] = utils, -- convenient for testing and stubbing
 		['domoticz'] = domoticz,
 		['settings'] = settings,
-		['mainMethod'] = mainMethod or MAIN_METHOD,
 	}
 
 	if (_G.TESTMODE) then
 		self.scriptsFolderPath = scriptsFolderPath
+		function self._getUtilsInstance()
+			return utils
+		end
 	end
 
 	function self.getStorageContext(storageDef, module)
@@ -134,7 +131,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.callEventHandler(eventHandler, device)
 		local useStorage = false
-		if (eventHandler[self.mainMethod] ~= nil) then
+		if (eventHandler['execute'] ~= nil) then
 
 			-- ==================
 			-- Prepare storage
@@ -161,7 +158,7 @@ local function EventHelpers(domoticz, mainMethod)
 			-- Run script
 			-- ==================
 			local info = getEventInfo(eventHandler)
-			local ok, res = pcall(eventHandler[self.mainMethod], self.domoticz, device, info)
+			local ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
 			if (ok) then
 
 				-- ==================
@@ -191,7 +188,7 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log(res, utils.LOG_ERROR) -- error info
 			end
 		else
-			utils.log('No' .. self.mainMethod .. 'function found in event handler ' .. eventHandler, utils.LOG_ERROR)
+			utils.log('No "execute" function found in event handler ' .. eventHandler, utils.LOG_ERROR)
 		end
 
 		self.domoticz[SCRIPT_DATA] = nil
@@ -451,7 +448,7 @@ local function EventHelpers(domoticz, mainMethod)
 							end
 						end
 						if (not skip) then
-							if (module.on ~= nil and module[self.mainMethod] ~= nil) then
+							if (module.on ~= nil and module['execute'] ~= nil) then
 								module.name = moduleName
 								module.dataFileName = '__data_' .. moduleName
 								module.dataFilePath = scriptsFolderPath .. '/storage/__data_' .. moduleName .. '.lua'
@@ -502,7 +499,7 @@ local function EventHelpers(domoticz, mainMethod)
 									end
 								end
 							else
-								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "' .. self.mainMethod .. '" section. Skipping', utils.LOG_ERROR)
+								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "execute" section. Skipping', utils.LOG_ERROR)
 								table.insert(errModules, moduleName)
 							end
 						end
@@ -608,12 +605,6 @@ local function EventHelpers(domoticz, mainMethod)
 
 		return self.domoticz.commandArray
 
-	end
-
-	if (_G.TESTMODE) then
-		function self._getUtilsInstance()
-			return utils
-		end
 	end
 
 	return self
