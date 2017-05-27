@@ -25,6 +25,7 @@ describe('event helpers', function()
 	local domoticz = {
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
+		['EVENT_TYPE_VARIABLE'] = 'variable',
 		['settings'] = {},
 		['radixSeparator'] = '.',
 		['name'] = 'domoticz', -- used in script1
@@ -332,6 +333,21 @@ describe('event helpers', function()
 
 		end)
 
+		it('should return variable script', function()
+			local modules = helpers.getEventBindings('variable')
+			local myVar1 = modules['myVar1']
+
+			assert.are.same('table', type(myVar1))
+
+			local res = {}
+			for i, mod in pairs(myVar1) do
+				table.insert(res, mod.name)
+			end
+			table.sort(res)
+
+			assert.are.same({ 'script_variable1', 'script_variable2',  }, res)
+		end)
+
 	end)
 
 	describe('Various', function()
@@ -377,6 +393,22 @@ describe('event helpers', function()
 			assert.is_same('script1: domoticz device device', res)
 		end)
 
+		it('should call the event handler for variables', function()
+
+			local bindings = helpers.getEventBindings('variable')
+			local myVar1 = bindings['myVar1'][1]
+
+			local res = helpers.callEventHandler(myVar1,
+				nil,
+				{
+					name = 'myVar1'
+				})
+			-- should pass the arguments to the execute function
+			-- and catch the results from the function
+			assert.is_same('script_variable1: domoticz myVar1 variable', res)
+		end)
+
+
 		it('should catch errors', function()
 			local bindings = helpers.getEventBindings()
 			local script2 = bindings['onscript2'][1]
@@ -411,7 +443,7 @@ describe('event helpers', function()
 
 	describe('Event dispatching', function()
 
-		it('should dispatch all event scripts', function()
+		it('should dispatch all device event scripts', function()
 			local scripts = {}
 			local devices = {}
 			local dumped = false
@@ -511,6 +543,68 @@ describe('event helpers', function()
 			assert.is_true(dumped)
 		end)
 
+
+		it('should dispatch all variable event scripts', function()
+			local scripts = {}
+			local variables = {}
+			local dumped = false
+
+			local function getDummy(id, name, value)
+				return {
+					['id'] = id,
+					['name'] = name,
+					['value'] = value
+				}
+			end
+
+			local varchanged = {
+				['myVar1'] = getDummy(1, 'myVar1', 10),
+				['myVar2'] = getDummy(2, 'myVar2', 20),
+				['myVar3'] = getDummy(3, 'myVar3', 30),
+			}
+
+			varchanged['forEach'] = function(func)
+				local res
+				for i, item in pairs(varchanged) do
+					if (type(item) ~= 'function' and type(i) ~= 'number') then
+						res = func(item, i, varchanged)
+						if (res == false) then -- abort
+							return
+						end
+					end
+				end
+			end
+
+			helpers.dumpCommandArray = function()
+				dumped = true
+			end
+
+			helpers.handleEvents = function(_scripts, _variable)
+				_.forEach(_scripts, function(s)
+					table.insert(scripts, s.name)
+				end)
+				table.insert(variables, _variable.name)
+			end
+			local res = helpers.dispatchVariableEventsToScripts({ ['changedVariables'] = varchanged })
+
+			table.sort(scripts)
+			table.sort(variables)
+			assert.is_same({
+				'script_variable1',
+				'script_variable2',
+				'script_variable2',
+				'script_variable3'
+			}, scripts)
+
+
+			assert.is_same({
+				"myVar1",
+				"myVar2",
+				"myVar3",
+			}, variables)
+
+			assert.is_true(dumped)
+		end)
 
 	end)
 end)

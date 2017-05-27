@@ -8,7 +8,6 @@ local utils = require('Utils')
 
 local _ = require('lodash') -- todo remove
 
-
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
 function string:split(sep)
@@ -37,6 +36,7 @@ local function Domoticz(settings)
 		['scenes'] = {},
 		['groups'] = {},
 		['changedDevices'] = {},
+		['changedVariables'] = {},
 		['security'] = globalvariables['Security'],
 		['radixSeparator'] = globalvariables['radix_separator'],
 		['time'] = nowTime,
@@ -96,6 +96,7 @@ local function Domoticz(settings)
 		['LOG_ERROR'] = utils.LOG_ERROR,
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
+		['EVENT_TYPE_VARIABLE'] = 'variable',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
@@ -294,6 +295,14 @@ local function Domoticz(settings)
 			elseif (item.baseType == 'uservariable') then
 				local var = Variable(self, item)
 				self.variables[item.name] = var
+
+				-- todo remove
+				if (item.name == 'myVar1') then
+					item.changed = true
+				end
+				if (item.changed) then
+					self.changedVariables[item.name] = var
+				end
 			end
 
 		end
@@ -305,6 +314,7 @@ local function Domoticz(settings)
 	setIterators(self.devices)
 	setIterators(self.changedDevices)
 	setIterators(self.variables)
+	setIterators(self.changedVariables)
 	setIterators(self.scenes)
 	setIterators(self.groups)
 

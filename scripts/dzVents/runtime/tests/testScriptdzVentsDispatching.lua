@@ -98,6 +98,17 @@ describe('Event dispatching', function()
 				["lastUpdate"] = "2017-05-18 09:52:19",
 				["switchType"] = "On/Off",
 			},
+			[4] = {
+				["id"] = 1;
+				["lastUpdate"] = "2017-05-27 17:18:07";
+				["variableType"] = "integer";
+				["data"] = {
+					["value"] = 3345;
+				};
+				["baseType"] = "uservariable";
+				["changed"] = true;
+				["name"] = "myVar1";
+			}
 		}
 	end)
 
@@ -132,6 +143,15 @@ describe('Event dispatching', function()
 			{ ["onscript1"] = "Off" },
 			{ ["SendNotification"] = "Me#timer every minute#0#pushover##" },
 			{ ["Scene:scene 1"] = "On" }
+		}, main)
+	end)
+
+	it("should dispatch variable events", function()
+		_G.commandArray = {}
+		_G.globalvariables['script_reason'] = 'uservariable'
+		local main = require('dzVents')
+		assert.is_same({
+			{ ['OpenURL'] = 'http://127.0.0.1:8080/json.htm?type=command&param=updateuservariable&vname=myVar1&vtype=integer&vvalue=10' }
 		}, main)
 	end)
 

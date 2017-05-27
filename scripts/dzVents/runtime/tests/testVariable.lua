@@ -50,6 +50,7 @@ describe('variables', function()
 		assert.is_same(2.3, var.nValue)
 		assert.is_same(2.3, var.value)
 		assert.is_same('2017-04-18 20:16:23', var.lastUpdate.raw)
+		assert.is_same('y', var.name)
 	end)
 
 	it('should have cast to number', function()

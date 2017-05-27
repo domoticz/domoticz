@@ -25,10 +25,14 @@ if (_G.TESTMODE == nil) then
 	print(triggerReason)
 end
 
+commandArray = {}
+
 if triggerReason == "time" then
 	commandArray = helpers.dispatchTimerEventsToScripts()
 elseif triggerReason == "device" then
 	commandArray = helpers.dispatchDeviceEventsToScripts()
+elseif triggerReason == "uservariable" then
+	commandArray = helpers.dispatchVariableEventsToScripts()
 else
 	print ("Unknown trigger: ", triggerReason)
 end

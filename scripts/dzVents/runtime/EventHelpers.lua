@@ -118,18 +118,16 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	local function getEventInfo(eventHandler)
+	local function getEventInfo(eventHandler, mode)
 		local res = {}
+		res.type = mode
 		if (eventHandler.trigger ~= nil) then
-			res.type = self.domoticz.EVENT_TYPE_TIMER
 			res.trigger = eventHandler.trigger
-		else
-			res.type = self.domoticz.EVENT_TYPE_DEVICE
 		end
 		return res
 	end
 
-	function self.callEventHandler(eventHandler, device)
+	function self.callEventHandler(eventHandler, device, variable)
 		local useStorage = false
 		if (eventHandler['execute'] ~= nil) then
 
@@ -157,8 +155,19 @@ local function EventHelpers(domoticz, mainMethod)
 			-- ==================
 			-- Run script
 			-- ==================
-			local info = getEventInfo(eventHandler)
-			local ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
+			local ok, res, info
+			if (device ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
+			elseif (variable ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_VARIABLE)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
+			else
+				-- timer
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
+			end
+
 			if (ok) then
 
 				-- ==================
@@ -372,7 +381,7 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	function self.handleEvents(events, device)
+	function self.handleEvents(events, device, variable)
 		if (type(events) ~= 'table') then
 			return
 		end
@@ -380,13 +389,16 @@ local function EventHelpers(domoticz, mainMethod)
 		for eventIdx, eventHandler in pairs(events) do
 			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
 			utils.log('>>> Handler: ' .. eventHandler.name, utils.LOG_MODULE_EXEC_INFO)
+
 			if (device) then
 				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
+			elseif (variable) then
+				utils.log('>>> Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id), utils.LOG_MODULE_EXEC_INFO)
 			end
 
 			utils.log('.....................................................', utils.LOG_INFO)
 
-			self.callEventHandler(eventHandler, device)
+			self.callEventHandler(eventHandler, device, variable)
 
 			utils.log('.....................................................', utils.LOG_INFO)
 			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
@@ -415,6 +427,8 @@ local function EventHelpers(domoticz, mainMethod)
 			utils.log(modules, utils.LOG_ERROR)
 			return nil
 		end
+
+		if (mode == nil) then mode = 'device' end
 
 		for i, moduleName in pairs(modules) do
 
@@ -474,8 +488,8 @@ local function EventHelpers(domoticz, mainMethod)
 												table.insert(bindings, module)
 											end
 										end
-									else
-										if (event ~= 'timer' and j ~= 'timer') then
+									elseif (mode == 'device') then
+										if (event ~= 'timer' and j ~= 'timer' and j~= 'variable' and j~='variables') then
 
 											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
 
@@ -496,6 +510,23 @@ local function EventHelpers(domoticz, mainMethod)
 												table.insert(bindings[event], module)
 											end
 										end
+									elseif (mode == 'variable') then
+										if (type(j) == 'string' and j == 'variable' and type(event) == 'string') then
+											-- { ['variable'] = 'myvar' }
+											if (bindings[event] == nil) then
+												bindings[event] = {}
+											end
+											table.insert(bindings[event], module)
+										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
+											-- { ['variables'] = { 'varA', 'varB' }
+											for devIdx, varName in pairs(event) do
+												if (bindings[varName] == nil) then
+													bindings[varName] = {}
+												end
+												table.insert(bindings[varName], module)
+											end
+										end
+
 									end
 								end
 							else
@@ -521,6 +552,10 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('timer')
 	end
 
+	function self.getVariableHandlers()
+		return self.getEventBindings('variable')
+	end
+
 	function self.dumpCommandArray(commandArray)
 		local printed = false
 		for k, v in pairs(commandArray) do
@@ -536,24 +571,24 @@ local function EventHelpers(domoticz, mainMethod)
 		if (printed) then utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO) end
 	end
 
-	function self.findScriptForChangedDevice(changedDeviceName, allEventScripts)
+	function self.findScriptForChangedItem(changedItemName, allEventScripts)
 		-- event could be like: myPIRLivingRoom
 		-- or myPir(.*)
-		utils.log('Searching for scripts for changed device: ' .. changedDeviceName, utils.LOG_DEBUG)
+		utils.log('Searching for scripts for changed item: ' .. changedItemName, utils.LOG_DEBUG)
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
 			-- turn it into a valid regexp
 			scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
 
-			if (string.match(changedDeviceName, scriptTrigger)) then
-				-- there is trigger for this changedDeviceName
+			if (string.match(changedItemName, scriptTrigger)) then
+				-- there is trigger for this changedItemName
 				return scripts
 			end
 
 			else
-				if (scriptTrigger == changedDeviceName) then
-					-- there is trigger for this changedDeviceName
+				if (scriptTrigger == changedItemName) then
+					-- there is trigger for this changedItemName
 					return scripts
 				end
 			end
@@ -572,13 +607,13 @@ local function EventHelpers(domoticz, mainMethod)
 
 		domoticz.changedDevices.forEach( function(device)
 
-			utils.log('Event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
+			utils.log('Device-event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
 			local scriptsToExecute
 
 			-- first search by name
 
-			scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
+			scriptsToExecute = self.findScriptForChangedItem(device.name, allEventScripts)
 
 			if (scriptsToExecute == nil) then
 				-- search by id
@@ -606,6 +641,42 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.domoticz.commandArray
 
 	end
+
+	function self.dispatchVariableEventsToScripts(domoticz)
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		local allEventScripts = self.getVariableHandlers()
+
+
+
+		domoticz.changedVariables.forEach(function(variable)
+
+			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. variable.value, utils.LOG_DEBUG)
+
+			local scriptsToExecute
+
+			-- first search by name
+
+			scriptsToExecute = self.findScriptForChangedItem(variable.name, allEventScripts)
+
+			if (scriptsToExecute == nil) then
+				-- search by id
+				scriptsToExecute = allEventScripts[variable.id]
+			end
+
+			if (scriptsToExecute ~= nil) then
+				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. variable.value .. '"', utils.LOG_INFO)
+				self.handleEvents(scriptsToExecute, variable)
+			end
+		end)
+
+
+		self.dumpCommandArray(self.domoticz.commandArray)
+		return self.domoticz.commandArray
+	end
+
 
 	return self
 end
