@@ -108,27 +108,29 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	std::stringstream sstr;
 	bool bEnableLogTimestamps = m_bEnableLogTimestamps;
+	char szDate[100];
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	struct tm timeinfo;
+#ifdef WIN32
+	//Thanks to the winsock header file
+	time_t tv_sec = tv.tv_sec;
+	localtime_r(&tv_sec, &timeinfo);
+#else
+	localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+	// create a time stamp string for the log message
+	snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
+		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+
 #ifndef WIN32
 	if (g_bUseSyslog)
 		bEnableLogTimestamps = false;
 #endif
+	bEnableLogTimestamps = false;
 	if (bEnableLogTimestamps)
 	{
-		char szDate[100];
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		struct tm timeinfo;
-#ifdef WIN32
-		//Thanks to the winsock header file
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-		// create a time stamp string for the log message
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 		sstr << szDate << " ";
 	}
 
@@ -141,31 +143,15 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	{
 		sstr << "Error: " << cbuffer;
 	}
-	if (m_lastlog.size()>=MAX_LOG_LINE_BUFFER)
-		m_lastlog.erase(m_lastlog.begin());
-	m_lastlog.push_back(_tLogLineStruct(level,sstr.str()));
 
-	if (level == LOG_STATUS)
+	if ((level == LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 	{
-		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_status_log.erase(m_last_status_log.begin());
-		m_last_status_log.push_back(_tLogLineStruct(level, sstr.str()));
-	}
-	else if (level == LOG_ERROR)
-	{
-		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_error_log.erase(m_last_error_log.begin());
-		m_last_error_log.push_back(_tLogLineStruct(level, sstr.str()));
-
-		if (m_bEnableErrorsToNotificationSystem)
+		if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_notification_log.erase(m_last_error_log.begin());
+		m_notification_log.push_back(_tLogLineStruct(level, sstr.str()));
+		if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
 		{
-			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
-				m_notification_log.erase(m_last_error_log.begin());
-			m_notification_log.push_back(_tLogLineStruct(level, sstr.str()));
-			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
-			{
-				m_mainworker.ForceLogNotificationCheck();
-			}
+			m_mainworker.ForceLogNotificationCheck();
 		}
 	}
 
@@ -192,6 +178,25 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	m_outputfile << sstr.str() << std::endl;
 	m_outputfile.flush();
+
+	std::string szIntLog = std::string(szDate) + " " + sstr.str();
+
+	if (m_lastlog.size() >= MAX_LOG_LINE_BUFFER)
+		m_lastlog.erase(m_lastlog.begin());
+	m_lastlog.push_back(_tLogLineStruct(level, szIntLog));
+
+	if (level == LOG_STATUS)
+	{
+		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_status_log.erase(m_last_status_log.begin());
+		m_last_status_log.push_back(_tLogLineStruct(level, szIntLog));
+	}
+	else if (level == LOG_ERROR)
+	{
+		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+			m_last_error_log.erase(m_last_error_log.begin());
+		m_last_error_log.push_back(_tLogLineStruct(level, szIntLog));
+	}
 }
 
 bool strhasEnding(std::string const &fullString, std::string const &ending)

@@ -3559,7 +3559,9 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SubType == "Alert") {
-										status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+										var aLevel = item.Level;
+										if (aLevel > 4) aLevel = 4;
+										status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
