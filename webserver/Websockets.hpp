@@ -3,8 +3,6 @@
 #include <string>
 #include "WebsocketHandler.h"
 
-#define size_t_t long long
-
 namespace http {
 	namespace server {
 
@@ -24,21 +22,21 @@ namespace http {
 		public:
 			CWebsocketFrame();
 			~CWebsocketFrame();
-			bool Parse(const unsigned char *bytes, size_t_t size);
+			bool Parse(const uint8_t *bytes, size_t size);
 			std::string Payload();
 			bool isFinal();
-			size_t_t Consumed();
+			size_t Consumed();
 			opcodes Opcode();
 			static std::string Create(opcodes opcode, const std::string &payload, bool domasking);
 		private:
-			static std::string unmask(const unsigned char *mask, const unsigned char *bytes, size_t_t payloadlen);
+			static std::string unmask(const uint8_t *mask, const uint8_t *bytes, size_t payloadlen);
 			bool fin;
 			bool rsvi1;
 			bool rsvi2;
 			bool rsvi3;
 			opcodes opcode;
 			bool masking;
-			size_t_t payloadlen, bytes_consumed;
+			size_t payloadlen, bytes_consumed;
 			std::string payload;
 		};
 
@@ -46,7 +44,7 @@ namespace http {
 		public:
 			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler);
 			~CWebsocket();
-			virtual boost::tribool parse(const unsigned char *begin, size_t_t size, size_t_t &bytes_consumed, bool &keep_alive);
+			virtual boost::tribool parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
 			virtual void SendClose(const std::string &packet_data);
 			virtual void SendPing();
 			virtual void Start();
@@ -60,7 +58,7 @@ namespace http {
 			std::string packet_data;
 			bool start_new_packet;
 			opcodes last_opcode;
-			const char *OUR_PING_ID;
+			std::string OUR_PING_ID;
 			CWebsocketHandler *handler;
 			boost::function<void(const std::string &packet_data)> MyWrite;
 		};

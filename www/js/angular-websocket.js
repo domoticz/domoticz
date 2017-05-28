@@ -8,29 +8,29 @@
      * @description
      * HTML5 WebSocket provider for AngularJS
      */
-    function $websocketProvider () {
-        var wsp = this;
+	function $websocketProvider() {
+		var wsp = this;
 
-        wsp.$$config = {
-            lazy: false,
-            reconnect: true,
-            reconnectInterval: 2000,
-            mock: false,
-            enqueue: false,
-            protocols: null
-        };
+		wsp.$$config = {
+			lazy: false,
+			reconnect: true,
+			reconnectInterval: 2000,
+			mock: false,
+			enqueue: false,
+			protocols: null
+		};
 
-        wsp.$setup = function (cfg) {
-            cfg = cfg || {};
-            wsp.$$config = angular.extend({}, wsp.$$config, cfg);
+		wsp.$setup = function (cfg) {
+			cfg = cfg || {};
+			wsp.$$config = angular.extend({}, wsp.$$config, cfg);
 
-            return wsp;
-        };
+			return wsp;
+		};
 
-        wsp.$get = ['$http', function ($http) {
-            return new $websocketService(wsp.$$config, $http);
-        }];
-    }
+		wsp.$get = ['$http', function ($http) {
+			return new $websocketService(wsp.$$config, $http);
+		}];
+	}
 
     /**
      * @ngdoc service
@@ -39,42 +39,42 @@
      * @description
      * HTML5 Websocket service for AngularJS
      */
-    function $websocketService (cfg, $http) {
-        var wss = this;
+	function $websocketService(cfg, $http) {
+		var wss = this;
 
-        wss.$$websocketList = {};
-        wss.$$config = cfg || {};
+		wss.$$websocketList = {};
+		wss.$$config = cfg || {};
 
-        wss.$get = function (url) {
-            return wss.$$websocketList[url];
-        };
+		wss.$get = function (url) {
+			return wss.$$websocketList[url];
+		};
 
-        wss.$new = function (cfg) {
-            cfg = cfg || {};
+		wss.$new = function (cfg) {
+			cfg = cfg || {};
 
-            // Url or url + protocols initialization
-            if (typeof cfg === 'string') {
-                cfg = {url: cfg};
+			// Url or url + protocols initialization
+			if (typeof cfg === 'string') {
+				cfg = { url: cfg };
 
-                // url + protocols
-                if (arguments.length > 1) {
-                    if (typeof arguments[1] === 'string' && arguments[1].length > 0) cfg.protocols = [arguments[1]];
-                    else if (typeof arguments[1] === 'object' && arguments[1].length > 0) cfg.protocols = arguments[1];
-                }
-            }
+				// url + protocols
+				if (arguments.length > 1) {
+					if (typeof arguments[1] === 'string' && arguments[1].length > 0) cfg.protocols = [arguments[1]];
+					else if (typeof arguments[1] === 'object' && arguments[1].length > 0) cfg.protocols = arguments[1];
+				}
+			}
 
-            // If the websocket already exists, return that instance
-            var ws = wss.$get(cfg.url);
-            if (typeof ws === 'undefined') {
-                var wsCfg = angular.extend({}, wss.$$config, cfg);
+			// If the websocket already exists, return that instance
+			var ws = wss.$get(cfg.url);
+			if (typeof ws === 'undefined') {
+				var wsCfg = angular.extend({}, wss.$$config, cfg);
 
-                ws = new $websocket(wsCfg, $http);
-                wss.$$websocketList[wsCfg.url] = ws;
-            }
+				ws = new $websocket(wsCfg, $http);
+				wss.$$websocketList[wsCfg.url] = ws;
+			}
 
-            return ws;
-        };
-    }
+			return ws;
+		};
+	}
 
     /**
      * @ngdoc class
@@ -83,106 +83,106 @@
      * @description
      * HTML5 Websocket wrapper class for AngularJS
      */
-    function $websocket (cfg, $http) {
-        var me = this;
+	function $websocket(cfg, $http) {
+		var me = this;
 
-        if (typeof cfg === 'undefined' || (typeof cfg === 'object' && typeof cfg.url === 'undefined')) throw new Error('An url must be specified for WebSocket');
+		if (typeof cfg === 'undefined' || (typeof cfg === 'object' && typeof cfg.url === 'undefined')) throw new Error('An url must be specified for WebSocket');
 
-        me.$$eventMap = {};
-        me.$$ws = undefined;
-        me.$$reconnectTask = undefined;
-        me.$$reconnectCopy = true;
-        me.$$queue = [];
-        me.$$config = {
-            url: undefined,
-            lazy: false,
-            reconnect: true,
-            reconnectInterval: 2000,
-            enqueue: false,
-            mock: false,
-            protocols: null
-        };
+		me.$$eventMap = {};
+		me.$$ws = undefined;
+		me.$$reconnectTask = undefined;
+		me.$$reconnectCopy = true;
+		me.$$queue = [];
+		me.$$config = {
+			url: undefined,
+			lazy: false,
+			reconnect: true,
+			reconnectInterval: 2000,
+			enqueue: false,
+			mock: false,
+			protocols: null
+		};
 
-        me.$$fireEvent = function () {
-            var args = [];
+		me.$$fireEvent = function () {
+			var args = [];
 
-            Array.prototype.push.apply(args, arguments);
+			Array.prototype.push.apply(args, arguments);
 
-            var event = args.shift(),
-                handlers = me.$$eventMap[event];
+			var event = args.shift(),
+				handlers = me.$$eventMap[event];
 
-            if (typeof handlers !== 'undefined') {
-                for (var i = 0; i < handlers.length; i++) {
-                    if (typeof handlers[i] === 'function') handlers[i].apply(me, args);
-                }
-            }
-        };
+			if (typeof handlers !== 'undefined') {
+				for (var i = 0; i < handlers.length; i++) {
+					if (typeof handlers[i] === 'function') handlers[i].apply(me, args);
+				}
+			}
+		};
 
-        me.$$init = function (cfg) {
+		me.$$init = function (cfg) {
 
-            if (cfg.mock) {
-                me.$$ws = new $$mockWebsocket(cfg.mock, $http);
-            }
-            else if (cfg.protocols) {
-                me.$$ws = new WebSocket(cfg.url, cfg.protocols);
-            }
-            else {
-                me.$$ws = new WebSocket(cfg.url);
-            }
+			if (cfg.mock) {
+				me.$$ws = new $$mockWebsocket(cfg.mock, $http);
+			}
+			else if (cfg.protocols) {
+				me.$$ws = new WebSocket(cfg.url, cfg.protocols);
+			}
+			else {
+				me.$$ws = new WebSocket(cfg.url);
+			}
 
-            me.$$ws.onmessage = function (message) {
-                try {
-                    var decoded = JSON.parse(message.data);
-                    me.$$fireEvent(decoded.event, decoded.data);
-                    me.$$fireEvent('$message', decoded);
-                }
-                catch (err) {
-                    me.$$fireEvent('$message', message.data);
-                }
-            };
+			me.$$ws.onmessage = function (message) {
+				try {
+					var decoded = JSON.parse(message.data);
+					me.$$fireEvent(decoded.event, decoded.data);
+					me.$$fireEvent('$message', decoded);
+				}
+				catch (err) {
+					me.$$fireEvent('$message', message.data);
+				}
+			};
 
-            me.$$ws.onerror = function (error) {
-                me.$$fireEvent('$error', error);
-            };
+			me.$$ws.onerror = function (error) {
+				me.$$fireEvent('$error', error);
+			};
 
-            me.$$ws.onopen = function () {
-                // Clear the reconnect task if exists
-                if (me.$$reconnectTask) {
-                    clearInterval(me.$$reconnectTask);
-                    delete me.$$reconnectTask;
-                }
+			me.$$ws.onopen = function () {
+				// Clear the reconnect task if exists
+				if (me.$$reconnectTask) {
+					clearInterval(me.$$reconnectTask);
+					delete me.$$reconnectTask;
+				}
 
-                // Flush the message queue
-                if (me.$$config.enqueue && me.$$queue.length > 0) {
-                    while (me.$$queue.length > 0) {
-                        if (me.$ready()) me.$$send(me.$$queue.shift());
-                        else break;
-                    }
-                }
+				// Flush the message queue
+				if (me.$$config.enqueue && me.$$queue.length > 0) {
+					while (me.$$queue.length > 0) {
+						if (me.$ready()) me.$$send(me.$$queue.shift());
+						else break;
+					}
+				}
 
-                me.$$fireEvent('$open');
-            };
+				me.$$fireEvent('$open');
+			};
 
-            me.$$ws.onclose = function () {
-                // Activate the reconnect task
-                if (me.$$config.reconnect) {
-                    me.$$reconnectTask = setInterval(function () {
-                        if (me.$status() === me.$CLOSED) me.$open();
-                    }, me.$$config.reconnectInterval);
-                }
+			me.$$ws.onclose = function () {
+				// Activate the reconnect task
+				if (me.$$config.reconnect) {
+					me.$$reconnectTask = setInterval(function () {
+						if (me.$status() === me.$CLOSED) me.$open();
+					}, me.$$config.reconnectInterval);
+				}
 
-                me.$$fireEvent('$close');
-            };
+				me.$$fireEvent('$close');
+			};
 
-            return me;
-        };
+			return me;
+		};
 
-        me.$CONNECTING = 0;
-        me.$OPEN = 1;
-        me.$CLOSING = 2;
-        me.$CLOSED = 3;
+		me.$CONNECTING = 0;
+		me.$OPEN = 1;
+		me.$CLOSING = 2;
+		me.$CLOSED = 3;
 
-        // TODO: it doesn't refresh the view (maybe $apply on something?)
+		// TODO: it doesn't refresh the view (maybe $apply on something?)
         /*me.$bind = function (event, scope, model) {
          me.$on(event, function (message) {
          model = message;
@@ -190,181 +190,198 @@
          });
          };*/
 
-        me.$on = function () {
-            var handlers = [];
+		me.$on = function () {
+			var handlers = [];
 
-            Array.prototype.push.apply(handlers, arguments);
+			Array.prototype.push.apply(handlers, arguments);
 
-            var event = handlers.shift();
-            if (typeof event !== 'string' || handlers.length === 0) throw new Error('$on accept two parameters at least: a String and a Function or an array of Functions');
+			var event = handlers.shift();
+			if (typeof event !== 'string' || handlers.length === 0) throw new Error('$on accept two parameters at least: a String and a Function or an array of Functions');
 
-            me.$$eventMap[event] = me.$$eventMap[event] || [];
-            for (var i = 0; i < handlers.length; i++) {
-                me.$$eventMap[event].push(handlers[i]);
-            }
+			me.$$eventMap[event] = me.$$eventMap[event] || [];
+			for (var i = 0; i < handlers.length; i++) {
+				if (me.$$eventMap[event].indexOf(handlers[i]) < 0)
+					me.$$eventMap[event].push(handlers[i]);
+			}
 
-            return me;
-        };
+			return me;
+		};
 
-        me.$un = function (event) {
-            if (typeof event !== 'string') throw new Error('$un needs a String representing an event.');
+		me.$un = function () {
+			var handlers = [], index, eventMap;
 
-            if (typeof me.$$eventMap[event] !== 'undefined') delete me.$$eventMap[event];
+			Array.prototype.push.apply(handlers, arguments);
 
-            return me;
-        };
+			var event = handlers.shift();
 
-        me.$$send = function (message) {
-            if (me.$ready()) me.$$ws.send(JSON.stringify(message));
-            else if (me.$$config.enqueue) me.$$queue.push(message);
-        };
+			if (typeof event !== 'string') throw new Error('$un needs a String representing an event.');
 
-        me.$emit = function (event, data) {
-            if (typeof event !== 'string') throw new Error('$emit needs two parameter: a String and a Object or a String');
+			if (handlers.length == 0) {
+				if (typeof me.$$eventMap[event] !== 'undefined')
+					delete me.$$eventMap[event];
+			}
+			else {
+				for (var i = 0; i < handlers.length; i++) {
+					index = me.$$eventMap[event].indexOf(handlers[i]);
 
-            var message = {
-                event: event,
-                data: data
-            };
+					if (index >= 0) {
+						me.$$eventMap[event].splice(index, 1);
+					}
+				}
+			}
+		};
 
-            me.$$send(message);
+		me.$$send = function (message) {
+			if (me.$ready()) me.$$ws.send(JSON.stringify(message));
+			else if (me.$$config.enqueue) me.$$queue.push(message);
+		};
 
-            return me;
-        };
+		me.$emit = function (event, data) {
+			if (typeof event !== 'string') throw new Error('$emit needs two parameter: a String and a Object or a String');
 
-        me.$open = function () {
-            me.$$config.reconnect = me.$$reconnectCopy;
+			var message = {
+				event: event,
+				data: data
+			};
 
-            if (me.$status() !== me.$OPEN) me.$$init(me.$$config);
-            return me;
-        };
+			me.$$send(message);
 
-        me.$close = function () {
-            if (me.$status() !== me.$CLOSED) me.$$ws.close();
+			return me;
+		};
 
-            if (me.$$reconnectTask) {
-                clearInterval(me.$$reconnectTask);
-                delete me.$$reconnectTask;
-            }
+		me.$open = function () {
+			me.$$config.reconnect = me.$$reconnectCopy;
 
-            me.$$config.reconnect = false;
+			if (me.$status() !== me.$OPEN) me.$$init(me.$$config);
+			return me;
+		};
 
-            return me;
-        };
+		me.$close = function () {
+			if (me.$status() !== me.$CLOSED) me.$$ws.close();
 
-        me.$status = function () {
-            if (typeof me.$$ws === 'undefined') return me.$CLOSED;
-            else return me.$$ws.readyState;
-        };
+			if (me.$$reconnectTask) {
+				clearInterval(me.$$reconnectTask);
+				delete me.$$reconnectTask;
+			}
 
-        me.$ready = function () {
-            return me.$status() === me.$OPEN;
-        };
+			me.$$config.reconnect = false;
 
-        me.$mockup = function () {
-            return me.$$config.mock;
-        };
+			return me;
+		};
 
-        // setup
-        me.$$config = angular.extend({}, me.$$config, cfg);
-        me.$$reconnectCopy = me.$$config.reconnect;
+		me.$status = function () {
+			if (typeof me.$$ws === 'undefined') return me.$CLOSED;
+			else return me.$$ws.readyState;
+		};
 
-        if (!me.$$config.lazy) me.$$init(me.$$config);
+		me.$ready = function () {
+			return me.$status() === me.$OPEN;
+		};
 
-        return me;
-    }
+		me.$mockup = function () {
+			return me.$$config.mock;
+		};
 
-    function $$mockWebsocket (cfg, $http) {
-        cfg = cfg || {};
+		// setup
+		me.$$config = angular.extend({}, me.$$config, cfg);
+		me.$$reconnectCopy = me.$$config.reconnect;
 
-        var me = this,
-            openTimeout = cfg.openTimeout || 500,
-            closeTimeout = cfg.closeTimeout || 1000,
-            messageInterval = cfg.messageInterval || 2000,
-            fixtures = cfg.fixtures || {},
-            messageQueue = [];
+		if (!me.$$config.lazy) me.$$init(me.$$config);
 
-        me.CONNECTING = 0;
-        me.OPEN = 1;
-        me.CLOSING = 2;
-        me.CLOSED = 3;
+		return me;
+	}
 
-        me.readyState = me.CONNECTING;
+	function $$mockWebsocket(cfg, $http) {
+		cfg = cfg || {};
 
-        me.send = function (message) {
-            if (me.readyState === me.OPEN) {
-                messageQueue.push(message);
-                return me;
-            }
-            else throw new Error('WebSocket is already in CLOSING or CLOSED state.');
-        };
+		var me = this,
+			openTimeout = cfg.openTimeout || 500,
+			closeTimeout = cfg.closeTimeout || 1000,
+			messageInterval = cfg.messageInterval || 2000,
+			fixtures = cfg.fixtures || {},
+			messageQueue = [];
 
-        me.close = function () {
-            if (me.readyState === me.OPEN) {
-                me.readyState = me.CLOSING;
+		me.CONNECTING = 0;
+		me.OPEN = 1;
+		me.CLOSING = 2;
+		me.CLOSED = 3;
 
-                setTimeout(function () {
-                    me.readyState = me.CLOSED;
+		me.readyState = me.CONNECTING;
 
-                    me.onclose();
-                }, closeTimeout);
-            }
+		me.send = function (message) {
+			if (me.readyState === me.OPEN) {
+				messageQueue.push(message);
+				return me;
+			}
+			else throw new Error('WebSocket is already in CLOSING or CLOSED state.');
+		};
 
-            return me;
-        };
+		me.close = function () {
+			if (me.readyState === me.OPEN) {
+				me.readyState = me.CLOSING;
 
-        me.onmessage = function () {};
-        me.onerror = function () {};
-        me.onopen = function () {};
-        me.onclose = function () {};
+				setTimeout(function () {
+					me.readyState = me.CLOSED;
 
-        setInterval(function () {
-            if (messageQueue.length > 0) {
-                var message = messageQueue.shift(),
-                    msgObj = JSON.parse(message);
+					me.onclose();
+				}, closeTimeout);
+			}
 
-                switch (msgObj.event) {
-                    case '$close':
-                        me.close();
-                        break;
-                    default:
-                        // Check for a custom response
-                        if (typeof fixtures[msgObj.event] !== 'undefined') {
-                            msgObj.data = fixtures[msgObj.event].data || msgObj.data;
-                            msgObj.event = fixtures[msgObj.event].event || msgObj.event;
-                        }
+			return me;
+		};
 
-                        message = JSON.stringify(msgObj);
+		me.onmessage = function () { };
+		me.onerror = function () { };
+		me.onopen = function () { };
+		me.onclose = function () { };
 
-                        me.onmessage({
-                            data: message
-                        });
-                }
-            }
-        }, messageInterval);
+		setInterval(function () {
+			if (messageQueue.length > 0) {
+				var message = messageQueue.shift(),
+					msgObj = JSON.parse(message);
 
-        var start = function (fixs) {
-            fixs = fixs || {};
-            fixs = fixs instanceof Error ? {} : fixs;
+				switch (msgObj.event) {
+					case '$close':
+						me.close();
+						break;
+					default:
+						// Check for a custom response
+						if (typeof fixtures[msgObj.event] !== 'undefined') {
+							msgObj.data = fixtures[msgObj.event].data || msgObj.data;
+							msgObj.event = fixtures[msgObj.event].event || msgObj.event;
+						}
 
-            fixtures = fixs;
+						message = JSON.stringify(msgObj);
 
-            setTimeout(function () {
-                me.readyState = me.OPEN;
-                me.onopen();
-            }, openTimeout);
-        };
+						me.onmessage({
+							data: message
+						});
+				}
+			}
+		}, messageInterval);
 
-        // Get fixtures from a server or a file if it's a string
-        if (typeof fixtures === 'string') {
-            $http.get(fixtures)
-                .success(start)
-                .error(start);
-        }
-        else start(fixtures);
+		var start = function (fixs) {
+			fixs = fixs || {};
+			fixs = fixs instanceof Error ? {} : fixs;
 
-        return me;
-    }
+			fixtures = fixs;
+
+			setTimeout(function () {
+				me.readyState = me.OPEN;
+				me.onopen();
+			}, openTimeout);
+		};
+
+		// Get fixtures from a server or a file if it's a string
+		if (typeof fixtures === 'string') {
+			$http.get(fixtures)
+				.success(start)
+				.error(start);
+		}
+		else start(fixtures);
+
+		return me;
+	}
 
     /**
      * @ngdoc module
@@ -373,7 +390,7 @@
      * @description
      * HTML5 WebSocket module for AngularJS
      */
-    angular
-        .module('ngWebsocket', [])
-        .provider('$websocket', $websocketProvider);
+	angular
+		.module('ngWebsocket', [])
+		.provider('$websocket', $websocketProvider);
 })();

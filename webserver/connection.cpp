@@ -279,7 +279,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		reply reply_;
 		const char *begin;
 		// websocket variables
-		size_t_t bytes_consumed;
+		size_t bytes_consumed;
 
 		switch (connection_type) {
 		case connection_http:

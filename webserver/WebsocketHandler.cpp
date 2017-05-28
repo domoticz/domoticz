@@ -10,10 +10,13 @@
 namespace http {
 	namespace server {
 
-		CWebsocketHandler::CWebsocketHandler(cWebem *m_pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : m_Push(this)
+		CWebsocketHandler::CWebsocketHandler(cWebem *pWebem, boost::function<void(const std::string &packet_data)> _MyWrite) : 
+			m_Push(this),
+			sessionid(""),
+			MyWrite(_MyWrite),
+			myWebem(pWebem)
 		{
-			MyWrite = _MyWrite;
-			myWebem = m_pWebem;
+			
 		}
 
 		CWebsocketHandler::~CWebsocketHandler()
@@ -23,7 +26,6 @@ namespace http {
 
 		boost::tribool CWebsocketHandler::Handle(const std::string &packet_data)
 		{
-			request req;
 			reply rep;
 			Json::Value jsonValue;
 			Json::StyledWriter writer;
@@ -40,7 +42,6 @@ namespace http {
 				// todo: check: AreWeInLocalNetwork(). If yes, then session.rights = 2 without a session being setup.
 				return false;
 			}
-			req.method = "GET";
 			Json::Reader reader;
 			Json::Value value;
 			if (!reader.parse(packet_data, value)) {
@@ -49,7 +50,8 @@ namespace http {
 			if (value["event"] != "request") {
 				return true;
 			}
-			std::string requestid = value["requestid"].asString();
+			request req;
+			req.method = "GET";
 			std::string querystring = value["query"].asString();
 			req.uri = "/json.htm?" + querystring;
 			req.http_version_major = 1;
@@ -59,7 +61,7 @@ namespace http {
 			if (myWebem->CheckForPageOverride(session, req, rep)) {
 				if (rep.status == reply::ok) {
 					jsonValue["event"] = "response";
-					jsonValue["requestid"] = boost::lexical_cast<Json::UInt64>(requestid);
+					jsonValue["requestid"] = value["requestid"].asInt64();
 					jsonValue["data"] = rep.content;
 					std::string response = writer.write(jsonValue);
 					MyWrite(response);
@@ -130,19 +132,28 @@ namespace http {
 			}
 		}
 
-		void CWebsocketHandler::OnDeviceChanged(const unsigned long long DeviceRowIdx)
+		void CWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
-			std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
-			Json::Value request;
-			Json::StyledWriter writer;
-			request["event"] = "request";
-			request["requestid"] = "-1";
-			request["query"] = query;
-			std::string packet = writer.write(request);
-			Handle(packet);
+			//Rob, needed a try/catch, but don't know why...
+			//When a browser was still open and polling/connecting to the websocket, and the application was started this caused a crash
+			try
+			{
+				std::string query = "type=devices&rid=" + boost::lexical_cast<std::string>(DeviceRowIdx);
+				Json::Value request;
+				Json::StyledWriter writer;
+				request["event"] = "request";
+				request["requestid"] = -1;
+				request["query"] = query;
+				std::string packet = writer.write(request);
+				Handle(packet);
+			}
+			catch (...)
+			{
+				
+			}
 		}
 
-		void CWebsocketHandler::OnMessage(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
+		void CWebsocketHandler::OnMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
 		{
 			Json::Value json;
 

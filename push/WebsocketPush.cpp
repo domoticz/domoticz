@@ -19,9 +19,9 @@ void CWebSocketPush::Start()
 	if (isStarted) {
 		return;
 	}
-	isStarted = true;
 	m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&CWebSocketPush::OnDeviceReceived, this, _1, _2, _3, _4));
 	m_sNotification = sOnNotificationReceived.connect(boost::bind(&CWebSocketPush::OnNotificationReceived, this, _1, _2, _3, _4, _5, _6));
+	isStarted = true;
 }
 
 void CWebSocketPush::Stop()
@@ -102,6 +102,10 @@ bool CWebSocketPush::WeListenTo(const unsigned long long DeviceRowIdx)
 
 void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
+	if (!isStarted) {
+		return;
+	}
+
 	m_sock->OnDeviceChanged(DeviceRowIdx);
 	if (WeListenTo(DeviceRowIdx)) {
 		// push notification to web socket
@@ -110,6 +114,10 @@ void CWebSocketPush::OnDeviceReceived(const int m_HwdID, const unsigned long lon
 
 void CWebSocketPush::OnNotificationReceived(const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
 {
+	if (!isStarted) {
+		return;
+	}
+
 	// push message to websocket
 	m_sock->OnMessage(Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 }
