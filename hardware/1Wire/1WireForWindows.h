@@ -22,7 +22,7 @@ public:
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
-   virtual unsigned int GetWiper(const _t1WireDevice& device) const;
+   virtual int GetWiper(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
    virtual void PrepareDevices();
    // END : I_1WireSystem implementation

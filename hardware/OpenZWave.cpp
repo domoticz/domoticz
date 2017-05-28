@@ -1827,7 +1827,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 				InsertDevice(_device);
 			}
 		}
-		else if (vLabel == "Barometric Pressure")
+		else if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
 		{
 			if (m_pManager->GetValueAsFloat(vID, &fValue) == true)
 			{
@@ -3004,9 +3004,12 @@ void COpenZWave::UpdateValue(const OpenZWave::ValueID &vID)
 	case ZDTYPE_SENSOR_BAROMETER:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)
 			return;
-		if (vLabel != "Barometric Pressure")
+		if ((vLabel == "Barometric Pressure") || (vLabel == "Atmospheric Pressure"))
+		{
+			pDevice->floatValue = fValue*10.0f;
+		}
+		else
 			return;
-		pDevice->floatValue = fValue*10.0f;
 		break;
 	case ZDTYPE_SENSOR_DEWPOINT:
 		if (vType != OpenZWave::ValueID::ValueType_Decimal)

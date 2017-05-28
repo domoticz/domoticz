@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "HTTPClient.h"
 #include <curl/curl.h>
+#include "../main/Logger.h"
 
 #include <iostream>
 #include <fstream>
@@ -115,7 +116,44 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
+
+		if (res == CURLE_HTTP_RETURNED_ERROR)
+		{
+#ifndef _DEBUG
+			if (_log.isTraceEnabled())
+#endif
+			{
+				long response_code;
+				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+				switch (response_code)
+				{
+				case 400:
+					_log.Log(LOG_TRACE, "HTTP 400: Bad Request");
+					break;
+				case 401:
+					_log.Log(LOG_TRACE, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
+					break;
+				case 403:
+					_log.Log(LOG_TRACE, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
+					break;
+				case 404:
+					_log.Log(LOG_TRACE, "HTTP 404: Not Found");
+					break;
+				case 500:
+					_log.Log(LOG_TRACE, "HTTP 500: Internal Server Error");
+					break;
+				case 503:
+					_log.Log(LOG_TRACE, "HTTP 503: Service Unavailable");
+					break;
+				default:
+					_log.Log(LOG_TRACE, "HTTP return code is: %i", response_code);
+					break;
+				}
+			}
+		}
+
 		curl_easy_cleanup(curl);
 
 		if (headers!=NULL) {
@@ -324,50 +362,62 @@ bool HTTPClient::GET(const std::string &url, std::string &response, const bool b
 	return true;
 }
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!GETBinary(url,ExtraHeaders,vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return false;
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!POSTBinary(url,postdata,ExtraHeaders, vHTTPResponse, bFollowRedirect))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::PUT(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!PUTBinary(url,postdata,ExtraHeaders, vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
 
-bool HTTPClient::Delete(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response)
+bool HTTPClient::Delete(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	if (!DeleteBinary(url, postdata, ExtraHeaders, vHTTPResponse))
 		return false;
-	if (vHTTPResponse.empty())
-		return true; //empty response possible
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }

@@ -12,7 +12,6 @@ public:
 	explicit C1Wire(const int ID, const int sensorThreadPeriod, const int switchThreadPeriod, const std::string& path);
 	virtual ~C1Wire();
 
-	static bool Have1WireSystem();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
 private:
@@ -41,7 +40,7 @@ private:
 
 	// Messages to Domoticz
 	void ReportLightState(const std::string& deviceId, const int unit, const bool state);
-	void ReportWiper(const std::string& deviceId, const unsigned int wiper);
+	void ReportWiper(const std::string& deviceId, const int wiper);
 	void ReportTemperature(const std::string& deviceId, const float temperature);
 	void ReportTemperatureHumidity(const std::string& deviceId, const float temperature, const float humidity);
 	void ReportHumidity(const std::string& deviceId, const float humidity);
