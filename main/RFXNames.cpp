@@ -2,7 +2,7 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
-#include "../hardware/evohome.h"
+#include "../hardware/EvohomeBase.h"
 #include "Helper.h"
 #include <boost/algorithm/string.hpp>
 #include "Logger.h"
@@ -190,6 +190,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
+		{ HTYPE_EVOHOME_WEB, "Evohome via Web API" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
@@ -224,7 +225,6 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
-		{ HTYPE_FITBIT, "Fitbit" },
 		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
@@ -249,7 +249,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
 		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
-		{ HTYPE_SysfsGPIO, "Generic sysfs gpio" },
+		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -868,6 +868,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
 		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
 		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
+		{ pTypeGeneralSwitch, sSwitchTypeSysfsGpio, "SysfsGpio" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -1835,7 +1836,7 @@ void GetLightStatus(
 		break;
 	case pTypeEvohome:
 		llevel=0;
-		lstatus=CEvohome::GetWebAPIModeName(nValue);
+		lstatus=CEvohomeBase::GetWebAPIModeName(nValue);
 		break;
 	case pTypeEvohomeRelay:
 		bHaveDimmer=true;

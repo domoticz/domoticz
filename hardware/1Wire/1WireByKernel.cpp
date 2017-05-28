@@ -258,7 +258,7 @@ float C1WireByKernel::GetTemperature(const _t1WireDevice& device) const
    }
 }
 
-unsigned int C1WireByKernel::GetWiper(const _t1WireDevice& device) const
+int C1WireByKernel::GetWiper(const _t1WireDevice& device) const
 {
 	return -1;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
