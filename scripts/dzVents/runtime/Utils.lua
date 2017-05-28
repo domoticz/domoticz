@@ -30,9 +30,14 @@ function self.log(msg, level)
 	if (level == nil) then level = self.LOG_INFO end
 
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
+	local marker = ''
+
+	if (_G.logMarker ~= nil) then
+		marker = _G.logMarker .. ': '
+	end
 
 	if (level <= lLevel) then
-		self.print(msg)
+		self.print(tostring(marker) .. msg)
 	end
 end
 

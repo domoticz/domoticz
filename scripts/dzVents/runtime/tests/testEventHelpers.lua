@@ -217,6 +217,7 @@ describe('event helpers', function()
 			local modules = helpers.getEventBindings()
 			assert.are.same({
 				8,
+				'loggingstuff',
 				'on_script_5',
 				'onscript1',
 				'onscript2',
@@ -226,7 +227,7 @@ describe('event helpers', function()
 				'some*device',
 				'somedevice',
 				'wild*' }, keys(modules))
-			assert.are.same(10, _.size(modules))
+			assert.are.same(11, _.size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -393,6 +394,7 @@ describe('event helpers', function()
 			assert.is_same('script1: domoticz device device', res)
 		end)
 
+
 		it('should call the event handler for variables', function()
 
 			local bindings = helpers.getEventBindings('variable')
@@ -414,7 +416,6 @@ describe('event helpers', function()
 		it('should catch errors', function()
 			local bindings = helpers.getEventBindings()
 			local script2 = bindings['onscript2'][1]
-
 
 			local err = false
 			utils.log = function(msg,level)
@@ -439,6 +440,23 @@ describe('event helpers', function()
 
 			helpers.handleEvents(script1)
 			assert.is_same({"script1", "script3", "script_combined"}, called)
+		end)
+
+		it('should have custom logging settings', function()
+			local bindings = helpers.getEventBindings()
+			local loggingstuff = bindings['loggingstuff']
+
+			local moduleLevel, moduleMarker
+			helpers.callEventHandler = function(mod, dev, var)
+				moduleLevel = _G.logLevel
+				moduleMarker = _G.logMarker
+			end
+
+			helpers.handleEvents(loggingstuff)
+			assert.is_same(4, moduleLevel)
+			assert.is_same('Hey you', moduleMarker)
+			assert.is_same(1, _G.logLevel)
+			assert.is_same(nil, _G.logMarker)
 		end)
 
 	end)

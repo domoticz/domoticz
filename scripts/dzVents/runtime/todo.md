@@ -6,3 +6,5 @@
 * update constants in dox
 * scene active/inactive???
 * todo's checken in code
+* logging section
+* variable events

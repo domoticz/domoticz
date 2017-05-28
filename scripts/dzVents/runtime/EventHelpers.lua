@@ -129,6 +129,9 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.callEventHandler(eventHandler, device, variable)
 		local useStorage = false
+
+
+
 		if (eventHandler['execute'] ~= nil) then
 
 			-- ==================
@@ -156,6 +159,8 @@ local function EventHelpers(domoticz, mainMethod)
 			-- Run script
 			-- ==================
 			local ok, res, info
+
+
 			if (device ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
@@ -382,11 +387,30 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	function self.handleEvents(events, device, variable)
+
+		local originalLogLevel = _G.logLevel -- a script can override the level
+
+		function restoreLogging()
+			_G.logLevel = originalLogLevel
+			_G.logMarker = nil
+		end
+
 		if (type(events) ~= 'table') then
 			return
 		end
 
 		for eventIdx, eventHandler in pairs(events) do
+
+			if (eventHandler.logging) then
+				if (eventHandler.logging.level ~= nil) then
+					_G.logLevel = eventHandler.logging.level
+				end
+				if (eventHandler.logging.marker ~= nil) then
+					_G.logMarker = eventHandler.logging.marker
+				end
+			end
+
+
 			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
 			utils.log('>>> Handler: ' .. eventHandler.name, utils.LOG_MODULE_EXEC_INFO)
 
@@ -403,6 +427,8 @@ local function EventHelpers(domoticz, mainMethod)
 			utils.log('.....................................................', utils.LOG_INFO)
 			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
 			utils.log('-----------------------------------------------------', utils.LOG_MODULE_EXEC_INFO)
+
+			restoreLogging()
 		end
 	end
 
@@ -433,7 +459,17 @@ local function EventHelpers(domoticz, mainMethod)
 		for i, moduleName in pairs(modules) do
 
 			local module, skip
+
+			_G.domoticz = {
+				['LOG_INFO'] = utils.LOG_INFO,
+				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
+				['LOG_DEBUG'] = utils.LOG_DEBUG,
+				['LOG_ERROR'] = utils.LOG_ERROR,
+			}
+
 			ok, module = pcall(require, moduleName)
+
+			_G.domoticz = nil
 
 			if (ok) then
 

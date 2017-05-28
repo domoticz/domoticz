@@ -1,5 +1,6 @@
 return {
 	active = true,
+
 	on = {
 		'onscript2'
 	},
