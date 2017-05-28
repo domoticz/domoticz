@@ -128,7 +128,6 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (g_bUseSyslog)
 		bEnableLogTimestamps = false;
 #endif
-	bEnableLogTimestamps = false;
 	if (bEnableLogTimestamps)
 	{
 		sstr << szDate << " ";
