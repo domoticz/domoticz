@@ -10357,6 +10357,8 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
+							if (nValue > 4)
+								nValue = 4;
 							sprintf(szData, "Level: %d", nValue);
 							root["result"][ii]["Data"] = szData;
 							if (!sValue.empty())
