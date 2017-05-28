@@ -123,6 +123,7 @@
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
 #include "../hardware/SysfsGpio.h"
+#include "../hardware/Rtl433.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -994,6 +995,8 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EVOHOME_WEB:
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
+	case HTYPE_Rtl433:
+		pHardware = new CRtl433(ID);
 		break;
 	}
 
