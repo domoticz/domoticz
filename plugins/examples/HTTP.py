@@ -23,7 +23,8 @@
 import Domoticz
 
 class BasePlugin:
-    
+    httpConn = None
+   
     def __init__(self):
         return
 
@@ -31,14 +32,13 @@ class BasePlugin:
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
         DumpConfigToLog()
-        Domoticz.Transport(Transport="TCP/IP", Address=Parameters["Address"], Port=Parameters["Port"])
-        Domoticz.Protocol("HTTP")
-        Domoticz.Connect()
+        self.httpConn = Domoticz.Connection(Name="HTTP Test", Transport="TCP/IP", Protocol="HTTP", Address=Parameters["Address"], Port=Parameters["Port"])
+        self.httpConn.Connect()
 
     def onStop(self):
         Domoticz.Log("Plugin is stopping.")
 
-    def onConnect(self, Status, Description):
+    def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Debug("Google connected successfully.")
             data = ''
@@ -48,11 +48,11 @@ class BasePlugin:
                         'Host': Parameters["Address"]+":"+Parameters["Port"], \
                         'User-Agent':'Domoticz/1.0', \
                         'Content-Length' : "%d"%(len(data)) }
-            Domoticz.Send(data, 'GET', '/', headers)
+            Connection.Send(data, 'GET', '/', headers)
         else:
             Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
 
-    def onMessage(self, Data, Status, Extra):
+    def onMessage(self, Connection, Data, Status, Extra):
         strData = Data.decode("utf-8", "ignore")
         Domoticz.Log("onMessage: Status="+str(Status))
         Domoticz.Log("Headers:")
@@ -61,6 +61,7 @@ class BasePlugin:
 
         if (Status == 200):
             Domoticz.Log("Good Response received from Google.")
+            self.httpConn.Disconnect()
         elif (Status == 302):
             Domoticz.Log("Google returned a Page Moved Error.")
             headers = { 'Content-Type': 'text/xml; charset=utf-8', \
@@ -69,7 +70,7 @@ class BasePlugin:
                         'Host': Parameters["Address"]+":"+Parameters["Port"], \
                         'User-Agent':'Domoticz/1.0', \
                         'Content-Length' : "0" }
-            Domoticz.Send("", "GET", Extra["Location"], headers)
+            Connection.Send("", "GET", Extra["Location"], headers)
         elif (Status == 400):
             Domoticz.Error("Google returned a Bad Request Error.")
         elif (Status == 500):
@@ -80,8 +81,9 @@ class BasePlugin:
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Debug("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
 
-    def onDisconnect(self):
-        Domoticz.Log("Device has disconnected")
+    def onDisconnect(self, Connection):
+        Domoticz.Log("onDisconnect called for connection to: "+Connection.Address+":"+Connection.Port)
+        self.httpConn = None
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
@@ -97,21 +99,25 @@ def onStop():
     global _plugin
     _plugin.onStop()
 
-def onConnect(Status, Description):
+def onConnect(Connection, Status, Description):
     global _plugin
-    _plugin.onConnect(Status, Description)
+    _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Data, Status, Extra):
+def onMessage(Connection, Data, Status, Extra):
     global _plugin
-    _plugin.onMessage(Data, Status, Extra)
+    _plugin.onMessage(Connection, Data, Status, Extra)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
     _plugin.onCommand(Unit, Command, Level, Hue)
 
-def onDisconnect():
+def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
     global _plugin
-    _plugin.onDisconnect()
+    _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
+
+def onDisconnect(Connection):
+    global _plugin
+    _plugin.onDisconnect(Connection)
 
 def onHeartbeat():
     global _plugin
