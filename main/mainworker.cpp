@@ -995,11 +995,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EVOHOME_WEB:
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
-#ifndef WIN32
 	case HTYPE_Rtl433:
-		pHardware = new Rtl433(ID);
+		pHardware = new CRtl433(ID);
 		break;
-#endif
 	}
 
 	if (pHardware)
