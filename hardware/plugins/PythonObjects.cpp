@@ -692,7 +692,7 @@ namespace Plugins {
 
 						m_sql.safe_query(
 							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0,  '%q', '%q', %d)",
+							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
 							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
 					}
 					else

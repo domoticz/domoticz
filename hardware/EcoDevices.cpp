@@ -63,15 +63,16 @@ CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsig
 	m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
-	m_iRateLimit = ratelimit;
-	m_iDataTimeout = datatimeout;
+        
+        // Updates must be at least every 5mn in order to keep consistent historical data
+	m_iDataTimeout = (datatimeout >= 300 || datatimeout == 0) ? 300 : datatimeout;
 	
  	// system seems unstable if going too fast
-	if (m_iRateLimit < 2) m_iRateLimit = 2;
+	m_iRateLimit = (ratelimit < 2) ? 2 : ratelimit;
 
         // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
-	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake
-        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
+	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake.
+        if (m_iRateLimit > m_iDataTimeout)   m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }

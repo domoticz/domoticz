@@ -357,11 +357,11 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
    return (float)(atof(readValue.c_str())*1000.0);
 }
 
-unsigned int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
+int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
 {
 	std::string readValue = readRawData(std::string(device.filename + "/wiper"));
 	if (readValue.empty())
-		return 0;
+		return -1;
 	return atoi(readValue.c_str());
 }
 
