@@ -1597,7 +1597,13 @@
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\evohome.h">
+    <ClInclude Include="..\hardware\EvohomeBase.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeSerial.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
@@ -2250,7 +2256,13 @@
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\evohome.cpp">
+    <ClCompile Include="..\hardware\EvohomeBase.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
