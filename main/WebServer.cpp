@@ -1145,6 +1145,9 @@ namespace http {
 			else if (htype == HTYPE_1WIRE) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_Rtl433) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_Pinger) {
 				//all fine here!
 			}
@@ -1592,6 +1595,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_SysfsGpio) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_Rtl433) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Daikin) {
@@ -7994,11 +8000,18 @@ namespace http {
 			}
 
 			char szOrderBy[50];
-			if (order == "")
+			std::string szQuery;
+			bool isAlpha = true;
+			const std::string orderBy = order.c_str();
+			for(int i = 0; i < orderBy.size(); i++) {
+                                if( !isalpha(orderBy[i])) {
+                                        isAlpha = false;
+                                }
+                        }
+			if (order.empty() || (!isAlpha)) {
 				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
-			else
-			{
-				sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+			} else {
+				sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 			}
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
@@ -8059,14 +8072,16 @@ namespace http {
 							" WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID) AND (B.DeviceRowID==a.ID)"
 							" AND (B.DevSceneType==1) ORDER BY B.[Order]",
 							floorID.c_str());
-					else
-						result = m_sql.safe_query(
+					else {
+						szQuery = (
 							"SELECT A.ID, A.Name, A.nValue, A.LastUpdate, A.Favorite, A.SceneType,"
 							" A.Protected, B.XOffset, B.YOffset, B.PlanID, A.Description"
 							" FROM Scenes as A"
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
-							" ORDER BY %q",
-							szOrderBy);
+							" ORDER BY ");
+						szQuery += szOrderBy;
+                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
+					}
 
 					if (result.size() > 0)
 					{
@@ -8230,15 +8245,15 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 
-					if (order == "")
+					if (order.empty() || (!isAlpha))
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					if (hardwareid != "") {
-						result = m_sql.safe_query(
+						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
 							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
@@ -8249,11 +8264,12 @@ namespace http {
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"WHERE (A.HardwareID == %q) "
-							"ORDER BY %q",
-							hardwareid.c_str(), szOrderBy);
+							"ORDER BY ");
+						szQuery += szOrderBy;
+                                                result = m_sql.safe_query(szQuery.c_str(), hardwareid.c_str(), order.c_str());
 					}
 					else {
-						result = m_sql.safe_query(
+						szQuery = (
 							"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,A.Type, A.SubType,"
 							" A.SignalLevel, A.BatteryLevel, A.nValue, A.sValue,"
 							" A.LastUpdate, A.Favorite, A.SwitchType, A.HardwareID,"
@@ -8263,8 +8279,9 @@ namespace http {
 							" A.Options "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
-							"ORDER BY %q",
-							szOrderBy);
+							"ORDER BY ");
+						szQuery += szOrderBy;
+                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 					}
 				}
 			}
@@ -8345,14 +8362,14 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 
-					if (order == "")
+					if (order.empty() || (!isAlpha))
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
-					result = m_sql.safe_query(
+					szQuery = (
 						"SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"
 						" A.Type, A.SubType, A.SignalLevel, A.BatteryLevel,"
 						" A.nValue, A.sValue, A.LastUpdate, A.Favorite,"
@@ -8365,8 +8382,9 @@ namespace http {
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
-						" AND (B.SharedUserID==%lu) ORDER BY %q",
-						m_users[iUser].ID, szOrderBy);
+						" AND (B.SharedUserID==%lu) ORDER BY ");
+					szQuery += szOrderBy;
+                                        result = m_sql.safe_query(szQuery.c_str(), m_users[iUser].ID, order.c_str());
 				}
 			}
 
@@ -10339,6 +10357,8 @@ namespace http {
 						}
 						else if (dSubType == sTypeAlert)
 						{
+							if (nValue > 4)
+								nValue = 4;
 							sprintf(szData, "Level: %d", nValue);
 							root["result"][ii]["Data"] = szData;
 							if (!sValue.empty())
