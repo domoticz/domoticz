@@ -18,7 +18,7 @@
 #include "../main/mainworker.h"
 #include "../json/json.h"
 #include "hardwaretypes.h"
-//#define __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include "../main/localtime_r.h"
 #include "../httpclient/HTTPClient.h"
@@ -78,6 +78,9 @@ void CEvohomeWeb::Init()
 	m_logonfailures=0;
 	m_bequiet=false;
 	m_szlocationName="";
+	m_awaysetpoint=15; // default "Away" setpoint value
+	j_fi.clear();
+	j_stat.clear();
 
 	m_bOutputLog=false;
 }
@@ -186,6 +189,8 @@ bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 		return false;
 	if (!m_loggedon && !StartSession())
 		return false;
+	if (j_stat.isNull() && !GetStatus())
+		return false;
 
 	REVOBUF *tsen=(REVOBUF*)pdata;
 	switch (pdata[1])
@@ -240,9 +245,61 @@ bool CEvohomeWeb::GetStatus()
 
 bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 {
+	std::string oldmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+	std::string newmode = GetWebAPIModeName(sysmode);
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
 		_log.Log(LOG_NORM,"(%s) changed system status to %s", this->Name.c_str(), GetControllerModeName(sysmode));
+
+		if (newmode == "HeatingOff")
+		{
+			// cycle my zones to reflect the HeatingOff mode
+			for (std::map<int, zone>::iterator it=m_tcs->zones.begin(); it!=m_tcs->zones.end(); ++it)
+			{
+				zone* hz = &m_tcs->zones[it->first];
+				std::string zoneId = (*hz->status)["zoneId"].asString();
+				std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+				unsigned long evoID=atol(zoneId.c_str());
+				std::stringstream ssUpdateStat;
+				ssUpdateStat << temperature << ";5;HeatingOff";
+				std::string sdevname;
+				uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			}
+			return true;
+		}
+
+		// cycle my zones to restore scheduled temps
+		for (std::map<int, zone>::iterator it=m_tcs->zones.begin(); it!=m_tcs->zones.end(); ++it)
+		{
+			std::string szuntil, szsetpoint;
+			double setpoint;
+			zone* hz = &m_tcs->zones[it->first];
+
+			if ( (!hz->schedule.isNull()) || get_schedule(hz->zoneId) )
+			{
+				szuntil=local_to_utc(get_next_switchpoint_ex(hz->schedule,szsetpoint));
+				setpoint = strtod(szsetpoint.c_str(),NULL);
+			}
+			if (newmode == "AutoWithEco")
+				setpoint -= 3;
+
+			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
+			 *  for the next update to get the correct values.
+			 */
+
+			if (newmode == "Away")
+				setpoint = m_awaysetpoint;
+			
+			std::string zoneId = (*hz->status)["zoneId"].asString();
+			std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+			unsigned long evoID=atol(zoneId.c_str());
+			std::stringstream ssUpdateStat;
+			ssUpdateStat << temperature << ";" << setpoint << ";FollowSchedule";
+			if (m_showschedule)
+				ssUpdateStat << ";" << szuntil;
+			std::string sdevname;
+			uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+		}
 		return true;
 	}	
 	_log.Log(LOG_ERROR,"(%s) error changing system status", this->Name.c_str());
@@ -272,9 +329,9 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 			return false;
 		
 		std::string szsetpoint, szuntil;
-		if ( (hz->schedule.isNull()) || get_schedule(hz->zoneId) )
+		if ( (!hz->schedule.isNull()) || get_schedule(hz->zoneId) )
 		{
-			szuntil=local_to_utc(get_next_switchpoint_ex(&hz->schedule,szsetpoint));
+			szuntil=local_to_utc(get_next_switchpoint_ex(hz->schedule,szsetpoint));
 			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(),NULL)*100);
 		}
 
@@ -411,6 +468,8 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 	unsigned long evoID=atol(zonedata["zoneId"].c_str());
 	std::stringstream ssUpdateStat;
+	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString()=="Away")
+		m_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(),NULL);
 	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString()=="HeatingOff")
 		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << "HeatingOff";
 	else

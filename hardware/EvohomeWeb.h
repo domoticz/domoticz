@@ -58,6 +58,7 @@ private:
 	uint8_t m_locationId;
 	uint8_t m_gatewayId;
 	uint8_t m_systemId;
+	double m_awaysetpoint;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
@@ -67,8 +68,6 @@ private:
 
 	Json::Value j_fi;
 	Json::Value j_stat;
-	Json::Value j_sched;
-
 
 	// base functions
 	void Init();
