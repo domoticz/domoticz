@@ -170,13 +170,12 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		syslog(sLogLevel, "%s", sstr.str().c_str());
 	}
 #endif
-	if (!m_outputfile.is_open())
-		return;
-
-	//output to file
-
-	m_outputfile << sstr.str() << std::endl;
-	m_outputfile.flush();
+	if (m_outputfile.is_open())
+	{
+		//output to file
+		m_outputfile << sstr.str() << std::endl;
+		m_outputfile.flush();
+	}
 
 	std::string szIntLog = std::string(szDate) + " " + sstr.str();
 
