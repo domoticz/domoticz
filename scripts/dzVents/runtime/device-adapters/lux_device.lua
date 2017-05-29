@@ -1,5 +1,3 @@
-local adapters = require('Adapters')()
-
 return {
 
 	baseType = 'device',
@@ -10,7 +8,7 @@ return {
 		return (device.deviceType == 'Lux' and device.deviceSubType == 'Lux')
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz, utils, adapterManager)
 
 		-- set the lux value
 		device['lux'] = tonumber(device.rawData[1])

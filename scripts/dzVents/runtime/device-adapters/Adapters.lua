@@ -1,20 +1,37 @@
 local genericAdapter = require('generic_device')
 
 local deviceAdapters = {
-	'lux_device',
-	'zone_heating_device',
-	'kwh_device',
-	'p1_smartmeter_device',
-	'electric_usage_device',
-	'thermostat_setpoint_device',
-	'text_device',
-	'rain_device',
 	'airquality_device',
-	'kodi_device',
+	'alert_device',
+	'barometer_device',
+	'counter_device',
+	'custom_sensor_device',
+	'distance_device',
+	'electric_usage_device',
 	'evohome_device',
-	'opentherm_gateway_device'
+	'gas_device',
+	'group_device',
+	'humidity_device',
+	'kwh_device',
+	'lux_device',
+	'opentherm_gateway_device',
+	'p1_smartmeter_device',
+	'percentage_device',
+	'pressure_device',
+	'rain_device',
+	'scene_device',
+	'switch_device',
+	'thermostat_setpoint_device',
+	'temperature_device',
+	'temperature_humidity_device',
+	'temperature_humidity_barometer_device',
+	'text_device',
+	'uv_device',
+	'voltage_device',
+	'wind_device',
+	'zone_heating_device',
+	'kodi_device'
 }
-local fallBackDeviceAdapter = genericAdapter
 
 local _utils = require('Utils')
 
@@ -31,58 +48,82 @@ local function DeviceAdapters(utils)
 		utils = _utils
 	end
 
-	local self = {
+	local self = {}
 
-		name = 'Generic device adapter',
+	self.name = 'Adapter manager'
 
-		getDeviceAdapter = function(device)
-			-- find a matching adapter
-			for i, adapterName in pairs(deviceAdapters) do
+	function self.getDeviceAdapters(device)
+		-- find a matching adapters
 
-				-- do a safe call and catch possible errors
-				ok, adapter = pcall(require, adapterName)
-				if (not ok) then
-					utils.log(adapter, utils.LOG_ERROR)
-				else
+		local adapters = {}
+
+		for i, adapterName in pairs(deviceAdapters) do
+
+			-- do a safe call and catch possible errors
+			ok, adapter = pcall(require, adapterName)
+			if (not ok) then
+				utils.log(adapter, utils.LOG_ERROR)
+			else
+				if (adapter.baseType == device.baseType) then
 					local matches = adapter.matches(device)
 					if (matches) then
-						return adapter
+						utils.log('Adapter found for ' .. device.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
+						table.insert(adapters, adapter)
 					end
-
 				end
 			end
-
-			-- no adapter found
-			-- return the fallback
-			return genericAdapter
-		end,
-
-		deviceAdapters = deviceAdapters,
-
-		genericAdapter = genericAdapter,
-
-		parseFormatted = function(sValue, radixSeparator)
-
-			local splitted = string.split(sValue, ' ')
-
-			local sV = splitted[1]
-			local unit = splitted[2]
-
-			-- normalize radix to .
-
-			if (sV ~= nil) then
-				sV = string.gsub(sV, '%' .. radixSeparator, '.')
-			end
-
-			local value = sV ~= nil and tonumber(sV) or 0
-
-			return {
-				['value'] = value,
-				['unit'] = unit ~= nil and unit or ''
-			}
-
 		end
 
+		return adapters
+	end
+
+	self.genericAdapter = genericAdapter
+	self.deviceAdapters = deviceAdapters
+
+	function self.parseFormatted (sValue, radixSeparator)
+
+		local splitted = string.split(sValue, ' ')
+
+		local sV = splitted[1]
+		local unit = splitted[2]
+
+		-- normalize radix to .
+
+		if (sV ~= nil) then
+			sV = string.gsub(sV, '%' .. radixSeparator, '.')
+		end
+
+		local value = sV ~= nil and tonumber(sV) or 0
+
+		return {
+			['value'] = value,
+			['unit'] = unit ~= nil and unit or ''
+		}
+	end
+
+	self.states = {
+		on = { b = true, inv = 'Off' },
+		open = { b = true, inv = 'Off' },
+		['group on'] = { b = true },
+		panic = { b = true, inv = 'Off' },
+		normal = { b = true, inv = 'Alarm' },
+		alarm = { b = true, inv = 'Normal' },
+		chime = { b = true },
+		video = { b = true },
+		audio = { b = true },
+		photo = { b = true },
+		playing = { b = true, inv = 'Pause' },
+		motion = { b = true },
+		off = { b = false, inv = 'On' },
+		closed = { b = false, inv = 'On' },
+		['group off'] = { b = false },
+		['panic end'] = { b = false },
+		['no motion'] = { b = false, inv = 'Off' },
+		stop = { b = false, inv = 'Open' },
+		stopped = { b = false },
+		paused = { b = false, inv = 'Play' },
+		['all on'] = { b = true, inv = 'All Off' },
+		['all off'] = { b = false, inv = 'All On' },
 	}
 
 	return self

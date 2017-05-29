@@ -8,7 +8,6 @@ local utils = require('Utils')
 
 local _ = require('lodash') -- todo remove
 
-
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
 function string:split(sep)
@@ -37,6 +36,7 @@ local function Domoticz(settings)
 		['scenes'] = {},
 		['groups'] = {},
 		['changedDevices'] = {},
+		['changedVariables'] = {},
 		['security'] = globalvariables['Security'],
 		['radixSeparator'] = globalvariables['radix_separator'],
 		['time'] = nowTime,
@@ -72,13 +72,16 @@ local function Domoticz(settings)
 		['HUM_COMFORTABLE'] = 1,
 		['HUM_DRY'] = 2,
 		['HUM_WET'] = 3,
-		['BARO_STABLE'] = 0,
-		['BARO_SUNNY'] = 1,
-		['BARO_CLOUDY'] = 2,
-		['BARO_UNSTABLE'] = 3,
-		['BARO_THUNDERSTORM'] = 4,
-		['BARO_UNKNOWN'] = 5,
-		['BARO_CLOUDY_RAIN'] = 6,
+		-- true mapping to numbers is done in the device adapters for
+		-- baro and temphumbaro devices
+		['BARO_STABLE'] = 'stable',
+		['BARO_SUNNY'] = 'sunny',
+		['BARO_CLOUDY'] = 'cloudy',
+		['BARO_UNSTABLE'] = 'unstable',
+		['BARO_THUNDERSTORM'] = 'thunderstorm',
+		['BARO_NOINFO'] = 'noinfo',
+		['BARO_PARTLYCLOUDY'] = 'partlycloudy',
+		['BARO_RAIN'] = 'rain',
 		['ALERTLEVEL_GREY'] = 0,
 		['ALERTLEVEL_GREEN'] = 1,
 		['ALERTLEVEL_YELLOW'] = 2,
@@ -93,6 +96,7 @@ local function Domoticz(settings)
 		['LOG_ERROR'] = utils.LOG_ERROR,
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
+		['EVENT_TYPE_VARIABLE'] = 'variable',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
@@ -100,7 +104,17 @@ local function Domoticz(settings)
 		['FLOAT'] = 'float',
 		['STRING'] = 'string',
 		['DATE'] = 'date',
-		['TIME'] = 'time'
+		['TIME'] = 'time',
+		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
+		['NSS_HTTP'] = 'http',
+		['NSS_KODI'] = 'kodi',
+		['NSS_LOGITECH_MEDIASERVER'] = 'lms',
+		['NSS_NMA'] = 'nma',
+		['NSS_PROWL'] = 'prowl',
+		['NSS_PUSHALOT'] = 'pushalot',
+		['NSS_PUSHBULLET'] = 'pushbullet',
+		['NSS_PUSHOVER'] = 'pushover',
+		['NSS_PUSHSAFER'] = 'pushsafer'
 	}
 
 	local function setIterators(collection)
@@ -115,6 +129,15 @@ local function Domoticz(settings)
 					end
 				end
 			end
+		end
+
+		collection['reduce'] = function(func, accumulator)
+			for i, item in pairs(collection) do
+				if (type(item) ~= 'function' and type(i) ~= 'number') then
+					accumulator = func(accumulator, item, i, collection)
+				end
+			end
+			return accumulator
 		end
 
 		collection['filter'] = function(filter)
@@ -140,13 +163,33 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz send a push notification
-	function self.notify(subject, message, priority, sound)
+	function self.notify(subject, message, priority, sound, extra, subSystems)
 		-- set defaults
 		if (priority == nil) then priority = self.PRIORITY_NORMAL end
 		if (message == nil) then message = '' end
 		if (sound == nil) then sound = self.SOUND_DEFAULT end
+		if (extra == nil) then extra = '' end
 
-		self.sendCommand('SendNotification', subject .. '#' .. message .. '#' .. tostring(priority) .. '#' .. tostring(sound))
+		local _subSystem
+
+		if (subSystems == nil) then
+			_subSystem = ''
+		else
+			-- combine
+			if (type(subSystems) == 'table') then
+				_subSystem = table.concat(subSystems, ";")
+			elseif (type(subSystems) == 'string') then
+				_subSystem = subSystems
+			else
+				_subSystem = ''
+			end
+		end
+		self.sendCommand('SendNotification', subject
+				.. '#' .. message
+				.. '#' .. tostring(priority)
+				.. '#' .. tostring(sound)
+				.. '#' .. tostring(extra)
+				.. '#' .. tostring(_subSystem))
 	end
 
 	-- have domoticz send an email
@@ -252,6 +295,14 @@ local function Domoticz(settings)
 			elseif (item.baseType == 'uservariable') then
 				local var = Variable(self, item)
 				self.variables[item.name] = var
+
+				-- todo remove
+				if (item.name == 'myVar1') then
+					item.changed = true
+				end
+				if (item.changed) then
+					self.changedVariables[item.name] = var
+				end
 			end
 
 		end
@@ -263,6 +314,7 @@ local function Domoticz(settings)
 	setIterators(self.devices)
 	setIterators(self.changedDevices)
 	setIterators(self.variables)
+	setIterators(self.changedVariables)
 	setIterators(self.scenes)
 	setIterators(self.groups)
 

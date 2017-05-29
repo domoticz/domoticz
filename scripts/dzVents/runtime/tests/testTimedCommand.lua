@@ -7,7 +7,7 @@ package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 local testData = require('tstData')
 
 describe('timed commands', function()
-	local TimeCommand
+	local TimedCommand
 	local commandArray = {}
 	local cmd
 
@@ -24,6 +24,7 @@ describe('timed commands', function()
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
+			['domoticz_listening_port'] = '8080',
 			['script_path'] = scriptPath
 		}
 		TimedCommand = require('TimedCommand')

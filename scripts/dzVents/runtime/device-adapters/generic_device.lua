@@ -1,30 +1,8 @@
-local _states = {
-	on = { b = true, inv = 'Off' },
-	open = { b = true, inv = 'Closed' },
-	['group on'] = { b = true },
-	panic = { b = true, inv = 'Off' },
-	normal = { b = true, inv = 'Alarm' },
-	alarm = { b = true, inv = 'Normal' },
-	chime = { b = true },
-	video = { b = true },
-	audio = { b = true },
-	photo = { b = true },
-	playing = { b = true, inv = 'Pause' },
-	motion = { b = true },
-	off = { b = false, inv = 'On' },
-	closed = { b = false, inv = 'Open' },
-	['group off'] = { b = false },
-	['panic end'] = { b = false },
-	['no motion'] = { b = false, inv = 'Off' },
-	stop = { b = false, inv = 'Open' },
-	stopped = { b = false },
-	paused = { b = false, inv = 'Play' },
-	['all on'] = { b = true, inv = 'All Off' },
-	['all off'] = { b = false, inv = 'All On' },
-}
+local Time = require('Time')
+local TimedCommand = require('TimedCommand')
 
 -- some states will be 'booleanized'
-local function stateToBool(state)
+local function stateToBool(state, _states)
 	state = string.lower(state)
 	local info = _states[state]
 	local b
@@ -36,7 +14,7 @@ local function stateToBool(state)
 	return b
 end
 
-local function setStateAttribute(state, device)
+local function setStateAttribute(state, device, _states)
 	local level;
 	if (state and string.find(state, 'Set Level')) then
 		level = string.match(state, "%d+") -- extract dimming value
@@ -44,16 +22,15 @@ local function setStateAttribute(state, device)
 	end
 
 	if (level) then
-		device.addAttribute('level', tonumber(level))
+		device['level'] = tonumber(level)
 	end
-
 
 	if (state ~= nil) then -- not all devices have a state like sensors
 		if (type(state) == 'string') then -- just to be sure
-			device.addAttribute('state', state)
-			device.addAttribute('bState', stateToBool(state))
+			device['state'] = state
+			device['bState'] = stateToBool(state, _states)
 		else
-			device.addAttribute('state', state)
+			device['state'] = state
 		end
 	end
 
@@ -68,16 +45,45 @@ return {
 		return true -- generic always matches
 	end,
 
-	process = function (device)
+	process = function (device, data, domoticz, utils, adapterManager)
 
-		local domoticzData = device._data
+		local _states = adapterManager.states
 
-		local data = domoticzData.data
+		if (data.baseType == 'device') then
 
-		setStateAttribute(data._state, device)
+			device['changed'] = data.changed
+			device['description'] = data.description
+			device['deviceType'] = data.deviceType
+			device['hardwareName'] = data.hardwareName
+			device['hardwareType'] = data.hardwareType
+			device['hardwareId'] = data.hardwareID
+			device['hardwareTypeVal'] = data.hardwareTypeValue
+			device['switchType'] = data.switchType
+			device['switchTypeValue'] = data.switchTypeValue
+			device['timedOut'] = data.timedOut
+			device['batteryLevel'] = data.batteryLevel
+			device['signalLevel'] = data.signalLevel
+			device['deviceSubType'] = data.subType
+			device['lastUpdate'] = Time(data.lastUpdate)
+			device['rawData'] = data.rawData
+		end
 
-		for attribute, value in pairs(data) do
-			device.addAttribute(attribute, value)
+		if (data.baseType == 'group' or data.baseType == 'scene') then
+			device['lastUpdate'] = Time(data.lastUpdate)
+			device['rawData'] = { [1] = data.data._state }
+		end
+
+
+		setStateAttribute(data.data._state, device, _states)
+
+		function device.setState(newState)
+			-- generic state update method
+			return TimedCommand(domoticz, device.name, newState)
+		end
+
+
+		for attribute, value in pairs(data.data) do
+			device[attribute] = value
 		end
 
 		return device

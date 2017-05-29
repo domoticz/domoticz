@@ -29,7 +29,7 @@ return {
 
 			local sensor = domoticz.devices[TEMPERATURE_SENSOR]
 
-			if (sensor.changed and sensor.attributeChanged('temperature')) then
+			if (sensor.changed) then
 				-- sensor just reported a new reading
 				-- add it to the readings table
 

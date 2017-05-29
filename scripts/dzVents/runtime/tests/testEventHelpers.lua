@@ -25,6 +25,7 @@ describe('event helpers', function()
 	local domoticz = {
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
+		['EVENT_TYPE_VARIABLE'] = 'variable',
 		['settings'] = {},
 		['radixSeparator'] = '.',
 		['name'] = 'domoticz', -- used in script1
@@ -41,7 +42,8 @@ describe('event helpers', function()
 
 	setup(function()
 		settings = {
-			['Log level'] = 1
+			['Log level'] = 1,
+
 		}
 
 		_G.TESTMODE = true
@@ -52,7 +54,7 @@ describe('event helpers', function()
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath,
 			['dzVents_log_level'] = 1,
-			['domoticz_url'] = 'http://localhost:8080'
+			['domoticz_listening_port'] = '8181'
 		}
 
 		EventHelpers = require('EventHelpers')
@@ -78,7 +80,7 @@ describe('event helpers', function()
 	describe('Loading modules', function()
 		it('should get a list of files in a folder', function()
 			local files = helpers.scandir('scandir')
-			local f = {'f1','f2','f3'}
+			local f = {'f1','f2','f3', 'lua' }
 			assert.are.same(f, files)
 		end)
 	end)
@@ -215,6 +217,7 @@ describe('event helpers', function()
 			local modules = helpers.getEventBindings()
 			assert.are.same({
 				8,
+				'loggingstuff',
 				'on_script_5',
 				'onscript1',
 				'onscript2',
@@ -224,7 +227,7 @@ describe('event helpers', function()
 				'some*device',
 				'somedevice',
 				'wild*' }, keys(modules))
-			assert.are.same(10, _.size(modules))
+			assert.are.same(11, _.size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -331,6 +334,21 @@ describe('event helpers', function()
 
 		end)
 
+		it('should return variable script', function()
+			local modules = helpers.getEventBindings('variable')
+			local myVar1 = modules['myVar1']
+
+			assert.are.same('table', type(myVar1))
+
+			local res = {}
+			for i, mod in pairs(myVar1) do
+				table.insert(res, mod.name)
+			end
+			table.sort(res)
+
+			assert.are.same({ 'script_variable1', 'script_variable2',  }, res)
+		end)
+
 	end)
 
 	describe('Various', function()
@@ -353,6 +371,11 @@ describe('event helpers', function()
 				"====================================================="
 			}, messages)
 		end)
+		it('should have proper settings', function()
+
+			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
+
+		end)
 	end)
 
 	describe('Events', function()
@@ -371,10 +394,28 @@ describe('event helpers', function()
 			assert.is_same('script1: domoticz device device', res)
 		end)
 
+
+		it('should call the event handler for variables', function()
+
+			local bindings = helpers.getEventBindings('variable')
+			local myVar1 = bindings['myVar1'][1]
+
+			local res = helpers.callEventHandler(myVar1,
+				nil,
+				{
+					name = 'myVar1',
+					set = function()
+					end
+				})
+			-- should pass the arguments to the execute function
+			-- and catch the results from the function
+			assert.is_same('script_variable1: domoticz myVar1 variable', res)
+		end)
+
+
 		it('should catch errors', function()
 			local bindings = helpers.getEventBindings()
 			local script2 = bindings['onscript2'][1]
-
 
 			local err = false
 			utils.log = function(msg,level)
@@ -401,11 +442,28 @@ describe('event helpers', function()
 			assert.is_same({"script1", "script3", "script_combined"}, called)
 		end)
 
+		it('should have custom logging settings', function()
+			local bindings = helpers.getEventBindings()
+			local loggingstuff = bindings['loggingstuff']
+
+			local moduleLevel, moduleMarker
+			helpers.callEventHandler = function(mod, dev, var)
+				moduleLevel = _G.logLevel
+				moduleMarker = _G.logMarker
+			end
+
+			helpers.handleEvents(loggingstuff)
+			assert.is_same(4, moduleLevel)
+			assert.is_same('Hey you', moduleMarker)
+			assert.is_same(1, _G.logLevel)
+			assert.is_same(nil, _G.logMarker)
+		end)
+
 	end)
 
 	describe('Event dispatching', function()
 
-		it('should dispatch all event scripts', function()
+		it('should dispatch all device event scripts', function()
 			local scripts = {}
 			local devices = {}
 			local dumped = false
@@ -505,6 +563,68 @@ describe('event helpers', function()
 			assert.is_true(dumped)
 		end)
 
+
+		it('should dispatch all variable event scripts', function()
+			local scripts = {}
+			local variables = {}
+			local dumped = false
+
+			local function getDummy(id, name, value)
+				return {
+					['id'] = id,
+					['name'] = name,
+					['value'] = value
+				}
+			end
+
+			local varchanged = {
+				['myVar1'] = getDummy(1, 'myVar1', 10),
+				['myVar2'] = getDummy(2, 'myVar2', 20),
+				['myVar3'] = getDummy(3, 'myVar3', 30),
+			}
+
+			varchanged['forEach'] = function(func)
+				local res
+				for i, item in pairs(varchanged) do
+					if (type(item) ~= 'function' and type(i) ~= 'number') then
+						res = func(item, i, varchanged)
+						if (res == false) then -- abort
+							return
+						end
+					end
+				end
+			end
+
+			helpers.dumpCommandArray = function()
+				dumped = true
+			end
+
+			helpers.handleEvents = function(_scripts, _variable)
+				_.forEach(_scripts, function(s)
+					table.insert(scripts, s.name)
+				end)
+				table.insert(variables, _variable.name)
+			end
+			local res = helpers.dispatchVariableEventsToScripts({ ['changedVariables'] = varchanged })
+
+			table.sort(scripts)
+			table.sort(variables)
+			assert.is_same({
+				'script_variable1',
+				'script_variable2',
+				'script_variable2',
+				'script_variable3'
+			}, scripts)
+
+
+			assert.is_same({
+				"myVar1",
+				"myVar2",
+				"myVar3",
+			}, variables)
+
+			assert.is_true(dumped)
+		end)
 
 	end)
 end)

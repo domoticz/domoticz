@@ -5,9 +5,11 @@ local Time = require('Time')
 local function Variable(domoticz, data)
 
 	local self = {
-		--['nValue'] = tonumber(data.data.value),
 		['value'] = data.data.value,
+		['name'] = data.name,
 		['type'] = data.variableType,
+		['changed'] = data.changed,
+		['id'] = data.id,
 		['lastUpdate'] = Time(data.lastUpdate)
 	}
 
@@ -37,7 +39,12 @@ local function Variable(domoticz, data)
 
 	-- send an update to domoticz
 	function self.set(value)
-		domoticz.sendCommand('Variable:' .. data.name, tostring(value))
+--		domoticz.sendCommand('Variable:' .. data.name, tostring(value))
+
+		local url = domoticz.settings['Domoticz url'] ..
+				'/json.htm?type=command&param=updateuservariable&vname=' .. data.name ..'&vtype=' .. data.variableType .. '&vvalue=' .. tostring(value)
+
+		domoticz.openURL(url)
 	end
 
 	return self

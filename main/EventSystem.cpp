@@ -60,7 +60,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "Barometer",			"barometer",				"float" },
 	{ "Chill",				"chill", 					"float" },
 	{ "Counter",			"counter", 					"string" },
-	{ "CounterDeliv",		"counterDelivered", 		"string" },
+	{ "CounterDeliv",		"counterDelivered", 		"float" },
 	{ "CounterDelivToday",	"counterDeliveredToday",	"string"},
 	{ "CounterToday",		"counterToday", 			"string" },
 	{ "Current",			"current", 					"float" },
@@ -1163,7 +1163,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
-	
+
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
 		DirectoryListing(FileEntries, dzv_Dir, false, true);
@@ -2658,7 +2658,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, "hardwareName");
 			lua_pushstring(lua_state, _hardwareNames[hwID].Name.c_str());
 			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareTypeID");
+			lua_pushstring(lua_state, "hardwareTypeValue");
 			lua_pushnumber(lua_state, (lua_Number)_hardwareNames[hwID].HardwareTypeVal);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "hardwareType");

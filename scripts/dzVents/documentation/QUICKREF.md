@@ -114,7 +114,7 @@ All times are in 24hr format:
  - **email(subject, message, mailTo)**: *Function*. Send email.
  - **fetchHttpDomoticzData**: *Function*. This will trigger a script that will download the device data from Domoticz and stores this on the filesystem for dzVents to use.
  - **log(message, [level]):** *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG` or `domoticz.LOG_ERROR`. In `dzVents_settings.lua` you can specify which kind of log message will be printed.
- - **notify(subject, message, priority, sound)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below.
+ - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification substystems. See `domoticz.NSS_xxx` types.
  - **openURL(url)**: *Function*. Have Domoticz 'call' a URL.
  - **sendCommand(command, value)**: *Function*. Generic command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz.
  - **setScene(scene, value)**: *Function*. E.g. `domoticz.setScene('My scene', 'On')`. Supports timing options. See below.
@@ -125,6 +125,7 @@ All times are in 24hr format:
 Available on the collections: devices, variables, scenes, groups:
  - **forEach(function( item, key):** Executes a provided function once per array element.
  - **filter(function( device )):** returns items in the collection for which the function returns true.
+ - **reduce(function, initial)**:  Loop over all items in the collection and do some calculation with it.
 
 ## Contants
 
@@ -182,6 +183,17 @@ Available on the collections: devices, variables, scenes, groups:
  - **EVOHOME_MODE_AUTO**,
  - **EVOHOME_MODE_TEMPORARY_OVERRIDE**
  - **EVOHOME_MODE_PERMANENT_OVERRIDE**: for EvoHome set point controlling.
+ - **NSS_GOOGLE_CLOUD_MESSAGING**,
+ - **NSS_HTTP**,
+ - **NSS_KODI**,
+ - **NSS_LOGITECH_MEDIASERVER**,
+ - **NSS_NMA**,
+ - **NSS_PROWL**,
+ - **NSS_PUSHALOT**,
+ - **NSS_PUSHBULLET**,
+ - **NSS_PUSHOVER**,
+ - **NSS_PUSHSAFER**: for notification subsystem
+
 
 
 # Device object API
@@ -244,7 +256,6 @@ Available on the collections: devices, variables, scenes, groups:
  - **windspeed**: Only when applicable.
 
 ## Device methods
- - **attributeChanged(attributeName)**: *Function*. Returns  a boolean (true/false) if the attribute was changed in this cycle. E.g. `device.attributeChanged('temperature')`.
  - **close()**: *Function*.  Set device to Close if it supports it. Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **dimTo(percentage)**: *Function*.  Switch a dimming device on and/or dim to the specified level. Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **kodiExecuteAddOn(addonId)**: *Function*. Will send an Execute Addon command sending no parameters. Addon IDs are embedded in the addon configuration and are not to be confused with the Addon Name. For example: http://forums.homeseer.com/showthread.php?p=1213403.

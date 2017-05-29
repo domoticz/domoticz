@@ -1,4 +1,3 @@
-local MAIN_METHOD = 'execute'
 local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
@@ -18,18 +17,18 @@ local function EventHelpers(domoticz, mainMethod)
 	local currentPath = globalvariables['script_path']
 
 	if (_G.TESTMODE) then
-
 		-- make sure you run the tests from the tests folder !!!!
-
 		scriptsFolderPath = currentPath .. 'scripts'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
+
+
 	end
 
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
-		['Domoticz url'] = globalvariables['domoticz_url'] or 'http://localhost:8080'
+		['Domoticz url'] = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 	}
 
 	_G.logLevel = settings['Log level']
@@ -43,11 +42,13 @@ local function EventHelpers(domoticz, mainMethod)
 		['utils'] = utils, -- convenient for testing and stubbing
 		['domoticz'] = domoticz,
 		['settings'] = settings,
-		['mainMethod'] = mainMethod or MAIN_METHOD,
 	}
 
 	if (_G.TESTMODE) then
 		self.scriptsFolderPath = scriptsFolderPath
+		function self._getUtilsInstance()
+			return utils
+		end
 	end
 
 	function self.getStorageContext(storageDef, module)
@@ -117,20 +118,21 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	local function getEventInfo(eventHandler)
+	local function getEventInfo(eventHandler, mode)
 		local res = {}
+		res.type = mode
 		if (eventHandler.trigger ~= nil) then
-			res.type = self.domoticz.EVENT_TYPE_TIMER
 			res.trigger = eventHandler.trigger
-		else
-			res.type = self.domoticz.EVENT_TYPE_DEVICE
 		end
 		return res
 	end
 
-	function self.callEventHandler(eventHandler, device)
+	function self.callEventHandler(eventHandler, device, variable)
 		local useStorage = false
-		if (eventHandler[self.mainMethod] ~= nil) then
+
+
+
+		if (eventHandler['execute'] ~= nil) then
 
 			-- ==================
 			-- Prepare storage
@@ -156,8 +158,21 @@ local function EventHelpers(domoticz, mainMethod)
 			-- ==================
 			-- Run script
 			-- ==================
-			local info = getEventInfo(eventHandler)
-			local ok, res = pcall(eventHandler[self.mainMethod], self.domoticz, device, info)
+			local ok, res, info
+
+
+			if (device ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
+			elseif (variable ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_VARIABLE)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
+			else
+				-- timer
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
+			end
+
 			if (ok) then
 
 				-- ==================
@@ -187,7 +202,7 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log(res, utils.LOG_ERROR) -- error info
 			end
 		else
-			utils.log('No' .. self.mainMethod .. 'function found in event handler ' .. eventHandler, utils.LOG_ERROR)
+			utils.log('No "execute" function found in event handler ' .. eventHandler, utils.LOG_ERROR)
 		end
 
 		self.domoticz[SCRIPT_DATA] = nil
@@ -210,9 +225,9 @@ local function EventHelpers(domoticz, mainMethod)
 		t = {}
 		local pfile = popen(cmd)
 		for filename in pfile:lines() do
-			pos, len = string.find(filename, '.lua')
+			pos, len = string.find(filename, '.lua', 1, true)
+			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
 
-			if (pos and pos > 0) then
 				table.insert(t, string.sub(filename, 1, pos - 1))
 				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t], utils.LOG_DEBUG)
 			end
@@ -371,25 +386,49 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	function self.handleEvents(events, device)
+	function self.handleEvents(events, device, variable)
+
+		local originalLogLevel = _G.logLevel -- a script can override the level
+
+		function restoreLogging()
+			_G.logLevel = originalLogLevel
+			_G.logMarker = nil
+		end
+
 		if (type(events) ~= 'table') then
 			return
 		end
 
 		for eventIdx, eventHandler in pairs(events) do
+
+			if (eventHandler.logging) then
+				if (eventHandler.logging.level ~= nil) then
+					_G.logLevel = eventHandler.logging.level
+				end
+				if (eventHandler.logging.marker ~= nil) then
+					_G.logMarker = eventHandler.logging.marker
+				end
+			end
+
+
 			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
 			utils.log('>>> Handler: ' .. eventHandler.name, utils.LOG_MODULE_EXEC_INFO)
+
 			if (device) then
 				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
+			elseif (variable) then
+				utils.log('>>> Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id), utils.LOG_MODULE_EXEC_INFO)
 			end
 
 			utils.log('.....................................................', utils.LOG_INFO)
 
-			self.callEventHandler(eventHandler, device)
+			self.callEventHandler(eventHandler, device, variable)
 
 			utils.log('.....................................................', utils.LOG_INFO)
 			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
 			utils.log('-----------------------------------------------------', utils.LOG_MODULE_EXEC_INFO)
+
+			restoreLogging()
 		end
 	end
 
@@ -415,10 +454,22 @@ local function EventHelpers(domoticz, mainMethod)
 			return nil
 		end
 
+		if (mode == nil) then mode = 'device' end
+
 		for i, moduleName in pairs(modules) do
 
 			local module, skip
+
+			_G.domoticz = {
+				['LOG_INFO'] = utils.LOG_INFO,
+				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
+				['LOG_DEBUG'] = utils.LOG_DEBUG,
+				['LOG_ERROR'] = utils.LOG_ERROR,
+			}
+
 			ok, module = pcall(require, moduleName)
+
+			_G.domoticz = nil
 
 			if (ok) then
 
@@ -447,7 +498,7 @@ local function EventHelpers(domoticz, mainMethod)
 							end
 						end
 						if (not skip) then
-							if (module.on ~= nil and module[self.mainMethod] ~= nil) then
+							if (module.on ~= nil and module['execute'] ~= nil) then
 								module.name = moduleName
 								module.dataFileName = '__data_' .. moduleName
 								module.dataFilePath = scriptsFolderPath .. '/storage/__data_' .. moduleName .. '.lua'
@@ -473,8 +524,8 @@ local function EventHelpers(domoticz, mainMethod)
 												table.insert(bindings, module)
 											end
 										end
-									else
-										if (event ~= 'timer' and j ~= 'timer') then
+									elseif (mode == 'device') then
+										if (event ~= 'timer' and j ~= 'timer' and j~= 'variable' and j~='variables') then
 
 											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
 
@@ -495,10 +546,27 @@ local function EventHelpers(domoticz, mainMethod)
 												table.insert(bindings[event], module)
 											end
 										end
+									elseif (mode == 'variable') then
+										if (type(j) == 'string' and j == 'variable' and type(event) == 'string') then
+											-- { ['variable'] = 'myvar' }
+											if (bindings[event] == nil) then
+												bindings[event] = {}
+											end
+											table.insert(bindings[event], module)
+										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
+											-- { ['variables'] = { 'varA', 'varB' }
+											for devIdx, varName in pairs(event) do
+												if (bindings[varName] == nil) then
+													bindings[varName] = {}
+												end
+												table.insert(bindings[varName], module)
+											end
+										end
+
 									end
 								end
 							else
-								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "' .. self.mainMethod .. '" section. Skipping', utils.LOG_ERROR)
+								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "execute" section. Skipping', utils.LOG_ERROR)
 								table.insert(errModules, moduleName)
 							end
 						end
@@ -520,6 +588,10 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('timer')
 	end
 
+	function self.getVariableHandlers()
+		return self.getEventBindings('variable')
+	end
+
 	function self.dumpCommandArray(commandArray)
 		local printed = false
 		for k, v in pairs(commandArray) do
@@ -535,24 +607,24 @@ local function EventHelpers(domoticz, mainMethod)
 		if (printed) then utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO) end
 	end
 
-	function self.findScriptForChangedDevice(changedDeviceName, allEventScripts)
+	function self.findScriptForChangedItem(changedItemName, allEventScripts)
 		-- event could be like: myPIRLivingRoom
 		-- or myPir(.*)
-		utils.log('Searching for scripts for changed device: ' .. changedDeviceName, utils.LOG_DEBUG)
+		utils.log('Searching for scripts for changed item: ' .. changedItemName, utils.LOG_DEBUG)
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
 			-- turn it into a valid regexp
 			scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
 
-			if (string.match(changedDeviceName, scriptTrigger)) then
-				-- there is trigger for this changedDeviceName
+			if (string.match(changedItemName, scriptTrigger)) then
+				-- there is trigger for this changedItemName
 				return scripts
 			end
 
 			else
-				if (scriptTrigger == changedDeviceName) then
-					-- there is trigger for this changedDeviceName
+				if (scriptTrigger == changedItemName) then
+					-- there is trigger for this changedItemName
 					return scripts
 				end
 			end
@@ -571,13 +643,13 @@ local function EventHelpers(domoticz, mainMethod)
 
 		domoticz.changedDevices.forEach( function(device)
 
-			utils.log('Event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
+			utils.log('Device-event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
 			local scriptsToExecute
 
 			-- first search by name
 
-			scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
+			scriptsToExecute = self.findScriptForChangedItem(device.name, allEventScripts)
 
 			if (scriptsToExecute == nil) then
 				-- search by id
@@ -606,11 +678,41 @@ local function EventHelpers(domoticz, mainMethod)
 
 	end
 
-	if (_G.TESTMODE) then
-		function self._getUtilsInstance()
-			return utils
+	function self.dispatchVariableEventsToScripts(domoticz)
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
 		end
+
+		local allEventScripts = self.getVariableHandlers()
+
+
+
+		domoticz.changedVariables.forEach(function(variable)
+
+			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. variable.value, utils.LOG_DEBUG)
+
+			local scriptsToExecute
+
+			-- first search by name
+
+			scriptsToExecute = self.findScriptForChangedItem(variable.name, allEventScripts)
+
+			if (scriptsToExecute == nil) then
+				-- search by id
+				scriptsToExecute = allEventScripts[variable.id]
+			end
+
+			if (scriptsToExecute ~= nil) then
+				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. variable.value .. '"', utils.LOG_INFO)
+				self.handleEvents(scriptsToExecute, variable)
+			end
+		end)
+
+
+		self.dumpCommandArray(self.domoticz.commandArray)
+		return self.domoticz.commandArray
 	end
+
 
 	return self
 end
