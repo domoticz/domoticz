@@ -866,11 +866,20 @@ define(['app'], function (app) {
 				if ( (mode1 == "") || (mode1 == "0") ) {
 					mode1 = "60";
 				}
+				var mode4 = $("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked") ? 1 : 0;
+				if (mode4 == "1") {
+					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
+				}
 
 				var mode2 = $("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked") ? 0 : 1;
 				var mode3 = $("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked") ? 1 : 0;
+
+				var mode5 = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
+				mode5 = mode5 + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
+				mode5 = mode5 + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
+
 				$.ajax({
-					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&idx=" + idx +	"&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3,
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&idx=" + idx +	"&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3 + "&Mode4=" + mode4 + "&Mode5=" + mode5,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1647,11 +1656,19 @@ define(['app'], function (app) {
 				if ( (mode1 == "") || (mode1 == "0") ) {
 					mode1 = "60";
 				}
-
+				var mode4 = $("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked") ? 1 : 0;
+				if (mode4 == "1") {
+					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
+				}
 				var mode2 = $("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked") ? 0 : 1;
 				var mode3 = $("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked");
+
+				var mode5 = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
+				mode5 = mode5 + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
+				mode5 = mode5 + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
+
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + "&Mode1=" + mode1 + "&Mode2=" + mode2 + "&Mode3=" + mode3 + "&Mode4=" + mode4 + "&Mode5=" + mode5,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5102,7 +5119,16 @@ define(['app'], function (app) {
 
 							$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(data["Mode1"]);
 							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", data["Mode2"] == 0);
-							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked", data["Mode3"] == 1);
+							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked", data["Mode3"]);
+							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked", data["Mode4"]);
+							for (var i=0;i<10;i++){
+								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
+								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
+								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
+							}
+							$("#hardwarecontent #divevohomeweb #comboevolocation").val(Math.floor(data["Mode5"]/4096));
+							$("#hardwarecontent #divevohomeweb #comboevogateway").val(Math.floor(data["Mode5"]/512)%16);
+							$("#hardwarecontent #divevohomeweb #comboevotcs").val((data["Mode5"]/16)%16);
 						}
 
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.

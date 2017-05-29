@@ -1172,7 +1172,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 			filename = *itt;
 			if (filename.find("dzVents") != std::string::npos)
 			{
-				EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+				EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
 			}
 		}
 	}

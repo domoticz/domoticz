@@ -39,17 +39,22 @@ const uint8_t CEvohomeWeb::m_dczToEvoWebAPIMode[7]={0,2,3,4,6,1,5};
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool updatedev, const bool showschedule):
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool updatedev, const bool showschedule, const bool showlocation, const unsigned int installation):
 	m_username(Username),
 	m_password(Password),
 	m_refreshrate(refreshrate),
 	m_updatedev(!updatedev),
-	m_showschedule(showschedule)
+	m_showschedule(showschedule),
+	m_showlocation(showlocation)
 
 {
 	m_HwdID=ID;
 	m_bSkipReceiveCheck = true;
 
+	m_locationId = installation/4096;
+	m_gatewayId = (installation/256)%16;
+	m_systemId = (installation/16)%16;
+	
 	Init();
 }
 
@@ -72,6 +77,7 @@ void CEvohomeWeb::Init()
 	m_lastDST=-1;
 	m_logonfailures=0;
 	m_bequiet=false;
+	m_szlocationName="";
 }
 
 
@@ -90,15 +96,25 @@ bool CEvohomeWeb::StartSession()
 			m_logonfailures--;
 		return false;
 	}
-	full_installation();
+	if (!full_installation())
+	{
+		_log.Log(LOG_ERROR, "EvohomeWeb: failed to retrieve installation info from server");
+		return false;
+	}
 	m_tcs = NULL;
-// FIXME: always choose the first available system for now
-	if ( (!is_single_heating_system()) && (!m_bequiet) )
-		_log.Log(LOG_STATUS, "EvohomeWeb: WARNING: you appear to have multiple heating systems assigned to your Evohome account. We can currently only support one - autoselecting the system at [0,0,0]");
-	
-
-		m_tcs = &locations[0].gateways[0].temperatureControlSystems[0];
-
+	if (	(locations.size() > m_locationId) &&
+		(locations[m_locationId].gateways.size() > m_gatewayId) &&
+		(locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems.size() > m_systemId) 
+	   )
+	{
+		m_tcs = &locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems[m_systemId];
+		m_szlocationName = j_fi["locations"][m_locationId]["locationInfo"]["name"].asString();
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "EvohomeWeb: installation at [%d,%d,%d] does not exist - verify your settings",m_locationId,m_gatewayId,m_systemId);
+		return false;
+	}
 
 	m_zones[0] = 0;
 	m_loggedon=true;
@@ -146,7 +162,7 @@ void CEvohomeWeb::Do_Work()
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
-			if (m_LastHeartbeat > m_sessiontimer) // discard our session with the honeywell server
+			if ( m_loggedon && (m_LastHeartbeat > m_sessiontimer) ) // discard our session with the honeywell server
 			{
 				m_loggedon = false;
 				m_bequiet = true;
@@ -154,8 +170,8 @@ void CEvohomeWeb::Do_Work()
 		}
 		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
 		{
-			if (GetStatus())
-				int pollcounter = LOGONFAILTRESHOLD;
+			GetStatus();
+			int pollcounter = LOGONFAILTRESHOLD;
 		}
 	}
 	_log.Log(LOG_STATUS,"EvohomeWeb: Worker stopped...");
@@ -349,15 +365,21 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 		if(ret["modelType"].empty())
 			return;
 
+		std::string devname;
+		if (m_showlocation)
+			devname = m_szlocationName + ": " + ret["modelType"];
+		else
+			devname = ret["modelType"];
+
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
-		if (!result.empty() && (result[0][2] != ret["modelType"]))
+		if (!result.empty() && (result[0][2] != devname))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
 			time_t now = mytime(NULL);
 			struct tm ltime;
 			localtime_r(&now,&ltime);
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", ret["modelType"].c_str(), ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -398,11 +420,20 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::string sdevname;
 	uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zonedata["zoneId"].c_str(),GetUnit_by_ID(evoID),pTypeEvohomeZone,sTypeEvohomeZone,10,255,0,ssUpdateStat.str().c_str(), sdevname);
 
-	if (m_updatedev && (DevRowIdx!=-1) && (sdevname!=zonedata["name"]))
+	if (m_updatedev && (DevRowIdx!=-1))
 	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", zonedata["name"].c_str(), DevRowIdx);
-		if (sdevname.find("zone ")!=std::string::npos)
-			_log.Log(LOG_STATUS,"EvohomeWeb: register new zone '%c'", zonedata["name"].c_str());
+		std::string ndevname;
+		if (m_showlocation)
+			ndevname = m_szlocationName + ": " + zonedata["name"];
+		else
+			ndevname = zonedata["name"];
+
+		if (sdevname!=ndevname)
+		{
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
+			if (sdevname.find("zone ")!=std::string::npos)
+				_log.Log(LOG_STATUS,"EvohomeWeb: register new zone '%c'", ndevname.c_str());
+		}
 	}
 }
 
@@ -431,18 +462,24 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		result = m_sql.safe_query(
 			"SELECT ID,DeviceID,Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) ORDER BY Unit",
 			this->m_HwdID, pTypeEvohomeWater);
+		std::string ndevname;
+		if (m_showlocation)
+			ndevname = m_szlocationName + ": Hot Water";
+		else
+			ndevname = "Hot Water";
+
 		if (result.size() < 1) // create device
 		{
 			std::string sdevname;
 			uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID,dhwdata["dhwId"].c_str(),1,pTypeEvohomeWater,sTypeEvohomeWater,10,255,50,"0.0;Off;Auto",sdevname);
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='Hot Water' WHERE (ID == %" PRIu64 ")", DevRowIdx);
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 		}
-		else if ( (result[0][1]!=dhwdata["dhwId"]) || (result[0][2]!="Hot Water") )
+		else if ( (result[0][1]!=dhwdata["dhwId"]) || (result[0][2]!=ndevname) )
 		{
 			uint64_t DevRowIdx;
 			std::stringstream s_str( result[0][0] );
 			s_str >> DevRowIdx;
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q',Name='Hot Water' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), DevRowIdx);
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q',Name='%q' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
 		}
 	}
 

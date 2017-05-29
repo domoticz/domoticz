@@ -203,7 +203,7 @@ void CInfluxPush::Do_Work()
 		}
 		std::vector<std::string> ExtraHeaders;
 		std::string sResult;
-		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult, true))
+		if (!HTTPClient::POST(m_szURL, sSendData, ExtraHeaders, sResult, true, true))
 		{
 			_log.Log(LOG_ERROR, "InfluxLink: Error sending data to InfluxDB server! (check address/port/database)");
 		}
