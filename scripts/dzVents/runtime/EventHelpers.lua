@@ -18,7 +18,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 	if (_G.TESTMODE) then
 		-- make sure you run the tests from the tests folder !!!!
-		scriptsFolderPath = currentPath .. 'scripts'
+		_G.scriptsFolderPath = currentPath .. 'scripts'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
@@ -215,6 +215,10 @@ local function EventHelpers(domoticz, mainMethod)
 		local sep = string.sub(package.config, 1, 1)
 		local cmd
 
+		if (directory == nil) then
+			return {}
+		end
+
 		if (sep == '/') then
 			cmd = 'ls -a "' .. directory .. '"'
 		else
@@ -228,8 +232,12 @@ local function EventHelpers(domoticz, mainMethod)
 			pos, len = string.find(filename, '.lua', 1, true)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
 
-				table.insert(t, string.sub(filename, 1, pos - 1))
-				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t], utils.LOG_DEBUG)
+				table.insert(t, {
+					['type'] = 'external',
+					['name'] = string.sub(filename, 1, pos - 1)
+				})
+
+				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
 			end
 		end
 		pfile:close()
@@ -447,18 +455,41 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.getEventBindings(mode)
 		local bindings = {}
 		local errModules = {}
-		local ok, modules, moduleName, i, event, j, device
-		ok, modules = pcall(self.scandir, scriptsFolderPath)
+		local internalScripts = {}
+		local hasInternals = false
+		local ok, diskScripts, moduleName, i, event, j, device
+		local modules = {}
+
+
+		ok, diskScripts = pcall(self.scandir, _G.scriptsFolderPath)
+
 		if (not ok) then
-			utils.log(modules, utils.LOG_ERROR)
-			return nil
+			utils.log(diskScripts, utils.LOG_ERROR)
+		end
+
+		if (_G.scripts == nil) then _G.scripts = {} end
+
+		-- prepare internal modules
+		-- todo this could be done entirely in c++
+		for name, script in pairs(_G.scripts) do
+			table.insert(modules, {
+				['type'] = 'internal',
+				['code'] = script,
+				['name'] = name
+			})
+		end
+
+		for i, external in pairs(diskScripts) do
+			table.insert(modules, external)
 		end
 
 		if (mode == nil) then mode = 'device' end
 
-		for i, moduleName in pairs(modules) do
+		for i, moduleInfo in pairs(modules) do
 
 			local module, skip
+
+			local moduleName = moduleInfo.name
 
 			_G.domoticz = {
 				['LOG_INFO'] = utils.LOG_INFO,
@@ -467,7 +498,19 @@ local function EventHelpers(domoticz, mainMethod)
 				['LOG_ERROR'] = utils.LOG_ERROR,
 			}
 
-			ok, module = pcall(require, moduleName)
+			ok = true
+
+			if (moduleInfo.type == 'external') then
+				ok, module = pcall(require, moduleName)
+			else
+				module, err = loadstring(moduleInfo.code)
+				if (module == nil) then
+					module = moduleInfo.name .. ': ' .. err
+					ok = false
+				else
+					module = module()
+				end
+			end
 
 			_G.domoticz = nil
 

@@ -1,0 +1,9 @@
+return {
+	active = true,
+	on = {
+		'rgb*'
+	},
+	execute = function(domoticz, s) -- see readme for what you get
+		print(s.name .. ' was triggered')
+	end
+}

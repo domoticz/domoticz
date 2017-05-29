@@ -39,7 +39,8 @@ describe('event helper storage', function()
 			['on_script_5'] = { name = 'on_script_5', id = 5 },
 			['wildcard'] = { name = 'wildcard', id = 6 },
 			['someweirddevice'] = { name = 'someweirddevice', id = 7 },
-			['mydevice'] = { name = 'mydevice', id = 8 }
+			['mydevice'] = { name = 'mydevice', id = 8 },
+			['someswitch'] = { name = 'someswitch', id = 9 },
 		}
 	}
 
@@ -59,6 +60,24 @@ describe('event helper storage', function()
 			['domoticz_listening_port'] = '8080'
 		}
 
+		_G.scripts = {
+			['myInternalScript'] = [[
+				return {
+					active = true,
+					on = {
+						'someswitch'
+					},
+					data = {
+						x = { initial = 4 }
+					},
+					execute = function(domoticz, device, triggerInfo)
+						domoticz.data.x = domoticz.data.x + 10
+
+					end
+				}
+			]],
+		}
+
 		EventHelpers = require('EventHelpers')
 	end)
 
@@ -72,6 +91,7 @@ describe('event helper storage', function()
 		utils.print = function() end
 		os.remove('../tests/scripts/storage/__data_script_data.lua')
 		os.remove('../tests/scripts/storage/__data_global_data.lua')
+		os.remove('../tests/scripts/storage/__data_myInternalScript.lua')
 	end)
 
 	after_each(function()
@@ -145,6 +165,20 @@ describe('event helper storage', function()
 		assert.is_same({x=10, y=20}, newContext.c)
 
 	end)
+
+	it('should write local storage inside the script for internal scripts', function()
+		local bindings = helpers.getEventBindings()
+		local script_data = bindings['someswitch'][1]
+
+		local res = helpers.callEventHandler(script_data, { name = 'someswitch' })
+
+		-- should pass the arguments to the execute function
+		-- and catch the results from the function
+		local newContext = helpers.getStorageContext(script_data.data, script_data.dataFileName)
+		assert.is_same({ 'x' }, keys(newContext))
+		assert.is_same(14, newContext.x)
+	end)
+
 
 	it('should have a default global context', function()
 		local bindings = helpers.getEventBindings()

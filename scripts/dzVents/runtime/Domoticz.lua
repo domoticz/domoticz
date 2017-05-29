@@ -296,10 +296,7 @@ local function Domoticz(settings)
 				local var = Variable(self, item)
 				self.variables[item.name] = var
 
-				-- todo remove
-				if (item.name == 'myVar1') then
-					item.changed = true
-				end
+
 				if (item.changed) then
 					self.changedVariables[item.name] = var
 				end

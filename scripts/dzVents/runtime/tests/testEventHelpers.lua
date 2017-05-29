@@ -69,6 +69,49 @@ describe('event helpers', function()
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
 		utils.activateDevicesFile = function() end
+		_G.scripts = {
+			['switchScript'] = [[
+				return {
+					active = true,
+					on = {
+						'mySwitch'
+					},
+					execute = function(domoticz, device, triggerInfo)
+
+						if (device.toggleSwitch) then device.toggleSwitch() end
+
+						return 'script1: ' ..
+								tostring(domoticz.name) ..
+								' ' ..
+								tostring(device.name) ..
+								' ' ..
+								tostring(triggerInfo['type'])
+					end
+				}
+			]],
+			['faultyscript'] = [[
+				return {
+					active = true,
+					on = {
+			]],
+			['internalOnScript1'] = [[
+				return {
+					active = true,
+					on = {
+						'onscript1'
+					},
+					execute = function(domoticz, device, triggerInfo)
+
+						return 'internal onscript1: ' ..
+								tostring(domoticz.name) ..
+								' ' ..
+								tostring(device.name) ..
+								' ' ..
+								tostring(triggerInfo['type'])
+					end
+				}
+			]],
+		}
 	end)
 
 	after_each(function()
@@ -79,8 +122,9 @@ describe('event helpers', function()
 	describe('Loading modules', function()
 		it('should get a list of files in a folder', function()
 			local files = helpers.scandir('scandir')
+
 			local f = {'f1','f2','f3', 'lua' }
-			assert.are.same(f, files)
+			assert.are.same(f, _.pluck(files, {'name'}))
 		end)
 	end)
 
@@ -208,7 +252,23 @@ describe('event helpers', function()
 			end
 			table.sort(res)
 
-			assert.are.same({'script1', 'script3', 'script_combined'}, res)
+			assert.are.same({'internalOnScript1', 'script1', 'script3', 'script_combined'}, res)
+
+		end)
+
+		it('should find scripts for changed items', function()
+
+			local modules = {
+				['aaa'] = { 'a1', 'a2', 'a3' },
+				['bbb'] = { 'b1', 'b2', 'b3' },
+				['aa*'] = { 'c1', 'c2', 'c3' },
+				['a*'] =  { 'd1', 'd2', 'd3' },
+				['aaa*'] = { 'e1', 'e2', 'e3' }
+			}
+
+			local scripts = helpers.findScriptForChangedItem('aaa', modules)
+
+			assert.are.same({ 'a1', 'a2', 'a3', 'c1', 'c2', 'c3', 'd1', 'd2', 'd3', 'e1', 'e2', 'e3' }, values(scripts))
 
 		end)
 
@@ -217,6 +277,7 @@ describe('event helpers', function()
 			assert.are.same({
 				8,
 				'loggingstuff',
+				'mySwitch',
 				'on_script_5',
 				'onscript1',
 				'onscript2',
@@ -226,7 +287,7 @@ describe('event helpers', function()
 				'some*device',
 				'somedevice',
 				'wild*' }, keys(modules))
-			assert.are.same(11, _.size(modules))
+			assert.are.same(12, _.size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -239,8 +300,9 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(4, _.size(errModules))
+			assert.are.same(5, _.size(errModules))
 			assert.are.same({
+				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -261,8 +323,9 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(4, _.size(errModules))
+			assert.are.same(5, _.size(errModules))
 			assert.are.same({
+				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -282,8 +345,9 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(4, _.size(errModules))
+			assert.are.same(5, _.size(errModules))
 			assert.are.same({
+				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -348,6 +412,40 @@ describe('event helpers', function()
 			assert.are.same({ 'script_variable1', 'script_variable2',  }, res)
 		end)
 
+
+		it('should return an array of internal scripts for the same trigger', function()
+
+			local modules = helpers.getEventBindings()
+			local script1 = modules['mySwitch']
+			assert.are.same('table', type(script1))
+
+			local res = {}
+			for i,mod in pairs(script1) do
+				table.insert(res, mod.name)
+			end
+			table.sort(res)
+
+			assert.are.same({'switchScript'}, res)
+		end)
+
+			it('should return internal and external scripts for all triggers', function()
+				local modules = helpers.getEventBindings()
+				assert.are.same({
+					8,
+					'loggingstuff',
+					'mySwitch',
+					'on_script_5',
+					'onscript1',
+					'onscript2',
+					'onscript4',
+					'onscript7',
+					'onscript7b',
+					'some*device',
+					'somedevice',
+					'wild*' }, keys(modules))
+				assert.are.same(12, _.size(modules))
+			end)
+
 	end)
 
 	describe('Various', function()
@@ -382,9 +480,20 @@ describe('event helpers', function()
 		it('should call the event handler', function()
 
 			local bindings = helpers.getEventBindings()
+
 			local script1 = bindings['onscript1'][1]
 
 			local res = helpers.callEventHandler(script1,
+				{
+					name = 'device'
+				})
+			-- should pass the arguments to the execute function
+			-- and catch the results from the function
+			assert.is_same('internal onscript1: domoticz device device', res)
+
+			script1 = bindings['onscript1'][2]
+
+			res = helpers.callEventHandler(script1,
 				{
 					name = 'device'
 				})
@@ -438,7 +547,7 @@ describe('event helpers', function()
 			end
 
 			helpers.handleEvents(script1)
-			assert.is_same({"script1", "script3", "script_combined"}, called)
+			assert.is_same({'internalOnScript1', "script1", "script3", "script_combined"}, called)
 		end)
 
 		it('should have custom logging settings', function()
@@ -514,6 +623,7 @@ describe('event helpers', function()
 			table.sort(scripts)
 			table.sort(devices)
 			assert.is_same({
+				'internalOnScript1',
 				"script1",
 				"script3",
 				"script4",
