@@ -1,18 +1,15 @@
 /**
- * Place holder for Integrated Evohome client for Domoticz
+ * Json client for UK/EMEA Evohome API
+ *
+ *  Adapted for integration with Domoticz
  *
  *  Copyright 2017 - gordonb3 https://github.com/gordonb3/evohomeclient
  *
  *  Licensed under GNU General Public License 3.0 or later. 
  *  Some rights reserved. See COPYING, AUTHORS.
  *
- * @license GPL-3.0+ <https://github.com/gordonb3/evohomeclient/blob/master/LICENSE>
- *
- *
- *
- *
+ *  @license GPL-3.0+ <https://github.com/gordonb3/evohomeclient/blob/master/LICENSE>
  */
-
 #pragma once
 
 #include "EvohomeBase.h"
@@ -21,9 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <curl/curl.h>
 #include <map>
-
 #include "../json/json.h"
 
 
