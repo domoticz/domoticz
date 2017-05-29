@@ -30,7 +30,7 @@
 class CEvohomeWeb : public CEvohomeBase
 {
 public:
-	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool updatedev, const bool showschedule, const bool showlocation, const unsigned int installation);
+	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation);
 	~CEvohomeWeb(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
@@ -58,6 +58,7 @@ private:
 	uint8_t m_locationId;
 	uint8_t m_gatewayId;
 	uint8_t m_systemId;
+	double m_awaysetpoint;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
@@ -67,8 +68,6 @@ private:
 
 	Json::Value j_fi;
 	Json::Value j_stat;
-	Json::Value j_sched;
-
 
 	// base functions
 	void Init();
