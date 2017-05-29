@@ -76,7 +76,6 @@ describe('event helpers', function()
 		utils = nil
 	end)
 
-
 	describe('Loading modules', function()
 		it('should get a list of files in a folder', function()
 			local files = helpers.scandir('scandir')

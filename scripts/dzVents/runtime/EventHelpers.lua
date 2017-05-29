@@ -412,7 +412,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 
 			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
-			utils.log('>>> Handler: ' .. eventHandler.name, utils.LOG_MODULE_EXEC_INFO)
+			utils.log('>>> Handler: ' .. eventHandler.name .. '.lua', utils.LOG_MODULE_EXEC_INFO)
 
 			if (device) then
 				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
@@ -612,25 +612,65 @@ local function EventHelpers(domoticz, mainMethod)
 		-- or myPir(.*)
 		utils.log('Searching for scripts for changed item: ' .. changedItemName, utils.LOG_DEBUG)
 
+		--[[
+
+			allEventScripts is a dictionary where
+			each key is the name or id of a device and the value
+			is a table with all the modules for this device
+
+			{
+				['myDevice'] = {
+					modA, modB, modC
+				},
+				['anotherDevice'] = {
+					modD
+				},
+				12 = {
+					modE, modF
+				},
+				['myDev*'] = {
+					modG, modH
+				}
+			}
+
+		]]--
+
+		local modules
+
+		-- only search for named and wildcard triggers,
+		-- id is done later
+
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
-			-- turn it into a valid regexp
-			scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
+				-- turn it into a valid regexp
+				scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
 
-			if (string.match(changedItemName, scriptTrigger)) then
-				-- there is trigger for this changedItemName
-				return scripts
-			end
+				if (string.match(changedItemName, scriptTrigger)) then
+					-- there is trigger for this changedItemName
+
+					if modules == nil then modules = {} end
+
+					for i, mod in pairs(scripts) do
+						table.insert(modules, mod)
+					end
+
+				end
 
 			else
 				if (scriptTrigger == changedItemName) then
 					-- there is trigger for this changedItemName
-					return scripts
+
+					if modules == nil then modules = {} end
+
+					for i, mod in pairs(scripts) do
+						table.insert(modules, mod)
+					end
+
 				end
 			end
 		end
 
-		return nil
+		return modules
 	end
 
 	function self.dispatchDeviceEventsToScripts(domoticz)
