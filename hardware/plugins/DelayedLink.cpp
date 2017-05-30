@@ -9,7 +9,6 @@
 #include "DelayedLink.h"
 
 namespace Plugins {
-
-	SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
+    SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
 }
 #endif

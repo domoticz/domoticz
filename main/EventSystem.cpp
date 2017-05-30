@@ -30,12 +30,16 @@ extern "C" {
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
 #endif
-#ifdef ENABLE_PYTHON
-#include <Python.h>
-#endif
 }
 
 #ifdef ENABLE_PYTHON
+#include "EventsPythonModule.h"
+#include "EventsPythonDevice.h"
+extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+#endif
+
+
+#ifdef ENABLE_PYTHON_DECAP
 #include <boost/python.hpp>
 using namespace boost::python;
 #endif
@@ -2191,220 +2195,209 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 
 
-static int numargs=0;
-
-/* Return the number of arguments of the application command line */
-static PyObject*
-PyDomoticz_log(PyObject *self, PyObject *args)
-{
-	char* msg;
-	int type;
-    if(!PyArg_ParseTuple(args, "is", &type, &msg))
-        return NULL;
-	_log.Log((_eLogLevel)type, msg);
-	Py_INCREF(Py_None);
-    return Py_None;
-
-}
-
-static PyMethodDef DomoticzMethods[] = {
-    {"log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz."},
-    {NULL, NULL, 0, NULL}
-};
-
-
-// from https://gist.github.com/octavifs/5362297
-
-template <class K, class V>
-boost::python::dict toPythonDict(std::map<K, V> map) {
-    typename std::map<K, V>::iterator iter;
-	boost::python::dict dictionary;
-	for (iter = map.begin(); iter != map.end(); ++iter) {
-		dictionary[iter->first] = iter->second;
-	}
-	return dictionary;
-}
-
-
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
+
+int PythonEventsInitalized = 0;
+
+// Python EventModule helper functions
+bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
+    ScheduleEvent(ID, Action,eventName);
+    return true;
+}
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
 
-	std::stringstream python_DirT;
+    if (PythonEventsInitalized == -1) {
+        // Failed to load library
+        return;
+    }
 
-#ifdef WIN32
-	python_DirT << szUserDataFolder << "scripts\\python\\";
-#else
-	python_DirT << szUserDataFolder << "scripts/python/";
-#endif
-	std::string python_Dir = python_DirT.str();
-	if(!Py_IsInitialized()) {
-		Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
-		Py_Initialize();
-		Py_InitModule("domoticz_", DomoticzMethods);
-		// TODO: may have a small memleak, remove references in destructor
-		PyObject* sys = PyImport_ImportModule("sys");
-		PyObject *path = PyObject_GetAttrString(sys, "path");
-		PyList_Append(path, PyString_FromString(python_Dir.c_str()));
+    if (!Plugins::Py_LoadLibrary())
+    {
+        _log.Log(LOG_STATUS, "EventSystem: Failed dynamic library load, install the latest libpython3.x library that is available for your platform.");
+        PythonEventsInitalized = -1;
+        return;
+    }
 
-		bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
-		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
-			.def("command", ScheduleEventMethod)
-			;
-	}
+   if (Plugins::Py_IsInitialized()) {
+       if (PythonEventsInitalized==0) {
+           std::string ssPath;
+            #ifdef WIN32
+                ssPath  = szUserDataFolder + "scripts\\python\\;";
+            #else
+                ssPath  = szUserDataFolder + "scripts/python/:";
+            #endif
 
-	FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-	object main_module = import("__main__");
-	object main_namespace = dict(main_module.attr("__dict__")).copy();
+            std::wstring sPath = std::wstring(ssPath.begin(), ssPath.end());
+
+            sPath += Plugins::Py_GetPath();
+    		Plugins::PySys_SetPath((wchar_t*)sPath.c_str());
+
+            PythonEventsInitalized = 1;
+       }
+
+       PyObject* pModule = Plugins::GetEventModule();
+       if (pModule) {
+
+           PyObject* pModuleDict = Plugins::PyModule_GetDict((PyObject*)pModule); // borrowed referece
+
+           if (!pModuleDict) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to open module dictionary.");
+               return;
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device_name", Plugins::PyUnicode_FromString(m_devicestates[DeviceID].deviceName.c_str())) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to set changed_device_name.");
+               return;
+           }
+
+           PyObject* m_DeviceDict = Plugins::PyDict_New();
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
+           {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add Device dictionary.");
+               return;
+           }
+           Py_DECREF(m_DeviceDict);
+
+           if (Plugins::PyType_Ready(&Plugins::PDeviceType) < 0) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Unable to ready DeviceType Object.");
+               return;
+           }
+
+           // Mutex
+           boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
+
+           typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+           for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+           {
+               _tDeviceStatus sitem = iterator->second;
+               // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
+               // devices[sitem.deviceName] = deviceStatus;
+
+               Plugins::PDevice* aDevice = (Plugins::PDevice*)Plugins::PDevice_new(&Plugins::PDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+               PyObject* pKey = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+
+               if (sitem.ID == DeviceID) {
+                   if (Plugins::PyDict_SetItemString(pModuleDict, "changed_device", (PyObject*)aDevice) == -1) {
+                       _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' as changed_device.", sitem.deviceName.c_str());
+                   }
+               }
+
+               if (Plugins::PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)aDevice) == -1)
+               {
+                   _log.Log(LOG_ERROR, "Python EventSystem: Failed to add device '%s' to device dictionary.", sitem.deviceName.c_str());
+               } else {
+
+                   // _log.Log(LOG_ERROR, "Python EventSystem: nValueWording '%s' - done. ", sitem.nValueWording.c_str());
+
+                   std::string temp_n_value_string = sitem.nValueWording;
+
+                   // If nValueWording contains %, unicode fails?
+
+                   aDevice->id = sitem.ID;
+                   aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
+                   aDevice->type = sitem.devType;
+                   aDevice->sub_type = sitem.subType;
+                   aDevice->switch_type = sitem.switchtype;
+                   aDevice->n_value = sitem.nValue;
+                   aDevice->n_value_string = Plugins::PyUnicode_FromString(temp_n_value_string.c_str());
+                   aDevice->s_value = Plugins::PyUnicode_FromString(sitem.sValue.c_str());
+                   aDevice->last_update_string = Plugins::PyUnicode_FromString(sitem.lastUpdate.c_str());
+                   // _log.Log(LOG_STATUS, "Python EventSystem: deviceName %s added to device dictionary", sitem.deviceName.c_str());
+               }
+               Py_DECREF(aDevice);
+               Py_DECREF(pKey);
+           }
+           devicestatesMutexLock1.unlock();
+
+           // Time related
+
+           int intRise = getSunRiseSunSetMinutes("Sunrise");
+           int intSet = getSunRiseSunSetMinutes("Sunset");
+
+           // Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+           time_t now = mytime(NULL);
+           struct tm ltime;
+           localtime_r(&now, &ltime);
+           int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "minutes_since_midnight", Plugins::PyLong_FromLong(minutesSinceMidnight)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'minutesSinceMidnight' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "sunrise_in_minutes", Plugins::PyLong_FromLong(intRise)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunrise_in_minutes' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "sunset_in_minutes", Plugins::PyLong_FromLong(intSet)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'sunset_in_minutes' to module_dict");
+           }
+
+           //PyObject* dayTimeBool = Py_False;
+           //PyObject* nightTimeBool = Py_False;
+
+           bool isDaytime = false;
+           bool isNightime = false;
+
+           if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+               isDaytime = true;
+           }
+           else {
+               isNightime = true;
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_daytime", PyBool_FromLong(isDaytime)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+           }
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "is_nighttime", PyBool_FromLong(isNightime)) == -1) {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add 'is_daytime' to module_dict");
+           }
+
+           // UserVariables
+           PyObject* m_uservariablesDict = Plugins::PyDict_New();
+
+           if (Plugins::PyDict_SetItemString(pModuleDict, "user_variables", (PyObject*)m_uservariablesDict) == -1)
+           {
+               _log.Log(LOG_ERROR, "Python EventSystem: Failed to add uservariables dictionary.");
+               return;
+           }
+           Py_DECREF(m_uservariablesDict);
+
+           // This doesn't work
+           // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
+
+           typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
+           for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
+               _tUserVariable uvitem = iterator->second;
+               Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(), Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
+           }
+
+           // uservariablesMutexLock2.unlock();
+
+           FILE* PythonScriptFile = _Py_fopen(filename.c_str(),"r+");
+
+            // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+            PyRun_SimpleFile(PythonScriptFile, filename.c_str());
+
+        	if (PythonScriptFile!=NULL)
+        		fclose(PythonScriptFile);
 
 
-	try {
-		object domoticz_module = import("domoticz");
-		object reloader = import("reloader");
-		reloader.attr("_check_reload")();
-
-		//object alldevices = dict();
-		object devices = domoticz_module.attr("devices");
-		object domoticz_namespace = domoticz_module.attr("__dict__");
-
-		domoticz_namespace["event_system"] = ptr(this);
-
-		main_namespace["changed_device_name"] = str(devname);
-		domoticz_namespace["changed_device_name"] = str(devname);
-
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-		typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-		{
-			_tDeviceStatus sitem = iterator->second;
-			object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
-			devices[sitem.deviceName] = deviceStatus;
-		}
-		main_namespace["domoticz"] = ptr(this);
-		main_namespace["__file__"] = filename;
-
-		if (reason == "device")
-		{
-			main_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-			domoticz_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-		}
-		devicestatesMutexLock1.unlock();
-
-
-		int intRise = getSunRiseSunSetMinutes("Sunrise");
-		int intSet = getSunRiseSunSetMinutes("Sunset");
-
-		// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-		time_t now = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
-
-		bool dayTimeBool = false;
-		bool nightTimeBool = false;
-		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-			dayTimeBool = true;
-		}
-		else {
-			nightTimeBool = true;
-		}
-		main_namespace["is_daytime"] = dayTimeBool;
-		main_namespace["is_nighttime"] = nightTimeBool;
-		main_namespace["sunrise_in_minutes"] = intRise;
-		main_namespace["sunset_in_minutes"] = intSet;
-
-		domoticz_namespace["is_daytime"] = dayTimeBool;
-		domoticz_namespace["is_nighttime"] = nightTimeBool;
-		domoticz_namespace["sunrise_in_minutes"] = intRise;
-		domoticz_namespace["sunset_in_minutes"] = intSet;
-
-		//main_namespace["timeofday"] = ... 		// not sure how to set this
-
-
-		/*std::string secstatusw = "";
-		m_sql.GetPreferencesVar("SecStatus", secstatus);
-		if (secstatus == 1) {
-			secstatusw = "Armed Home";
-		}
-		else if (secstatus == 2) {
-			secstatusw = "Armed Away";
-		}
-		else {
-			secstatusw = "Disarmed";
-		}
-		main_namespace["Security"] = secstatusw;*/
-
-		// put variables in user_variables dict, but also in the namespace
-		object user_variables = dict();
-		{
-			typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-				_tUserVariable uvitem = iterator->second;
-				//user_variables[uvitem.variableName] = uvitem;
-				if (uvitem.variableType == 0) {
-					//Integer
-					main_namespace[uvitem.variableName] = atoi(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else if (uvitem.variableType == 1) {
-					//Float
-					main_namespace[uvitem.variableName] = atof(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else {
-					//String,Date,Time
-					main_namespace[uvitem.variableName] = uvitem.variableValue;
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-			}
-		}
-
-		domoticz_namespace["user_variables"] = user_variables;
-		main_namespace["user_variables"] = user_variables;
-		main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
-		main_namespace["otherdevices_dewpoint"] = toPythonDict(m_dewValuesByName);
-		main_namespace["otherdevices_barometer"] = toPythonDict(m_baroValuesByName);
-		main_namespace["otherdevices_utility"] = toPythonDict(m_utilityValuesByName);
-		main_namespace["otherdevices_rain"] = toPythonDict(m_rainValuesByName);
-		main_namespace["otherdevices_rain_lasthour"] = toPythonDict(m_rainLastHourValuesByName);
-		main_namespace["otherdevices_uv"] = toPythonDict(m_uvValuesByName);
-		main_namespace["otherdevices_winddir"] = toPythonDict(m_winddirValuesByName);
-		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
-		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
-		main_namespace["otherdevices_zwavealarms"] = toPythonDict(m_zwaveAlarmValuesByName);
-
-		if(PyString.length() > 0)
-			exec(str(PyString), main_namespace);
-		else
-			object ignored = exec_file(str(filename), main_namespace);
-	} catch(...) {
-
-		PyObject *exc,*val,*tb;
-		PyErr_Fetch(&exc,&val,&tb);
-		boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
-		boost::python::object traceback(boost::python::import("traceback"));
-
-		boost::python::object format_exception(traceback.attr("format_exception"));
-		boost::python::object formatted_list = format_exception(hexc, hval, htb);
-		boost::python::object formatted = boost::python::str("\n").join(formatted_list);
-
-		object traceback_module = import("traceback");
-		std::string formatted_str = extract<std::string>(formatted);
-		//PyErr_Print();
-		PyErr_Clear();
-		if(PyString.length() > 0)
-			_log.Log(LOG_ERROR, "in event %s: %s", filename.c_str(), formatted_str.c_str());
-		else
-			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
-	}
-	if (PythonScriptFile!=NULL)
-		fclose(PythonScriptFile);
+        } else {
+            _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
+        }
+    } else {
+        _log.Log(LOG_ERROR, "EventSystem: Python not initalized");
+    }
 	//Py_Finalize();
 }
+
 #endif // ENABLE_PYTHON
 
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
@@ -2851,14 +2844,14 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, "svalue");
 			lua_pushstring(lua_state, sValue);
 			lua_rawset(lua_state, -3);
-			
+
 			lua_pushstring(lua_state, "nvalue");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged => 
-			lua_pushstring(lua_state, "name"); 
+			// replace devicechanged =>
+			lua_pushstring(lua_state, "name");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 			*/
@@ -2868,7 +2861,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 
 	exportDeviceStatesToLua(lua_state);
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;

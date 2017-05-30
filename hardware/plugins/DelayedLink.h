@@ -10,7 +10,7 @@
 #    undefine WITH_THREAD
 #endif
 #include <Python.h>
-#include <structmember.h> 
+#include <structmember.h>
 #include <frameobject.h>
 
 #include "../../main/Helper.h"
@@ -96,6 +96,11 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
+
+#ifdef ENABLE_PYTHON
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleString, const char*);
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFile, FILE* COMMA const char*);
+#endif
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -185,6 +190,12 @@ namespace Plugins {
 #ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
+
+#ifdef ENABLE_PYTHON
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFile);
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleString);
+#endif
+
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -337,4 +348,10 @@ extern	SharedLibraryProxy* pythonLib;
 
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
 #define _Py_NoneStruct			pythonLib->_Py_NoneStruct
+
+#ifdef ENABLE_PYTHON
+// #define PyRun_SimpleString      pythonLib->PyRun_SimpleString
+// #define PyRun_SimpleFile        pythonLib->PyRun_SimpleFile
+#endif
+
 }

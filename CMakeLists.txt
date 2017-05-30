@@ -263,6 +263,8 @@ main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
+main/EventsPythonModule.cpp
+main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp
@@ -507,7 +509,8 @@ set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
 IF(USE_PYTHON AND PYTHONLIBS_FOUND)
-  find_package(Boost REQUIRED COMPONENTS thread date_time system python)
+  # find_package(Boost REQUIRED COMPONENTS thread date_time system python)
+  find_package(Boost REQUIRED COMPONENTS thread date_time system)
 else()
   find_package(Boost REQUIRED COMPONENTS thread date_time system)
 endif(USE_PYTHON AND PYTHONLIBS_FOUND)
