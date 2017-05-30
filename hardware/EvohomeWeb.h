@@ -13,11 +13,6 @@
 #pragma once
 
 #include "EvohomeBase.h"
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <map>
 #include "../json/json.h"
 
