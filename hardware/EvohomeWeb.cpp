@@ -5,7 +5,7 @@
  *
  *  Copyright 2017 - gordonb3 https://github.com/gordonb3/evohomeclient
  *
- *  Licensed under GNU General Public License 3.0 or later. 
+ *  Licensed under GNU General Public License 3.0 or later.
  *  Some rights reserved. See COPYING, AUTHORS.
  *
  *  @license GPL-3.0+ <https://github.com/gordonb3/evohomeclient/blob/master/LICENSE>
@@ -30,13 +30,15 @@
 #endif
 
 
-extern std::string szUserDataFolder;
+//extern std::string szUserDataFolder;
 
-const uint8_t CEvohomeWeb::m_dczToEvoWebAPIMode[7]={0,2,3,4,6,1,5};
+const uint8_t CEvohomeWeb::m_dczToEvoWebAPIMode[7] = { 0,2,3,4,6,1,5 };
+const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+//const std::string CEvohomeWeb::evo_modes[7] = {"Auto", "HeatingOff", "AutoWithEco", "Away", "DayOff", "", "Custom"};
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation):
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation) :
 	m_username(Username),
 	m_password(Password),
 	m_refreshrate(refreshrate),
@@ -45,51 +47,45 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_showlocation(showlocation)
 
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 
-	m_locationId = installation/4096;
-	m_gatewayId = (installation/256)%16;
-	m_systemId = (installation/16)%16;
-	
+	m_locationId = installation / 4096;
+	m_gatewayId = (installation / 256) % 16;
+	m_systemId = (installation / 16) % 16;
+
 	Init();
 }
 
 
 CEvohomeWeb::~CEvohomeWeb(void)
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
 
 
 void CEvohomeWeb::Init()
 {
-	LoginHeaders.clear();
-	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
-	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
-	LoginHeaders.push_back("charsets: utf-8");
+	m_loggedon = false;
+	m_tzoffset = -1;
+	m_lastDST = -1;
+	m_logonfailures = 0;
+	m_bequiet = false;
+	m_szlocationName = "";
+	m_awaysetpoint = 15; // default "Away" setpoint value
+	m_j_fi.clear();
+	m_j_stat.clear();
 
-	m_loggedon=false;
-	m_tzoffset=-1;
-	m_lastDST=-1;
-	m_logonfailures=0;
-	m_bequiet=false;
-	m_szlocationName="";
-	m_awaysetpoint=15; // default "Away" setpoint value
-	j_fi.clear();
-	j_stat.clear();
-
-	m_bOutputLog=false;
+	m_bOutputLog = false;
 }
-
 
 
 bool CEvohomeWeb::StartSession()
 {
 	if (!m_bequiet)
 		_log.Log(LOG_STATUS, "(%s) connect to Evohome server", this->Name.c_str());
-	m_loggedon=false;
-	if (!login(m_username,m_password))
+	m_loggedon = false;
+	if (!login(m_username, m_password))
 	{
 		m_logonfailures++;
 		if (m_logonfailures > LOGONFAILTRESHOLD)
@@ -104,13 +100,14 @@ bool CEvohomeWeb::StartSession()
 		return false;
 	}
 	m_tcs = NULL;
-	if (	(locations.size() > m_locationId) &&
-		(locations[m_locationId].gateways.size() > m_gatewayId) &&
-		(locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems.size() > m_systemId) 
-	   )
+	if (
+		(m_locations.size() > m_locationId) &&
+		(m_locations[m_locationId].gateways.size() > m_gatewayId) &&
+		(m_locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems.size() > m_systemId)
+		)
 	{
-		m_tcs = &locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems[m_systemId];
-		m_szlocationName = j_fi["locations"][m_locationId]["locationInfo"]["name"].asString();
+		m_tcs = &m_locations[m_locationId].gateways[m_gatewayId].temperatureControlSystems[m_systemId];
+		m_szlocationName = m_j_fi["locations"][m_locationId]["locationInfo"]["name"].asString();
 	}
 	else
 	{
@@ -119,10 +116,10 @@ bool CEvohomeWeb::StartSession()
 	}
 
 	m_zones[0] = 0;
-	m_loggedon=true;
-	m_logonfailures=0;
+	m_loggedon = true;
+	m_logonfailures = 0;
 	m_sessiontimer = mytime(NULL) + 3600 - m_refreshrate; // Honeywell will drop our session after an hour
-	m_bequiet=false;
+	m_bequiet = false;
 	return true;
 }
 
@@ -134,7 +131,7 @@ bool CEvohomeWeb::StartHardware()
 	if (!m_thread)
 		return false;
 	m_stoprequested = false;
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	return true;
 }
@@ -142,13 +139,13 @@ bool CEvohomeWeb::StartHardware()
 
 bool CEvohomeWeb::StopHardware()
 {
-	if (m_thread!=NULL)
+	if (m_thread != NULL)
 	{
 		assert(m_thread);
 		m_stoprequested = true;
 		m_thread->join();
 	}
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 	return true;
 }
 
@@ -163,50 +160,50 @@ void CEvohomeWeb::Do_Work()
 		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 10 == 0) {
-			m_LastHeartbeat=mytime(NULL);
-			if ( m_loggedon && (m_LastHeartbeat > m_sessiontimer) ) // discard our session with the honeywell server
+			m_LastHeartbeat = mytime(NULL);
+			if (m_loggedon && (m_LastHeartbeat > m_sessiontimer)) // discard our session with the honeywell server
 			{
 				m_loggedon = false;
 				m_bequiet = true;
 			}
 		}
-		if ( (sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) )
+		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures))
 		{
 			GetStatus();
 			int pollcounter = LOGONFAILTRESHOLD;
 		}
 	}
-	_log.Log(LOG_STATUS,"(%s) Worker stopped...", this->Name.c_str());
+	_log.Log(LOG_STATUS, "(%s) Worker stopped...", this->Name.c_str());
 }
 
 
 bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if(!pdata)
+	if (!pdata)
 		return false;
 	if (!m_loggedon && !StartSession())
 		return false;
-	if (j_stat.isNull() && !GetStatus())
+	if (m_j_stat.isNull() && !GetStatus())
 		return false;
 
-	REVOBUF *tsen=(REVOBUF*)pdata;
+	REVOBUF *tsen = (REVOBUF*)pdata;
 	switch (pdata[1])
 	{
-		case pTypeEvohome:
-			if (length<sizeof(REVOBUF::_tEVOHOME1))
-				return false;
-			return SetSystemMode(tsen->EVOHOME1.status);
-			break;
-		case pTypeEvohomeZone:
-			if (length<sizeof(REVOBUF::_tEVOHOME2))
-				return false;
-			return SetSetpoint(pdata);
-			break;
-		case pTypeEvohomeWater:
-			if (length<sizeof(REVOBUF::_tEVOHOME2))
-				return false;
-			return SetDHWState(pdata);
-			break;
+	case pTypeEvohome:
+		if (length < sizeof(REVOBUF::_tEVOHOME1))
+			return false;
+		return SetSystemMode(tsen->EVOHOME1.status);
+		break;
+	case pTypeEvohomeZone:
+		if (length < sizeof(REVOBUF::_tEVOHOME2))
+			return false;
+		return SetSetpoint(pdata);
+		break;
+	case pTypeEvohomeWater:
+		if (length < sizeof(REVOBUF::_tEVOHOME2))
+			return false;
+		return SetDHWState(pdata);
+		break;
 	}
 	return false; // bad command
 }
@@ -223,13 +220,13 @@ bool CEvohomeWeb::GetStatus()
 	}
 
 	if (m_bOutputLog)
-		_log.Log(LOG_NORM,"(%s) fetch data from server", this->Name.c_str());
+		_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
 
 	// system status
 	DecodeControllerMode(m_tcs);
 
 	// cycle all zones for status
-	for (std::map<int, zone>::iterator it=m_tcs->zones.begin(); it!=m_tcs->zones.end(); ++it)
+	for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 		DecodeZone(&m_tcs->zones[it->first]);
 
 	// hot water status
@@ -246,36 +243,36 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 	std::string newmode = GetWebAPIModeName(sysmode);
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
-		_log.Log(LOG_NORM,"(%s) changed system status to %s", this->Name.c_str(), GetControllerModeName(sysmode));
+		_log.Log(LOG_NORM, "(%s) changed system status to %s", this->Name.c_str(), GetControllerModeName(sysmode));
 
 		if (newmode == "HeatingOff")
 		{
 			// cycle my zones to reflect the HeatingOff mode
-			for (std::map<int, zone>::iterator it=m_tcs->zones.begin(); it!=m_tcs->zones.end(); ++it)
+			for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 			{
 				zone* hz = &m_tcs->zones[it->first];
 				std::string zoneId = (*hz->status)["zoneId"].asString();
 				std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
-				unsigned long evoID=atol(zoneId.c_str());
+				unsigned long evoID = atol(zoneId.c_str());
 				std::stringstream ssUpdateStat;
 				ssUpdateStat << temperature << ";5;HeatingOff";
 				std::string sdevname;
-				uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 			}
 			return true;
 		}
 
 		// cycle my zones to restore scheduled temps
-		for (std::map<int, zone>::iterator it=m_tcs->zones.begin(); it!=m_tcs->zones.end(); ++it)
+		for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 		{
 			std::string szuntil, szsetpoint;
 			double setpoint;
 			zone* hz = &m_tcs->zones[it->first];
 
-			if ( (!hz->schedule.isNull()) || get_schedule(hz->zoneId) )
+			if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
 			{
-				szuntil=local_to_utc(get_next_switchpoint_ex(hz->schedule,szsetpoint));
-				setpoint = strtod(szsetpoint.c_str(),NULL);
+				szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
+				setpoint = strtod(szsetpoint.c_str(), NULL);
 			}
 			if (newmode == "AutoWithEco")
 				setpoint -= 3;
@@ -286,20 +283,20 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 			if (newmode == "Away")
 				setpoint = m_awaysetpoint;
-			
+
 			std::string zoneId = (*hz->status)["zoneId"].asString();
 			std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
-			unsigned long evoID=atol(zoneId.c_str());
+			unsigned long evoID = atol(zoneId.c_str());
 			std::stringstream ssUpdateStat;
 			ssUpdateStat << temperature << ";" << setpoint << ";FollowSchedule";
 			if (m_showschedule)
 				ssUpdateStat << ";" << szuntil;
 			std::string sdevname;
-			uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
 		return true;
-	}	
-	_log.Log(LOG_ERROR,"(%s) error changing system status", this->Name.c_str());
+	}
+	_log.Log(LOG_ERROR, "(%s) error changing system status", this->Name.c_str());
 	m_loggedon = false;
 	return false;
 }
@@ -307,16 +304,16 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 bool CEvohomeWeb::SetSetpoint(const char *pdata)
 {
-	REVOBUF *pEvo=(REVOBUF*)pdata;
+	REVOBUF *pEvo = (REVOBUF*)pdata;
 
 	std::stringstream ssID;
-	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3);
+	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
 	std::string zoneId(ssID.str());
 
-	zone* hz=get_zone_by_ID(zoneId);
+	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL) // zone number not known by installation (manually added?)
 	{
-		_log.Log(LOG_ERROR,"(%s) attempt to change setpoint on unknown zone", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) attempt to change setpoint on unknown zone", this->Name.c_str());
 		return false;
 	}
 
@@ -324,29 +321,29 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 	{
 		if (!cancel_temperature_override(zoneId))
 			return false;
-		
+
 		std::string szsetpoint, szuntil;
-		if ( (!hz->schedule.isNull()) || get_schedule(hz->zoneId) )
+		if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
 		{
-			szuntil=local_to_utc(get_next_switchpoint_ex(hz->schedule,szsetpoint));
-			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(),NULL)*100);
+			szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
+			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
 		}
 
-		if ( (m_showschedule) && (!hz->schedule.isNull()) )
+		if ((m_showschedule) && (!hz->schedule.isNull()))
 		{
-			pEvo->EVOHOME2.year=(uint16_t)(atoi(szuntil.substr(0,4).c_str()));
-			pEvo->EVOHOME2.month=(uint8_t)(atoi(szuntil.substr(5,2).c_str()));
-			pEvo->EVOHOME2.day=(uint8_t)(atoi(szuntil.substr(8,2).c_str()));
-			pEvo->EVOHOME2.hrs=(uint8_t)(atoi(szuntil.substr(11,2).c_str()));
-			pEvo->EVOHOME2.mins=(uint8_t)(atoi(szuntil.substr(14,2).c_str()));
+			pEvo->EVOHOME2.year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
+			pEvo->EVOHOME2.month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
+			pEvo->EVOHOME2.day = (uint8_t)(atoi(szuntil.substr(8, 2).c_str()));
+			pEvo->EVOHOME2.hrs = (uint8_t)(atoi(szuntil.substr(11, 2).c_str()));
+			pEvo->EVOHOME2.mins = (uint8_t)(atoi(szuntil.substr(14, 2).c_str()));
 		}
 		else
-			pEvo->EVOHOME2.year=0;
+			pEvo->EVOHOME2.year = 0;
 		return true;
 	}
 
-	int temperature_int = (int)pEvo->EVOHOME2.temperature/100;
-	int temperature_frac = (int)pEvo->EVOHOME2.temperature%100;
+	int temperature_int = (int)pEvo->EVOHOME2.temperature / 100;
+	int temperature_frac = (int)pEvo->EVOHOME2.temperature % 100;
 	std::stringstream s_setpoint;
 	s_setpoint << temperature_int << "." << temperature_frac;
 
@@ -367,21 +364,21 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 {
 	if (!has_dhw(m_tcs)) // Installation has no Hot Water device
 	{
-		_log.Log(LOG_ERROR,"(%s) attempt to set state on non existing Hot Water device", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) attempt to set state on non existing Hot Water device", this->Name.c_str());
 		return false;
 	}
 
-	REVOBUF *pEvo=(REVOBUF*)pdata;
+	REVOBUF *pEvo = (REVOBUF*)pdata;
 
 	std::stringstream ssID;
-	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3);
+	ssID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
 	std::string dhwId(ssID.str());
 
-	std::string DHWstate=(pEvo->EVOHOME2.temperature==0)?"off":"on";
+	std::string DHWstate = (pEvo->EVOHOME2.temperature == 0) ? "off" : "on";
 
 	if ((pEvo->EVOHOME2.mode) == 0) // cancel override (web front end does not appear to support this?)
 	{
-		DHWstate="auto";
+		DHWstate = "auto";
 	}
 	if ((pEvo->EVOHOME2.mode) <= 1) // permanent override
 	{
@@ -398,30 +395,30 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(),NULL));
+	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
 	std::map<std::string, std::string> ret;
-	uint8_t sysmode=0;
+	uint8_t sysmode = 0;
 
 	ret["systemMode"] = (*tcs->status)["systemModeStatus"]["mode"].asString();
 
-	while (sysmode<7 && strcmp(ret["systemMode"].c_str(),m_szWebAPIMode[sysmode]) != 0)
+	while (sysmode < 7 && strcmp(ret["systemMode"].c_str(), m_szWebAPIMode[sysmode]) != 0)
 		sysmode++;
 
 	REVOBUF tsen;
-	memset(&tsen,0,sizeof(REVOBUF));
-	tsen.EVOHOME1.len=sizeof(tsen.EVOHOME1)-1;
-	tsen.EVOHOME1.type=pTypeEvohome;
-	tsen.EVOHOME1.subtype=sTypeEvohome;
-	RFX_SETID3(ID,tsen.EVOHOME1.id1,tsen.EVOHOME1.id2,tsen.EVOHOME1.id3);
-	tsen.EVOHOME1.mode=0; // web API does not support temp override of controller mode
-	tsen.EVOHOME1.status=sysmode;
+	memset(&tsen, 0, sizeof(REVOBUF));
+	tsen.EVOHOME1.len = sizeof(tsen.EVOHOME1) - 1;
+	tsen.EVOHOME1.type = pTypeEvohome;
+	tsen.EVOHOME1.subtype = sTypeEvohome;
+	RFX_SETID3(ID, tsen.EVOHOME1.id1, tsen.EVOHOME1.id2, tsen.EVOHOME1.id3);
+	tsen.EVOHOME1.mode = 0; // web API does not support temp override of controller mode
+	tsen.EVOHOME1.status = sysmode;
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME1, "Controller mode", -1);
 
-	if ( GetControllerName().empty() || m_updatedev )
+	if (GetControllerName().empty() || m_updatedev)
 	{
 		ret["modelType"] = (*tcs->installationInfo)["modelType"].asString();
 		SetControllerName(ret["modelType"]);
-		if(ret["modelType"].empty())
+		if (ret["modelType"].empty())
 			return;
 
 		std::string devname;
@@ -437,8 +434,8 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			// also change lastupdate time to allow the web frontend to pick up the change
 			time_t now = mytime(NULL);
 			struct tm ltime;
-			localtime_r(&now,&ltime);
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			localtime_r(&now, &ltime);
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -452,9 +449,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	Json::Value::Members keys1, keys2;
 	keys1 = (*hz->status).getMemberNames();
 	for (size_t i = 0; i < keys1.size(); ++i) {
-		if ( (keys1[i]=="zoneId") || (keys1[i]=="name") )
+		if ((keys1[i] == "zoneId") || (keys1[i] == "name"))
 			zonedata[keys1[i]] = (*hz->status)[keys1[i]].asString();
-		else if ( (keys1[i]=="temperatureStatus") || (keys1[i]=="heatSetpointStatus") )
+		else if ((keys1[i] == "temperatureStatus") || (keys1[i] == "heatSetpointStatus"))
 		{
 			keys2 = (*hz->status)[keys1[i]].getMemberNames();
 			for (size_t j = 0; j < keys2.size(); ++j) {
@@ -463,11 +460,11 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		}
 	}
 
-	unsigned long evoID=atol(zonedata["zoneId"].c_str());
+	unsigned long evoID = atol(zonedata["zoneId"].c_str());
 	std::stringstream ssUpdateStat;
-	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString()=="Away")
-		m_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(),NULL);
-	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString()=="HeatingOff")
+	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString() == "Away")
+		m_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(), NULL);
+	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString() == "HeatingOff")
 		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << "HeatingOff";
 	else
 	{
@@ -479,9 +476,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	}
 
 	std::string sdevname;
-	uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, zonedata["zoneId"].c_str(),GetUnit_by_ID(evoID),pTypeEvohomeZone,sTypeEvohomeZone,10,255,0,ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zonedata["zoneId"].c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 
-	if (m_updatedev && (DevRowIdx!=-1))
+	if (m_updatedev && (DevRowIdx != -1))
 	{
 		std::string ndevname;
 		if (m_showlocation)
@@ -489,11 +486,11 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		else
 			ndevname = zonedata["name"];
 
-		if (sdevname!=ndevname)
+		if (sdevname != ndevname)
 		{
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
-			if (sdevname.find("zone ")!=std::string::npos)
-				_log.Log(LOG_STATUS,"(%s) register new zone '%c'", this->Name.c_str(), ndevname.c_str());
+			if (sdevname.find("zone ") != std::string::npos)
+				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ndevname.c_str());
 		}
 	}
 }
@@ -503,12 +500,12 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
 	// Hot Water is essentially just another zone
 	std::map<std::string, std::string> dhwdata;
-	if ( tcs->status->isMember("dhw") )
+	if (tcs->status->isMember("dhw"))
 	{
 		dhwdata["until"] = "";
 		dhwdata["dhwId"] = (*tcs->status)["dhw"]["dhwId"].asString();
 		dhwdata["temperature"] = (*tcs->status)["dhw"]["temperatureStatus"]["temperature"].asString();
-		if ( tcs->status->isMember("stateStatus") )
+		if (tcs->status->isMember("stateStatus"))
 		{
 			dhwdata["state"] = (*tcs->status)["stateStatus"]["state"].asString();
 			dhwdata["mode"] = (*tcs->status)["stateStatus"]["mode"].asString();
@@ -532,13 +529,13 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		if (result.size() < 1) // create device
 		{
 			std::string sdevname;
-			uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID,dhwdata["dhwId"].c_str(),1,pTypeEvohomeWater,sTypeEvohomeWater,10,255,50,"0.0;Off;Auto",sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, dhwdata["dhwId"].c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname);
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 		}
-		else if ( (result[0][1]!=dhwdata["dhwId"]) || (result[0][2]!=ndevname) )
+		else if ((result[0][1] != dhwdata["dhwId"]) || (result[0][2] != ndevname))
 		{
 			uint64_t DevRowIdx;
-			std::stringstream s_str( result[0][0] );
+			std::stringstream s_str(result[0][0]);
 			s_str >> DevRowIdx;
 			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q',Name='%q' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
 		}
@@ -552,7 +549,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		ssUpdateStat << ";" << dhwdata["until"];
 
 	std::string sdevname;
-	uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID, dhwdata["dhwId"].c_str(),1,pTypeEvohomeWater,sTypeEvohomeWater,10,255,50,ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, dhwdata["dhwId"].c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
 }
 
 
@@ -569,19 +566,19 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 		result = m_sql.safe_query(
 			"SELECT Unit,DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) ORDER BY Unit",
 			this->m_HwdID, pTypeEvohomeZone);
-		for (row=1; row <= m_nMaxZones; row++)
+		for (row = 1; row <= m_nMaxZones; row++)
 			m_zones[row] = 0;
-		for (row=0; row < result.size(); row++)
+		for (row = 0; row < result.size(); row++)
 		{
-			int unit = atoi(result[row][0].c_str());	
+			int unit = atoi(result[row][0].c_str());
 			m_zones[unit] = atol(result[row][1].c_str());
 			if (m_zones[unit] == (unsigned long)(unit + 92000)) // mark manually added, unlinked zone as free
 				m_zones[unit] = 0;
 		}
 		m_zones[0] = 1;
 	}
-	unsigned char unit=0;
-	for (row=1; row <= m_nMaxZones; row++)
+	unsigned char unit = 0;
+	for (row = 1; row <= m_nMaxZones; row++)
 	{
 		unit++;
 		if (m_zones[row] == evoID)
@@ -589,17 +586,17 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 	}
 	if (m_updatedev) // create/update and return the first free unit
 	{
-		unit=0;
-		for (row=1; row <= m_nMaxZones; row++)
+		unit = 0;
+		for (row = 1; row <= m_nMaxZones; row++)
 		{
 			unit++;
 			if (m_zones[row] == 0)
 			{
 				std::string sdevname;
-				unsigned long nid=92000+row;
+				unsigned long nid = 92000 + row;
 				char ID[40];
 				sprintf(ID, "%lu", nid);
-				uint64_t DevRowIdx=m_sql.UpdateValue(this->m_HwdID,ID,unit,pTypeEvohomeZone,sTypeEvohomeZone,10,255,0,"0.0;0.0;Auto",sdevname);
+				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, ID, unit, pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, "0.0;0.0;Auto", sdevname);
 				if (DevRowIdx == -1)
 					return -1;
 				char devname[8];
@@ -610,7 +607,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				return (uint8_t)(unit);
 			}
 		}
-		_log.Log(LOG_ERROR,"(%s) cannot add new zone because you have no free zones left", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) cannot add new zone because you have no free zones left", this->Name.c_str());
 	}
 	return -1;
 }
@@ -639,14 +636,14 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
 	ltime.tm_min = atoi(local_time.substr(14, 2).c_str());
 	ltime.tm_sec = atoi(local_time.substr(17, 2).c_str()) + m_tzoffset;
 	mktime(&ltime);
-	if ((m_lastDST!=ltime.tm_isdst) && (m_lastDST!=-1)) // DST changed - must recalculate timezone offset
+	if ((m_lastDST != ltime.tm_isdst) && (m_lastDST != -1)) // DST changed - must recalculate timezone offset
 	{
 		ltime.tm_hour -= (ltime.tm_isdst - m_lastDST);
-		m_lastDST=ltime.tm_isdst;
-		m_tzoffset=-1;
+		m_lastDST = ltime.tm_isdst;
+		m_tzoffset = -1;
 	}
 	char until[22];
-	sprintf(until,"%04d-%02d-%02dT%02d:%02d:%02dZ",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
+	sprintf(until, "%04d-%02d-%02dT%02d:%02d:%02dZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 	return std::string(until);
 }
 
@@ -655,21 +652,17 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
  * Evohome client API starts here
  */
 
-/*
- * Copyright (c) 2016 Gordon Bos <gordon@bosvangennip.nl> All rights reserved.
- *
- * Json client for UK/EMEA Evohome API
- *
- *
- * Source code subject to GNU GENERAL PUBLIC LICENSE version 3
- */
+ /*
+  * Copyright (c) 2016 Gordon Bos <gordon@bosvangennip.nl> All rights reserved.
+  *
+  * Json client for UK/EMEA Evohome API
+  *
+  *
+  * Source code subject to GNU GENERAL PUBLIC LICENSE version 3
+  */
 
 
 #define EVOHOME_HOST "https://tccna.honeywell.com"
-
-
-const std::string CEvohomeWeb::weekdays[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-//const std::string CEvohomeWeb::evo_modes[7] = {"Auto", "HeatingOff", "AutoWithEco", "Away", "DayOff", "", "Custom"};
 
 
 /************************************************************************
@@ -680,7 +673,7 @@ const std::string CEvohomeWeb::weekdays[7] = {"Sunday", "Monday", "Tuesday", "We
 
 bool CEvohomeWeb::login(std::string user, std::string password)
 {
-	auth_info.clear();
+	m_auth_info.clear();
 
 	std::stringstream pdata;
 	pdata << "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
@@ -693,10 +686,15 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 	pdata << "&Password=" << CURLEncode::URLEncode(password);
 	pdata << "&Connection=Keep-Alive";
 
+	std::vector<std::string> LoginHeaders;
+	LoginHeaders.push_back("Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=");
+	LoginHeaders.push_back("Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	LoginHeaders.push_back("charsets: utf-8");
+
 	std::string s_res;
 	if (!HTTPClient::POST(EVOHOME_HOST"/Auth/OAuth/Token", pdata.str(), LoginHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"(%s) HTTP client error at login!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at login!", this->Name.c_str());
 		return false;
 	}
 
@@ -713,22 +711,22 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 			i++;
 			c = html[i];
 		}
-		_log.Log(LOG_ERROR,"(%s) login failed with message: %s", this->Name.c_str(), edata.str().c_str());
+		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", this->Name.c_str(), edata.str().c_str());
 		return false;
 	}
 
 	Json::Value j_login;
 	Json::Reader jReader;
-	bool ret=jReader.parse(s_res.c_str(),j_login);
+	bool ret = jReader.parse(s_res.c_str(), j_login);
 
-	std::string szError="";
+	std::string szError = "";
 	if (j_login.isMember("error"))
 		szError = j_login["error"].asString();
 	if (j_login.isMember("message"))
 		szError = j_login["message"].asString();
 	if (!szError.empty())
 	{
-		_log.Log(LOG_ERROR,"(%s) login failed with message: %s", this->Name.c_str(), szError.c_str());
+		_log.Log(LOG_ERROR, "(%s) login failed with message: %s", this->Name.c_str(), szError.c_str());
 		return false;
 	}
 
@@ -736,36 +734,36 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
-	SessionHeaders.clear();
-	SessionHeaders.push_back(atoken.str());
-	SessionHeaders.push_back("applicationId: b013aa26-9724-4dbd-8897-048b9aada249");
-	SessionHeaders.push_back("accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
-	SessionHeaders.push_back("content-type: application/json");
-	SessionHeaders.push_back("charsets: utf-8");
+	m_SessionHeaders.clear();
+	m_SessionHeaders.push_back(atoken.str());
+	m_SessionHeaders.push_back("applicationId: b013aa26-9724-4dbd-8897-048b9aada249");
+	m_SessionHeaders.push_back("accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml");
+	m_SessionHeaders.push_back("content-type: application/json");
+	m_SessionHeaders.push_back("charsets: utf-8");
 
 	return user_account();
 }
 
 
-/* 
+/*
  * Retrieve evohome user info
  */
 bool CEvohomeWeb::user_account()
 {
-	account_info.clear();
+	m_account_info.clear();
 	std::string s_res;
-	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", SessionHeaders, s_res))
+	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"(%s) HTTP client error at retrieve user account info!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve user account info!", this->Name.c_str());
 		return false;
 	}
 	Json::Value j_account;
 	Json::Reader jReader;
-	bool ret=jReader.parse(s_res.c_str(),j_account);
+	bool ret = jReader.parse(s_res.c_str(), j_account);
 
 	Json::Value::Members keys = j_account.getMemberNames();
 	for (size_t i = 0; i < keys.size(); ++i) {
-		account_info[keys[i]] = j_account[keys[i]].asString();
+		m_account_info[keys[i]] = j_account[keys[i]].asString();
 	}
 
 	return true;
@@ -780,8 +778,8 @@ bool CEvohomeWeb::user_account()
 
 void CEvohomeWeb::get_zones(int location, int gateway, int temperatureControlSystem)
 {
-	locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones.clear();
-	Json::Value *j_tcs = locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].installationInfo;
+	m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones.clear();
+	Json::Value *j_tcs = m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].installationInfo;
 
 	if (!(*j_tcs)["zones"].isArray())
 		return;
@@ -789,21 +787,21 @@ void CEvohomeWeb::get_zones(int location, int gateway, int temperatureControlSys
 	size_t l = (*j_tcs)["zones"].size();
 	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo =  &(*j_tcs)["zones"][(int)(i)];
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = (*j_tcs)["zones"][(int)(i)]["zoneId"].asString();
+		m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].installationInfo = &(*j_tcs)["zones"][(int)(i)];
+		m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].zoneId = (*j_tcs)["zones"][(int)(i)]["zoneId"].asString();
 
 
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].systemId = locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].systemId;
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].gatewayId = locations[location].gateways[gateway].gatewayId;
-		locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].locationId = locations[location].locationId;
+		m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].systemId = m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].systemId;
+		m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].gatewayId = m_locations[location].gateways[gateway].gatewayId;
+		m_locations[location].gateways[gateway].temperatureControlSystems[temperatureControlSystem].zones[i].locationId = m_locations[location].locationId;
 	}
 }
 
 
 void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 {
-	locations[location].gateways[gateway].temperatureControlSystems.clear();
-	Json::Value *j_gw = locations[location].gateways[gateway].installationInfo;
+	m_locations[location].gateways[gateway].temperatureControlSystems.clear();
+	Json::Value *j_gw = m_locations[location].gateways[gateway].installationInfo;
 
 	if (!(*j_gw)["temperatureControlSystems"].isArray())
 		return;
@@ -811,10 +809,10 @@ void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 	size_t l = (*j_gw)["temperatureControlSystems"].size();
 	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo = &(*j_gw)["temperatureControlSystems"][(int)(i)];
-		locations[location].gateways[gateway].temperatureControlSystems[i].systemId = (*j_gw)["temperatureControlSystems"][(int)(i)]["systemId"].asString();
-		locations[location].gateways[gateway].temperatureControlSystems[i].gatewayId = locations[location].gateways[gateway].gatewayId;
-		locations[location].gateways[gateway].temperatureControlSystems[i].locationId = locations[location].locationId;
+		m_locations[location].gateways[gateway].temperatureControlSystems[i].installationInfo = &(*j_gw)["temperatureControlSystems"][(int)(i)];
+		m_locations[location].gateways[gateway].temperatureControlSystems[i].systemId = (*j_gw)["temperatureControlSystems"][(int)(i)]["systemId"].asString();
+		m_locations[location].gateways[gateway].temperatureControlSystems[i].gatewayId = m_locations[location].gateways[gateway].gatewayId;
+		m_locations[location].gateways[gateway].temperatureControlSystems[i].locationId = m_locations[location].locationId;
 
 		get_zones(location, gateway, i);
 	}
@@ -823,8 +821,8 @@ void CEvohomeWeb::get_temperatureControlSystems(int location, int gateway)
 
 void CEvohomeWeb::get_gateways(int location)
 {
-	locations[location].gateways.clear();
-	Json::Value *j_loc = locations[location].installationInfo;
+	m_locations[location].gateways.clear();
+	Json::Value *j_loc = m_locations[location].installationInfo;
 
 	if (!(*j_loc)["gateways"].isArray())
 		return;
@@ -832,25 +830,25 @@ void CEvohomeWeb::get_gateways(int location)
 	size_t l = (*j_loc)["gateways"].size();
 	for (size_t i = 0; i < l; ++i)
 	{
-		locations[location].gateways[i].installationInfo = &(*j_loc)["gateways"][(int)(i)];
-		locations[location].gateways[i].gatewayId = (*j_loc)["gateways"][(int)(i)]["gatewayInfo"]["gatewayId"].asString();
-		locations[location].gateways[i].locationId = locations[location].locationId;
+		m_locations[location].gateways[i].installationInfo = &(*j_loc)["gateways"][(int)(i)];
+		m_locations[location].gateways[i].gatewayId = (*j_loc)["gateways"][(int)(i)]["gatewayInfo"]["gatewayId"].asString();
+		m_locations[location].gateways[i].locationId = m_locations[location].locationId;
 
-		get_temperatureControlSystems(location,i);
+		get_temperatureControlSystems(location, i);
 	}
 }
 
 
 bool CEvohomeWeb::full_installation()
 {
-	locations.clear();
+	m_locations.clear();
 	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/installationInfo?userId=" << account_info["userId"] << "&includeTemperatureControlSystems=True";
+	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/installationInfo?userId=" << m_account_info["userId"] << "&includeTemperatureControlSystems=True";
 
 	std::string s_res;
-	if (!HTTPClient::GET(url.str(), SessionHeaders, s_res))
+	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"(%s) HTTP client error at retrieve installation!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at retrieve installation!", this->Name.c_str());
 		return false;
 	}
 
@@ -858,16 +856,16 @@ bool CEvohomeWeb::full_installation()
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;
-	bool ret=jReader.parse(ss_jdata.str(),j_fi);
+	bool ret = jReader.parse(ss_jdata.str(), m_j_fi);
 
-	if (!j_fi["locations"].isArray())
+	if (!m_j_fi["locations"].isArray())
 		return false; // invalid return
 
-	size_t l = j_fi["locations"].size();
+	size_t l = m_j_fi["locations"].size();
 	for (size_t i = 0; i < l; ++i)
 	{
-		locations[i].installationInfo = &j_fi["locations"][(int)(i)];
-		locations[i].locationId = j_fi["locations"][(int)(i)]["locationInfo"]["locationId"].asString();
+		m_locations[i].installationInfo = &m_j_fi["locations"][(int)(i)];
+		m_locations[i].locationId = m_j_fi["locations"][(int)(i)]["locationInfo"]["locationId"].asString();
 
 		get_gateways(i);
 	}
@@ -883,12 +881,11 @@ bool CEvohomeWeb::full_installation()
 
 bool CEvohomeWeb::get_status(std::string locationId)
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		return false;
-	size_t i;
-	for (i = 0; i < (int)locations.size(); i++)
+	for (size_t i = 0; i < m_locations.size(); i++)
 	{
-		if (locations[i].locationId == locationId)
+		if (m_locations[i].locationId == locationId)
 			return get_status(i);
 	}
 	return false;
@@ -896,23 +893,23 @@ bool CEvohomeWeb::get_status(std::string locationId)
 bool CEvohomeWeb::get_status(int location)
 {
 	Json::Value *j_loc, *j_gw, *j_tcs;
-	if ( (locations.size() == 0) || locations[location].locationId.empty() )
+	if ((m_locations.size() == 0) || m_locations[location].locationId.empty())
 		return false;
 
 	bool valid_json = true;
 	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/" << locations[location].locationId << "/status?includeTemperatureControlSystems=True";
+	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/" << m_locations[location].locationId << "/status?includeTemperatureControlSystems=True";
 	std::string s_res;
-	if (!HTTPClient::GET(url.str(), SessionHeaders, s_res))
+	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))
 	{
-		_log.Log(LOG_ERROR,"(%s) HTTP client error at get status!", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) HTTP client error at get status!", this->Name.c_str());
 		return false;
 	}
 
 	Json::Reader jReader;
-	bool ret=jReader.parse(s_res,j_stat);
-	locations[location].status = &j_stat;
-	j_loc = locations[location].status;
+	bool ret = jReader.parse(s_res, m_j_stat);
+	m_locations[location].status = &m_j_stat;
+	j_loc = m_locations[location].status;
 
 	// get gateway status
 	if ((*j_loc)["gateways"].isArray())
@@ -920,8 +917,8 @@ bool CEvohomeWeb::get_status(int location)
 		size_t lgw = (*j_loc)["gateways"].size();
 		for (size_t igw = 0; igw < lgw; ++igw)
 		{
-			locations[location].gateways[igw].status = &(*j_loc)["gateways"][(int)(igw)];
-			j_gw = locations[location].gateways[igw].status;
+			m_locations[location].gateways[igw].status = &(*j_loc)["gateways"][(int)(igw)];
+			j_gw = m_locations[location].gateways[igw].status;
 
 			// get temperatureControlSystem status
 			if ((*j_gw)["temperatureControlSystems"].isArray())
@@ -929,8 +926,8 @@ bool CEvohomeWeb::get_status(int location)
 				size_t ltcs = (*j_gw)["temperatureControlSystems"].size();
 				for (size_t itcs = 0; itcs < ltcs; itcs++)
 				{
-					locations[location].gateways[igw].temperatureControlSystems[itcs].status = &(*j_gw)["temperatureControlSystems"][(int)(itcs)];
-					j_tcs = locations[location].gateways[igw].temperatureControlSystems[itcs].status;
+					m_locations[location].gateways[igw].temperatureControlSystems[itcs].status = &(*j_gw)["temperatureControlSystems"][(int)(itcs)];
+					j_tcs = m_locations[location].gateways[igw].temperatureControlSystems[itcs].status;
 
 					// get zone status
 					if ((*j_tcs)["zones"].isArray())
@@ -938,7 +935,7 @@ bool CEvohomeWeb::get_status(int location)
 						size_t lz = (*j_tcs)["zones"].size();
 						for (size_t iz = 0; iz < lz; iz++)
 						{
-							locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][(int)(iz)];
+							m_locations[location].gateways[igw].temperatureControlSystems[itcs].zones[iz].status = &(*j_tcs)["zones"][(int)(iz)];
 						}
 					}
 					else
@@ -953,7 +950,7 @@ bool CEvohomeWeb::get_status(int location)
 		valid_json = false;
 
 	if (!valid_json)
-		_log.Log(LOG_ERROR,"(%s) status request did not return a valid response", this->Name.c_str());
+		_log.Log(LOG_ERROR, "(%s) status request did not return a valid response", this->Name.c_str());
 	return valid_json;
 }
 
@@ -966,13 +963,12 @@ bool CEvohomeWeb::get_status(int location)
 
 CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		full_installation();
-	size_t l;
-	for (l = 0; l < locations.size(); l++)
+	for (size_t l = 0; l < m_locations.size(); l++)
 	{
-		if (locations[l].locationId == locationId)
-			return &locations[l];
+		if (m_locations[l].locationId == locationId)
+			return &m_locations[l];
 	}
 	return NULL;
 }
@@ -980,15 +976,14 @@ CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
 
 CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		full_installation();
-	size_t l,g;
-	for (l = 0; l < locations.size(); l++)
+	for (size_t l = 0; l < m_locations.size(); l++)
 	{
-		for (g = 0; g < locations[l].gateways.size(); g++)
+		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
 		{
-			if (locations[l].gateways[g].gatewayId == gatewayId)
-				return &locations[l].gateways[g];
+			if (m_locations[l].gateways[g].gatewayId == gatewayId)
+				return &m_locations[l].gateways[g];
 		}
 	}
 	return NULL;
@@ -997,17 +992,16 @@ CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
 
 CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem_by_ID(std::string systemId)
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		full_installation();
-	size_t l,g,t;
-	for (l = 0; l < locations.size(); l++)
+	for (size_t l = 0; l < m_locations.size(); l++)
 	{
-		for (g = 0; g < locations[l].gateways.size(); g++)
+		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
 		{
-			for (t = 0; t < locations[l].gateways[g].temperatureControlSystems.size(); t++)
+			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
 			{
-				if (locations[l].gateways[g].temperatureControlSystems[t].systemId == systemId)
-					return &locations[l].gateways[g].temperatureControlSystems[t];
+				if (m_locations[l].gateways[g].temperatureControlSystems[t].systemId == systemId)
+					return &m_locations[l].gateways[g].temperatureControlSystems[t];
 			}
 		}
 	}
@@ -1017,19 +1011,18 @@ CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem
 
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		full_installation();
-	size_t l,g,t,z;
-	for (l = 0; l < locations.size(); l++)
+	for (size_t l = 0; l < m_locations.size(); l++)
 	{
-		for (g = 0; g < locations[l].gateways.size(); g++)
+		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
 		{
-			for (t = 0; t < locations[l].gateways[g].temperatureControlSystems.size(); t++)
+			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
 			{
-				for (z = 0; z < locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
+				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
 				{
-					if (locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
-						return &locations[l].gateways[g].temperatureControlSystems[t].zones[z];
+					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
+						return &m_locations[l].gateways[g].temperatureControlSystems[t].zones[z];
 				}
 			}
 		}
@@ -1040,17 +1033,16 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 
 CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_zone_temperatureControlSystem(CEvohomeWeb::zone* zone)
 {
-	size_t l,g,t,z;
-	for (l = 0; l < locations.size(); l++)
+	for (size_t l = 0; l < m_locations.size(); l++)
 	{
-		for (g = 0; g < locations[l].gateways.size(); g++)
+		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
 		{
-			for (t = 0; t < locations[l].gateways[g].temperatureControlSystems.size(); t++)
+			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
 			{
-				for (z = 0; z < locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
+				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
 				{
-					if (locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zone->zoneId)
-						return &locations[l].gateways[g].temperatureControlSystems[t];
+					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zone->zoneId)
+						return &m_locations[l].gateways[g].temperatureControlSystems[t];
 				}
 			}
 		}
@@ -1070,27 +1062,27 @@ bool CEvohomeWeb::get_schedule(std::string zoneId)
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/schedule";
 	std::string s_res;
-	if ((!HTTPClient::GET(url.str(), SessionHeaders, s_res))||(!s_res.find("\"id\"")))
+	if ((!HTTPClient::GET(url.str(), m_SessionHeaders, s_res)) || (!s_res.find("\"id\"")))
 		return false;
 	Json::Reader jReader;
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-	bool ret=jReader.parse(s_res,get_zone_by_ID(zoneId)->schedule);
+	bool ret = jReader.parse(s_res, get_zone_by_ID(zoneId)->schedule);
 	return true;
 }
 
 
 std::string CEvohomeWeb::get_next_switchpoint(CEvohomeWeb::temperatureControlSystem* tcs, int zone)
 {
-	if ( (tcs->zones[zone].schedule.isNull()) && !get_schedule(tcs->zones[zone].zoneId) )
-			return "";
+	if ((tcs->zones[zone].schedule.isNull()) && !get_schedule(tcs->zones[zone].zoneId))
+		return "";
 	return get_next_switchpoint(tcs->zones[zone].schedule);
 }
 std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 {
-	if ( (hz->schedule.isNull()) && !get_schedule(hz->zoneId) )
-			return "";
+	if ((hz->schedule.isNull()) && !get_schedule(hz->zoneId))
+		return "";
 	return get_next_switchpoint(hz->schedule);
 }
 std::string CEvohomeWeb::get_next_switchpoint(Json::Value schedule)
@@ -1105,30 +1097,30 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 
 	struct tm ltime;
 	time_t now = mytime(NULL);
-	localtime_r(&now,&ltime);
+	localtime_r(&now, &ltime);
 	int year = ltime.tm_year;
 	int month = ltime.tm_mon;
 	int day = ltime.tm_mday;
 	std::string sztime;
-	bool found=false;
+	bool found = false;
 
 	for (uint8_t d = 0; ((d < 7) && !found); d++)
 	{
 		int wday = (ltime.tm_wday + d) % 7;
 		std::string s_wday = (std::string)weekdays[wday];
 		Json::Value* j_day;
-// find day
-		for (size_t i = 0; ( (i < schedule["dailySchedules"].size()) && !found); i++)
+		// find day
+		for (size_t i = 0; ((i < schedule["dailySchedules"].size()) && !found); i++)
 		{
 			j_day = &schedule["dailySchedules"][(int)(i)];
-			if ( ((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_wday) )
+			if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_wday))
 				found = true;
 		}
 		if (!found)
 			continue;
 
-		found=false;
-		for (size_t i = 0; ( (i < (*j_day)["switchpoints"].size()) && !found); ++i)
+		found = false;
+		for (size_t i = 0; ((i < (*j_day)["switchpoints"].size()) && !found); ++i)
 		{
 			sztime = (*j_day)["switchpoints"][(int)(i)]["timeOfDay"].asString();
 			ltime.tm_isdst = -1;
@@ -1146,7 +1138,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 		}
 	}
 	char rdata[30];
-	sprintf(rdata,"%04d-%02d-%02dT%sZ",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,sztime.c_str());
+	sprintf(rdata, "%04d-%02d-%02dT%sZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, sztime.c_str());
 
 	return std::string(rdata);
 }
@@ -1163,7 +1155,7 @@ bool CEvohomeWeb::verify_date(std::string date)
 {
 	if (date.length() < 10)
 		return false;
-	std:: string s_date = date.substr(0,10);
+	std::string s_date = date.substr(0, 10);
 	struct tm mtime;
 	mtime.tm_isdst = -1;
 	mtime.tm_year = atoi(date.substr(0, 4).c_str()) - 1900;
@@ -1173,20 +1165,20 @@ bool CEvohomeWeb::verify_date(std::string date)
 	mtime.tm_min = 0;
 	mtime.tm_sec = 0;
 	time_t ntime = mktime(&mtime);
-	if ( ntime == -1)
+	if (ntime == -1)
 		return false;
 	char rdata[12];
-	sprintf(rdata,"%04d-%02d-%02d",mtime.tm_year+1900,mtime.tm_mon+1,mtime.tm_mday);
+	sprintf(rdata, "%04d-%02d-%02d", mtime.tm_year + 1900, mtime.tm_mon + 1, mtime.tm_mday);
 	return (s_date == std::string(rdata));
 }
 
-	
+
 bool CEvohomeWeb::verify_datetime(std::string datetime)
 {
 	if (datetime.length() < 19)
 		return false;
-	std:: string s_date = datetime.substr(0,10);
-	std:: string s_time = datetime.substr(11,8);
+	std::string s_date = datetime.substr(0, 10);
+	std::string s_time = datetime.substr(11, 8);
 	struct tm mtime;
 	mtime.tm_isdst = -1;
 	mtime.tm_year = atoi(datetime.substr(0, 4).c_str()) - 1900;
@@ -1196,13 +1188,13 @@ bool CEvohomeWeb::verify_datetime(std::string datetime)
 	mtime.tm_min = atoi(datetime.substr(14, 2).c_str());
 	mtime.tm_sec = atoi(datetime.substr(17, 2).c_str());
 	time_t ntime = mktime(&mtime);
-	if ( ntime == -1)
+	if (ntime == -1)
 		return false;
 	char c_date[12];
-	sprintf(c_date,"%04d-%02d-%02d",mtime.tm_year+1900,mtime.tm_mon+1,mtime.tm_mday);
+	sprintf(c_date, "%04d-%02d-%02d", mtime.tm_year + 1900, mtime.tm_mon + 1, mtime.tm_mday);
 	char c_time[12];
-	sprintf(c_time,"%02d:%02d:%02d",mtime.tm_hour,mtime.tm_min,mtime.tm_sec);
-	return ( (s_date == std::string(c_date)) && (s_time == std::string(c_time)) );
+	sprintf(c_time, "%02d:%02d:%02d", mtime.tm_hour, mtime.tm_min, mtime.tm_sec);
+	return ((s_date == std::string(c_date)) && (s_time == std::string(c_time)));
 }
 
 
@@ -1216,12 +1208,12 @@ bool CEvohomeWeb::set_system_mode(std::string systemId, int mode, std::string da
 		data << ",\"TimeUntil\":null,\"Permanent\":true}";
 	else
 	{
-		if ( ! verify_date(date_until) )
+		if (!verify_date(date_until))
 			return false;
-		data << ",\"TimeUntil\":\"" << date_until.substr(0,10) << "T00:00:00Z\",\"Permanent\":false}";
+		data << ",\"TimeUntil\":\"" << date_until.substr(0, 10) << "T00:00:00Z\",\"Permanent\":false}";
 	}
 	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), SessionHeaders, s_res))&&(s_res.find("\"id\"")))
+	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
 }
@@ -1241,12 +1233,12 @@ bool CEvohomeWeb::set_temperature(std::string zoneId, std::string temperature, s
 		data << ",\"SetpointMode\":1,\"TimeUntil\":null}";
 	else
 	{
-		if ( ! verify_datetime(time_until) )
+		if (!verify_datetime(time_until))
 			return false;
-		data << ",\"SetpointMode\":2,\"TimeUntil\":\"" << time_until.substr(0,10) << "T" << time_until.substr(11,8) << "Z\"}";
+		data << ",\"SetpointMode\":2,\"TimeUntil\":\"" << time_until.substr(0, 10) << "T" << time_until.substr(11, 8) << "Z\"}";
 	}
 	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), SessionHeaders, s_res))&&(s_res.find("\"id\"")))
+	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
 }
@@ -1258,7 +1250,7 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/heatSetpoint";
 	std::string s_data = "{\"HeatSetpointValue\":0.0,\"SetpointMode\":0,\"TimeUntil\":null}";
 	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), s_data, SessionHeaders, s_res))&&(s_res.find("\"id\"")))
+	if ((HTTPClient::PUT(url.str(), s_data, m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
 }
@@ -1272,11 +1264,11 @@ bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 
 bool CEvohomeWeb::is_single_heating_system()
 {
-	if (locations.size() == 0)
+	if (m_locations.size() == 0)
 		full_installation();
-	return ( (locations.size() == 1) &&
-		 (locations[0].gateways.size() == 1) &&
-		 (locations[0].gateways[0].temperatureControlSystems.size() == 1) );
+	return ((m_locations.size() == 1) &&
+		(m_locations[0].gateways.size() == 1) &&
+		(m_locations[0].gateways[0].temperatureControlSystems.size() == 1));
 }
 
 
@@ -1296,15 +1288,15 @@ bool CEvohomeWeb::set_dhw_mode(std::string dhwId, std::string mode, std::string 
 			data << ",\"Mode\":1,\"UntilTime\":null}";
 		else
 		{
-			if ( ! verify_datetime(time_until) )
+			if (!verify_datetime(time_until))
 				return false;
-			data << ",\"Mode\":2,\"UntilTime\":\"" << time_until.substr(0,10) << "T" << time_until.substr(11,8) << "Z\"}";
+			data << ",\"Mode\":2,\"UntilTime\":\"" << time_until.substr(0, 10) << "T" << time_until.substr(11, 8) << "Z\"}";
 		}
 	}
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/domesticHotWater/" << dhwId << "/state";
 	std::string s_res;
-	if ((HTTPClient::PUT(url.str(), data.str(), SessionHeaders, s_res))&&(s_res.find("\"id\"")))
+	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
 }
