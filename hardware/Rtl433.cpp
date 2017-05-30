@@ -105,8 +105,8 @@ void CRtl433::Do_Work()
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
 #else
-		szCommand = "rtl_433 " + szFlags + " > /dev/null";
-		pipe = popen(szCommand.c_str(), "r");
+		std::string szCommand = "rtl_433 " + szFlags + " 2>/dev/null";
+		m_hPipe = popen(szCommand.c_str(), "r");
 #endif
 		if (m_hPipe == NULL)
 		{
