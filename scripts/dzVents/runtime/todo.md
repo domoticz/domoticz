@@ -8,3 +8,4 @@
 * todo's checken in code
 * logging section
 * variable events
+* document global_data.helpers

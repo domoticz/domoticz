@@ -412,7 +412,6 @@ describe('event helpers', function()
 			assert.are.same({ 'script_variable1', 'script_variable2',  }, res)
 		end)
 
-
 		it('should return an array of internal scripts for the same trigger', function()
 
 			local modules = helpers.getEventBindings()
@@ -428,7 +427,7 @@ describe('event helpers', function()
 			assert.are.same({'switchScript'}, res)
 		end)
 
-			it('should return internal and external scripts for all triggers', function()
+		it('should return internal and external scripts for all triggers', function()
 				local modules = helpers.getEventBindings()
 				assert.are.same({
 					8,
@@ -468,9 +467,17 @@ describe('event helpers', function()
 				"====================================================="
 			}, messages)
 		end)
-		it('should have proper settings', function()
 
+		it('should have proper settings', function()
 			assert.are.same('http://127.0.0.1:8181', helpers.settings['Domoticz url'])
+
+		end)
+
+		it('should add global helpers to the domoticz object', function()
+
+			local bindings = helpers.getEventBindings()
+
+			assert.is_same('abc', domoticz.helpers.myHelper('a', 'b', 'c')) -- method is defined in global_data.lua
 
 		end)
 	end)
@@ -502,7 +509,6 @@ describe('event helpers', function()
 			assert.is_same('script1: domoticz device device', res)
 		end)
 
-
 		it('should call the event handler for variables', function()
 
 			local bindings = helpers.getEventBindings('variable')
@@ -519,7 +525,6 @@ describe('event helpers', function()
 			-- and catch the results from the function
 			assert.is_same('script_variable1: domoticz myVar1 variable', res)
 		end)
-
 
 		it('should catch errors', function()
 			local bindings = helpers.getEventBindings()
@@ -671,7 +676,6 @@ describe('event helpers', function()
 
 			assert.is_true(dumped)
 		end)
-
 
 		it('should dispatch all variable event scripts', function()
 			local scripts = {}

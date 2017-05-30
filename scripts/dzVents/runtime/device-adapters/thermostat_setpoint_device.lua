@@ -5,7 +5,7 @@ return {
 	name = 'Thermostat setpoint device adapter',
 
 	matches = function (device)
-		return (device.hardwareTypeVal == 15 and device.deviceSubType == 'SetPoint')
+		return device.deviceSubType == 'SetPoint'
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

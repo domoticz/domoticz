@@ -128,9 +128,8 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	function self.callEventHandler(eventHandler, device, variable)
+
 		local useStorage = false
-
-
 
 		if (eventHandler['execute'] ~= nil) then
 
@@ -522,9 +521,12 @@ local function EventHelpers(domoticz, mainMethod)
 						if (_G.TESTMODE) then
 							self.globalsDefinition = globalsDefinition
 						end
-					else
-						utils.log('Globals module has no storage section', utils.LOG_ERROR)
 					end
+
+					if (module.helpers ~= nil) then
+						self.domoticz.helpers = module.helpers
+					end
+
 				else
 					if (type(module) == 'table') then
 						skip = false
