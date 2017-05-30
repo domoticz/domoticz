@@ -961,54 +961,6 @@ bool CEvohomeWeb::get_status(int location)
  *									*
  ************************************************************************/
 
-CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		if (m_locations[l].locationId == locationId)
-			return &m_locations[l];
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			if (m_locations[l].gateways[g].gatewayId == gatewayId)
-				return &m_locations[l].gateways[g];
-		}
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem_by_ID(std::string systemId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
-			{
-				if (m_locations[l].gateways[g].temperatureControlSystems[t].systemId == systemId)
-					return &m_locations[l].gateways[g].temperatureControlSystems[t];
-			}
-		}
-	}
-	return NULL;
-}
-
-
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 {
 	if (m_locations.size() == 0)
@@ -1023,26 +975,6 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 				{
 					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
 						return &m_locations[l].gateways[g].temperatureControlSystems[t].zones[z];
-				}
-			}
-		}
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_zone_temperatureControlSystem(CEvohomeWeb::zone* zone)
-{
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
-			{
-				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
-				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zone->zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t];
 				}
 			}
 		}
@@ -1151,28 +1083,6 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
  ************************************************************************/
 
 
-bool CEvohomeWeb::verify_date(std::string date)
-{
-	if (date.length() < 10)
-		return false;
-	std::string s_date = date.substr(0, 10);
-	struct tm mtime;
-	mtime.tm_isdst = -1;
-	mtime.tm_year = atoi(date.substr(0, 4).c_str()) - 1900;
-	mtime.tm_mon = atoi(date.substr(5, 2).c_str()) - 1;
-	mtime.tm_mday = atoi(date.substr(8, 2).c_str());
-	mtime.tm_hour = 12; // midday time - prevent date shift because of DST
-	mtime.tm_min = 0;
-	mtime.tm_sec = 0;
-	time_t ntime = mktime(&mtime);
-	if (ntime == -1)
-		return false;
-	char rdata[12];
-	sprintf(rdata, "%04d-%02d-%02d", mtime.tm_year + 1900, mtime.tm_mon + 1, mtime.tm_mday);
-	return (s_date == std::string(rdata));
-}
-
-
 bool CEvohomeWeb::verify_datetime(std::string datetime)
 {
 	if (datetime.length() < 19)
@@ -1198,28 +1108,16 @@ bool CEvohomeWeb::verify_datetime(std::string datetime)
 }
 
 
-bool CEvohomeWeb::set_system_mode(std::string systemId, int mode, std::string date_until)
+bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureControlSystem/" << systemId << "/mode";
 	std::stringstream data;
-	data << "{\"SystemMode\":" << mode;
-	if (date_until == "")
-		data << ",\"TimeUntil\":null,\"Permanent\":true}";
-	else
-	{
-		if (!verify_date(date_until))
-			return false;
-		data << ",\"TimeUntil\":\"" << date_until.substr(0, 10) << "T00:00:00Z\",\"Permanent\":false}";
-	}
+	data << "{\"SystemMode\":" << mode << ",\"TimeUntil\":null,\"Permanent\":true}";
 	std::string s_res;
 	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
-}
-bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
-{
-	return set_system_mode(systemId, mode, "");
 }
 
 
@@ -1259,16 +1157,6 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 {
 	return (*tcs->status).isMember("dhw");
-}
-
-
-bool CEvohomeWeb::is_single_heating_system()
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	return ((m_locations.size() == 1) &&
-		(m_locations[0].gateways.size() == 1) &&
-		(m_locations[0].gateways[0].temperatureControlSystems.size() == 1));
 }
 
 
