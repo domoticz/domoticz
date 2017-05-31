@@ -89,8 +89,8 @@ void HTTPClient::SetTimeout(const long timeout)
 
 void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost, const bool tlsv1)
 {
-	m_iVerifyPeer = peer;
-	m_iVerifyHost = host;
+	m_iVerifyPeer = verifypeer;
+	m_iVerifyHost = verifyhost;
 	m_iEnforceTLSv1 = tlsv1;
 }
 
