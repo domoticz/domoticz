@@ -23,6 +23,7 @@
 #include "../httpclient/HTTPClient.h"
 
 #define LOGONFAILTRESHOLD 3
+#define MINPOLINTERVAL 10
 #define MAXPOLINTERVAL 3600
 
 #ifdef _WIN32
@@ -183,13 +184,15 @@ bool CEvohomeWeb::StopHardware()
 
 void CEvohomeWeb::Do_Work()
 {
-	int sec_counter = m_refreshrate - 10;
+	int sec_counter = m_refreshrate - MINPOLINTERVAL;
 	int pollcounter = LOGONFAILTRESHOLD;
 	_log.Log(LOG_STATUS, "(%s) Worker started...", this->Name.c_str());
+	m_lastconnect=0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
+		m_lastconnect++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 			if (m_loggedon && (m_LastHeartbeat > m_sessiontimer)) // discard our session with the honeywell server
@@ -198,10 +201,11 @@ void CEvohomeWeb::Do_Work()
 				m_bequiet = true;
 			}
 		}
-		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures))
+		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
 		{
 			GetStatus();
 			int pollcounter = LOGONFAILTRESHOLD;
+			m_lastconnect=0;
 		}
 	}
 	_log.Log(LOG_STATUS, "(%s) Worker stopped...", this->Name.c_str());
@@ -217,6 +221,7 @@ bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 	if (m_j_stat.isNull() && !GetStatus())
 		return false;
 
+	m_lastconnect=0;
 	REVOBUF *tsen = (REVOBUF*)pdata;
 	switch (pdata[1])
 	{
@@ -461,8 +466,8 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			devname = ret["modelType"];
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
-		if (!result.empty() && (result[0][2] != devname))
+		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name, StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
+		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
 			time_t now = mytime(NULL);
