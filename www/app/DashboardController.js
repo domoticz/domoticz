@@ -1473,7 +1473,9 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SubType == "Alert") {
-											status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
 										}
 										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1574,7 +1576,9 @@ define(['app'], function (app) {
 										}
 										else if (item.SubType == "Alert") {
 											status = item.Data;
-											img = '<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											img = '<img src="images/Alert48_' + aLevel + '.png" height="40" width="40">';
 										}
 										else if (item.Type == "Lux") {
 											status = item.Data;
@@ -3555,7 +3559,9 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SubType == "Alert") {
-										status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+										var aLevel = item.Level;
+										if (aLevel > 4) aLevel = 4;
+										status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
@@ -3661,7 +3667,7 @@ define(['app'], function (app) {
 									var bigtexthtml = "";
 									bigtexthtml += '<span class="value1">';
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
-										//bigtexthtml += item.Usage;
+										bigtexthtml += item.Usage;
 									}
 									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
 										if (parseInt(item.Usage) > 0) {
@@ -3699,8 +3705,6 @@ define(['app'], function (app) {
 										(item.SubType == "RFXMeter counter") ||
 										(item.SubType == "Counter Incremental") ||
 										(item.SubType == "Custom Sensor")
-
-
 									) {
 										bigtexthtml += item.Data;
 									}

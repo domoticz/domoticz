@@ -278,7 +278,7 @@ private:
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	void PluginLoadConfig();
 #endif
 
