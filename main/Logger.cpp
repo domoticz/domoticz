@@ -124,10 +124,9 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
 		timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
 
-#ifndef WIN32
 	if (g_bUseSyslog)
 		bEnableLogTimestamps = false;
-#endif
+
 	if (bEnableLogTimestamps)
 	{
 		sstr << szDate << " ";
@@ -170,14 +169,14 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		syslog(sLogLevel, "%s", sstr.str().c_str());
 	}
 #endif
+	std::string szIntLog = std::string(szDate) + " " + sstr.str();
+
 	if (m_outputfile.is_open())
 	{
 		//output to file
-		m_outputfile << sstr.str() << std::endl;
+		m_outputfile << szIntLog << std::endl;
 		m_outputfile.flush();
 	}
-
-	std::string szIntLog = std::string(szDate) + " " + sstr.str();
 
 	if (m_lastlog.size() >= MAX_LOG_LINE_BUFFER)
 		m_lastlog.erase(m_lastlog.begin());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DelayedLink.h"
+#include "Plugins.h"
 
 #ifndef byte
 typedef unsigned char byte;
@@ -8,106 +9,125 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
-	enum ePluginMessageType {
-		PMT_NULL = 0,
-		PMT_Initialise,
-		PMT_Start,
-		PMT_Directive,
-		PMT_Connected,
-		PMT_Read,
-		PMT_Message,
-		PMT_Heartbeat,
-		PMT_Disconnect,
-		PMT_Command,
-		PMT_Notification,
-		PMT_Stop
-	};
-
-	enum ePluginDirectiveType {
-		PDT_PollInterval = 0,
-		PDT_Transport,
-		PDT_Protocol,
-		PDT_Notifier,
-		PDT_Connect,
-		PDT_Write,
-		PDT_Disconnect,
-		PDT_Settings
-	};
-
-	class CPluginMessage
+	class CPluginMessageBase
 	{
 	public:
-		virtual ~CPluginMessage(void) {};
+		virtual ~CPluginMessageBase(void) {};
 
-		ePluginMessageType		m_Type;
-		ePluginDirectiveType	m_Directive;
-		int						m_HwdID;
-		int						m_Unit;
-		time_t					m_When;
+		CPlugin*	m_pPlugin;
+		int			m_HwdID;
+		int			m_Unit;
+		time_t		m_When;
 
 	protected:
-		CPluginMessage(ePluginMessageType Type, int HwdID) :
-			m_Type(Type), m_HwdID(HwdID), m_Unit(-1) {
+		CPluginMessageBase(CPlugin* pPlugin) : m_pPlugin(pPlugin), m_HwdID(pPlugin->m_HwdID), m_Unit(-1)
+		{
 			m_When = time(0);
 		};
-		CPluginMessage(ePluginMessageType Type, ePluginDirectiveType dType, int HwdID) :
-			m_Type(Type), m_Directive(dType), m_HwdID(HwdID), m_Unit(-1) {
-			m_When = time(0);
+	public:
+		virtual void Process() = 0;
+	};
+
+	// Handles lifecycle management of the Python Connection object
+	class CHasConnection
+	{
+	public:
+		CHasConnection(PyObject* Connection) : m_pConnection(Connection)
+		{
+			Py_XINCREF(m_pConnection);
+		};
+		~CHasConnection()
+		{
+			Py_XDECREF(m_pConnection);
+		}
+		PyObject*	m_pConnection;
+	};
+
+	class InitializeMessage : public CPluginMessageBase
+	{
+	public:
+		InitializeMessage(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
+		virtual void Process()
+		{
+			m_pPlugin->Initialise();
 		};
 	};
 
-	class InitializeMessage : public CPluginMessage
+	// Base callback message class
+	class CCallbackBase : public CPluginMessageBase
 	{
+	protected:
+		std::string	m_Callback;
 	public:
-		InitializeMessage(int HwdID) : CPluginMessage(PMT_Initialise, HwdID) {};
+		CCallbackBase(CPlugin* pPlugin, std::string Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
+		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
+		virtual void Process() { throw "Base callback class Handle called."; };
 	};
 
-	class StartMessage : public CPluginMessage
+	class StartCallback : public CCallbackBase
 	{
 	public:
-		StartMessage(int HwdID) : CPluginMessage(PMT_Start, HwdID) {};
+		StartCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStart") {};
+		virtual void Process()
+		{
+			m_pPlugin->Start();
+			Callback(NULL);
+		};
 	};
 
-	class ConnectedMessage : public CPluginMessage
+	class HeartbeatCallback : public CCallbackBase
 	{
 	public:
-		ConnectedMessage(int HwdID) : CPluginMessage(PMT_Connected, HwdID) {};
-		ConnectedMessage(int HwdID, const int Code, const std::string Text) : CPluginMessage(PMT_Connected, HwdID)
+		HeartbeatCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onHeartbeat") {};
+		virtual void Process()
+		{
+			Callback(NULL);
+		};
+	};
+
+	class ConnectedMessage : public CCallbackBase, public CHasConnection
+	{
+	public:
+		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) {};
+		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection)
 		{
 			m_Status = Code;
 			m_Text = Text;
 		};
 		int						m_Status;
 		std::string				m_Text;
+		virtual void Process()
+		{
+			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, m_Text.c_str()));  // 0 is success else socket failure code
+		};
 	};
 
-	class ReadMessage : public CPluginMessage
+	class ReadMessage : public CPluginMessageBase, public CHasConnection
 	{
 	public:
-		ReadMessage(int HwdID, const int ByteCount, const unsigned char* Data) : CPluginMessage(PMT_Read, HwdID)
+		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
 		{
 			m_Buffer.reserve(ByteCount);
 			m_Buffer.assign(Data, Data + ByteCount);
 		};
 		std::vector<byte>		m_Buffer;
+		virtual void Process() { m_pPlugin->ConnectionRead(this); };
 	};
 
-	class HeartbeatMessage : public CPluginMessage
+	class DisconnectMessage : public CCallbackBase, public CHasConnection
 	{
 	public:
-		HeartbeatMessage(int HwdID) : CPluginMessage(PMT_Heartbeat, HwdID) {};
+		DisconnectMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) {};
+		virtual void Process()
+		{
+			Callback(Py_BuildValue("(O)", m_pConnection));  // 0 is success else socket failure code
+		};
 	};
 
-	class DisconnectMessage : public CPluginMessage
+	class CommandMessage : public CCallbackBase
 	{
 	public:
-		DisconnectMessage(int HwdID) : CPluginMessage(PMT_Disconnect, HwdID) {};
-	};
-
-	class CommandMessage : public CPluginMessage
-	{
-	public:
-		CommandMessage(int HwdID, int Unit, const std::string& Command, const int level, const int hue) : CPluginMessage(PMT_Command, HwdID)
+		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Unit = Unit;
 			m_fLevel = -273.15f;
@@ -115,7 +135,7 @@ namespace Plugins {
 			m_iLevel = level;
 			m_iHue = hue;
 		};
-		CommandMessage(int HwdID, int Unit, const std::string& Command, const float level) : CPluginMessage(PMT_Command, HwdID)
+		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Unit = Unit;
 			m_fLevel = level;
@@ -127,21 +147,35 @@ namespace Plugins {
 		int						m_iHue;
 		int						m_iLevel;
 		float					m_fLevel;
+
+		virtual void Process()
+		{
+			PyObject*	pParams;
+			if (m_fLevel != -273.15f)
+			{
+				pParams = Py_BuildValue("isfi", m_Unit, m_Command.c_str(), m_fLevel, 0);
+			}
+			else
+			{
+				pParams = Py_BuildValue("isii", m_Unit, m_Command.c_str(), m_iLevel, m_iHue);
+			}
+			Callback(pParams);
+		};
 	};
 
-	class ReceivedMessage : public CPluginMessage
+	class ReceivedMessage : public CCallbackBase, public CHasConnection
 	{
 	public:
-		ReceivedMessage(int HwdID, const std::string& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
 		{
 			m_Buffer.reserve(Buffer.length());
 			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
 		};
-		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer) : CPluginMessage(PMT_Message, HwdID), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
 		{
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(int HwdID, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CPluginMessage(PMT_Message, HwdID)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
 			m_Buffer = Buffer;
 			m_Status = Status;
@@ -150,19 +184,40 @@ namespace Plugins {
 		std::vector<byte>		m_Buffer;
 		int						m_Status;
 		PyObject*				m_Object;
+
+		virtual void Process()
+		{
+			if (m_Buffer.size())
+			{
+				PyObject*	pParams;
+				if (m_Object)
+				{
+					PyObject*	pHeaders = m_Object;
+					pParams = Py_BuildValue("Oy#iO", m_pConnection, &m_Buffer[0], m_Buffer.size(), m_Status, pHeaders);
+					Py_XDECREF(pHeaders);
+				}
+				else
+				{
+					Py_INCREF(Py_None);
+					pParams = Py_BuildValue("Oy#iO", m_pConnection, &m_Buffer[0], m_Buffer.size(), m_Status, Py_None);
+				}
+				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+				Callback(pParams);
+			}
+		}
 	};
 
-	class NotificationMessage : public CPluginMessage
+	class NotificationMessage : public CCallbackBase
 	{
 	public:
-		NotificationMessage(int HwdID,
+		NotificationMessage(CPlugin* pPlugin,
 							const std::string& Subject,
 							const std::string& Text,
 							const std::string& Name,
 							const std::string& Status,
 							int Priority,
 							const std::string& Sound,
-							const std::string& ImageFile) : CPluginMessage(PMT_Notification, HwdID)
+							const std::string& ImageFile) : CCallbackBase(pPlugin, "onNotification")
 		{
 			m_Subject = Subject;
 			m_Text = Text;
@@ -180,43 +235,66 @@ namespace Plugins {
 		int						m_Priority;
 		std::string				m_Sound;
 		std::string				m_ImageFile;
+
+		virtual void Process()
+		{
+			PyObject*	pParams = Py_BuildValue("ssssiss", m_Name.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
+			Callback(pParams);
+		};
 	};
 
-	class StopMessage : public CPluginMessage
+	class StopMessage : public CCallbackBase
 	{
 	public:
-		StopMessage(int HwdID) : CPluginMessage(PMT_Stop, HwdID) {};
+		StopMessage(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStop") {};
+		virtual void Process()
+		{
+			Callback(NULL);
+			m_pPlugin->Stop();
+		};
 	};
 
 	// Base directive message class
-	class CDirectiveMessage : public CPluginMessage
+	class CDirectiveBase : public CPluginMessageBase
 	{
 	public:
-		CDirectiveMessage(ePluginDirectiveType dType, int HwdID) : CPluginMessage(PMT_Directive, dType, HwdID) {};
+		CDirectiveBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
+		virtual void Process() { throw "Base directive class Handle called"; };
 	};
 
-	class SettingsDirective : public CDirectiveMessage
+	class ProtocolDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		SettingsDirective(int HwdID) : CDirectiveMessage(PDT_Settings, HwdID) {};
+		ProtocolDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) {};
+		virtual void Process() { m_pPlugin->ConnectionProtocol(this); };
 	};
 
-	class ConnectDirective : public CDirectiveMessage
+	class ConnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		ConnectDirective(int HwdID) : CDirectiveMessage(PDT_Connect, HwdID) {};
+		ConnectDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) {};
+		virtual void Process() { m_pPlugin->ConnectionConnect(this); };
 	};
 
-	class DisconnectDirective : public CDirectiveMessage
+	class ListenDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		DisconnectDirective(int HwdID) : CDirectiveMessage(PDT_Disconnect, HwdID) {};
+		ListenDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) {};
+		virtual void Process() { m_pPlugin->ConnectionListen(this); };
 	};
 
-	class WriteDirective : public CDirectiveMessage
+	class DisconnectDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		WriteDirective(int HwdID, const Py_buffer* Buffer, const char* URL, const char* Verb, PyObject*	pHeaders, const int Delay) : CDirectiveMessage(PDT_Write, HwdID)
+		DisconnectDirective(CPlugin* pPlugin, PyObject* Connection) : CDirectiveBase(pPlugin), CHasConnection(Connection) {};
+		virtual void Process() { m_pPlugin->ConnectionDisconnect(this); };
+	};
+
+	class WriteDirective : public CDirectiveBase, public CHasConnection
+	{
+	public:
+		WriteDirective(CPlugin* pPlugin, PyObject* Connection, const Py_buffer* Buffer, const char* URL, const char* Verb, PyObject*	pHeaders, const int Delay) :
+			CDirectiveBase(pPlugin), CHasConnection(Connection)
 		{
 			if (Buffer)
 			{
@@ -238,52 +316,31 @@ namespace Plugins {
 		std::string				m_URL;
 		std::string				m_Operation;
 		PyObject*				m_Object;
+
+		virtual void Process() { m_pPlugin->ConnectionWrite(this); };
 	};
 
-	class ProtocolDirective : public CDirectiveMessage
+	class SettingsDirective : public CDirectiveBase
 	{
 	public:
-		ProtocolDirective(int HwdID, const char* Protocol) : CDirectiveMessage(PDT_Protocol, HwdID)
-		{
-			m_Protocol = Protocol;
-		};
-		std::string		m_Protocol;
+		SettingsDirective(CPlugin* pPlugin) : CDirectiveBase(pPlugin) {};
+		virtual void Process() { m_pPlugin->LoadSettings(); };
 	};
 
-	class PollIntervalDirective : public CDirectiveMessage
+	class PollIntervalDirective : public CDirectiveBase
 	{
 	public:
-		PollIntervalDirective(int HwdID, const int PollInterval) : CDirectiveMessage(PDT_PollInterval, HwdID)
-		{
-			m_Interval = PollInterval;
-		};
+		PollIntervalDirective(CPlugin* pPlugin, const int PollInterval) : CDirectiveBase(pPlugin), m_Interval(PollInterval) {};
 		int						m_Interval;
+		virtual void Process() {m_pPlugin->PollInterval(m_Interval); };
 	};
 
-	class NotifierDirective : public CDirectiveMessage
+	class NotifierDirective : public CDirectiveBase
 	{
 	public:
-		NotifierDirective(int HwdID, const char* Name) : CDirectiveMessage(PDT_Notifier, HwdID)
-		{
-			m_Name = Name;
-		};
+		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_Name(Name) {};
 		std::string		m_Name;
-	};
-
-	class TransportDirective : public CDirectiveMessage
-	{
-	public:
-		TransportDirective(int HwdID, const char* Transport, const char* Address, const char* Port, int Baud) : CDirectiveMessage(PDT_Transport, HwdID)
-		{
-			m_Transport = Transport;
-			m_Address = Address;
-			if (Port) m_Port = Port;
-			m_Baud = Baud;
-		};
-		std::string				m_Transport;
-		std::string				m_Address;
-		std::string				m_Port;
-		int						m_Baud;
+		virtual void Process() { m_pPlugin->Notifier(m_Name); };
 	};
 }
 
