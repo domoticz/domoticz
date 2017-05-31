@@ -33,6 +33,8 @@ elseif triggerReason == "device" then
 	commandArray = helpers.dispatchDeviceEventsToScripts()
 elseif triggerReason == "uservariable" then
 	commandArray = helpers.dispatchVariableEventsToScripts()
+elseif triggerReason == 'security' then
+	commandArray = helpers.dispatchSecurityEventsToScripts()
 else
 	print ("Unknown trigger: ", triggerReason)
 end

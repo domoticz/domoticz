@@ -16,8 +16,5 @@ return {
 		-- mySwitch is a Device object with all the properties of the device that was updated
 		-- unless this is a timer script, then there is not second parameter to this execute function
 
-		if (mySwitch.state == 'On') then
-			domoticz.notify('Hey!', 'I am on!', domoticz.PRIORITY_NORMAL)
-		end
 	end
 }

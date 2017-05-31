@@ -127,9 +127,11 @@ local function EventHelpers(domoticz, mainMethod)
 		return res
 	end
 
-	function self.callEventHandler(eventHandler, device, variable)
+	function self.callEventHandler(eventHandler, device, variable, security)
+
 
 		local useStorage = false
+
 
 		if (eventHandler['execute'] ~= nil) then
 
@@ -166,6 +168,9 @@ local function EventHelpers(domoticz, mainMethod)
 			elseif (variable ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_VARIABLE)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
+			elseif (security ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SECURITY)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, security, info)
 			else
 				-- timer
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
@@ -330,11 +335,18 @@ local function EventHelpers(domoticz, mainMethod)
 
 		-- first get a possible on section (days)
 		local onPos = string.find(t, ' on ')
+		local onPosStart = string.find(t, '^on ')
 		local days
 
 		if (onPos ~= nil and onPos > 0) then
+			-- days is the remainder of the string starting after 'on '
 			days = string.sub(t, onPos + 4)
+			-- make t to be everything before the on part
 			t = string.sub(t, 1, onPos - 1)
+		elseif (onPosStart~= nil and onPosStart == 1) then
+			-- starts with 'on '
+			days = string.sub(t, 3)
+			t = nil -- we stop further processing in this case
 		end
 
 		-- now we can skip everything if the current day
@@ -343,6 +355,8 @@ local function EventHelpers(domoticz, mainMethod)
 			-- today is not part of this trigger definition
 			return false
 		end
+
+		if (t == nil) then return true end
 
 		local m, h
 		local words = {}
@@ -391,9 +405,11 @@ local function EventHelpers(domoticz, mainMethod)
 			local time = words[2]
 			return self.isTriggerByTime(time, testTime)
 		end
+
+		return true
 	end
 
-	function self.handleEvents(events, device, variable)
+	function self.handleEvents(events, device, variable, security)
 
 		local originalLogLevel = _G.logLevel -- a script can override the level
 
@@ -425,11 +441,13 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
 			elseif (variable) then
 				utils.log('>>> Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id), utils.LOG_MODULE_EXEC_INFO)
+			elseif (security) then
+				utils.log('>>> Security: "' .. security .. '"', utils.LOG_MODULE_EXEC_INFO)
 			end
 
 			utils.log('.....................................................', utils.LOG_INFO)
 
-			self.callEventHandler(eventHandler, device, variable)
+			self.callEventHandler(eventHandler, device, variable, security)
 
 			utils.log('.....................................................', utils.LOG_INFO)
 			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
@@ -451,7 +469,14 @@ local function EventHelpers(domoticz, mainMethod)
 		return false
 	end
 
-	function self.getEventBindings(mode)
+	function addBindingEvent(bindings, event, module)
+		if (bindings[event] == nil) then
+			bindings[event] = {}
+		end
+		table.insert(bindings[event], module)
+	end
+
+	function self.getEventBindings(mode, testTime)
 		local bindings = {}
 		local errModules = {}
 		local internalScripts = {}
@@ -495,8 +520,10 @@ local function EventHelpers(domoticz, mainMethod)
 				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
 				['LOG_DEBUG'] = utils.LOG_DEBUG,
 				['LOG_ERROR'] = utils.LOG_ERROR,
+				['SECURITY_DISARMED'] = self.domoticz.SECURITY_DISARMED,
+				['SECURITY_ARMEDAWAY'] = self.domoticz.SECURITY_ARMEDAWAY,
+				['SECURITY_ARMEDHOME'] = self.domoticz.SECURITY_ARMEDHOME,
 			}
-
 			ok = true
 
 			if (moduleInfo.type == 'external') then
@@ -570,44 +597,55 @@ local function EventHelpers(domoticz, mainMethod)
 											end
 										end
 									elseif (mode == 'device') then
-										if (event ~= 'timer' and j ~= 'timer' and j~= 'variable' and j~='variables') then
+										if (event ~= 'timer' and j ~= 'timer' and j~= 'variable' and j~='variables' and j~='security') then
 
 											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
 
-												-- { ['devices'] = { 'devA', 'devB', .. }
+												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
 
 												for devIdx, devName in pairs(event) do
-													if (bindings[devName] == nil) then
-														bindings[devName] = {}
+
+													-- detect if devName is of the form ['devB'] = { 'every hour' }
+													if (type(devName) == 'table') then
+														local triggered, def = self.checkTimeDefs(devName, testTime)
+														if (triggered) then
+															addBindingEvent(bindings, devIdx, module)
+														end
+													else
+														-- a single device name (or id)
+														addBindingEvent(bindings, devName, module)
 													end
-													table.insert(bindings[devName], module)
 												end
 
-											else
-												-- let's not try to resolve indexes to names here for performance reasons
-												if (bindings[event] == nil) then
-													bindings[event] = {}
+											elseif (type(j) == 'string' and j ~= 'devices' and type(event) == 'table') then
+												-- [devicename] = { ...timedefs}
+												local triggered, def = self.checkTimeDefs(event, testTime)
+												if (triggered) then
+													addBindingEvent(bindings, j, module)
 												end
-												table.insert(bindings[event], module)
+											else
+												-- single device name or id
+												-- let's not try to resolve indexes to names here for performance reasons
+												addBindingEvent(bindings, event, module)
 											end
 										end
 									elseif (mode == 'variable') then
-										if (type(j) == 'string' and j == 'variable' and type(event) == 'string') then
+										if (type(j) == 'string' and j == 'variable'  and type(event) == 'string') then
 											-- { ['variable'] = 'myvar' }
-											if (bindings[event] == nil) then
-												bindings[event] = {}
-											end
-											table.insert(bindings[event], module)
+											addBindingEvent(bindings, event, module)
 										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
 											-- { ['variables'] = { 'varA', 'varB' }
 											for devIdx, varName in pairs(event) do
-												if (bindings[varName] == nil) then
-													bindings[varName] = {}
-												end
-												table.insert(bindings[varName], module)
+												addBindingEvent(bindings, varName, module)
 											end
 										end
+									elseif (mode == 'security') then
+										if (type(j) == 'string' and j == 'security' and type(event) == 'string') then
 
+											if (event == self.domoticz.security) then
+												table.insert(bindings, module)
+											end
+										end
 									end
 								end
 							else
@@ -635,6 +673,10 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.getVariableHandlers()
 		return self.getEventBindings('variable')
+	end
+
+	function self.getSecurityHandlers()
+		return self.getEventBindings('security')
 	end
 
 	function self.dumpCommandArray(commandArray)
@@ -743,7 +785,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			if (scriptsToExecute ~= nil) then
 				utils.log('Handling events for: "' .. device.name .. '", value: "' .. device.state .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, device)
+				self.handleEvents(scriptsToExecute, device, nil, nil)
 			end
 
 		end)
@@ -763,14 +805,21 @@ local function EventHelpers(domoticz, mainMethod)
 
 	end
 
+	function self.dispatchSecurityEventsToScripts()
+		local scriptsToExecute = self.getSecurityHandlers()
+		self.handleEvents(scriptsToExecute, nil, nil, self.domoticz.security)
+		self.dumpCommandArray(self.domoticz.commandArray)
+
+		return self.domoticz.commandArray
+	end
+
+
 	function self.dispatchVariableEventsToScripts(domoticz)
 		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
 			domoticz = self.domoticz
 		end
 
 		local allEventScripts = self.getVariableHandlers()
-
-
 
 		domoticz.changedVariables.forEach(function(variable)
 
@@ -789,7 +838,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			if (scriptsToExecute ~= nil) then
 				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. variable.value .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, variable)
+				self.handleEvents(scriptsToExecute, nil, variable, nil)
 			end
 		end)
 

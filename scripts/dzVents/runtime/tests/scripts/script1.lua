@@ -3,6 +3,7 @@ return {
 	on = {
 		'onscript1'
 	},
+	data = {},
 	execute = function(domoticz, device, triggerInfo)
 
 		if (device.toggleSwitch) then device.toggleSwitch() end

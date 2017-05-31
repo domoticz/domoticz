@@ -26,8 +26,13 @@ describe('event helpers', function()
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
 		['EVENT_TYPE_VARIABLE'] = 'variable',
+		['EVENT_TYPE_SECURITY'] = 'security',
+		['SECURITY_DISARMED'] = 'Disarmed',
+		['SECURITY_ARMEDAWAY'] = 'Armed Away',
+		['SECURITY_ARMEDHOME'] = 'Armed Home',
 		['settings'] = {},
 		['radixSeparator'] = '.',
+		['security'] = 'Armed Away',
 		['name'] = 'domoticz', -- used in script1
 		['devices'] = {
 			['device1'] = { name = '' },
@@ -53,6 +58,7 @@ describe('event helpers', function()
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath,
+			['Security'] = 'Armed Away',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181'
 		}
@@ -207,6 +213,9 @@ describe('event helpers', function()
 			assert.is_true(helpers.evalTimeTrigger('every other minute on mon, tue, fri', {['hour']=2, ['min']=4, ['day']=2}))
 			assert.is_false(helpers.evalTimeTrigger('every other minute on mon, tue, fri', {['hour']=2, ['min']=4, ['day']=1}))
 
+			assert.is_true(helpers.evalTimeTrigger('on mon', { ['hour'] = 2, ['min'] = 4, ['day'] = 2 }))
+			assert.is_false(helpers.evalTimeTrigger('on mon', { ['hour'] = 2, ['min'] = 4, ['day'] = 3 }))
+
 			assert.is_true(helpers.evalTimeTrigger('at sunset', {['hour']=1, ['min']=4, ['SunsetInMinutes']=64}))
 			assert.is_false(helpers.evalTimeTrigger('at sunset', {['hour']=1, ['min']=4, ['SunsetInMinutes']=63}))
 
@@ -276,6 +285,7 @@ describe('event helpers', function()
 			local modules = helpers.getEventBindings()
 			assert.are.same({
 				8,
+				'deviceGork',
 				'loggingstuff',
 				'mySwitch',
 				'on_script_5',
@@ -287,7 +297,7 @@ describe('event helpers', function()
 				'some*device',
 				'somedevice',
 				'wild*' }, keys(modules))
-			assert.are.same(12, _.size(modules))
+			assert.are.same(13, _.size(modules))
 		end)
 
 		it('should detect erroneous modules', function()
@@ -428,22 +438,59 @@ describe('event helpers', function()
 		end)
 
 		it('should return internal and external scripts for all triggers', function()
-				local modules = helpers.getEventBindings()
-				assert.are.same({
-					8,
-					'loggingstuff',
-					'mySwitch',
-					'on_script_5',
-					'onscript1',
-					'onscript2',
-					'onscript4',
-					'onscript7',
-					'onscript7b',
-					'some*device',
-					'somedevice',
-					'wild*' }, keys(modules))
-				assert.are.same(12, _.size(modules))
-			end)
+			local modules = helpers.getEventBindings()
+			assert.are.same({
+				8,
+				'deviceGork',
+				'loggingstuff',
+				'mySwitch',
+				'on_script_5',
+				'onscript1',
+				'onscript2',
+				'onscript4',
+				'onscript7',
+				'onscript7b',
+				'some*device',
+				'somedevice',
+				'wild*' }, keys(modules))
+			assert.are.same(13, _.size(modules))
+		end)
+
+		it('should return scripts for a device that has time-constrained triggers', function()
+			local modules = helpers.getEventBindings('device', { ['hour'] = 13, ['min'] = 5, ['day'] = 2 })
+			local scripts = modules['deviceZork']
+
+			local res = {}
+			for i, mod in pairs(scripts) do
+				table.insert(res, mod.name)
+			end
+
+			table.sort(res)
+			assert.are.same({ 'script_with_time-contrained_device' }, res)
+
+			modules = helpers.getEventBindings('device', { ['hour'] = 2, ['min'] = 1, ['day'] = 5  })
+			scripts = modules['deviceZork']
+			assert.is_nil(scripts)
+
+
+			modules = helpers.getEventBindings('device', { ['hour'] = 2, ['min'] = 1, ['day'] = 1 })
+			scripts = modules['deviceDork']
+
+			local res = {}
+			for i, mod in pairs(scripts) do
+				table.insert(res, mod.name)
+			end
+
+			table.sort(res)
+			assert.are.same({ 'script_with_time-contrained_device' }, res)
+
+			scripts = modules['deviceGork']
+
+			local res = {}
+			for i, mod in pairs(scripts) do
+				table.insert(res, mod.name)
+			end
+		end)
 
 	end)
 
@@ -526,6 +573,22 @@ describe('event helpers', function()
 			assert.is_same('script_variable1: domoticz myVar1 variable', res)
 		end)
 
+		it('should call the event handler for security events', function()
+
+			local bindings = helpers.getEventBindings('security')[1]
+
+
+			local res = helpers.callEventHandler(bindings,
+				nil,
+				nil,
+				'Armed Away')
+			-- should pass the arguments to the execute function
+			-- and catch the results from the function
+			assert.is_same('script_security: Armed Away security', res)
+		end)
+
+
+
 		it('should catch errors', function()
 			local bindings = helpers.getEventBindings()
 			local script2 = bindings['onscript2'][1]
@@ -556,11 +619,12 @@ describe('event helpers', function()
 		end)
 
 		it('should have custom logging settings', function()
-			local bindings = helpers.getEventBindings()
+			local bindings = helpers.getEventBindings('device')
+
 			local loggingstuff = bindings['loggingstuff']
 
 			local moduleLevel, moduleMarker
-			helpers.callEventHandler = function(mod, dev, var)
+			helpers.callEventHandler = function(mod, dev, var, sec)
 				moduleLevel = _G.logLevel
 				moduleMarker = _G.logMarker
 			end
@@ -677,6 +741,32 @@ describe('event helpers', function()
 			assert.is_true(dumped)
 		end)
 
+		it('should dispatch all security events', function()
+			local scripts = {}
+			local dumped = false
+
+			helpers.dumpCommandArray = function()
+				dumped = true
+			end
+
+			helpers.handleEvents = function(_scripts)
+				_.forEach(_scripts, function(s)
+					table.insert(scripts, s.name)
+				end)
+			end
+
+			local res = helpers.dispatchSecurityEventsToScripts()
+
+			table.sort(scripts)
+
+			assert.is_same({
+				'script_security'
+			}, scripts)
+
+			assert.is_true(dumped)
+		end)
+
+
 		it('should dispatch all variable event scripts', function()
 			local scripts = {}
 			local variables = {}
@@ -712,7 +802,7 @@ describe('event helpers', function()
 				dumped = true
 			end
 
-			helpers.handleEvents = function(_scripts, _variable)
+			helpers.handleEvents = function(_scripts, _device, _variable)
 				_.forEach(_scripts, function(s)
 					table.insert(scripts, s.name)
 				end)

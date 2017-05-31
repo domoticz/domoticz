@@ -97,6 +97,7 @@ local function Domoticz(settings)
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
 		['EVENT_TYPE_VARIABLE'] = 'variable',
+		['EVENT_TYPE_SECURITY'] = 'security',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
