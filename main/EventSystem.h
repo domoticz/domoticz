@@ -103,6 +103,8 @@ public:
 	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 
+    bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
+
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;

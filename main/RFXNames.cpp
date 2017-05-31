@@ -250,6 +250,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
 		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
+		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

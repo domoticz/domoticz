@@ -95,7 +95,9 @@ P1MeterBase::~P1MeterBase(void)
 
 void P1MeterBase::Init()
 {
-	m_p1version=2; // initialize DSMR version @2
+	m_bOutputLog = false; // this hardware is way too loud
+
+	m_p1version=0;
 	m_linecount=0;
 	m_exclmarkfound=0;
 	m_CRfound=0;
@@ -133,8 +135,6 @@ void P1MeterBase::Init()
 	m_gastimestamp="";
 	m_gasclockskew=0;
 	m_gasoktime=0;
-
-	hflogonce=true;
 }
 
 bool P1MeterBase::MatchLine()
@@ -203,6 +203,11 @@ bool P1MeterBase::MatchLine()
 			continue;
 
 		if (l_exclmarkfound) {
+			if (m_p1version==0)
+			{
+				_log.Log(LOG_STATUS,"(%s) P1 meter is pre DSMR 4.0 - using DSMR 2.2 compatibility", this->Name.c_str());
+				m_p1version=2;
+			}
 			time_t atime=mytime(NULL);
 			if (difftime(atime,m_lastUpdateTime)>=m_ratelimit) {
 				m_lastUpdateTime=atime;
@@ -228,11 +233,6 @@ bool P1MeterBase::MatchLine()
 						sprintf(myts,"%02d%02d%02d%02d%02d%02dW",ltime.tm_year%100,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
 						if (ltime.tm_isdst)
 						myts[12]='S';
-						if (hflogonce && (m_gastimestamp.length()>13))
-						{
-							_log.Log(LOG_ERROR, "P1: The gas timestamp on this meter appears to have an unknown format.");
-							hflogonce = false;
-						}
 						if ( (m_gastimestamp.length()>13) || (strncmp((const char*)&myts,m_gastimestamp.c_str(),m_gastimestamp.length())>=0) )
 						{
 							m_lastSharedSendGas=atime;
@@ -259,11 +259,11 @@ bool P1MeterBase::MatchLine()
 							time_t gtime=mktime(&gastm);
 							m_gasclockskew=difftime(gtime,atime);
 							if (m_gasclockskew>=300){
-								_log.Log(LOG_ERROR, "unable to synchronize to the gas meter clock because it is more than 5 minutes ahead of my time");
+								_log.Log(LOG_ERROR, "(%s) unable to synchronize to the gas meter clock because it is more than 5 minutes ahead of my time", this->Name.c_str());
 							}
 							else {
 								m_gasoktime=gtime;
-								_log.Log(LOG_STATUS, "Gas meter clock is %i seconds ahead - wait for my clock to catch up", (int)m_gasclockskew);
+								_log.Log(LOG_STATUS, "(%s) gas meter clock is %i seconds ahead - wait for my clock to catch up", this->Name.c_str(), (int)m_gasclockskew);
 							}
 						}
 					}
@@ -281,14 +281,14 @@ bool P1MeterBase::MatchLine()
 			if (ePos==std::string::npos)
 			{
 				// invalid message: value not delimited
-				_log.Log(LOG_STATUS,"P1: dismiss incoming - value is not delimited in line \"%s\"",l_buffer);
+				_log.Log(LOG_NORM,"(%s) dismiss incoming - value is not delimited in line \"%s\"", this->Name.c_str(), l_buffer);
 				return false;
 			}
 
 			if (ePos>19)
 			{
 				// invalid message: line too long
-				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is oversized",l_buffer);
+				_log.Log(LOG_NORM,"(%s) dismiss incoming - value in line \"%s\" is oversized", this->Name.c_str(), l_buffer);
 				return false;
 			}
 
@@ -296,7 +296,7 @@ bool P1MeterBase::MatchLine()
 			{
 				strcpy(value,vString.substr(0,ePos).c_str());
 #ifdef _DEBUG
-				_log.Log(LOG_NORM,"P1: Key: %s, Value: %s", t->topic,value);
+				_log.Log(LOG_NORM,"(%s) Key: %s, Value: %s", this->Name.c_str(), t->topic,value);
 #endif
 			}
 
@@ -307,6 +307,8 @@ bool P1MeterBase::MatchLine()
 			switch (t->type)
 			{
 			case P1TYPE_VERSION:
+				if (m_p1version==0)
+					_log.Log(LOG_STATUS,"(%s) P1 meter reports as DSMR %c.%c", this->Name.c_str(), value[0], value[1]);
 				m_p1version=value[0]-0x30;
 				break;
 			case P1TYPE_MBUSDEVICETYPE:
@@ -314,7 +316,7 @@ bool P1MeterBase::MatchLine()
 				if (temp_usage == 3) {
 					m_gasmbuschannel = (char)l_buffer[2];
 					m_gasprefix[2]=m_gasmbuschannel;
-				_log.Log(LOG_STATUS,"P1: Found gas meter on M-Bus channel %c", m_gasmbuschannel);
+					_log.Log(LOG_STATUS,"(%s) Found gas meter on M-Bus channel %c", this->Name.c_str(), m_gasmbuschannel);
 				}
 				break;
 			case P1TYPE_POWERUSAGE1:
@@ -374,7 +376,7 @@ bool P1MeterBase::MatchLine()
 
 			if (ePos>0 && ((validate - value) != ePos)) {
 				// invalid message: value is not a number
-				_log.Log(LOG_STATUS,"P1: dismiss incoming - value in line \"%s\" is not a number", l_buffer);
+				_log.Log(LOG_NORM,"(%s) dismiss incoming - value in line \"%s\" is not a number", this->Name.c_str(),l_buffer);
 				return false;
 			}
 
@@ -382,7 +384,7 @@ bool P1MeterBase::MatchLine()
 				vString=(const char*)&l_buffer+11;
 				m_gastimestamp=vString.substr(0,13);
 #ifdef _DEBUG
-				_log.Log(LOG_NORM,"P1: Key: gastimestamp, Value: %s", m_gastimestamp);
+				_log.Log(LOG_NORM,"(%s) Key: gastimestamp, Value: %s", this->Name.c_str(), m_gastimestamp);
 #endif
 			}
 		}
@@ -402,18 +404,23 @@ bool P1MeterBase::CheckCRC()
 {
 	// sanity checks
 	if (l_buffer[1]==0){
+		if (m_p1version==0)
+		{
+			_log.Log(LOG_STATUS,"(%s) P1 meter is pre DSMR 4.0 and does not send a CRC checksum - using DSMR 2.2 compatibility", this->Name.c_str());
+			m_p1version=2;
+		}
 		// always return true with pre DSMRv4 format message
 		return true;
 	}
 
 	if (l_buffer[5]!=0){
 		// trailing characters after CRC
-		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC value in message has trailing characters");
+		_log.Log(LOG_NORM,"(%s) dismiss incoming - CRC value in message has trailing characters", this->Name.c_str());
 		return false;
 	}
 
 	if (!m_CRfound){
-		_log.Log(LOG_STATUS,"P1: you appear to have middleware that changes the message content - skipping CRC validation");
+		_log.Log(LOG_NORM,"(%s) you appear to have middleware that changes the message content - skipping CRC validation", this->Name.c_str());
 		return true;
 	}
 
@@ -439,7 +446,7 @@ bool P1MeterBase::CheckCRC()
 		}
 	}
 	if (crc != m_crc16){
-		_log.Log(LOG_STATUS,"P1: dismiss incoming - CRC failed");
+		_log.Log(LOG_NORM,"(%s) dismiss incoming - CRC failed", this->Name.c_str());
 	}
 	return (crc==m_crc16);
 }
@@ -472,7 +479,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const boo
 	if (pData[ii]==0x2f)
 	{
 		if ((l_buffer[0]==0x21) && !l_exclmarkfound && (m_linecount>0)) {
-			_log.Log(LOG_STATUS,"P1: WARNING: got new message but buffer still contains unprocessed data from previous message.");
+			_log.Log(LOG_NORM,"(%s) WARNING: got new message but buffer still contains unprocessed data from previous message.", this->Name.c_str());
 			l_buffer[l_bufferpos] = 0;
 			if (disable_crc || CheckCRC()) {
 				MatchLine();
@@ -502,7 +509,7 @@ void P1MeterBase::ParseData(const unsigned char *pData, const int Len, const boo
 		// discard oversized message
 		if ((Len > 400) || (pData[0]==0x21)){
 			// 400 is an arbitrary chosen number to differentiate between full messages and single line commits
-			_log.Log(LOG_STATUS,"P1: dismiss incoming - message oversized");
+			_log.Log(LOG_NORM,"(%s) dismiss incoming - message oversized", this->Name.c_str());
 		}
 		m_linecount = 0;
 		return;

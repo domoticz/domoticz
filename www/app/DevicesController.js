@@ -206,7 +206,9 @@ define(['app'], function (app) {
 							var TypeImg = item.TypeImg;
 							var itemImage = '<img src="images/' + TypeImg + '.png" width="16" height="16">';
 							if (TypeImg.indexOf("Alert") == 0) {
-								itemImage = '<img src="images/Alert48_' + item.Level + '.png" width="16" height="16">';
+								var aLevel = item.Level;
+								if (aLevel > 4) aLevel = 4;
+								itemImage = '<img src="images/Alert48_' + aLevel + '.png" width="16" height="16">';
 							}
 							else if ((TypeImg.indexOf("lightbulb") == 0) || (TypeImg.indexOf("dimmer") == 0)) {
 								if (
