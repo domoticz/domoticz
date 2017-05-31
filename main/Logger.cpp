@@ -169,7 +169,11 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		syslog(sLogLevel, "%s", sstr.str().c_str());
 	}
 #endif
-	std::string szIntLog = std::string(szDate) + " " + sstr.str();
+	std::string szIntLog;
+	if (bEnableLogTimestamps)
+		szIntLog = sstr.str();
+	else
+		szIntLog = std::string(szDate) + " " + sstr.str();
 
 	if (m_outputfile.is_open())
 	{
