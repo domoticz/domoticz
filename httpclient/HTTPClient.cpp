@@ -236,7 +236,6 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		{
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 		}
-//		SetCustomOptions(curl);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());

@@ -5,13 +5,6 @@
 class HTTPClient
 {
 public:
-
-	struct _tCustomOptions
-	{
-		std::string option;
-		std::string value;
-	};
-
 	//GET functions
 	static bool GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned = false);
 	static bool GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned = false);
