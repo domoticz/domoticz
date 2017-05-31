@@ -7,7 +7,7 @@
 
 #define RETRY_DELAY 30
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit, const bool verbosity) :
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
@@ -15,8 +15,13 @@ m_szIPAddress(IPAddress)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
+
 	m_bDisableCRC = disable_crc;
 	m_ratelimit = ratelimit;
+	m_bOutputLog = verbosity;
+
+//	m_bOutputLog = false; // this hardware is way too loud
+
 }
 
 P1MeterTCP::~P1MeterTCP(void)
@@ -25,6 +30,9 @@ P1MeterTCP::~P1MeterTCP(void)
 
 bool P1MeterTCP::StartHardware()
 {
+	if (m_bOutputLog)
+		_log.Log(LOG_STATUS, "(%s) high verbosity enabled", this->Name.c_str());
+
 	m_stoprequested=false;
 
 	memset(&m_addr,0,sizeof(sockaddr_in));

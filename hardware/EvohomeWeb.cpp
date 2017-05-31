@@ -38,7 +38,7 @@ const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "W
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation) :
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation, const unsigned int Params) :
 	m_username(Username),
 	m_password(Password),
 	m_refreshrate(refreshrate),
@@ -50,9 +50,39 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 
-	m_locationId = installation / 4096;
-	m_gatewayId = (installation / 256) % 16;
-	m_systemId = (installation / 16) % 16;
+	m_locationId = (installation >> 12) & 15;
+	m_gatewayId = (installation >> 8) & 15;
+	m_systemId = (installation >> 4) & 15;
+
+
+	/* Params
+	 *
+	 * 0x1 = m_updatedev (let Honeywell server control the device name)
+	 * 0x2 = m_showschedule (show next scheduled switch point as `until` time)
+	 * 0x4 = m_showlocation (prefix device name with location)
+	 * 0x8 = m_bOutputLog (verbosity)
+	 *
+	 */
+
+	if ((Params & 15) == 0) // compatibility - load from old parameters
+	{
+		int newParams = Params;
+		if (!m_updatedev) // reverted value: default = true
+			newParams++;
+		if (m_showschedule)
+			newParams += 2;
+		if (m_showlocation)
+			newParams += 4;
+		m_bOutputLog = false;
+		m_sql.safe_query("UPDATE Hardware SET Mode6=%d WHERE (ID == '%d')", newParams, m_HwdID);
+	}
+	else
+	{
+		m_updatedev = ((Params & 1) == 0); // reverted value: default = true
+		m_showschedule = ((Params & 2) > 0);
+		m_showlocation = ((Params & 4) > 0);
+		m_bOutputLog = ((Params & 8) > 0);
+	}
 
 	Init();
 }
@@ -75,8 +105,6 @@ void CEvohomeWeb::Init()
 	m_awaysetpoint = 15; // default "Away" setpoint value
 	m_j_fi.clear();
 	m_j_stat.clear();
-
-	m_bOutputLog = false;
 }
 
 
@@ -126,6 +154,9 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	if (m_bOutputLog)
+		_log.Log(LOG_STATUS, "(%s) high verbosity enabled", this->Name.c_str());
+
 	Init();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeWeb::Do_Work, this)));
 	if (!m_thread)
