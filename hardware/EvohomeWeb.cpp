@@ -297,7 +297,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 		{
 			std::string szuntil, szsetpoint;
-			double setpoint;
+			double setpoint = 0;
 			zone* hz = &m_tcs->zones[it->first];
 
 			if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
@@ -307,6 +307,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			}
 			if (newmode == "AutoWithEco")
 				setpoint -= 3;
+			if (setpoint < 5)
+				setpoint = 5;
 
 			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
 			 *  for the next update to get the correct values.
@@ -466,7 +468,8 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			time_t now = mytime(NULL);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -519,7 +522,8 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 		if (sdevname != ndevname)
 		{
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 			if (sdevname.find("zone ") != std::string::npos)
 				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ndevname.c_str());
 		}
@@ -568,7 +572,8 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 			uint64_t DevRowIdx;
 			std::stringstream s_str(result[0][0]);
 			s_str >> DevRowIdx;
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q',Name='%q' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
 		}
 	}
 
@@ -591,7 +596,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 {
 	size_t row;
-	if (m_zones[0] == 0) // first run - construct 
+	if (m_zones[0] == 0) // first run - construct
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
