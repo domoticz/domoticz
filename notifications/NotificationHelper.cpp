@@ -94,11 +94,20 @@ bool CNotificationHelper::SendMessageEx(
 	const std::string &Subject,
 	const std::string &Text,
 	const std::string &ExtraData,
-	const int Priority,
+	int Priority,
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	bool bRet = (Priority == -100) ? false : true;
+	bool bRet = false;
+	bool bThread = true;
+
+	if (Priority == -100)
+	{
+		Priority = 0;
+		bThread = false;
+		bRet = true;
+	}
+
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
@@ -119,7 +128,7 @@ bool CNotificationHelper::SendMessageEx(
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
 		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			if (Priority != -100)
+			if (bThread)
 				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
 			else
 				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
