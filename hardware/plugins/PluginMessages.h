@@ -121,7 +121,6 @@ namespace Plugins {
 		virtual void Process()
 		{
 			Callback(Py_BuildValue("(O)", m_pConnection));  // 0 is success else socket failure code
-			m_pPlugin->ConnectionDisconnected();
 		};
 	};
 

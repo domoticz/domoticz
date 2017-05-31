@@ -15,6 +15,8 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 
+#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+
 namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls accessto the message queue
@@ -135,6 +137,104 @@ namespace Plugins {
 		PluginMessageQueue.push(Message);
 	}
 
+	bool CPluginTransportTCP::handleListen()
+	{
+		try
+		{
+			if (!m_Socket)
+			{
+				if (!m_Acceptor)
+				{
+					m_Acceptor = new boost::asio::ip::tcp::acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), atoi(m_Port.c_str())));
+				}
+				boost::system::error_code ec;
+
+				//
+				//	Acceptor based on http://www.boost.org/doc/libs/1_62_0/doc/html/boost_asio/tutorial/tutdaytime3/src.html
+				//
+				boost::asio::ip::tcp::socket*	pSocket = new boost::asio::ip::tcp::socket(ios);
+				m_Acceptor->async_accept((boost::asio::ip::tcp::socket&)*pSocket, boost::bind(&CPluginTransportTCP::handleAsyncAccept, this, pSocket, boost::asio::placeholders::error));
+
+				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+				{
+					ios.reset();
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				}
+				m_bConnected = true;
+			}
+		}
+		catch (std::exception& e)
+		{
+			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+			return false;
+		}
+
+		return true;
+	}
+
+	void CPluginTransportTCP::handleAsyncAccept(boost::asio::ip::tcp::socket* pSocket, const boost::system::error_code& err)
+	{
+		m_tLastSeen = time(0);
+
+		if (!err)
+		{
+			boost::asio::ip::tcp::endpoint remote_ep = pSocket->remote_endpoint();
+			std::string sAddress = remote_ep.address().to_string();
+			std::string sPort = SSTR(remote_ep.port());
+
+			PyType_Ready(&CConnectionType);
+			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
+			CPluginTransportTCP* pTcpTransport = new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			Py_DECREF(pConnection);
+
+			// Configure transport object
+			pTcpTransport->m_pConnection = (PyObject*)pConnection;
+			pTcpTransport->m_Socket = pSocket;
+			pTcpTransport->m_bConnected = true;
+			pTcpTransport->m_tLastSeen = time(0);
+
+			// Configure Python Connection object
+			pConnection->pTransport = pTcpTransport;
+			Py_XDECREF(pConnection->Name);
+			pConnection->Name = PyUnicode_FromString(std::string(sAddress+":"+sPort).c_str());
+			Py_XDECREF(pConnection->Address);
+			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
+			Py_XDECREF(pConnection->Port);
+			pConnection->Port = PyUnicode_FromString(sPort.c_str());
+			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
+			Py_INCREF(pConnection->Transport);
+			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
+			Py_INCREF(pConnection->Protocol);
+			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+
+			// Add it to the plugins list of connections
+			pConnection->pPlugin->AddConnection(pTcpTransport);
+
+			// Create Protocol object to handle connection's traffic
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
+				PluginMessageQueue.push(pMessage);
+				//  and signal connection
+				ConnectedMessage*	Message = new ConnectedMessage(pConnection->pPlugin, (PyObject*)pConnection, err.value(), err.message());
+				PluginMessageQueue.push(Message);
+			}
+
+			pTcpTransport->m_Socket->async_read_some(boost::asio::buffer(pTcpTransport->m_Buffer, sizeof pTcpTransport->m_Buffer),
+				boost::bind(&CPluginTransportTCP::handleRead, pTcpTransport, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+		}
+
+		// Requeue listener
+		if (m_Acceptor)
+		{
+			handleListen();
+		}
+	}
+
 	void CPluginTransportTCP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
 		if (!e)
@@ -206,22 +306,22 @@ namespace Plugins {
 				delete m_Socket;
 				m_Socket = NULL;
 			}
+			if (m_Acceptor)
+			{
+				boost::asio::ip::tcp::acceptor*	tAcceptor = m_Acceptor;
+				m_Acceptor = NULL; // make sure there is not a race condition with listen being resubmitted
+				tAcceptor->cancel();
+				delete tAcceptor;
+			}
+
 			m_bConnected = false;
 			m_bDisconnectQueued = false;
-
 		}
+
+		if (m_Resolver) delete m_Resolver;
+
 		return true;
 	}
-
-	CPluginTransportTCP::~CPluginTransportTCP()
-	{
-		if (m_Socket)
-		{
-			handleDisconnect();
-			delete m_Socket;
-		}
-		if (m_Resolver) delete m_Resolver;
-	};
 
 	bool CPluginTransportUDP::handleConnect()
 	{

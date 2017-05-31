@@ -150,8 +150,13 @@
         }
         
         bool PythonEventsStop() {
-            if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-            return true;
+            if (m_PyInterpreter) {
+                PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+                Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+                _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
+                return true;
+            } else
+                return false;
         }
         
         PyObject* PythonEventsGetModule (void) {

@@ -465,6 +465,9 @@
     <Filter Include="Devices\SysfsGPIO">
       <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\RTL_433">
+      <UniqueIdentifier>{0e8b8072-43d4-44a2-b5de-8a4eb7887d1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1603,6 +1606,9 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeWeb.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
       <Filter>zip\Base</Filter>
     </ClInclude>
@@ -2010,6 +2016,11 @@
     </ClInclude>
     <ClInclude Include="..\main\EventsPythonModule.h">
       <Filter>EventSystem</Filter>
+    <ClInclude Include="..\hardware\EvohomeScript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Rtl433.h">
+      <Filter>Devices\RTL_433</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2263,6 +2274,9 @@
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
@@ -2681,6 +2695,11 @@
     </ClCompile>
     <ClCompile Include="..\main\EventsPythonModule.cpp">
       <Filter>EventSystem</Filter>
+    <ClCompile Include="..\hardware\EvohomeScript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Rtl433.cpp">
+      <Filter>Devices\RTL_433</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -84,7 +84,7 @@ bool CNotificationHelper::SendMessage(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, -100, std::string(""), bFromNotification);
 }
 
 bool CNotificationHelper::SendMessageEx(
@@ -98,7 +98,7 @@ bool CNotificationHelper::SendMessageEx(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	bool bRet = false;
+	bool bRet = (Priority == -100) ? false : true;
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
@@ -114,11 +114,15 @@ bool CNotificationHelper::SendMessageEx(
 		ActiveSystems[*itt] = 1;
 	}
 
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)
+	{
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
-		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured()))
+		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+			if (Priority != -100)
+				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+			else
+				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
 	return bRet;

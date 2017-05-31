@@ -28,8 +28,10 @@ summation = 0.0
 connectStatus = "Disconnected"
 
 isConnected = False
+SerialConn = None
 
 def onStart():
+    global SerialConn
     if Parameters["Mode6"] == "Debug":
         Domoticz.Debugging(1)
     if (len(Devices) == 0):
@@ -38,57 +40,54 @@ def onStart():
         Domoticz.Log("Devices created.")
     Domoticz.Log("Plugin has " + str(len(Devices)) + " devices associated with it.")
     DumpConfigToLog()
-#    Domoticz.Heartbeat(900)
-    Domoticz.Transport("Serial", Parameters["SerialPort"], 115200)
-    Domoticz.Protocol("XML")
-    Domoticz.Connect()
+    SerialConn = Domoticz.Connection(Name="RAVEn", Transport="Serial", Protocol="XML", Address=Parameters["SerialPort"], Baud=115200)
+    SerialConn.Connect()
     return
 
-def onConnect(Status, Description):
-    global isConnected
+def onConnect(Connection, Status, Description):
+    global SerialConn
     if (Status == 0):
-        isConnected = True
         Domoticz.Log("Connected successfully to: "+Parameters["SerialPort"])
-        Domoticz.Send("<Command>\n  <Name>get_device_info</Name>\n</Command>")
+        SerialConn.Send("<Command>\n  <Name>get_device_info</Name>\n</Command>")
     else:
         Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["SerialPort"])
         Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["SerialPort"]+" with error: "+Description)
     return True
 
-def onMessage(Data, Status, Extra):
-    global connectStatus, fScale, summation
+def onMessage(Connection, Data, Status, Extra):
+    global SerialConn, connectStatus, fScale, summation
     Domoticz.Debug(Data)
     xmltree = ET.fromstring(Data)
     if xmltree.tag == 'DeviceInfo':
         Domoticz.Log( "Manufacturer: %s, Device ID: %s, Install Code: %s" % (xmltree.find('Manufacturer').text, xmltree.find('DeviceMacId').text, xmltree.find('InstallCode').text) )
         Domoticz.Log( "Hardware: Version %s, Firmware Version: %s, Model: %s" % (xmltree.find('HWVersion').text, xmltree.find('FWVersion').text, xmltree.find('ModelId').text) )
-        Domoticz.Send("<Command>\n  <Name>get_network_info</Name>\n</Command>\n")
+        SerialConn.Send("<Command>\n  <Name>get_network_info</Name>\n</Command>\n")
     elif xmltree.tag == 'NetworkInfo':
         Domoticz.Debug( "NetworkInfo response, Status = '%s' - %s, Link Strength = %d" % (xmltree.find('Status').text, xmltree.find('Description').text, int(xmltree.find('LinkStrength').text,16)))
-        Domoticz.Send("<Command>\n  <Name>get_connection_status</Name>\n</Command>\n")
+        SerialConn.Send("<Command>\n  <Name>get_connection_status</Name>\n</Command>\n")
     elif xmltree.tag == 'ConnectionStatus':
         if connectStatus != 'Connected':
-            Domoticz.Send("<Command>\n  <Name>get_meter_list</Name>\n</Command>\n")
+            SerialConn.Send("<Command>\n  <Name>get_meter_list</Name>\n</Command>\n")
         connectStatus = xmltree.find('Status').text
         Domoticz.Log( "MeterMacId: %s, Connection Status, Status = '%s' - %s, Link Strength = %d" % (xmltree.find('MeterMacId').text, xmltree.find('Status').text, xmltree.find('Description').text, int(xmltree.find('LinkStrength').text,16)))
     elif xmltree.tag == 'MeterList':
         for meter in xmltree.iter('MeterMacId'):
             Domoticz.Debug( "MeterMacId: %s, MeterList response" % meter.text)
-            Domoticz.Send("<Command>\n  <Name>get_meter_info</Name>\n  <MeterMacId>"+meter.text+"</MeterMacId>\n</Command>\n")
+            SerialConn.Send("<Command>\n  <Name>get_meter_info</Name>\n  <MeterMacId>"+meter.text+"</MeterMacId>\n</Command>\n")
     elif xmltree.tag == 'MeterInfo':
         Domoticz.Debug( "MeterMacId: %s, MeterInfo response, Enabled = %s" % (xmltree.find('MeterMacId').text, xmltree.find('Enabled').text))
-        Domoticz.Send("<Command>\n  <Name>get_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n</Command>\n")
+        SerialConn.Send("<Command>\n  <Name>get_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n</Command>\n")
     elif xmltree.tag == 'ScheduleInfo':
         iFreq = int(xmltree.find('Frequency').text,16)
         Domoticz.Debug( "MeterMacId: %s, ScheduleInfo response: Type '%s', Frequency %d, Enabled %s" % (xmltree.find('MeterMacId').text, xmltree.find('Event').text, iFreq, xmltree.find('Enabled').text))
         if (xmltree.find('Event').text == 'demand') and (iFreq != demandFreq):
             Domoticz.Debug( "MeterMacId: %s, Setting 'demand' schedule to: Frequency %d" % (xmltree.find('MeterMacId').text, demandFreq))
-            Domoticz.Send("<Command>\n  <Name>set_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n <Event>demand</Event>\n  <Frequency>" + str(hex(demandFreq)) + "</Frequency>\n  <Enabled>Y</Enabled>\n</Command>\n")
+            SerialConn.Send("<Command>\n  <Name>set_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n <Event>demand</Event>\n  <Frequency>" + str(hex(demandFreq)) + "</Frequency>\n  <Enabled>Y</Enabled>\n</Command>\n")
         if (xmltree.find('Event').text == 'summation') and (iFreq != summaryFreq):
             Domoticz.Debug( "MeterMacId: %s, Setting 'summation' schedule to: Frequency %d" % (xmltree.find('MeterMacId').text, summaryFreq))
-            Domoticz.Send("<Command>\n  <Name>set_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n  <Event>summation</Event>\n  <Frequency>" + str(hex(summaryFreq)) + "</Frequency>\n  <Enabled>Y</Enabled>\n</Command>\n")
+            SerialConn.Send("<Command>\n  <Name>set_schedule</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n  <Event>summation</Event>\n  <Frequency>" + str(hex(summaryFreq)) + "</Frequency>\n  <Enabled>Y</Enabled>\n</Command>\n")
         if (xmltree.find('Event').text == 'summation'):
-            Domoticz.Send("<Command>\n  <Name>get_current_summation_delivered</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n  <Refresh>Y</Refresh>\n</Command>\n")
+            SerialConn.Send("<Command>\n  <Name>get_current_summation_delivered</Name>\n  <MeterMacId>"+xmltree.find('MeterMacId').text+"</MeterMacId>\n  <Refresh>Y</Refresh>\n</Command>\n")
     elif xmltree.tag == 'InstantaneousDemand':
         demand = float(getInstantDemandKWh(xmltree))
         if (summation == 0.0):
@@ -120,16 +119,14 @@ def onMessage(Data, Status, Extra):
         Domoticz.Error("Unrecognised (not implemented) XML Fragment ("+xmltree.tag+").")
     return
 
-def onDisconnect():
-    global isConnected
-    isConnected = False
+def onDisconnect(Connection):
     Domoticz.Log("RAVEn Disconnected")
     return
 
 def onHeartbeat():
-    global isConnected
-    if (isConnected != True):
-        Domoticz.Connect()
+    global SerialConn
+    if (SerialConn.Connected() != True):
+        SerialConn.Connect()
     return True
 
 # RAVEn support functions
