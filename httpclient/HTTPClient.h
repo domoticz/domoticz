@@ -5,6 +5,13 @@
 class HTTPClient
 {
 public:
+
+	struct _tCustomOptions
+	{
+		std::string option;
+		std::string value;
+	};
+
 	//GET functions
 	static bool GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned = false);
 	static bool GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned = false);
@@ -31,11 +38,15 @@ public:
 	static void SetConnectionTimeout(const long timeout);
 	static void SetTimeout(const long timeout);
 	static void SetUserAgent(const std::string &useragent);
+	static void SetSecurityOptions(const bool verifypeer, const bool verifyhost, const bool tlsv1);
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
 	//our static variables
 	static bool	m_bCurlGlobalInitialized;
+	static bool m_iVerifyPeer;
+	static bool m_iVerifyHost;
+	static bool m_iEnforceTLSv1;
 	static long	m_iConnectionTimeout;
 	static long	m_iTimeout;
 	static std::string m_sUserAgent;

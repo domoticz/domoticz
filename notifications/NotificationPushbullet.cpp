@@ -46,8 +46,9 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	sHeaderKey << "Access-Token: " << _apikey;
 	ExtraHeaders.push_back(sHeaderKey.str());
 	ExtraHeaders.push_back("Content-Type: application/json");
-	
+
 	//Do the request
+	HTTPClient::SetSecurityOptions(true, true, true);
 	bRet = HTTPClient::POST("https://api.pushbullet.com/v2/pushes",sPostData,ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("\"created\":") != std::string::npos);
 	if (!bSuccess)
