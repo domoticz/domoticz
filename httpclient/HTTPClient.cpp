@@ -13,9 +13,9 @@
 extern std::string szUserDataFolder;
 
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
-bool		HTTPClient::m_iVerifyPeer = false;
-bool		HTTPClient::m_iVerifyHost = false;
-bool		HTTPClient::m_iEnforceTLSv1 = false;
+bool		HTTPClient::m_bEnforceTLSv1 = false;
+bool		HTTPClient::m_bVerifyHost = false;
+bool		HTTPClient::m_bVerifyPeer = false;
 long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
@@ -65,14 +65,14 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT,m_iTimeout);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_iVerifyPeer);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_iVerifyHost); //allow self signed certificates
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_bVerifyPeer);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_bVerifyHost); //allow self signed certificates
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	std::string domocookie = szUserDataFolder + "domocookie.txt";
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
-	curl_easy_setopt(curl, CURLOPT_SSLVERSION, (m_iEnforceTLSv1 ? CURL_SSLVERSION_TLSv1 : CURL_SSLVERSION_DEFAULT));
+	curl_easy_setopt(curl, CURLOPT_SSLVERSION, (m_bEnforceTLSv1 ? CURL_SSLVERSION_TLSv1 : CURL_SSLVERSION_DEFAULT));
 }
 
 //Configuration functions
@@ -88,9 +88,9 @@ void HTTPClient::SetTimeout(const long timeout)
 
 void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost, const bool tlsv1)
 {
-	m_iVerifyPeer = verifypeer;
-	m_iVerifyHost = verifyhost;
-	m_iEnforceTLSv1 = tlsv1;
+	m_bVerifyPeer = verifypeer;
+	m_bVerifyHost = verifyhost;
+	m_bEnforceTLSv1 = tlsv1;
 }
 
 void HTTPClient::SetUserAgent(const std::string &useragent)

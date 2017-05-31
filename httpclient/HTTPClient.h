@@ -37,9 +37,9 @@ private:
 	static bool CheckIfGlobalInitDone();
 	//our static variables
 	static bool m_bCurlGlobalInitialized;
-	static bool m_iVerifyPeer;
-	static bool m_iVerifyHost;
-	static bool m_iEnforceTLSv1;
+	static bool m_bEnforceTLSv1;
+	static bool m_bVerifyHost;
+	static bool m_bVerifyPeer;
 	static long m_iConnectionTimeout;
 	static long m_iTimeout;
 	static std::string m_sUserAgent;
