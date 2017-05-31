@@ -5200,7 +5200,7 @@ define(['app'], function (app) {
 							}
 
 							var Location = parseInt(data["Mode5"]);
-							for (var i=0;i<10;i++){
+							for (var i=1;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
