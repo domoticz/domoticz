@@ -1015,7 +1015,7 @@ namespace http {
 				ii++;
 			}
 
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 			// Append Plugin list as well
 			PluginList(root["result"]);
 #endif
@@ -7889,7 +7889,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
 #endif
@@ -7965,7 +7965,7 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
-#ifndef USE_PYTHON_PLUGINS
+#ifndef ENABLE_PYTHON
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 #else
 					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
