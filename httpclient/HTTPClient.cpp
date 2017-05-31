@@ -59,7 +59,7 @@ void HTTPClient::Cleanup()
 void HTTPClient::SetGlobalOptions(void *curlobj)
 {
 	CURL *curl=(CURL *)curlobj;
-	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC|CURLAUTH_DIGEST);
+	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC | CURLAUTH_DIGEST);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data);
 	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -72,8 +72,7 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	std::string domocookie = szUserDataFolder + "domocookie.txt";
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
 	curl_easy_setopt(curl, CURLOPT_COOKIEJAR, domocookie.c_str());
-	if (m_iEnforceTLSv1)
-		curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+	curl_easy_setopt(curl, CURLOPT_SSLVERSION, (m_iEnforceTLSv1 ? CURL_SSLVERSION_TLSv1 : CURL_SSLVERSION_DEFAULT));
 }
 
 //Configuration functions
