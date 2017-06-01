@@ -31,13 +31,16 @@ public:
 	static void SetConnectionTimeout(const long timeout);
 	static void SetTimeout(const long timeout);
 	static void SetUserAgent(const std::string &useragent);
+	static void SetSecurityOptions(const bool verifypeer, const bool verifyhost);
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
 	//our static variables
-	static bool	m_bCurlGlobalInitialized;
-	static long	m_iConnectionTimeout;
-	static long	m_iTimeout;
+	static bool m_bCurlGlobalInitialized;
+	static bool m_bVerifyHost;
+	static bool m_bVerifyPeer;
+	static long m_iConnectionTimeout;
+	static long m_iTimeout;
 	static std::string m_sUserAgent;
 };
 
