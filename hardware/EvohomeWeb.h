@@ -58,7 +58,7 @@ class CEvohomeWeb : public CEvohomeBase
 		std::map<int, gateway> gateways;
 	};
 public:
-	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation);
+	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const bool showschedule, const bool showlocation, const unsigned int installation);
 	~CEvohomeWeb(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:

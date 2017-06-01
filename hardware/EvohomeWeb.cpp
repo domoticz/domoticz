@@ -39,21 +39,45 @@ const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "W
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation) :
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const bool showschedule, const bool showlocation, const unsigned int installation) :
 	m_username(Username),
 	m_password(Password),
 	m_refreshrate(refreshrate),
-	m_updatedev(!notupdatedev),
 	m_showschedule(showschedule),
 	m_showlocation(showlocation)
-
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 
-	m_locationId = installation / 4096;
-	m_gatewayId = (installation / 256) % 16;
-	m_systemId = (installation / 16) % 16;
+	m_locationId = (installation >> 12) & 15;
+	m_gatewayId = (installation >> 8) & 15;
+	m_systemId = (installation >> 4) & 15;
+
+
+	/* Use Flags
+	 *
+	 * 0x1 = m_updatedev (let Honeywell server control the device name)
+	 * 0x2 = m_showschedule (show next scheduled switch point as `until` time)
+	 * 0x4 = m_showlocation (prefix device name with location)
+	 *
+	 */
+
+	m_updatedev = ((UseFlags & 1) == 0); // reverted value: default = true
+
+	if ((UseFlags & 15) < 2) // compatibility - load from old parameters
+	{
+		int newParams = UseFlags;
+		if (m_showschedule)
+			newParams += 2;
+		if (m_showlocation)
+			newParams += 4;
+		m_sql.safe_query("UPDATE Hardware SET Mode2=%d WHERE (ID == '%d')", newParams, m_HwdID);
+	}
+	else
+	{
+		m_showschedule = ((UseFlags & 2) > 0);
+		m_showlocation = ((UseFlags & 4) > 0);
+	}
 
 	Init();
 }
@@ -76,8 +100,6 @@ void CEvohomeWeb::Init()
 	m_awaysetpoint = 15; // default "Away" setpoint value
 	m_j_fi.clear();
 	m_j_stat.clear();
-
-	m_bOutputLog = false;
 }
 
 
@@ -224,8 +246,7 @@ bool CEvohomeWeb::GetStatus()
 		return false;
 	}
 
-	if (m_bOutputLog)
-		_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
+	_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
 
 	// system status
 	DecodeControllerMode(m_tcs);
