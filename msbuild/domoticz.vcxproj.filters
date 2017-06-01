@@ -2011,16 +2011,17 @@
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\EventsPythonDevice.h">
-      <Filter>EventSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\EventsPythonModule.h">
-      <Filter>EventSystem</Filter>
     <ClInclude Include="..\hardware\EvohomeScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Rtl433.h">
       <Filter>Devices\RTL_433</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2690,16 +2691,17 @@
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\EventsPythonDevice.cpp">
-      <Filter>EventSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\EventsPythonModule.cpp">
-      <Filter>EventSystem</Filter>
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Rtl433.cpp">
       <Filter>Devices\RTL_433</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
