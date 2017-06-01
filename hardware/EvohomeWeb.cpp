@@ -39,7 +39,7 @@ const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "W
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const bool showschedule, const bool showlocation, const unsigned int installation) :
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const unsigned int UseFlags, const bool showschedule, const bool showlocation, const unsigned int installation) :
 	m_username(Username),
 	m_password(Password),
 	m_refreshrate(refreshrate),
@@ -149,6 +149,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	if (m_username.empty() || m_password.empty())
+		return false;
 	Init();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeWeb::Do_Work, this)));
 	if (!m_thread)
