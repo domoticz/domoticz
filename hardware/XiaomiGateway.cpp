@@ -502,7 +502,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			}
 		}
 		else {
-			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch") || (Name == "Xiaomi Smoke Detector")) {
+			if ((bIsOn == false && nvalue >= 1) || (bIsOn == true) || (Name == "Xiaomi Wired Dual Wall Switch") || (Name == "Xiaomi Wired Single Wall Switch")) {
 				m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, BatteryLevel);
 			}
 		}
@@ -640,6 +640,8 @@ bool XiaomiGateway::StartHardware()
 		if (result.size() > 0) {
 			m_OutputMessage = true;
 		}
+		_log.Log(LOG_STATUS, "XiaomiGateway: Delaying worker startup...");
+		sleep_seconds(5);
 		//Start worker thread
 		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&XiaomiGateway::Do_Work, this)));
 	}
@@ -877,6 +879,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Smoke Detector";
 						type = STYPE_SMOKEDETECTOR;
 					}
+					else if (model == "natgas") {
+						name = "Xiaomi Gas Detector";
+						type = STYPE_SMOKEDETECTOR;
+					}
 					std::string voltage = root2["voltage"].asString();
 					int battery = 255;
 					if (voltage != "" && voltage != "3600") {
@@ -893,7 +899,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						//Smart plug usage
 						std::string load_power = root2["load_power"].asString();
 						std::string power_consumed = root2["power_consumed"].asString();
-						//Smoke Detector
+						//Smoke or Gas Detector
 						std::string density = root2["density"].asString();
 						std::string alarm = root2["alarm"].asString();
 						bool on = false;
@@ -901,7 +907,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (model == "switch") {
 							level = 0;
 						}
-						else if (model == "smoke") {
+						else if ((model == "smoke") || (model == "natgas")) {
 							if (alarm == "1") {
 								level = 0;
 								on = true;
