@@ -49,9 +49,9 @@ bool CNotificationPushover::SendMessageImplementation(
 		sPostData << "&retry=300&expire=3600";
 	}
 	std::vector<std::string> ExtraHeaders;
-	HTTPClient::SetSecurityOptions(true, true, true);
+	HTTPClient::SetSecurityOptions(true, true);
 	bRet = HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData.str(),ExtraHeaders,sResult);
-	HTTPClient::SetSecurityOptions(false, false, false);
+	HTTPClient::SetSecurityOptions(false, false);
 	if (!bRet)
 		_log.Log(LOG_ERROR, "Pushover: %s", sResult.c_str());
 	return bRet;
