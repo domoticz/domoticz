@@ -312,7 +312,10 @@ define(['app'], function (app) {
 						ratelimitp1 = "0";
 					}
 					Mode3 = ratelimitp1;
-					Mode4 = $("#hardwarecontent #divverbosity #comboverbosity").val();
+					if ($("#hardwarecontent #divverbosity #comboverbosity").val()=="1")
+					{
+						Mode2 = Mode2 | 2;
+	 				}
 				}
 				if (text.indexOf("Teleinfo EDF") >= 0) {
 					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
@@ -867,26 +870,26 @@ define(['app'], function (app) {
 					Pollseconds = 60;
 				}
 
-				var Params = 0;
+				var UseFlags = 0;
 				if ($("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked"))
 				{
 					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
-					Params = Params | 4;
+					UseFlags = UseFlags | 4;
 				}
 
 				if (!$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked")) // reverted value - default 0 is true
 				{
-					Params = Params | 1;
+					UseFlags = UseFlags | 1;
 				}
 
 				if ($("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked"))
 				{
-					Params = Params | 2;
+					UseFlags = UseFlags | 2;
 				}
 
 				if ($("#hardwarecontent #divverbosity #comboverbosity").val()=="1")
 				{
-					Params = Params | 8;
+					UseFlags = UseFlags | 8;
 				}
 
 
@@ -904,7 +907,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout + 
 					"&Mode1=" + Pollseconds + 
 					"&Mode5=" + evo_installation +
-					"&Mode6=" + Params,
+					"&Mode6=" + UseFlags,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1219,7 +1222,10 @@ define(['app'], function (app) {
 						ratelimitp1 = "0";
 					}
 					Mode3 = ratelimitp1;
-					Mode4 = $("#hardwarecontent #divverbosity #comboverbosity").val();
+					if ($("#hardwarecontent #divverbosity #comboverbosity").val()=="1")
+					{
+						Mode2 = Mode2 | 2;
+	 				}
 
 				}
 				if (text.indexOf("Teleinfo EDF") >= 0) {
@@ -1696,26 +1702,26 @@ define(['app'], function (app) {
 					Pollseconds = 60;
 				}
 
-				var Params = 0;
+				var UseFlags = 0;
 				if ($("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked"))
 				{
 					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
-					Params = Params | 4;
+					UseFlags = UseFlags | 4;
 				}
 
 				if (!$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked")) // reverted value - default 0 is true
 				{
-					Params = Params | 1;
+					UseFlags = UseFlags | 1;
 				}
 
 				if ($("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked"))
 				{
-					Params = Params | 2;
+					UseFlags = UseFlags | 2;
 				}
 
 				if ($("#hardwarecontent #divverbosity #comboverbosity").val()=="1")
 				{
-					Params = Params | 8;
+					UseFlags = UseFlags | 8;
 				}
 
 				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
@@ -1732,7 +1738,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout + 
 					"&Mode1=" + Pollseconds + 
 					"&Mode5=" + evo_installation +
-					"&Mode6=" + Params,
+					"&Mode6=" + UseFlags,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5031,8 +5037,9 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divbaudratemysensors #combobaudrate").val(data["Mode1"]);
 							}
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
+								var UseFlags = parseInt(data["Mode2"]);
 								$("#hardwarecontent #divbaudratep1 #combobaudratep1").val(data["Mode1"]);
-								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
+								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", ((UseFlags & 1) ^ 1));
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
 								if (data["Mode1"] == 0) {
 									$("#hardwarecontent #divcrcp1").hide();
@@ -5040,7 +5047,7 @@ define(['app'], function (app) {
 								else {
 									$("#hardwarecontent #divcrcp1").show();
 								}
-								$("#hardwarecontent #divverbosity #comboverbosity").val(data["Mode4"]);
+								$("#hardwarecontent #divverbosity #comboverbosity").val(((UseFlags & 2) >>> 1));
 							}
 							else if (data["Type"].indexOf("Teleinfo EDF") >= 0) {
 								$("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo").val(data["Mode1"]);
@@ -5058,9 +5065,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
-								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", data["Mode2"] == 0);
+								var UseFlags = parseInt(data["Mode2"]);
+								$("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked", ((UseFlags & 1) ^ 1));
 								$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(data["Mode3"]);
-								$("#hardwarecontent #divverbosity #comboverbosity").val(data["Mode4"]);
+								$("#hardwarecontent #divverbosity #comboverbosity").val(((UseFlags & 2) >>> 1));
 							}
 							if (data["Type"].indexOf("Eco Devices") >= 0) {
 								$("#hardwarecontent #divmodelecodevices #combomodelecodevices").val(data["Mode1"]);
@@ -5186,13 +5194,13 @@ define(['app'], function (app) {
 							}
 							$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(Pollseconds);
 
-							var Params = parseInt(data["Mode6"]);
-							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((Params & 1) ^ 1));
-							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((Params & 2) >>> 1));
-							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((Params & 4) >>> 2));
-							$("#hardwarecontent #divverbosity #comboverbosity").val((Params & 8) >>> 3);
+							var UseFlags = parseInt(data["Mode6"]);
+							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
+							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
+							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
+							$("#hardwarecontent #divverbosity #comboverbosity").val((UseFlags & 8) >>> 3);
 
-							if (Params == 0) // backward compatibility - delete after 2017-09-01
+							if (UseFlags == 0) // backward compatibility - delete after 2017-09-01
 							{
 								$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", data["Mode2"] == 0);
 								$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked", data["Mode3"]);
