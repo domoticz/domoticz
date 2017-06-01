@@ -328,7 +328,7 @@ void CGpio::UpdateStartup()
 		{
 			sleep_milliseconds(1000);
 			if (m_stoprequested)
-				break;
+				return;
 		}
 		_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
 		UpdateDeviceStates(true);
