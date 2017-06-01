@@ -180,6 +180,12 @@
             }
         }
 
+        // main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
+        
+        PyObject* mapToPythonDict(std::map<std::string, float> floatMap) {
+            
+            return Py_None;
+        }
        
 
         void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet) {
@@ -334,14 +340,20 @@
                    }
 
                    // uservariablesMutexLock2.unlock();
+                   
 
-                   FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-
-                    // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-                    Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
-
-                	if (PythonScriptFile!=NULL)
-                		fclose(PythonScriptFile);
+                   if(PyString.length() > 0) {
+                       // Python-string from WebEditor
+                       Plugins::PyRun_SimpleStringFlags(PyString.c_str(), NULL);
+                       
+                   } else {
+                       // Script-file
+                       FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+                       Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
+                       
+                       if (PythonScriptFile!=NULL)
+                           fclose(PythonScriptFile);
+                   }
                 } else {
                     _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
                 }
