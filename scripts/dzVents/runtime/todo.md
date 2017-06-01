@@ -12,3 +12,8 @@
 * time-limited device triggers in docs
 * security events
 * deprecations doc
+
+*co2 device?
+
+changes:
+counterToday > number

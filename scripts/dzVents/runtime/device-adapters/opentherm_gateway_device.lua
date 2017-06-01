@@ -5,7 +5,7 @@ return {
 	name = 'OpenTherm gateway device adapter',
 
 	matches = function (device)
-		return (device.hardwareTypeVal == 20 and device.deviceSubType == 'SetPoint')
+		return (device.hardwareTypeValue == 20 and device.deviceSubType == 'SetPoint')
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

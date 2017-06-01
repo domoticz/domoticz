@@ -5,7 +5,7 @@ return {
 	name = 'Evohome device adapter',
 
 	matches = function (device)
-		return (device.hardwareTypeVal == 39 and device.deviceSubType == 'Zone')
+		return (device.hardwareTypeValue == 39 and device.deviceSubType == 'Zone')
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

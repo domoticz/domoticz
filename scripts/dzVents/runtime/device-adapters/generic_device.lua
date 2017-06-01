@@ -57,7 +57,7 @@ return {
 			device['hardwareName'] = data.hardwareName
 			device['hardwareType'] = data.hardwareType
 			device['hardwareId'] = data.hardwareID
-			device['hardwareTypeVal'] = data.hardwareTypeValue
+			device['hardwareTypeValue'] = data.hardwareTypeValue
 			device['switchType'] = data.switchType
 			device['switchTypeValue'] = data.switchTypeValue
 			device['timedOut'] = data.timedOut
