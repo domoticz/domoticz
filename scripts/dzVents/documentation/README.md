@@ -59,7 +59,9 @@ Let's start with an example. Let's say you have a switch that when activated, it
     return {
     	active = true,
     	on = {
-    		'Room switch'
+    		devices = {
+	    		'Room switch'
+    		}
     	},
     	execute = function(domoticz, roomSwitch)
     		if (roomSwitch.state == 'On' and domoticz.devices['Living room'].temperature > 18) then
@@ -77,11 +79,11 @@ Or you have a timer script that should be executed every 10 minutes but only on 
     return {
     	active = true,
     	on = {
-    		['timer'] = {'Every 10 minutes on mon,tue,wed,thu,fri'}
+    		timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
     	},
     	execute = function(domoticz)
     		-- check time of the day
-    		if (domoticz.time.isDayTime and domoticz.variables['myVar'].nValue == 10) then
+    		if (domoticz.time.isDayTime and domoticz.variables['myVar'].value == 10) then
     			domoticz.variables['anotherVar'].set(15)
     			--activate my scene
     			domoticz.setScene('Evening lights', 'On')
@@ -92,12 +94,16 @@ Or you have a timer script that should be executed every 10 minutes but only on 
     	end
     }
 
-Or you want to detect a humidity rise since the past 5 minutes:
+Or you want to detect a humidity rise within the past 5 minutes:
 
     return {
     	active = true,
-    	on = { ['timer'] = 'every 5 minutes },
-    	data = { previousHumidity = { initial = 100 } },
+    	on = {
+	    	timer = {'every 5 minutes'}
+    	},
+    	data = {
+	    	previousHumidity = { initial = 100 }
+    	},
     	execute = function(domoticz)
     		local bathroomSensor = domoticz.devices['BathroomSensor']
     		if (bathroomSensor.humidity - domoticz.data.previousHumidity) >= 5) then
@@ -109,90 +115,59 @@ Or you want to detect a humidity rise since the past 5 minutes:
     	end
     }
 
-Just to give you an idea! Everything that was previously scattered around in a dozen Lua tables is now logically available in the domoticz object structure. From there you can get to all the information and you can control the devices.
+Just to give you an idea! Everything in your Domoticz system is now logically available in the domoticz object structure. With this domoticz object you can get to all the information in your system and manipulate your devices.
 
-# Installing
-*First of all, installing dzVents will not affect any of the scripts you have already in place so you can try dzVents without disrupting things.*
+# Using dzVents with Domoticz
+In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked.
 
-Note: this code is *not* tested on a non-linux machine like Windows. I'm almost certain you will have complications.
+There are two ways of creating dzVents event script in Domoticz:
 
-Download the latest release from [GitHub](https://github.com/dannybloe/dzVents/releases), unzip it.
-Form the extracted zip folder copy the following to the Domoticz script folder (`/path/to/domoticz/scripts/lua`):
+ 1. By creating lua scripts in your domoticz instance on your domoticz server: `/path/to/domoticz/scripts/dzVents/scripts`. Make sure that each script has the extension `.lua` and follows the guidelines as described below.
+ 2. By creating lua scripts inside Domoticz using the internal Domoticz event editor: Go to **Setup > More Options > Events** and set the event type to Lua (dzVents).
 
- -  The `dzVents` folder. This folder contains all the dzVents logic
- - `script_time_main.lua`
- - `script_device_main.lua`
- - `dzVents_settings_example.lua` and
- - the folder `scripts`
-
-After doing so you will have this structure:
-
-    domoticz/
-    	scripts/
-    		lua/
-    			dzVents/
-    				... <dzVents files> ...
-    				examples/
-    				tests/
-    			scripts/
-    			script_time_main.lua
-    			script_device_main.lua
-    			dzVents_settings_example.lua
-    			... <other stuff that was already there> ...
-
-Now **rename** the file `dzVents_settings_example.lua` to `dzVents_settings.lua`, open the file in an editor and enter the ip number and port number of your Domoticz instance. Make sure that you don't need a username/password for local networks (see Domoticz settings) or dzVents will not be able to fetch additional data like battery status and device type information! If you don't want  or need this then you can set `['Enable http fetch']` to `false` but you will miss some of the handy features if you do so!
-
-The scripts folder is where you put your new Lua event scripts. You can give them any name with the `.lua` extension (no need for *script_device* nor *script_time* prefixing).
 
 ## Quickstart
-After you placed the dzVents files in the right location we can do a quick test if everything works:
+If you made sure that dzVents system is active we can do a quick test if everything works:
 
  - Pick a switch in your Domoticz system. Note down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.
- - Create a new script in the `scripts/` folder. Call it `test.lua`.
+ - Create a new script in the `scripts/` folder (or in Domoticz). Call it `test.lua`.
  - Open `test.lua` in an editor and fill it with this code and change `<exact name of the switch>` with the .. you guessed it... exact name of the switch device:
 ```
      return {
     	active = true,
     	on = {
-    		'<exact name of the switch>'
+	    	devices = {
+	    		'<exact name of the switch>'
+    		}
     	},
     	execute = function(domoticz, switch)
     		if (switch.state == 'On') then
     			domoticz.notify('Hey!', 'I am on!',
-    			domoticz.PRIORITY_NORMAL)
+	    			domoticz.PRIORITY_NORMAL)
     		else
     			domoticz.notify('Hey!', 'I am off!',
-    			domoticz.PRIORITY_NORMAL)
+	    			domoticz.PRIORITY_NORMAL)
     		end
     	end
     }
 ```
  - Save the script
  - Open the Domoticz log in the browser
- - In Domoticz (another tab perhaps) press the switch.
+ - In Domoticz  GUI (perhaps in another browser tab) press the switch.
  - You can watch the log in Domoticz and it should show you that indeed it triggered your script.
- - Assuming of course that you have configured the notify options in Domoticz. Otherwise you can change the lines with `domoticz.notify` to `domoticz.email(<your address>)`.
+ - Assuming of course that you have configured the notify options in Domoticz setup. Otherwise you can change the lines with `domoticz.notify` to `domoticz.email(<your address>)`.
 
 The [examples folder](/dzVents/examples) has a couple of example scripts
 
-# How does it to work?
-Normally, every time a device is updated in Domoticz it scans the script folder `../domoticz/scripts/lua` and executes *every script it can find starting with script_device* but before it does so, for each and every script, it builds all the necessary global Lua tables. This takes quite some time especially when you have a lot of scripts. Also, you have to program logic in every script to prevent the code from being executed when you don't want to (e.g. the device wasn't updated).
-
-dzVents optimizes this process. All the event scripts that you make using dzVents will have to sit in the scripts folder and the two main script `script_device_main.lua` and `script_time.main.lua` make sure the right event scripts are called. Don't change these two files.
-
-All other scripts can live alongside the dzVents scripts. However, in order to have them work with dzVents you have to adapt them a little (and move them over to the scripts folder).
-
-*Note: there are two other kinds of scripts that Domoticz might call: `script_security..` and `script_variable..`. They will not be affected by dzVents just yet.*
-
-So, how to adapt the scripts?
-
-## Adapting or creating your scripts
-In order for your scripts to work with dzVents, they have to be turned into a Lua module. Basically you make sure it returns a Lua table (object) with a couple of predefined keys `active`, `on` and `execute`.. Here is an example:
+# Adapting or creating your scripts
+In order for your scripts to work with dzVents, they have to be turned into a Lua module. Basically you make sure it returns a Lua table (object) with a couple of predefined keys like `active`, `on` and `execute`.. Here is an example:
 
     return {
         active = true,
         on = {
-            'My switch'
+            devices = {
+	            'My switch'
+            }
         },
         execute = function(domoticz, device)
             -- your script logic goes here, something like this:
@@ -209,85 +184,121 @@ So, the module returns a table with these sections (keys):
 
     return {
         active = ... ,
-        on = { ... },
+        on = {
+	        devices = { ... },
+	        variables = { ... },
+	        timer = { ... },
+	        security = { ... }
+        },
         data = { ... },
         execute = function(domoticz, device, triggerInfo)
     		...
         end
     }
 
-* **on = { .. }**: (*don't confuse this with **on**/off, it is more like: **on** < some event > **execute** < code >*). This is a Lua table (kind of an array) with **one or more** trigger events:
-    * The name of your device between string quotes. **You can use the asterisk (\*) wild-card here e.g. `PIR_*` or `*_PIR` .** Note that in one cycle several devices could have been updated. If you have a script with a wild-card trigger that matches all the names of these changed devices, then this script will be executed *for all these changed devices*.
-    * The index of your device (the name may change, the index will usually stay the same),
-    * A 'devices' table holding a list of device names or ids: `'devices' = { 'deviceNameA', 'deviceNameB'}`. This can be useful if you have a variable holding the devices that you use for defining the triggers and use in your code.
-    * The string or table 'timer' which makes the script execute every minute (see the section **timer trigger options** [below](#timer-trigger-options)).
-    * Or a **combination**.
+## Sections in the script
+As you can see in the example above, the script has a couple of sections necessary for the script to do when and what you want:
 
-    So you can put as many triggers in there as you like and only if one of those is met, then the **execute** part is executed by dzVents.
-* **active = true/false**: this can either be:
-	* a boolean value (`true` or `false`, no quotes!). When set to `false`, the script will not be called. This is handy for when you are still writing the script and you don't want it to be executed just yet or when you simply want to disable it.
-	* A function returning `true` or `false`. The function will receive the domoticz object with all the information about you domoticz instance: `active = function(domoticz) .... end`. So for example you could check for a Domoticz variable or switch and prevent the script from being executed. **However, be aware that for *every script* in your scripts folder, this active function will be called, every cycle!! So, it is better to put all your logic in the execute function instead of in the active function.** Maybe it is better to not allow a function here at all... /me wonders.
-* **execute = function(domoticz, device, triggerInfo)**: This part should be a function that is called by dzVents and contains the actual logic. You can copy the code from your existing script into this section. The execute function receives three possible parameters:
-	* the [domoticz object](#domoticz-object-api). This gives access to almost everything in your Domoticz system including all methods to manipulate them like modifying switches or sending notifications. *There shouldn't be any need to manipulate the commandArray anymore.* (If there is a need, please let me know and I'll fix it). More about the domoticz object below.
-	* the actual [device](#device-object-api) that was defined in the **on** part and caused the script to be called. **Note: of course, if the script was triggered by a timer event, this parameter is *nil*! You may have to test this in your code if your script is triggered by timer events AND device events**
-	* information about what triggered the script. This is a small table with two keys:
-		* **triggerInfo.type**: (either domoticz.EVENT_TYPE_TIMER  or domoticz.EVENT_TYPE_DEVICE): was the script executed due to a timer event or a device-change event.
-		* **triggerInfo.trigger**: which timer rule triggered the script in case the script was called due to a timer event. See [below](#timer-trigger-options) for the possible timer trigger options. Note that dzVents lists the first timer definition that matches the current time so if there are more timer triggers that could have been triggering the script, dzVents only picks the first for this trigger property.
-* **data = { .. }**: A Lua table defining variables that will be persisted between script runs. These variables can get a value in your execute function (e.g. `domoticz.data.previousTemperature = device.temperature`) and the next time the script is executed this value is again available in your code (e.g. `if (domoticz.data.previousTemperature < 20) then ...`. For more info see the section [persistent data](#persistent-data).
+### active = { ... }
+If the active-setting is false then the script is not activated. dzVents will ignore the file completely.
+The active setting can either be:
+
+ - **true**: the script file will be processed.
+ - **false**: the script file is ignored.
+ - **function**:   A function returning `true` or `false`. The function will receive the domoticz object with all the information about you domoticz instance: `active = function(domoticz) .... end`. So for example you could check for a Domoticz variable or switch and prevent the script from being executed. **However, be aware that for *every script* in your scripts folder, this active function will be called, every cycle!! So, it is better to put all your logic in the execute function instead of in the active function.**
+
+### on = { ... }
+The on-section holds all the events/triggers that are monitored by dzVents. If any of the events or triggers matches with the current event then the execute part of the script is executed.
+The on-section has four kinds of subsections that *can all be used simultaneously!* :
+
+ - **devices = { ...}**: this is a list of devices. Each device can be:
+	 -  The name of your device between string quotes. **You can use the asterisk (\*) wild-card here e.g. `PIR_*` or `*_PIR`**.  E.g.: `devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }`
+	 - The index of your device (the name may change, the index will usually stay the same),
+	 - The name/id of your device followed by a time constraint (similar to what you can do):
+		 - `['myDevice']  = { 'at 15:*', 'at 22:** on sat, sun' }` The script will be executed if `myDevice` was changed and it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
+ - **timer = { ... }**: a list of time triggers like `every minute` or `at 17:*`. See [below](#timer-trigger-options).
+ - **variables = { ... }**: a list of user variable-names as defined in Domoticz ( Setup > More options > User variables). If any of the variables listed here changes, the script is executed.
+ - **security = { ... }**: a list of security states. If the security state in Domoticz changes and it matches with any of the states listed here, the script will be executed.
+
+### execute = function(domoticz, device/variable, triggerInfo) ... end
+When al the above conditions are met (active == true and the on section has at least one matching rule) then this function is called. This is the heart of your script. The function receives three possible parameters:
+
+ - the [domoticz object](#domoticz-object-api). This gives access to almost everything in your Domoticz system including all methods to manipulate them like modifying switches or sending notifications. More about the domoticz object below.
+ - the actual [device](#device-object-api) or [variable](#variable-object-api) that was defined in the **on** part and caused the script to be called. **Note: of course, if the script was triggered by a timer event, or a security-change event this parameter is *nil*! You may have to test this in your code if your script is triggered by timer events AND device events**
+ - information about what triggered the script. This is a small table with two keys:
+		* **triggerInfo.type**: (either domoticz.EVENT_TYPE_TIMER, domoticz.EVENT_TYPE_DEVICE, domoticz.EVENT_TYPE_SECURITY or domoticz.EVENT_TYPE_VARIABLE): was the script executed due to a timer event, device-change event, security-change or user variable-change event?
+		* **triggerInfo.trigger**: which timer rule triggered the script in case the script was called due to a timer event. or the security state that triggered the security trigger rule. See [below](#timer-trigger-options) for the possible timer trigger options. Note that dzVents lists the first timer definition that matches the current time so if there are more timer triggers that could have been triggering the script, dzVents only picks the first for this trigger property.
+
+### data = { ... }
+The optional data section allows you to define variables that will be persisted between script runs. These variables can get a value in your execute function (e.g. `domoticz.data.previousTemperature = device.temperature`) and the next time the script is executed this value is again available in your code (e.g. `if (domoticz.data.previousTemperature < 20) then ...`. For more info see the section [persistent data](#persistent-data). *Note that this functionality is kind of experimental. It can be a bit fragile so don't let your entire domotica system depend on the current state of these variables.*
+
+### logging = { ... }
+The optional logging setting allows you to override the global logging setting of dzVents as set in Setup > Settings > Other > EventSystem > dzVents Log Level. This can be handy when you only want this script to have extensive debug logging while the rest of your script execute silently. You have these options:
+
+ - **level**: This is the log-level you want for this script. Can be either domoticz.LOG_INFO, domoticz.LOG_MODULE_EXEC_INFO, domoticz.LOG_DEBUG or domoticz.LOG_ERROR
+ - **marker**: A string that is prefixed before each log message. That way you can easily create a filter in the Domoticz log to just see these messages.
+
+E.g:
+```
+logging = {
+	level = domoticz.LOG_DEBUG,
+	marker = "Hey you"
+	},
+```
 
 ## *timer* trigger options
-There are several options for time triggers. It is important to know that Domoticz timer events are only trigger once every minute. So that is the smallest interval for you timer scripts. However, dzVents gives you a great many options to have full control over when and how often your timer scripts are called (all times are in 24hr format!). You can create full schedules (sorry about the weird bracket syntax, that's just Lua):
+There are several options for time triggers. It is important to know that Domoticz timer events are only trigger once every minute. So that is the smallest interval for you timer scripts. However, dzVents gives you great many options to have full control over when and how often your timer scripts are called (all times are in 24hr format!). :
 
     on = {
-        'timer'                            -- the simplest form, causes the script to be called every minute
-        ['timer'] = 'every minute',        -- same as above: every minute
-        ['timer'] = 'every other minute',  -- minutes: xx:00, xx:02, xx:04, ..., xx:58
-        ['timer'] = 'every <xx> minutes',  -- starting from xx:00 triggers every xx minutes
-                                           -- (0 > xx < 60)
-        ['timer'] = 'every hour',          -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
-        ['timer'] = 'every other hour',    -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
-        ['timer'] = 'every <xx> hours',    -- starting from 00:00, triggers every xx
-                                           -- hours (0 > xx < 24)
-        ['timer'] = 'at 13:45',            -- specific time
-        ['timer'] = 'at *:45',             -- every 45th minute in the hour
-        ['timer'] = 'at 15:*',             -- every minute between 15:00 and 16:00
-        ['timer'] = 'at 13:45 on mon,tue', -- at 13:45 only on Monday en Tuesday (english)
-        ['timer'] = 'every hour on sat',   -- you guessed it correctly
-        ['timer'] = 'at sunset',           -- uses sunset/sunrise info from Domoticz
-        ['timer'] = 'at sunrise',
-        ['timer'] = 'at sunset on sat,sun'
-
-        -- and last but not least, you can create a table with multiples:
-        ['timer'] = {'at 13:45', 'at 18:37', 'every 3 minutes'},
-
-    },
+	    timer = {
+			'every minute',        -- causes the script to be called every minute
+	        'every other minute',  -- minutes: xx:00, xx:02, xx:04, ..., xx:58
+	        'every <xx> minutes',  -- starting from xx:00 triggers every xx minutes
+	                               -- (0 > xx < 60)
+	        'every hour',          -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
+	        'every other hour',    -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
+	        'every <xx> hours',    -- starting from 00:00, triggers every xx
+	                               -- hours (0 > xx < 24)
+	        'at 13:45',            -- specific time
+	        'at *:45',             -- every 45th minute in the hour
+	        'at 15:*',             -- every minute between 15:00 and 16:00
+	        'at 13:45 on mon,tue', -- at 13:45 only on Monday en Tuesday (english)
+	        'every hour on sat',   -- you guessed it correctly
+	        'at sunset',           -- uses sunset/sunrise info from Domoticz
+	        'at sunrise',
+	        'at sunset on sat,sun'
+	   },
+   }
 
 **One important note: if Domoticz, for whatever reason, skips a beat (skips a timer event) then you may miss the trigger! So you may have to build in some fail-safe checks or some redundancy if you have critical time-based stuff to control. There is nothing dzVents can do about it**
 
+Another important issue: the way it is implemented right now the `every xx minutes` and `every xx hours` is a bit limited. The interval resets at every \*:00  (for minutes) or 00:* for hours. So you need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes.
+
 # The domoticz object
-And now the most interesting part. Before, all the device information was scattered around in a dozen global Lua tables like `otherdevices` or `devicechanged`. You had to write a lot of code to collect all this information and build your logic around it. And, when you want to update switches and stuff you had to fill the commandArray with often low-level stuff in order to make it work.
-
-**IMPORTANT: Make sure that all your devices have unique names!! dzVents doesn't check for duplicates!!**
-
+And now the most interesting part. Without dzVents all the device information was scattered around in a dozen global Lua tables like `otherdevices` or `devicechanged`. You had to write a lot of code to collect all this information and build your logic around it. And, when you want to update switches and stuff you had to fill the commandArray with often low-level stuff in order to make it work.
 Fear no more: introducing the **domoticz object**.
 
-The domoticz object contains everything that you need to know in your scripts and all the methods (hopefully) to manipulate your devices and sensors. Getting this information has never been more easy:
+The domoticz object contains everything that you need to know in your scripts and all the methods to manipulate your devices and sensors. Getting this information has never been more easy:
 
 `domoticz.time.isDayTime` or `domoticz.devices['My sensor'].temperature` or `domoticz.devices['My sensor'].lastUpdate.minutesAgo`.
 
 So this object structure contains all the information logically arranged where you would expect it to be. Also, it harbors methods to manipulate Domoticz or devices. dzVents will create the commandArray contents for you and all you have to do is something like `domoticz.devices[123].switchOn().for_min(5).after_sec(10)` or `domoticz.devices['My dummy sensor'].updateBarometer(1034, domoticz.BARO_THUNDERSTORM)`.
 
-*The intention is that you don't have to construct low-level commandArray-commands for Domoticz anymore!* Please let me know if there is anything missing there. Of course there is a method `domotiz.sendCommand(..)` that allows you to send raw Domoticz commands in case there indeed is some update function missing.
+*The intention is that you don't have to construct low-level commandArray-commands for Domoticz anymore!* The domoticz object tries to encapsulate every low-level commandArray-command into a nice API.  If there is still something missing, please file a report in the Domoticz issue-tracker on github and until then you can always use the sendCommand method which will dispatch the command to the commandArray
+
+One tip:
+**Make sure that all your devices have unique names!! dzVents doesn't check for duplicates!!**
 
 ## Domoticz object API
-The domoticz object holds all information about your Domoticz system. It has a couple of global attributes and methods to query and manipulate your system. It also has a collection of **devices** and **variables** (user variables in Domoticz) and when applicable, a collection of **changedDevices**. There three collection each have two iterator functions: `forEach(function)` and `filter(function)` to make searching for devices easier. See [iterators](#iterators) below.
+The domoticz object holds all information about your Domoticz system. It has a couple of global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups** and when applicable, a collection of **changedDevices** and **changedVariables**. All these collections each have three iterator functions: `forEach(function)`, `filter(function)` and `reduce(function)` to make searching for devices easier. See [iterators](#iterators) below.
 
 ### Domoticz attributes:
 
  - **changedDevices**: *Table*. A collection holding all the devices that have been updated in this cycle.
+ - **changedVariables**: *Table*. A collection holding all the variables that have been updated in this cycle.
  - **devices**: *Table*. A collection with all the *device objects*. You can get a device by its name or id: `domoticz.devices[123]` or `domoticz.devices['My switch']`. See [Device object API](#device-object-api) below.
- - **groups**: *Table*: A collection with all the groups. Each group has the same interface as a device. See [Device object API](#device-object-api). Of course a group has far less properties than a regular device.  Only available when [http fetching](#fetching-http-data) is enabled.
- - **scenes**: *Table*: A collection with all the scenes. Each scene has the same interface as a device. See [Device object API](#device-object-api). Of course a scene has far less properties than a regular device.  Only available when [http fetching](#fetching-http-data) is enabled.
+ - **groups**: *Table*: A collection with all the groups. Each group has the same interface as a device. Of course a group has far less properties than a regular device.
+ - **scenes**: *Table*: A collection with all the scenes. Each scene has the same interface as a device. See [Device object API](#device-object-api). Of course a scene has far less properties than a regular device.
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **time**: Current system time:
 	 - **day**: *Number*
@@ -310,22 +321,20 @@ The domoticz object holds all information about your Domoticz system. It has a c
 ### Domoticz methods
 
  - **email(subject, message, mailTo)**: *Function*. Send email.
- - **fetchHttpDomoticzData**: *Function*. This will trigger a script that will download the device data from Domoticz and stores this on the filesystem for dzVents to use. This data contains information like battery level and device type information that can only be fetched through an http call. Normally dzVents will do this automatically in the background if it is enabled in the `dzVents_settings.lua` file. If you want to do this manually through an event script perhaps (you can use a switch trigger for instance) then you can disable the automatic fetching by changing the setting in `dzVents_settings.lua` and create your own event.
- - **log(message, [level]):** *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG` or `domoticz.LOG_ERROR`. In `dzVents_settings.lua` you can specify which kind of log message will be printed.
-  - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification substystems. See `domoticz.NSS_xxx` types.
+ - **log(message, [level]):** *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG` or `domoticz.LOG_ERROR`. In Domoticz settings you can set the log level for dzVents.
+  - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
  - **openURL(url)**: *Function*. Have Domoticz 'call' a URL.
- - **sendCommand(command, value)**: *Function*. Generic command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
+ - **sendCommand(command, value)**: *Function*. Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **setScene(scene, value)**: *Function*. E.g. `domoticz.setScene('My scene', 'On')`. Supports timing options. See below.
  - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
  - **switchGroup(group, value)**: *Function*. E.g. `domoticz.switchGroup('My group', 'Off')`. Supports timing options. See below.
 
 ### Iterators
-The domoticz object has three collections (tables): devices, changedDevices and variables. In order to make iterating over these collections easier dzVents has two iterator methods so you don't need to use the `pair()` or `ipairs()` function anymore (less code to write):
+The domoticz object has a couple of collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. In order to make iterating over these collections easier, dzVents has three iterator methods so you don't need to use the `pair()` or `ipairs()` function anymore (less code to write):
 
  1. **forEach(function):** Executes a provided function once per array element. The function receives the item in the collection (device or variable) and the key and the collection itself. If you return *false* in the function then the loop is aborted.
  2. **filter(function):** returns items in the collection for which the function returns true.
- 3. **reduce(function, initial)**:  Loop over all items in the collection and do some calculation with it. You call  with the function and the initial value. Each iteration the function is called with the accumulator and the item in the collection. The function does something with the accumulator and returns a new value for it.
-
+ 3. **reduce(function, initial)**:  Loop over all items in the collection and do some calculation with it. You call it with the function and the initial value. Each iteration the function is called with the accumulator and the item in the collection. The function does something with the accumulator and returns a new value for it.
 
 Best to illustrate with an example:
 
@@ -365,50 +374,56 @@ Using a reducer to count all devices that are switched on:
 ### Contants
 
  - **ALERTLEVEL_GREY**, **ALERTLEVEL_GREEN**, **ALERTLEVEL_ORANGE**, **ALERTLEVEL_RED**, **ALERTLEVEL_YELLOW**: For updating text sensors.
- - **BARO_CLOUDY**, **BARO_CLOUDY_RAIN**, **BARO_STABLE**, **BARO_SUNNY**, **BARO_THUNDERSTORM**, **BARO_UNKNOWN**, **BARO_UNSTABLE**: For updating barometric values.
+ - **BARO_CLOUDY**, **BARO_CLOUDY_RAIN**, **BARO_STABLE**, **BARO_SUNNY**, **BARO_THUNDERSTORM**, **BARO_NOINFO**, **BARO_UNSTABLE**: For updating barometric values.
+ - **EVENT_TYPE_DEVICE**, **EVENT_TYPE_VARIABLE**, **EVENT_TYPE_SECURITY**, **EVENT_TYPE_TIMER**: triggerInfo types passed to the execute function in your scripts.
+ - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**: mode for EvoHome system.
  - **HUM_COMFORTABLE**, **HUM_DRY**, **HUM_NORMAL**, **HUM_WET**: Constant for humidity status.
+ - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
  - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**: For logging messages.
+ - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**,
+**NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: For notification priority.
  - **SECURITY_ARMEDAWAY**, **SECURITY_ARMEDHOME**, **SECURITY_DISARMED**: For security state.
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: For notification sounds.
- - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**: for EvoHome set point controlling.
- - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**,
-**NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**: for notification subsystem
-
 
 ## Device object API
-Each device in Domoticz can be found in the `domoticz.devices` collection as listed above. The device object has a set of fixed attributes like *name* and *id*. Many devices though (like sensors) have special attributes like *temperature*, *humidity* etc. These attributes are also available on each device object *when applicable*.
+Each device in Domoticz can be found in the `domoticz.devices` collection as listed above. The device object has a set of fixed attributes like *name* and *id*. Many devices though have different attributes and methods depending on there (hardware)type, subtype and other device specific identifiers. So it is possible that you will get an error if you call a method on a device that doesn't support it. If that is the case please check the device properties (can also be done in your script code!).
 
-### Fetching http data
-Some attributes are not exposed by Domoticz to the event scripts. Fortunately dzVents can fetch this information through http (json call) and extends this missing information to the device data it already got from Domoticz. If you still find some attributes missing you can check the rawData property of a device. Most likely you will find it there:
+dzVents already recognizes most of the devices and creates the proper attributes and methods. It is always possible that your device-type has attributes that are not recognized. If that's the case please create a ticket in Domoticz issue-tracker on GitHub and an adapter for that device will be added.
 
-
-	domoticz.devices['mySensor'].temperature
-	domoticz.devices['myLightSensor'].rawData[1] -- lux value, rawData is an indexed table!
-
-You can control this fetching in the [settings](#settings).
-
-**Important: if you disable fetching http data in the settings then some attributes are not available and you will have to get them from the rawData set yourself. dzVents doesn't know device type information in that case so it doesn't know what is in the raw data it gets from Domoticz.**
+Most of the time when your device is not recognized you can always use the `rawData` attribute as that will almost always hold all the data that is available in Domoticz.
 
 ### Device attributes
-
- - **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255). Only available when [http fetching](#fetching-http-data) is enabled.
- - **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
- - **barometer**: Only when applicable.
- - **changed**: *Boolean*. True if the device was changed
- - **counterToday**: *String*. Today's counter value for counter devices. Formatted string with unit. Only available when [http fetching](../README.md/#fetching-http-data) is enabled.
- - **counterTotal**: *String*. Total counter value for counter devices. Formatted string with unit. Only available when [http fetching](../README.md/#fetching-http-data) is enabled.
- - **description**: *String*. Description of the device. Only available when [http fetching](#fetching-http-data) is enabled.Only available when [http fetching](../README.md/#fetching-http-data) is enabled.
- - **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **deviceType**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **dewpoint**: Only when applicable.
- - **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **hardwareTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **humidity**: Only when applicable.
- - **id**: *Number*. Id of the device
- - **lastUpdate**:
+ 1. **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255).
+ 2. **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
+ 3. **barometer**
+ 4. **changed**: *Boolean*. True if the device was changed
+ 5. **chill**: *Number*. Chill temperature for temperature/wind devices that support it.
+ 6. **co2**
+ 7. **counter**: *Number*
+ 8. **counterToday**: *Number*. Today's counter value for counter devices.
+ 9. **counterDeliveredToday**: *Number*. Counter delivered today for P1 smart meter devices.
+ 10. **counterTotal**: *String*. Total counter value for counter devices. Formatted string with unit.
+ 11. **description**: *String*. Description of the device.
+ 12. **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
+ 13. **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
+ 14. **dewPoint**: *Number*
+ 15. **direction**: *Number*. Wind direction.
+ 16. **directionString**: *String*. Formatted wind direction.
+ 17. **distance**: *Number*. For distance devices.
+ 18. **forecast**: *Number*.
+ 19. **forecastString**: *String*.
+ 20. **gust**: *Number*. For Wind devices.
+ 21. **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
+ 22. **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
+ 23. **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
+ 24. **hardwareTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ 25. **heatingMode**: *String*. For zoned thermostats like EvoHome.
+ 26. **humidity**: *Number*
+ 27. **humidityStatus**: *String*
+ 28. **icon**: *String*. Name of the icon in Domoticz GUI.
+ 28. **id**: *Number*. Id of the device
+ 29. **lastUpdate**:
 	 - **day**: *Number*
 	 - **getISO**: *Function*. Returns the ISO 8601 formatted date.
 	 - **hour**: *Number*
@@ -423,30 +438,49 @@ You can control this fetching in the [settings](#settings).
 	 - **sec**: *Number*
 	 - **secondsAgo**: *Number*. Number of seconds since the last update.
 	 - **year**: *Number*
- - **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
- - **lux**: *Number*. Lux level for light sensors.  Only available when [http fetching](#fetching-http-data) is enabled.
- - **name**: *String*. Name of the device
- - **rain**: Only when applicable.
- - **rainLastHour**: Only when applicable.
- - **rawData**: *Table*:  Not all information from a device is available as a named attribute on the device object. That is because Domoticz doesn't provide this as such. If you have a multi-sensor for instance then you can find all data points in this **rawData** *String*. It is an array (Lua table). E.g. to get the Lux value of a sensor you can do this: `local lux = mySensor.rawData[1]` (assuming it is the first value that is passed by Domoticz). Note that the values are string types!! So if you expect a number, convert it first (`tonumber(device.rawData[1]`).
- - **signalLevel**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
- - **setPoint**: *Number*. Holds the set point for thermostat like devices.  Only available when [http fetching](#fetching-http-data) is enabled.
- - **heatingMode**: *String*. For zoned thermostats like EvoHome. Only available when [http fetching](#fetching-http-data) is enabled.
- - **switchType**: *String*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI. Only available when [http fetching](#fetching-http-data) is enabled.
- - **temperature**: Only when applicable.
- - **text**: Text value for dummy text devices. Only available when [http fetching](#fetching-http-data) is enabled.
- - **timedOut**: *Boolean*. Is true when the device couldn't be reached. Only available when [http fetching](#fetching-http-data) is enabled.
- - **utility**: Only when applicable.
- - **uv**: Only when applicable.
- - **weather**: Only when applicable.
- - **WActual**: *Number*. Current Watt usage. Only available when [http fetching](#fetching-http-data) is enabled.
- - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh. Only available when [http fetching](#fetching-http-data) is enabled.
- - **WhTotal**: *Number*. Total Wh (incremental). Only available when [http fetching](#fetching-http-data) is enabled.
- - **winddir**: Only when applicable.
- - **windgust**: Only when applicable.
- - **windspeed**: Only when applicable.
+ 30. **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
+ 31. **levelActions**: *String*. |-separated list of url actions for selector switches.
+ 32. **levelName**: *Table*. Table holding the level names for selector switch devices.
+ 33. **lux**: *Number*. Lux level for light sensors.
+ 34. **name**: *String*. Name of the device.
+ 35. **maxDimLevel**: *Number*.
+ 36. **moisture**: *String*.
+ 37. **percentage**: *Number*. Percentage for percentage devices.
+ 38. **pressure**: *Number*. For pressure devices.
+ 38. **quality**: *String*. Formatted label for air quality devices.
+ 39. **radiation**: *Number*
+ 39. **rain**: *Number*
+ 40. **rainLastHour**
+ 41. **rainRate**: *Number*
+ 41. **rawData**: *Table*:  All values are *String* types and hold the raw data received from Domoticz.
+ 42. **return1**, **return2**: *Number*. Return values for P1 smart meter devices.
+ 43. **setPoint**: *Number*. Holds the set point for thermostat like devices.
+ 44. **sensorType**: *Number*. Type of a custom sensor.
+ 45. **sensorUnit**: *String*: Unit of the custom sensor.
+ 44. **signalLevel**: *String*. See Domoticz devices table in Domoticz GUI.
+ 45. **speed**: *Number*. Wind speed.
+ 45. **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
+ 46. **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
+ 47. **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ 48. **temperature**: *Number*
+ 49. **text**: Text value for dummy text devices.
+ 50. **timedOut**: *Boolean*. Is true when the device couldn't be reached.
+ 51. **usage1**, **usage2**: *Number*. Usages for P1 smart meter devices
+ 52. **usage**: *Number*. Usage for P1 smart meter devices.
+ 53. **usageDelivered**: *Number*. Delivered usage for P1 smart meter devices.
+ 54. **utility**
+ 55. **uv**: *Number*.
+ 56. **valueQuantity**: *String*. For counters.
+ 57. **valueUnits**: *String*.
+ 57. **visibility**: *Number*. For visibility devices.
+ 58. **voltage**: *Number*. For voltage devices.
+ 56. **weather**
+ 57. **WActual**: *Number*. Current Watt usage.
+ 58. **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh.
+ 59. **WhTotal**: *Number*. Total Wh (incremental).
+ 60. **winddir**
+ 61. **windgust**
+ 62. **windspeed**
 
 ### Device methods
 
@@ -467,37 +501,30 @@ You can control this fetching in the [settings](#settings).
  - **switchOn()**: *Function*.  Switch device on if it supports it. Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **switchSelector(level)**:  *Function*. Switches a selector switch to a specific level (numeric value, see the edit page in Domoticz for such a switch to get a list of the values). Supports timing options. See [below](#switch-timing-options-delay-duration).
  - **update(< params >)**: *Function*. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`
+ - **toggleGroup()**: *Function*. Toggles the state of a group.
  - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
- - **updateAirQuality(quality)**: *Function*.
+ - **updateAirQuality(ppm)**: *Function*. Pass the CO2 concentration.
  - **updateAlertSensor(level, text)**: *Function*. Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREE, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED
- - **updateBarometer(pressure, forecast)**: *Function*. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM, BARO_UNKNOWN, BARO_CLOUDY_RAIN
- - **updateCounter(value)**: *Function*.
- - **updateCustomSensor(value)**: *Function*.
- - **updateDistance(distance)**: *Function*.
- - **updateElectricity(power, energy)**: *Function*.
- - **updateGas(usage)**: *Function*.
+ - **updateBarometer(pressure, forecast)**: *Function*. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM.
+ - **updateCounter(value)**: *Function*. Update counter devices.
+ - **updateCustomSensor(value)**: *Function*. Update custom sensor devices.
+ - **updateDistance(distance)**: *Function*. Update distance devices.
+ - **updateElectricity(power, energy)**: *Function*. Update electricity devices.
+ - **updateGas(usage)**: *Function*. Update gas devices.
  - **updateHumidity(humidity, status)**: *Function*. Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET
- - **updateLux(lux)**: *Function*.
- - **updateP1(sage1, usage2, return1, return2, cons, prod)**: *Function*.
- - **updatePercentage(percentage)**: *Function*.
- - **updatePressure(pressure)**: *Function*.
+ - **updateLux(lux)**: *Function*. Update lux devices.
+ - **updateP1(usage1, usage2, return1, return2, cons, prod)**: *Function*. Update P1 smart meter device.
+ - **updatePercentage(percentage)**: *Function*. Updates percentage devices.
+ - **updatePressure(pressure)**: *Function*. Update pressure devices
  - **updateRain(rate, counter)**: *Function*. Update rain sensor.
- - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point for dummy thermostat devices, OpenThermGW and EvoHome Zone devices. This uses http json calls to update setpoints so make sure your [http settings](#settings) are correct. For EvoHome devices mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`). Note that there is a bug in the EvoHome code which ignores the time zone so you may have to add/remove some hours depending on your time zone.
+ - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point for dummy thermostat devices, OpenThermGW and EvoHome Zone devices. For EvoHome devices mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`).
  - **updateTemperature(temperature)**: *Function*. Update temperature sensor.
  - **updateTempHum(temperature, humidity, status)**: *Function*. For status options see updateHumidity.
- - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*.
- - **updateText(text)**: *Function*.
- - **updateUV(uv)**: *Function*.
- - **updateVoltage(voltage)**: *Function*.
- - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*.
-
-> "Hey!! I don't see my sensor readings in the device object!! Where is my LUX value for instance?"
-
-That may be because Domoticz doesn't pass all the device data as named attributes. If you cannot find your attribute then you can inspect the **rawData** attribute of the device. This is a table (array) of values. So for a device that has a Lux value you may access it like this:
-
-    local lux = mySensor.rawData[0]
-
-Other devices may have more stuff in the rawData attribute like wind direction, energy info etc etc.
+ - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN
+ - **updateText(text)**: *Function*. Update text devices.
+ - **updateUV(uv)**: *Function*. Update UV devices.
+ - **updateVoltage(voltage)**: *Function*. Update voltage devices.
+ - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Update wind devices.
 
 ### Switch timing options (delay, duration)
 To specify a duration or a delay for the various switch command you can do this:
@@ -516,15 +543,17 @@ To specify a duration or a delay for the various switch command you can do this:
  - **for_min(minutes)**: *Function*. Activates the command for the duration of a certain amount of minutes (cannot be specified in seconds).
  - **within_min(minutes)**: *Function*. Activates the command within a certain period *randomly*.
 
-Note that **dimTo()** doesn't support **duration()**.
+Note that **dimTo()** doesn't support **for_min()**.
 
 ## Variable object API
 User variables created in Domoticz have these attributes and methods:
 
 ### Variable attributes
 
- - **nValue**: *Number*. **value** cast to number.
- - **value**: Raw value coming from Domoticz
+
+ - **changed**: *Boolean*. Was the device changed.
+ - **date**: *Date*. If type is domoticz.DATE. See lastUpdate for the sub-attributes.
+ - **id**: *Number*. Index of the variable.
  - **lastUpdate**:
 	 - **day**: *Number*
 	 - **getISO**: *Function*. Returns the ISO 8601 formatted date.
@@ -539,10 +568,14 @@ User variables created in Domoticz have these attributes and methods:
  	 - **rawTime**: *String*. Returns the time part of the raw data.
 	 - **sec**: *Number*
 	 - **year**: *Number*
+ - **name**: *String*. Name of the variable
+ - **time**: *Date*. If type is domoticz.TIME. See lastUpdate for the sub-attributes.
+ - **type**: *String*. Can be domoticz.INTEGER, domoticz.FLOAT, domoticz.STRING, domoticz.DATE, domoticz.TIME.
+ - **value**: *String|Number|Date|Time*. value of the variable.
 
 ### Variable methods
 
- - **set(value)**: *Function*. Tells Domoticz to update the variable. *No need to cast it to a string first (it will be done for you).*
+ - **set(value)**: *Function*. Tells Domoticz to update the variable.
 
 ## Create your own Time object
 dzVents comes with a Time object that my be useful to you. This object is used for the various time attributes like `domoticz.time`, `device.lastUpdate`. You can easily create such an object yourself:
