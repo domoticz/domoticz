@@ -131,6 +131,7 @@ private:
 	bool m_bequiet;
 	bool m_showlocation;
 	std::string m_szlocationName;
+	int m_lastconnect;
 
 	uint8_t m_locationId;
 	uint8_t m_gatewayId;
