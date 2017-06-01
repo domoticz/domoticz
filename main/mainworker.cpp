@@ -124,6 +124,7 @@
 #include "../hardware/RelayNet.h"
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/Rtl433.h"
+#include "../hardware/OnkyoAVTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -998,6 +999,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Rtl433:
 		pHardware = new CRtl433(ID);
+		break;
+	case HTYPE_OnkyoAVTCP:
+		pHardware = new OnkyoAVTCP(ID, Address, Port);
 		break;
 	}
 
