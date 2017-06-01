@@ -65,8 +65,8 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_bVerifyPeer);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_bVerifyHost); //allow self signed certificates
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_bVerifyPeer ? 1L : 0);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_bVerifyHost ? 2L : 0); //allow self signed certificates
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	std::string domocookie = szUserDataFolder + "domocookie.txt";
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
