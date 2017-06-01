@@ -127,6 +127,18 @@ local function EventHelpers(domoticz, mainMethod)
 		return res
 	end
 
+	local function deprecationWarning(key, value, quoted)
+		local msg
+
+		if quoted then
+			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { \'' .. tostring(value) .. '\' } }"'
+		else
+			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { ' .. tostring(value) .. ' } }"'
+		end
+
+		utils.log(msg, utils.LOG_ERROR)
+	end
+
 	function self.callEventHandler(eventHandler, device, variable, security)
 
 
@@ -170,7 +182,7 @@ local function EventHelpers(domoticz, mainMethod)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
 			elseif (security ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SECURITY)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, security, info)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
 			else
 				-- timer
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
@@ -469,6 +481,17 @@ local function EventHelpers(domoticz, mainMethod)
 		return false
 	end
 
+	function self.checkSecurity(securityDefs, security)
+
+		for i, def in pairs(securityDefs) do
+			if (def == security) then
+				return true, def
+			end
+		end
+
+		return false
+	end
+
 	function addBindingEvent(bindings, event, module)
 		if (bindings[event] == nil) then
 			bindings[event] = {}
@@ -581,8 +604,10 @@ local function EventHelpers(domoticz, mainMethod)
 											-- execute every minute (old style)
 											module.trigger = event
 											table.insert(bindings, module)
+											deprecationWarning('timer', event, true)
 										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'string') then
 											-- { ['timer'] = 'every minute' }
+											deprecationWarning('timer', event, true)
 											if (self.evalTimeTrigger(event)) then
 												module.trigger = event
 												table.insert(bindings, module)
@@ -602,6 +627,8 @@ local function EventHelpers(domoticz, mainMethod)
 											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
 
 												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
+
+												deprecationWarning('devices', '...<device triggers> ...', false)
 
 												for devIdx, devName in pairs(event) do
 
@@ -626,6 +653,11 @@ local function EventHelpers(domoticz, mainMethod)
 											else
 												-- single device name or id
 												-- let's not try to resolve indexes to names here for performance reasons
+												if (type(event) == 'string') then
+													deprecationWarning('devices', event, true)
+												else
+													deprecationWarning('devices', tostring(event), false)
+												end
 												addBindingEvent(bindings, event, module)
 											end
 										end
@@ -633,6 +665,7 @@ local function EventHelpers(domoticz, mainMethod)
 										if (type(j) == 'string' and j == 'variable'  and type(event) == 'string') then
 											-- { ['variable'] = 'myvar' }
 											addBindingEvent(bindings, event, module)
+											deprecationWarning('variables', event, true)
 										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
 											-- { ['variables'] = { 'varA', 'varB' }
 											for devIdx, varName in pairs(event) do
@@ -641,10 +674,19 @@ local function EventHelpers(domoticz, mainMethod)
 										end
 									elseif (mode == 'security') then
 										if (type(j) == 'string' and j == 'security' and type(event) == 'string') then
-
+											deprecationWarning('security', event, true)
 											if (event == self.domoticz.security) then
 												table.insert(bindings, module)
+												module.trigger = event
 											end
+										elseif (type(j) == 'string' and j == 'security' and type(event) == 'table') then
+
+											local triggered, def = self.checkSecurity(event, self.domoticz.security)
+											if (triggered) then
+												table.insert(bindings, module)
+												module.trigger = def
+											end
+
 										end
 									end
 								end

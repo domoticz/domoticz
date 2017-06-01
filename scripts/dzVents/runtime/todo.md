@@ -11,3 +11,4 @@
 * document global_data.helpers
 * time-limited device triggers in docs
 * security events
+* deprecations doc

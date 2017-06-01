@@ -575,16 +575,40 @@ describe('event helpers', function()
 
 		it('should call the event handler for security events', function()
 
-			local bindings = helpers.getEventBindings('security')[1]
+			local bindings = helpers.getEventBindings('security')
+
+			local modulesFound = _.pluck(bindings, {'name'})
+
+			local scriptSecurity = _.find(bindings, function(mod)
+				return mod.name == 'script_security'
+			end)
+
+			local scriptSecurityGrouped = _.find(bindings, function(mod)
+				return mod.name == 'script_security_grouped'
+			end)
+
+			assert.are.same({
+				"script_security",
+				"script_security_grouped"
+			}, modulesFound)
 
 
-			local res = helpers.callEventHandler(bindings,
+			local res = helpers.callEventHandler(scriptSecurity,
 				nil,
 				nil,
 				'Armed Away')
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
-			assert.is_same('script_security: Armed Away security', res)
+			assert.is_same('script_security: nil Armed Away', res)
+
+			local res = helpers.callEventHandler(scriptSecurityGrouped,
+				nil,
+				nil,
+				'Armed Home')
+			-- should pass the arguments to the execute function
+			-- and catch the results from the function
+			assert.is_same('script_security: nil Armed Away', res)
+
 		end)
 
 
@@ -760,7 +784,9 @@ describe('event helpers', function()
 			table.sort(scripts)
 
 			assert.is_same({
-				'script_security'
+				'script_security',
+				'script_security_grouped'
+
 			}, scripts)
 
 			assert.is_true(dumped)

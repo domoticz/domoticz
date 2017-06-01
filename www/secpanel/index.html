@@ -8,7 +8,7 @@
 	<script src="js/less.js"></script>
 	<script src="js/ion.sound.min.js"></script>
 	<script src="../js/jquery-1.12.0.min.js"></script>
-	<script src="../js/i18next-1.8.0.min.js"></script> 
+	<script src="../js/i18next-1.8.0.min.js"></script>
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
 	<script type="text/javascript">
@@ -26,7 +26,7 @@
 			multiplay: true,
 			volume: 0.9
 		});
-	
+
 		function ShowError(error) {
 			if (error=="NoConnect") {
 				$('#digitdisplay').val("no connect");
@@ -46,7 +46,7 @@
 		function ShowStatus() {
 			$.ajax({
 				url: "../json.htm?type=command&param=getsecstatus",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -88,7 +88,7 @@
 			}
 			$.ajax({
 				url: "../json.htm?type=command&param=getuservariables",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -115,7 +115,7 @@
 				}
 			});
 		}
-		
+
 		var CountdownTimer = 0;
 		function countdown() {
 			if (timer > 1) {
@@ -135,7 +135,7 @@
 			var secondelay=0;
 			$.ajax({
 				url: "../json.htm?type=settings",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -161,7 +161,7 @@
 			var idxnumbers=[];
 			$.ajax({
 				url: "../json.htm?type=command&param=getlightswitches",
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -192,7 +192,7 @@
 				$.each(zonearray, function(i,item) {
 					$.ajax({
 						url: "../json.htm?type=devices&rid="+item,
-						async: false, 
+						async: false,
 						dataType: 'json',
 						success: function(data) {
 							if (data.status != "OK") {
@@ -261,7 +261,7 @@
 			}
 			$.ajax({
 				url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + md5(seccode),
-				async: false, 
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (data.status != "OK") {
@@ -304,7 +304,7 @@
 		}
 
 		function AddDigit(digit) {
-			beep(); 
+			beep();
 			if (typeof(CodeSetTimer) != "undefined") {
 				CodeSetTimer=clearTimeout(CodeSetTimer);
 			}
@@ -329,8 +329,9 @@
 			$('#digitdisplay').val(codeinput);
 			$('#password').val(newtext);
 		}
-		
+
 		function beep(tone) {
+			return; //todo
 			if (tone=="error") {
 				ion.sound.play("wrongcode");
 			}
@@ -347,7 +348,7 @@
 				ion.sound.play("key");
 			}
 		}
-		
+
 		function SetLanguageEx(lng) {
 			$.i18n.init({
 				resGetPath: '/i18n/domoticz-__lng__.json',
@@ -365,7 +366,7 @@
 		$(document).ready(function() {
 			$.ajax({
 				 url: "../json.htm?type=command&param=getlanguage",
-				 async: false, 
+				 async: false,
 				 dataType: 'json',
 				 success: function(data) {
 					if (typeof data.language != 'undefined') {
