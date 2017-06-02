@@ -394,36 +394,37 @@ dzVents already recognizes most of the devices and creates the proper attributes
 Most of the time when your device is not recognized you can always use the `rawData` attribute as that will almost always hold all the data that is available in Domoticz.
 
 ### Device attributes
- 1. **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255).
- 2. **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
- 3. **barometer**
- 4. **changed**: *Boolean*. True if the device was changed
- 5. **chill**: *Number*. Chill temperature for temperature/wind devices that support it.
- 6. **co2**
- 7. **counter**: *Number*
- 8. **counterToday**: *Number*. Today's counter value for counter devices.
- 9. **counterDeliveredToday**: *Number*. Counter delivered today for P1 smart meter devices.
- 10. **counterTotal**: *String*. Total counter value for counter devices. Formatted string with unit.
- 11. **description**: *String*. Description of the device.
- 12. **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
- 13. **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
- 14. **dewPoint**: *Number*
- 15. **direction**: *Number*. Wind direction.
- 16. **directionString**: *String*. Formatted wind direction.
- 17. **distance**: *Number*. For distance devices.
- 18. **forecast**: *Number*.
- 19. **forecastString**: *String*.
- 20. **gust**: *Number*. For Wind devices.
- 21. **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
- 22. **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
- 23. **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
- 24. **hardwareTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
- 25. **heatingMode**: *String*. For zoned thermostats like EvoHome.
- 26. **humidity**: *Number*
- 27. **humidityStatus**: *String*
- 28. **icon**: *String*. Name of the icon in Domoticz GUI.
- 28. **id**: *Number*. Id of the device
- 29. **lastUpdate**:
+
+ - **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255).
+ -  **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
+ -  **barometer**
+ - **changed**: *Boolean*. True if the device was changed
+ - **chill**: *Number*. Chill temperature for temperature/wind devices that support it.
+ - **co2**
+ - **counter**: *Number*
+ - **counterToday**: *Number*. Today's counter value for counter devices.
+ - **counterDeliveredToday**: *Number*. Counter delivered today for P1 smart meter devices.
+ - **counterTotal**: *String*. Total counter value for counter devices. Formatted string with unit.
+ - **description**: *String*. Description of the device.
+ - **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **dewPoint**: *Number*
+ - **direction**: *Number*. Wind direction.
+ - **directionString**: *String*. Formatted wind direction.
+ - **distance**: *Number*. For distance devices.
+ - **forecast**: *Number*.
+ - **forecastString**: *String*.
+ - **gust**: *Number*. For Wind devices.
+ - **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
+ - **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **hardwareTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ - **heatingMode**: *String*. For zoned thermostats like EvoHome.
+ - **humidity**: *Number*
+ - **humidityStatus**: *String*
+ - **icon**: *String*. Name of the icon in Domoticz GUI.
+ - **id**: *Number*. Id of the device
+ - **lastUpdate**:
 	 - **day**: *Number*
 	 - **getISO**: *Function*. Returns the ISO 8601 formatted date.
 	 - **hour**: *Number*
@@ -438,49 +439,49 @@ Most of the time when your device is not recognized you can always use the `rawD
 	 - **sec**: *Number*
 	 - **secondsAgo**: *Number*. Number of seconds since the last update.
 	 - **year**: *Number*
- 30. **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
- 31. **levelActions**: *String*. |-separated list of url actions for selector switches.
- 32. **levelName**: *Table*. Table holding the level names for selector switch devices.
- 33. **lux**: *Number*. Lux level for light sensors.
- 34. **name**: *String*. Name of the device.
- 35. **maxDimLevel**: *Number*.
- 36. **moisture**: *String*.
- 37. **percentage**: *Number*. Percentage for percentage devices.
- 38. **pressure**: *Number*. For pressure devices.
- 38. **quality**: *String*. Formatted label for air quality devices.
- 39. **radiation**: *Number*
- 39. **rain**: *Number*
- 40. **rainLastHour**
- 41. **rainRate**: *Number*
- 41. **rawData**: *Table*:  All values are *String* types and hold the raw data received from Domoticz.
- 42. **return1**, **return2**: *Number*. Return values for P1 smart meter devices.
- 43. **setPoint**: *Number*. Holds the set point for thermostat like devices.
- 44. **sensorType**: *Number*. Type of a custom sensor.
- 45. **sensorUnit**: *String*: Unit of the custom sensor.
- 44. **signalLevel**: *String*. See Domoticz devices table in Domoticz GUI.
- 45. **speed**: *Number*. Wind speed.
- 45. **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
- 46. **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
- 47. **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
- 48. **temperature**: *Number*
- 49. **text**: Text value for dummy text devices.
- 50. **timedOut**: *Boolean*. Is true when the device couldn't be reached.
- 51. **usage1**, **usage2**: *Number*. Usages for P1 smart meter devices
- 52. **usage**: *Number*. Usage for P1 smart meter devices.
- 53. **usageDelivered**: *Number*. Delivered usage for P1 smart meter devices.
- 54. **utility**
- 55. **uv**: *Number*.
- 56. **valueQuantity**: *String*. For counters.
- 57. **valueUnits**: *String*.
- 57. **visibility**: *Number*. For visibility devices.
- 58. **voltage**: *Number*. For voltage devices.
- 56. **weather**
- 57. **WActual**: *Number*. Current Watt usage.
- 58. **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh.
- 59. **WhTotal**: *Number*. Total Wh (incremental).
- 60. **winddir**
- 61. **windgust**
- 62. **windspeed**
+ - **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
+ - **levelActions**: *String*. |-separated list of url actions for selector switches.
+ - **levelName**: *Table*. Table holding the level names for selector switch devices.
+ - **lux**: *Number*. Lux level for light sensors.
+ - **name**: *String*. Name of the device.
+ - **maxDimLevel**: *Number*.
+ - **moisture**: *String*.
+ - **percentage**: *Number*. Percentage for percentage devices.
+ - **pressure**: *Number*. For pressure devices.
+ - **quality**: *String*. Formatted label for air quality devices.
+ - **radiation**: *Number*
+ - **rain**: *Number*
+ - **rainLastHour**
+ - **rainRate**: *Number*
+ - **rawData**: *Table*:  All values are *String* types and hold the raw data received from Domoticz.
+ - **return1**, **return2**: *Number*. Return values for P1 smart meter devices.
+ - **setPoint**: *Number*. Holds the set point for thermostat like devices.
+ - **sensorType**: *Number*. Type of a custom sensor.
+ - **sensorUnit**: *String*: Unit of the custom sensor.
+ - **signalLevel**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **speed**: *Number*. Wind speed.
+ - **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
+ - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ - **temperature**: *Number*
+ - **text**: Text value for dummy text devices.
+ - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
+ - **usage1**, **usage2**: *Number*. Usages for P1 smart meter devices
+ - **usage**: *Number*. Usage for P1 smart meter devices.
+ - **usageDelivered**: *Number*. Delivered usage for P1 smart meter devices.
+ - **utility**
+ - **uv**: *Number*.
+ - **valueQuantity**: *String*. For counters.
+ - **valueUnits**: *String*.
+ - **visibility**: *Number*. For visibility devices.
+ - **voltage**: *Number*. For voltage devices.
+ - **weather**
+ - **WActual**: *Number*. Current Watt usage.
+ - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh.
+ - **WhTotal**: *Number*. Total Wh (incremental).
+ - **winddir**
+ - **windgust**
+ - **windspeed**
 
 ### Device methods
 
@@ -549,8 +550,6 @@ Note that **dimTo()** doesn't support **for_min()**.
 User variables created in Domoticz have these attributes and methods:
 
 ### Variable attributes
-
-
  - **changed**: *Boolean*. Was the device changed.
  - **date**: *Date*. If type is domoticz.DATE. See lastUpdate for the sub-attributes.
  - **id**: *Number*. Index of the variable.
@@ -578,21 +577,23 @@ User variables created in Domoticz have these attributes and methods:
  - **set(value)**: *Function*. Tells Domoticz to update the variable.
 
 ## Create your own Time object
-dzVents comes with a Time object that my be useful to you. This object is used for the various time attributes like `domoticz.time`, `device.lastUpdate`. You can easily create such an object yourself:
+dzVents comes with a Time object that may be useful to you. This object is used for the various time attributes like `domoticz.time`, `device.lastUpdate`. You can easily create such an object yourself:
 
+```
     local Time = require('Time')
     local t = Time('2016-12-12 7:35:00') -- must be this format!!
+```
 
 You can use this in combination with the various dzVents time attributes:
 
+```
     local Time = require('Time')
     local t = Time('2016-12-12 7:35:00')
 
 	local tonight = Time(domoticz.time.rawDate .. ' 20:00:00')
 	print (tonight.getISO())
 	-- will print something like: 2016-12-12T20:00:00Z
-
-In the future I plan to add some date/time arithmetric
+```
 
 ### Time Properties:
 
@@ -615,18 +616,18 @@ In the future I plan to add some date/time arithmetric
 
 In many situations you need to store some device state or other information in your scripts for later use. Like knowing what the state was of a device the previous time the script was executed or what the temperature in a room was 10 minutes ago. Without dzVents you had to resort to user variables. These are global variables that you create in the Domoticz GUI and that you can access in your scripts like: domoticz.variables['previousTemperature'].
 
-Now, for some this is rather inconvenient and they want to control this state information in the event scripts themselves (like me). dzVents has a solution for that: **persistent script data**. This can either be on the script level or on a global level.
+Now, for some this is rather inconvenient and they want to control this state information in the event scripts themselves or want to use all of Lua's variable types. dzVents has a solution for that: **persistent script data**. This can either be on the script level or on a global level.
 
 ## Script level persistent variables
 
 Persistent script variables are available in your scripts and whatever value put in them is persisted and can be retrieved in the next script run.
 
 Here is an example. Let's say you want to send a notification if some switch has been actived 5 times:
-
+```
     return {
         active = true,
         on = {
-    	    'MySwitch'
+			devices = { 'MySwitch' }
     	},
         data = {
     	    counter = {initial=0}
@@ -640,15 +641,16 @@ Here is an example. Let's say you want to send a notification if some switch has
     		end
         end
     }
-
+```
 Here you see the `data` section defining a persistent variable called `counter`. It also defines an initial value.  From then on you can read and set the variable in your script.
 
 You can define as many variables as you like and put whatever value in there that you like. It doesn't have to be just a number,  you can even put the entire device state in it:
 
+```
     return {
         active = true,
         on = {
-    	    'MySwitch'
+    	    devices = { 'MySwitch' }
     	},
         data = {
     	    previousState = {initial=nil}
@@ -662,7 +664,7 @@ You can define as many variables as you like and put whatever value in there tha
     		end
         end
     }
-
+```
 **Note that you cannot call methods on previousState like switchOn(). Only the data is persisted.**
 
 ### Size matters and watch your speed!!
@@ -672,35 +674,40 @@ If you decide to put tables in the persistent data (or arrays) beware to not let
 
 Next to script level variables you can also define global variables. As script level variables are only available in the scripts that define them, global variables can be accessed and changed in every script. All you have to do is create a script file called `global_data.lua` in your scripts folder with this content:
 
+```
     return {
     	data = {
     		peopleAtHome = { initial = false },
     		heatingProgramActive = { initial = false }
     	}
     }
+```
 
 Just define the variables that you need and access them in your scripts:
-
+```
     return {
         active = true,
         on = {
-    	    'WindowSensor'
+    	    devices = {'WindowSensor'}
     	},
         execute = function(domoticz, windowSensor)
-    		if (domoticz.globalData.heatingProgramActive and windowSensor.state == 'Open') then
+    		if (domoticz.globalData.heatingProgramActive
+    		    and windowSensor.state == 'Open') then
     			domoticz.notify("Hey don't open the window when the heating is on!")
     		end
         end
     }
+```
 
 ## A special kind of persistent variables: *history = true*
 
 In some situation, storing a previous value for a sensor is not enough and you would like to have more previous values for example when you want to calculate an average over several readings or see if there was a constant rise or decrease. Of course you can define a persistent variable holding a table:
 
+```
     return {
         active = true,
         on = {
-    	    'MyTempSensor'
+    	    devices = {'MyTempSensor'}
     	},
     	data = {
     		previousData = { initial = {} }
@@ -718,13 +725,14 @@ In some situation, storing a previous value for a sensor is not enough and you w
     		local average = sum / count
         end
     }
+```
 
 The problem with this is that you have to do a lot of bookkeeping yourself to make sure that there isn't too much data to store (see [below how it works](#how-does-the-storage-stuff-work)) and many statistical stuff requires a lot of code. Fortunately, dzVents has done this for you:
-
+```
     return {
         active = true,
         on = {
-    	    'MyTempSensor'
+    	    devices = {'MyTempSensor'}
     	},
     	data = {
     		temperatures = { history = true, maxItems = 10 }
@@ -740,6 +748,7 @@ The problem with this is that you have to do a lot of bookkeeping yourself to ma
     		local max = domoticz.data.temperatures.maxSince('01:00:00')
         end
     }
+```
 
 ### Historical variables API
 #### Defining
@@ -994,7 +1003,7 @@ As mentioned in the install section there is a settings file: dzVents_settings_e
     - 3: Debug info + Errors + Info
     - 0: As silent as possible.
 
-    This part is stil a bit experimental and may not give you all the information you need in the logs. Besides, Domoticz tends to choke on too many log messages and may decide not to show them all. You can alway put a print statement here or there or use the `domoticz.log()` API (see [Domoticz object API](#domoticz-object-api)).
+This part is stil a bit experimental and may not give you all the information you need in the logs. Besides, Domoticz tends to choke on too many log messages and may decide not to show them all. You can alway put a print statement here or there or use the `domoticz.log()` API (see [Domoticz object API](#domoticz-object-api)).
 
 # Final note
 
