@@ -30,8 +30,10 @@
 
 class CEvohomeDataType
 {
-	friend class EvohomeSerial;
-	friend class EvohomeScript;
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
 
 public:
 	//uint24_t may occasionally be defined but is not portable etc.
@@ -61,6 +63,11 @@ public:
 
 class CEvohomeTemp : public CEvohomeDataType
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	CEvohomeTemp():m_nTemp(0){}
 	CEvohomeTemp(int16_t nTemp):m_nTemp(nTemp){}
@@ -89,6 +96,11 @@ public:
 
 class CEvohomeID : public CEvohomeDataType
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	enum devType {
 		devController=1,
@@ -163,6 +175,11 @@ public:
 
 class CEvohomeDateTime : public CEvohomeDataType
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	CEvohomeDateTime():mins(0xFF),hrs(0xFF),day(0xFF),month(0xFF),year(0xFFFF){}
 	template <class T> CEvohomeDateTime(const T &in){*this=in;}
@@ -246,6 +263,11 @@ public:
 
 class CEvohomeDate : public CEvohomeDateTime
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	CEvohomeDate(){}
 	CEvohomeDate(const unsigned char* msg, unsigned char nOfs){Decode(msg,nOfs);}
@@ -264,6 +286,11 @@ public:
 
 class CEvohomeZoneFlags
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	enum evoZoneFlags {
 		flgLocalOverrideDisabled=1,
@@ -284,6 +311,11 @@ public:
 
 class CEvohomeMsg
 {
+	friend class CEvohomeBase;
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	enum flagtypes{
 		flgid1=1,
@@ -412,6 +444,10 @@ public:
 
 class CEvohomeBase : public CDomoticzHardwareBase
 {
+	friend class CEvohomeSerial;
+	friend class CEvohomeScript;
+	friend class CEvohomeWeb;
+
 public:
 	CEvohomeBase(void);
 	~CEvohomeBase(void);
@@ -467,6 +503,7 @@ public:
 	static void Log(bool bDebug, int nLogLevel, const char* format, ... );
 	static void Log(const char *szMsg, CEvohomeMsg &msg);
 
+private:
 	void SetControllerID(int nID);
 	void SetGatewayID(int nID);
 

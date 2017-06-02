@@ -10,9 +10,8 @@
 #    undefine WITH_THREAD
 #endif
 #include <Python.h>
-#include <structmember.h> 
+#include <structmember.h>
 #include <frameobject.h>
-
 #include "../../main/Helper.h"
 
 namespace Plugins {
@@ -96,6 +95,11 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyBool_FromLong, long);
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleStringFlags, const char* COMMA PyCompilerFlags*);
+        DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFileExFlags, FILE* COMMA const char* COMMA int COMMA PyCompilerFlags*);
+		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
+		DECLARE_PYTHON_SYMBOL(void*, PyType_GenericAlloc, const PyTypeObject * COMMA Py_ssize_t);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -110,15 +114,18 @@ namespace Plugins {
 			if (!shared_lib_) {
 #ifdef WIN32
 #	ifdef _DEBUG
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python37_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
 #	endif
 #else
+				if (!shared_lib_) FindLibrary("python3.7", true);
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
@@ -185,6 +192,11 @@ namespace Plugins {
 #ifdef _DEBUG
 					RESOLVE_PYTHON_SYMBOL(_Py_Dealloc);
 #endif
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleFileExFlags);
+                    RESOLVE_PYTHON_SYMBOL(PyRun_SimpleStringFlags);
+					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
+					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
+					RESOLVE_PYTHON_SYMBOL(PyType_GenericAlloc);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -337,4 +349,9 @@ extern	SharedLibraryProxy* pythonLib;
 
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
 #define _Py_NoneStruct			pythonLib->_Py_NoneStruct
+#define PyRun_SimpleStringFlags pythonLib->PyRun_SimpleStringFlags
+#define PyRun_SimpleFileExFlags pythonLib->PyRun_SimpleFileExFlags
+#define PyBool_FromLong			pythonLib->PyBool_FromLong
+#define PyCapsule_Import		pythonLib->PyCapsule_Import
+#define PyType_GenericAlloc		pythonLib->PyType_GenericAlloc
 }

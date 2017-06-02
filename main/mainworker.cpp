@@ -68,6 +68,7 @@
 #include "../hardware/EvohomeBase.h"
 #include "../hardware/EvohomeScript.h"
 #include "../hardware/EvohomeSerial.h"
+#include "../hardware/EvohomeWeb.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
 #include "../hardware/MySensorsMQTT.h"
@@ -121,7 +122,8 @@
 #include "../hardware/OpenWebNetUSB.h"
 #include "../hardware/InComfort.h"
 #include "../hardware/RelayNet.h"
-#include "../hardware/SysfsGPIO.h"
+#include "../hardware/SysfsGpio.h"
+#include "../hardware/Rtl433.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -398,7 +400,7 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	if (dpos==-1)
 		return;
 	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	m_pluginsystem.DeregisterPlugin(HwdId);
 #endif
 }
@@ -940,9 +942,9 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CGpio(ID, Mode1, Mode2, Mode3);
 #endif
 		break;
-	case HTYPE_SysfsGPIO:
+	case HTYPE_SysfsGpio:
 #ifdef WITH_SYSFS_GPIO
-		pHardware = new CSysfsGPIO(ID);
+		pHardware = new CSysfsGpio(ID, Mode1);
 #endif
 		break;
 	case HTYPE_Comm5TCP:
@@ -975,7 +977,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new Yeelight(ID);
 		break;
 	case HTYPE_PythonPlugin:
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
 	    break;
@@ -990,6 +992,12 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_IntergasInComfortLAN2RF:
 		pHardware = new CInComfort(ID, Address, Port);
+		break;
+	case HTYPE_EVOHOME_WEB:
+		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
+		break;
+	case HTYPE_Rtl433:
+		pHardware = new CRtl433(ID);
 		break;
 	}
 
@@ -1020,7 +1028,7 @@ bool MainWorker::Start()
 	m_notifications.Init();
 	GetSunSettings();
 	GetAvailableWebThemes();
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	m_pluginsystem.StartPluginSystem();
 #endif
 	AddAllDomoticzHardware();
@@ -1061,7 +1069,7 @@ bool MainWorker::Stop()
 		m_httppush.Stop();
 		m_influxpush.Stop();
 		m_googlepubsubpush.Stop();
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 		m_pluginsystem.StopPluginSystem();
 #endif
 
@@ -1487,7 +1495,7 @@ void MainWorker::Do_Work()
 			{
 				m_bStartHardware=false;
 				StartDomoticzHardware();
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 				m_pluginsystem.AllPluginsStarted();
 #endif
 				ParseRFXLogFile();
@@ -2376,8 +2384,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
 		if (szDate[0] != 0)
-			sTmp << szDate;
-		sTmp << " (" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+			sTmp << szDate << " ";
+		sTmp << "(" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();
@@ -6230,6 +6238,19 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 						else
 							strarray[3]=szISODate;
 					}
+					else if ((pEvo->EVOHOME2.mode==pEvoHW->zmAuto) && (HwdType==HTYPE_EVOHOME_WEB) )
+					{
+						strarray[2]="FollowSchedule";
+						if( (pEvo->EVOHOME2.year!=0) && (pEvo->EVOHOME2.year!=0xFFFF) )
+						{
+							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
+							if(strarray.size()<4) //add or set until
+								strarray.push_back(szISODate);
+							else
+								strarray[3]=szISODate;
+						}
+
+					}
 					else
 						if(strarray.size()>=4) //remove until
 							strarray.resize(3);
@@ -6253,6 +6274,7 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
 }
@@ -6310,6 +6332,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
+		procResult.DeviceName = name;
 	}
 
 	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
@@ -10827,7 +10850,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	//
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 		((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(Unit, switchcmd, level, hue);
 #endif
 		return true;
@@ -11701,12 +11724,13 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	if (pHardware==NULL)
 		return false;
 
+
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SCRIPT) //GB3: scripted evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
-		s_strid << std::hex << std::dec << sd[1];
-	else
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
 		s_strid << std::hex << sd[1];
+	else  //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
+		s_strid << std::hex << std::dec << sd[1];
 	s_strid >> ID;
 
 	//Update Domoticz evohome Device
@@ -11801,21 +11825,25 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	if (hindex==-1)
 		return false;
 
+	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
+	if (pHardware==NULL)
+		return false;
+
 	unsigned long ID;
 	std::stringstream s_strid;
-	s_strid << std::hex << sd[1];
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+		s_strid << std::hex << sd[1];
+	else //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
+		s_strid << std::hex << std::dec << sd[1];
 	s_strid >> ID;
+
 
 	unsigned char Unit=atoi(sd[2].c_str());
 	unsigned char dType=atoi(sd[3].c_str());
 	unsigned char dSubType=atoi(sd[4].c_str());
 	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
-		return false;
-
-	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
 	{
 		REVOBUF tsen;
 		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
@@ -11877,7 +11905,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 	//
 	if (pHardware->HwdType == HTYPE_PythonPlugin)
 	{
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 		((Plugins::CPlugin*)pHardware)->SendCommand(Unit, "Set Level", TempValue);
 #endif
 	}
@@ -11892,6 +11920,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
 		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
@@ -11947,7 +11976,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNefitEasy *pGateway = reinterpret_cast<CNefitEasy*>(pHardware);
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL)
+		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
 		}

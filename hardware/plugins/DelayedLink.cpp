@@ -3,13 +3,12 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "../main/Helper.h"
 #include "DelayedLink.h"
 
 namespace Plugins {
-
-	SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
+    SharedLibraryProxy* pythonLib = new SharedLibraryProxy();
 }
 #endif
