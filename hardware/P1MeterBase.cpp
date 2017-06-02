@@ -95,8 +95,6 @@ P1MeterBase::~P1MeterBase(void)
 
 void P1MeterBase::Init()
 {
-	m_bOutputLog = false; // this hardware is way too loud
-
 	m_p1version=0;
 	m_linecount=0;
 	m_exclmarkfound=0;

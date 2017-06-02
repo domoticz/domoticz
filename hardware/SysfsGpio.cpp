@@ -108,7 +108,7 @@
 
 #include "stdafx.h"
 
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -123,11 +123,11 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 
-/* 
+/*
 Note:
 HEATBEAT_COUNT, UPDATE_MASTER_COUNT and GPIO_POLL_MSEC are related.
-Set values so that that heartbeat occurs every 10 seconds and update 
-master occurs once, 30 seconds after startup. 
+Set values so that that heartbeat occurs every 10 seconds and update
+master occurs once, 30 seconds after startup.
 */
 #define HEARTBEAT_COUNT		40
 #define UPDATE_MASTER_COUNT 120
@@ -144,7 +144,7 @@ master occurs once, 30 seconds after startup.
 #define GPIO_BOTH			3
 #define GPIO_PIN_MIN		0
 #define GPIO_PIN_MAX		31
-#define GPIO_MAX_VALUE_SIZE	16		
+#define GPIO_MAX_VALUE_SIZE	16
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
 #define GPIO_DEVICE_ID_BASE	0x030E0E00
@@ -207,7 +207,7 @@ bool CSysfsGpio::WriteToHardware(const char *pdata, const unsigned char length)
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
 		if ((GpioSavedState[i].pin_number == gpio_pin) &&
-			(GpioSavedState[i].direction == GPIO_OUT) && 
+			(GpioSavedState[i].direction == GPIO_OUT) &&
 			(packettype == pTypeLighting2))
 		{
 			int state = pSen->LIGHTING2.cmnd == light2_sOn ? GPIO_HIGH : GPIO_LOW;
@@ -227,7 +227,7 @@ void CSysfsGpio::Do_Work()
 	int counter = 0;
 	int input_count = 0;
 	int output_count = 0;
-	
+
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
 		if ((GpioSavedState[i].direction == GPIO_IN) ? input_count++ : output_count++);
@@ -312,7 +312,7 @@ void CSysfsGpio::Init()
 	m_Packet.LIGHTING2.rssi = 12;
 
 	FindGpioExports();
-	
+
 	if (m_auto_configure_devices)
 	{
 		CreateDomoticzDevices();
@@ -388,8 +388,8 @@ void CSysfsGpio::CreateDomoticzDevices()
 			/* Input */
 
 			result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-				m_HwdID, 
-				GpioSavedState[i].pin_number); 
+				m_HwdID,
+				GpioSavedState[i].pin_number);
 
 			if (result.empty())
 			{
@@ -401,8 +401,8 @@ void CSysfsGpio::CreateDomoticzDevices()
 				{
 					vector<string> sd = result[0];
 
-					if (sd[1].empty())	
-					{	
+					if (sd[1].empty())
+					{
 						/* update manual created device */
 						GpioSavedState[i].request_update = 1;
 						UpdateDomoticzDatabase();
@@ -431,11 +431,11 @@ void CSysfsGpio::CreateDomoticzDevices()
 			}
 		}
 		else
-		{	
+		{
 			/* Output */
 
 			result = m_sql.safe_query("SELECT nValue,Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-				m_HwdID, 
+				m_HwdID,
 				GpioSavedState[i].pin_number);
 
 			if (result.empty())
@@ -449,7 +449,7 @@ void CSysfsGpio::CreateDomoticzDevices()
 					vector<string> sd = result[0];
 
 					if (sd[1].empty())
-					{	
+					{
 						/* update manual created output device */
 						GpioSavedState[i].request_update = 1;
 						UpdateDomoticzDatabase();
@@ -540,7 +540,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 			if ((GpioSavedState[i].db_state != state) || (forceUpdate))
 			{
 				vector< vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-					m_HwdID, 
+					m_HwdID,
 					GpioSavedState[i].pin_number);
 
 				if ((!result.empty()) && (result.size() > 0))
@@ -607,7 +607,7 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 	if (pin_found)
 	{
 		/* Existing pin was found */
-		
+
 		string sdeviceid;
 		int id1, id2, id3, id4;
 
@@ -649,20 +649,20 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 void CSysfsGpio::UpdateGpioOutputs()
 {
 	/* make sure actual gpio output values match database */
-	
+
 	for (int i = 0; i < GpioSavedState.size(); i++)
 	{
 		if (GpioSavedState[i].direction == GPIO_OUT)
 		{
 			vector<vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
-				m_HwdID, 
+				m_HwdID,
 				GpioSavedState[i].pin_number);
 
 			if ((!result.empty()) && (result.size() > 0))
 			{
 				vector<string> sd = result[0];
 				GpioSavedState[i].db_state = atoi(sd[0].c_str());
-				
+
 				if (atoi(sd[1].c_str()))
 				{
 					/* device is used, update gpio output pin */
@@ -704,7 +704,7 @@ int CSysfsGpio::GetReadResult(int bytecount, char* value_str)
 
 		default:
 		{
-			if ((memcmp("0", value_str, strlen("0")) == 0) || 
+			if ((memcmp("0", value_str, strlen("0")) == 0) ||
 				(memcmp("in", value_str, strlen("in")) == 0) ||
 				(memcmp("none", value_str, strlen("none")) == 0))
 			{
@@ -869,4 +869,4 @@ void CSysfsGpio::RequestDbUpdate(int pin)
 
 //---------------------------------------------------------------------------
 
-#endif // WITH_SYSFS_GPIO
+#endif // WITH_GPIO
