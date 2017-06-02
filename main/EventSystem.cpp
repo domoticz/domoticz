@@ -2666,7 +2666,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			//Integer
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
-			vtype = "integer";
+			vtype = (char*)"integer";
 		}
 		else if (uvitem.variableType == 1)
 		{
@@ -4390,9 +4390,9 @@ namespace http {
 				root["title"] = "ListEvents";
 				root["status"] = "OK";
 #ifdef ENABLE_PYTHON
-				root["interpreters"] = "Blockly:Lua:Python";
+				root["interpreters"] = "Blockly:Lua:dzVents:Python";
 #else
-				root["interpreters"] = "Blockly:Lua";
+				root["interpreters"] = "Blockly:Lua:dzVents";
 #endif
 
 				std::map<std::string, _tSortedEventsInt> _levents;
