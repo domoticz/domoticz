@@ -3,10 +3,15 @@
 **Table of contents**
 
 - [About](#about)
-- [Installing](#installing)
+- [Using dzVents with Domoticz](#using-dzvents-with-domoticz)
   - [Quickstart](#quickstart)
-- [How does it to work?](#how-does-it-to-work)
-  - [Adapting or creating your scripts](#adapting-or-creating-your-scripts)
+- [Adapting or creating your scripts](#adapting-or-creating-your-scripts)
+  - [Sections in the script](#sections-in-the-script)
+    - [active = { ... }](#active----)
+    - [on = { ... }](#on----)
+    - [execute = function(domoticz, device/variable, triggerInfo) ... end](#execute--functiondomoticz-devicevariable-triggerinfo--end)
+    - [data = { ... }](#data----)
+    - [logging = { ... }](#logging----)
   - [*timer* trigger options](#timer-trigger-options)
 - [The domoticz object](#the-domoticz-object)
   - [Domoticz object API](#domoticz-object-api)
@@ -15,7 +20,6 @@
     - [Iterators](#iterators)
     - [Contants](#contants)
   - [Device object API](#device-object-api)
-    - [Fetching http data](#fetching-http-data)
     - [Device attributes](#device-attributes)
     - [Device methods](#device-methods)
     - [Switch timing options (delay, duration)](#switch-timing-options-delay-duration)
@@ -37,13 +41,12 @@
         - [Index](#index)
         - [Time specification (*timeAgo*)](#time-specification-timeago)
         - [Getting data points](#getting-data-points)
-          - [Data iterators](#data-iterators)
+          - [Looping through the data: iterators](#looping-through-the-data-iterators)
         - [Statistical functions](#statistical-functions)
           - [Functions](#functions)
         - [About data smoothing](#about-data-smoothing)
   - [How does the storage stuff work?](#how-does-the-storage-stuff-work)
 - [Settings](#settings)
-- [Final note](#final-note)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
