@@ -1,9 +1,11 @@
 return {
 	active = false,
 	on = {
-		variable = 'myUserVariable'
+		variables = {
+			'myUserVariable'
+		}
 	},
-	execute = function(domoticz, variable, info)
+	execute = function(domoticz, variable)
 		domoticz.log('Variable ' .. variable.name .. ' was changed', domoticz.LOG_INFO)
 		-- code
 	end
