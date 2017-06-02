@@ -832,7 +832,7 @@ Every datapoint in the set has a time stamp and of course the set is always orde
 
     12:88:03
 
-Which will point to the data point at or around `12*3600 + 88*60 + 3 = 48.483` seconds in the past.
+Which will point to the data point at or around `12*3600 + 88*60 + 3 = 48.483 seconds` in the past.
 Example:
 
 	-- get average since the past 30 minutes:
@@ -849,7 +849,7 @@ Example:
  - **subsetSince( [[timeAgo](#time-specification-timeago)] )**: Returns a subset of the stored data since the relative time specified by timeAgo. So calling `myVar.subsetSince('00:60:00')` returns all items that have been added to the list in the past 60 minutes. The result set supports [iterators](#data-iterators) `forEach`, `filter`, `find` and `reduce`.
  - **reset( ):** Removes all the items from the set. Could be handy if you want to start over. It could be a good practice to do this often when you know you don't need older data. For instance when you turn on a heater and you just want to monitor rising temperatures starting from this moment when the heater is activated. If you don't need data points from before, then you may call reset.
 
-###### Data iterators
+###### Looping through the data: iterators
 There are a couple of convenience methods to make looping through the data set easier. This is similar to the iterators as described [above](#iterators):
 
  - **forEach(function)**:  Loop over all items in the set: E.g.: `myVar.forEach( function( item, index, collection) ... end )`
@@ -867,7 +867,7 @@ Suppose you want to get data points older than 45 minutes and count the values t
 	local myVar = domoticz.data.myVar
 
 	local olderItems = myVar.filter(function (item)
-			return (item.time.minutesAgo > 45)
+		return (item.time.minutesAgo > 45)
 	end)
 
 	local count = olderItems.reduce(function(acc, item)
@@ -990,27 +990,14 @@ If you dare to you can watch inside these files. Every time some data is changed
 
 # Settings
 
+There are a couple of settings for dzVents. They can be found in Domoticz GUI: **Setup > Settings > Other > EventSystem**:
+
 As mentioned in the install section there is a settings file: dzVents_settings_example.lua. **Rename this file to dzVents_settings.lua**. There you can set a couple of parameters for how dzVents operates:
 
- - **Domoticz ip**: *Number*. IP-address of your Domoticz instance.
- - **Domoticz port**: *Number*. Port number used to contact Domoticz over IP.
- - **Enable http fetch**: *Boolean*: Controls wether or not dzVents will fetch device data using http. Some information is not passed to the scripts by Domoticz like battery status or group or scene information. dzVents will fetch this data for you using this interval property:
- - **Fetch interval**: *String*. Default is 'every 30 minutes' but you can increase this if you need more recent values in your device objects. See [timer trigger options](#timer-trigger-options).
- - **Log level**: *Number*:
-    - 1: Errors,
-    - 1.5: Errors + info about the execution of individual scripts and a dump of the commands sent back to Domoticz,
-    - 2: Errors + info
-    - 3: Debug info + Errors + Info
-    - 0: As silent as possible.
-
-This part is stil a bit experimental and may not give you all the information you need in the logs. Besides, Domoticz tends to choke on too many log messages and may decide not to show them all. You can alway put a print statement here or there or use the `domoticz.log()` API (see [Domoticz object API](#domoticz-object-api)).
-
-# Final note
-
-If you don't want to rewrite all your scripts at once you can have dzVents live along side your other scripts. They do not influence each other at all. You can move your scripts over one by one as you see fit to the scripts folder dzVents uses.
-
-Oh, this code is tested on a linux file system. It should work on Windows. Let me know if it doesn't. There is some code in event_helpers.lua that is need to get a list of all the script in the scripts folder.
-
-Another note: I haven't tested all the various `device.update*` methods. Please let me know if I made any mistakes there or fix them yourselves and create a pull request (or email me) in GitHub.
-
-Good luck and hopefully you enjoy using dzVents.
+ - **dzVents disabled**: Tick this if you don't want any dzVents script to be executed.
+ - **Log level**:  Note that you can override this setting in the logging section of your script:
+    - Errors,
+    - Errors + info about the execution of individual scripts and a dump of the commands sent back to Domoticz,
+    - Errors + info
+    - Debug info + Errors + Info
+    - As silent as possible.
