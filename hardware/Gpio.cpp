@@ -117,7 +117,6 @@ void CGpio::InterruptHandler()
 	uint32_t diff = 1;
 	bool bRead;
 	struct timeval tvBegin, tvEnd, tvDiff;
-	signal(SIGHUP, SIG_IGN); // Prevents poll() reacting (under special circumstances) on SIGHUP
 
 	// Higher priority and real-time scheduling is only effective if we run as root
 	GetSchedPriority(&sched, &priority);
