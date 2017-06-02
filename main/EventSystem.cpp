@@ -4390,9 +4390,9 @@ namespace http {
 				root["title"] = "ListEvents";
 				root["status"] = "OK";
 #ifdef ENABLE_PYTHON
-				root["interpreters"] = "Blockly:Lua:Python";
+				root["interpreters"] = "Blockly:Lua:dzVents:Python";
 #else
-				root["interpreters"] = "Blockly:Lua";
+				root["interpreters"] = "Blockly:Lua:dzVents";
 #endif
 
 				std::map<std::string, _tSortedEventsInt> _levents;
