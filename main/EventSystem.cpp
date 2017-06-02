@@ -2666,7 +2666,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			//Integer
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
-			vtype = "integer";
+			vtype = (char*)"integer";
 		}
 		else if (uvitem.variableType == 1)
 		{
