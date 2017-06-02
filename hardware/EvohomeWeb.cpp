@@ -149,6 +149,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	if (this->Name.substr(0, 3)=="Fit") // attempt to block old FitBit hardware
+		return false;
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();
