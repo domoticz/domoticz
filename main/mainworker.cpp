@@ -943,7 +943,7 @@ bool MainWorker::AddHardwareFromParams(
 #endif
 		break;
 	case HTYPE_SysfsGpio:
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 		pHardware = new CSysfsGpio(ID, Mode1);
 #endif
 		break;
