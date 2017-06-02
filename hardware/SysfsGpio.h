@@ -10,6 +10,7 @@ struct gpio_info
 {
 	int		pin_number;		// GPIO Pin number
 	int		read_value_fd;	// Fast read fd
+	int		edge_fd;		// Edge detect fd
 	int8_t	request_update;	// Request update
 	int8_t	db_state;		// Database Value
 	int8_t	value;			// GPIO pin Value
@@ -41,6 +42,7 @@ private:
 	bool StopHardware();
 	void FindGpioExports();
 	void Do_Work();
+	void EdgeDetectThread();
 	void Init();
 	void PollGpioInputs();
 	void CreateDomoticzDevices();
@@ -49,15 +51,25 @@ private:
 	void UpdateGpioOutputs();
 	void UpdateDeviceID(int pin);
 	std::vector<std::string> GetGpioDeviceId();
-	int GPIORead(int pin, const char* param);
-	int GPIOReadFd(int fd);
-	int GPIOWrite(int pin, int value);
+	int GpioRead(int pin, const char* param);
+	int GpioReadFd(int fd);
+	int GpioWrite(int pin, int value);
+	int GpioOpenRw(int gpio_pin);
 	int GetReadResult(int bytecount, char* value_str);
-	boost::shared_ptr<boost::thread> m_thread;
-	static std::vector<gpio_info> GpioSavedState;
-	static int sysfs_hwdid;
-	static int sysfs_req_update;
+	int GpioGetState(int index);
+	void GpioSaveState(int index, int value);
+	static std::vector<gpio_info> m_saved_state;
+	static int m_sysfs_hwdid;
+	static int m_sysfs_req_update;
+	bool m_polling_enabled;
+	bool m_interrupts_enabled;
 	volatile bool m_stoprequested;
 	int m_auto_configure_devices;
+	int m_maxfd;
+	fd_set m_rfds;
 	tRBUF m_Packet;
+
+	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_edge_thread;
+	boost::mutex m_state_mutex;
 };
