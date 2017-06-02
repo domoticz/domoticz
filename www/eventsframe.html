@@ -657,8 +657,9 @@
 		  });
 	  }
 	  
-	function new_block() {
-		$("#blockId").html("");
+      function new_block() {
+        var eventInterpreter = $("#interpreter").val().toLowerCase();
+        $("#blockId").html("");
 		Blockly.mainWorkspace.clear();
 		editor.setValue("");
 		$("#eventName").val("");
@@ -668,15 +669,18 @@
 		if ($("#interpreter").val() == "Blockly") {
 			ResizeBlockyWindow();
 		}
-		else {
-			editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
-			$.ajax({
+        else {
+            if (eventInterpreter == "dzvents") {
+                eventInterpreter = "lua";
+            }
+            editor.getSession().setMode("ace/mode/" + eventInterpreter);
+            $.ajax({
 				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data.template != 'undefined') {
-						editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+						editor.getSession().setMode("ace/mode/" + eventInterpreter);
 						editor.setValue(data.template);
 						editor.gotoLine(1);
 					}
