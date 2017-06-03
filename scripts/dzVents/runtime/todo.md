@@ -1,19 +1,11 @@
 * update description for timedOut in docs
-* all attributes from EventSystem.cpp in help
-* add variable type constants to docs
-* changed for updating uservariables
-* remove settingsinfo from docs
-* update constants in dox
 * scene active/inactive???
 * todo's checken in code
-* logging section
-* variable events
-* document global_data.helpers
-* time-limited device triggers in docs
-* security events
 * deprecations doc
 
 *co2 device?
 
 changes:
 counterToday > number
+
+pandoc -r markdown README.md -t mediawiki -o README.wiki

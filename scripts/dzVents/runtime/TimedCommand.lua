@@ -9,6 +9,10 @@ local utils = require('Utils')
 -- switch(v1).within_min(v2).for_min(v3)
 -- switch(v1).after_sec(v2).for_min(v3)
 
+local function deprecationWarning(msg)
+	utils.log(msg, utils.LOG_ERROR)
+end
+
 local function TimedCommand(domoticz, name, value)
 	local valueValue = value
 	local afterValue, forValue, randomValue
@@ -45,51 +49,103 @@ local function TimedCommand(domoticz, name, value)
 	return {
 		['_constructCommand'] = constructCommand, -- for testing purposes
 		['_latest'] = latest, -- for testing purposes
-		['after_sec'] = function(seconds)
+		['afterSec'] = function(seconds)
 			afterValue = seconds
 			latest[command] = constructCommand()
 			return {
-				['for_min'] = function(minutes)
+				['forMin'] = function(minutes)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end
 			}
 		end,
-		['after_min'] = function(minutes)
+		['afterMin'] = function(minutes)
 			afterValue = minutes * 60
 			latest[command] = constructCommand()
 			return {
-				['for_min'] = function(minutes)
+				['forMin'] = function(minutes)
+					forValue = minutes
+					latest[command] = constructCommand()
+				end
+			}
+		end,
+		['forMin'] = function(minutes)
+			forValue = minutes
+			latest[command] = constructCommand()
+			return {
+				['afterSec'] = function(seconds)
+					afterValue = seconds
+					latest[command] = constructCommand()
+				end,
+				['afterMin'] = function(minutes)
+					afterValue = minutes * 60
+					latest[command] = constructCommand()
+				end
+			}
+		end,
+		['withinMin'] = function(minutes)
+			randomValue = minutes
+			latest[command] = constructCommand()
+			return {
+				['forMin'] = function(minutes)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end
 			}
 		end,
 		['for_min'] = function(minutes)
+			deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
 			forValue = minutes
 			latest[command] = constructCommand()
 			return {
 				['after_sec'] = function(seconds)
+					deprecationWarning('dzVents depecration warning: please use afterSec instead of after_sec.', LOG_ERROR)
 					afterValue = seconds
 					latest[command] = constructCommand()
 				end,
 				['after_min'] = function(minutes)
+					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
 					afterValue = minutes * 60
 					latest[command] = constructCommand()
 				end
-
 			}
 		end,
-		['within_min'] = function(minutes)
-			randomValue = minutes
+		['after_sec'] = function(seconds)
+			deprecationWarning('dzVents depecration warning: please use afterSec instead of after_sec.', LOG_ERROR)
+			afterValue = seconds
 			latest[command] = constructCommand()
 			return {
 				['for_min'] = function(minutes)
+					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end
 			}
-		end
+		end,
+		['within_min'] = function(minutes)
+			deprecationWarning('dzVents depecration warning: please use withinMin instead of within_min', LOG_ERROR)
+			randomValue = minutes
+			latest[command] = constructCommand()
+			return {
+				['for_min'] = function(minutes)
+					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
+					forValue = minutes
+					latest[command] = constructCommand()
+				end
+			}
+		end,
+		['after_min'] = function(minutes)
+			deprecationWarning('dzVents depecration warning: please use afterMin instead of after_min', LOG_ERROR)
+			afterValue = minutes * 60
+			latest[command] = constructCommand()
+			return {
+				['for_min'] = function(minutes)
+					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
+					forValue = minutes
+					latest[command] = constructCommand()
+				end
+			}
+		end,
 	}
 end
 

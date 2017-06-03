@@ -1,59 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of contents**
-
-- [About](#about)
-- [Using dzVents with Domoticz](#using-dzvents-with-domoticz)
-  - [Quickstart](#quickstart)
-- [Adapting or creating your scripts](#adapting-or-creating-your-scripts)
-  - [Sections in the script](#sections-in-the-script)
-    - [active = { ... }](#active----)
-    - [on = { ... }](#on----)
-    - [execute = function(domoticz, device/variable, triggerInfo) ... end](#execute--functiondomoticz-devicevariable-triggerinfo--end)
-    - [data = { ... }](#data----)
-    - [logging = { ... }](#logging----)
-  - [*timer* trigger options](#timer-trigger-options)
-- [The domoticz object](#the-domoticz-object)
-  - [Domoticz object API](#domoticz-object-api)
-    - [Domoticz attributes:](#domoticz-attributes)
-    - [Domoticz methods](#domoticz-methods)
-    - [Iterators](#iterators)
-    - [Contants](#contants)
-  - [Device object API](#device-object-api)
-    - [Device attributes](#device-attributes)
-    - [Device methods](#device-methods)
-    - [Switch timing options (delay, duration)](#switch-timing-options-delay-duration)
-  - [Variable object API](#variable-object-api)
-    - [Variable attributes](#variable-attributes)
-    - [Variable methods](#variable-methods)
-  - [Create your own Time object](#create-your-own-time-object)
-    - [Time Properties:](#time-properties)
-- [Persistent data](#persistent-data)
-  - [Script level persistent variables](#script-level-persistent-variables)
-    - [Size matters and watch your speed!!](#size-matters-and-watch-your-speed)
-  - [Global persistent variables](#global-persistent-variables)
-  - [A special kind of persistent variables: *history = true*](#a-special-kind-of-persistent-variables-history--true)
-    - [Historical variables API](#historical-variables-api)
-      - [Defining](#defining)
-      - [Add](#add)
-      - [Getting. It's all about time!](#getting-its-all-about-time)
-      - [Interacting with your data: statistics!](#interacting-with-your-data-statistics)
-        - [Index](#index)
-        - [Time specification (*timeAgo*)](#time-specification-timeago)
-        - [Getting data points](#getting-data-points)
-          - [Looping through the data: iterators](#looping-through-the-data-iterators)
-        - [Statistical functions](#statistical-functions)
-          - [Functions](#functions)
-        - [About data smoothing](#about-data-smoothing)
-  - [How does the storage stuff work?](#how-does-the-storage-stuff-work)
-- [Settings](#settings)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-If you know your way you can go straight to the [Quick Reference Guide](dzVents/QUICKREF.md).
-
-[Release notes](dzVents/dzVents%20history.txt)
-
 # About
 dzVents (|diː ziː vɛnts| short for Domoticz Easy Events) brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticzs in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
 
@@ -285,7 +229,7 @@ The domoticz object contains everything that you need to know in your scripts an
 
 `domoticz.time.isDayTime` or `domoticz.devices['My sensor'].temperature` or `domoticz.devices['My sensor'].lastUpdate.minutesAgo`.
 
-So this object structure contains all the information logically arranged where you would expect it to be. Also, it harbors methods to manipulate Domoticz or devices. dzVents will create the commandArray contents for you and all you have to do is something like `domoticz.devices[123].switchOn().for_min(5).after_sec(10)` or `domoticz.devices['My dummy sensor'].updateBarometer(1034, domoticz.BARO_THUNDERSTORM)`.
+So this object structure contains all the information logically arranged where you would expect it to be. Also, it harbors methods to manipulate Domoticz or devices. dzVents will create the commandArray contents for you and all you have to do is something like `domoticz.devices[123].switchOn().forMin(5).afterSec(10)` or `domoticz.devices['My dummy sensor'].updateBarometer(1034, domoticz.BARO_THUNDERSTORM)`.
 
 *The intention is that you don't have to construct low-level commandArray-commands for Domoticz anymore!* The domoticz object tries to encapsulate every low-level commandArray-command into a nice API.  If there is still something missing, please file a report in the Domoticz issue-tracker on github and until then you can always use the sendCommand method which will dispatch the command to the commandArray
 
@@ -534,20 +478,20 @@ Most of the time when your device is not recognized you can always use the `rawD
 To specify a duration or a delay for the various switch command you can do this:
 
     -- switch on for 2 minutes after 10 seconds
-    device.switchOn().after_sec(10).for_min(2)
+    device.switchOn().afterSec(10).forMin(2)
 
     -- switch on for 2 minutes after a randomized delay of 1-10 minutes
-    device.switchOff().within_min(10).for_min(2)
-    device.close().for_min(15)
-    device.open().after_sec(20)
-    device.open().after_min(2)
+    device.switchOff().withinMin(10).forMin(2)
+    device.close().forMin(15)
+    device.open().afterSec(20)
+    device.open().afterMin(2)
 
- - **after_sec(seconds)**: *Function*. Activates the command after a certain amount of seconds.
- - **after_min(minutes)**: *Function*. Activates the command after a certain amount of minutes.
- - **for_min(minutes)**: *Function*. Activates the command for the duration of a certain amount of minutes (cannot be specified in seconds).
- - **within_min(minutes)**: *Function*. Activates the command within a certain period *randomly*.
+ - **afterSec(seconds)**: *Function*. Activates the command after a certain amount of seconds.
+ - **afterMin(minutes)**: *Function*. Activates the command after a certain amount of minutes.
+ - **forMin(minutes)**: *Function*. Activates the command for the duration of a certain amount of minutes (cannot be specified in seconds).
+ - **withinMin(minutes)**: *Function*. Activates the command within a certain period *randomly*.
 
-Note that **dimTo()** doesn't support **for_min()**.
+Note that **dimTo()** doesn't support **forMin()**.
 
 ## Variable object API
 User variables created in Domoticz have these attributes and methods:
