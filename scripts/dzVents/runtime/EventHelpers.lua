@@ -264,13 +264,14 @@ local function EventHelpers(domoticz, mainMethod)
 		local d
 		if (testTime ~= nil) then
 			d = testTime.day
+			if (d == nil) then d = 1 end
 		else
 			d = os.date('*t').wday
 		end
 
 		local lookup = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
 		utils.log('Current day .. ' .. lookup[d], utils.LOG_DEBUG)
-		return lookup[d]
+		return lookup[d], d
 	end
 
 	function self.getNow(testTime)
@@ -293,6 +294,30 @@ local function EventHelpers(domoticz, mainMethod)
 		return (time.hour / h == math.floor(time.hour / h) and time.min == 0)
 	end
 
+	local function getMinutes(hours, minutes)
+		return (hours * 60) + minutes
+	end
+
+	local function isTimeBetween(startH, startM, stopH, stopM, testH, testM)
+		if (stopH < startH) then -- add 24 hours if endhours < startHours
+			local stopHOrg = stopH
+			stopH = stopH + 24
+			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
+				testH = testH + 24
+			end
+		end
+
+		local startTVal = getMinutes(startH, startM)
+		local stopTVal = getMinutes(stopH, stopM)
+		local curTVal = getMinutes(testH, testM)
+		return (curTVal >= startTVal and curTVal <= stopTVal)
+	end
+
+	local function isNowBetween(startH,sStartM, stopH, stopM)
+		local time = os.date("*t")
+		return isTimeBetween(startH, startM, stopH, stopM, time.hour, time.min)
+	end
+
 	function self.isTriggerByTime(t, testTime)
 		local tm, th
 		local time = self.getNow(testTime)
@@ -309,18 +334,51 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 			else
 				if (t == 'sunset') then
-					return (minutesnow == timeofday['SunsetInMinutes'])
+					return (minutesnow == _G.timeofday['SunsetInMinutes'])
 				else
-					return (minutesnow == timeofday['SunriseInMinutes'])
+					return (minutesnow == _G.timeofday['SunriseInMinutes'])
 				end
 			end
+		elseif (t == 'nighttime') then
+			return _G.timeofday['Nighttime']
+		elseif (t == 'daytime') then
+			return _G.timeofday['Daytime']
 		end
 
-		local pos = string.find(t, ':')
+		local range = string.split(t, '-')
 
-		if (pos ~= nil and pos > 0) then
-			th = string.sub(t, 1, pos - 1)
-			tm = string.sub(t, pos + 1)
+		if (range[1] ~= nil and range[2] ~= nil) then
+			-- time range
+
+			local from = range[1]
+			local to = range[2]
+
+			local fromParts = string.split(from, ':')
+			local fromH = tonumber(fromParts[1])
+			local fromM = tonumber(fromParts[2])
+
+			local toParts = string.split(to, ':')
+			local toH = tonumber(toParts[1])
+			local toM = tonumber(toParts[2])
+
+			if (fromH == nil or fromM == nil or toH == nil or toM == nil) then
+				utils.log('wrong time format. ' .. t, utils.LOG_ERROR)
+				return false
+			end
+
+			return isTimeBetween(fromH, fromM, toH, toM, time.hour, time.min)
+
+
+		else
+
+			local parts = string.split(t, ':')
+			th = parts[1]
+			tm = parts[2]
+
+			if (tm == nil or th == nil) then
+				utils.log('wrong time format', utils.LOG_ERROR)
+				return false
+			end
 
 			if (tm == '*') then
 				return (time.hour == tonumber(th))
@@ -328,19 +386,40 @@ local function EventHelpers(domoticz, mainMethod)
 				return (time.min == tonumber(tm))
 			elseif (th ~= '*' and tm ~= '*') then
 				return (tonumber(tm) == time.min and tonumber(th) == time.hour)
-			else
-				utils.log('wrong time format', utils.LOG_ERROR)
-				return false
 			end
-
-		else
-			utils.log('Wrong time format, should be hh:mm ' .. tostring(t), utils.LOG_DEBUG)
-			return false
 		end
+
 	end
 
 	function self.evalTimeTrigger(t, testTime)
 		if (testTime) then utils.log(t, utils.LOG_INFO) end
+
+		local dayOfWeek, d = self.getDayOfWeek(testTime)
+
+		if (type(t) == 'function') then
+
+			_G.domoticz = {
+				['LOG_INFO'] = utils.LOG_INFO,
+				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
+				['LOG_DEBUG'] = utils.LOG_DEBUG,
+				['LOG_ERROR'] = utils.LOG_ERROR,
+				['log'] = self.domoticz.log
+			}
+
+			ok, res = pcall(t, self.domoticz.time)
+
+			_G.domoticz = nil
+
+			if (not ok) then
+				utils.log('Error executing custom timer function.', utils.LOG_ERROR)
+				utils.log(res, utils.LOG_ERROR)
+				if (_G.TESTMODE) then
+					print(res)
+				end
+				return false
+			end
+			return res
+		end
 
 		-- t is a single timer definition
 		t = string.lower(t) -- normalize
@@ -363,7 +442,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		-- now we can skip everything if the current day
 		-- cannot be found in the days string
-		if (days ~= nil and string.find(days, self.getDayOfWeek(testTime)) == nil) then
+		if (days ~= nil and string.find(days, dayOfWeek) == nil) then
 			-- today is not part of this trigger definition
 			return false
 		end
@@ -400,16 +479,30 @@ local function EventHelpers(domoticz, mainMethod)
 			if (words[3] == 'minutes') then
 				m = tonumber(words[2])
 				if (m ~= nil) then
+
+					if ((60 / m) ~= math.floor(60/m) or m >=60) then
+						utils.log(t .. ' is not a valid timer definition. Can only run every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes.', utils.LOG_ERROR)
+						return false
+					end
+
 					return self.isTriggerByMinute(m, testTime)
 				else
 					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
+					return false
 				end
 			elseif (words[3] == 'hours') then
 				h = tonumber(words[2])
 				if (h ~= nil) then
+
+					if ((24 / h) ~= math.floor(24 / h) or h >=24) then
+						utils.log(t .. ' is not a valid timer definition. Can only run every 1, 2, 3, 4, 6, 12 hour.', utils.LOG_ERROR)
+						return false
+					end
+
 					return self.isTriggerByHour(h, testTime)
 				else
 					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
+					return false
 				end
 			end
 		elseif (words[1] == 'at' or words[1] == 'at:') then
@@ -547,6 +640,7 @@ local function EventHelpers(domoticz, mainMethod)
 				['SECURITY_ARMEDAWAY'] = self.domoticz.SECURITY_ARMEDAWAY,
 				['SECURITY_ARMEDHOME'] = self.domoticz.SECURITY_ARMEDHOME,
 			}
+
 			ok = true
 
 			if (moduleInfo.type == 'external') then

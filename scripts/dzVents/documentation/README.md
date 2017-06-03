@@ -209,17 +209,29 @@ There are several options for time triggers. It is important to know that Domoti
 	        'at 13:45',            -- specific time
 	        'at *:45',             -- every 45th minute in the hour
 	        'at 15:*',             -- every minute between 15:00 and 16:00
+	        'at 12:45-21:15',      -- between 12:45 and 21:15. You cannot use '*'!
+	        'at 19:30-08:20',      -- between 19:30 and 8:20 then next day
 	        'at 13:45 on mon,tue', -- at 13:45 only on Monday en Tuesday (english)
 	        'every hour on sat',   -- you guessed it correctly
 	        'at sunset',           -- uses sunset/sunrise info from Domoticz
 	        'at sunrise',
-	        'at sunset on sat,sun'
+	        'at sunset on sat,sun',
+	        'at nighttime',         -- between sunset and sunrise
+	        'at daytime',           -- between sunrise and sunset
+	        'at daytime on mon,tue', -- between sunrise and sunset
+	                                   only on monday and tuesday
+	        function(time)
+		        -- see domoticz.time below for the time attributes
+		        -- note that this function is called every minute!
+		        -- custom code that either returns true or false
+		        ...
+	        end
 	   },
    }
 
 **One important note: if Domoticz, for whatever reason, skips a beat (skips a timer event) then you may miss the trigger! So you may have to build in some fail-safe checks or some redundancy if you have critical time-based stuff to control. There is nothing dzVents can do about it**
 
-Another important issue: the way it is implemented right now the `every xx minutes` and `every xx hours` is a bit limited. The interval resets at every \*:00  (for minutes) or 00:* for hours. So you need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes.
+Another important issue: the way it is implemented right now the `every xx minutes` and `every xx hours` is a bit limited. The interval resets at every \*:00  (for minutes) or 00:* for hours. So you need an interval that is an integer divider of 60 (or 24 for the hours). So you can do every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes only.
 
 # The domoticz object
 And now the most interesting part. Without dzVents all the device information was scattered around in a dozen global Lua tables like `otherdevices` or `devicechanged`. You had to write a lot of code to collect all this information and build your logic around it. And, when you want to update switches and stuff you had to fill the commandArray with often low-level stuff in order to make it work.

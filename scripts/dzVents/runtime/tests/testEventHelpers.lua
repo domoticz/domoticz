@@ -1,5 +1,7 @@
-local _ = require 'lodash'
-_G._ = require 'lodash'
+local _ = require('lodash')
+_G._ = require('lodash')
+
+local Time = require('Time')
 
 local scriptPath = ''
 
@@ -165,9 +167,12 @@ describe('event helpers', function()
 			assert.is_true(helpers.evalTimeTrigger('Every 20 minutes', {['hour']=13, ['min']=40}))
 			assert.is_false(helpers.evalTimeTrigger('Every 20 minutes', {['hour']=13, ['min']=2}))
 
-			assert.is_true(helpers.evalTimeTrigger('Every 11 minutes', {['hour']=13, ['min']=0}))
-			assert.is_true(helpers.evalTimeTrigger('Every 11 minutes', {['hour']=13, ['min']=11}))
-			assert.is_true(helpers.evalTimeTrigger('Every 11 minutes', {['hour']=13, ['min']=22}))
+			assert.is_true(helpers.evalTimeTrigger('Every 10 minutes', {['hour']=13, ['min']=0}))
+			assert.is_true(helpers.evalTimeTrigger('Every 10 minutes', {['hour']=13, ['min']=10}))
+			assert.is_true(helpers.evalTimeTrigger('Every 10 minutes', {['hour']=13, ['min']=20}))
+
+			-- should not be possible:
+			assert.is_false(helpers.evalTimeTrigger('Every 11 minutes', { ['hour'] = 13, ['min'] = 11 }))
 
 			assert.is_true(helpers.evalTimeTrigger('Every hour', {['hour']=13, ['min']=0}))
 			assert.is_true(helpers.evalTimeTrigger('Every hour', {['hour']=0, ['min']=0}))
@@ -184,6 +189,9 @@ describe('event helpers', function()
 			assert.is_true(helpers.evalTimeTrigger('Every 3 hours', {['hour']=0, ['min']=0}))
 			assert.is_true(helpers.evalTimeTrigger('Every 3 hours', {['hour']=3, ['min']=0}))
 			assert.is_false(helpers.evalTimeTrigger('Every 3 hours', {['hour']=2, ['min']=0}))
+
+			-- 24/h ~= floot(24/h)
+			assert.is_false(helpers.evalTimeTrigger('Every 5 hours', { ['hour'] = 2, ['min'] = 0 }))
 
 			assert.is_true(helpers.evalTimeTrigger('at 12:23', {['hour']=12, ['min']=23}))
 			assert.is_false(helpers.evalTimeTrigger('at 12:23', {['hour']=13, ['min']=23}))
@@ -207,6 +215,19 @@ describe('event helpers', function()
 			assert.is_false(helpers.evalTimeTrigger('at *:5', {['hour']=2, ['min']=11}))
 			assert.is_true(helpers.evalTimeTrigger('at *:5', {['hour']=2, ['min']=5}))
 
+			assert.is_true(helpers.evalTimeTrigger('at 10:15-13:45', { ['hour'] = 11, ['min'] = 46 }))
+			assert.is_false(helpers.evalTimeTrigger('at 10:15-13:45', { ['hour'] = 9, ['min'] = 46 }))
+			assert.is_true(helpers.evalTimeTrigger('at 10:15-13:45', { ['hour'] = 13, ['min'] = 45 }))
+			assert.is_false(helpers.evalTimeTrigger('at 10:15-13:45', { ['hour'] = 13, ['min'] = 46 }))
+			assert.is_true(helpers.evalTimeTrigger('at 10:15-13:45', { ['hour'] = 10, ['min'] = 15 }))
+			assert.is_false(helpers.evalTimeTrigger('at 10:15-13:*', { ['hour'] = 10, ['min'] = 15 }))
+
+			assert.is_true(helpers.evalTimeTrigger('at 12:00-11:00', { ['hour'] = 9, ['min'] = 15 }))
+			assert.is_false(helpers.evalTimeTrigger('at 12:00-11:00', { ['hour'] = 11, ['min'] = 15 }))
+
+			assert.is_false(helpers.evalTimeTrigger('at 9:00-10:00 on mon', { ['hour'] = 9, ['min'] = 15, ['day'] = 1 }))
+			assert.is_true(helpers.evalTimeTrigger('at 9:00-10:00 on mon', { ['hour'] = 9, ['min'] = 15, ['day'] = 2 }))
+
 			assert.is_true(helpers.evalTimeTrigger('at *:5 on mon, tue, fri', {['hour']=2, ['min']=5, ['day']=6}))
 			assert.is_false(helpers.evalTimeTrigger('at *:5 on sat', {['hour']=2, ['min']=5, ['day']=5}))
 
@@ -224,6 +245,42 @@ describe('event helpers', function()
 
 			assert.is_true(helpers.evalTimeTrigger('at sunrise on mon', {['hour']=1, ['min']=4, ['day']=2, ['SunriseInMinutes']=64}))
 			assert.is_false(helpers.evalTimeTrigger('at sunrise on fri', {['hour']=1, ['min']=4, ['day']=2, ['SunriseInMinutes']=64}))
+
+
+			_G.timeofday = {['Nighttime'] = true}
+			assert.is_true(helpers.evalTimeTrigger('at nighttime', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+
+			_G.timeofday = { ['Nighttime'] = false }
+			assert.is_false(helpers.evalTimeTrigger('at nighttime', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+
+			_G.timeofday = { ['Nighttime'] = true }
+			assert.is_true(helpers.evalTimeTrigger('at nighttime on mon', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+			assert.is_false(helpers.evalTimeTrigger('at nighttime on mon', { ['hour'] = 1, ['min'] = 4, ['day'] = 1 }))
+
+			_G.timeofday = { ['Daytime'] = true }
+			assert.is_true(helpers.evalTimeTrigger('at daytime', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+			assert.is_true(helpers.evalTimeTrigger('at daytime on mon', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+			assert.is_false(helpers.evalTimeTrigger('at daytime on fri', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+
+			_G.timeofday = { ['Daytime'] = false }
+			assert.is_false(helpers.evalTimeTrigger('at daytime', { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+		end)
+
+		it('should evaluate a custom timer function', function()
+
+			local sTime = 2017 .. '-' .. 6 .. '-' .. 13 .. ' ' .. 12 .. ':' .. 5 .. ':' .. 0
+			domoticz.time = Time(sTime)
+
+			local custom = function(time)
+				return tostring(time.hour) .. ':' .. tostring(time.min) .. ' ' .. tostring(time.day) .. ' ' .. (time.isDayTime and 'day' or 'night')
+			end
+
+			domoticz.time['isDayTime'] = true
+			assert.is_same('12:5 13 day', helpers.evalTimeTrigger(custom, { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+
+			domoticz.time['isDayTime'] = false
+			assert.is_same('12:5 13 night', helpers.evalTimeTrigger(custom, { ['hour'] = 1, ['min'] = 4, ['day'] = 2 }))
+
 		end)
 
 		it('should check time defs', function()
@@ -396,12 +453,13 @@ describe('event helpers', function()
 			--on = {'timer'} -- every minute
 			local modules = helpers.getTimerHandlers()
 
-			assert.are.same(3, _.size(modules))
+			assert.are.same(4, _.size(modules))
 			local names = _.pluck(modules, {'name'})
 			table.sort(names)
 
 			assert.are.same({
 				"script_timer_classic",
+				'script_timer_function',
 				"script_timer_single",
 				"script_timer_table" }, names)
 
@@ -758,6 +816,7 @@ describe('event helpers', function()
 
 			assert.is_same({
 				'script_timer_classic',
+				'script_timer_function',
 				'script_timer_single',
 				'script_timer_table'
 			}, scripts)

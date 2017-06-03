@@ -11,6 +11,7 @@ describe('Event dispatching', function()
 
 	setup(function()
 		_G.TESTMODE = true
+		_G.TESTTIME = 2017 .. '-' .. 6 .. '-' .. 13 .. ' ' .. 12 .. ':' .. 5 .. ':' .. 0
 
 		_G.timeofday = {
 			Daytime = 'dt',
@@ -141,6 +142,7 @@ describe('Event dispatching', function()
 		local main = require('dzVents')
 		assert.is_same({
 			{ ["onscript1"] = "Off" },
+			{ ['Scene:scene 2'] = 'On' },
 			{ ["SendNotification"] = "Me#timer every minute#0#pushover##" },
 			{ ["Scene:scene 1"] = "On" }
 		}, main)

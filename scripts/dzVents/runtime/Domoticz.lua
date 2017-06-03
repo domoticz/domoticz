@@ -20,8 +20,13 @@ end
 -- main class
 local function Domoticz(settings)
 
-	local now = os.date('*t')
-	local sNow = now.year .. '-' .. now.month .. '-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec
+	local sNow, now
+	if (_G.TESTMODE and _G.TESTTIME) then
+		sNow = 2017 .. '-' .. 6 .. '-' .. 13 .. ' ' .. 12 .. ':' .. 5 .. ':' .. 0
+	else
+		now = os.date('*t')
+		sNow = now.year .. '-' .. now.month .. '-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec
+	end
 	local nowTime = Time(sNow)
 	nowTime['isDayTime'] = timeofday['Daytime']
 	nowTime['isNightTime'] = timeofday['Nighttime']
