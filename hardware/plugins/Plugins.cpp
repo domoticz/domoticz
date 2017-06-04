@@ -587,13 +587,15 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
-		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		if (m_Transports.size())
 		{
-			CPluginTransport*	pPluginTransport = *itt;
-			if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
-				return true;
+			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+			{
+				CPluginTransport*	pPluginTransport = *itt;
+				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
+					return true;
+			}
 		}
-
 		return false;
 	}
 
