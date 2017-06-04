@@ -208,6 +208,7 @@ namespace Plugins {
 						}
 					}
 				}
+				FileEntries.clear();
 			}
 		}
 	}
