@@ -545,37 +545,43 @@
 	      return [conditionArray,setArray];     
       }
       
-      function loadSelectedEvent(id) {
-      		$.ajax({
-			  	url: "json.htm?type=events&param=load&event="+id, 
-			  	async: false, 
-			  	dataType: 'json',
-			  	success: function(data) {
-				  	if (typeof data.result != 'undefined') {
-						if (data.editortheme != 'undefined') {
-							editor.setTheme(data.editortheme);
-						}
-				  		if (data.status=="OK") {
-							$("#eventName").val(data.result[0].name);
-							$("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
-							$("#eventType").val(data.result[0].type);
-							if (data.result[0].eventstatus == '1') {
-								$("#eventActive").prop('checked', true);
-							}
-							else {
-								$("#eventActive").prop('checked',false);
-							}
-							if (data.result[0].interpreter == 'Blockly') {
-								ResizeBlockyWindow();
-								var xmltemp = data.result[0].xmlstatement;
-								var xml = Blockly.Xml.textToDom(xmltemp);
-								Blockly.mainWorkspace.clear();
-								Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
-								$("#blockId").html(id);
-							}
-							else {
-								editor.setValue("");
-								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+        function loadSelectedEvent(id) {
+            $.ajax({
+                url: "json.htm?type=events&param=load&event=" + id,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (typeof data.result != 'undefined') {
+                        if (data.editortheme != 'undefined') {
+                            editor.setTheme(data.editortheme);
+                        }
+                        if (data.status == "OK") {
+                            $("#eventName").val(data.result[0].name);
+                            $("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
+                            $("#eventType").val(data.result[0].type);
+                            if (data.result[0].eventstatus == '1') {
+                                $("#eventActive").prop('checked', true);
+                            }
+                            else {
+                                $("#eventActive").prop('checked', false);
+                            }
+                            if (data.result[0].interpreter == 'Blockly') {
+                                ResizeBlockyWindow();
+                                var xmltemp = data.result[0].xmlstatement;
+                                var xml = Blockly.Xml.textToDom(xmltemp);
+                                Blockly.mainWorkspace.clear();
+                                Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
+                                $("#blockId").html(id);
+                            }
+                            else {
+                                if (data.result[0].interpreter == 'dzVents') {
+                                    editor.getSession().setMode("ace/mode/lua");
+                                }
+                                else
+                                {
+                                    editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+                                }
+                                editor.setValue("");
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
 								editor.scrollToLine(1, true, true, function () {});
