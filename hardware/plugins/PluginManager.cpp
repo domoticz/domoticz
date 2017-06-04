@@ -135,6 +135,7 @@ namespace Plugins {
 #endif //ENABLE_PYTHON
 
 			Py_Initialize();
+			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
@@ -325,12 +326,6 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
-		if (Py_LoadLibrary())
-		{
-			if (Py_IsInitialized()) {
-				Py_Finalize();
-			}
-		}
 		// Hardware should already be stopped to just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
@@ -339,6 +334,14 @@ namespace Plugins {
 		}
 
 		m_pPlugins.clear();
+
+		if (Py_LoadLibrary()  && m_InitialPythonThread)
+		{
+			if (Py_IsInitialized()) {
+				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
+				Py_Finalize();
+			}
+		}
 
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;

@@ -81,6 +81,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyImport_ImportModule, const char*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_CallObject, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyFrame_GetLineNumber, PyFrameObject*);
+		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyEval_SaveThread, void);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, _PyObject_New, PyTypeObject*);
@@ -175,6 +176,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyFrame_GetLineNumber);
+					RESOLVE_PYTHON_SYMBOL(PyEval_SaveThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
@@ -329,6 +331,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define PyFrame_GetLineNumber	pythonLib->PyFrame_GetLineNumber
+#define PyEval_SaveThread		pythonLib->PyEval_SaveThread
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
