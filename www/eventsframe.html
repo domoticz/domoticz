@@ -577,8 +577,7 @@
                                 if (data.result[0].interpreter == 'dzVents') {
                                     editor.getSession().setMode("ace/mode/lua");
                                 }
-                                else
-                                {
+                                else {
                                     editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
                                 }
                                 editor.setValue("");
