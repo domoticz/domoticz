@@ -8002,11 +8002,11 @@ namespace http {
 			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order.c_str();
-			for(int i = 0; i < orderBy.size(); i++) {
-                                if( !isalpha(orderBy[i])) {
-                                        isAlpha = false;
-                                }
-                        }
+			for (size_t i = 0; i < orderBy.size(); i++) {
+				if (!isalpha(orderBy[i])) {
+					isAlpha = false;
+				}
+			}
 			if (order.empty() || (!isAlpha)) {
 				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 			} else {

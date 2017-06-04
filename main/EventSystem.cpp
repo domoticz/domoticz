@@ -272,7 +272,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
-			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue, options));
+			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
@@ -402,7 +402,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 		float temp = 0;
 		float chill = 0;
-		unsigned char humidity = 0;
+		int humidity = 0;
 		float barometer = 0;
 		float rainmm = 0;
 		float rainmmlasthour = 0;
@@ -468,7 +468,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeHUM:
-			humidity = (unsigned char)sitem.nValue;
+			humidity = sitem.nValue;
 			isHum = true;
 			break;
 		case pTypeTEMP_HUM:
@@ -667,7 +667,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (sitem.subType == sTypeZWaveAlarm)
 				{
-					alarmval = static_cast<int>(sitem.nValue);
+					alarmval = sitem.nValue;
 					isZWaveAlarm = true;
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
@@ -3425,7 +3425,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 
-std::string CEventSystem::nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
+std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
 
 	std::string lstatus = "";

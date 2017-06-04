@@ -264,7 +264,7 @@
 
                            // If nValueWording contains %, unicode fails?
 
-                           aDevice->id = sitem.ID;
+                           aDevice->id = static_cast<int>(sitem.ID);
                            aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
                            aDevice->type = sitem.devType;
                            aDevice->sub_type = sitem.subType;
