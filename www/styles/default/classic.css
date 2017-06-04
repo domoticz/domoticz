@@ -4,8 +4,10 @@
 /*  general settings, like colors. */
 body {
     color: #ddd; /*!important;*/
+    background-color: #013!important;
     background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);
     background-attachment: fixed;
+    
 }
     
 /* settings/hardware background color*/
@@ -306,8 +308,14 @@ body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{border-radius:3px!
 
 .ui-draggable:not(.ui-dialog) tr td.options a.btnsmall-sel{
     /*color:#af2aaf;*/ /* #446cce*/
-    border-bottom:2px solid #af2aaf;
+    background-color:#af2aaf;
+    color: #ddd;
     border-radius: 0;
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    height: 24px;
+    display: inline-block;
 }
 
 /*
@@ -329,7 +337,8 @@ body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{border-radius:3px!
 /*  events  */
 
 #IMain{
-    background-color: transparant;
+    /*background-color: transparent;*/
+    background-color:#11213d;
     width: 100%!important;
     border:none;
     margin-top: 0!important;
@@ -424,8 +433,9 @@ p.tip, p.inlinetip{
 
 #settingscontent #Domoticz a.btn-info,
 .related > div.span2 > a.btn-info{
-    background-color:#ccc;
-    color:#555;
+    /*background-color:#ccc;*/
+    background-color:#11213d;
+    color:#ccc;
     background-image:none;
 }
 
@@ -547,9 +557,10 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
         -webkit-box-shadow: inset 0 -5px 8px -4px #DF2D3A;
         box-shadow: inset 0 -10px 0px -4px #DF2D3A;*/
     }
-    div.item.statusTimeout tr {
+    div.item.statusTimeout {
         /*border:5px solid #DF2D3A; */
-        box-shadow: inset 0 0 0 3px #DF2D3A;*/
+        box-shadow: inset 0 0 0 3px #DF2D3A;
+        height:100%;
     }
     
     
@@ -567,11 +578,36 @@ body.dashMobile #dashcontent #status{box-shadow:none!important;}
 
 /*  footer  */
 
+    /*html,body{height:calc(100% - 30px)!important;}*/
+    /*#holder{min-height:calc(100% - 30px)!important;}*/
+    #holder .container-fluid{padding-bottom:0;margin-top:0;padding-top:10px}
+    
 #copyright{
     background-color:#013;
 }
 
 
+/* other final changes */
+    
+.navbar .tooltip{padding:5px!important;top:-14px!important}
+
+div.divider .span3, 
+div.divider .span4{
+    background-color: rgba(255,255,255,0.1);
+}
+    
+div.divider .span3 .item, 
+div.divider .span4 .item{
+    margin-bottom:0;
+}
+    
+/*  EDIT SWITCH */
+
+.dd-options,
+.dd-select{background-color:#1c2b46!important}
+.dd-desc{color:#eee;}
+
+    
 
 /*  experiments  */
 
