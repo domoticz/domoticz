@@ -12,7 +12,7 @@ namespace Plugins {
 	public:
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
-		virtual void				Flush(const int HwdID);
+		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);
 		virtual int					Length() { return m_sRetainedData.size(); };
 	};
 

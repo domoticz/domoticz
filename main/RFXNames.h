@@ -156,7 +156,7 @@ enum _eHardwareTypes {
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
-	HTYPE_AVAILABLE_FOR_USAGE,	//75
+	HTYPE_EVOHOME_WEB,	//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_DenkoviSmartdenLan,	//78
@@ -180,10 +180,11 @@ enum _eHardwareTypes {
 	HTYPE_RaspberryBME280,		//96
 	HTYPE_Arilux,				//97
 	HTYPE_OpenWebNetUSB,		//98
-	HTYPE_IntergasInComfortLAN2RF,			//99
+	HTYPE_IntergasInComfortLAN2RF,	//99
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
-	HTYPE_SysfsGPIO,			//102
+	HTYPE_SysfsGpio,			//102
+	HTYPE_Rtl433,                           //103
 	HTYPE_END
 };
 

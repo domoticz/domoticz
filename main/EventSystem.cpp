@@ -30,14 +30,12 @@ extern "C" {
 #include "../lua/src/lualib.h"
 #include "../lua/src/lauxlib.h"
 #endif
-#ifdef ENABLE_PYTHON
-#include <Python.h>
-#endif
 }
 
 #ifdef ENABLE_PYTHON
-#include <boost/python.hpp>
-using namespace boost::python;
+#include "EventsPythonModule.h"
+#include "EventsPythonDevice.h"
+extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
 extern std::string szUserDataFolder;
@@ -71,7 +69,10 @@ void CEventSystem::StartEventSystem()
 
 	LoadEvents();
 	GetCurrentStates();
-
+#ifdef ENABLE_PYTHON
+    Plugins::PythonEventsInitialize(szUserDataFolder);
+#endif
+    
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -82,6 +83,9 @@ void CEventSystem::StopEventSystem()
 		m_stoprequested = true;
 		m_thread->join();
 	}
+#ifdef ENABLE_PYTHON
+    Plugins::PythonEventsStop();
+#endif
 }
 
 void CEventSystem::SetEnabled(const bool bEnabled)
@@ -268,7 +272,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
-			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue, options));
+			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
@@ -398,7 +402,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 		float temp = 0;
 		float chill = 0;
-		unsigned char humidity = 0;
+		int humidity = 0;
 		float barometer = 0;
 		float rainmm = 0;
 		float rainmmlasthour = 0;
@@ -464,7 +468,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeHUM:
-			humidity = (unsigned char)sitem.nValue;
+			humidity = sitem.nValue;
 			isHum = true;
 			break;
 		case pTypeTEMP_HUM:
@@ -663,7 +667,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (sitem.subType == sTypeZWaveAlarm)
 				{
-					alarmval = static_cast<int>(sitem.nValue);
+					alarmval = sitem.nValue;
 					isZWaveAlarm = true;
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
@@ -2191,220 +2195,30 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 }
 
 
-static int numargs=0;
-
-/* Return the number of arguments of the application command line */
-static PyObject*
-PyDomoticz_log(PyObject *self, PyObject *args)
-{
-	char* msg;
-	int type;
-    if(!PyArg_ParseTuple(args, "is", &type, &msg))
-        return NULL;
-	_log.Log((_eLogLevel)type, msg);
-	Py_INCREF(Py_None);
-    return Py_None;
-
-}
-
-static PyMethodDef DomoticzMethods[] = {
-    {"log", PyDomoticz_log, METH_VARARGS,  "log to Domoticz."},
-    {NULL, NULL, 0, NULL}
-};
-
-
-// from https://gist.github.com/octavifs/5362297
-
-template <class K, class V>
-boost::python::dict toPythonDict(std::map<K, V> map) {
-    typename std::map<K, V>::iterator iter;
-	boost::python::dict dictionary;
-	for (iter = map.begin(); iter != map.end(); ++iter) {
-		dictionary[iter->first] = iter->second;
-	}
-	return dictionary;
-}
-
-
 // this should be filled in by the preprocessor
 const char * Python_exe = "PYTHON_EXE";
+
+
+
+// Python EventModule helper functions
+bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
+    ScheduleEvent(ID, Action,eventName);
+    return true;
+}
 
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	//_log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
 
-	std::stringstream python_DirT;
-
-#ifdef WIN32
-	python_DirT << szUserDataFolder << "scripts\\python\\";
-#else
-	python_DirT << szUserDataFolder << "scripts/python/";
-#endif
-	std::string python_Dir = python_DirT.str();
-	if(!Py_IsInitialized()) {
-		Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
-		Py_Initialize();
-		Py_InitModule("domoticz_", DomoticzMethods);
-		// TODO: may have a small memleak, remove references in destructor
-		PyObject* sys = PyImport_ImportModule("sys");
-		PyObject *path = PyObject_GetAttrString(sys, "path");
-		PyList_Append(path, PyString_FromString(python_Dir.c_str()));
-
-		bool (CEventSystem::*ScheduleEventMethod)(std::string ID, const std::string &Action, const std::string &eventName) = &CEventSystem::ScheduleEvent;
-		class_<CEventSystem, boost::noncopyable>("Domoticz", no_init)
-			.def("command", ScheduleEventMethod)
-			;
-	}
-
-	FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-	object main_module = import("__main__");
-	object main_namespace = dict(main_module.attr("__dict__")).copy();
+    
+    Plugins::PythonEventsProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
+        getSunRiseSunSetMinutes("Sunset"));
 
 
-	try {
-		object domoticz_module = import("domoticz");
-		object reloader = import("reloader");
-		reloader.attr("_check_reload")();
-
-		//object alldevices = dict();
-		object devices = domoticz_module.attr("devices");
-		object domoticz_namespace = domoticz_module.attr("__dict__");
-
-		domoticz_namespace["event_system"] = ptr(this);
-
-		main_namespace["changed_device_name"] = str(devname);
-		domoticz_namespace["changed_device_name"] = str(devname);
-
-		boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
-		typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-		for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
-		{
-			_tDeviceStatus sitem = iterator->second;
-			object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
-			devices[sitem.deviceName] = deviceStatus;
-		}
-		main_namespace["domoticz"] = ptr(this);
-		main_namespace["__file__"] = filename;
-
-		if (reason == "device")
-		{
-			main_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-			domoticz_namespace["changed_device"] = devices[m_devicestates[DeviceID].deviceName];
-		}
-		devicestatesMutexLock1.unlock();
-
-
-		int intRise = getSunRiseSunSetMinutes("Sunrise");
-		int intSet = getSunRiseSunSetMinutes("Sunset");
-
-		// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-		time_t now = mytime(NULL);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
-
-		bool dayTimeBool = false;
-		bool nightTimeBool = false;
-		if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-			dayTimeBool = true;
-		}
-		else {
-			nightTimeBool = true;
-		}
-		main_namespace["is_daytime"] = dayTimeBool;
-		main_namespace["is_nighttime"] = nightTimeBool;
-		main_namespace["sunrise_in_minutes"] = intRise;
-		main_namespace["sunset_in_minutes"] = intSet;
-
-		domoticz_namespace["is_daytime"] = dayTimeBool;
-		domoticz_namespace["is_nighttime"] = nightTimeBool;
-		domoticz_namespace["sunrise_in_minutes"] = intRise;
-		domoticz_namespace["sunset_in_minutes"] = intSet;
-
-		//main_namespace["timeofday"] = ... 		// not sure how to set this
-
-
-		/*std::string secstatusw = "";
-		m_sql.GetPreferencesVar("SecStatus", secstatus);
-		if (secstatus == 1) {
-			secstatusw = "Armed Home";
-		}
-		else if (secstatus == 2) {
-			secstatusw = "Armed Away";
-		}
-		else {
-			secstatusw = "Disarmed";
-		}
-		main_namespace["Security"] = secstatusw;*/
-
-		// put variables in user_variables dict, but also in the namespace
-		object user_variables = dict();
-		{
-			typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-			for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-				_tUserVariable uvitem = iterator->second;
-				//user_variables[uvitem.variableName] = uvitem;
-				if (uvitem.variableType == 0) {
-					//Integer
-					main_namespace[uvitem.variableName] = atoi(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else if (uvitem.variableType == 1) {
-					//Float
-					main_namespace[uvitem.variableName] = atof(uvitem.variableValue.c_str());
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-				else {
-					//String,Date,Time
-					main_namespace[uvitem.variableName] = uvitem.variableValue;
-					user_variables[uvitem.variableName] = main_namespace[uvitem.variableName];
-				}
-			}
-		}
-
-		domoticz_namespace["user_variables"] = user_variables;
-		main_namespace["user_variables"] = user_variables;
-		main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
-		main_namespace["otherdevices_dewpoint"] = toPythonDict(m_dewValuesByName);
-		main_namespace["otherdevices_barometer"] = toPythonDict(m_baroValuesByName);
-		main_namespace["otherdevices_utility"] = toPythonDict(m_utilityValuesByName);
-		main_namespace["otherdevices_rain"] = toPythonDict(m_rainValuesByName);
-		main_namespace["otherdevices_rain_lasthour"] = toPythonDict(m_rainLastHourValuesByName);
-		main_namespace["otherdevices_uv"] = toPythonDict(m_uvValuesByName);
-		main_namespace["otherdevices_winddir"] = toPythonDict(m_winddirValuesByName);
-		main_namespace["otherdevices_windspeed"] = toPythonDict(m_windspeedValuesByName);
-		main_namespace["otherdevices_windgust"] = toPythonDict(m_windgustValuesByName);
-		main_namespace["otherdevices_zwavealarms"] = toPythonDict(m_zwaveAlarmValuesByName);
-
-		if(PyString.length() > 0)
-			exec(str(PyString), main_namespace);
-		else
-			object ignored = exec_file(str(filename), main_namespace);
-	} catch(...) {
-
-		PyObject *exc,*val,*tb;
-		PyErr_Fetch(&exc,&val,&tb);
-		boost::python::handle<> hexc(exc), hval(boost::python::allow_null(val)), htb(boost::python::allow_null(tb));
-		boost::python::object traceback(boost::python::import("traceback"));
-
-		boost::python::object format_exception(traceback.attr("format_exception"));
-		boost::python::object formatted_list = format_exception(hexc, hval, htb);
-		boost::python::object formatted = boost::python::str("\n").join(formatted_list);
-
-		object traceback_module = import("traceback");
-		std::string formatted_str = extract<std::string>(formatted);
-		//PyErr_Print();
-		PyErr_Clear();
-		if(PyString.length() > 0)
-			_log.Log(LOG_ERROR, "in event %s: %s", filename.c_str(), formatted_str.c_str());
-		else
-			_log.Log(LOG_ERROR, "%s",formatted_str.c_str());
-	}
-	if (PythonScriptFile!=NULL)
-		fclose(PythonScriptFile);
 	//Py_Finalize();
 }
+
 #endif // ENABLE_PYTHON
 
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
@@ -2851,14 +2665,14 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, "svalue");
 			lua_pushstring(lua_state, sValue);
 			lua_rawset(lua_state, -3);
-			
+
 			lua_pushstring(lua_state, "nvalue");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 
 			/* USELESS, WE HAVE THE DEVICE INDEX
-			// replace devicechanged => 
-			lua_pushstring(lua_state, "name"); 
+			// replace devicechanged =>
+			lua_pushstring(lua_state, "name");
 			lua_pushnumber(lua_state, nValue);
 			lua_rawset(lua_state, -3);
 			*/
@@ -2868,7 +2682,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 
 	exportDeviceStatesToLua(lua_state);
-	
+
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
@@ -3611,7 +3425,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 
-std::string CEventSystem::nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
+std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
 
 	std::string lstatus = "";

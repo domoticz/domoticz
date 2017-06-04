@@ -465,11 +465,8 @@
     <Filter Include="Devices\SysfsGPIO">
       <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Pushers\WebSocket">
-      <UniqueIdentifier>{076cca10-001c-4bef-8aa2-981ed783f5df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="www\views\temperatures">
-      <UniqueIdentifier>{dc509f3d-51e4-4c9c-8f40-a3ee75a36efc}</UniqueIdentifier>
+    <Filter Include="Devices\RTL_433">
+      <UniqueIdentifier>{0e8b8072-43d4-44a2-b5de-8a4eb7887d1c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1322,12 +1319,6 @@
     <None Include="..\www\views\floorplans.html">
       <Filter>www\views</Filter>
     </None>
-    <None Include="..\www\js\angular-websocket.js">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\views\temperatures\temperatureWidget.html">
-      <Filter>www\views\temperatures</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1613,6 +1604,9 @@
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeSerial.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
@@ -2020,20 +2014,14 @@
     <ClInclude Include="..\hardware\EvohomeScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\notifications\NotificationBrowser.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\hardware\Rtl433.h">
+      <Filter>Devices\RTL_433</Filter>
     </ClInclude>
-    <ClInclude Include="..\push\Push.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\push\WebsocketPush.h">
-      <Filter>Pushers\WebSocket</Filter>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2287,6 +2275,9 @@
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
@@ -2703,17 +2694,14 @@
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\hardware\Rtl433.cpp">
+      <Filter>Devices\RTL_433</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Webserver</Filter>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\WebsocketPush.cpp">
-      <Filter>Pushers\WebSocket</Filter>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
