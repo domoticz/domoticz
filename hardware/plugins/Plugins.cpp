@@ -587,13 +587,15 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
-		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		if (m_Transports.size())
 		{
-			CPluginTransport*	pPluginTransport = *itt;
-			if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
-				return true;
+			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+			{
+				CPluginTransport*	pPluginTransport = *itt;
+				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
+					return true;
+			}
 		}
-
 		return false;
 	}
 
@@ -709,10 +711,13 @@ namespace Plugins {
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
-				for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+				if (m_Transports.size())
 				{
-					CPluginTransport*	pPluginTransport = *itt;
-					pPluginTransport->VerifyConnection();
+					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					{
+						CPluginTransport*	pPluginTransport = *itt;
+						pPluginTransport->VerifyConnection();
+					}
 				}
 			}
 			catch (...)
