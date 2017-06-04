@@ -6,6 +6,7 @@ _G.TESMODE = true
 --package.path = package.path .. ";../?.lua"
 local scriptPath = ''
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+local Time = require('Time')
 
 local clock = os.clock
 function sleep(n)  -- seconds
@@ -32,6 +33,7 @@ describe('event helper storage', function()
 	local domoticz = {
 		['settings'] = {},
 		['name'] = 'domoticz', -- used in script1
+		['time'] = Time('2017-06-03 12:04:00'),
 		['devices'] = {
 			['device1'] = { name = '' },
 			['onscript1'] = { name = 'onscript1', id = 1 },

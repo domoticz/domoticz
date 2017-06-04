@@ -220,6 +220,11 @@ There are several options for time triggers. It is important to know that Domoti
 	        'at daytime',           -- between sunrise and sunset
 	        'at daytime on mon,tue', -- between sunrise and sunset
 	                                   only on monday and tuesday
+
+	        -- or if you want to go really wild:
+	        'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
+
+			-- or just do it yourself:
 	        function(time)
 		        -- see domoticz.time below for the time attributes
 		        -- note that this function is called every minute!
@@ -263,6 +268,8 @@ The domoticz object holds all information about your Domoticz system. It has a c
 	 - **day**: *Number*
 	 - **getISO**: *Function*. Returns the ISO 8601 formatted date.
 	 - **hour**: *Number*
+	 - **isDayTime**
+	 - **isNightTime**
 	 - **isToday**: *Boolean*. Indicates if the device was updated today
 	 - **month**: *Number*
 	 - **min**: *Number*
@@ -270,11 +277,10 @@ The domoticz object holds all information about your Domoticz system. It has a c
  	 - **rawDate**: *String*. Returns the date part of the raw data.
  	 - **rawTime**: *String*. Returns the time part of the raw data.
 	 - **sec**: *Number*
-	 - **year**: *Number*
-	 - **isDayTime**
-	 - **isNightTime**
 	 - **sunsetInMinutes**
 	 - **sunriseInMinutes**
+	 - **wday**: *Number*. Day of the week ( 0 == sunday)
+	 - **year**: *Number*
  - **variables**: *Table*. A collection holding all the user *variable objects* as defined in Domoticz. See  [Variable object API](#variable-object-api) for the attributes.
 
 ### Domoticz methods

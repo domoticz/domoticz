@@ -54,7 +54,7 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.getStorageContext(storageDef, module)
 
 		local storageContext = {}
-		local fileStorage, value
+		local fileStorage, value, ok
 
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
@@ -107,7 +107,7 @@ local function EventHelpers(domoticz, mainMethod)
 				os.execute('mkdir ' .. scriptsFolderPath .. '/storage')
 			end
 
-			ok, err = pcall(persistence.store, dataFilePath, data)
+			local ok, err = pcall(persistence.store, dataFilePath, data)
 
 			-- make sure there is no cache for this 'data' module
 			package.loaded[dataFileModuleName] = nil
@@ -274,251 +274,37 @@ local function EventHelpers(domoticz, mainMethod)
 		return lookup[d], d
 	end
 
-	function self.getNow(testTime)
-		if (testTime == nil) then
-			local timenow = os.date("*t")
-			return timenow
-		else
-			utils.log('h=' .. testTime.hour .. ' m=' .. testTime.min)
-			return testTime
-		end
-	end
+	function self.processTimeRuleFunction(fn)
 
-	function self.isTriggerByMinute(m, testTime)
-		local time = self.getNow(testTime)
-		return (time.min / m == math.floor(time.min / m))
-	end
+		_G.domoticz = {
+			['LOG_INFO'] = utils.LOG_INFO,
+			['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
+			['LOG_DEBUG'] = utils.LOG_DEBUG,
+			['LOG_ERROR'] = utils.LOG_ERROR,
+			['log'] = self.domoticz.log
+		}
 
-	function self.isTriggerByHour(h, testTime)
-		local time = self.getNow(testTime)
-		return (time.hour / h == math.floor(time.hour / h) and time.min == 0)
-	end
+		local ok, res = pcall(fn, self.domoticz.time)
 
-	local function getMinutes(hours, minutes)
-		return (hours * 60) + minutes
-	end
+		_G.domoticz = nil
 
-	local function isTimeBetween(startH, startM, stopH, stopM, testH, testM)
-		if (stopH < startH) then -- add 24 hours if endhours < startHours
-			local stopHOrg = stopH
-			stopH = stopH + 24
-			if (testH <= stopHOrg) then -- if endhours has increased the currenthour should also increase
-				testH = testH + 24
+		if (not ok) then
+			utils.log('Error executing custom timer function.', utils.LOG_ERROR)
+			utils.log(res, utils.LOG_ERROR)
+			if (_G.TESTMODE) then
+				print(res)
 			end
-		end
-
-		local startTVal = getMinutes(startH, startM)
-		local stopTVal = getMinutes(stopH, stopM)
-		local curTVal = getMinutes(testH, testM)
-		return (curTVal >= startTVal and curTVal <= stopTVal)
-	end
-
-	local function isNowBetween(startH,sStartM, stopH, stopM)
-		local time = os.date("*t")
-		return isTimeBetween(startH, startM, stopH, stopM, time.hour, time.min)
-	end
-
-	function self.isTriggerByTime(t, testTime)
-		local tm, th
-		local time = self.getNow(testTime)
-
-		-- specials: sunset, sunrise
-		if (t == 'sunset' or t == 'sunrise') then
-			local minutesnow = time.min + time.hour * 60
-
-			if (testTime ~= nil) then
-				if (t == 'sunset') then
-					return (minutesnow == testTime['SunsetInMinutes'])
-				else
-					return (minutesnow == testTime['SunriseInMinutes'])
-				end
-			else
-				if (t == 'sunset') then
-					return (minutesnow == _G.timeofday['SunsetInMinutes'])
-				else
-					return (minutesnow == _G.timeofday['SunriseInMinutes'])
-				end
-			end
-		elseif (t == 'nighttime') then
-			return _G.timeofday['Nighttime']
-		elseif (t == 'daytime') then
-			return _G.timeofday['Daytime']
-		end
-
-		local range = string.split(t, '-')
-
-		if (range[1] ~= nil and range[2] ~= nil) then
-			-- time range
-
-			local from = range[1]
-			local to = range[2]
-
-			local fromParts = string.split(from, ':')
-			local fromH = tonumber(fromParts[1])
-			local fromM = tonumber(fromParts[2])
-
-			local toParts = string.split(to, ':')
-			local toH = tonumber(toParts[1])
-			local toM = tonumber(toParts[2])
-
-			if (fromH == nil or fromM == nil or toH == nil or toM == nil) then
-				utils.log('wrong time format. ' .. t, utils.LOG_ERROR)
-				return false
-			end
-
-			return isTimeBetween(fromH, fromM, toH, toM, time.hour, time.min)
-
-
-		else
-
-			local parts = string.split(t, ':')
-			th = parts[1]
-			tm = parts[2]
-
-			if (tm == nil or th == nil) then
-				utils.log('wrong time format', utils.LOG_ERROR)
-				return false
-			end
-
-			if (tm == '*') then
-				return (time.hour == tonumber(th))
-			elseif (th == '*') then
-				return (time.min == tonumber(tm))
-			elseif (th ~= '*' and tm ~= '*') then
-				return (tonumber(tm) == time.min and tonumber(th) == time.hour)
-			end
-		end
-
-	end
-
-	function self.evalTimeTrigger(t, testTime)
-		if (testTime) then utils.log(t, utils.LOG_INFO) end
-
-		local dayOfWeek, d = self.getDayOfWeek(testTime)
-
-		if (type(t) == 'function') then
-
-			_G.domoticz = {
-				['LOG_INFO'] = utils.LOG_INFO,
-				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
-				['LOG_DEBUG'] = utils.LOG_DEBUG,
-				['LOG_ERROR'] = utils.LOG_ERROR,
-				['log'] = self.domoticz.log
-			}
-
-			ok, res = pcall(t, self.domoticz.time)
-
-			_G.domoticz = nil
-
-			if (not ok) then
-				utils.log('Error executing custom timer function.', utils.LOG_ERROR)
-				utils.log(res, utils.LOG_ERROR)
-				if (_G.TESTMODE) then
-					print(res)
-				end
-				return false
-			end
-			return res
-		end
-
-		-- t is a single timer definition
-		t = string.lower(t) -- normalize
-
-		-- first get a possible on section (days)
-		local onPos = string.find(t, ' on ')
-		local onPosStart = string.find(t, '^on ')
-		local days
-
-		if (onPos ~= nil and onPos > 0) then
-			-- days is the remainder of the string starting after 'on '
-			days = string.sub(t, onPos + 4)
-			-- make t to be everything before the on part
-			t = string.sub(t, 1, onPos - 1)
-		elseif (onPosStart~= nil and onPosStart == 1) then
-			-- starts with 'on '
-			days = string.sub(t, 3)
-			t = nil -- we stop further processing in this case
-		end
-
-		-- now we can skip everything if the current day
-		-- cannot be found in the days string
-		if (days ~= nil and string.find(days, dayOfWeek) == nil) then
-			-- today is not part of this trigger definition
 			return false
 		end
+		return res
 
-		if (t == nil) then return true end
-
-		local m, h
-		local words = {}
-		for w in t:gmatch("%S+") do
-			table.insert(words, w)
-		end
-
-		-- specials
-		if (t == 'every minute') then
-			return self.isTriggerByMinute(1, testTime)
-		end
-
-		if (t == 'every other minute') then
-			return self.isTriggerByMinute(2, testTime)
-		end
-
-		if (t == 'every hour') then
-			return self.isTriggerByHour(1, testTime)
-		end
-
-		if (t == 'every other hour') then
-			return self.isTriggerByHour(2, testTime)
-		end
-
-		-- others
-
-		if (words[1] == 'every') then
-
-			if (words[3] == 'minutes') then
-				m = tonumber(words[2])
-				if (m ~= nil) then
-
-					if ((60 / m) ~= math.floor(60/m) or m >=60) then
-						utils.log(t .. ' is not a valid timer definition. Can only run every 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30 minutes.', utils.LOG_ERROR)
-						return false
-					end
-
-					return self.isTriggerByMinute(m, testTime)
-				else
-					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
-					return false
-				end
-			elseif (words[3] == 'hours') then
-				h = tonumber(words[2])
-				if (h ~= nil) then
-
-					if ((24 / h) ~= math.floor(24 / h) or h >=24) then
-						utils.log(t .. ' is not a valid timer definition. Can only run every 1, 2, 3, 4, 6, 12 hour.', utils.LOG_ERROR)
-						return false
-					end
-
-					return self.isTriggerByHour(h, testTime)
-				else
-					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
-					return false
-				end
-			end
-		elseif (words[1] == 'at' or words[1] == 'at:') then
-			-- expect a time stamp
-			local time = words[2]
-			return self.isTriggerByTime(time, testTime)
-		end
-
-		return true
 	end
 
 	function self.handleEvents(events, device, variable, security)
 
 		local originalLogLevel = _G.logLevel -- a script can override the level
 
-		function restoreLogging()
+		local function restoreLogging()
 			_G.logLevel = originalLogLevel
 			_G.logMarker = nil
 		end
@@ -562,15 +348,31 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	function self.checkTimeDefs(timeDefs, testTime)
+	function self.processTimeRules(timeRules, testTime)
 		-- accepts a table of timeDefs, if one of them matches with the
 		-- current time, then it returns true
 		-- otherwise it returns false
-		for i, timeDef in pairs(timeDefs) do
-			if (self.evalTimeTrigger(timeDef, testTime)) then
-				return true, timeDef
+
+		local now
+		if (testTime == nil) then
+			now = self.domoticz.time
+		else
+			now = testTime
+		end
+
+		for i, _rule in pairs(timeRules) do
+
+			if (type(_rule) == 'function') then
+				return self.processTimeRuleFunction(_rule)
+			end
+
+			local rule = string.lower(_rule)
+
+			if (now.matchesRule(rule)) then
+				return true, rule
 			end
 		end
+
 		return false
 	end
 
@@ -585,7 +387,7 @@ local function EventHelpers(domoticz, mainMethod)
 		return false
 	end
 
-	function addBindingEvent(bindings, event, module)
+	local function addBindingEvent(bindings, event, module)
 		if (bindings[event] == nil) then
 			bindings[event] = {}
 		end
@@ -597,7 +399,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local errModules = {}
 		local internalScripts = {}
 		local hasInternals = false
-		local ok, diskScripts, moduleName, i, event, j, device
+		local ok, diskScripts, moduleName, i, event, j, device, err
 		local modules = {}
 
 
@@ -702,13 +504,14 @@ local function EventHelpers(domoticz, mainMethod)
 										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'string') then
 											-- { ['timer'] = 'every minute' }
 											deprecationWarning('timer', event, true)
-											if (self.evalTimeTrigger(event)) then
+--											if (self.evalTimeTrigger(event)) then
+											if (self.processTimeRules({event}, testTime)) then
 												module.trigger = event
 												table.insert(bindings, module)
 											end
 										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
 											-- { ['timer'] = { 'every minute ', 'every hour' } }
-											local triggered, def = self.checkTimeDefs(event)
+											local triggered, def = self.processTimeRules(event)
 											if (triggered) then
 												-- this one can be executed
 												module.trigger = def
@@ -728,7 +531,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 													-- detect if devName is of the form ['devB'] = { 'every hour' }
 													if (type(devName) == 'table') then
-														local triggered, def = self.checkTimeDefs(devName, testTime)
+														local triggered, def = self.processTimeRules(devName, testTime)
 														if (triggered) then
 															addBindingEvent(bindings, devIdx, module)
 														end
@@ -740,7 +543,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 											elseif (type(j) == 'string' and j ~= 'devices' and type(event) == 'table') then
 												-- [devicename] = { ...timedefs}
-												local triggered, def = self.checkTimeDefs(event, testTime)
+												local triggered, def = self.processTimeRules(event, testTime)
 												if (triggered) then
 													addBindingEvent(bindings, j, module)
 												end
@@ -949,7 +752,6 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.domoticz.commandArray
 	end
 
-
 	function self.dispatchVariableEventsToScripts(domoticz)
 		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
 			domoticz = self.domoticz
@@ -982,7 +784,6 @@ local function EventHelpers(domoticz, mainMethod)
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
 	end
-
 
 	return self
 end
