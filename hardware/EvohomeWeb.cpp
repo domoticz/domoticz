@@ -39,12 +39,10 @@ const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "W
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const unsigned int UseFlags, const bool showschedule, const bool showlocation, const unsigned int installation) :
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const unsigned int installation) :
 	m_username(Username),
 	m_password(Password),
-	m_refreshrate(refreshrate),
-	m_showschedule(showschedule),
-	m_showlocation(showlocation)
+	m_refreshrate(refreshrate)
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
@@ -63,21 +61,8 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	 */
 
 	m_updatedev = ((UseFlags & 1) == 0); // reverted value: default = true
-
-	if ((UseFlags & 15) < 2) // compatibility - load from old parameters
-	{
-		int newParams = UseFlags;
-		if (m_showschedule)
-			newParams += 2;
-		if (m_showlocation)
-			newParams += 4;
-		m_sql.safe_query("UPDATE Hardware SET Mode2=%d WHERE (ID == '%d')", newParams, m_HwdID);
-	}
-	else
-	{
-		m_showschedule = ((UseFlags & 2) > 0);
-		m_showlocation = ((UseFlags & 4) > 0);
-	}
+	m_showschedule = ((UseFlags & 2) > 0);
+	m_showlocation = ((UseFlags & 4) > 0);
 
 	Init();
 }
@@ -149,8 +134,6 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
-	if (this->Name.substr(0, 3)=="Fit") // attempt to block old FitBit hardware
-		return false;
 	if (m_username.empty() || m_password.empty())
 		return false;
 	Init();

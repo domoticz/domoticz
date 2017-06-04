@@ -5171,13 +5171,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
 							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
 
-							if (UseFlags < 2) // backward compatibility
-							{
-								$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", data["Mode2"] == 0);
-								$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked", data["Mode3"]);
-								$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked", data["Mode4"]);
-							}
-
 							var Location = parseInt(data["Mode5"]);
 							for (var i=0;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
