@@ -21,13 +21,15 @@
 //
 //Class P1MeterSerial
 //
-P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit):
+P1MeterSerial::P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const int use_flags, const int ratelimit) :
 m_szSerialPort(devname)
 {
 	m_HwdID=ID;
 	m_iBaudRate=baud_rate;
 	m_stoprequested = false;
-	m_bDisableCRC = disable_crc;
+
+	m_bDisableCRC = ((use_flags & 1) > 0);
+	m_bOutputLog = ((use_flags & 2) > 0);
 	m_ratelimit = ratelimit;
 }
 
@@ -54,6 +56,9 @@ P1MeterSerial::~P1MeterSerial()
 
 bool P1MeterSerial::StartHardware()
 {
+	if (m_bOutputLog)
+		_log.Log(LOG_STATUS, "(%s) high verbosity enabled", this->Name.c_str());
+
 #ifdef DEBUG_FROM_FILE
 	FILE *fIn=fopen("E:\\meter.txt","rb+");
 	BYTE buffer[1400];
@@ -67,7 +72,7 @@ bool P1MeterSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS,"P1 Smart Meter: Using serial port: %s", m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS,"(%s) Using serial port: %s", this->Name.c_str(), m_szSerialPort.c_str());
 		if (m_iBaudRate==9600)
 		{
 			open(
@@ -89,13 +94,13 @@ bool P1MeterSerial::StartHardware()
 				boost::asio::serial_port_base::character_size(8)
 				);
 			if (m_bDisableCRC) {
-				_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
+				_log.Log(LOG_STATUS,"(%s) CRC validation disabled through hardware control", this->Name.c_str());
 			}
 		}
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: Error opening serial port!");
+		_log.Log(LOG_ERROR,"(%s) Error opening serial port!", this->Name.c_str());
 #ifdef _DEBUG
 		_log.Log(LOG_ERROR,"-----------------\n%s\n-----------------",boost::diagnostic_information(e).c_str());
 #else
@@ -105,7 +110,7 @@ bool P1MeterSerial::StartHardware()
 	}
 	catch ( ... )
 	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: Error opening serial port!!!");
+		_log.Log(LOG_ERROR,"(%s) Error opening serial port!!!", this->Name.c_str());
 		return false;
 	}
 	m_bIsStarted=true;
@@ -128,7 +133,7 @@ bool P1MeterSerial::StopHardware()
 		sleep_milliseconds(10);
 	}
 	m_bIsStarted = false;
-    _log.Log(LOG_STATUS, "P1 Smart Meter: Serial Worker stopped...");
+    _log.Log(LOG_STATUS, "(%s) Serial Worker stopped...", this->Name.c_str());
 	return true;
 }
 

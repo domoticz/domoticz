@@ -7,7 +7,7 @@
 
 #define RETRY_DELAY 30
 
-P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const bool disable_crc, const int ratelimit):
+P1MeterTCP::P1MeterTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const int use_flags, const int ratelimit) :
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
@@ -15,7 +15,9 @@ m_szIPAddress(IPAddress)
 	m_stoprequested=false;
 	m_usIPPort=usIPPort;
 	m_retrycntr = RETRY_DELAY;
-	m_bDisableCRC = disable_crc;
+
+	m_bDisableCRC = ((use_flags & 1) > 0);
+	m_bOutputLog = ((use_flags & 2) > 0);
 	m_ratelimit = ratelimit;
 }
 
@@ -25,6 +27,10 @@ P1MeterTCP::~P1MeterTCP(void)
 
 bool P1MeterTCP::StartHardware()
 {
+	if (m_bOutputLog)
+		_log.Log(LOG_STATUS, "(%s) high verbosity enabled", this->Name.c_str());
+
+
 	m_stoprequested=false;
 
 	memset(&m_addr,0,sizeof(sockaddr_in));
@@ -82,7 +88,7 @@ bool P1MeterTCP::ConnectInternal()
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (m_socket == INVALID_SOCKET)
 	{
-		_log.Log(LOG_ERROR,"P1 Smart Meter: could not create a TCP/IP socket!");
+		_log.Log(LOG_ERROR,"(%s) could not create a TCP/IP socket!", this->Name.c_str());
 		return false;
 	}
 
@@ -93,15 +99,14 @@ bool P1MeterTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket=INVALID_SOCKET;
-		_log.Log(LOG_ERROR,"P1 Smart Meter: could not connect to: %s:%ld",m_szIPAddress.c_str(),m_usIPPort);
+		_log.Log(LOG_ERROR,"(%s) could not connect to: %s:%ld", this->Name.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS,"P1 Smart Meter: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"(%s) connected to: %s:%ld", this->Name.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 
-	if (m_bDisableCRC) {
-		_log.Log(LOG_STATUS,"P1 Smart Meter: CRC validation disabled through hardware control");
-	}
+	if (m_bDisableCRC)
+		_log.Log(LOG_STATUS,"(%s) CRC validation disabled through hardware control", this->Name.c_str());
 
 	Init();
 
@@ -142,7 +147,7 @@ void P1MeterTCP::Do_Work()
 				m_retrycntr=0;
 				if (!ConnectInternal())
 				{
-					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"(%s) retrying in %d seconds...", this->Name.c_str(), RETRY_DELAY);
 					continue;
 				}
 			}
@@ -155,12 +160,12 @@ void P1MeterTCP::Do_Work()
 				break;
 			m_LastHeartbeat=mytime(NULL);
 			if ((bread==0)||(bread<0)) {
-				_log.Log(LOG_ERROR,"P1 Smart Meter: TCP/IP connection closed!");
+				_log.Log(LOG_ERROR,"(%s) TCP/IP connection closed!", this->Name.c_str());
 				closesocket(m_socket);
 				m_socket=INVALID_SOCKET;
 				if (!m_stoprequested)
 				{
-					_log.Log(LOG_STATUS,"P1 Smart Meter: retrying in %d seconds...", RETRY_DELAY);
+					_log.Log(LOG_STATUS,"(%s) retrying in %d seconds...", this->Name.c_str(), RETRY_DELAY);
 					m_retrycntr=0;
 					continue;
 				}
@@ -172,7 +177,7 @@ void P1MeterTCP::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"P1 Smart Meter: TCP/IP Worker stopped...");
+	_log.Log(LOG_STATUS,"(%s) TCP/IP Worker stopped...", this->Name.c_str());
 }
 
 void P1MeterTCP::write(const char *data, size_t size)

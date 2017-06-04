@@ -58,7 +58,7 @@ class CEvohomeWeb : public CEvohomeBase
 		std::map<int, gateway> gateways;
 	};
 public:
-	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation);
+	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation, const unsigned int Params);
 	~CEvohomeWeb(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
@@ -75,11 +75,7 @@ private:
 	bool SetSetpoint(const char *pdata);
 	bool SetDHWState(const char *pdata);
 
-	//struct curl_slist *m_evoheader;
-	//std::string send_receive_data(std::string url, curl_slist *header);
-	//std::string send_receive_data(std::string url, std::string postdata, curl_slist *header);
-	//std::string put_receive_data(std::string url, std::string postdata, curl_slist *header);
-
+	// evohome client library - don't ask about naming convention - these are imported from another project
 	bool login(std::string user, std::string password);
 	bool user_account();
 
@@ -91,40 +87,21 @@ private:
 	bool get_status(int location);
 	bool get_status(std::string locationId);
 
-	location* get_location_by_ID(std::string locationId);
-	gateway* get_gateway_by_ID(std::string gatewayId);
-	temperatureControlSystem* get_temperatureControlSystem_by_ID(std::string systemId);
 	zone* get_zone_by_ID(std::string zoneId);
-	temperatureControlSystem* get_zone_temperatureControlSystem(zone* zone);
 
-	//bool has_dhw(int location, int gateway, int temperatureControlSystem);
 	bool has_dhw(temperatureControlSystem *tcs);
-	bool is_single_heating_system();
 
 	bool get_schedule(std::string zoneId);
-
 	std::string get_next_switchpoint(temperatureControlSystem* tcs, int zone);
-	//std::string get_next_switchpoint(std::string zoneId);
 	std::string get_next_switchpoint(zone* hz);
 	std::string get_next_switchpoint(Json::Value schedule);
 	std::string get_next_switchpoint_ex(Json::Value schedule, std::string &current_setpoint);
 
-	bool set_system_mode(std::string systemId, int mode, std::string date_until);
 	bool set_system_mode(std::string systemId, int mode);
-
-	//std::string json_get_val(std::string s_json, const char* key);
-	//std::string json_get_val(Json::Value *j_json, const char* key);
-	//std::string json_get_val(std::string s_json, const char* key1, const char* key2);
-	//std::string json_get_val(Json::Value *j_json, const char* key1, const char* key2);
-
 	bool set_temperature(std::string zoneId, std::string temperature, std::string time_until);
-	//bool set_temperature(std::string zoneId, std::string temperature);
 	bool cancel_temperature_override(std::string zoneId);
-
 	bool set_dhw_mode(std::string dhwId, std::string mode, std::string time_until);
-	//bool set_dhw_mode(std::string systemId, std::string mode);
 
-	bool verify_date(std::string date);
 	bool verify_datetime(std::string datetime);
 
 	// status readers
@@ -154,6 +131,7 @@ private:
 	bool m_bequiet;
 	bool m_showlocation;
 	std::string m_szlocationName;
+	int m_lastconnect;
 
 	uint8_t m_locationId;
 	uint8_t m_gatewayId;
@@ -168,8 +146,6 @@ private:
 	Json::Value m_j_fi;
 	Json::Value m_j_stat;
 
-
-	// evohome client library
 	std::map<std::string, std::string> m_auth_info;
 	std::map<std::string, std::string> m_account_info;
 	std::map<int, location> m_locations;
