@@ -363,7 +363,7 @@ local function EventHelpers(domoticz, mainMethod)
 		for i, _rule in pairs(timeRules) do
 
 			if (type(_rule) == 'function') then
-				return self.processTimeRuleFunction(_rule)
+				return self.processTimeRuleFunction(_rule), 'function'
 			end
 
 			local rule = string.lower(_rule)
