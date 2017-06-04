@@ -54,6 +54,9 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_gatewayId = (installation / 256) % 16;
 	m_systemId = (installation / 16) % 16;
 
+	if (m_refreshrate < 2)
+		m_refreshrate = 60;
+
 	Init();
 }
 

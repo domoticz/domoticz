@@ -152,7 +152,8 @@
         bool PythonEventsStop() {
             if (m_PyInterpreter) {
                 PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
-                Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				if (Plugins::Py_IsInitialized())
+					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
                 _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
@@ -263,7 +264,7 @@
 
                            // If nValueWording contains %, unicode fails?
 
-                           aDevice->id = sitem.ID;
+                           aDevice->id = static_cast<int>(sitem.ID);
                            aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
                            aDevice->type = sitem.devType;
                            aDevice->sub_type = sitem.subType;
