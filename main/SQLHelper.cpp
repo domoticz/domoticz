@@ -3541,7 +3541,6 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			std::string slevel = sd[6];
 
 			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
-				//|| (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
 				//update level for device
 				safe_query(
