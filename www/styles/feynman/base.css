@@ -21,10 +21,10 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 
 /* setting the stage, based on the part of the style.css code this I now concider 'legacy'. */
 
-body .ui-draggable table,
-body .ui-draggable table tbody,
-body .ui-draggable table tbody tr,
-body .ui-draggable table  tbody tr > td{
+body .ui-draggable:not(.ui-dialog) table,
+body .ui-draggable:not(.ui-dialog) table tbody,
+body .ui-draggable:not(.ui-dialog) table tbody tr,
+body .ui-draggable:not(.ui-dialog) table  tbody tr > td{
     display:block;
     width:100%;
 	padding: 0;
@@ -217,7 +217,7 @@ p.tip::before{
     position: absolute;
     font-size: 14px;
     /*background-color: rgba(200,200,255,0.2);*/
-    background-color:#999;
+    background-color:#0077c0;
     border-radius: 50%;
     padding: 2px 8px;
     top: -2px;
@@ -456,6 +456,8 @@ p.ng-binding {
 #bannav td:last-of-type a{
     margin-right:0;
 }
+
+.nav-tabs > li{margin-bottom:0}
 
 .sub-tabs-apply {
 /*    position:absolute;
@@ -1128,9 +1130,10 @@ a.btnsmall {
     padding:2px 5px;
 }
 
+/*
 .options a.btnsmall-sel{
     font-weight: bold;
-}
+}*/
 
 #settingscontent .sub-tabs > li > a.btn-succes,
 .sub-tabs-apply,
@@ -1258,10 +1261,12 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
 #notifications>table, 
 #metercounters table, 
 #othersettings table, 
-#floorplans table, 
-#settingscontent #ActiveTabs {
+#floorplans table{
     padding-left: 20px;
     margin-bottom:10px;
+}
+#settingscontent #ActiveTabs{
+    padding-left: 20px;
 }
 
 #hardwarecontent #configuration{ padding:20px;}
@@ -1298,6 +1303,19 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
 }
 
 .page-header-small {border:none!important; margin-top:0!important}
+
+/*   EDIT  SWITCH  */
+
+#LedColor .display td > div{
+    margin-top:10px;
+}
+#LedColor .display td > div > button{
+    margin-right:5px;
+}
+#LedColor .display td > div.radio{
+    margin-right:10px;
+}
+#LedColor .display td > div.radio label{margin-right:10px; display:inline-block; padding:5px;background-color:#1c2b46;border-radius:5px}
 
 
 
@@ -1386,12 +1404,12 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     padding-bottom:5px;
 }
 
-/* tof, maar plakt dingen ook horizontaal aan elkaar.
+/* tof, maar plakt dingen ook horizontaal aan elkaar.*/
 .row-fluid{
     display:flex;
     flex-wrap: wrap;
-    align-items: stretch;
-}*/
+    /*align-items: stretch;*/
+}
 /*
 #settingscontent #ActiveTabs h2{
     color: #666;
@@ -1655,7 +1673,8 @@ table.dataTable td:first-of-type{padding-left:10px;}
 
 #lighttable_wrapper > .dataTable.no-footer#lighttable td:first-of-type thead th{width:150px!important}
 
-
+/*  devices table: keep icons horizontal*/
+.table3icons{width:70px!important}
 
 
 
@@ -1829,12 +1848,16 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
 }
 
 .ui-widget-content {
-    background-color: #fff;
+    background-color: transparent;
     background-image: none!important;
     border-color: #999;
     color: #333;
     margin-left:0!important;
 }
+/*
+.ui-widget-content td{display:table-cell;}
+body .ui-draggable table  tbody tr > td
+*/
 
 /*#settingscontent .ui-widget-content,*/
 #settingscontent input.text{
@@ -1870,10 +1893,21 @@ body.dashboard div.item.SelectorSwitch #bigtext{display:none}
     /*transition: all 2s ease-in-out;*/
     text-align:left;
 }
-.ui-dialog td label,
-.ui-dialog td{display:inline;text-align:left;}
-.ui-dialog input, .ui-dialog textarea{margin-bottom:10px}
+.ui-dialog-content{
+    height:auto!important;
+}
 
+/* .ui-dialog div:not(#dialog-add-edit-camera) td*/
+.ui-dialog td label{display:inline;text-align:left;}
+
+
+.ui-dialog tr{margin-bottom:5px}
+.ui-dialog input, .ui-dialog textarea{margin-bottom:5px}
+
+div.ui-dialog table tr td{text-align: left};
+
+center{margin-top: 10px;}
+div.ui-dialog center{padding:5px 0; margin:10px 0;border-top:1px solid rgba(250,250,250,0.1); border-bottom:1px solid rgba(250,250,250,0.1);}
 
 
 /* BACKSTAGE HARDWARE PAGES */
@@ -2199,10 +2233,6 @@ td[colspan]:not([colspan="1"])
         margin-left:4%!important;
     }
     
-    .ui-dialog-content{
-        height:auto!important
-    }
-    
     .ui-dialog td{
         display:block;
         text-align:left;
@@ -2380,7 +2410,7 @@ td[colspan]:not([colspan="1"])
 }
     
 
-@media all and (max-width: 1200px){
+@media all  and (min-width: 600px) and (max-width: 1200px){
     
     .navbar-static-top .container, 
     .navbar-fixed-top .container, 

@@ -219,6 +219,15 @@
     #appnavbar > li.dropdown > a > b.caret{
         display:none;
     }  
+    
+    #appnavbar:hover > li.dropdown > a > b.caret,
+    .navbar:hover #appnavbar > li.dropdown > a > b.caret{
+        display:block;
+        -ms-transform: rotate(270deg);
+        -webkit-transform: rotate(270deg);
+        transform: rotate(270deg);
+        margin-bottom:7px;
+    }  
 
 
     /*  DROPDOWNS  */

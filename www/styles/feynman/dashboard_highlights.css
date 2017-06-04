@@ -9,6 +9,7 @@
         /*height:163px!important;*//* let's let the item take care of it itself.*.
         padding:0;
         /*margin-bottom: 20px;*/
+        background-color:transparent;
     }
 
     #dashcontent h2 + div.divider .span4:nth-child(-n+3) .item,
