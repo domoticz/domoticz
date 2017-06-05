@@ -574,33 +574,14 @@ int CGpio::GPIOReadFd(int fd)
 int CGpio::GPIOWrite(int gpio_pin, bool value)
 {
 	char path[GPIO_MAX_PATH];
-	int fd;
-	bool new_state = false;
-	int active_low = -1;
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
-	{
-		if (it->GetPin() == gpio_pin)
-		{
-			active_low = it->GetActiveLow();
-			break;
-		}
-	}
-
-	if (active_low == -1)
-		return -1;
-
-	if (active_low == 1)
-		value ? new_state = false : new_state = true;
-	else
-		value ? new_state = true : new_state = false;
 
 	snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, gpio_pin);
-	fd = open(path, O_WRONLY);
+	int fd = open(path, O_WRONLY);
 
 	if (fd == -1)
 		return -1;
 
-	if (write(fd, GPIO_LOW == new_state ? "0" : "1", 1) != 1)
+	if (write(fd, value ? "1" : "0", 1) != 1)
 	{
 		close(fd);
 		return -1;
