@@ -1,5 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
 /domoticzData.lua
 scripts/*.lua
-!/data/
+data/*.lua
 generated_scripts/*.lua
