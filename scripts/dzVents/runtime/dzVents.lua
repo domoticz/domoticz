@@ -16,6 +16,11 @@ package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 
+--local persistence = require('persistence')
+--if (_G.TESTMODE == nil) then
+--	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+--end
+
 commandArray = {}
 
 if triggerReason == "time" then
