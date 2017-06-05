@@ -3,8 +3,8 @@ _G._ = require('lodash')
 
 local scriptPath = ''
 
---package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua'
+
 local Time = require('Time')
 local function keys(t)
 	local keys = _.keys(t)
@@ -30,6 +30,8 @@ describe('event helpers', function()
 		}
 
 		_G.TESTMODE = true
+		_G.dataFolderPath= './data'
+		_G.generatedScriptsFolderPath = './generated_scripts'
 
 		_G.globalvariables = {
 			Security = 'sec',
@@ -77,49 +79,7 @@ describe('event helpers', function()
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
 		utils.activateDevicesFile = function() end
-		_G.scripts = {
-			['switchScript'] = [[
-				return {
-					active = true,
-					on = {
-						'mySwitch'
-					},
-					execute = function(domoticz, device, triggerInfo)
 
-						if (device.toggleSwitch) then device.toggleSwitch() end
-
-						return 'script1: ' ..
-								tostring(domoticz.name) ..
-								' ' ..
-								tostring(device.name) ..
-								' ' ..
-								tostring(triggerInfo['type'])
-					end
-				}
-			]],
-			['faultyscript'] = [[
-				return {
-					active = true,
-					on = {
-			]],
-			['internalOnScript1'] = [[
-				return {
-					active = true,
-					on = {
-						'onscript1'
-					},
-					execute = function(domoticz, device, triggerInfo)
-
-						return 'internal onscript1: ' ..
-								tostring(domoticz.name) ..
-								' ' ..
-								tostring(device.name) ..
-								' ' ..
-								tostring(triggerInfo['type'])
-					end
-				}
-			]],
-		}
 	end)
 
 	after_each(function()
@@ -174,7 +134,7 @@ describe('event helpers', function()
 			end
 			table.sort(res)
 
-			assert.are.same({'internalOnScript1', 'script1', 'script3', 'script_combined'}, res)
+			assert.are.same({'internal2', 'script1', 'script3', 'script_combined'}, res)
 
 		end)
 
@@ -223,9 +183,8 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(5, _.size(errModules))
+			assert.are.same(4, _.size(errModules))
 			assert.are.same({
-				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -246,9 +205,8 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(5, _.size(errModules))
+			assert.are.same(4, _.size(errModules))
 			assert.are.same({
-				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -268,9 +226,8 @@ describe('event helpers', function()
 
 			local modules, errModules = helpers.getEventBindings()
 			assert.are.same(true, err)
-			assert.are.same(5, _.size(errModules))
+			assert.are.same(4, _.size(errModules))
 			assert.are.same({
-				'faultyscript',
 				'script_error',
 				'script_incomplete_missing_execute',
 				'script_incomplete_missing_on',
@@ -348,7 +305,7 @@ describe('event helpers', function()
 			end
 			table.sort(res)
 
-			assert.are.same({'switchScript'}, res)
+			assert.are.same({'internal1'}, res)
 		end)
 
 		it('should return internal and external scripts for all triggers', function()
@@ -449,17 +406,22 @@ describe('event helpers', function()
 
 			local bindings = helpers.getEventBindings()
 
-			local script1 = bindings['onscript1'][1]
 
-			local res = helpers.callEventHandler(script1,
+			local internal = _.find(bindings['onscript1'], function(module)
+				return module.name == 'internal2'
+			end)
+
+			local script1 = _.find(bindings['onscript1'], function(module)
+				return module.name == 'script1'
+			end)
+
+			local res = helpers.callEventHandler(internal,
 				{
 					name = 'device'
 				})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
 			assert.is_same('internal onscript1: domoticz device device', res)
-
-			script1 = bindings['onscript1'][2]
 
 			res = helpers.callEventHandler(script1,
 				{
@@ -553,7 +515,7 @@ describe('event helpers', function()
 			end
 
 			helpers.handleEvents(script1)
-			assert.is_same({'internalOnScript1', "script1", "script3", "script_combined"}, called)
+			assert.is_same({"script1", "script3", "script_combined", 'internal2'}, called)
 		end)
 
 		it('should have custom logging settings', function()
@@ -630,7 +592,7 @@ describe('event helpers', function()
 			table.sort(scripts)
 			table.sort(devices)
 			assert.is_same({
-				'internalOnScript1',
+				'internal2',
 				"script1",
 				"script3",
 				"script4",

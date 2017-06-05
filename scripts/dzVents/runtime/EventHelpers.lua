@@ -20,7 +20,7 @@ local function EventHelpers(domoticz, mainMethod)
 		-- make sure you run the tests from the tests folder !!!!
 		_G.scriptsFolderPath = currentPath .. 'scripts'
 		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
-		package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
+		package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
 
 
@@ -46,6 +46,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 	if (_G.TESTMODE) then
 		self.scriptsFolderPath = scriptsFolderPath
+		self.dataFolderPath = _G.dataFolderPath
 		function self._getUtilsInstance()
 			return utils
 		end
@@ -103,8 +104,8 @@ local function EventHelpers(domoticz, mainMethod)
 					data[var] = storageContext[var]
 				end
 			end
-			if (not utils.fileExists(scriptsFolderPath .. '/storage')) then
-				os.execute('mkdir ' .. scriptsFolderPath .. '/storage')
+			if (not utils.fileExists(dataFolderPath)) then
+				os.execute('mkdir ' .. dataFolderPath)
 			end
 
 			local ok, err = pcall(persistence.store, dataFilePath, data)
@@ -204,8 +205,8 @@ local function EventHelpers(domoticz, mainMethod)
 
 				if (globalsDefinition) then
 					self.writeStorageContext(globalsDefinition,
-						scriptsFolderPath .. '/storage/__data_global_data.lua',
-						scriptsFolderPath .. '/storage/__data_global_data',
+						_G.dataFolderPath .. '/__data_global_data.lua',
+						_G.dataFolderPath .. '/__data_global_data',
 						self.domoticz[GLOBAL_DATA])
 				end
 
@@ -225,7 +226,7 @@ local function EventHelpers(domoticz, mainMethod)
 		self.domoticz[GLOBAL_DATA] = nil
 	end
 
-	function self.scandir(directory)
+	function self.scandir(directory, type)
 		local pos, len
 		local i, t, popen = 0, {}, io.popen
 		local sep = string.sub(package.config, 1, 1)
@@ -249,7 +250,7 @@ local function EventHelpers(domoticz, mainMethod)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
 
 				table.insert(t, {
-					['type'] = 'external',
+					['type'] = type,
 					['name'] = string.sub(filename, 1, pos - 1)
 				})
 
@@ -324,9 +325,10 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 			end
 
+			local scriptType = eventHandler.type == 'external' and '>>> External script: ' or '>>> Internal script: '
 
 			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
-			utils.log('>>> Handler: ' .. eventHandler.name .. '.lua', utils.LOG_MODULE_EXEC_INFO)
+			utils.log(scriptType .. eventHandler.name .. '.lua', utils.LOG_MODULE_EXEC_INFO)
 
 			if (device) then
 				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
@@ -397,32 +399,22 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.getEventBindings(mode, testTime)
 		local bindings = {}
 		local errModules = {}
-		local internalScripts = {}
+		local internalScripts
 		local hasInternals = false
 		local ok, diskScripts, moduleName, i, event, j, device, err
 		local modules = {}
 
 
-		ok, diskScripts = pcall(self.scandir, _G.scriptsFolderPath)
+		ok, modules = pcall(self.scandir, _G.scriptsFolderPath, 'external')
 
 		if (not ok) then
-			utils.log(diskScripts, utils.LOG_ERROR)
+			utils.log(modules, utils.LOG_ERROR)
 		end
 
-		if (_G.scripts == nil) then _G.scripts = {} end
+		ok, internalScripts = pcall(self.scandir, _G.generatedScriptsFolderPath, 'internal')
 
-		-- prepare internal modules
-		-- todo this could be done entirely in c++
-		for name, script in pairs(_G.scripts) do
-			table.insert(modules, {
-				['type'] = 'internal',
-				['code'] = script,
-				['name'] = name
-			})
-		end
-
-		for i, external in pairs(diskScripts) do
-			table.insert(modules, external)
+		for i, internal in pairs(internalScripts) do
+			table.insert(modules, internal)
 		end
 
 		if (mode == nil) then mode = 'device' end
@@ -432,6 +424,7 @@ local function EventHelpers(domoticz, mainMethod)
 			local module, skip
 
 			local moduleName = moduleInfo.name
+			local logScript = (moduleInfo.type == 'external' and 'Script ' or 'Internal script ')
 
 			_G.domoticz = {
 				['LOG_INFO'] = utils.LOG_INFO,
@@ -445,17 +438,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			ok = true
 
-			if (moduleInfo.type == 'external') then
-				ok, module = pcall(require, moduleName)
-			else
-				module, err = loadstring(moduleInfo.code)
-				if (module == nil) then
-					module = moduleInfo.name .. ': ' .. err
-					ok = false
-				else
-					module = module()
-				end
-			end
+			ok, module = pcall(require, moduleName)
 
 			_G.domoticz = nil
 
@@ -491,8 +474,9 @@ local function EventHelpers(domoticz, mainMethod)
 						if (not skip) then
 							if (module.on ~= nil and module['execute'] ~= nil) then
 								module.name = moduleName
+								module.type = moduleInfo.type
 								module.dataFileName = '__data_' .. moduleName
-								module.dataFilePath = scriptsFolderPath .. '/storage/__data_' .. moduleName .. '.lua'
+								module.dataFilePath = _G.dataFolderPath .. '/__data_' .. moduleName .. '.lua'
 								for j, event in pairs(module.on) do
 									if (mode == 'timer') then
 										if (type(j) == 'number' and type(event) == 'string' and event == 'timer') then
@@ -588,12 +572,12 @@ local function EventHelpers(domoticz, mainMethod)
 									end
 								end
 							else
-								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "execute" section. Skipping', utils.LOG_ERROR)
+								utils.log(logScript .. moduleName .. '.lua has no "on" and/or "execute" section. Skipping', utils.LOG_ERROR)
 								table.insert(errModules, moduleName)
 							end
 						end
 					else
-						utils.log('Script ' .. moduleName .. '.lua is not a valid module. Skipping', utils.LOG_ERROR)
+						utils.log(logScript .. moduleName .. '.lua is not a valid module. Skipping', utils.LOG_ERROR)
 						table.insert(errModules, moduleName)
 					end
 				end

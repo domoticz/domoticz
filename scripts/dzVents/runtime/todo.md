@@ -2,6 +2,8 @@
 * todo's checken in code
 * deprecations doc
 
+*mkdir check for windows
+
 *co2 device?
 
 changes:

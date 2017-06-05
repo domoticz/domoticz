@@ -5,7 +5,8 @@ _G.TESMODE = true
 
 --package.path = package.path .. ";../?.lua"
 local scriptPath = ''
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua'
+local Time = require('Time')
 
 local clock = os.clock
 function sleep(n)  -- seconds
@@ -32,6 +33,7 @@ describe('event helper storage', function()
 	local domoticz = {
 		['settings'] = {},
 		['name'] = 'domoticz', -- used in script1
+		['time'] = Time('2017-06-03 12:04:00'),
 		['devices'] = {
 			['device1'] = { name = '' },
 			['onscript1'] = { name = 'onscript1', id = 1 },
@@ -51,6 +53,9 @@ describe('event helper storage', function()
 		}
 
 		_G.TESTMODE = true
+
+		_G.dataFolderPath = './data'
+		_G.generatedScriptsFolderPath = './generated_scripts'
 
 		_G.globalvariables = {
 			Security = 'sec',
@@ -89,9 +94,9 @@ describe('event helper storage', function()
 		helpers = EventHelpers(domoticz)
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
-		os.remove('../tests/scripts/storage/__data_script_data.lua')
-		os.remove('../tests/scripts/storage/__data_global_data.lua')
-		os.remove('../tests/scripts/storage/__data_myInternalScript.lua')
+		os.remove('../tests/data/__data_script_data.lua')
+		os.remove('../tests/data/__data_global_data.lua')
+		os.remove('../tests/data/__data_internal1.lua')
 	end)
 
 	after_each(function()
@@ -168,7 +173,7 @@ describe('event helper storage', function()
 
 	it('should write local storage inside the script for internal scripts', function()
 		local bindings = helpers.getEventBindings()
-		local script_data = bindings['someswitch'][1]
+		local script_data = bindings['mySwitch'][1]
 
 		local res = helpers.callEventHandler(script_data, { name = 'someswitch' })
 
@@ -200,12 +205,12 @@ describe('event helper storage', function()
 
 		helpers.writeStorageContext(
 			helpers.globalsDefinition,
-			helpers.scriptsFolderPath .. '/storage/__data_global_data.lua',
-			helpers.scriptsFolderPath .. '/storage/__data_global_data',
+			helpers.dataFolderPath .. '/__data_global_data.lua',
+			helpers.dataFolderPath .. '/__data_global_data',
 			context)
 
 
-		local exists = utils.fileExists('../tests/scripts/storage/__data_global_data.lua')
+		local exists = utils.fileExists('../tests/data/__data_global_data.lua')
 
 		assert.is_true(exists)
 		-- check if it was properly stored
