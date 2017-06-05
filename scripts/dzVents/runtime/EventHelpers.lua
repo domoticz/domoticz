@@ -265,33 +265,19 @@ local function EventHelpers(domoticz, mainMethod)
 		return t, namesLookup
 	end
 
-	function self.getDayOfWeek(testTime)
-		local d
-		if (testTime ~= nil) then
-			d = testTime.day
-			if (d == nil) then d = 1 end
-		else
-			d = os.date('*t').wday
-		end
-
-		local lookup = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
-		utils.log('Current day .. ' .. lookup[d], utils.LOG_DEBUG)
-		return lookup[d], d
-	end
-
 	function self.processTimeRuleFunction(fn)
 
-		_G.domoticz = {
-			['LOG_INFO'] = utils.LOG_INFO,
-			['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
-			['LOG_DEBUG'] = utils.LOG_DEBUG,
-			['LOG_ERROR'] = utils.LOG_ERROR,
-			['log'] = self.domoticz.log
-		}
+--		_G.domoticz = {
+--			['LOG_INFO'] = utils.LOG_INFO,
+--			['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
+--			['LOG_DEBUG'] = utils.LOG_DEBUG,
+--			['LOG_ERROR'] = utils.LOG_ERROR,
+--			['log'] = self.domoticz.log
+--		}
 
-		local ok, res = pcall(fn, self.domoticz.time)
+		local ok, res = pcall(fn, self.domoticz)
 
-		_G.domoticz = nil
+--		_G.domoticz = nil
 
 		if (not ok) then
 			utils.log('Error executing custom timer function.', utils.LOG_ERROR)

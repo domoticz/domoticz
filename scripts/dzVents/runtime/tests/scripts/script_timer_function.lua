@@ -2,8 +2,8 @@ return {
 	active = true,
 	on = {
 		['timer'] = {
-			function(time)
-				return time.hour == 12
+			function(domoticz)
+				return domoticz.time.hour == 12
 			end
 		}
 	},

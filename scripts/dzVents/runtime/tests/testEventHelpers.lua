@@ -107,8 +107,8 @@ describe('event helpers', function()
 			local sTime = 2017 .. '-' .. 6 .. '-' .. 13 .. ' ' .. 12 .. ':' .. 5 .. ':' .. 0
 			domoticz.time = Time(sTime)
 
-			local custom = function(time)
-				return tostring(time.hour) .. ':' .. tostring(time.min) .. ' ' .. tostring(time.day) .. ' ' .. (time.isDayTime and 'day' or 'night')
+			local custom = function(domoticz)
+				return tostring(domoticz.time.hour) .. ':' .. tostring(domoticz.time.min) .. ' ' .. tostring(domoticz.time.day) .. ' ' .. (domoticz.time.isDayTime and 'day' or 'night')
 			end
 
 			domoticz.time['isDayTime'] = true

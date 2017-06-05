@@ -225,8 +225,8 @@ There are several options for time triggers. It is important to know that Domoti
 	        'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
 
 			-- or just do it yourself:
-	        function(time)
-		        -- see domoticz.time below for the time attributes
+	        function(domoticz)
+		        -- you can use domoticz.time to get the current time
 		        -- note that this function is called every minute!
 		        -- custom code that either returns true or false
 		        ...
