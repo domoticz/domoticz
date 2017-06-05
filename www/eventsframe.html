@@ -681,6 +681,7 @@
         else {
             if (eventInterpreter == "dzvents") {
                 eventInterpreter = "lua";
+                $("#eventType").prop('disabled', true);
             }
             editor.getSession().setMode("ace/mode/" + eventInterpreter);
             $.ajax({

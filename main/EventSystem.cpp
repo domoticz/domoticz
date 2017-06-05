@@ -174,7 +174,10 @@ void CEventSystem::LoadEvents()
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
 		filename = dzv_Dir + *itt;
-		std::remove(filename.c_str());
+		if (filename.find("README.md") == std::string::npos)
+		{
+			std::remove(filename.c_str());
+		}
 	}
 
 	std::vector<std::vector<std::string> > result;
