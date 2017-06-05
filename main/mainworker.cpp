@@ -994,7 +994,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	case HTYPE_EVOHOME_WEB:
-		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
+		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
 		pHardware = new CRtl433(ID);
