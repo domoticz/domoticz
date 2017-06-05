@@ -37,7 +37,7 @@ return {
 		local myScene = domoticz.sceneds['myScene']
 
 		The device object is the device that was triggered due to the device in the 'on' section above.
-
+		]] --
 		-- example
 		if (device.state == 'On') then
 			device.switchOff().after_min(2)

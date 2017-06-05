@@ -1,5 +1,3 @@
--- make sure we can find our modules
-
 local currentPath = globalvariables['script_path']
 local triggerReason = globalvariables['script_reason']
 
@@ -13,21 +11,10 @@ package.path = package.path .. ';' .. currentPath .. 'runtime/device-adapters/?.
 package.path = package.path .. ';' .. currentPath .. 'dzVents/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'generated_scripts/?.lua'
---package.path = package.path .. ';' .. currentPath .. 'scripts/storage/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
 
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
-
---_ = require 'lodash' -- todo remove
---local persistence = require('persistence')
-
--- _.print(domoticzData)
-
---if (_G.TESTMODE == nil) then
-----	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
---	print(triggerReason)
---end
 
 commandArray = {}
 

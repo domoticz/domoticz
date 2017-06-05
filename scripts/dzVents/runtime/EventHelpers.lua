@@ -128,13 +128,13 @@ local function EventHelpers(domoticz, mainMethod)
 		return res
 	end
 
-	local function deprecationWarning(key, value, quoted)
+	local function deprecationWarning(moduleName, key, value, quoted)
 		local msg
 
 		if quoted then
-			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { \'' .. tostring(value) .. '\' } }"'
+			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { \'' .. tostring(value) .. '\' } }". Module: ' .. moduleName
 		else
-			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { ' .. tostring(value) .. ' } }"'
+			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { ' .. tostring(value) .. ' } }". Module: ' .. moduleName
 		end
 
 		utils.log(msg, utils.LOG_ERROR)
@@ -231,6 +231,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local i, t, popen = 0, {}, io.popen
 		local sep = string.sub(package.config, 1, 1)
 		local cmd
+		local namesLookup = {}
 
 		if (directory == nil) then
 			return {}
@@ -249,16 +250,19 @@ local function EventHelpers(domoticz, mainMethod)
 			pos, len = string.find(filename, '.lua', 1, true)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
 
+				local name = string.sub(filename, 1, pos - 1)
 				table.insert(t, {
 					['type'] = type,
-					['name'] = string.sub(filename, 1, pos - 1)
+					['name'] = name
 				})
+
+				namesLookup[name] = true -- for quick lookup for filename
 
 				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
 			end
 		end
 		pfile:close()
-		return t
+		return t, namesLookup
 	end
 
 	function self.getDayOfWeek(testTime)
@@ -401,21 +405,35 @@ local function EventHelpers(domoticz, mainMethod)
 		local errModules = {}
 		local internalScripts
 		local hasInternals = false
-		local ok, diskScripts, moduleName, i, event, j, device, err
+		local ok, diskScripts, externalNames, moduleName, i, event, j, device, err
 		local modules = {}
 
 
-		ok, modules = pcall(self.scandir, _G.scriptsFolderPath, 'external')
+		ok, diskScripts, externalNames = pcall(self.scandir, _G.scriptsFolderPath, 'external')
 
 		if (not ok) then
-			utils.log(modules, utils.LOG_ERROR)
+			utils.log(diskScripts, utils.LOG_ERROR)
+		else
+			modules = diskScripts
 		end
+
+		ok = true
 
 		ok, internalScripts = pcall(self.scandir, _G.generatedScriptsFolderPath, 'internal')
 
-		for i, internal in pairs(internalScripts) do
-			table.insert(modules, internal)
+		if (not ok) then
+			utils.log(internalScripts, utils.LOG_ERROR)
+		else
+			for i, internal in pairs(internalScripts) do
+				if (externalNames[internal.name]) then
+					-- oops already there, skipping
+					utils.log('There is already an external script with the name "' .. internal.name .. '.lua". Please rename in the internal script.', utils.LOG_ERROR)
+				else
+					table.insert(modules, internal)
+				end
+			end
 		end
+
 
 		if (mode == nil) then mode = 'device' end
 
@@ -484,10 +502,10 @@ local function EventHelpers(domoticz, mainMethod)
 											-- execute every minute (old style)
 											module.trigger = event
 											table.insert(bindings, module)
-											deprecationWarning('timer', event, true)
+											deprecationWarning(moduleName, 'timer', event, true)
 										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'string') then
 											-- { ['timer'] = 'every minute' }
-											deprecationWarning('timer', event, true)
+											deprecationWarning(moduleName, 'timer', event, true)
 --											if (self.evalTimeTrigger(event)) then
 											if (self.processTimeRules({event}, testTime)) then
 												module.trigger = event
@@ -509,7 +527,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
 
-												deprecationWarning('devices', '...<device triggers> ...', false)
+												deprecationWarning(moduleName, 'devices', '...<device triggers> ...', false)
 
 												for devIdx, devName in pairs(event) do
 
@@ -535,9 +553,9 @@ local function EventHelpers(domoticz, mainMethod)
 												-- single device name or id
 												-- let's not try to resolve indexes to names here for performance reasons
 												if (type(event) == 'string') then
-													deprecationWarning('devices', event, true)
+													deprecationWarning(moduleName, 'devices', event, true)
 												else
-													deprecationWarning('devices', tostring(event), false)
+													deprecationWarning(moduleName, 'devices', tostring(event), false)
 												end
 												addBindingEvent(bindings, event, module)
 											end
@@ -546,7 +564,7 @@ local function EventHelpers(domoticz, mainMethod)
 										if (type(j) == 'string' and j == 'variable'  and type(event) == 'string') then
 											-- { ['variable'] = 'myvar' }
 											addBindingEvent(bindings, event, module)
-											deprecationWarning('variables', event, true)
+											deprecationWarning(moduleName, 'variables', event, true)
 										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
 											-- { ['variables'] = { 'varA', 'varB' }
 											for devIdx, varName in pairs(event) do
@@ -555,7 +573,7 @@ local function EventHelpers(domoticz, mainMethod)
 										end
 									elseif (mode == 'security') then
 										if (type(j) == 'string' and j == 'security' and type(event) == 'string') then
-											deprecationWarning('security', event, true)
+											deprecationWarning(moduleName, 'security', event, true)
 											if (event == self.domoticz.security) then
 												table.insert(bindings, module)
 												module.trigger = event
