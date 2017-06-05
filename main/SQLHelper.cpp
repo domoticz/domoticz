@@ -2274,7 +2274,7 @@ bool CSQLHelper::OpenDatabase()
 	std::string sValue;
 	if (!GetPreferencesVar("Title", sValue))
         {
-                UpdatePreferencesVar("Title", "Domoticz"); 
+                UpdatePreferencesVar("Title", "Domoticz");
         }
         if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
@@ -3571,7 +3571,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
-			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255))
 			{
 				//update level for device
 				safe_query(
