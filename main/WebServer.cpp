@@ -2667,6 +2667,13 @@ namespace http {
 			root["Latitude"] = Latitude;
 			root["Longitude"] = Longitude;
 
+			root["theme_VerticalColumnsOnDashboard"] = m_sql.m_bTheme_VerticalColumnsOnDashboard;
+			root["theme_VerticalMenuForSettings"] = m_sql.m_bTheme_VerticalMenuForSettings;
+			root["theme_ShowLastUpdateTime"] = m_sql.m_bTheme_ShowLastUpdateTime;
+			root["theme_SunriseTimesAtTop"] = m_sql.m_bTheme_SunriseTimesAtTop;
+			root["theme_MergeUtilities"] = m_sql.m_bTheme_MergeUtilities;
+			root["theme_ShowDataVisualisations"] = m_sql.m_bTheme_ShowDataVisualisations;
+
 #ifndef NOCLOUD
 			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
 #else

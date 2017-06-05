@@ -466,6 +466,24 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			if (typeof $rootScope.config.DegreeDaysBaseTemperature != 'undefined') {
 				$.myglobals.DegreeDaysBaseTemperature=$rootScope.config.DegreeDaysBaseTemperature;
 			}
+			if (typeof $rootScope.config.theme_VerticalColumnsOnDashboard != 'undefined') {
+				$.myglobals.theme_VerticalColumnsOnDashboard=$rootScope.config.theme_VerticalColumnsOnDashboard;
+			}
+			if (typeof $rootScope.config.theme_VerticalMenuForSettings != 'undefined') {
+				$.myglobals.theme_VerticalMenuForSettings=$rootScope.config.theme_VerticalMenuForSettings;
+			}
+			if (typeof $rootScope.config.theme_ShowLastUpdateTime != 'undefined') {
+				$.myglobals.theme_ShowLastUpdateTime=$rootScope.config.theme_ShowLastUpdateTime;
+			}
+			if (typeof $rootScope.config.theme_SunriseTimesAtTop != 'undefined') {
+				$.myglobals.theme_SunriseTimesAtTop=$rootScope.config.theme_SunriseTimesAtTop;
+			}
+			if (typeof $rootScope.config.theme_MergeUtilities != 'undefined') {
+				$.myglobals.theme_MergeUtilities=$rootScope.config.theme_MergeUtilities;
+			}
+			if (typeof $rootScope.config.theme_ShowDataVisualisations != 'undefined') {
+				$.myglobals.theme_ShowDataVisualisations=$rootScope.config.theme_ShowDataVisualisations;
+			}
 		}
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config={
@@ -495,7 +513,13 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				apphash: 0,
 				appdate: 0,
 				versiontooltip: "",
-				ShowUpdatedEffect: true
+				ShowUpdatedEffect: true,
+				theme_VerticalColumnsOnDashboard: false,
+				theme_VerticalMenuForSettings: false,
+				theme_ShowLastUpdateTime: true,
+				theme_SunriseTimesAtTop: false,
+				theme_MergeUtilities: false,
+				theme_ShowDataVisualisations: true
 				};
 
 		$rootScope.GetGlobalConfig = function()
@@ -529,6 +553,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.EnableTabUtility=data.result.EnableTabUtility;
 					$rootScope.config.ShowUpdatedEffect=data.result.ShowUpdatedEffect;
 					$rootScope.config.DegreeDaysBaseTemperature=data.result.DegreeDaysBaseTemperature;
+					$rootScope.config.theme_VerticalColumnsOnDashboard=data.result.theme_VerticalColumnsOnDashboard;
+					$rootScope.config.theme_VerticalMenuForSettings=data.result.theme_VerticalMenuForSettings;
+					$rootScope.config.theme_ShowLastUpdateTime=data.result.theme_ShowLastUpdateTime;
+					$rootScope.config.theme_SunriseTimesAtTop=data.result.theme_SunriseTimesAtTop;
+					$rootScope.config.theme_MergeUtilities=data.result.theme_MergeUtilities;
+					$rootScope.config.theme_ShowDataVisualisations=data.result.theme_ShowDataVisualisations;
 				
 					SetLanguage(data.language);
 					

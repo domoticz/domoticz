@@ -359,6 +359,13 @@ public:
 	bool		m_bDisableEventSystem;
 	int			m_ShortLogInterval;
 	bool		m_bLogEventScriptTrigger;
+	bool		m_bTheme_VerticalColumnsOnDashboard;
+	bool		m_bTheme_VerticalMenuForSettings;
+	bool		m_bTheme_ShowLastUpdateTime;
+	bool		m_bTheme_SunriseTimesAtTop;
+	bool		m_bTheme_MergeUtilities;
+	bool		m_bTheme_ShowDataVisualisations;
+
 private:
 	boost::mutex	m_sqlQueryMutex;
 	sqlite3			*m_dbase;

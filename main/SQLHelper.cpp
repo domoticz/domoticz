@@ -650,6 +650,12 @@ CSQLHelper::CSQLHelper(void)
 	m_bDisableEventSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
+	m_bTheme_VerticalColumnsOnDashboard = false;
+	m_bTheme_VerticalMenuForSettings = false;
+	m_bTheme_ShowLastUpdateTime = true;
+	m_bTheme_SunriseTimesAtTop = false;
+	m_bTheme_MergeUtilities = false;
+	m_bTheme_ShowDataVisualisations = true;
 
 	SetDatabaseName("domoticz.db");
 }
@@ -2652,6 +2658,44 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 0;
 	}
 	_log.ForwardErrorsToNotificationSystem(nValue != 0);
+
+	//Gui Theme Settings
+	if (!GetPreferencesVar("Theme_VerticalColumnsOnDashboard", nValue))
+	{
+		UpdatePreferencesVar("Theme_VerticalColumnsOnDashboard", 0);
+		nValue = 0;
+	}
+	m_bTheme_VerticalColumnsOnDashboard = (nValue != 0);
+	if (!GetPreferencesVar("Theme_VerticalMenuForSettings", nValue))
+	{
+		UpdatePreferencesVar("Theme_VerticalMenuForSettings", 0);
+		nValue = 0;
+	}
+	m_bTheme_VerticalMenuForSettings = (nValue != 0);
+	if (!GetPreferencesVar("Theme_ShowLastUpdateTime", nValue))
+	{
+		UpdatePreferencesVar("Theme_ShowLastUpdateTime", 1);
+		nValue = 1;
+	}
+	m_bTheme_ShowLastUpdateTime = (nValue != 0);
+	if (!GetPreferencesVar("Theme_SunriseTimesAtTop", nValue))
+	{
+		UpdatePreferencesVar("Theme_SunriseTimesAtTop", 0);
+		nValue = 0;
+	}
+	m_bTheme_SunriseTimesAtTop = (nValue != 0);
+	if (!GetPreferencesVar("Theme_MergeUtilities", nValue))
+	{
+		UpdatePreferencesVar("Theme_MergeUtilities", 0);
+		nValue = 0;
+	}
+	m_bTheme_MergeUtilities = (nValue != 0);
+	if (!GetPreferencesVar("Theme_ShowDataVisualisations", nValue))
+	{
+		UpdatePreferencesVar("Theme_ShowDataVisualisations", 1);
+		nValue = 1;
+	}
+	m_bTheme_ShowDataVisualisations = (nValue != 0);
 
 	//Start background thread
 	if (!StartThread())
