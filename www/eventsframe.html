@@ -576,9 +576,11 @@
                             else {
                                 if (data.result[0].interpreter == 'dzVents') {
                                     editor.getSession().setMode("ace/mode/lua");
+                                    $("#eventType").val(data.result[0].type).prop('disabled', true);
                                 }
                                 else {
                                     editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+                                    $("#eventType").val(data.result[0].type).prop('disabled', false);
                                 }
                                 editor.setValue("");
 								editor.setValue(data.result[0].xmlstatement);
@@ -666,7 +668,9 @@
         var eventInterpreter = $("#interpreter").val().toLowerCase();
         $("#blockId").html("");
 		Blockly.mainWorkspace.clear();
-		editor.setValue("");
+        editor.setValue("");
+        $("#eventType").val("All");
+        $("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
 		$("#interpreter").prop('disabled', false);
