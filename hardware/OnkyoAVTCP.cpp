@@ -363,7 +363,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 			pData++;
 			continue;
 		}
-		uint32_t data_size = ntohl(pkt->data_size);
+		int data_size = static_cast<int>(ntohl(pkt->data_size));
 //		_log.Log(LOG_NORM, "ISCP at len %d size %d", Len, data_size);
 		if (Len < 16 + data_size)
 			break;
