@@ -527,8 +527,6 @@ local function EventHelpers(domoticz, mainMethod)
 
 												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
 
-												deprecationWarning(moduleName, 'devices', '...<device triggers> ...', false)
-
 												for devIdx, devName in pairs(event) do
 
 													-- detect if devName is of the form ['devB'] = { 'every hour' }
@@ -545,6 +543,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 											elseif (type(j) == 'string' and j ~= 'devices' and type(event) == 'table') then
 												-- [devicename] = { ...timedefs}
+												deprecationWarning(moduleName, 'devices', '...<device triggers> ...', false)
 												local triggered, def = self.processTimeRules(event, testTime)
 												if (triggered) then
 													addBindingEvent(bindings, j, module)
