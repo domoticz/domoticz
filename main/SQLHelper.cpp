@@ -6606,9 +6606,6 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 					std::stringstream ss;
 					ss << szTmp;
 					ss >> delay;
-				}
-				if (delay != -1)
-				{
 					szTmp = Action.substr(0, firstpipe - 1);
 					szTmp.append(Action.substr(secondpipe + 1));
 					Action = szTmp;
