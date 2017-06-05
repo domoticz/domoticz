@@ -6,8 +6,6 @@ local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
 
-local _ = require('lodash') -- todo remove
-
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
 function string:split(sep)
