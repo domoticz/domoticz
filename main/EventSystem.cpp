@@ -127,7 +127,7 @@ void CEventSystem::StartEventSystem()
 #ifdef ENABLE_PYTHON
     Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
-    
+
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -165,8 +165,8 @@ void CEventSystem::LoadEvents()
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-	
-	// Remove dzVents DB files from disk 
+
+	// Remove dzVents DB files from disk
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
@@ -200,8 +200,9 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",eitem.Name.c_str());
+
 				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
 				FILE *fOut = fopen(s.c_str(), "wb+");
 				if (fOut)
 				{
@@ -2314,7 +2315,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
 
-    
+
     Plugins::PythonEventsProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
         getSunRiseSunSetMinutes("Sunset"));
 

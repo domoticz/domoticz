@@ -3,8 +3,8 @@
 local currentPath = globalvariables['script_path']
 local triggerReason = globalvariables['script_reason']
 
-scriptsFolderPath = currentPath .. 'scripts' -- global
-
+_G.scriptsFolderPath = currentPath .. 'scripts' -- global
+_G.generatedScriptsFolderPath = currentPath .. 'generatated_scripts' -- global
 package.path = package.path .. ';' .. currentPath .. '?.lua'
 package.path = package.path .. ';' .. currentPath .. 'runtime/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'runtime/device-adapters/?.lua'
