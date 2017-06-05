@@ -251,6 +251,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
+		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

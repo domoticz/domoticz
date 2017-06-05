@@ -85,7 +85,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;USE_PYTHON_PLUGINS;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_63_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -468,6 +468,7 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
+    <ClInclude Include="..\hardware\OnkyoAVTCP.h" />
     <ClInclude Include="..\hardware\OpenWeatherMap.h" />
     <ClInclude Include="..\hardware\OpenWebNetTCP.h" />
     <ClInclude Include="..\hardware\OpenWebNetUSB.h" />
@@ -715,6 +716,7 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
+    <ClCompile Include="..\hardware\OnkyoAVTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
     <ClCompile Include="..\hardware\OpenWebNetTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWebNetUSB.cpp" />

@@ -152,7 +152,8 @@
         bool PythonEventsStop() {
             if (m_PyInterpreter) {
                 PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
-                Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				if (Plugins::Py_IsInitialized())
+					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
                 _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
@@ -180,6 +181,12 @@
             }
         }
 
+        // main_namespace["otherdevices_temperature"] = toPythonDict(m_tempValuesByName);
+        
+        PyObject* mapToPythonDict(std::map<std::string, float> floatMap) {
+            
+            return Py_None;
+        }
        
 
         void PythonEventsProcessPython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, std::map<uint64_t, CEventSystem::_tDeviceStatus> m_devicestates, std::map<uint64_t, CEventSystem::_tUserVariable> m_uservariables, int intSunRise, int intSunSet) {
@@ -257,7 +264,7 @@
 
                            // If nValueWording contains %, unicode fails?
 
-                           aDevice->id = sitem.ID;
+                           aDevice->id = static_cast<int>(sitem.ID);
                            aDevice->name = Plugins::PyUnicode_FromString(sitem.deviceName.c_str());
                            aDevice->type = sitem.devType;
                            aDevice->sub_type = sitem.subType;
@@ -334,14 +341,20 @@
                    }
 
                    // uservariablesMutexLock2.unlock();
+                   
 
-                   FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-
-                    // FILE* PythonScriptFile = fopen(filename.c_str(), "r");
-                    Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
-
-                	if (PythonScriptFile!=NULL)
-                		fclose(PythonScriptFile);
+                   if(PyString.length() > 0) {
+                       // Python-string from WebEditor
+                       Plugins::PyRun_SimpleStringFlags(PyString.c_str(), NULL);
+                       
+                   } else {
+                       // Script-file
+                       FILE* PythonScriptFile = fopen(filename.c_str(), "r");
+                       Plugins::PyRun_SimpleFileExFlags(PythonScriptFile, filename.c_str(), 0, NULL);
+                       
+                       if (PythonScriptFile!=NULL)
+                           fclose(PythonScriptFile);
+                   }
                 } else {
                     _log.Log(LOG_ERROR, "Python EventSystem: Module not available to events");
                 }

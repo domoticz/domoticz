@@ -72,7 +72,7 @@ void CEventSystem::StartEventSystem()
 #ifdef ENABLE_PYTHON
     Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
-    
+
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 }
 
@@ -272,7 +272,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.switchtype = atoi(sd[7].c_str());
 			_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
-			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, (unsigned char)sitem.nValue, sitem.sValue, options));
+			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
@@ -402,7 +402,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 		float temp = 0;
 		float chill = 0;
-		unsigned char humidity = 0;
+		int humidity = 0;
 		float barometer = 0;
 		float rainmm = 0;
 		float rainmmlasthour = 0;
@@ -468,7 +468,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			}
 			break;
 		case pTypeHUM:
-			humidity = (unsigned char)sitem.nValue;
+			humidity = sitem.nValue;
 			isHum = true;
 			break;
 		case pTypeTEMP_HUM:
@@ -667,7 +667,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				if (sitem.subType == sTypeZWaveAlarm)
 				{
-					alarmval = static_cast<int>(sitem.nValue);
+					alarmval = sitem.nValue;
 					isZWaveAlarm = true;
 				}
 				else if (sitem.subType == sTypeCounterIncremental)
@@ -2209,7 +2209,8 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 void CEventSystem::EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
-	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, deviceName: %s" , reason.c_str(), filename.c_str(), devname.c_str());
+	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
+
 
     Plugins::PythonEventsProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
         getSunRiseSunSetMinutes("Sunset"));
@@ -2265,6 +2266,17 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_idx");
+
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_pushnumber(lua_state, sitem.lastLevel);
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_lastlevel");
 	devicestatesMutexLock2.unlock();
 }
 
@@ -3424,7 +3436,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 
 
 
-std::string CEventSystem::nValueToWording(const unsigned char dType, const unsigned char dSubType, const _eSwitchType switchtype, const unsigned char nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
+std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options)
 {
 
 	std::string lstatus = "";
@@ -3516,7 +3528,7 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		{
 			lstatus = "Closed";
 		}
-		else
+		else if (lstatus == "Off")
 		{
 			lstatus = "Open";
 		}
@@ -3527,7 +3539,7 @@ std::string CEventSystem::nValueToWording(const unsigned char dType, const unsig
 		{
 			lstatus = "Open";
 		}
-		else
+		else if (lstatus == "Off")
 		{
 			lstatus = "Closed";
 		}

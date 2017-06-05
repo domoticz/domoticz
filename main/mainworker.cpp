@@ -124,6 +124,7 @@
 #include "../hardware/RelayNet.h"
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/Rtl433.h"
+#include "../hardware/OnkyoAVTCP.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -943,7 +944,7 @@ bool MainWorker::AddHardwareFromParams(
 #endif
 		break;
 	case HTYPE_SysfsGpio:
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 		pHardware = new CSysfsGpio(ID, Mode1);
 #endif
 		break;
@@ -994,10 +995,13 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CInComfort(ID, Address, Port);
 		break;
 	case HTYPE_EVOHOME_WEB:
-		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5);
+		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
 		pHardware = new CRtl433(ID);
+		break;
+	case HTYPE_OnkyoAVTCP:
+		pHardware = new OnkyoAVTCP(ID, Address, Port);
 		break;
 	}
 
