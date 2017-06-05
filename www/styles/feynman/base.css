@@ -1404,12 +1404,7 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
     padding-bottom:5px;
 }
 
-/* tof, maar plakt dingen ook horizontaal aan elkaar.*/
-.row-fluid{
-    display:flex;
-    flex-wrap: wrap;
-    /*align-items: stretch;*/
-}
+
 /*
 #settingscontent #ActiveTabs h2{
     color: #666;
@@ -2303,6 +2298,9 @@ td[colspan]:not([colspan="1"])
 
 @media all and (max-width: 767px){
     
+    .row-fluid{
+        display:block;
+    }
     
     #dashcontent div.item.withstatus{
         margin-bottom:30px;
@@ -2342,14 +2340,22 @@ td[colspan]:not([colspan="1"])
         clear:both
     }
     
-    
-    
-#copyright{
-    left: -22px;
-    right: -42px;
+    #copyright{
+        left: -22px;
+        right: -42px;
     }
     
 }
+
+
+@media all and (min-width: 768px) {
+    .row-fluid{
+        display:flex;
+        /*flex-wrap: wrap;*/
+        /*align-items: stretch;*/
+    }
+}
+
 
 /*  A lot of optimising data-outputon smaller screens, to avoid things overlapping */
 @media all and (min-width: 768px) and (max-width: 980px){
