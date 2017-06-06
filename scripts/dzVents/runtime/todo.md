@@ -4,10 +4,6 @@
 
 *co2 device?
 
-* define function for all device methods with a warning
-* debug info in each adapater inside the matches
-* check all places for debug info
-* create domoticzdata dump when in debug mode
 
 changes:
 counterToday > number

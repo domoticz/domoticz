@@ -330,6 +330,31 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|44" } }, commandArray)
 		end)
 
+		it('should detect a security device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Security',
+				['subType'] = 'Security Panel'
+			})
+
+			device.disarm()
+
+			assert.is_same({ { ['myDevice'] = 'Disarm' } }, commandArray)
+
+			commandArray = {}
+
+			device.armAway()
+
+			assert.is_same({ { ['myDevice'] = 'Arm Away' } }, commandArray)
+
+			commandArray = {}
+
+			device.armHome()
+
+			assert.is_same({ { ['myDevice'] = 'Arm Home' } }, commandArray)
+
+		end)
+
 		describe('dummy methods', function()
 
 			it('should set dummy methods', function()

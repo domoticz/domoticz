@@ -264,17 +264,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.processTimeRuleFunction(fn)
 
---		_G.domoticz = {
---			['LOG_INFO'] = utils.LOG_INFO,
---			['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
---			['LOG_DEBUG'] = utils.LOG_DEBUG,
---			['LOG_ERROR'] = utils.LOG_ERROR,
---			['log'] = self.domoticz.log
---		}
-
 		local ok, res = pcall(fn, self.domoticz)
-
---		_G.domoticz = nil
 
 		if (not ok) then
 			utils.log('Error executing custom timer function.', utils.LOG_ERROR)

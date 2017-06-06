@@ -199,7 +199,7 @@ local function Domoticz(settings)
 	-- have domoticz send an email
 	function self.email(subject, message, mailTo)
 		if (mailTo == nil) then
-			utils.log('No mail to is provide', utils.LOG_DEBUG)
+			utils.log('No mail-to is provided', utils.LOG_ERROR)
 		else
 			if (subject == nil) then subject = '' end
 			if (message == nil) then message = '' end

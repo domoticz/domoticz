@@ -46,7 +46,7 @@ local function Device(domoticz, data, dummyLogger)
 	local adapters = adapterManager.getDeviceAdapters(self)
 
 	for i, adapter in pairs(adapters) do
-		utils.log('Processing adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
+		utils.log('Processing device-adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 		adapter.process(self, data, domoticz, utils, adapterManager)
 	end
 

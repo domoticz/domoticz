@@ -15,13 +15,17 @@ package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
 
 local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
+local utils = require('Utils')
 
---local persistence = require('persistence')
---if (_G.TESTMODE == nil) then
---	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
---end
+if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG) then
+	utils.log('Dumping domoticz data to ' .. currentPath .. '/domoticzData.lua', utils.LOG_DEBUG)
+	local persistence = require('persistence')
+	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+end
 
 commandArray = {}
+
+utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
 
 if triggerReason == "time" then
 	commandArray = helpers.dispatchTimerEventsToScripts()
@@ -32,7 +36,7 @@ elseif triggerReason == "uservariable" then
 elseif triggerReason == 'security' then
 	commandArray = helpers.dispatchSecurityEventsToScripts()
 else
-	print ("Unknown trigger: ", triggerReason)
+	utils.log("Unknown trigger: ", triggerReason, utils.LOG_DEBUG)
 end
 
 return commandArray

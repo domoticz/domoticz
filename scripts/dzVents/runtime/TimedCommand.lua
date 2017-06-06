@@ -37,7 +37,7 @@ local function TimedCommand(domoticz, name, value)
 
 		local sCommand = table.concat(command, " ")
 
-		utils.log('Constructed command: ' .. sCommand, utils.LOG_DEBUG)
+		utils.log('Constructed timed-command: ' .. sCommand, utils.LOG_DEBUG)
 
 		return sCommand
 	end
