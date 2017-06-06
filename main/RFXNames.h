@@ -185,6 +185,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronicUDP,			//101
 	HTYPE_SysfsGpio,			//102
 	HTYPE_Rtl433,                           //103
+	HTYPE_OnkyoAVTCP,			//104
 	HTYPE_END
 };
 

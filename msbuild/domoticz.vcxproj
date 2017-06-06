@@ -470,6 +470,7 @@
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
+    <ClInclude Include="..\hardware\OnkyoAVTCP.h" />
     <ClInclude Include="..\hardware\OpenWeatherMap.h" />
     <ClInclude Include="..\hardware\OpenWebNetTCP.h" />
     <ClInclude Include="..\hardware\OpenWebNetUSB.h" />
@@ -722,6 +723,7 @@
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
+    <ClCompile Include="..\hardware\OnkyoAVTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
     <ClCompile Include="..\hardware\OpenWebNetTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWebNetUSB.cpp" />

@@ -23,6 +23,7 @@
 #include "../httpclient/HTTPClient.h"
 
 #define LOGONFAILTRESHOLD 3
+#define MINPOLINTERVAL 10
 #define MAXPOLINTERVAL 3600
 
 #ifdef _WIN32
@@ -38,21 +39,30 @@ const std::string CEvohomeWeb::weekdays[7] = { "Sunday", "Monday", "Tuesday", "W
 
 
 
-CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const bool notupdatedev, const bool showschedule, const bool showlocation, const unsigned int installation) :
+CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const unsigned int installation) :
 	m_username(Username),
 	m_password(Password),
-	m_refreshrate(refreshrate),
-	m_updatedev(!notupdatedev),
-	m_showschedule(showschedule),
-	m_showlocation(showlocation)
-
+	m_refreshrate(refreshrate)
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 
-	m_locationId = installation / 4096;
-	m_gatewayId = (installation / 256) % 16;
-	m_systemId = (installation / 16) % 16;
+	m_locationId = (installation >> 12) & 15;
+	m_gatewayId = (installation >> 8) & 15;
+	m_systemId = (installation >> 4) & 15;
+
+
+	/* Use Flags
+	 *
+	 * 0x1 = m_updatedev (let Honeywell server control the device name)
+	 * 0x2 = m_showschedule (show next scheduled switch point as `until` time)
+	 * 0x4 = m_showlocation (prefix device name with location)
+	 *
+	 */
+
+	m_updatedev = ((UseFlags & 1) == 0); // reverted value: default = true
+	m_showschedule = ((UseFlags & 2) > 0);
+	m_showlocation = ((UseFlags & 4) > 0);
 
 	if (m_refreshrate < 2)
 		m_refreshrate = 60;
@@ -78,8 +88,6 @@ void CEvohomeWeb::Init()
 	m_awaysetpoint = 15; // default "Away" setpoint value
 	m_j_fi.clear();
 	m_j_stat.clear();
-
-	m_bOutputLog = false;
 }
 
 
@@ -129,6 +137,8 @@ bool CEvohomeWeb::StartSession()
 
 bool CEvohomeWeb::StartHardware()
 {
+	if (m_username.empty() || m_password.empty())
+		return false;
 	Init();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeWeb::Do_Work, this)));
 	if (!m_thread)
@@ -155,13 +165,15 @@ bool CEvohomeWeb::StopHardware()
 
 void CEvohomeWeb::Do_Work()
 {
-	int sec_counter = m_refreshrate - 10;
+	int sec_counter = m_refreshrate - MINPOLINTERVAL;
 	int pollcounter = LOGONFAILTRESHOLD;
 	_log.Log(LOG_STATUS, "(%s) Worker started...", this->Name.c_str());
+	m_lastconnect=0;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
+		m_lastconnect++;
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 			if (m_loggedon && (m_LastHeartbeat > m_sessiontimer)) // discard our session with the honeywell server
@@ -170,10 +182,11 @@ void CEvohomeWeb::Do_Work()
 				m_bequiet = true;
 			}
 		}
-		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures))
+		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
 		{
 			GetStatus();
 			int pollcounter = LOGONFAILTRESHOLD;
+			m_lastconnect=0;
 		}
 	}
 	_log.Log(LOG_STATUS, "(%s) Worker stopped...", this->Name.c_str());
@@ -189,6 +202,7 @@ bool CEvohomeWeb::WriteToHardware(const char *pdata, const unsigned char length)
 	if (m_j_stat.isNull() && !GetStatus())
 		return false;
 
+	m_lastconnect=0;
 	REVOBUF *tsen = (REVOBUF*)pdata;
 	switch (pdata[1])
 	{
@@ -222,8 +236,7 @@ bool CEvohomeWeb::GetStatus()
 		return false;
 	}
 
-	if (m_bOutputLog)
-		_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
+	_log.Log(LOG_NORM, "(%s) fetch data from server", this->Name.c_str());
 
 	// system status
 	DecodeControllerMode(m_tcs);
@@ -269,7 +282,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 		{
 			std::string szuntil, szsetpoint;
-			double setpoint;
+			double setpoint = 0;
 			zone* hz = &m_tcs->zones[it->first];
 
 			if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
@@ -279,6 +292,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			}
 			if (newmode == "AutoWithEco")
 				setpoint -= 3;
+			if (setpoint < 5)
+				setpoint = 5;
 
 			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
 			 *  for the next update to get the correct values.
@@ -431,14 +446,15 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			devname = ret["modelType"];
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
-		if (!result.empty() && (result[0][2] != devname))
+		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name, StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
+		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
 			time_t now = mytime(NULL);
 			struct tm ltime;
 			localtime_r(&now, &ltime);
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -491,7 +507,8 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 		if (sdevname != ndevname)
 		{
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 			if (sdevname.find("zone ") != std::string::npos)
 				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ndevname.c_str());
 		}
@@ -540,7 +557,8 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 			uint64_t DevRowIdx;
 			std::stringstream s_str(result[0][0]);
 			s_str >> DevRowIdx;
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q',Name='%q' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
 		}
 	}
 
@@ -563,7 +581,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 {
 	size_t row;
-	if (m_zones[0] == 0) // first run - construct 
+	if (m_zones[0] == 0) // first run - construct
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
@@ -964,54 +982,6 @@ bool CEvohomeWeb::get_status(int location)
  *									*
  ************************************************************************/
 
-CEvohomeWeb::location* CEvohomeWeb::get_location_by_ID(std::string locationId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		if (m_locations[l].locationId == locationId)
-			return &m_locations[l];
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::gateway* CEvohomeWeb::get_gateway_by_ID(std::string gatewayId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			if (m_locations[l].gateways[g].gatewayId == gatewayId)
-				return &m_locations[l].gateways[g];
-		}
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_temperatureControlSystem_by_ID(std::string systemId)
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
-			{
-				if (m_locations[l].gateways[g].temperatureControlSystems[t].systemId == systemId)
-					return &m_locations[l].gateways[g].temperatureControlSystems[t];
-			}
-		}
-	}
-	return NULL;
-}
-
-
 CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 {
 	if (m_locations.size() == 0)
@@ -1026,26 +996,6 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
 				{
 					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zoneId)
 						return &m_locations[l].gateways[g].temperatureControlSystems[t].zones[z];
-				}
-			}
-		}
-	}
-	return NULL;
-}
-
-
-CEvohomeWeb::temperatureControlSystem* CEvohomeWeb::get_zone_temperatureControlSystem(CEvohomeWeb::zone* zone)
-{
-	for (size_t l = 0; l < m_locations.size(); l++)
-	{
-		for (size_t g = 0; g < m_locations[l].gateways.size(); g++)
-		{
-			for (size_t t = 0; t < m_locations[l].gateways[g].temperatureControlSystems.size(); t++)
-			{
-				for (size_t z = 0; z < m_locations[l].gateways[g].temperatureControlSystems[t].zones.size(); z++)
-				{
-					if (m_locations[l].gateways[g].temperatureControlSystems[t].zones[z].zoneId == zone->zoneId)
-						return &m_locations[l].gateways[g].temperatureControlSystems[t];
 				}
 			}
 		}
@@ -1154,28 +1104,6 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
  ************************************************************************/
 
 
-bool CEvohomeWeb::verify_date(std::string date)
-{
-	if (date.length() < 10)
-		return false;
-	std::string s_date = date.substr(0, 10);
-	struct tm mtime;
-	mtime.tm_isdst = -1;
-	mtime.tm_year = atoi(date.substr(0, 4).c_str()) - 1900;
-	mtime.tm_mon = atoi(date.substr(5, 2).c_str()) - 1;
-	mtime.tm_mday = atoi(date.substr(8, 2).c_str());
-	mtime.tm_hour = 12; // midday time - prevent date shift because of DST
-	mtime.tm_min = 0;
-	mtime.tm_sec = 0;
-	time_t ntime = mktime(&mtime);
-	if (ntime == -1)
-		return false;
-	char rdata[12];
-	sprintf(rdata, "%04d-%02d-%02d", mtime.tm_year + 1900, mtime.tm_mon + 1, mtime.tm_mday);
-	return (s_date == std::string(rdata));
-}
-
-
 bool CEvohomeWeb::verify_datetime(std::string datetime)
 {
 	if (datetime.length() < 19)
@@ -1201,28 +1129,16 @@ bool CEvohomeWeb::verify_datetime(std::string datetime)
 }
 
 
-bool CEvohomeWeb::set_system_mode(std::string systemId, int mode, std::string date_until)
+bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureControlSystem/" << systemId << "/mode";
 	std::stringstream data;
-	data << "{\"SystemMode\":" << mode;
-	if (date_until == "")
-		data << ",\"TimeUntil\":null,\"Permanent\":true}";
-	else
-	{
-		if (!verify_date(date_until))
-			return false;
-		data << ",\"TimeUntil\":\"" << date_until.substr(0, 10) << "T00:00:00Z\",\"Permanent\":false}";
-	}
+	data << "{\"SystemMode\":" << mode << ",\"TimeUntil\":null,\"Permanent\":true}";
 	std::string s_res;
 	if ((HTTPClient::PUT(url.str(), data.str(), m_SessionHeaders, s_res)) && (s_res.find("\"id\"")))
 		return true;
 	return false;
-}
-bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
-{
-	return set_system_mode(systemId, mode, "");
 }
 
 
@@ -1262,16 +1178,6 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 {
 	return (*tcs->status).isMember("dhw");
-}
-
-
-bool CEvohomeWeb::is_single_heating_system()
-{
-	if (m_locations.size() == 0)
-		full_installation();
-	return ((m_locations.size() == 1) &&
-		(m_locations[0].gateways.size() == 1) &&
-		(m_locations[0].gateways[0].temperatureControlSystems.size() == 1));
 }
 
 

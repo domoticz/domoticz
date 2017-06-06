@@ -350,6 +350,7 @@ hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
+hardware/OnkyoAVTCP.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNetTCP.cpp
 hardware/OpenWebNetUSB.cpp
