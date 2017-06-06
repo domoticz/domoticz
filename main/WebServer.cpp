@@ -9004,10 +9004,14 @@ namespace http {
 							if (levelNames.empty()) {
 								levelNames.assign("Off"); // default is Off only
 							}
+							std::vector<std::string> splitresults;
+							StringSplit(levelNames, "|", splitresults);
+							std::string levelStr = splitresults[(llevel / 10)];
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
 							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
 							root["result"][ii]["LevelNames"] = levelNames;
+							root["result"][ii]["LevelStr"] = levelStr;
 							root["result"][ii]["LevelActions"] = levelActions;
 						}
 						//Rob: Dont know who did this, but this should be solved in GetLightCommand

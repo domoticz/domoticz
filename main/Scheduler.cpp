@@ -870,7 +870,7 @@ namespace http {
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 0 AS IsThermostat,"
 					" t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, 0 AS Temperature, t.Days,"
-					" t.UseRandomness, t.MDay, t.Month, t.Occurence"
+					" t.UseRandomness, t.MDay, t.Month, t.Occurence, d.Options AS Options, d.SwitchType AS SwitchType"
 					" FROM Timers AS t, DeviceStatus AS d"
 					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY d.[Name], t.Time",
@@ -884,7 +884,7 @@ namespace http {
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, s.[Name], t.SceneRowID AS ID, 1 AS IsScene, 0 AS IsThermostat"
 					", t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Hue, 0 AS Temperature, t.Days,"
-					" t.UseRandomness, t.MDay, t.Month, t.Occurence"
+					" t.UseRandomness, t.MDay, t.Month, t.Occurence, '' AS Options, 0 AS SwitchType"
 					" FROM SceneTimers AS t, Scenes AS s"
 					" WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY s.[Name], t.Time",
@@ -898,7 +898,7 @@ namespace http {
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, d.[Name], t.DeviceRowID AS ID, 0 AS IsScene, 1 AS IsThermostat,"
 					" t.[Date], t.Time, t.Type, 0 AS Cmd, 0 AS Level, 0 AS Hue, t.Temperature, t.Days,"
-					" 0 AS UseRandomness, t.MDay, t.Month, t.Occurence"
+					" 0 AS UseRandomness, t.MDay, t.Month, t.Occurence, '' AS Options, 0 AS SwitchType"
 					" FROM SetpointTimers AS t, DeviceStatus AS d"
 					" WHERE (d.ID == t.DeviceRowID) AND (t.TimerPlan==%d)"
 					" ORDER BY d.[Name], t.Time",
@@ -916,6 +916,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					int iTimerIdx = atoi(sd[0].c_str());
+					_eSwitchType switchtype = (_eSwitchType)atoi(sd[19].c_str());
 					bool bActive = atoi(sd[1].c_str()) != 0;
 					bool bIsScene = atoi(sd[4].c_str()) != 0;
 					bool bIsThermostat = atoi(sd[5].c_str()) != 0;
@@ -940,6 +941,9 @@ namespace http {
 					unsigned char iLevel = atoi(sd[10].c_str());
 					if (iLevel == 0)
 						iLevel = 100;
+
+					std::string sOptions = sd[18];
+					std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sOptions);
 
 					int iTimerType = atoi(sd[8].c_str());
 					std::string sdate = sd[6];
@@ -980,6 +984,18 @@ namespace http {
 						root["result"][ii]["Level"] = iLevel;
 						root["result"][ii]["Hue"] = atoi(sd[11].c_str());
 						root["result"][ii]["Randomness"] = (atoi(sd[14].c_str()) != 0) ? "true" : "false";
+					}
+					if (switchtype == STYPE_Selector)
+					{
+						unsigned char iTimerCmd = atoi(sd[9].c_str());
+						if (iTimerCmd == 1)
+							iLevel = 0;
+						std::vector<std::string> splitresults;
+						std::string levelNames = options["LevelNames"];
+						StringSplit(levelNames, "|", splitresults);
+						std::string levelStr = splitresults[(iLevel / 10)];
+
+						root["result"][ii]["LevelStr"] = levelStr;
 					}
 					ii++;
 				}
