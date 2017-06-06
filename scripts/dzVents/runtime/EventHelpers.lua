@@ -104,9 +104,6 @@ local function EventHelpers(domoticz, mainMethod)
 					data[var] = storageContext[var]
 				end
 			end
-			if (not utils.fileExists(dataFolderPath)) then
-				os.execute('mkdir ' .. dataFolderPath)
-			end
 
 			local ok, err = pcall(persistence.store, dataFilePath, data)
 
