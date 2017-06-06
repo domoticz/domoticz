@@ -4,8 +4,12 @@ return {
 
 	name = 'Humidty device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Humidity')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Humidity')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateHumidity')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

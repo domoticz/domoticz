@@ -4,8 +4,9 @@ return {
 
 	name = 'Electric usage device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Usage' and device.deviceSubType == 'Electric')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Usage' and device.deviceSubType == 'Electric')
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

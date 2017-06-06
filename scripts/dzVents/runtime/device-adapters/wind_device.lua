@@ -4,8 +4,12 @@ return {
 
 	name = 'Wind device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Wind')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Wind')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateWind')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

@@ -4,8 +4,12 @@ return {
 
 	name = 'Rain device',
 
-	matches = function (device)
-		return (device.deviceType == 'Rain')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Rain')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateRain')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

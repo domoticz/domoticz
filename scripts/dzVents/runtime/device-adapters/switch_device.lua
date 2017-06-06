@@ -6,8 +6,19 @@ return {
 
 	name = 'Switch device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Light/Switch')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Light/Switch')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'switchOn')
+			adapterManager.addDummyMethod(device, 'switchOff')
+			adapterManager.addDummyMethod(device, 'close')
+			adapterManager.addDummyMethod(device, 'open')
+			adapterManager.addDummyMethod(device, 'stop')
+			adapterManager.addDummyMethod(device, 'dimTo')
+			adapterManager.addDummyMethod(device, 'switchSelector')
+			adapterManager.addDummyMethod(device, 'toggleSwitch')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
@@ -57,7 +68,6 @@ return {
 		if (device.switchType == 'Selector') then
 			device.levelNames = device.levelName and string.split(device.levelName, '|') or {}
 		end
-
 
 	end
 

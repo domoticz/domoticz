@@ -4,8 +4,12 @@ return {
 
 	name = 'P1 smart meter energy device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'P1 Smart Meter' and device.deviceSubType == 'Energy')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'P1 Smart Meter' and device.deviceSubType == 'Energy')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateP1')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

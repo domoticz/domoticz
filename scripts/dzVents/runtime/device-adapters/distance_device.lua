@@ -4,8 +4,12 @@ return {
 
 	name = 'Distance device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'Distance')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'Distance')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateDistance')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

@@ -4,8 +4,12 @@ return {
 
 	name = 'Lux device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Lux' and device.deviceSubType == 'Lux')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Lux' and device.deviceSubType == 'Lux')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateLux')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

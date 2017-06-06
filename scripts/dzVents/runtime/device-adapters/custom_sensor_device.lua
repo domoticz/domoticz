@@ -4,8 +4,14 @@ return {
 
 	name = 'Custom sensor device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'Custom Sensor')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'Custom Sensor')
+
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateCustomSensor')
+		end
+
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

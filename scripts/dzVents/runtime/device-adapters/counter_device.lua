@@ -4,8 +4,14 @@ return {
 
 	name = 'Counter device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'RFXMeter counter' or device.deviceSubType == 'Counter Incremental')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'RFXMeter counter' or device.deviceSubType == 'Counter Incremental')
+
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateCounter')
+		end
+
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

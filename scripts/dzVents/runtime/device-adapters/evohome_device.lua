@@ -4,8 +4,13 @@ return {
 
 	name = 'Evohome device adapter',
 
-	matches = function (device)
-		return (device.hardwareTypeValue == 39 and device.deviceSubType == 'Zone')
+	matches = function (device, adapterManager)
+		local res = (device.hardwareTypeValue == 39 and device.deviceSubType == 'Zone')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateSetPoint')
+		end
+		return res
+
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

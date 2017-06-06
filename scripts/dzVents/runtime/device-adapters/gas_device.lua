@@ -4,8 +4,12 @@ return {
 
 	name = 'Gas device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'Gas')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'Gas')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateGas')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

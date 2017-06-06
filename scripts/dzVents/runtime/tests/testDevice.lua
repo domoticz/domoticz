@@ -11,6 +11,12 @@ local LOG_INFO = 2
 local LOG_DEBUG = 3
 local LOG_ERROR = 1
 
+local utils = require('Utils')
+local function values(t)
+	local values = _.values(t)
+	table.sort(values)
+	return values
+end
 local function getDevice_(
 	domoticz,
 	name,
@@ -23,7 +29,8 @@ local function getDevice_(
 	additionalDataData,
 	hardwareType,
 	hardwaryTypeValue,
-	baseType)
+	baseType,
+	dummyLogger)
 
 	local Device = require('Device')
 
@@ -83,7 +90,7 @@ local function getDevice_(
 		data.data[attribute] = value
 	end
 
-	return Device(domoticz, data)
+	return Device(domoticz, data, dummyLogger)
 end
 
 local function getDevice(domoticz, options)
@@ -99,7 +106,8 @@ local function getDevice(domoticz, options)
 		options.additionalDataData,
 		options.hardwareType,
 		options.hardwareTypeValue,
-		options.baseType)
+		options.baseType,
+		options.dummyLogger)
 
 end
 
@@ -320,6 +328,71 @@ describe('device', function()
 
 			device.updateAirQuality(44)
 			assert.is_same({ { ["UpdateDevice"] = "1|44" } }, commandArray)
+		end)
+
+		describe('dummy methods', function()
+
+			it('should set dummy methods', function()
+
+				local dummies = {}
+
+				local device = getDevice(domoticz, {
+					['name'] = 'myDevice',
+					['type'] = 'some crazy type',
+					['subType'] = 'some crazy subtype',
+					['hardwareType'] = 'some crazy hardware type',
+					['dummyLogger' ] = function(device, name)
+						table.insert(dummies, name)
+					end
+				})
+
+				local adapterManager = device.getAdapterManager()
+
+				assert.is_same({
+					"armAway",
+					"armHome",
+					"close",
+					"dimTo",
+					"disarm",
+					"kodiExecuteAddOn",
+					"kodiPause",
+					"kodiPlay",
+					"kodiPlayFavorites",
+					"kodiPlayPlaylist",
+					"kodiSetVolume",
+					"kodiStop",
+					"kodiSwitchOff",
+					"open",
+					"stop",
+					"switchOff",
+					"switchOn",
+					"switchSelector",
+					"toggleSwitch",
+					"updateAirQuality",
+					"updateAlertSensor",
+					"updateBarometer",
+					"updateCounter",
+					"updateCustomSensor",
+					"updateDistance",
+					"updateElectricity",
+					"updateGas",
+					"updateHumidity",
+					"updateLux",
+					"updateP1",
+					"updatePercentage",
+					"updatePressure",
+					"updateRain",
+					"updateSetPoint",
+					"updateTempHum",
+					"updateTempHumBaro",
+					"updateTemperature",
+					"updateText",
+					"updateUV",
+					"updateVoltage",
+					"updateWind" }, values(dummies))
+
+			end)
+
 		end)
 
 		it('should detect an evohome device', function()

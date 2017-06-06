@@ -4,8 +4,12 @@ return {
 
 	name = 'kWh device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'kWh')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'kWh')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateElectricity')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

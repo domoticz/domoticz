@@ -12,8 +12,13 @@ return {
 
 	name = 'Barometer device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'Barometer')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'Barometer')
+
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateBarometer')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

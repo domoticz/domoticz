@@ -4,8 +4,12 @@ return {
 
 	name = 'UV device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'UV')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'UV')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateUV')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

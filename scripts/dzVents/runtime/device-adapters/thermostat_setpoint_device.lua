@@ -4,8 +4,12 @@ return {
 
 	name = 'Thermostat setpoint device adapter',
 
-	matches = function (device)
-		return device.deviceSubType == 'SetPoint'
+	matches = function (device, adapterManager)
+		local res = device.deviceSubType == 'SetPoint'
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateSetPoint')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

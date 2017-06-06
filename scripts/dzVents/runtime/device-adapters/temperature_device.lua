@@ -4,8 +4,12 @@ return {
 
 	name = 'Temperature device adapter',
 
-	matches = function (device)
-		return (device.deviceType == 'Temp')
+	matches = function (device, adapterManager)
+		local res = (device.deviceType == 'Temp')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateTemperature')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

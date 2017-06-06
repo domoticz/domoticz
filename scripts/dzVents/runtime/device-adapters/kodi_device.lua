@@ -4,8 +4,20 @@ return {
 
 	name = 'Kodi device',
 
-	matches = function (device)
-		return (device.hardwareType == 'Kodi Media Server')
+	matches = function (device, adapterManager)
+		local res = (device.hardwareType == 'Kodi Media Server')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'kodiSwitchOff')
+			adapterManager.addDummyMethod(device, 'kodiStop')
+			adapterManager.addDummyMethod(device, 'kodiPlay')
+			adapterManager.addDummyMethod(device, 'kodiPause')
+			adapterManager.addDummyMethod(device, 'kodiSetVolume')
+			adapterManager.addDummyMethod(device, 'kodiPlayPlaylist')
+			adapterManager.addDummyMethod(device, 'kodiPlayFavorites')
+			adapterManager.addDummyMethod(device, 'kodiExecuteAddOn')
+
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)

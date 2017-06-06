@@ -34,7 +34,7 @@ local deviceAdapters = {
 	'kodi_device'
 }
 
-local _utils = require('Utils')
+local utils = require('Utils')
 
 function string:split(sep)
 	local sep, fields = sep or ":", {}
@@ -43,13 +43,11 @@ function string:split(sep)
 	return fields
 end
 
-local function DeviceAdapters(utils)
+local function DeviceAdapters(dummyLogger)
 
-	if (utils == nil) then
-		utils = _utils
-	end
 
 	local self = {}
+
 
 	self.name = 'Adapter manager'
 
@@ -66,7 +64,7 @@ local function DeviceAdapters(utils)
 				utils.log(adapter, utils.LOG_ERROR)
 			else
 				if (adapter.baseType == device.baseType) then
-					local matches = adapter.matches(device)
+					local matches = adapter.matches(device, self)
 					if (matches) then
 						utils.log('Adapter found for ' .. device.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 						table.insert(adapters, adapter)
@@ -100,6 +98,34 @@ local function DeviceAdapters(utils)
 			['value'] = value,
 			['unit'] = unit ~= nil and unit or ''
 		}
+	end
+
+	self['logDummyCall'] = function(device, name)
+
+	end
+
+	function self.getDummyMethod(device, name)
+		if (dummyLogger ~= nil) then
+			dummyLogger(device, name)
+		end
+
+		return function()
+
+			utils.log('Method ' ..
+					name ..
+					' is not available for device "' ..
+					device.name ..
+					'" (deviceType=' .. device.deviceType .. ', deviceSubType=' .. device.deviceSubType .. '). ' ..
+					'If you believe this is not correct, please report.',
+				utils.LOG_ERROR)
+		end
+	end
+
+
+	function self.addDummyMethod(device, name)
+		if (device[name] == nil) then
+			device[name] = self.getDummyMethod(device, name)
+		end
 	end
 
 	self.states = {

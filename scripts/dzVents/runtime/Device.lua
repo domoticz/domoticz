@@ -1,11 +1,11 @@
 local utils = require('Utils')
 local Adapters = require('Adapters')
 
-local function Device(domoticz, data)
+local function Device(domoticz, data, dummyLogger)
 
 	local self = {}
 	local state
-	local adapterManager = Adapters()
+	local adapterManager = Adapters(dummyLogger)
 
 
 	function self.update(...)
@@ -32,6 +32,12 @@ local function Device(domoticz, data)
 	self['_data'] = data
 	self['baseType'] = data.baseType
 
+
+	if (_G.TESTMODE) then
+		function self.getAdapterManager()
+			return adapterManager
+		end
+	end
 
 	-- process generic first
 	adapterManager.genericAdapter.process(self, data, domoticz, utils, adapterManager)

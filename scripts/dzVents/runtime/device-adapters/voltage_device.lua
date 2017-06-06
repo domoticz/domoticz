@@ -4,8 +4,12 @@ return {
 
 	name = 'Voltage device adapter',
 
-	matches = function (device)
-		return (device.deviceSubType == 'Voltage')
+	matches = function (device, adapterManager)
+		local res = (device.deviceSubType == 'Voltage')
+		if (not res) then
+			adapterManager.addDummyMethod(device, 'updateVoltage')
+		end
+		return res
 	end,
 
 	process = function (device, data, domoticz, adapterManager)
