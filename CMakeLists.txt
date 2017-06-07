@@ -105,7 +105,7 @@ IF(USE_PYTHON)
     INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
     add_definitions(-DENABLE_PYTHON)
   ELSE(PYTHONLIBS_FOUND)
-    MESSAGE(FATAL_ERROR "Python3 not found on your system, use ENABLE_PYTHON=NO or sudo apt-get install python3-dev)")
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON=NO or sudo apt-get install python3-dev)")
   ENDIF(PYTHONLIBS_FOUND)
 ENDIF(USE_PYTHON)
 

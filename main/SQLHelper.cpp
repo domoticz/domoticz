@@ -3458,7 +3458,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
+			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
 	        //~ use different update queries based on the device type

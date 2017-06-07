@@ -40,7 +40,6 @@ public:
 	void SetVerboseLevel(_eLogFileVerboseLevel vLevel);
 
 	void Log(const _eLogLevel level, const char* logline, ...);
-	void LogNoLF(const _eLogLevel level, const char* logline, ...);
 
 	void LogSequenceStart();
 	void LogSequenceAdd(const char* logline);
