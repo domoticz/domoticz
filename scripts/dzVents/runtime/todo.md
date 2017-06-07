@@ -4,9 +4,5 @@
 
 *co2 device?
 
-helpers in docs
-how to use domoticz.time.matchesRule('on mon')
-changes:
-counterToday > number
 
 pandoc -r markdown README.md -t mediawiki -o README.wiki
