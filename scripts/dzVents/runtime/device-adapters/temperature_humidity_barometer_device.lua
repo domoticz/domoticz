@@ -22,6 +22,9 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: barometer, dewPoint, humidity, forecast
+		-- humidityStatus, forecastString, temperature
+
 		function device.updateTempHumBaro(temperature, humidity, status, pressure, forecast)
 
 			if (status == nil) then

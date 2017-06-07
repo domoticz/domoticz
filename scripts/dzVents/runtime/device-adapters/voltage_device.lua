@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, adapterManager)
 
+		-- from date: voltage
+
 		function device.updateVoltage(voltage)
 			device.update(0, voltage)
 		end

@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: rainRate, rain
+
 		device['updateRain'] = function (rate, counter)
 			device.update(0, tostring(rate) .. ';' .. tostring(counter))
 		end

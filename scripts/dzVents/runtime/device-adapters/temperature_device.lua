@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: temperature
+
 		function device.updateTemperature(temperature)
 			device.update(0, temperature)
 		end

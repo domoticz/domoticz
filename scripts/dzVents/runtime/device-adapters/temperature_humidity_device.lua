@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: dewPoint, humidity, humidityStatus, temperature
+
 		function device.updateTempHum(temperature, humidity, status)
 			if (status == nil) then
 				-- when no status is provided, domoticz will not set the device obviously

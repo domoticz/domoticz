@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: direction, speed, directionString
+
 		device.gust = tonumber(device.rawData[4]) / 10
 		device.temperature = tonumber(device.rawData[5])
 		device.chill = tonumber(device.rawData[6])

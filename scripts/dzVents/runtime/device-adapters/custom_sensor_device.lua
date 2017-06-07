@@ -16,6 +16,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: sensorType, sensorUnit
+
 		function device.updateCustomSensor(value)
 			device.update(0, value)
 		end

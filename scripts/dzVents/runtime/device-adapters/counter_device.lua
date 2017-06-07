@@ -16,6 +16,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: counter, counterToday, valueQuantity, valueUnits
 
 		local valueFormatted = device.counterToday or ''
 		local info = adapterManager.parseFormatted(valueFormatted, domoticz['radixSeparator'])

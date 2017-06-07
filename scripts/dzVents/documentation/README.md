@@ -360,35 +360,18 @@ dzVents already recognizes most of the devices and creates the proper attributes
 
 Most of the time when your device is not recognized you can always use the `rawData` attribute as that will almost always hold all the data that is available in Domoticz.
 
-### Device attributes
-
+### Device attributes for all devices
  - **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255).
  -  **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
- -  **barometer**
  - **changed**: *Boolean*. True if the device was changed
- - **chill**: *Number*. Chill temperature for temperature/wind devices that support it.
- - **co2**
- - **counter**: *Number*
- - **counterToday**: *Number*. Today's counter value for counter devices.
- - **counterDeliveredToday**: *Number*. Counter delivered today for P1 smart meter devices.
- - **counterTotal**: *String*. Total counter value for counter devices. Formatted string with unit.
  - **description**: *String*. Description of the device.
  - **deviceSubType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **deviceType**: *String*. See Domoticz devices table in Domoticz GUI.
- - **dewPoint**: *Number*
- - **direction**: *Number*. Wind direction.
- - **directionString**: *String*. Formatted wind direction.
- - **distance**: *Number*. For distance devices.
- - **forecast**: *Number*.
- - **forecastString**: *String*.
- - **gust**: *Number*. For Wind devices.
+ - **dump()**: *Function*. Dump all attributes to the Domoticz log. This ignores the log level setting.
  - **hardwareName**: *String*. See Domoticz devices table in Domoticz GUI.
  - **hardwareId**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **hardwareType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **hardwareTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
- - **heatingMode**: *String*. For zoned thermostats like EvoHome.
- - **humidity**: *Number*
- - **humidityStatus**: *String*
  - **icon**: *String*. Name of the icon in Domoticz GUI.
  - **id**: *Number*. Id of the device
  - **lastUpdate**:
@@ -406,96 +389,193 @@ Most of the time when your device is not recognized you can always use the `rawD
 	 - **sec**: *Number*
 	 - **secondsAgo**: *Number*. Number of seconds since the last update.
 	 - **year**: *Number*
+ - **name**: *String*. Name of the device.
+ - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
+ - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+- **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
+ - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
+ - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
+ - **update(< params >)**: *Function*. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`
+
+### Device attributes for specific devices
+Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please lets us know that it is missing so we can write an adapter for it (or you can write your own and submit it). You can dump all attributes for your device by calling `myDevice.dump()`. That will show you all the attributes and their values in the Domoticz. log.
+
+#### Air quality
+  - **co2**
+  - **quality**: *String*. Air quality
+  - **updateAirQuality(ppm)**: Pass the CO2 concentration.
+
+#### Alert sensor
+ - **updateAlertSensor(level, text)**: *Function*. Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREEN, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED
+
+#### Barometer sensor
+ - **barometer**. *Number*. Barometric pressure.
+ - **forecast**: *Number*.
+ - **forecastString**: *String*.
+ - **updateBarometer(pressure, forecast)**: *Function*. Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM.
+
+#### Counter and counter incremental
+ - **counter**: *Number*
+ - **counterToday**: *Number*. Today's counter value.
+ - **updateCounter(value)**: *Function*.
+ - **valueQuantity**: *String*. For counters.
+ - **valueUnits**: *String*.
+
+#### Custom sensor
+ - **sensorType**: *Number*.
+ - **sensorUnit**: *String*:
+ - **updateCustomSensor(value)**: *Function*.
+
+#### Distance sensor
+ - **distance**: *Number*.
+ - **updateDistance(distance)**: *Function*.
+
+#### Electric usage
+ - **WActual**: *Number*. Current Watt usage.
+
+#### Evohome
+ - **setPoint**: *Number*.
+ - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`).
+
+#### Gas
+ - **counter**: *Number*
+ - **counterToday**: *Number*.
+ - **updateGas(usage)**: *Function*.
+
+#### Group
+ - **toggleGroup()**: Toggles the state of a group.
+ - **switchOff()**: *Function*. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **switchOn()**: Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+
+#### Humidity sensor
+ - **humidity**: *Number*
+ - **humidityStatus**: *String*
+ - **updateHumidity(humidity, status)**: Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET
+
+#### Kodi
+ - **kodiExecuteAddOn(addonId)**: *Function*. Will send an Execute Addon command sending no parameters. Addon IDs are embedded in the addon configuration and are not to be confused with the Addon Name. For example: http://forums.homeseer.com/showthread.php?p=1213403.
+ - **kodiPause()**: *Function*. Will send a Pause command, only effective if the device is streaming.
+ - **kodiPlay()**: *Function*. Will send a Play command, only effective if the device was streaming and has been paused.
+ - **kodiPlayFavorites([position])**: *Function*. Will play an item from the Kodi's Favorites list optionally starting at *position*. Favorite positions start from 0 which is the default.
+ - **kodiPlayPlaylist(name, [position])**: *Function*. Will play a music or video Smart Playlist with *name* optionally starting at *position*. Playlist positions start from 0 which is the default.
+ - **kodiSetVolume(level)**: *Function*. Set the volume for a Kodi device, 0 <= level <= 100.
+ - **kodiStop()**: *Function*. Will send a Stop command, only effective if the device is streaming.
+ - **kodiSwitchOff()**: *Function*. Will turn the device off if this is supported in settings on the device.
+
+#### kWh, Electricity (instant and counter)
+ - **counterToday**: *Number*.
+ - **updateElectricity(power, energy)**: *Function*.
+ - **usage**: *Number*.
+ - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh!
+
+#### Lux sensor
+ - **lux**: *Number*. Lux level for light sensors.
+ - **updateLux(lux)**: *Function*.
+
+#### OpenTherm gateway
+ - **setPoint**: *Number*.
+ - **updateSetPoint(setPoint)**: *Function*.
+ -
+#### P1 Smart meter
+ - **counterDeliveredToday**: *Number*.
+ - **counterToday**: *Number*.
+ - **usage1**, **usage2**: *Number*.
+ - **return1**, **return2**: *Number*.
+ - **updateP1(usage1, usage2, return1, return2, cons, prod)**: *Function*. Updates the device.
+ - **usage**: *Number*.
+ - **usageDelivered**: *Number*.
+
+#### Percentage
+ - **percentage**: *Number*.
+ - **updatePercentage(percentage)**: *Function*.
+
+#### Pressure
+ - **pressure**: *Number*.
+ - **updatePressure(pressure)**: *Function*.
+
+#### Rain meter
+ - **rain**: *Number*
+ - **rainRate**: *Number*
+ - **updateRain(rate, counter)**: *Function*.
+
+#### Scene
+ - **switchOn()**: *Function*. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+
+#### Security
+ - **armAway()**: Sets a security device to Armed Away.
+ - **armHome()**: Sets a security device to Armed Home.
+ - **disarm()**: Disarms a security device.
+
+#### Solar radiation
+ - **radiation**. *Number*
+ - **updateRadiation(radiation)**: *Function*.
+
+#### Switch (dimmer, selector etc.)
+There are many switch-like devices. Not all methods are applicable for all switch-like devices. You can always use the generic `setState(newState)` method.
+
+ - **close()**: *Function*. Set device to Close if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **dimTo(percentage)**: *Function*. Switch a dimming device on and/or dim to the specified level. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
  - **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *Table*. Table holding the level names for selector switch devices.
- - **lux**: *Number*. Lux level for light sensors.
- - **name**: *String*. Name of the device.
  - **maxDimLevel**: *Number*.
- - **moisture**: *String*.
- - **percentage**: *Number*. Percentage for percentage devices.
- - **pressure**: *Number*. For pressure devices.
- - **quality**: *String*. Formatted label for air quality devices.
- - **radiation**: *Number*
- - **rain**: *Number*
- - **rainLastHour**
- - **rainRate**: *Number*
- - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
- - **return1**, **return2**: *Number*. Return values for P1 smart meter devices.
- - **setPoint**: *Number*. Holds the set point for thermostat like devices.
- - **sensorType**: *Number*. Type of a custom sensor.
- - **sensorUnit**: *String*: Unit of the custom sensor.
- - **signalLevel**: *String*. See Domoticz devices table in Domoticz GUI.
- - **speed**: *Number*. Wind speed.
- - **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
- - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
- - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
+ - **open()**: *Function*. Set device to Open if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **stop()**: *Function*. Set device to Stop if it supports it (e.g. blinds). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **switchOff()**: *Function*. Switch device off it is supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **switchOn()**: *Function*. Switch device on if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **switchSelector(level)**: *Function*. Switches a selector switch to a specific level (numeric value, see the edit page in Domoticz for such a switch to get a list of the values). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
+
+#### Temperature sensor
  - **temperature**: *Number*
- - **text**: Text value for dummy text devices.
- - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
- - **usage1**, **usage2**: *Number*. Usages for P1 smart meter devices
- - **usage**: *Number*. Usage for P1 smart meter devices.
- - **usageDelivered**: *Number*. Delivered usage for P1 smart meter devices.
- - **utility**
+ - **updateTemperature(temperature)**: *Function*.
+
+#### Temperature, Humidity, Barometer sensor
+ - **barometer**: *Number*
+ - **dewPoint**: *Number*
+ - **forecast**: *Number*.
+ - **forecastString**: *String*.
+ - **humidity**: *Number*
+ - **humidityStatus**: *String*
+ - **temperature**: *Number*
+ - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN
+
+#### Temperature, Humidity
+ - **dewPoint**: *Number*
+ - **humidity**: *Number*
+ - **humidityStatus**: *String*
+ - **temperature**: *Number*
+ - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET.
+
+#### Text
+ - **text**: *String*
+ - **updateText(text)**: Function*.
+
+#### Thermostat set point
+- **setPoint**: *Number*.
+- **updateSetPoint(setPoint)**:*Function*.
+
+#### UV sensor
  - **uv**: *Number*.
- - **valueQuantity**: *String*. For counters.
- - **valueUnits**: *String*.
- - **visibility**: *Number*. For visibility devices.
- - **voltage**: *Number*. For voltage devices.
- - **weather**
- - **WActual**: *Number*. Current Watt usage.
- - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh.
- - **WhTotal**: *Number*. Total Wh (incremental).
- - **winddir**
- - **windgust**
- - **windspeed**
+ - **updateUV(uv)**: *Function*.
 
-### Device methods
+#### Voltage
+ - **voltage**: *Number*.
+ - **updateVoltage(voltage)**:Function*.
 
- - **armAway()**: Sets a security device to Armed Away.
- - **armHome()**: Sets a security device to Armed Home.
- - **close()**: Set device to Close if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **dimTo(percentage)**: Switch a dimming device on and/or dim to the specified level. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **disarm()**: Disarms a security device.
- - **kodiExecuteAddOn(addonId)**: Will send an Execute Addon command sending no parameters. Addon IDs are embedded in the addon configuration and are not to be confused with the Addon Name. For example: http://forums.homeseer.com/showthread.php?p=1213403.
- - **kodiPause()**: Will send a Pause command, only effective if the device is streaming.
- - **kodiPlay()**: Will send a Play command, only effective if the device was streaming and has been paused.
- - **kodiPlayFavorites([position])**: Will play an item from the Kodi's Favorites list optionally starting at *position*. Favorite positions start from 0 which is the default.
- - **kodiPlayPlaylist(name, [position])**: Will play a music or video Smart Playlist with *name* optionally starting at *position*. Playlist positions start from 0 which is the default.
- - **kodiSetVolume(level)**: Set the volume for a Kodi device, 0 <= level <= 100.
- - **kodiStop()**: Will send a Stop command, only effective if the device is streaming.
- - **kodiSwitchOff()**: Will turn the device off if this is supported in settings on the device.
- - **open()**: Set device to Open if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **setState(newState)**: Generic update method for switch-like devices. E.g.: device.setState('On'). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **stop()**: Set device to Stop if it supports it (e.g. blinds). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **switchOff()**: Switch device off it is supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **switchOn()**: Switch device on if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **switchSelector(level)**: Switches a selector switch to a specific level (numeric value, see the edit page in Domoticz for such a switch to get a list of the values). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
- - **update(< params >)**: Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`
- - **toggleGroup()**: Toggles the state of a group.
- - **toggleSwitch()**: Toggles the state of the switch (if it is togglable) like On/Off, Open/Close etc.
- - **updateAirQuality(ppm)**: Pass the CO2 concentration.
- - **updateAlertSensor(level, text)**: Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREE, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED
- - **updateBarometer(pressure, forecast)**: Update barometric pressure. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM.
- - **updateCounter(value)**: Update counter devices.
- - **updateCustomSensor(value)**: Update custom sensor devices.
- - **updateDistance(distance)**: Update distance devices.
- - **updateElectricity(power, energy)**: Update electricity devices.
- - **updateGas(usage)**: Update gas devices.
- - **updateHumidity(humidity, status)**: Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET
- - **updateLux(lux)**: Update lux devices.
- - **updateP1(usage1, usage2, return1, return2, cons, prod)**: Update P1 smart meter device.
- - **updatePercentage(percentage)**: Updates percentage devices.
- - **updatePressure(pressure)**: Update pressure devices
- - **updateRain(rate, counter)**: Update rain sensor.
- - **updateSetPoint(setPoint, mode, until)**: Update set point for dummy thermostat devices, OpenThermGW and EvoHome Zone devices. For EvoHome devices mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`).
- - **updateTemperature(temperature)**: Update temperature sensor.
- - **updateTempHum(temperature, humidity, status)**: For status options see updateHumidity.
- - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN
- - **updateText(text)**: Update text devices.
- - **updateUV(uv)**: Update UV devices.
- - **updateVoltage(voltage)**: Update voltage devices.
- - **updateWind(bearing, direction, speed, gust, temperature, chill)**: Update wind devices.
+#### Wind
+ - **chill**: *Number*.
+ - **direction**: *Number*. Degrees.
+ - **directionString**: *String*. Formatted wind direction like N, SE.
+ - **gust**: *Number*.
+ - **temperature**: *Number*
+ - **speed**: *Number*.
+ - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*.
+
+#### Zone heating
+ - **setPoint**: *Number*.
+ - **heatingMode**: *String*.
 
 ### Switch timing options (delay, duration)
 To specify a duration or a delay for the various switch command you can do this:
@@ -515,6 +595,9 @@ To specify a duration or a delay for the various switch command you can do this:
  - **withinMin(minutes)**: *Function*. Activates the command within a certain period *randomly*.
 
 Note that **dimTo()** doesn't support **forMin()**.
+
+### Create your own device adapter
+It is possible that your device is not recognized by dzVents. You can still operate it using the generic device attributes and methods but it is much nicer if you have device specific attributes and methods. Take a look at the existing adapters. You can find them in `/path/to/domoticz/scripts/dzVents/runtime/device-adapters`.  Just copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file `domoticzData.lua` in the dzVents folder. There you can see what the unique signature is for your device type. Usually it is a combination of deviceType and deviceSubType. But you can use any of the device attributes in the `matches` function. The matches function checks if the device type is suitable for your adapter and the `process` function actually creates your specific attributes and methods. Finally register your adapter in `Adapters.lua`. Please share your adapter when it is ready and working.
 
 ## Variable object API
 User variables created in Domoticz have these attributes and methods:
@@ -1005,12 +1088,10 @@ If you dare to you can watch inside these files. Every time some data is changed
 
 There are a couple of settings for dzVents. They can be found in Domoticz GUI: **Setup > Settings > Other > EventSystem**:
 
-As mentioned in the install section there is a settings file: dzVents_settings_example.lua. **Rename this file to dzVents_settings.lua**. There you can set a couple of parameters for how dzVents operates:
-
  - **dzVents disabled**: Tick this if you don't want any dzVents script to be executed.
  - **Log level**: Note that you can override this setting in the logging section of your script:
-    - Errors,
-    - Errors + info about the execution of individual scripts and a dump of the commands sent back to Domoticz,
-    - Errors + info
-    - Debug info + Errors + Info
-    - As silent as possible.
+    - *Errors*,
+    - *Errors + execution info* about the execution of individual scripts and a dump of the commands sent back to Domoticz,
+    - *Errors + more info*. Even more information about script execution and a bit more log formatting.
+    - *Debug info + Errors + Info*. When in debug mode, dzVents will create a file `domoticzData.lua` in the dzVents folder. This is a dump of all the data that is received by dzVents from Domoticz.. That data is used to create the entire dzVents data structure.
+    - *No logging*. As silent as possible.

@@ -23,6 +23,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: levelnName, levelOffHidden, levelActions, maxDimLevel
+
 		function device.toggleSwitch()
 			local current, inv
 			if (device.state ~= nil) then

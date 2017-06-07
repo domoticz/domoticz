@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: lux
+
 		-- set the lux value
 		device['lux'] = tonumber(device.rawData[1])
 

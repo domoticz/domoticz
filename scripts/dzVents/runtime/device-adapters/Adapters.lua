@@ -21,6 +21,7 @@ local deviceAdapters = {
 	'rain_device',
 	'scene_device',
 	'security_device',
+	'solar_radiation_device',
 	'switch_device',
 	'thermostat_setpoint_device',
 	'temperature_device',

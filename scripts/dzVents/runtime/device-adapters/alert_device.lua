@@ -2,7 +2,7 @@ return {
 
 	baseType = 'device',
 
-	name = 'Voltage device adapter',
+	name = 'Alert sensor  adapter',
 
 	matches = function (device, adapterManager)
 		local res =  (device.deviceSubType == 'Alert')

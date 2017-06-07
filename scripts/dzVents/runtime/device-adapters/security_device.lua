@@ -16,6 +16,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: maxDimLevel???
+
 		function device.disarm()
 			domoticz.sendCommand(device.name, 'Disarm')
 		end

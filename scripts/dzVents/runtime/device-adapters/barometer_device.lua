@@ -22,6 +22,7 @@ return {
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
+		-- from data: barometer, forecast, forecastString
 
 		function device.updateBarometer(pressure, forecast)
 			-- pressure in hPa

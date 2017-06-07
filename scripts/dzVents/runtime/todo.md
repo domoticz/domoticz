@@ -4,5 +4,6 @@
 
 *co2 device?
 
+howto: write adapter
 
 pandoc -r markdown README.md -t mediawiki -o README.wiki

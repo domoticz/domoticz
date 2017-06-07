@@ -16,6 +16,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: quality
+
 		-- todo this doesn't work just yet
 		device['co2'] = tonumber(device.state) -- co2 (ppm)
 

@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: humidityStatus, humidity
+
 		function device.updateHumidity(humidity, status)
 			--[[
 				status can be

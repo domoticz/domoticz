@@ -14,6 +14,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		-- from data: pressure
+
 		function device.updatePressure(pressure)
 			device.update(0, pressure)
 		end

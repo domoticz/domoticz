@@ -16,7 +16,7 @@ return {
 
 		device['SetPoint'] = device.rawData[1] or 0
 
-		function device.updateSetPoint(setPoint, mode, untilDate)
+		function device.updateSetPoint(setPoint)
 			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
 			local url = domoticz.settings['Domoticz url'] ..
 					'/json.htm?type=command&param=udevice&idx=' .. device.id .. '&nvalue=0&svalue=' .. setPoint

@@ -21,6 +21,7 @@
  - on-section now requires subsections for `devices`, `timer`, `variables`, and `security`. The old way is now deprecated and a log warning will be shown. Please convert your existing scripts!
  - A device trigger can have a time-rule constraint: ` on = { devices = { ['myDevice'] = 'at nighttime' } }`. This only triggers the script when myDevice was changed **and** the time is after sunset and before sunrise.
  - Add support for subsystem selection for domoticz.notify function.
+ - after_sec, for_min, after_min, within_min methods are now deprecated in favor the camel-cased variants afterSec, forMin, afterMin, withinMin. Please rename the calls in your script.
 
 [1.1.2]
 
