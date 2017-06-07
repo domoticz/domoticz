@@ -307,7 +307,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			unsigned long evoID = atol(zoneId.c_str());
 			std::stringstream ssUpdateStat;
 			ssUpdateStat << temperature << ";" << setpoint << ";FollowSchedule";
-			if (m_showschedule)
+			if ((m_showschedule) && (!szuntil.empty()))
 				ssUpdateStat << ";" << szuntil;
 			std::string sdevname;
 			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
@@ -347,7 +347,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
 		}
 
-		if ((m_showschedule) && (!hz->schedule.isNull()))
+		if ((m_showschedule) && (!hz->schedule.isNull()) && (!szuntil.empty()))
 		{
 			pEvo->EVOHOME2.year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
 			pEvo->EVOHOME2.month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
@@ -639,6 +639,8 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
  */
 std::string CEvohomeWeb::local_to_utc(std::string local_time)
 {
+	if (local_time.size() < 19)
+		return "";
 	if (m_tzoffset == -1)
 	{
 		// calculate timezone offset once
