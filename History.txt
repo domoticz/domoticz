@@ -40,6 +40,7 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Support for YeeLight
 - Implemented: Support for Youless LS120
 - Implemented: Switch type 'Door Lock'
+- Implemented: General/Text sensor now able to be shared
 - Implemented: Timer Plan editor
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
