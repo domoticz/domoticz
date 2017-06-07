@@ -5,18 +5,21 @@ Version 3.xxxx (January xth 2017)
 - Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
 - Fixed: Daemonize compatible with Systemd forking type
 - Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
-- Changed: Switch type 'Door Lock' renamed to 'Door Contact'
+- Changed: Lessen rounding errors for computed energy
 - Changed: Minimized On/Off/Script execution time
-- Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
-- Changed: Temperature Only charts will not display the Humidity axis
 - Changed: SolarEdgeAPI, now only needs API Key
 - Changed: Support symlinks for plugin and theme directories
+- Changed: Switch type 'Door Lock' renamed to 'Door Contact'
+- Changed: Temperature Only charts will not display the Humidity axis
+- Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
 - Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
 - Implemented: Blinds T1 till T13 new supports the Stop button
 - Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option
 - Implemented: Estonian Language support (big thanks to Kuido)
+- Implemented: EvohomeWeb support (Thanks to Gordon3!)
+- Implemented: General/Text sensor now able to be shared
 - Implemented: I2C BME280 sensor (temp+hum+baro)
 - Implemented: I2C for non arm systems
 - Implemented: InfluxDB Data push
@@ -24,12 +27,14 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Netatmo Home Coach support
 - Implemented: Notification for Dummy Soil/Moisture sensor
 - Implemented: Notification for Alert Sensor via udevice JSON call
+- Implemented: Onkyo AV Receiver (Thanks to dwmw2!)
 - Implemented: Option to replace an Meter device
 - Implemented: OZW, Added support for Atmospheric Pressure sensor
 - Implemented: Python Plugin System
 - Implemented: RFXtrx Lucci Fan implemented
 - Implemented: RFXtrx RFY2 protocol implemented
 - Implemented: RFXtrx Kangtai / Cotech implemented
+- Implemented: RTL433 (Thanks to Petri Ahone!)
 - Implemented: SolarEdgeAPI, support for multiple inverters
 - Implemented: Support for Ble Box hardware
 - Implemented: Support for different usage/return costs for electricity
@@ -40,9 +45,9 @@ Version 3.xxxx (January xth 2017)
 - Implemented: Support for YeeLight
 - Implemented: Support for Youless LS120
 - Implemented: Switch type 'Door Lock'
-- Implemented: General/Text sensor now able to be shared
-- Implemented: Timer Plan editor
+- Implemented: SysFS GPIO (Thanks to hvbommel/jvandenbroek!)
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
+- Implemented: Timer Plan editor
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
 
 Version 3.5878 (November 10th 2016)
