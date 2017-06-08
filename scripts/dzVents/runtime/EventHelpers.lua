@@ -314,7 +314,7 @@ local function EventHelpers(domoticz, mainMethod)
 			utils.log(scriptType .. eventHandler.name .. '.lua', utils.LOG_MODULE_EXEC_INFO)
 
 			if (device) then
-				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
+				utils.log('>>> Device: "' .. device.name .. ' (' .. device.hardwareName .. ') " Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
 			elseif (variable) then
 				utils.log('>>> Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id), utils.LOG_MODULE_EXEC_INFO)
 			elseif (security) then
