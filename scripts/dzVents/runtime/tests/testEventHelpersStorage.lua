@@ -281,9 +281,9 @@ describe('event helper storage', function()
 		context = helpers.getStorageContext(def, script_data.dataFileName)
 
 		assert.is_same({ 'x', 'y', 'z' }, keys(context))
-		assert.is_same(10, context.x)
+		assert.is_same(10, context.x) -- the updated old ones
 		assert.is_same(20, context.y)
-		assert.is_same(3, context.z)
+		assert.is_same(3, context.z) -- the new one with initial value
 
 		-- now remove a var from the def and check if the old var isn't still in the
 		-- file data
@@ -299,7 +299,7 @@ describe('event helper storage', function()
 
 		-- require the file
 		fileStorage = require(script_data.dataFileName)
-		assert.is_same({ 'x', 'y'}, keys(fileStorage))
+		assert.is_same({ 'x', 'y'}, keys(fileStorage)) -- z is no longer there
 
 	end)
 
