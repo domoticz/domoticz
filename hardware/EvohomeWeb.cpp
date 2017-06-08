@@ -64,10 +64,10 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_showschedule = ((UseFlags & 2) > 0);
 	m_showlocation = ((UseFlags & 4) > 0);
 
-	if (m_refreshrate < 2)
+	if (m_refreshrate < 10)
 		m_refreshrate = 60;
 
-	Init();
+	m_awaysetpoint = 0; // we'll fetch this from the controller device status later
 }
 
 
@@ -85,7 +85,6 @@ void CEvohomeWeb::Init()
 	m_logonfailures = 0;
 	m_bequiet = false;
 	m_szlocationName = "";
-	m_awaysetpoint = 15; // default "Away" setpoint value
 	m_j_fi.clear();
 	m_j_stat.clear();
 }
@@ -124,6 +123,20 @@ bool CEvohomeWeb::StartSession()
 	{
 		_log.Log(LOG_ERROR, "(%s) installation at [%d,%d,%d] does not exist - verify your settings", this->Name.c_str(), m_locationId, m_gatewayId, m_systemId);
 		return false;
+	}
+
+	if (m_awaysetpoint == 0) // first run - try to get our Away setpoint value from the controller device status
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
+		if (result.empty()) // shouldn't happen
+			return false;
+		std::vector<std::string> splitresults;
+		StringSplit(result[0][0], ";", splitresults);
+		if (splitresults.size()>0)
+			m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+		if (m_awaysetpoint == 0)
+			m_awaysetpoint = 15; // use default 'Away' setpoint value
 	}
 
 	m_zones[0] = 0;
@@ -505,8 +518,8 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		double new_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(), NULL);
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
-			//ToDo: store this value in database
 			m_awaysetpoint = new_awaysetpoint;
+			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%0.2f' WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_awaysetpoint, this->m_HwdID, m_tcs->systemId.c_str());
 		}
 		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << sysMode;
 	}
@@ -912,6 +925,7 @@ bool CEvohomeWeb::full_installation()
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;
+	m_j_fi.clear();
 	bool ret = jReader.parse(ss_jdata.str(), m_j_fi);
 
 	if (!m_j_fi["locations"].isArray())
@@ -963,6 +977,7 @@ bool CEvohomeWeb::get_status(int location)
 	}
 
 	Json::Reader jReader;
+	m_j_stat.clear();
 	bool ret = jReader.parse(s_res, m_j_stat);
 	m_locations[location].status = &m_j_stat;
 	j_loc = m_locations[location].status;
