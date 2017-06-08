@@ -1280,6 +1280,7 @@
     <Image Include="..\www\images\WallSocket48_Off.png" />
     <Image Include="..\www\images\WallSocket48_On.png" />
     <Image Include="..\www\images\Water.png" />
+    <Image Include="..\www\images\Water48.png" />
     <Image Include="..\www\images\Water48_Off.png" />
     <Image Include="..\www\images\Water48_On.png" />
     <Image Include="..\www\images\webcam.png" />

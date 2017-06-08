@@ -232,6 +232,7 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 
 			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
 			if ((m_bDisableCRC) || isCheckSumOk(teleinfo.CRCmode1))
+_log.Log(LOG_STATUS, "(%s): Match line %s", Name.c_str(), m_buffer);
 				MatchLine();
 
 			m_bufferpos = 0;

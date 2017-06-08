@@ -3601,6 +3601,9 @@
     <Image Include="..\www\images\Water.png">
       <Filter>www\images</Filter>
     </Image>
+    <Image Include="..\www\images\Water48.png">
+      <Filter>www\images</Filter>
+    </Image>
     <Image Include="..\www\images\Water48_Off.png">
       <Filter>www\images</Filter>
     </Image>
