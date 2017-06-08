@@ -276,6 +276,19 @@ $(document).ready(function() {
 		DashboardType: 0,
 		isproxied: false
 	};
+	if (typeof sessionStorage.title == 'undefined') {
+		sessionStorage.title = "Domoticz";
+		$.ajax({ 
+	             	url: "json.htm?type=command&param=gettitle",
+	        	async: false,
+		     	dataType: 'json',
+	          	success: function(data) {
+				if (typeof data.Title != 'undefined')
+					sessionStorage.title = data.Title;
+				  }
+		})
+	}
+	document.title = sessionStorage.title;
 
 	if( /Android|webOS|iPhone|iPad|iPod|ZuneWP7|BlackBerry/i.test(navigator.userAgent) ) {
 		$.myglobals.ismobile=true;
@@ -1687,7 +1700,7 @@ $(document).ready(function() {
 									<li id="mSecurity"><a id="cSecurity" href="secpanel/index.html"><img src="images/security.png"> <span data-i18n="SecurityPanel">Security Panel</span></a></li>
                                     <li id="dLogoutSetup" class="divider" style="display: none;" has-Login=true></li>
 									<li id="mLogoutSetup" style="display: none;" has-Login=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span data-i18n="Logout">Logout</span></a></li>
-								    				</ul>
+								</ul>
 							</li>
 							<li id="dLogout" class="divider-vertical" style="display: none;" has-Login-No-Admin=true></li>
 							<li id="mLogout" style="display: none;" has-Login-No-Admin=true><a id="cLogout" href="#Logout"><img src="images/logout.png"> <span class="hidden-phone hidden-tablet" data-i18n="Logout">Logout</span></a></li>

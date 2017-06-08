@@ -56,11 +56,12 @@ private:
 	void InterruptHandler();
 	void Poller();
 	void UpdateDeviceStates(bool forceUpdate);
+	void UpdateStartup();
 	void UpdateSwitch(const int gpioId, const bool value);
 	void GetSchedPriority(int *scheduler, int *priority);
 
 	boost::mutex m_pins_mutex;
-	boost::shared_ptr<boost::thread> m_thread, m_thread_poller;
+	boost::shared_ptr<boost::thread> m_thread, m_thread_poller, m_thread_updatestartup;
 	static std::vector<CGpioPin> pins;
 	volatile bool m_stoprequested;
 	volatile int pinPass;

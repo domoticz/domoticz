@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Devolo Flood Sensor MT2756
+    http://products.z-wavealliance.org/products/2227
+    -->
+    <!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" index="1" label="Basic Set OFF Level" size="1" min="0" max="255" value="0">
+            <Help>
+                Setting the BASIC command value.
+                When the flood trigger off(0x00), send the BASIC CC to the group 2
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" index="2" label="Basic Set ON Level" size="1" min="0" max="255" value="255">
+            <Help>
+                Setting the BASIC command value.
+                When the flood trigger on(0xFF), send the BASIC CC to the group 2
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="5" label="Operation Mode" size="1" value="0">
+            <Help>
+            </Help>
+            <Item label="Normal" value="0"/>
+            <Item label="Disable the Flood function" value="33"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="Costumer Function" units="" min="0" max="255" value="0">
+            <Help>
+                8  Disable send out BASIC OFF after the flood event cleared.
+                16 Notification Type, 0:Using Notification Report. 16:Using Sensor Binary Report.
+                32 Disable Multi CC in auto report.
+                64 Disable to report battery state when the device triggered.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="10" label="Auto Report Battery Time" units="" min="0" max="127" value="12">
+            <Help>
+                The interval time for auto report the battery level.
+                0 means turn off auto report.
+                The default value is 12.
+                The tick time can be set by the configuration No.20.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="15" label="Auto Report Flood Time" units="" min="0" max="127" value="12">
+            <Help>
+                The interval time for auto report the flood state.
+                0 means turn off auto report.
+                The default value is 12.
+                The tick time can be set by the configuration No.20.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="20" label="Auto Report Tick Interval" units="minute" min="0" max="255" value="30">
+            <Help>
+                The interval time for auto report each tick.
+                Setting this configuration will effect configuration No.10, No.13, No.14 and No.15.
+                Units of one minute.
+                Caution1: Setting to 0 means turn off all auto report function.
+                Caution2: The value is unsigned byte
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" setasreport="true"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="8" label="Lifeline"/>
+            <Group index="2" max_associations="8" label="Basic Set"/>
+        </Associations>
+    </CommandClass>
+</Product>

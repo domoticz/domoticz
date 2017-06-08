@@ -301,7 +301,6 @@ define(['app'], function (app) {
 					bFavorites = 0;
 				}
 			}
-
 			$.ajax({
 				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected + "&lastupdate=" + $scope.LastUpdateTime,
 				async: false,
@@ -1536,11 +1535,16 @@ define(['app'], function (app) {
 										if (typeof item.Counter != 'undefined') {
 											if ($scope.config.DashboardType == 0) {
 												status += '' + $.t("Usage") + ': ' + item.CounterToday;
-											} else {
-												if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
-													status += 'U: T: ' + item.CounterToday;
+											}
+											else {
+												if (typeof item.CounterDeliv == 'undefined') {
+													status = item.CounterToday;
 												} else {
-													status += 'T: ' + item.CounterToday;
+													if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
+														status += 'U: T: ' + item.CounterToday;
+													} else {
+														status += 'T: ' + item.CounterToday;
+													}
 												}
 											}
 										} else if (item.Type == "Current") {
@@ -1573,28 +1577,49 @@ define(['app'], function (app) {
 											} else {
 												status = item.Data;
 											}
-										} else if (item.SubType == "Alert") {
-											status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
-										} else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+										}
+										else if (item.SubType == "Alert") {
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+										}
+										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
 										} else if (item.SubType == "Smartwares") {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
 										}
-										if (typeof item.Usage != 'undefined') {
-											if ($scope.config.DashboardType == 0) {
-												status += '</span><span>' + $.t("Actual") + ': ' + item.Usage;
-											} else {
-												status += "</span>span>A: " + item.Usage;
+
+										var bHaveReturnUsage = false;
+										if (typeof item.CounterDeliv != 'undefined') {
+											if (item.UsageDeliv.charAt(0) != 0) {
+												bHaveReturnUsage = true;
+											}
+										}
+										if (!bHaveReturnUsage) {
+											if (typeof item.Usage != 'undefined') {
+												if ($scope.config.DashboardType == 0) {
+													status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+												}
+												else {
+													status += ", A: " + item.Usage;
+												}
 											}
 										}
 										if (typeof item.CounterDeliv != 'undefined') {
 											if (item.CounterDeliv != 0) {
 												if ($scope.config.DashboardType == 0) {
-													status += '</span><span>' + $.t("Return") + ': ' + item.CounterDelivToday;
-													status += '</span><span>' + $.t("Actual") + ': ' + item.UsageDeliv;
-												} else {
-													status += '</span><span>R: T: ' + item.CounterDelivToday;
-													status += "</span><span>A: " + item.UsageDeliv;
+													status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+													status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+												}
+												else {
+													status += '<br>R: T: ' + item.CounterDelivToday;
+													if (bHaveReturnUsage) {
+														status += ", A: ";
+														if (parseInt(item.UsageDeliv) > 0) {
+															status += "-";
+														}
+														status += item.UsageDeliv;
+													}
 												}
 											}
 										}
@@ -1648,8 +1673,11 @@ define(['app'], function (app) {
 											status = item.Data;
 										} else if (item.SubType == "Alert") {
 											status = item.Data;
-											img = '<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
-										} else if (item.Type == "Lux") {
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											img = '<img src="images/Alert48_' + aLevel + '.png" height="40" width="40">';
+										}
+										else if (item.Type == "Lux") {
 											status = item.Data;
 											bigtext = item.Data;
 										} else if (item.Type == "Weight") {
@@ -1675,12 +1703,11 @@ define(['app'], function (app) {
 											bigtext = item.Usage;
 											if (item.Type != "P1 Smart Meter") {
 												if ($scope.config.DashboardType == 0) {
-													//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 													if (typeof item.CounterToday != 'undefined') {
 														status += '</span><span>' + $.t("Today") + ': ' + item.CounterToday;
 													}
-												} else {
-													//status+=", A: " + item.Usage;
+												}
+												else {
 													if (typeof item.CounterToday != 'undefined') {
 														status += '</span><span> T: ' + item.CounterToday;
 													}
@@ -3690,9 +3717,13 @@ define(['app'], function (app) {
 										} else {
 											status = item.Data;
 										}
-									} else if (item.SubType == "Alert") {
-										status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
-									} else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
+									}
+									else if (item.SubType == "Alert") {
+										var aLevel = item.Level;
+										if (aLevel > 4) aLevel = 4;
+										status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+									}
+									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
 									} else if (item.SubType == "Smartwares") {
 										status = item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -3700,21 +3731,40 @@ define(['app'], function (app) {
 									} else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
 										status = item.Data;
 									}
-									if (typeof item.Usage != 'undefined') {
-										if ($scope.config.DashboardType == 0) {
-											status += '</span><span>' + $.t("Actual") + ': ' + item.Usage;
-										} else {
-											status += "</span><span>A: " + item.Usage;
+
+									var bHaveReturnUsage = false;
+									if (typeof item.CounterDeliv != 'undefined') {
+										if (item.UsageDeliv.charAt(0) != 0) {
+											bHaveReturnUsage = true;
 										}
 									}
+
+									if (typeof item.Usage != 'undefined') {
+										if ($scope.config.DashboardType == 0) {
+											status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+										}
+										else {
+											if (!bHaveReturnUsage) {
+												status += ", A: " + item.Usage;
+											}
+										}
+									}
+
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
 											if ($scope.config.DashboardType == 0) {
-												status += '</span><span>' + $.t("Return") + ': ' + item.CounterDelivToday;
-												status += '</span><span>' + $.t("Actual") + ': ' + item.UsageDeliv;
-											} else {
-												status += 'T: ' + item.CounterDelivToday;
-												status += "</span><span>A: " + item.UsageDeliv;
+												status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
+												status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
+											}
+											else {
+												status += '<br>R: T: ' + item.CounterDelivToday;
+												if (bHaveReturnUsage) {
+													status += ", A: ";
+													if (parseInt(item.UsageDeliv) > 0) {
+														status += "-";
+													}
+													status += item.UsageDeliv;
+												}
 											}
 										}
 									}
@@ -3735,15 +3785,16 @@ define(['app'], function (app) {
 									var bigtexthtml = "";
 									if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 										bigtexthtml += item.Usage;
-									} else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-										if (item.Usage.charAt(0) != 0) {
+									}
+									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
+										if (parseInt(item.Usage) > 0) {
 											bigtexthtml += item.Usage;
 										}
-										if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
-											bigtexthtml += item.Usage;
+										else if (parseInt(item.UsageDeliv) > 0) {
+											bigtexthtml += "-" + item.UsageDeliv;
 										}
-										if (item.UsageDeliv.charAt(0) != 0) {
-											bigtexthtml += '</span><span>' + item.UsageDeliv;
+										else {
+											bigtexthtml += item.Usage;
 										}
 									} else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
 										bigtexthtml += item.CounterToday;
@@ -3924,8 +3975,8 @@ define(['app'], function (app) {
 									}
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
-											statushtml += '</span><span>';
-											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
+											statushtml += '</span><span class="value2">';
+											statushtml += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
 

@@ -963,8 +963,11 @@ define(['app'], function (app) {
 									status = item.Data;
 								} else if (item.SubType == "Alert") {
 									status = item.Data;
-									img = '<img src="images/Alert48_' + item.Level + '.png" height="48" width="48">';
-								} else if (item.Type == "Lux") {
+									var aLevel = item.Level;
+									if (aLevel > 4) aLevel = 4;
+									img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
+								}
+								else if (item.Type == "Lux") {
 									status = item.Data;
 									bigtext = item.Data;
 								} else if (item.Type == "Weight") {

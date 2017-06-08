@@ -3,7 +3,7 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -20,13 +20,13 @@
 
 namespace Plugins {
 
-	extern 	std::queue<CPluginMessage*>	PluginMessageQueue;
+	extern 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern	boost::mutex PluginMutex;
 
 	void CPluginProtocol::ProcessInbound(const ReadMessage* Message)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
-		ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, Message->m_Buffer);
+		ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(RecvMessage);
@@ -38,10 +38,10 @@ namespace Plugins {
 		return WriteMessage->m_Buffer;
 	}
 
-	void CPluginProtocol::Flush(const int HwdID)
+	void CPluginProtocol::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
 		// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-		ReceivedMessage*	RecvMessage = new ReceivedMessage(HwdID, m_sRetainedData);
+		ReceivedMessage*	RecvMessage = new ReceivedMessage(pPlugin, pConnection, m_sRetainedData);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(RecvMessage);
@@ -61,7 +61,7 @@ namespace Plugins {
 		int iPos = sData.find_first_of('\r');		//  Look for message terminator 
 		while (iPos != std::string::npos)
 		{
-			ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, std::vector<byte>(&sData[0], &sData[iPos]));
+			ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos]));
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(RecvMessage);
@@ -92,7 +92,7 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sData);
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sData);
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
@@ -104,7 +104,7 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sMessage);
+				ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sMessage);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
@@ -159,7 +159,7 @@ namespace Plugins {
 				if (iPos != std::string::npos)
 				{
 					int iEnd = iPos + m_Tag.length() + 3;
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, sData.substr(0, iEnd));
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sData.substr(0, iEnd));
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
@@ -277,7 +277,7 @@ namespace Plugins {
 				if (m_ContentLength == sData.length())
 				{
 					std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vData, m_Status, (PyObject*)m_Headers);
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vData, m_Status, (PyObject*)m_Headers);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
 					m_sRetainedData.clear();
@@ -300,7 +300,7 @@ namespace Plugins {
 						sData = sData.substr(sData.find_first_of('\n') + 1);
 						if (!m_RemainingChunk)	// last chunk is zero length
 						{
-							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_HwdID, vHTML, m_Status, (PyObject*)m_Headers);
+							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vHTML, m_Status, (PyObject*)m_Headers);
 							boost::lock_guard<boost::mutex> l(PluginMutex);
 							PluginMessageQueue.push(RecvMessage);
 							m_sRetainedData.clear();

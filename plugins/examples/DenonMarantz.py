@@ -42,7 +42,7 @@ import base64
 import datetime
 
 class BasePlugin:
-    isConnected = False
+    telnetConn = None
     nextConnect = 3
     oustandingPings = 0
 
@@ -105,28 +105,26 @@ class BasePlugin:
         for item in Parameters["Mode3"].split('|'):
             self.selectorMap[dictValue] = item
             dictValue = dictValue + 10
-        Domoticz.Transport("TCP/IP", Parameters["Address"], Parameters["Port"])
-        Domoticz.Protocol("Line")
-        Domoticz.Connect()
+        self.telnetConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
+        self.telnetConn.Connect()
         return
 
-    def onConnect(self, Status, Description):
+    def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             self.isConnected = True
             Domoticz.Log("Connected successfully to: "+Parameters["Address"]+":"+Parameters["Port"])
-            Domoticz.Send('PW?\r')
-            Domoticz.Send('ZM?\r', Delay=1)
-            Domoticz.Send('Z2?\r', Delay=2)
-            Domoticz.Send('Z3?\r', Delay=3)
+            self.telnetConn.Send('PW?\r')
+            self.telnetConn.Send('ZM?\r', Delay=1)
+            self.telnetConn.Send('Z2?\r', Delay=2)
+            self.telnetConn.Send('Z3?\r', Delay=3)
         else:
-            self.isConnected = False
             self.powerOn = False
             Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
             Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
             self.SyncDevices()
         return
 
-    def onMessage(self, Data, Status, Extra):
+    def onMessage(self, Connection, Data, Status, Extra):
         self.oustandingPings = self.oustandingPings - 1
         strData = Data.decode("utf-8", "ignore")
         Domoticz.Debug("onMessage called with Data: '"+str(strData)+"'")
@@ -234,96 +232,95 @@ class BasePlugin:
 
         if (Unit == 1):     # Main power switch
             if (action == "On"):
-                Domoticz.Send(Message='PWON\r')
+                self.telnetConn.Send(Message='PWON\r')
             elif (action == "Off"):
-                Domoticz.Send(Message='PWSTANDBY\r', Delay=delay)
+                self.telnetConn.Send(Message='PWSTANDBY\r', Delay=delay)
 
         # Main Zone devices
         elif (Unit == 2):     # Main selector
             if (action == "On"):
-                Domoticz.Send(Message='ZMON\r')
+                self.telnetConn.Send(Message='ZMON\r')
             elif (action == "Set"):
-                if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
-                Domoticz.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
+                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+                self.telnetConn.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='ZMOFF\r', Delay=delay)
+                self.telnetConn.Send(Message='ZMOFF\r', Delay=delay)
         elif (Unit == 3):     # Main Volume control
-            if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
+            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
             if (action == "On"):
-                Domoticz.Send(Message='MUOFF\r', Delay=delay)
+                self.telnetConn.Send(Message='MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                Domoticz.Send(Message='MV'+str(Level)+'\r', Delay=delay)
+                self.telnetConn.Send(Message='MV'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='MUON\r', Delay=delay)
+                self.telnetConn.Send(Message='MUON\r', Delay=delay)
 
         # Zone 2 devices
         elif (Unit == 4):   # Zone 2 selector
             if (action == "On"):
-                if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
-                Domoticz.Send(Message='Z2ON\r', Delay=delay)
+                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+                self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
+                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
                 if (self.zone2On == False):
-                    Domoticz.Send(Message='Z2ON\r', Delay=delay)
+                    self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
                     delay += 1
-                Domoticz.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                Domoticz.Send(Message='Z2?\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2?\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='Z2OFF\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2OFF\r', Delay=delay)
         elif (Unit == 5):   # Zone 2 Volume control
-            if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
+            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
             if (self.zone2On == False):
-                Domoticz.Send(Message='Z2ON\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                Domoticz.Send(Message='Z2MUOFF\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                Domoticz.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='Z2MUON\r', Delay=delay)
+                self.telnetConn.Send(Message='Z2MUON\r', Delay=delay)
 
         # Zone 3 devices
         elif (Unit == 6):   # Zone 3 selector
             if (action == "On"):
-                if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
-                Domoticz.Send(Message='Z3ON\r', Delay=delay)
+                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+                self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
+                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
                 if (self.zone3On == False):
-                    Domoticz.Send(Message='Z3ON\r', Delay=delay)
+                    self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
                     delay += 1
-                Domoticz.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                Domoticz.Send(Message='Z3?\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3?\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='Z3OFF\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3OFF\r', Delay=delay)
         elif (Unit == 7):   # Zone 3 Volume control
-            if (self.powerOn == False): Domoticz.Send(Message='PWON\r')
+            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
             if (self.zone3On == False):
-                Domoticz.Send(Message='Z3ON\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                Domoticz.Send(Message='Z3MUOFF\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                Domoticz.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                Domoticz.Send(Message='Z3MUON\r', Delay=delay)
+                self.telnetConn.Send(Message='Z3MUON\r', Delay=delay)
 
         return
 
-    def onDisconnect(self):
-        self.isConnected = False
-        Domoticz.Log("Denon device has disconnected.")
+    def onDisconnect(self, Connection):
+        Domoticz.Log("Denon device has disconnected: "+Connection.Address+":"+Connection.Port)
         return
 
     def onHeartbeat(self):
-        if (self.isConnected == True):
+        if (self.telnetConn.Connected() == True):
             if (self.oustandingPings > 5):
-                Domoticz.Disconnect()
+                self.telnetConn.Disconnect()
                 self.nextConnect = 0
             else:
-                Domoticz.Send(self.pollingDict[self.lastMessage])
+                self.telnetConn.Send(self.pollingDict[self.lastMessage])
                 Domoticz.Debug("onHeartbeat: self.lastMessage "+self.lastMessage+", Sending '"+self.pollingDict[self.lastMessage][0:2]+"'.")
                 self.oustandingPings = self.oustandingPings + 1
         else:
@@ -332,7 +329,7 @@ class BasePlugin:
             self.nextConnect = self.nextConnect - 1
             if (self.nextConnect <= 0):
                 self.nextConnect = 3
-                Domoticz.Connect()
+                self.telnetConn.Connect()
                 
         self.lastHeartbeat = datetime.datetime.now()
         return
@@ -366,21 +363,21 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def onConnect(Status, Description):
+def onConnect(Connection, Status, Description):
     global _plugin
-    _plugin.onConnect(Status, Description)
+    _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Data, Status, Extra):
+def onMessage(Connection, Data, Status, Extra):
     global _plugin
-    _plugin.onMessage(Data, Status, Extra)
+    _plugin.onMessage(Connection, Data, Status, Extra)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
     _plugin.onCommand(Unit, Command, Level, Hue)
 
-def onDisconnect():
+def onDisconnect(Connection):
     global _plugin
-    _plugin.onDisconnect()
+    _plugin.onDisconnect(Connection)
 
 def onHeartbeat():
     global _plugin
@@ -408,9 +405,3 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
-
-def stringToBase64(s):
-    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
-
-def base64ToString(b):
-    return base64.b64decode(b).decode('utf-8')
