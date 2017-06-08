@@ -673,7 +673,7 @@ void CDomoticzHardwareBase::SendPercentageSensor(const int NodeID, const int Chi
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypePercentage;
 	gDevice.id = ChildID;
-	gDevice.intval1 = NodeID;
+	gDevice.intval1 =  (NodeID << 8) | ChildID;
 	gDevice.floatval1 = Percentage;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
 }
@@ -682,7 +682,7 @@ bool CDomoticzHardwareBase::CheckPercentageSensorExists(const int NodeID, const 
 {
 	std::vector<std::vector<std::string> > result;
 	char szTmp[30];
-	sprintf(szTmp, "%08X", (unsigned int)NodeID);
+	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypePercentage));
 	return (!result.empty());
