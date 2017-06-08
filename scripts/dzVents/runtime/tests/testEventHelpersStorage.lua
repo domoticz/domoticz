@@ -244,6 +244,65 @@ describe('event helper storage', function()
 		assert.is_same(false, globalContext.h)
 	end)
 
+	it('should allow you to add/remove variables from an existing context', function()
+		local bindings = helpers.getEventBindings()
+		local script_data = bindings['somedevice'][1]
+
+		local def = {
+			x = { initial = 1},
+			y = { initial = 2}
+		}
+
+
+		local context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		-- just checking
+		assert.is_same({ 'x', 'y' }, keys(context))
+
+		-- create some new data
+		context['x'] = 10
+		context['y'] = 20
+
+		-- write the data
+
+		helpers.writeStorageContext(def,
+			script_data.dataFilePath,
+			script_data.dataFileName,
+			context)
+
+		-- just checking again
+		local exists = utils.fileExists(script_data.dataFilePath)
+
+
+		-- now add a new var to the def
+
+		def['z'] = { initial = 3 }
+
+		context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		assert.is_same({ 'x', 'y', 'z' }, keys(context))
+		assert.is_same(10, context.x)
+		assert.is_same(20, context.y)
+		assert.is_same(3, context.z)
+
+		-- now remove a var from the def and check if the old var isn't still in the
+		-- file data
+
+		def['z'] = nil
+
+		context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		helpers.writeStorageContext(def,
+			script_data.dataFilePath,
+			script_data.dataFileName,
+			context)
+
+		-- require the file
+		fileStorage = require(script_data.dataFileName)
+		assert.is_same({ 'x', 'y'}, keys(fileStorage))
+
+	end)
+
 	describe('Historical storage', function()
 		local HS = require('HistoricalStorage')
 		local data = {}

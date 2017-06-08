@@ -68,7 +68,13 @@ local function EventHelpers(domoticz, mainMethod)
 					if (def.history ~= nil and def.history == true) then
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
-						storageContext[var] = fileStorage[var]
+						if (fileStorage[var] == nil) then
+							-- obviously this is a var that was added later
+							-- initialize it
+							storageContext[var] = storageDef[var].initial
+						else
+							storageContext[var] = fileStorage[var]
+						end
 					end
 				end
 			else

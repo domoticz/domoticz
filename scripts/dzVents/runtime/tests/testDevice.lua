@@ -406,6 +406,7 @@ describe('device', function()
 					"updateP1",
 					"updatePercentage",
 					"updatePressure",
+					"updateRadiation",
 					"updateRain",
 					"updateSetPoint",
 					"updateTempHum",
@@ -665,6 +666,16 @@ describe('device', function()
 			})
 
 			device.updateCustomSensor(12)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|12" } }, commandArray)
+		end)
+
+		it('should detect a solar radiation device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Solar Radiation'
+			})
+
+			device.updateRadiation(12)
 			assert.is_same({ { ["UpdateDevice"] = "1|0|12" } }, commandArray)
 		end)
 

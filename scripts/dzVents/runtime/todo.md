@@ -4,6 +4,7 @@
 
 *co2 device?
 
-howto: write adapter
+fix persistent bug (new vars are not initialized)
+
 
 pandoc -r markdown README.md -t mediawiki -o README.wiki
