@@ -1,0 +1,130 @@
+@font-face {
+	font-family: "Lato";
+	font-style: normal;
+	src: url('fonts/Lato-Regular.ttf');
+	src: local('Lato Regular'), url('fonts/Lato-Regular.ttf') format('truetype');
+}
+
+
+@font-face {
+	font-family: "LatoThin";
+	font-style: normal;
+	src: url('fonts/Lato-Thin.ttf');
+	src: local('Lato Thin'), url('fonts/Lato-Thin.ttf') format('truetype');
+}
+
+body{
+    font-family: "Lato", sans-serif!important;
+    color: #666;
+    background:
+    -webkit-linear-gradient(45deg,  hsla(340, 100%, 55%, 1) 0%, hsla(340, 100%, 55%, 0) 70%),
+    -webkit-linear-gradient(315deg, hsla(225, 95%, 50%, 1) 10%, hsla(225, 95%, 50%, 0) 80%),
+    -webkit-linear-gradient(225deg, hsla(140, 90%, 50%, 1) 10%, hsla(140, 90%, 50%, 0) 80%),
+    -webkit-linear-gradient(315deg, hsla(135, 95%, 55%, 1) 100%, hsla(35, 95%, 55%, 0) 70%);
+    background:
+    linear-gradient(45deg,   hsla(340, 100%, 55%, 1) 0%, hsla(340, 100%, 55%, 0) 70%),
+    linear-gradient(315deg, hsla(225, 95%, 50%, 1) 10%, hsla(225, 95%, 50%, 0) 80%),
+    linear-gradient(225deg, hsla(140, 90%, 50%, 1) 10%, hsla(140, 90%, 50%, 0) 80%),
+    linear-gradient(315deg, hsla(135, 95%, 55%, 1) 100%, hsla(35, 95%, 55%, 0) 70%);
+    background-attachment: fixed;
+}
+
+body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenotype tbody tr {
+    background-color:transparent;
+}
+
+.navbar{
+    background-color:#f1f1f1;
+}
+#appnavbar li a{
+    font-family: "Lato";
+    font-size: 110%;
+    padding:10px 12px
+}
+
+#tabs a{
+    font-family: "Lato", sans-serif;
+    font-size: 110%;
+}
+
+#bannav td a{
+    text-transform: uppercase;
+}
+
+.ui-draggable td:last-of-type a.btnsmall{
+    color: #43A4D3!important
+}
+
+#holder h1, #holder h2, #holder h3{
+    font-family: "LatoThin", sans-serif;
+    border-bottom: 1px dotted white;
+    color: #fff;
+}
+
+#dashcontent h2, #settingscontent h1{
+    font-size:160%;
+    color:#fff;
+    padding-bottom:10px;
+    margin-top:30px!important;
+    border-bottom:1px solid #fff;
+}
+
+tr, #name{
+    border-radius: 0!important;
+}
+
+.container .ui-draggable tr{
+    background-color:#fff;
+    background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 72px,rgba(255,255,255,1) 72px,rgba(255,255,255,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,1) 42px,rgba(255,255,255,0.95) 72px,rgba(255,255,255,1) 72px,rgba(255,255,255,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 42px, rgba(255,255,255,0.9) 42px,rgba(255,255,255,0.95) 49px,rgba(255,255,255,1) 72px,rgba(255,255,255,0.95) 72px, rgba(255,255,255,1) 100%);    
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 ); /* IE6-9 */
+    box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
+}
+
+#dashcontent .ui-draggable tr{
+    background-image: none;
+    background-color: #D4E1EE;
+    box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.3);
+}
+
+#dashcontent .selectorlevels .ui-state-default{
+    background-color: #D4E1EE;
+    box-shadow: -2px -2px 20px -1px rgba(50, 50, 50, 0.2)
+}
+
+.related > .span2,
+.related > .span3 {
+    text-align: center;
+}
+
+/* Settings reshuffle for big screens */
+
+@media only screen and (min-width:1200px){    
+
+    #settingscontent #tabs{
+        position: fixed;
+        width: 11%;
+        border-bottom:0;
+    }
+    
+    #settingscontent .nav-tabs > li{
+        width:100%;
+    }
+    
+    #settingscontent .nav-tabs > li > a{
+        border-radius:0;
+    }    
+    
+    #settingscontent .sub-tabs-apply{
+        position:inherit;
+        margin-top:20px;
+        text-align:center;
+        border-radius:5px;
+    }
+    
+    #settingscontent .tab-content{
+        width: 85%;
+        overflow: inherit;
+        margin-left: 15%;
+    }
