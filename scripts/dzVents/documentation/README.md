@@ -289,7 +289,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 
  - **email(subject, message, mailTo)**: Send email.
  - **log(message, [level])**: Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG` or `domoticz.LOG_ERROR`. In Domoticz settings you can set the log level for dzVents.
-  - **notify(subject, message, priority, sound, extra, subsystem)**: Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
+ - **notify(subject, message, priority, sound, extra, subsystem)**: Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
  - **openURL(url)**: Have Domoticz 'call' a URL.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
  - **setScene(scene, value)**: E.g. `domoticz.setScene('My scene', 'On')`. Supports timing options. See below.
