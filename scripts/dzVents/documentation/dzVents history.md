@@ -22,6 +22,7 @@
  - A device trigger can have a time-rule constraint: ` on = { devices = { ['myDevice'] = 'at nighttime' } }`. This only triggers the script when myDevice was changed **and** the time is after sunset and before sunrise.
  - Add support for subsystem selection for domoticz.notify function.
  - after_sec, for_min, after_min, within_min methods are now deprecated in favor the camel-cased variants afterSec, forMin, afterMin, withinMin. Please rename the calls in your script.
+ - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
 
 [1.1.2]
 
