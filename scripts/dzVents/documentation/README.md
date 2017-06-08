@@ -390,6 +390,7 @@ Most of the time when your device is not recognized you can always use the `rawD
 	 - **secondsAgo**: *Number*. Number of seconds since the last update.
 	 - **year**: *Number*
  - **name**: *String*. Name of the device.
+ - **nValue**: *Number*. Numerical representation of the state.
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
 - **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
@@ -402,8 +403,8 @@ Most of the time when your device is not recognized you can always use the `rawD
 Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please lets us know that it is missing so we can write an adapter for it (or you can write your own and submit it). You can dump all attributes for your device by calling `myDevice.dump()`. That will show you all the attributes and their values in the Domoticz. log.
 
 #### Air quality
-  - **co2**
-  - **quality**: *String*. Air quality
+  - **co2**: *Number*. PPM
+  - **quality**: *String*. Air quality string.
   - **updateAirQuality(ppm)**: Pass the CO2 concentration.
 
 #### Alert sensor

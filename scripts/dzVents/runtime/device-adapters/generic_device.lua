@@ -68,6 +68,7 @@ return {
 			device['deviceSubType'] = data.subType
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
+			device['nValue'] = data.data._nValue
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then

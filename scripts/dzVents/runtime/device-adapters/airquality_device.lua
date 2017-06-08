@@ -19,12 +19,13 @@ return {
 		-- from data: quality
 
 		-- todo this doesn't work just yet
-		device['co2'] = tonumber(device.state) -- co2 (ppm)
+		device['co2'] = tonumber(data.data._nValue) -- co2 (ppm)
 
 		-- quality is automatically added (named)
 
-		device['updateAirQuality'] = function(quality)
-			device.update(quality)
+		device['updateAirQuality'] = function(quality) --ppm
+			local url = domoticz.settings['Domoticz url'] .. '/json.htm?type=command&param=udevice&idx=' .. device.id .. '&nvalue=' .. tonumber(quality)
+			domoticz.openURL(url)
 		end
 
 	end

@@ -74,7 +74,7 @@ local function getDevice_(
 		["switchType"] = "Contact",
 		["switchTypeValue"] = 2,
 		["lastUpdate"] = "2016-03-20 12:23:00",
-		["data"] = {["_state"] = state,},
+		["data"] = {["_state"] = state, ['_nValue'] = 123},
 		["deviceID"] = "",
 		["rawData"] = rawData,
 		["baseType"] = baseType ~= nil and baseType or "device",
@@ -133,6 +133,10 @@ describe('device', function()
 		sendCommand = function(command, value)
 			table.insert(commandArray, {[command] = value})
 			return commandArray[#commandArray], command, value
+		end,
+		openURL = function(url)
+			_.print('url') --                    TODO - >> REMOVE << -
+			return table.insert(commandArray, url)
 		end
 	}
 	_d = domoticz
@@ -206,6 +210,7 @@ describe('device', function()
 			assert.is_same('sub', device.deviceSubType)
 			assert.is_same(2016, device.lastUpdate.year)
 			assert.is_same({'1', '2', '3'}, device.rawData)
+			assert.is_same(123, device.nValue)
 
 			assert.is_not_nil(device.setState)
 			assert.is_same('bla', device.state)
@@ -359,10 +364,20 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['type'] = 'Air Quality',
+				['additionalDataData'] = {
+					['_nValue'] = 12
+				}
 			})
 
+			local res
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same(12, device.co2)
+
 			device.updateAirQuality(44)
-			assert.is_same({ { ["UpdateDevice"] = "1|44" } }, commandArray)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=44', res)
 		end)
 
 		it('should detect a security device', function()

@@ -385,6 +385,7 @@ Most of the time when your device is not recognized you can always use the <code
 ** '''secondsAgo''': ''Number''. Number of seconds since the last update.
 ** '''year''': ''Number''
 * '''name''': ''String''. Name of the device.
+* '''nValue''': ''Number''. Numerical representation of the state.
 * '''rawData''': ''Table'': All values are ''String'' types and hold the raw data received from Domoticz.
 * '''setState(newState)''': ''Function''. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]].
 * '''state''': ''String''. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. '''For selector switches''' (Dummy switch) the state holds the ''name'' of the currently selected level. The corresponding numeric level of this state can be found in the '''rawData''' attribute: <code>device.rawData[1]</code>.
@@ -399,8 +400,8 @@ Note that if you do not find your specific device type here you can always inspe
 
 ==== Air quality ====
 
-* '''co2'''
-* '''quality''': ''String''. Air quality
+* '''co2''': ''Number''. PPM
+* '''quality''': ''String''. Air quality string.
 * '''updateAirQuality(ppm)''': Pass the CO2 concentration.
 
 ==== Alert sensor ====
