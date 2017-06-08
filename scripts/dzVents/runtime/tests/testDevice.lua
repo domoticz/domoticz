@@ -61,8 +61,8 @@ local function getDevice_(
 		["id"] = 1,
 		["name"] = name,
 		["description"] = "Description 1",
-		["batteryLevel"] = 10,
-		["signalLevel"] = '10',
+		["batteryLevel"] = 128,
+		["signalLevel"] = 132,
 		["deviceType"] = type and type or "someSubType",
 		["subType"] = subType and subType or "someDeviceType",
 		["hardwareName"] = "hw1",
@@ -176,6 +176,41 @@ describe('device', function()
 	end)
 
 	describe('Adapters', function()
+
+		it('should apply the generic device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				changed = true,
+				type = 'sometype',
+				subType = 'sub',
+				hardwareType = 'hwtype',
+				hardwareTypeValue = 'hvalue',
+				state = 'bla'
+			})
+
+			assert.is_same(true, device.changed)
+			assert.is_same('Description 1', device.description)
+			assert.is_same('sometype', device.deviceType)
+			assert.is_same('hw1', device.hardwareName)
+			assert.is_same('hwtype', device.hardwareType)
+			assert.is_same(1, device.hardwareId)
+			assert.is_same('hvalue', device.hardwareTypeValue)
+			assert.is_same('Contact', device.switchType)
+			assert.is_same(2, device.switchTypeValue)
+			assert.is_same(true, device.timedOut)
+			assert.is_same(128, device.batteryLevel)
+			assert.is_same(50, device.batteryPercentage)
+			assert.is_same(132, device.signalLevel)
+			assert.is_same(51, device.signalPercentage)
+			assert.is_same('sub', device.deviceSubType)
+			assert.is_same(2016, device.lastUpdate.year)
+			assert.is_same({'1', '2', '3'}, device.rawData)
+
+			assert.is_not_nil(device.setState)
+			assert.is_same('bla', device.state)
+
+		end)
 
 		it('should detect a lux device', function()
 			local device = getDevice_(domoticz, 'myDevice', nil, true, 'Lux', 'Lux')

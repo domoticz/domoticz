@@ -246,6 +246,8 @@ local function Domoticz(settings)
 				else
 					print(level .. attr .. ': ' .. tostring(value))
 				end
+			else
+				print(level .. attr .. '()')
 			end
 		end
 	end
