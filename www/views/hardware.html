@@ -84,9 +84,7 @@
   </div>
 </div>
 
-
 <div id="hardwarecontent" class="container">
- 
 </div>
 <div id="opentherm" style="display:none;">
 	<center>
@@ -1188,6 +1186,15 @@
                 </tr>
 			</table>
 		</div>
+        <div id="divsysfsgpio">
+            <br>
+            <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
+                </tr>
+            </table>
+        </div>
         <div id="divevohome">
 			<br>
 			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">      
@@ -1529,6 +1536,58 @@
 					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
+			</table>
+		</div>
+		<div id="divevohomeweb">
+			<br />
+			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">      
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblupdfreqevohomeweb"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
+					</td>
+					<td><input type="text" id="updatefrequencyevohomeweb" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"  value="60"/>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br />
+						<span data-i18n="This sets the interval between status requests.">This sets the interval between status requests.</span><br />
+						<strong><font class="warning-text"><span data-i18n="If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!">If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!</span></font></strong>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblautoevohomeweb" for="name"><span data-i18n="Synchronize installation">Synchronize installation</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><br />
+						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblschedevohomeweb" for="name"><span data-i18n="Show schedule">Show schedule</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><br />
+						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Show location">Show location</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb">
+						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Select location">Select location</span>: </label>
+					</td>
+					<td>
+						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"></select>,
+						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"></select>,
+						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"></select>
+					</td>
+
 			</table>
 		</div>
 		<div>
