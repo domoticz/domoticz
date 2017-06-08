@@ -64,10 +64,10 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_showschedule = ((UseFlags & 2) > 0);
 	m_showlocation = ((UseFlags & 4) > 0);
 
-	if (m_refreshrate < 2)
+	if (m_refreshrate < 10)
 		m_refreshrate = 60;
 
-	Init();
+	m_awaysetpoint = 0; // we'll fetch this from the controller device status later
 }
 
 
@@ -85,7 +85,6 @@ void CEvohomeWeb::Init()
 	m_logonfailures = 0;
 	m_bequiet = false;
 	m_szlocationName = "";
-	m_awaysetpoint = 15; // default "Away" setpoint value
 	m_j_fi.clear();
 	m_j_stat.clear();
 }
@@ -124,6 +123,20 @@ bool CEvohomeWeb::StartSession()
 	{
 		_log.Log(LOG_ERROR, "(%s) installation at [%d,%d,%d] does not exist - verify your settings", this->Name.c_str(), m_locationId, m_gatewayId, m_systemId);
 		return false;
+	}
+
+	if (m_awaysetpoint == 0) // first run - try to get our Away setpoint value from the controller device status
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
+		if (result.empty()) // shouldn't happen
+			return false;
+		std::vector<std::string> splitresults;
+		StringSplit(result[0][0], ";", splitresults);
+		if (splitresults.size()>0)
+			m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+		if (m_awaysetpoint == 0)
+			m_awaysetpoint = 15; // use default 'Away' setpoint value
 	}
 
 	m_zones[0] = 0;
@@ -271,7 +284,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 				unsigned long evoID = atol(zoneId.c_str());
 				std::stringstream ssUpdateStat;
-				ssUpdateStat << temperature << ";5;HeatingOff";
+				ssUpdateStat << temperature << ";5;" << newmode;
 				std::string sdevname;
 				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 			}
@@ -281,34 +294,52 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		// cycle my zones to restore scheduled temps
 		for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
 		{
+			zone* hz = &m_tcs->zones[it->first];
+			std::string zonemode = "";
+			if (hz->status->isMember("heatSetpointStatus"))
+				zonemode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
+			if ((zonemode.size() > 9) && (zonemode.substr(9) == "Override")) // don't touch zone if it is in Override mode
+				continue;
+
 			std::string szuntil, szsetpoint;
 			double setpoint = 0;
-			zone* hz = &m_tcs->zones[it->first];
-
-			if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
-			{
-				szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-				setpoint = strtod(szsetpoint.c_str(), NULL);
-			}
-			if (newmode == "AutoWithEco")
-				setpoint -= 3;
-			if (setpoint < 5)
-				setpoint = 5;
 
 			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
-			 *  for the next update to get the correct values.
+			 *  for the next update to get the correct values. But we can make educated guesses
 			 */
 
+			// Away unconditionally sets all zones to a preset temperature, even if Normal mode is lower
 			if (newmode == "Away")
+			{
 				setpoint = m_awaysetpoint;
+				szuntil = "";
+			}
+			else 
+			{
+				if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
+				{
+					szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
+					setpoint = strtod(szsetpoint.c_str(), NULL);
+				}
+
+				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
+				// if the resulting setpoint is below the Away setpoint
+				if ((newmode == "AutoWithEco") && (setpoint >= (m_awaysetpoint + 3)))
+					setpoint -= 3;
+			}
 
 			std::string zoneId = (*hz->status)["zoneId"].asString();
 			std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 			unsigned long evoID = atol(zoneId.c_str());
 			std::stringstream ssUpdateStat;
-			ssUpdateStat << temperature << ";" << setpoint << ";FollowSchedule";
-			if (m_showschedule)
-				ssUpdateStat << ";" << szuntil;
+			if (setpoint < 5) // there was an error - no schedule?
+				ssUpdateStat << temperature << ";5;Unknown";
+			else
+			{
+				ssUpdateStat << temperature << ";" << setpoint << ";" << newmode;
+				if ((m_showschedule) && (!szuntil.empty()))
+					ssUpdateStat << ";" << szuntil;
+			}
 			std::string sdevname;
 			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
@@ -347,7 +378,7 @@ bool CEvohomeWeb::SetSetpoint(const char *pdata)
 			pEvo->EVOHOME2.temperature = (int16_t)(strtod(szsetpoint.c_str(), NULL) * 100);
 		}
 
-		if ((m_showschedule) && (!hz->schedule.isNull()))
+		if ((m_showschedule) && (!hz->schedule.isNull()) && (!szuntil.empty()))
 		{
 			pEvo->EVOHOME2.year = (uint16_t)(atoi(szuntil.substr(0, 4).c_str()));
 			pEvo->EVOHOME2.month = (uint8_t)(atoi(szuntil.substr(5, 2).c_str()));
@@ -481,17 +512,32 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 	unsigned long evoID = atol(zonedata["zoneId"].c_str());
 	std::stringstream ssUpdateStat;
-	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString() == "Away")
-		m_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(), NULL);
-	if ((*m_tcs->status)["systemModeStatus"]["mode"].asString() == "HeatingOff")
-		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << "HeatingOff";
+	std::string sysMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+	if ((sysMode == "Away") && (zonedata["setpointMode"] == "FollowSchedule"))
+	{
+		double new_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(), NULL);
+		if (m_awaysetpoint != new_awaysetpoint)
+		{
+			m_awaysetpoint = new_awaysetpoint;
+			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%0.2f' WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_awaysetpoint, this->m_HwdID, m_tcs->systemId.c_str());
+		}
+		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << sysMode;
+	}
+	else if (sysMode == "HeatingOff")
+		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << sysMode;
 	else
 	{
-		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << zonedata["setpointMode"];
-		if (m_showschedule && zonedata["until"].empty())
-			zonedata["until"] = local_to_utc(get_next_switchpoint(hz));
-		if (!zonedata["until"].empty())
-			ssUpdateStat << ";" << zonedata["until"];
+		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";";
+		if (zonedata["setpointMode"] != "FollowSchedule")
+			ssUpdateStat << zonedata["setpointMode"];
+		else
+		{
+			ssUpdateStat << sysMode;
+			if (m_showschedule && zonedata["until"].empty())
+				zonedata["until"] = local_to_utc(get_next_switchpoint(hz));
+			if (!zonedata["until"].empty())
+				ssUpdateStat << ";" << zonedata["until"];
+		}
 	}
 
 	std::string sdevname;
@@ -639,6 +685,8 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
  */
 std::string CEvohomeWeb::local_to_utc(std::string local_time)
 {
+	if (local_time.size() < 19)
+		return "";
 	if (m_tzoffset == -1)
 	{
 		// calculate timezone offset once
@@ -877,6 +925,7 @@ bool CEvohomeWeb::full_installation()
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;
+	m_j_fi.clear();
 	bool ret = jReader.parse(ss_jdata.str(), m_j_fi);
 
 	if (!m_j_fi["locations"].isArray())
@@ -928,6 +977,7 @@ bool CEvohomeWeb::get_status(int location)
 	}
 
 	Json::Reader jReader;
+	m_j_stat.clear();
 	bool ret = jReader.parse(s_res, m_j_stat);
 	m_locations[location].status = &m_j_stat;
 	j_loc = m_locations[location].status;
