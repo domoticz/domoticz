@@ -1,184 +1,184 @@
-define(['app'], function(app) {
-	app.controller('DashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+define(['app'], function (app) {
+	app.controller('DashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
 
 		$scope.LastUpdateTime = parseInt(0);
 
 		//Evohome...
 		//FIXME move evohome functions to a shared js ...see temperaturecontroller.js and lightscontroller.js
 
-        /* Adds Data Visualisations to the first three items of each section. They will only be shown if highlights are enabled.  A feature like this could also be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
-        addDataviz = function(){
-            if ($scope.config.DashboardType == 0 && $("#appnavbar").css('z-index') == 1031){ // Only do all this on normal display, and if the dataviz option has been enabled in theme settings.
-                console.log("Dataviz is enabled");
-                setTimeout(function() { // small delay to make sure the main html has been generated, and to lower the burden on the system.
-                    
-                    /* temperature */
-                    $('body.columns3 section#dashTemperature > .divider:first-of-type .Temp, body.columns3 section#dashTemperature > .divider:first-of-type .TempHumidityBaro').each(function(){
-                        var theid = '' + $(this).parent().attr('id');
-                        generateDataviz("dashTemperature","graph","temp","te", theid, "day");   
-                    });
-                    
-                    /*  general */
-                    $('body.columns3 section#dashUtility > .divider:first-of-type .CustomSensor').each(function(){
-                        var theid = '' + $(this).parent().attr('id');
-                        generateDataviz("dashUtility","graph","Percentage","any", theid, "day");   
-                    });
-                    
-                    /*  Lux */
-                    $('body.columns3 section#dashUtility > .divider:first-of-type .Lux').each(function(){
-                        var theid = '' + $(this).parent().attr('id');
-                        generateDataviz("dashUtility","graph","counter","lux", theid, "day");   
-                    });
-                    
-                    /*  Co2 */
-                    $('body.columns3 section#dashUtility > .divider:first-of-type .AirQuality').each(function(){
-                        var theid = '' + $(this).parent().attr('id');
-                        generateDataviz("dashUtility","graph","counter","any", theid, "day");   
-                    });
-                    
-                    /*  Energy */
-                    $('body.columns3 section#dashUtility > .divider:first-of-type .Energy').each(function(){
-                        var theid = '' + $(this).parent().attr('id');
-                        generateDataviz("dashUtility","graph","counter","any", theid, "day");   
-                    });
-                    
-                },3250);
-                setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
-            }
-        }
-        
-        generateDataviz = function(section,type,sensor,thekey,theid,range) {
-            var agent = '' + theid;
-            var n = agent.lastIndexOf('_');
-            var idx = agent.substring(n + 1);
-            if ($("section#"+ section + " #"+theid).is($("#dashcontent h2 + div.divider .span4:nth-child(-n+3)")) && !$("section#"+ section + " #" + theid + " div").hasClass('bandleader')) {  // avoid doing this for grouped items
-                console.log('making dataviz for item: ' + agent);
-                var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx+ '&range=' + range;
-                $('<td class="dataviz"><div></div></td>').insertBefore("#"+theid+" .status");
-                var showData = $('section#'+ section + ' #'+theid).find('.dataviz > div');
-                var datavizArray = [];
-                $.getJSON(urltoload, function(data) {
-                    //console.log( "Dataviz - JSON load success" );
-                    if (typeof data.result != "undefined") {
-                        var modulo = 1
-                        if(data.result.length > 100){modulo = 2;}
-                        if(data.result.length > 200){modulo = 4;}
-                        if(data.result.length > 300){modulo = 6;}
-                        if(data.result.length > 400){modulo = 8;}
-                        if(data.result.length > 500){modulo = 10;}
-                        if(data.result.length > 600){modulo = 16;}
-                        for(var i in data.result){
-                            var key = i;
-                            var val = data.result[i];
-                            if((i % modulo) == 0){ // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
-                                for(var j in val){
-                                    var readytobreak = 0;
-                                    var key2 = j;
-                                    var val2 = val[j];
-                                    if(thekey != 'any'){
-                                        if(key2 == thekey){
-                                            //console.log("adding data");
-                                            var addme =  Math.round( val2 * 10 ) / 10;
-                                            datavizArray.push(addme);
-                                        }
-                                    }else if(key2 != 'd'){
-                                        var addme = Math.round( val2 * 10 ) / 10;
-                                        datavizArray.push(addme);
-                                        readytobreak = 0
-                                    }
-                                    if(readytobreak == 1){break;} // if grabbing "any" value, then break after the first one.
-                                }
-                            }
-                        }
-                        // Attach the datavizualisation
-                        if(datavizArray.length > 0){
-                            showData.highcharts({    
-                                chart: {
-                                    type: 'line',
-                                    backgroundColor:'transparent',
-                                    plotBorderWidth: null,
-                                    marginTop: 0,
-                                    height:40,
-                                    marginBottom: 0,
-                                    marginLeft:0,
-                                    plotShadow: false,
-                                    borderWidth: 0,
-                                    plotBorderWidth: 0,
-                                    marginRight:0
-                                },
-                                 tooltip: {
-                                    userHTML: true,
-                                    style: {
-                                        padding: 5,
-                                        width: 100,
-                                        height: 30,
-                                        backgroundColor: '#FCFFC5',
-                                        borderColor: 'black',
-                                        borderRadius: 10,
-                                        borderWidth: 3, 
-                                     },
-                                    formatter: function() {
-                                        return '<b>' + this.y + '</b> ('+ range + ')';// 
-                                    },
-                                    height: 30,
-                                    width: 30
-                                 },
-                                title: {
-                                    text: ''
-                                },
-                                xAxis: {
-                                    gridLineWidth: 0,
-                                    minorGridLineWidth: 0,
-                                    enabled:false,
-                                    showEmpty:false,
-                                },
-                                yAxis: {
-                                    gridLineWidth: 0,
-                                    minorGridLineWidth: 0,
-                                    title: {
-                                        text: ''
-                                    },
-                                    showEmpty:true,
-                                    enabled:true
-                                },
-                                credits: {
-                                    enabled: false
-                                },
-                                legend: {
-                                    enabled:false
-                                },
-                                plotOptions: {
-                                    line:{
-                                        lineWidth:1.5,
-                                        lineColor:'#cccccc',
-                                    },
-                                     showInLegend: true,
-                                     tooltip: {
-                                     }
-                                },
-                                exporting: {
-                                    buttons: {
-                                        contextButton: {
-                                            enabled: false
-                                        }    
-                                    }
-                                },
-                                series: [{
-                                         marker: {
-                                            enabled: false
-                                        },
-                                    animation:true,
-                                    name: '24h',
-                                    data: datavizArray //[19.5,20,17]  
-                                }]
-                            });    
-                        }
-                    }
-                });
-            }
-        };
-        
-		MobilePhoneDetection = function() { // advanced and more complete mobile device detection
+		/* Adds Data Visualisations to the first three items of each section. They will only be shown if highlights are enabled.  A feature like this could also be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
+		addDataviz = function () {
+			if ($scope.config.DashboardType == 0 && $("#appnavbar").css('z-index') == 1031) { // Only do all this on normal display, and if the dataviz option has been enabled in theme settings.
+				console.log("Dataviz is enabled");
+				setTimeout(function () { // small delay to make sure the main html has been generated, and to lower the burden on the system.
+
+					/* temperature */
+					$('body.columns3 section#dashTemperature > .divider:first-of-type .Temp, body.columns3 section#dashTemperature > .divider:first-of-type .TempHumidityBaro').each(function () {
+						var theid = '' + $(this).parent().attr('id');
+						generateDataviz("dashTemperature", "graph", "temp", "te", theid, "day");
+					});
+
+					/*  general */
+					$('body.columns3 section#dashUtility > .divider:first-of-type .CustomSensor').each(function () {
+						var theid = '' + $(this).parent().attr('id');
+						generateDataviz("dashUtility", "graph", "Percentage", "any", theid, "day");
+					});
+
+					/*  Lux */
+					$('body.columns3 section#dashUtility > .divider:first-of-type .Lux').each(function () {
+						var theid = '' + $(this).parent().attr('id');
+						generateDataviz("dashUtility", "graph", "counter", "lux", theid, "day");
+					});
+
+					/*  Co2 */
+					$('body.columns3 section#dashUtility > .divider:first-of-type .AirQuality').each(function () {
+						var theid = '' + $(this).parent().attr('id');
+						generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
+					});
+
+					/*  Energy */
+					$('body.columns3 section#dashUtility > .divider:first-of-type .Energy').each(function () {
+						var theid = '' + $(this).parent().attr('id');
+						generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
+					});
+
+				}, 3250);
+				setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
+			}
+		}
+
+		generateDataviz = function (section, type, sensor, thekey, theid, range) {
+			var agent = '' + theid;
+			var n = agent.lastIndexOf('_');
+			var idx = agent.substring(n + 1);
+			if ($("section#" + section + " #" + theid).is($("#dashcontent h2 + div.divider .span4:nth-child(-n+3)")) && !$("section#" + section + " #" + theid + " div").hasClass('bandleader')) {  // avoid doing this for grouped items
+				console.log('making dataviz for item: ' + agent);
+				var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx + '&range=' + range;
+				$('<td class="dataviz"><div></div></td>').insertBefore("#" + theid + " .status");
+				var showData = $('section#' + section + ' #' + theid).find('.dataviz > div');
+				var datavizArray = [];
+				$.getJSON(urltoload, function (data) {
+					//console.log( "Dataviz - JSON load success" );
+					if (typeof data.result != "undefined") {
+						var modulo = 1
+						if (data.result.length > 100) { modulo = 2; }
+						if (data.result.length > 200) { modulo = 4; }
+						if (data.result.length > 300) { modulo = 6; }
+						if (data.result.length > 400) { modulo = 8; }
+						if (data.result.length > 500) { modulo = 10; }
+						if (data.result.length > 600) { modulo = 16; }
+						for (var i in data.result) {
+							var key = i;
+							var val = data.result[i];
+							if ((i % modulo) == 0) { // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
+								for (var j in val) {
+									var readytobreak = 0;
+									var key2 = j;
+									var val2 = val[j];
+									if (thekey != 'any') {
+										if (key2 == thekey) {
+											//console.log("adding data");
+											var addme = Math.round(val2 * 10) / 10;
+											datavizArray.push(addme);
+										}
+									} else if (key2 != 'd') {
+										var addme = Math.round(val2 * 10) / 10;
+										datavizArray.push(addme);
+										readytobreak = 0
+									}
+									if (readytobreak == 1) { break; } // if grabbing "any" value, then break after the first one.
+								}
+							}
+						}
+						// Attach the datavizualisation
+						if (datavizArray.length > 0) {
+							showData.highcharts({
+								chart: {
+									type: 'line',
+									backgroundColor: 'transparent',
+									plotBorderWidth: null,
+									marginTop: 0,
+									height: 40,
+									marginBottom: 0,
+									marginLeft: 0,
+									plotShadow: false,
+									borderWidth: 0,
+									plotBorderWidth: 0,
+									marginRight: 0
+								},
+								tooltip: {
+									userHTML: true,
+									style: {
+										padding: 5,
+										width: 100,
+										height: 30,
+										backgroundColor: '#FCFFC5',
+										borderColor: 'black',
+										borderRadius: 10,
+										borderWidth: 3,
+									},
+									formatter: function () {
+										return '<b>' + this.y + '</b> (' + range + ')';// 
+									},
+									height: 30,
+									width: 30
+								},
+								title: {
+									text: ''
+								},
+								xAxis: {
+									gridLineWidth: 0,
+									minorGridLineWidth: 0,
+									enabled: false,
+									showEmpty: false,
+								},
+								yAxis: {
+									gridLineWidth: 0,
+									minorGridLineWidth: 0,
+									title: {
+										text: ''
+									},
+									showEmpty: true,
+									enabled: true
+								},
+								credits: {
+									enabled: false
+								},
+								legend: {
+									enabled: false
+								},
+								plotOptions: {
+									line: {
+										lineWidth: 1.5,
+										lineColor: '#cccccc',
+									},
+									showInLegend: true,
+									tooltip: {
+									}
+								},
+								exporting: {
+									buttons: {
+										contextButton: {
+											enabled: false
+										}
+									}
+								},
+								series: [{
+									marker: {
+										enabled: false
+									},
+									animation: true,
+									name: '24h',
+									data: datavizArray //[19.5,20,17]  
+								}]
+							});
+						}
+					}
+				});
+			}
+		};
+
+		MobilePhoneDetection = function () { // advanced and more complete mobile device detection
 			if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
 				/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4))) {
 				$("body").prop('id', 'mobile');
@@ -187,7 +187,7 @@ define(['app'], function(app) {
 			}
 		}
 
-		SwitchModal = function(idx, name, status, refreshfunction) {
+		SwitchModal = function (idx, name, status, refreshfunction) {
 			clearInterval($.myglobals.refreshTimer);
 
 			ShowNotify($.t('Setting Evohome ') + ' ' + $.t(name));
@@ -196,30 +196,30 @@ define(['app'], function(app) {
 			//(the status can flick back to the previous status after an update)...now implemented with script side lockout
 			$.ajax({
 				url: "json.htm?type=command&param=switchmodal" +
-					"&idx=" + idx +
-					"&status=" + status +
-					"&action=1",
+				"&idx=" + idx +
+				"&status=" + status +
+				"&action=1",
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (data.status == "ERROR") {
 						HideNotify();
 						bootbox.alert($.t('Problem sending switch command'));
 					}
 					//wait 1 second
-					setTimeout(function() {
+					setTimeout(function () {
 						HideNotify();
 						refreshfunction();
 					}, 1000);
 				},
-				error: function() {
+				error: function () {
 					HideNotify();
 					bootbox.alert($.t('Problem sending switch command'));
 				}
 			});
 		}
 
-		EvoDisplayTextMode = function(strstatus) {
+		EvoDisplayTextMode = function (strstatus) {
 			if (strstatus == "Auto") //FIXME better way to convert?
 				strstatus = "Normal";
 			else if (strstatus == "AutoWithEco") //FIXME better way to convert?
@@ -231,7 +231,7 @@ define(['app'], function(app) {
 			return strstatus;
 		}
 
-		GetLightStatusText = function(item) {
+		GetLightStatusText = function (item) {
 			if (item.SubType == "Evohome")
 				return EvoDisplayTextMode(item.Status);
 			else if (item.SwitchType === "Selector")
@@ -240,16 +240,16 @@ define(['app'], function(app) {
 				return item.Status; //Don't convert for non Evohome switches just in case those status above get used anywhere
 		}
 
-		EvohomeAddJS = function() {
+		EvohomeAddJS = function () {
 			return "<script type='text/javascript'> function deselect(e,id) { $(id).slideFadeToggle('swing', function() { e.removeClass('selected'); });} $.fn.slideFadeToggle = function(easing, callback) {  return this.animate({ opacity: 'toggle',height: 'toggle' }, 'fast', easing, callback);};</script>";
 		}
 
-		EvohomeImg = function(item, strclass) {
+		EvohomeImg = function (item, strclass) {
 			//see http://www.theevohomeshop.co.uk/evohome-controller-display-icons/
 			return '<div title="Quick Actions" class="' + ((item.Status == "Auto") ? "evoimgnorm " : "evoimg ") + strclass + '"><img src="images/evohome/' + item.Status + '.png" class="lcursor" onclick="if($(this).hasClass(\'selected\')){deselect($(this),\'#evopop_' + item.idx + '\');}else{$(this).addClass(\'selected\');$(\'#evopop_' + item.idx + '\').slideFadeToggle();}return false;"></div>';
 		}
 
-		EvohomePopupMenu = function(item, strclass) {
+		EvohomePopupMenu = function (item, strclass) {
 			var htm = '\t      <td id="img" class="img img1"><a href="#evohome" id="evohome_' + item.idx + '">' + EvohomeImg(item, strclass) + '</a></td>\n<span class="' + strclass + '"><div id="evopop_' + item.idx + '" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
 			$.each([{
 				"name": "Normal",
@@ -269,13 +269,13 @@ define(['app'], function(app) {
 			}, {
 				"name": "Heating Off",
 				"data": "HeatingOff"
-			}], function(idx, obj) {
+			}], function (idx, obj) {
 				htm += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + obj.data + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + obj.name + '\',\'' + obj.data + '\',RefreshFavorites);deselect($(this),\'#evopop_' + item.idx + '\');return false;">' + obj.name + '</a></li>';
 			});
 			htm += '</ul></div></span>';
 			return htm;
 		}
-		SetColValue = function(idx, hue, brightness, isWhite) {
+		SetColValue = function (idx, hue, brightness, isWhite) {
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
@@ -289,7 +289,7 @@ define(['app'], function(app) {
 			});
 		}
 
-		RefreshFavorites = function() {
+		RefreshFavorites = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -306,7 +306,7 @@ define(['app'], function(app) {
 				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected + "&lastupdate=" + $scope.LastUpdateTime,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.ServerTime != 'undefined') {
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
@@ -314,21 +314,21 @@ define(['app'], function(app) {
 						if (typeof data.ActTime != 'undefined') {
 							$scope.LastUpdateTime = parseInt(data.ActTime);
 						}
-                        
-                        // Check if the merger feature is selected.
-                        var mergeItems = false;
-                        if ($("#copyright").css("z-index") == 1 && $('body').hasClass('CSS3')){ // Only do all this if the merger option has been enabled in theme settings.
-                            
-                            // is mobile check toevoegen.
-                            console.log("merging items data");
-                            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)){}else{
-                                mergeItems = true;
-                            }
-                        }
-                        
-                        
-//Scenes    
-						$.each(data.result, function(i, item) {
+
+						// Check if the merger feature is selected.
+						var mergeItems = false;
+						if ($("#copyright").css("z-index") == 1 && $('body').hasClass('CSS3')) { // Only do all this if the merger option has been enabled in theme settings.
+
+							// is mobile check toevoegen.
+							console.log("merging items data");
+							if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) { } else {
+								mergeItems = true;
+							}
+						}
+
+
+						//Scenes    
+						$.each(data.result, function (i, item) {
 							if (
 								(item.Type.indexOf('Scene') == 0) ||
 								(item.Type.indexOf('Group') == 0)
@@ -363,15 +363,15 @@ define(['app'], function(app) {
 												streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 												bigtext += "&nbsp;" + streamurl;
 											}
-                                            if(typeof item.Status != 'undefined'){
-                                                if ((item.Status == 'On') || (item.Status == 'Group On')) {
-                                                    $(id + " div.item").addClass('onn');
-                                                    $(id + " div.item").removeClass('offf');
-                                                }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
-                                                    $(id + " div.item").addClass('offf');
-                                                    $(id + " div.item").removeClass('onn');
-                                                }
-                                            }
+											if (typeof item.Status != 'undefined') {
+												if ((item.Status == 'On') || (item.Status == 'Group On')) {
+													$(id + " div.item").addClass('onn');
+													$(id + " div.item").removeClass('offf');
+												} else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+													$(id + " div.item").addClass('offf');
+													$(id + " div.item").removeClass('onn');
+												}
+											}
 											if (item.Status == 'On') {
 												onclass = "transimg";
 												offclass = "";
@@ -404,8 +404,8 @@ define(['app'], function(app) {
 							}
 						}); //Scene devices
 
-//Lights/switches
-						$.each(data.result, function(i, item) {
+						//Lights/switches
+						$.each(data.result, function (i, item) {
 
 							var isdimmer = false;
 							if (
@@ -724,7 +724,7 @@ define(['app'], function(app) {
 											}
 										}
 										if ($(id + " #status").html() != status) {
-                                            console.log(status);
+											console.log(status);
 											$(id + " #status").html(status);
 										}
 									} else {
@@ -732,7 +732,7 @@ define(['app'], function(app) {
 										var img = "";
 										var img2 = "";
 										var img3 = "";
-                                        
+
 										var bigtext = TranslateStatusShort(item.Status);
 										if (item.UsedByCamera == true) {
 											var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
@@ -755,12 +755,12 @@ define(['app'], function(app) {
 											}
 										} else if (item.SwitchType == "Door Lock") {
 											if (item.InternalState == "Unlocked") {
-												img = '<img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';   
-                                                $(id + " div.item").removeClass('locked');
-                                            } else {
+												img = '<img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+												$(id + " div.item").removeClass('locked');
+											} else {
 												img = '<img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                $(id + " div.item").addClass('locked');
-                                            }
+												$(id + " div.item").addClass('locked');
+											}
 										} else if (item.SwitchType == "Push Off Button") {
 											img = '<img src="images/pushoff48.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 										} else if (item.SwitchType == "X10 Siren") {
@@ -834,28 +834,28 @@ define(['app'], function(app) {
 												if (item.Status == 'Closed') {
 													img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 													img3 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                } else {
+												} else {
 													img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 													img3 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                }
+												}
 											} else {
 												if (item.Status == 'Closed') {
 													img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 													img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                } else {
+												} else {
 													img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 													img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                }
+												}
 											}
 										} else if (item.SwitchType == "Blinds Percentage") {
 											isdimmer = true;
 											if (item.Status == 'Closed') {
 												img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 												img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                            } else {
+											} else {
 												img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 												img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                            }
+											}
 										} else if (item.SwitchType == "Blinds Percentage Inverted") {
 											isdimmer = true;
 											if (item.Status == 'Closed') {
@@ -864,7 +864,7 @@ define(['app'], function(app) {
 											} else {
 												img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 												img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                            }
+											}
 										} else if (item.SwitchType == "Dimmer") {
 											isdimmer = true;
 											if (item.CustomImage == 0) item.Image = item.TypeImg;
@@ -908,7 +908,7 @@ define(['app'], function(app) {
 												img = '<img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
 											} else {
 												img = '<img src="images/uvsunny.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
-                                            }
+											}
 										} else if (item.SwitchType == "Media Player") {
 											if (item.CustomImage == 0) item.Image = item.TypeImg;
 											if (item.Status == 'Disconnected') {
@@ -940,9 +940,9 @@ define(['app'], function(app) {
 												(item.Status == "On")
 											) {
 												img = '<img src="images/smoke48on.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
-                                            } else {
+											} else {
 												img = '<img src="images/smoke48off.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40">';
-                                            }
+											}
 										} else if (item.SwitchType == "Selector") {
 											if ((item.Status === "Off")) {
 												img += '<img src="images/' + item.Image + '48_Off.png" height="40" width="40">';
@@ -966,7 +966,7 @@ define(['app'], function(app) {
 													img = '<img src="images/' + item.Image + '48_On.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
 												} else {
 													img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                                }
+												}
 											} else {
 												if (item.Type == "Thermostat 3") {
 													img = '<img src="images/' + item.Image + '48_Off.png" onclick="ShowTherm3Popup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -976,28 +976,28 @@ define(['app'], function(app) {
 											}
 										}
 
-                                        /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
-                                        if(typeof item.Status != 'undefined'){
-                                            if ((item.Status == 'On') || (item.Status == 'Group On')) {
-                                                $(id + " div.item").addClass('onn');
-                                                $(id + " div.item").removeClass('offf');
-                                            }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
-                                                $(id + " div.item").addClass('offf');
-                                                $(id + " div.item").removeClass('onn');
-                                            }
-                                        }
-                                        
-                                        var newStatusClass = "statusNormal";
-                                        if (item.HaveTimeout == true) {
-                                            newStatusClass = "statusTimeout";
-                                        }
-                                        else if (item.Protected == true) {
-                                            newStatusClass = "statusProtected";
-                                        }
-                                        if(!$(id + ".item").hasClass(newStatusClass)) {
-                                            $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout"); 
-                                            $(id + ".item").addClass(newStatusClass);
-                                        }
+										/*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
+										if (typeof item.Status != 'undefined') {
+											if ((item.Status == 'On') || (item.Status == 'Group On')) {
+												$(id + " div.item").addClass('onn');
+												$(id + " div.item").removeClass('offf');
+											} else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+												$(id + " div.item").addClass('offf');
+												$(id + " div.item").removeClass('onn');
+											}
+										}
+
+										var newStatusClass = "statusNormal";
+										if (item.HaveTimeout == true) {
+											newStatusClass = "statusTimeout";
+										}
+										else if (item.Protected == true) {
+											newStatusClass = "statusProtected";
+										}
+										if (!$(id + ".item").hasClass(newStatusClass)) {
+											$(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout");
+											$(id + ".item").addClass(newStatusClass);
+										}
 										if ($(id + " #img").html() != img) {
 											$(id + " #img").html(img);
 										}
@@ -1039,7 +1039,7 @@ define(['app'], function(app) {
 												}
 											}
 											bigtext = GetLightStatusText(item);
-                                            bigtext = "<span>" + bigtext + "</span>";
+											bigtext = "<span>" + bigtext + "</span>";
 										}
 										if ($(id + " #bigtext > span").html() != bigtext) {
 											$(id + " #bigtext > span").html(bigtext);
@@ -1050,7 +1050,7 @@ define(['app'], function(app) {
 										if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
 											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
-                                        console.log("updating switches");
+										console.log("updating switches");
 										if ($scope.config.ShowUpdatedEffect == true) {
 											$(id + " #name").effect("highlight", {
 												color: '#EEFFEE'
@@ -1061,8 +1061,8 @@ define(['app'], function(app) {
 							}
 						}); //light devices
 
-//Temperature Sensors
-						$.each(data.result, function(i, item) {
+						//Temperature Sensors
+						$.each(data.result, function (i, item) {
 							if (
 								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
 								(item.Favorite != 0)
@@ -1143,10 +1143,10 @@ define(['app'], function(app) {
 											}
 											status += $.t("Dew Point") + ": " + item.DewPoint + '&deg; ' + $scope.config.TempSign;
 										}
-                                        bigtext = "<span>" + bigtext + "</span>";
-                                        status = "<span>" + status + "</span>";
-                                        
-                                        
+										bigtext = "<span>" + bigtext + "</span>";
+										status = "<span>" + status + "</span>";
+
+
 										$(id + " > div.item").addClass('statusNormal');
 										if (item.HaveTimeout == true) {
 											$(id + " > div.item").removeClass('statusNormal');
@@ -1182,8 +1182,8 @@ define(['app'], function(app) {
 							}
 						}); //temp devices
 
-//Weather Sensors
-						$.each(data.result, function(i, item) {
+						//Weather Sensors
+						$.each(data.result, function (i, item) {
 							if (
 								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
 								(item.Favorite != 0)
@@ -1225,7 +1225,7 @@ define(['app'], function(app) {
 												status += '</span><span>Altitude: ' + item.Altitude + ' meter';
 											}
 										}
-                                        status = "<span>" + status + "</span>";
+										status = "<span>" + status + "</span>";
 										if ($(id + " #status > span").html() != status) {
 											$(id + " #status > span").html(status);
 										}
@@ -1287,9 +1287,9 @@ define(['app'], function(app) {
 											bigtext = item.Barometer + ' hPa';
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
-                                                var pred = item.ForecastStr.toLowerCase(); 
-                                                pred = pred.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                                $(id + " .item").attr("id", pred);
+												var pred = item.ForecastStr.toLowerCase();
+												pred = pred.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+												$(id + " .item").attr("id", pred);
 											} else {
 												status = item.Barometer + ' hPa';
 											}
@@ -1297,9 +1297,9 @@ define(['app'], function(app) {
 												status += '</span><span>Altitude: ' + item.Altitude + ' meter';
 											}
 										}
-                                        bigtext = "<span>" + bigtext + "</span>";
-                                        status = "<span>" + status + "</span>";
-                                        
+										bigtext = "<span>" + bigtext + "</span>";
+										status = "<span>" + status + "</span>";
+
 										$(id + " > div.item").addClass('statusNormal');
 										if (item.HaveTimeout == true) {
 											$(id + " > div.item").removeClass('statusNormal');
@@ -1313,11 +1313,11 @@ define(['app'], function(app) {
 												}
 											}
 										}
-                                        
-                                        /* checking if the bigtext already contains exactly the first item of status. Let's not show things twice? */
-                                        if(status.length != bigtext.length && status.lastIndexOf(bigtext, 0) === 0){
-                                            status = status.replace(bigtext, "");
-                                        }
+
+										/* checking if the bigtext already contains exactly the first item of status. Let's not show things twice? */
+										if (status.length != bigtext.length && status.lastIndexOf(bigtext, 0) === 0) {
+											status = status.replace(bigtext, "");
+										}
 
 										if ($(id + " #img").html() != img) {
 											$(id + " #img").html(img);
@@ -1341,8 +1341,8 @@ define(['app'], function(app) {
 							}
 						}); //weather devices
 
-//security devices
-						$.each(data.result, function(i, item) {
+						//security devices
+						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
 								id = "#dashcontent #security_" + item.idx;
 								var obj = $(id);
@@ -1397,7 +1397,7 @@ define(['app'], function(app) {
 												img += '<img src="images/security48.png" title="' + $.t("Turn Alarm On") + '" onclick="SwitchLight(' + item.idx + ',\'Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
 											} else {
 												img += '<img src="images/Alarm48_On.png" title="' + $.t("Turn Alarm Off") + '" onclick="SwitchLight(' + item.idx + ',\'No Motion\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
-                                            }
+											}
 										} else if ((item.Status.indexOf('Alarm') >= 0) || (item.Status.indexOf('Tamper') >= 0)) {
 											img = '<img src="images/Alarm48_On.png" height="40" width="40">';
 										} else {
@@ -1444,8 +1444,8 @@ define(['app'], function(app) {
 							}
 						}); //security devices
 
-//evohome devices
-						$.each(data.result, function(i, item) {
+						//evohome devices
+						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
 								id = "#dashcontent #evohome_" + item.idx;
 								var obj = $(id);
@@ -1493,8 +1493,8 @@ define(['app'], function(app) {
 							}
 						}); //evohome devices
 
-//Utility Sensors
-						$.each(data.result, function(i, item) {
+						//Utility Sensors
+						$.each(data.result, function (i, item) {
 							if (
 								(
 									(typeof item.Counter != 'undefined') ||
@@ -1598,12 +1598,12 @@ define(['app'], function(app) {
 												}
 											}
 										}
-                                        status = "<span>" + status + "</span>";
+										status = "<span>" + status + "</span>";
 										if ($(id + " #status > span.wrapper").html() != status) {
 											$(id + " #status > span.wrapper").html(status);
 										}
 									} else {
-                                        // normal and compact displays
+										// normal and compact displays
 										var status = "";
 										var bigtext = "";
 										var img = "";
@@ -1626,9 +1626,9 @@ define(['app'], function(app) {
 										} else if (item.SubType == "Percentage") {
 											status = item.Data;
 											bigtext = item.Data;
-                                            if ($("#copyright a:first-of-type").css("z-index") == 2){
-                                                $(id + " .overlay > div").width(item.Data);
-                                            }
+											if ($("#copyright a:first-of-type").css("z-index") == 2) {
+												$(id + " .overlay > div").width(item.Data);
+											}
 										} else if (item.SubType == "Custom Sensor") {
 											status = item.Data;
 											bigtext = item.Data;
@@ -1700,21 +1700,21 @@ define(['app'], function(app) {
 												}
 											}
 										}
-                                        
-                                        if(mergeItems == true){
-                                            var values = item.Name.split('-');
-                                            if (values.length > 1){ // a dash has been spotted in the name.
-                                                prefix=values[0].trim().toUpperCase();
-                                                prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                                postfix=values[1].trim().toLowerCase();
-                                                postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                                $("#utilityDivider .bandleader." + prefixClass + " span." + postfixClass).html(postfix+ ': ' + status);
-                                                
-                                                if($(id + " div.item").hasClass('bandleader')){
-                                                    return true;
-                                                }
-                                            }
-                                        }
+
+										if (mergeItems == true) {
+											var values = item.Name.split('-');
+											if (values.length > 1) { // a dash has been spotted in the name.
+												prefix = values[0].trim().toUpperCase();
+												prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+												postfix = values[1].trim().toLowerCase();
+												postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+												$("#utilityDivider .bandleader." + prefixClass + " span." + postfixClass).html(postfix + ': ' + status);
+
+												if ($(id + " div.item").hasClass('bandleader')) {
+													return true;
+												}
+											}
+										}
 
 										$(id + " > div.item").addClass('statusNormal');
 										if (item.HaveTimeout == true) {
@@ -1729,8 +1729,8 @@ define(['app'], function(app) {
 												}
 											}
 										}
-                                        bigtext = '<span>' + bigtext + '</span>';    
-                                        status = '<span>' + status + '</span>';
+										bigtext = '<span>' + bigtext + '</span>';
+										status = '<span>' + status + '</span>';
 										if ($(id + " #status > span").html() != status) {
 											$(id + " #status > span").html(status);
 										}
@@ -1757,12 +1757,12 @@ define(['app'], function(app) {
 					}
 				}
 			});
-			$scope.mytimer = $interval(function() {
+			$scope.mytimer = $interval(function () {
 				RefreshFavorites();
 			}, 10000);
 		}
 
-		ShowFavorites = function() {
+		ShowFavorites = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -1772,9 +1772,9 @@ define(['app'], function(app) {
 			var bHaveAddedDivider = false;
 			var htmlcontent = "";
 			var bShowRoomplan = false;
-            var mergeItems = false;
-            var bandList = [];
-            var bands = {};
+			var mergeItems = false;
+			var bandList = [];
+			var bands = {};
 			$.RoomPlans = [];
 
 			$("body").removeClass();
@@ -1784,7 +1784,7 @@ define(['app'], function(app) {
 				url: "json.htm?type=plans",
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						var totalItems = data.result.length;
 						if (totalItems > 0) {
@@ -1793,7 +1793,7 @@ define(['app'], function(app) {
 							//				bShowRoomplan=false;
 							//		}
 							if (bShowRoomplan == true) {
-								$.each(data.result, function(i, item) {
+								$.each(data.result, function (i, item) {
 									$.RoomPlans.push({
 										idx: item.idx,
 										name: item.Name
@@ -1811,19 +1811,18 @@ define(['app'], function(app) {
 					bFavorites = 0;
 				}
 			}
-            var CSS3 = false;
-            if('columns' in document.body.style)
-            {
-                CSS3 = true;
-                $('body').addClass("CSS3");
-                console.log("Browser supports CSS3");
-            }
-            
+			var CSS3 = false;
+			if ('columns' in document.body.style) {
+				CSS3 = true;
+				$('body').addClass("CSS3");
+				console.log("Browser supports CSS3");
+			}
+
 			$.ajax({
 				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.ActTime != 'undefined') {
 						$scope.LastUpdateTime = parseInt(data.ActTime);
 					}
@@ -1845,47 +1844,47 @@ define(['app'], function(app) {
 					}
 
 					if (typeof data.result != 'undefined') {
-                    
 
-                        var suntext = "";
-                        if (bShowRoomplan == false) {
-                            suntext =
-                                '<div class="beforebannav">' +
-                                '\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
-                                '\t<tr>\n' +
-                                '\t  <td align="left" valign="top" id="timesun"></td>\n' +
-                                '\t</tr>\n' +
-                                '\t</table>\n' +
-                                '\t</div>\n';
-                        } else {
-                            suntext =
-                                '<div class="beforebannav">' +
-                                '<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
-                                '<tr>' +
-                                '<td align="left" valign="top" id="timesun"></td>' +
-                                '<td align="right">' +
-                                '<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
-                                '<option value="0" data-i18n="All">All</option>' +
-                                '</select>' +
-                                '</td>' +
-                                '</tr>' +
-                                '</table>' +
-                                '</div>';
-                        }
-                        
-                        // Check if the merger feature is selected.
-                        console.log("CSS3 = "+CSS3);
-                        console.log("copyright z-index is " + $("#copyright").css("z-index"));
-                        if ($("#copyright").css("z-index") == 1 && CSS3 == true){ // Only do all this if the merger option has been enabled in theme settings, and the browser supports CSS3.
-                            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)){}else{
-                                console.log("MERGING ITEMS IS ENABLED");
-                                mergeItems = true;
-                            }
-                        }
-//Scenes
+
+						var suntext = "";
+						if (bShowRoomplan == false) {
+							suntext =
+								'<div class="beforebannav">' +
+								'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
+								'\t<tr>\n' +
+								'\t  <td align="left" valign="top" id="timesun"></td>\n' +
+								'\t</tr>\n' +
+								'\t</table>\n' +
+								'\t</div>\n';
+						} else {
+							suntext =
+								'<div class="beforebannav">' +
+								'<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
+								'<tr>' +
+								'<td align="left" valign="top" id="timesun"></td>' +
+								'<td align="right">' +
+								'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
+								'<option value="0" data-i18n="All">All</option>' +
+								'</select>' +
+								'</td>' +
+								'</tr>' +
+								'</table>' +
+								'</div>';
+						}
+
+						// Check if the merger feature is selected.
+						console.log("CSS3 = " + CSS3);
+						console.log("copyright z-index is " + $("#copyright").css("z-index"));
+						if ($("#copyright").css("z-index") == 1 && CSS3 == true) { // Only do all this if the merger option has been enabled in theme settings, and the browser supports CSS3.
+							if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) { } else {
+								console.log("MERGING ITEMS IS ENABLED");
+								mergeItems = true;
+							}
+						}
+						//Scenes
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							//Scenes/Groups
 							if (
 								(item.Type.indexOf('Scene') == 0) ||
@@ -1940,42 +1939,42 @@ define(['app'], function(app) {
 										'\t      <td id="status" class="status">' + status + '</td>\n' +
 										'\t    </tr>\n';
 								} else {
-                                    // Normal/compact dashboard view
+									// Normal/compact dashboard view
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="scene_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="scene_' + item.idx + '">\n';
 									}
-                                    
-                                    /* generate two item classes.  */
 
-                                    /* type of device */
-                                    var itemtypeclass = "";
-                                    var itemsubtypeclass = "";
-                                    if (typeof item.Type != 'undefined') {
-                                        var itemtypeclass = ' ' + item.Type.slice(0);
-                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    if (typeof item.SubType != 'undefined') {
-                                        var itemsubtypeclass = item.SubType.split(' ').join('');
-                                        itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
+									/* generate two item classes.  */
 
-                                    /* generate protected/timeout/lowbattery status */
-                                    var backgroundClass = "statusNormal";
-                                    if (item.HaveTimeout == true) {
-                                        backgroundClass = "statusTimeout";
-                                    } else {
-                                        var BatteryLevel = parseInt(item.BatteryLevel);
-                                        if (BatteryLevel != 255) {
-                                            if (BatteryLevel <= 10) {
-                                                backgroundClass = "statusLowBattery";
-                                            }
-                                        }
-                                    }
-                                    
-                                    var count = 0;
-								    xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
+									/* type of device */
+									var itemtypeclass = "";
+									var itemsubtypeclass = "";
+									if (typeof item.Type != 'undefined') {
+										var itemtypeclass = ' ' + item.Type.slice(0);
+										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+									if (typeof item.SubType != 'undefined') {
+										var itemsubtypeclass = item.SubType.split(' ').join('');
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+
+									/* generate protected/timeout/lowbattery status */
+									var backgroundClass = "statusNormal";
+									if (item.HaveTimeout == true) {
+										backgroundClass = "statusTimeout";
+									} else {
+										var BatteryLevel = parseInt(item.BatteryLevel);
+										if (BatteryLevel != 255) {
+											if (BatteryLevel <= 10) {
+												backgroundClass = "statusLowBattery";
+											}
+										}
+									}
+
+									var count = 0;
+									xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 
 									if (item.Type.indexOf('Scene') == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -2024,11 +2023,11 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
-                                    jj = 1; 
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                }
+								if (CSS3) { // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+									jj = 1;
+								} else { // older webbrowser.
+									jj += 1;
+								}
 							}
 						}); //scenes
 						if (bHaveAddedDivider == true) {
@@ -2042,10 +2041,10 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//light/switch devices
+						//light/switch devices
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if (
 								(item.Favorite != 0) && (
 									(item.Type.indexOf('Light') == 0) ||
@@ -2091,14 +2090,14 @@ define(['app'], function(app) {
 									htmlcontent += '<div class="row divider">\n';
 									bHaveAddedDivider = true;
 								}
-                                
+
 								var backgroundClass = "statusNormal";
 								if (item.Protected == true) {
 									backgroundClass = "statusProtected";
 								} else if (item.HaveTimeout == true) {
 									backgroundClass = "statusTimeout";
 								}
-                                
+
 								var status = "";
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -2399,7 +2398,7 @@ define(['app'], function(app) {
 											xhtm += '<div style="margin: -15px -4px -5px 24px; text-align: right;" class="selectorlevels">';
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
-											$.each(levelNames, function(index, levelName) {
+											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
@@ -2410,7 +2409,7 @@ define(['app'], function(app) {
 											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
-											$.each(levelNames, function(index, levelName) {
+											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
@@ -2423,28 +2422,28 @@ define(['app'], function(app) {
 										xhtm += '</tr>';
 									}
 								} else {
-                                    // normal/compact dashboard.
+									// normal/compact dashboard.
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="light_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="light_' + item.idx + '">\n';
 									}
-                                    
-                                    status="";
-                                    
-                                    // generate bigtext html
-                                    var bigtexthtml ='<span>';
+
+									status = "";
+
+									// generate bigtext html
+									var bigtexthtml = '<span>';
 									bigtexthtml += TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
 										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 										bigtexthtml += "</span><span>" + streamurl;
 									}
-									bigtexthtml+= '</span>\n';
-                                    
-                                    // generate image html (and find fun icons)
-                                    var imghtml = "";
-                                    var iconType = "";
+									bigtexthtml += '</span>\n';
+
+									// generate image html (and find fun icons)
+									var imghtml = "";
+									var iconType = "";
 									if (item.SwitchType == "Doorbell") {
 										imghtml += '\t      <td id="img" class="img img1"><img src="images/doorbell48.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
 									} else if (item.SwitchType == "Push On Button") {
@@ -2615,11 +2614,11 @@ define(['app'], function(app) {
 										var RO = (item.Unit < 64 || item.Unit > 95) ? true : false;
 										if (item.Status == 'On') {
 											imghtml += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_On.png" title="' + $.t(RO ? "On" : "Turn Off") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
-				                            iconType = "Fireplace";
-                                        } else {
+											iconType = "Fireplace";
+										} else {
 											imghtml += '\t      <td id="img" class="img img1"><img src="images/Fireplace48_Off.png" title="' + $.t(RO ? "Off" : "Turn On") + (RO ? '"' : '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor"') + ' height="40" width="40"></td>\n';
-										    iconType = "Fireplace";
-                                        }
+											iconType = "Fireplace";
+										}
 									} else if (item.SwitchType == "Dusk Sensor") {
 										if (item.Status == 'On') {
 											imghtml += '\t      <td id="img" class="img img1"><img src="images/uvdark.png" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#dashcontent\', \'ShowFavorites\');" class="lcursor" height="40" width="40"></td>\n';
@@ -2653,14 +2652,14 @@ define(['app'], function(app) {
 											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" height="40" width="40"></td>\n';
 										} else {
 											imghtml += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
-                                        }
+										}
 									} else if (item.SubType.indexOf("Itho") == 0) {
 										imghtml += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowIthoPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
-								        iconType = "Fan";
-                                    } else if (item.SubType.indexOf("Lucci") == 0) {
+										iconType = "Fan";
+									} else if (item.SubType.indexOf("Lucci") == 0) {
 										imghtml += '\t      <td id="img" class="img img1"><img src="images/Fan48_On.png" height="40" width="40" class="lcursor" onclick="ShowLucciPopup(event, ' + item.idx + ', RefreshFavorites, ' + item.Protected + ');"></td>\n';
-				                        iconType = "Fan";
-                                    } else {
+										iconType = "Fan";
+									} else {
 										if (
 											(item.Status == 'On') ||
 											(item.Status == 'Chime') ||
@@ -2682,40 +2681,40 @@ define(['app'], function(app) {
 											}
 										}
 									}
-                                    
-                                    /* set type of device as item's class*/
-                                    var itemtypeclass = "";
-                                    var itemsubtypeclass = "";
-                                    if (typeof item.Type != 'undefined') {
-                                        var itemtypeclass = ' ' + item.Type.slice(0);
-                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    if (typeof item.SubType != 'undefined') {
-                                        var itemsubtypeclass = item.SubType.split(' ').join('');
-                                        itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    
-                                    /* generate protected/timeout/lowbattery status */
-                                    /*  this should already be set from before the mobile part? */
-                                    
-                                    var backgroundClass = "statusNormal";
-                                    if (item.Protected == true) {
-                                        backgroundClass = "statusProtected";
-                                    } else if (item.HaveTimeout == true) {
-                                        backgroundClass = "statusTimeout";
-                                    }
-                                    
-                                    /*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
-                                    var toggleStatus ="";
-                                    if(typeof item.Status != 'undefined'){
-                                        if ((item.Status == 'On') || (item.Status == 'Group On')) {
-                                            toggleStatus = " onn";
-                                        }else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
-                                            toggleStatus = " offf";
-                                        }
-                                    }
-                                    var count = 0;
-								    xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + item.Image + ' ' + iconType + ' ' + backgroundClass + ' withoutstatus statuscount' + count + ' ' + toggleStatus + '">\n';
+
+									/* set type of device as item's class*/
+									var itemtypeclass = "";
+									var itemsubtypeclass = "";
+									if (typeof item.Type != 'undefined') {
+										var itemtypeclass = ' ' + item.Type.slice(0);
+										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+									if (typeof item.SubType != 'undefined') {
+										var itemsubtypeclass = item.SubType.split(' ').join('');
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+
+									/* generate protected/timeout/lowbattery status */
+									/*  this should already be set from before the mobile part? */
+
+									var backgroundClass = "statusNormal";
+									if (item.Protected == true) {
+										backgroundClass = "statusProtected";
+									} else if (item.HaveTimeout == true) {
+										backgroundClass = "statusTimeout";
+									}
+
+									/*  Experimental code to add on-off classes to the item, so that themes can reflect the current status in more ways. */
+									var toggleStatus = "";
+									if (typeof item.Status != 'undefined') {
+										if ((item.Status == 'On') || (item.Status == 'Group On')) {
+											toggleStatus = " onn";
+										} else if ((item.Status == 'Off') || (item.Status == 'Group Off')) {
+											toggleStatus = " offf";
+										}
+									}
+									var count = 0;
+									xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + item.Image + ' ' + iconType + ' ' + backgroundClass + ' withoutstatus statuscount' + count + ' ' + toggleStatus + '">\n';
 
 									if ((item.Type.indexOf('Blind') == 0) || (item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 										if (
@@ -2746,13 +2745,13 @@ define(['app'], function(app) {
 										'\t    <tr>\n' +
 										'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
-                                    xhtm += imghtml;
+									xhtm += imghtml;
 									xhtm +=
 										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n';
-                                    xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
-										
+									xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
+
 									if (item.SwitchType == "Dimmer") {
-										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {} else {
+										if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) { } else {
 											xhtm += '<td class="widget"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
 										}
 									} else if (item.SwitchType == "TPI") {
@@ -2767,7 +2766,7 @@ define(['app'], function(app) {
 											xhtm += '<td class="widget"><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
-											$.each(levelNames, function(index, levelName) {
+											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
@@ -2778,7 +2777,7 @@ define(['app'], function(app) {
 											xhtm += '<td class="widget"><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
 											var levelNames = item.LevelNames.split('|');
-											$.each(levelNames, function(index, levelName) {
+											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
@@ -2786,10 +2785,10 @@ define(['app'], function(app) {
 											});
 											xhtm += '</select>';
 											xhtm += '</div></td>';
-                                            
+
 										}
 									}
-                                    
+
 									xhtm +=
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
@@ -2797,12 +2796,12 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-                                
-                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns. Useful for special themes.
-                                    jj = 1; 
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                }
+
+								if (CSS3) { // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns. Useful for special themes.
+									jj = 1;
+								} else { // older webbrowser.
+									jj += 1;
+								}
 							}
 						}); //light devices
 						if (bHaveAddedDivider == true) {
@@ -2816,10 +2815,10 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//Temperature Sensors
+						//Temperature Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if (
 								((typeof item.Temp != 'undefined') || (typeof item.Humidity != 'undefined') || (typeof item.Chill != 'undefined')) &&
 								(item.Favorite != 0)
@@ -2892,32 +2891,32 @@ define(['app'], function(app) {
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="temp_' + item.idx + '">\n';
 									}
-                                    
-                                    /* add css classes for type of device */
-                                    var itemtypeclass = "";
-                                    var itemsubtypeclass = "";
-                                    if (typeof item.Type != 'undefined') {
-                                        var itemtypeclass = ' ' + item.Type.slice(0);
-                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    if (typeof item.SubType != 'undefined') {
-                                        var itemsubtypeclass = item.SubType.split(' ').join('');
-                                        itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    /* generate css classes for protected/timeout/lowbattery status */
-                                    var backgroundClass = "statusNormal";
-                                    if (item.HaveTimeout == true) {
-                                        backgroundClass = "statusTimeout";
-                                    } else {
-                                        var BatteryLevel = parseInt(item.BatteryLevel);
-                                        if (BatteryLevel != 255) {
-                                            if (BatteryLevel <= 10) {
-                                                backgroundClass = "statusLowBattery";
-                                            }
-                                        }
-                                    }
-                                    /*  generate bigtext html  */
-                                    var bigtext = "";
+
+									/* add css classes for type of device */
+									var itemtypeclass = "";
+									var itemsubtypeclass = "";
+									if (typeof item.Type != 'undefined') {
+										var itemtypeclass = ' ' + item.Type.slice(0);
+										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+									if (typeof item.SubType != 'undefined') {
+										var itemsubtypeclass = item.SubType.split(' ').join('');
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+									/* generate css classes for protected/timeout/lowbattery status */
+									var backgroundClass = "statusNormal";
+									if (item.HaveTimeout == true) {
+										backgroundClass = "statusTimeout";
+									} else {
+										var BatteryLevel = parseInt(item.BatteryLevel);
+										if (BatteryLevel != 255) {
+											if (BatteryLevel <= 10) {
+												backgroundClass = "statusLowBattery";
+											}
+										}
+									}
+									/*  generate bigtext html  */
+									var bigtext = "";
 									if (typeof item.Temp != 'undefined') {
 										bigtexthtml = item.Temp + '\u00B0 ' + $scope.config.TempSign;
 									}
@@ -2933,13 +2932,13 @@ define(['app'], function(app) {
 										}
 										bigtexthtml += item.Chill + '\u00B0 ' + $scope.config.TempSign;
 									}
-                                    bigtexthtml = "<span>" + bigtexthtml + "</span>";
-                                    
-                                    
-                                    /* Checking the generated html for even more classes, and comparing bigtext and status to see if it needs to be a 'withStatus' item */
-                                    var count = 0;
+									bigtexthtml = "<span>" + bigtexthtml + "</span>";
 
-                                    xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
+
+									/* Checking the generated html for even more classes, and comparing bigtext and status to see if it needs to be a 'withStatus' item */
+									var count = 0;
+
+									xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
 									xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
@@ -2969,19 +2968,19 @@ define(['app'], function(app) {
 									}
 									xhtm +=
 										'</span></td>\n';
-                                    xhtm += 	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+									xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div><!--item end-->\n' +
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-                                
-                                if(CSS3){ // In newer webbrowsers this keeps everything in the same divider and lets flexbox/CSS take care of columns.
-                                    jj = 1; 
-                                } else{ // older webbrowsers
-                                    jj += 1;
-                                }
+
+								if (CSS3) { // In newer webbrowsers this keeps everything in the same divider and lets flexbox/CSS take care of columns.
+									jj = 1;
+								} else { // older webbrowsers
+									jj += 1;
+								}
 							}
 						}); //temp devices                    
 						if (bHaveAddedDivider == true) {
@@ -2995,10 +2994,10 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//Weather Sensors
+						//Weather Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if (
 								((typeof item.Rain != 'undefined') || (typeof item.Visibility != 'undefined') || (typeof item.UVI != 'undefined') || (typeof item.Radiation != 'undefined') || (typeof item.Direction != 'undefined') || (typeof item.Barometer != 'undefined')) &&
 								(item.Favorite != 0)
@@ -3082,9 +3081,9 @@ define(['app'], function(app) {
 											status += '</span><span>Altitude: ' + item.Altitude + ' meter';
 										}
 									}
-                                    
-                                    status = "<span>" + status + "</span>";
-									xhtm += 
+
+									status = "<span>" + status + "</span>";
+									xhtm +=
 										'\t      <td id="status" class="status"><span class="wrapper">' + status + '</span></td>\n' +
 										'\t    </tr>\n';
 								} else {
@@ -3093,28 +3092,28 @@ define(['app'], function(app) {
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="weather_' + item.idx + '">\n';
 									}
-                                    
-                                    /*  generate weather forecast class*/
-                                    var predClass = "";
-                                    if (typeof item.ForecastStr != 'undefined') {
-                                        predClass = item.ForecastStr.toLowerCase(); 
-                                        predClass = predClass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                    }
-                                    
-                                    /* generate two item type classes.  */
+
+									/*  generate weather forecast class*/
+									var predClass = "";
+									if (typeof item.ForecastStr != 'undefined') {
+										predClass = item.ForecastStr.toLowerCase();
+										predClass = predClass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+									}
+
+									/* generate two item type classes.  */
 									var itemtypeclass = "";
 									var itemsubtypeclass = "";
 									if (typeof item.Type != 'undefined') {
 										var itemtypeclass = ' ' + item.Type.slice(0);
-										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
 									}
 									if (typeof item.SubType != 'undefined') {
 										var itemsubtypeclass = item.SubType.split(' ').join('');
-										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
 									}
-                                    
-                                    /*  Generate status indicator CSS class*/
-                                    var backgroundClass = "statusNormal";
+
+									/*  Generate status indicator CSS class*/
+									var backgroundClass = "statusNormal";
 									if (item.HaveTimeout == true) {
 										backgroundClass = "statusTimeout";
 									} else {
@@ -3125,120 +3124,120 @@ define(['app'], function(app) {
 											}
 										}
 									}
-                                    
-                                    /* generate bigtext html */
-                                    var bigtexthtml='<span>';
+
+									/* generate bigtext html */
+									var bigtexthtml = '<span>';
 									if (typeof item.Barometer != 'undefined') {
-									bigtexthtml += item.Barometer + ' hPa';
+										bigtexthtml += item.Barometer + ' hPa';
 									} else if (typeof item.Rain != 'undefined') {
-									bigtexthtml += item.Rain + ' mm';
+										bigtexthtml += item.Rain + ' mm';
 									} else if (typeof item.Visibility != 'undefined') {
-									bigtexthtml += item.Data;
+										bigtexthtml += item.Data;
 									} else if (typeof item.UVI != 'undefined') {
-									bigtexthtml += item.UVI + ' UVI';
+										bigtexthtml += item.UVI + ' UVI';
 									} else if (typeof item.Radiation != 'undefined') {
-									bigtexthtml += item.Data;
+										bigtexthtml += item.Data;
 									} else if (typeof item.Direction != 'undefined') {
-									bigtexthtml += item.DirectionStr;
+										bigtexthtml += item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
-										bigtexthtml += ' / ' + item.Speed + ' ' + $scope.config.WindSign;
+											bigtexthtml += ' / ' + item.Speed + ' ' + $scope.config.WindSign;
 										} else if (typeof item.Gust != 'undefined') {
-										bigtexthtml += ' / ' + item.Gust + ' ' + $scope.config.WindSign;
+											bigtexthtml += ' / ' + item.Gust + ' ' + $scope.config.WindSign;
 										}
 									}
 									bigtexthtml += '</span>';
-                                    
-                                    /* generate img and status html*/
-                                    var imghtml='<img src="images/';
-                                    var statushtml="<span>";
+
+									/* generate img and status html*/
+									var imghtml = '<img src="images/';
+									var statushtml = "<span>";
 									if (typeof item.Rain != 'undefined') {
 										imghtml += 'rain48.png" class="lcursor" onclick="ShowRainLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-										statushtml+= item.Rain + ' mm';
+										statushtml += item.Rain + ' mm';
 										if (typeof item.RainRate != 'undefined') {
 											if (item.RainRate != 0) {
-												statushtml+= '</span><span> Rate: ' + item.RainRate + ' mm/h';
+												statushtml += '</span><span> Rate: ' + item.RainRate + ' mm/h';
 											}
 										}
 									} else if (typeof item.Visibility != 'undefined') {
 										imghtml += 'visibility48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Visibility\');" height="40" width="40"></td>\n';
-											statushtml+= item.Data;
+										statushtml += item.Data;
 									} else if (typeof item.UVI != 'undefined') {
 										imghtml += 'uv48.png" class="lcursor" onclick="ShowUVLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-											statushtml+= item.UVI + ' UVI';
+										statushtml += item.UVI + ' UVI';
 										if (typeof item.Temp != 'undefined') {
-											statushtml+= '</span><span>Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
+											statushtml += '</span><span>Temp: ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 									} else if (typeof item.Radiation != 'undefined') {
 										imghtml += 'radiation48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'Radiation\');" height="40" width="40"></td>\n';
-											statushtml+= item.Data;
+										statushtml += item.Data;
 									} else if (typeof item.Direction != 'undefined') {
 										imghtml += 'Wind' + item.DirectionStr + '.png" class="lcursor" onclick="ShowWindLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-										statushtml+= item.Direction + ' ' + item.DirectionStr;
+										statushtml += item.Direction + ' ' + item.DirectionStr;
 										if (typeof item.Speed != 'undefined') {
-											statushtml+='</span><span>' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
+											statushtml += '</span><span>' + $.t('Speed') + ': ' + item.Speed + ' ' + $scope.config.WindSign;
 										}
 										if (typeof item.Gust != 'undefined') {
-											statushtml+= '</span><span>' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
+											statushtml += '</span><span>' + $.t('Gust') + ': ' + item.Gust + ' ' + $scope.config.WindSign;
 										}
-										statushtml+= '</span><span>\n';
+										statushtml += '</span><span>\n';
 										if (typeof item.Temp != 'undefined') {
-											statushtml+= $.t('Temp') + ': ' + item.Temp + '&deg; ' + $scope.config.TempSign;
+											statushtml += $.t('Temp') + ': ' + item.Temp + '&deg; ' + $scope.config.TempSign;
 										}
 										if (typeof item.Chill != 'undefined') {
 											if (typeof item.Temp != 'undefined') {
-												statushtml+= '</span><span>';
+												statushtml += '</span><span>';
 											}
-											statushtml+= $.t('Chill') + ': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
+											statushtml += $.t('Chill') + ': ' + item.Chill + '&deg; ' + $scope.config.TempSign;
 										}
 									} else if (typeof item.Barometer != 'undefined') {
 										imghtml += 'baro48.png" class="lcursor" onclick="ShowBaroLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-											statushtml+=  item.Barometer + ' hPa';
+										statushtml += item.Barometer + ' hPa';
 										if (typeof item.ForecastStr != 'undefined') {
-											statushtml+=  '</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
+											statushtml += '</span><span>' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 										}
 										if (typeof item.Altitude != 'undefined') {
-											statushtml+= '</span><span>Altitude: ' + item.Altitude + ' meter';
+											statushtml += '</span><span>Altitude: ' + item.Altitude + ' meter';
 										}
 									}
-                                    statushtml+='</span>';
-                                    
-                                    /* checking if the bigtext already contains exactly the first item of status. Let's not show things twice? */
-                                    if(statushtml.length != bigtexthtml.length && statushtml.lastIndexOf(bigtexthtml, 0) === 0){
-                                        statushtml = statushtml.replace(bigtexthtml, "");
-                                    }
-                                    
-                                    /* Checking the generated html for even more classes (comparing bigtext and status) */
-                                    var count = 0;
+									statushtml += '</span>';
+
+									/* checking if the bigtext already contains exactly the first item of status. Let's not show things twice? */
+									if (statushtml.length != bigtexthtml.length && statushtml.lastIndexOf(bigtexthtml, 0) === 0) {
+										statushtml = statushtml.replace(bigtexthtml, "");
+									}
+
+									/* Checking the generated html for even more classes (comparing bigtext and status) */
+									var count = 0;
 									count = (statushtml.match(/<span/g) || []).length;
 									if (statushtml.length != bigtexthtml.length) {
 										xhtm += '\t  <div id="' + predClass + '" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
 									} else {
 										xhtm += '\t  <div id="' + predClass + '" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withoutstatus statuscount' + count + '">\n';
 									}
-                                    
 
 
-                                    /* Finally, fill in the rest of the HTML */
+
+									/* Finally, fill in the rest of the HTML */
 									xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									xhtm += '\t    <tr>\n';
 									xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
-									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' +  bigtexthtml + '</span></td>\n';
+									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imghtml;
-                                    xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml; + '</span></td>\n';
-								    xhtm +='\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml; + '</span></td>\n';
+									xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div><!--item end-->\n' +
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-                                
-                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
-                                    jj = 1; 
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                }
-                                
+
+								if (CSS3) { // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+									jj = 1;
+								} else { // older webbrowser.
+									jj += 1;
+								}
+
 							}
 						}); //weather devices    
 						if (bHaveAddedDivider == true) {
@@ -3252,10 +3251,10 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//security devices
+						//security devices
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Security') == 0) && (item.Favorite != 0)) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -3311,8 +3310,8 @@ define(['app'], function(app) {
 									} else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="security_' + item.idx + '">\n';
 									}
-                                    
-                                    /* type of device */
+
+									/* type of device */
 									var itemtypeclass = "";
 									var itemsubtypeclass = "";
 									if (typeof item.Type != 'undefined') {
@@ -3321,10 +3320,10 @@ define(['app'], function(app) {
 									}
 									if (typeof item.SubType != 'undefined') {
 										var itemsubtypeclass = item.SubType.split(' ').join('');
-										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
 									}
-                                    
-                                    
+
+
 									xhtm += '\t  <div id="" class="item security">\n';
 									if ($scope.config.DashboardType == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -3394,11 +3393,11 @@ define(['app'], function(app) {
 										'\t</div>\n';
 								}
 								htmlcontent += xhtm;
-                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
-                                    jj = 1; 
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                }
+								if (CSS3) { // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+									jj = 1;
+								} else { // older webbrowser.
+									jj += 1;
+								}
 							}
 						}); //security devices                    
 						if (bHaveAddedDivider == true) {
@@ -3413,10 +3412,10 @@ define(['app'], function(app) {
 						}
 
 
-//evohome devices
+						//evohome devices
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if ((item.Type.indexOf('Heating') == 0) && (item.Favorite != 0)) {
 								totdevices += 1;
 								if (jj == 0) {
@@ -3490,11 +3489,11 @@ define(['app'], function(app) {
 									}
 								}
 								htmlcontent += xhtm;
-                                if(CSS3){ // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
-                                    jj = 1; 
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                }
+								if (CSS3) { // In newer webbrowsers keeps everything in the same divider and lets flexbox/CSS take care of columns.
+									jj = 1;
+								} else { // older webbrowser.
+									jj += 1;
+								}
 							}
 						}); //evohome devices
 						if (bHaveAddedDivider == true) {
@@ -3508,13 +3507,13 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-//Utility Sensors
-                        $('#dashcontent').html(suntext + htmlcontent); // attach everything so far.
-                        htmlcontent = "";
-                        
+						//Utility Sensors
+						$('#dashcontent').html(suntext + htmlcontent); // attach everything so far.
+						htmlcontent = "";
+
 						jj = 0;
 						bHaveAddedDivider = false;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if (
 								(
 									(typeof item.Counter != 'undefined') ||
@@ -3549,26 +3548,26 @@ define(['app'], function(app) {
 								(item.Favorite != 0)
 							) {
 								totdevices += 1;
-                                
-                                var bandLeaderID = "";
-                                var bandmember = false;
-                                var bandsign = false;
-                                var newspanhtml = "";
-                                var values = [];
-                                var prefix = "";
-                                var postfix = "";
-                                var prefixClass = "";
-                                var postfixClass = "";
+
+								var bandLeaderID = "";
+								var bandmember = false;
+								var bandsign = false;
+								var newspanhtml = "";
+								var values = [];
+								var prefix = "";
+								var postfix = "";
+								var prefixClass = "";
+								var postfixClass = "";
 								var count = 0;
-                                
+
 								if (jj == 0) {
 									//first time
-                                    
-                                    if(mergeItems){
-									   $('#dashcontent').append('<section class="dashCategory CSS3" id="dashUtility"><h2>' + $.t('Utility Sensors') + ':</h2><div class="row divider" id="utilityDivider"></div></section>');
-                                    }else{
-                                        htmlcontent += '<section class="dashCategory" id="dashUtility">';
-                                    }
+
+									if (mergeItems) {
+										$('#dashcontent').append('<section class="dashCategory CSS3" id="dashUtility"><h2>' + $.t('Utility Sensors') + ':</h2><div class="row divider" id="utilityDivider"></div></section>');
+									} else {
+										htmlcontent += '<section class="dashCategory" id="dashUtility">';
+									}
 
 									// mobile util start                  
 									if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -3726,7 +3725,7 @@ define(['app'], function(app) {
 										'\t    </tr>\n';
 								}
 								else {
-                                    // utilities normal/compact display
+									// utilities normal/compact display
 									if ($scope.config.DashboardType == 0) {
 										xhtm = '\t<div class="span4 movable" id="utility_' + item.idx + '">\n';
 									} else if ($scope.config.DashboardType == 1) {
@@ -3789,11 +3788,11 @@ define(['app'], function(app) {
 									var itemsubtypeclass = "";
 									if (typeof item.Type != 'undefined') {
 										var itemtypeclass = ' ' + item.Type.slice(0);
-                                        itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+										itemtypeclass = itemtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
 									}
 									if (typeof item.SubType != 'undefined') {
 										var itemsubtypeclass = item.SubType.split(' ').join('');
-										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
+										itemsubtypeclass = itemsubtypeclass.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
 									}
 									/* add classes for generate protected/timeout/lowbattery status */
 									var backgroundClass = "statusNormal";
@@ -3929,49 +3928,49 @@ define(['app'], function(app) {
 											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
-                                    
-                                    var overlayStyle= "";
-                                    if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#appnavbar").css("z-index") == 1031){
-                                        overlayStyle = 'style="width:' + item.Data + '"';
-                                    }
+
+									var overlayStyle = "";
+									if (item.SubType == "Percentage" && typeof item.Data != 'undefined' && $("#appnavbar").css("z-index") == 1031) {
+										overlayStyle = 'style="width:' + item.Data + '"';
+									}
 
 
 									count = (statushtml.match(/<span/g) || []).length + 1; // Count how many status data outputs this item has, by counting the separators.
 
-                                    // Merger feature.
-                                    if(mergeItems == true && count == 1){
-                                        //console.log("Found a simple item..");
-                                        values=item.Name.split('-');
-                                        if (values.length > 1){ // a dash in the name has been spotted.
-                                            //console.log("It is a merger candidate..");
-                                            bandsign = true;
-                                            prefix=values[0].trim().toUpperCase();
-                                            console.log("band:" + prefix);
-                                            prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                            postfix=values[1].trim().toLowerCase();
-                                            console.log("skill:" + postfix);
-                                            postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                            if(bandList.indexOf(prefix.trim()) > -1){ // There is a previous band member on record.
-                                                console.log("Adding band member to band!");
-                                                bandmember = true;
-                                                bandLeaderID = bands[prefix.trim()];
-                                                newspanhtml = '<span class="' + postfixClass + '">' + postfix + ': ' + statushtml + '</span>';
-                                                $("#utilityDivider #utility_" + bandLeaderID + " #status .wrapper").append(imagehtml + newspanhtml);
-                                                //$(imagehtml).insertAfter()
-                                                //$("#utilityDivider #utility_" + bandLeaderID + " .img1").append();
-                                                $('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass("bandleader"); // tag the leader so we can add classes to it afterwards.
-                                                $('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass(prefixClass);
-                                                return true;
-                                            }else{
-                                                bands[prefix] = item.idx; // save the ID, it may turn out to be a band leader later.
-                                                bandList.push(prefix); // for quick lookup, keep a list of possible band names (prefixes).
-                                            }
-                                        }
-                                    }
-                                    
-                                    bigtexthtml = '<span>' + bigtexthtml + '</span>';
+									// Merger feature.
+									if (mergeItems == true && count == 1) {
+										//console.log("Found a simple item..");
+										values = item.Name.split('-');
+										if (values.length > 1) { // a dash in the name has been spotted.
+											//console.log("It is a merger candidate..");
+											bandsign = true;
+											prefix = values[0].trim().toUpperCase();
+											console.log("band:" + prefix);
+											prefixClass = prefix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+											postfix = values[1].trim().toLowerCase();
+											console.log("skill:" + postfix);
+											postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+											if (bandList.indexOf(prefix.trim()) > -1) { // There is a previous band member on record.
+												console.log("Adding band member to band!");
+												bandmember = true;
+												bandLeaderID = bands[prefix.trim()];
+												newspanhtml = '<span class="' + postfixClass + '">' + postfix + ': ' + statushtml + '</span>';
+												$("#utilityDivider #utility_" + bandLeaderID + " #status .wrapper").append(imagehtml + newspanhtml);
+												//$(imagehtml).insertAfter()
+												//$("#utilityDivider #utility_" + bandLeaderID + " .img1").append();
+												$('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass("bandleader"); // tag the leader so we can add classes to it afterwards.
+												$('#utilityDivider #utility_' + bandLeaderID + ' .item').addClass(prefixClass);
+												return true;
+											} else {
+												bands[prefix] = item.idx; // save the ID, it may turn out to be a band leader later.
+												bandList.push(prefix); // for quick lookup, keep a list of possible band names (prefixes).
+											}
+										}
+									}
+
+									bigtexthtml = '<span>' + bigtexthtml + '</span>';
 									statushtml = '<span>' + statushtml + '</span>';
-                                    
+
 									if (statushtml.length != bigtexthtml.length) {
 										xhtm += '\t  <div id="" class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + ' withstatus statuscount' + count + '">\n';
 									} else {
@@ -3983,31 +3982,31 @@ define(['app'], function(app) {
 									xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper">' + bigtexthtml + '</span></td>\n';
 									xhtm += '\t      <td id="img" class="img img1">' + imagehtml + '</td>';
 									xhtm += '\t      <td id="status" class="status"><span class="wrapper">' + statushtml + '</span></td>\n';
-                                    xhtm += '\t      <td class="overlay"><div ' + overlayStyle + '></div></td>';   
-									xhtm +=	'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+									xhtm += '\t      <td class="overlay"><div ' + overlayStyle + '></div></td>';
+									xhtm += '\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 										'\t    </tr>\n' +
 										'\t    </table>\n' +
 										'\t  </div>\n' +
 										'\t</div>\n';
-                                    
+
 								} // end of normal/compact xhtm creation
 
-                                if(CSS3){
-                                    jj = 1; // keeps everything in the same divider, and let CSS create rows.
-                                    
-                                } else{ // older webbrowser.
-                                    jj += 1;
-                                    
-                                }
-                                if(mergeItems == true){
-                                    $('#utilityDivider').append(xhtm);// Each item is immediately added to the dom to make merging items easier via jQuery. 
-                                }else{
-                                    htmlcontent += xhtm;   
-                                }
-                                
+								if (CSS3) {
+									jj = 1; // keeps everything in the same divider, and let CSS create rows.
+
+								} else { // older webbrowser.
+									jj += 1;
+
+								}
+								if (mergeItems == true) {
+									$('#utilityDivider').append(xhtm);// Each item is immediately added to the dom to make merging items easier via jQuery. 
+								} else {
+									htmlcontent += xhtm;
+								}
+
 							}
 						}); //Utility devices
-                        
+
 						if (bHaveAddedDivider == true) {
 							//close previous divider
 							htmlcontent += '</div>\n';
@@ -4019,28 +4018,28 @@ define(['app'], function(app) {
 							htmlcontent += '</section>';
 						}
 
-                        if(mergeItems == true){ // optimise the merged item.
-                            $('#utilityDivider .bandleader').each(function() {
-                                var bandmembercount = "statuscount" + $(this).find('#status > .wrapper > span').length;
-                                console.log("bandmembercount = " + bandmembercount);
-                                $(this).removeClass("statuscount0");
-                                $(this).removeClass("statuscount1");
-                                $(this).addClass(bandmembercount);
-                                $(this).removeClass("withoutstatus");
-                                $(this).addClass("withstatus");
-                                $(this).find('.bigtext > span').text($.t('group'));
-                                var oldname = $(this).find('.name > span').text();
-                                var oldnamearray=oldname.split('-');
-                                $(this).find('.name > span').text(oldnamearray[0]);
-                                var postfix=oldnamearray[1].trim().toLowerCase();
-                                var postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, ''); 
-                                $(this).find('.status > .wrapper > span:first-of-type').addClass(postfixClass);
-                                $(this).find('.status > .wrapper > span:first-of-type').text(postfix+ ': ' + $(this).find('.status > .wrapper > span:first-of-type').text()); 
-                                var targetspan = $(this).find('#status .wrapper > span:first-of-type')
-                                $(this).find('.img1 img').insertBefore(targetspan);
-                            });
-                        }
-                        addDataviz();
+						if (mergeItems == true) { // optimise the merged item.
+							$('#utilityDivider .bandleader').each(function () {
+								var bandmembercount = "statuscount" + $(this).find('#status > .wrapper > span').length;
+								console.log("bandmembercount = " + bandmembercount);
+								$(this).removeClass("statuscount0");
+								$(this).removeClass("statuscount1");
+								$(this).addClass(bandmembercount);
+								$(this).removeClass("withoutstatus");
+								$(this).addClass("withstatus");
+								$(this).find('.bigtext > span').text($.t('group'));
+								var oldname = $(this).find('.name > span').text();
+								var oldnamearray = oldname.split('-');
+								$(this).find('.name > span').text(oldnamearray[0]);
+								var postfix = oldnamearray[1].trim().toLowerCase();
+								var postfixClass = postfix.replace(/\s/g, '').replace(/\\/g, '').replace(/\//g, '').replace(/,/g, '').replace(/\+/g, '');
+								$(this).find('.status > .wrapper > span:first-of-type').addClass(postfixClass);
+								$(this).find('.status > .wrapper > span:first-of-type').text(postfix + ': ' + $(this).find('.status > .wrapper > span:first-of-type').text());
+								var targetspan = $(this).find('#status .wrapper > span:first-of-type')
+								$(this).find('.img1 img').insertBefore(targetspan);
+							});
+						}
+						addDataviz();
 					}
 				}
 			});
@@ -4056,17 +4055,17 @@ define(['app'], function(app) {
 			} else {
 				htmlcontent += "<br>";
 			}
-            
+
 			if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true) || mergeItems == false || totdevices == 0) {
 				$('#dashcontent').append(htmlcontent);
 			}
-            
-            $('#dashcontent').append(EvohomeAddJS());
+
+			$('#dashcontent').append(EvohomeAddJS());
 			//$('#dashcontent').html(suntext + htmlcontent + EvohomeAddJS());
 			$('#dashcontent').i18n();
 
 			if (bShowRoomplan == true) {
-				$.each($.RoomPlans, function(i, item) {
+				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
 					$("#dashcontent #comboroom").append(option);
@@ -4074,7 +4073,7 @@ define(['app'], function(app) {
 				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
 					$("#dashcontent #comboroom").val(window.myglobals.LastPlanSelected);
 				}
-				$("#dashcontent #comboroom").change(function() {
+				$("#dashcontent #comboroom").change(function () {
 					var idx = $("#dashcontent #comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
 					ShowFavorites();
@@ -4089,7 +4088,7 @@ define(['app'], function(app) {
 			accordion_head.first().addClass('active').next().slideDown('normal');
 
 			// Click function
-			accordion_head.on('click', function(event) {
+			accordion_head.on('click', function (event) {
 				// Disable header links
 				event.preventDefault();
 
@@ -4113,7 +4112,7 @@ define(['app'], function(app) {
 				value: 5,
 
 				//Slider Events
-				create: function(event, ui) {
+				create: function (event, ui) {
 					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
 					$(this).slider("option", "type", $(this).data('type'));
 					$(this).slider("option", "isprotected", $(this).data('isprotected'));
@@ -4121,7 +4120,7 @@ define(['app'], function(app) {
 					if ($(this).data('disabled'))
 						$(this).slider("option", "disabled", true);
 				},
-				slide: function(event, ui) { //When the slider is sliding
+				slide: function (event, ui) { //When the slider is sliding
 					clearInterval($.setDimValue);
 					var maxValue = $(this).slider("option", "max");
 					var dtype = $(this).slider("option", "type");
@@ -4151,7 +4150,7 @@ define(['app'], function(app) {
 								$(id + " #status > span").html(status);
 							}
 						} else {
-                            // normal/compact view slider magic
+							// normal/compact view slider magic
 							var imgname = $('#light_' + idx + ' .lcursor').prop('src');
 							imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("_O") + 2);
 							if (dtype == "relay")
@@ -4168,29 +4167,29 @@ define(['app'], function(app) {
 									$(id + " #img").html(img);
 								}
 							}
-                            status = "<span>" + status + "</span>";
-							if ($(id + " #bigtext > span").html() != status) { 
+							status = "<span>" + status + "</span>";
+							if ($(id + " #bigtext > span").html() != status) {
 								$(id + " #bigtext > span").html(status);
 							}
-                            console.log("sliding");
+							console.log("sliding");
 						}
 					}
 					if (dtype != "relay")
-						$.setDimValue = setInterval(function() {
+						$.setDimValue = setInterval(function () {
 							SetDimValue(idx, ui.value);
 						}, 500);
 				},
-				stop: function(event, ui) {
+				stop: function (event, ui) {
 					var idx = $(this).data('idx');
 					var dtype = $(this).slider("option", "type");
 					if (dtype == "relay")
 						SetDimValue(idx, ui.value);
-                    if ($scope.config.ShowUpdatedEffect == true) {
-                        $(this).find("#name").effect("highlight", {
-                        //$(id + " #name").effect("highlight", {
-                            color: '#EEFFEE'
-                        }, 1000);
-                    }
+					if ($scope.config.ShowUpdatedEffect == true) {
+						$(this).find("#name").effect("highlight", {
+							//$(id + " #name").effect("highlight", {
+							color: '#EEFFEE'
+						}, 1000);
+					}
 				}
 			});
 			$scope.ResizeDimSliders();
@@ -4198,7 +4197,7 @@ define(['app'], function(app) {
 			//Create Selector buttonset
 			$('#dashcontent .selectorlevels div').buttonset({
 				//Selector selectmenu events
-				create: function(event, ui) {
+				create: function (event, ui) {
 					var div$ = $(this),
 						idx = div$.data('idx'),
 						type = div$.data('type'),
@@ -4211,7 +4210,7 @@ define(['app'], function(app) {
 					}
 					div$.find('input[value="' + level + '"]').prop("checked", true);
 
-					div$.find('input').click(function(event) {
+					div$.find('input').click(function (event) {
 						var target$ = $(event.target);
 						level = parseInt(target$.val(), 10);
 						levelname = div$.find('label[for="' + target$.attr('id') + '"]').text();
@@ -4236,7 +4235,7 @@ define(['app'], function(app) {
 				width: '75%',
 				value: 0,
 				//Selector selectmenu events
-				create: function(event, ui) {
+				create: function (event, ui) {
 					var select$ = $(this),
 						idx = select$.data('idx'),
 						isprotected = select$.data('isprotected'),
@@ -4255,7 +4254,7 @@ define(['app'], function(app) {
 						$('#dashcontent #light_' + idx + " #bigtext > span").html(unescape(levelname));
 					}
 				},
-				change: function(event, ui) { //When the user selects an option
+				change: function (event, ui) { //When the user selects an option
 					var select$ = $(this),
 						idx = select$.selectmenu("option", "idx"),
 						level = select$.selectmenu().val(),
@@ -4273,7 +4272,7 @@ define(['app'], function(app) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
 						$("#dashcontent .movable").draggable({
-							drag: function() {
+							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
 									$scope.mytimer = undefined;
@@ -4284,14 +4283,14 @@ define(['app'], function(app) {
 							revert: true
 						});
 						$("#dashcontent .movable").droppable({
-							drop: function() {
+							drop: function () {
 								var myid = $(this).attr("id");
 								var parts1 = myid.split('_');
 								var parts2 = $.devIdx.split('_');
-                                $(this).css("z-index",0);
+								$(this).css("z-index", 0);
 								if (parts1[0] != parts2[0]) {
 									bootbox.alert($.t('Only possible between Sensors of the same kind!'));
-									$scope.mytimer = $interval(function() {
+									$scope.mytimer = $interval(function () {
 										ShowFavorites();
 									}, 10000);
 								} else {
@@ -4303,7 +4302,7 @@ define(['app'], function(app) {
 										url: "json.htm?type=command&param=switchdeviceorder&idx1=" + parts1[1] + "&idx2=" + parts2[1] + "&roomid=" + roomid,
 										async: false,
 										dataType: 'json',
-										success: function(data) {
+										success: function (data) {
 											ShowFavorites();
 										}
 									});
@@ -4313,12 +4312,12 @@ define(['app'], function(app) {
 					}
 				}
 			}
-			$scope.mytimer = $interval(function() {
+			$scope.mytimer = $interval(function () {
 				RefreshFavorites();
 			}, 10000);
 		}
 
-		$scope.ResizeDimSliders = function() {
+		$scope.ResizeDimSliders = function () {
 			var nobj = $("#dashcontent .widget");
 			if (typeof nobj == 'undefined') {
 				return;
@@ -4332,7 +4331,7 @@ define(['app'], function(app) {
 
 			width = $("#dashcontent .widget").width() - 40;
 			//width=$(".span4").width()-118;
-            
+
 			$("#dashcontent .span4 .dimslidersmall").width(width);
 			//width=$(".span3").width()-112;
 			$("#dashcontent .span3 .dimslidersmall").width(width);
@@ -4347,7 +4346,7 @@ define(['app'], function(app) {
 		init();
 
 		function init() {
-			$(window).resize(function() {
+			$(window).resize(function () {
 				$scope.ResizeDimSliders();
 			});
 			$scope.LastUpdateTime = parseInt(0);
@@ -4361,7 +4360,7 @@ define(['app'], function(app) {
             */
 		};
 
-		$scope.$on('$destroy', function() {
+		$scope.$on('$destroy', function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;

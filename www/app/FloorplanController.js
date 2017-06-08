@@ -386,8 +386,8 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 
-            $("body").removeClass();
-            $("body").addClass("floorplan").addClass("frontStage");  
+			$("body").removeClass();
+			$("body").addClass("floorplan").addClass("frontStage");
             /*if ($scope.config.DashboardType == 0) {   
                 $("body").addClass("3column");
             }
@@ -399,10 +399,10 @@ define(['app'], function (app) {
             }    
             if ($scope.config.DashboardType == 3) {
                 $("body").addClass("dashFloorplan");*/
-            
-            
-            
-            
+
+
+
+
 			var htmlcontent = "";
 			htmlcontent += $('#fphtmlcontent').html();
 			$('#floorplancontent').html($compile(htmlcontent)($scope));

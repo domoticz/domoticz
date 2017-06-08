@@ -1,19 +1,19 @@
-define(['app'], function(app) {
-	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function($scope, $rootScope, $location, $http, $interval, permissions) {
+define(['app'], function (app) {
+	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
 
 		$scope.HasInitializedEditCustomSensorDialog = false;
 
-		DeleteSetpointTimer = function(idx) {
-			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function(result) {
+		DeleteSetpointTimer = function (idx) {
+			bootbox.confirm($.t("Are you sure to delete this timers?\n\nThis action can not be undone..."), function (result) {
 				if (result == true) {
 					$.ajax({
 						url: "json.htm?type=command&param=deletesetpointtimer&idx=" + idx,
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							RefreshSetpointTimerTable($.devIdx);
 						},
-						error: function() {
+						error: function () {
 							HideNotify();
 							ShowNotify($.t('Problem deleting timer!'), 2500, true);
 						}
@@ -22,17 +22,17 @@ define(['app'], function(app) {
 			});
 		}
 
-		ClearSetpointTimers = function() {
-			bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function(result) {
+		ClearSetpointTimers = function () {
+			bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function (result) {
 				if (result == true) {
 					$.ajax({
 						url: "json.htm?type=command&param=clearsetpointtimers&idx=" + $.devIdx,
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							RefreshSetpointTimerTable($.devIdx);
 						},
-						error: function() {
+						error: function () {
 							HideNotify();
 							ShowNotify($.t('Problem clearing timers!'), 2500, true);
 						}
@@ -41,7 +41,7 @@ define(['app'], function(app) {
 			});
 		}
 
-		GetSetpointTimerSettings = function() {
+		GetSetpointTimerSettings = function () {
 			var tsettings = {};
 			tsettings.Active = $('#utilitycontent #timerparamstable #enabled').is(":checked");
 			tsettings.timertype = $("#utilitycontent #timerparamstable #combotype").val();
@@ -82,7 +82,7 @@ define(['app'], function(app) {
 			return tsettings;
 		}
 
-		UpdateSetpointTimer = function(idx) {
+		UpdateSetpointTimer = function (idx) {
 			var tsettings = GetSetpointTimerSettings();
 			if (tsettings.timertype == 5) {
 				if (tsettings.date == "") {
@@ -127,29 +127,29 @@ define(['app'], function(app) {
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=updatesetpointtimer&idx=" + idx +
-					"&active=" + tsettings.Active +
-					"&timertype=" + tsettings.timertype +
-					"&date=" + tsettings.date +
-					"&hour=" + tsettings.hour +
-					"&min=" + tsettings.min +
-					"&tvalue=" + tsettings.tvalue +
-					"&days=" + tsettings.days +
-					"&mday=" + tsettings.mday +
-					"&month=" + tsettings.month +
-					"&occurence=" + tsettings.occurence,
+				"&active=" + tsettings.Active +
+				"&timertype=" + tsettings.timertype +
+				"&date=" + tsettings.date +
+				"&hour=" + tsettings.hour +
+				"&min=" + tsettings.min +
+				"&tvalue=" + tsettings.tvalue +
+				"&days=" + tsettings.days +
+				"&mday=" + tsettings.mday +
+				"&month=" + tsettings.month +
+				"&occurence=" + tsettings.occurence,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					RefreshSetpointTimerTable($.devIdx);
 				},
-				error: function() {
+				error: function () {
 					HideNotify();
 					ShowNotify($.t('Problem updating timer!'), 2500, true);
 				}
 			});
 		}
 
-		AddSetpointTimer = function() {
+		AddSetpointTimer = function () {
 			var tsettings = GetSetpointTimerSettings();
 			if (tsettings.timertype == 5) {
 				if (tsettings.date == "") {
@@ -194,29 +194,29 @@ define(['app'], function(app) {
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=addsetpointtimer&idx=" + $.devIdx +
-					"&active=" + tsettings.Active +
-					"&timertype=" + tsettings.timertype +
-					"&date=" + tsettings.date +
-					"&hour=" + tsettings.hour +
-					"&min=" + tsettings.min +
-					"&tvalue=" + tsettings.tvalue +
-					"&days=" + tsettings.days +
-					"&mday=" + tsettings.mday +
-					"&month=" + tsettings.month +
-					"&occurence=" + tsettings.occurence,
+				"&active=" + tsettings.Active +
+				"&timertype=" + tsettings.timertype +
+				"&date=" + tsettings.date +
+				"&hour=" + tsettings.hour +
+				"&min=" + tsettings.min +
+				"&tvalue=" + tsettings.tvalue +
+				"&days=" + tsettings.days +
+				"&mday=" + tsettings.mday +
+				"&month=" + tsettings.month +
+				"&occurence=" + tsettings.occurence,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					RefreshSetpointTimerTable($.devIdx);
 				},
-				error: function() {
+				error: function () {
 					HideNotify();
 					ShowNotify($.t('Problem adding timer!'), 2500, true);
 				}
 			});
 		}
 
-		EnableDisableSetpointDays = function(TypeStr, bDisabled) {
+		EnableDisableSetpointDays = function (TypeStr, bDisabled) {
 			$('#utilitycontent #timerparamstable #ChkMon').prop('checked', ((TypeStr.indexOf("Mon") >= 0) || (TypeStr == "Everyday") || (TypeStr == "Weekdays")) ? true : false);
 			$('#utilitycontent #timerparamstable #ChkTue').prop('checked', ((TypeStr.indexOf("Tue") >= 0) || (TypeStr == "Everyday") || (TypeStr == "Weekdays")) ? true : false);
 			$('#utilitycontent #timerparamstable #ChkWed').prop('checked', ((TypeStr.indexOf("Wed") >= 0) || (TypeStr == "Everyday") || (TypeStr == "Weekdays")) ? true : false);
@@ -234,7 +234,7 @@ define(['app'], function(app) {
 			$('#utilitycontent #timerparamstable #ChkSun').attr('disabled', bDisabled);
 		}
 
-		RefreshSetpointTimerTable = function(idx) {
+		RefreshSetpointTimerTable = function (idx) {
 			$('#modal').show();
 
 			$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
@@ -247,10 +247,10 @@ define(['app'], function(app) {
 				url: "json.htm?type=setpointtimers&idx=" + idx,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 
 					if (typeof data.result != 'undefined') {
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							var active = "No";
 							if (item.Active == "true") {
 								active = "Yes";
@@ -314,7 +314,7 @@ define(['app'], function(app) {
 								splitstr = " ";
 							}
 							var res = DayStrOrig.split(splitstr);
-							$.each(res, function(i, item) {
+							$.each(res, function (i, item) {
 								DayStr += $.t(item);
 								if (i != res.length - 1) {
 									DayStr += splitstr;
@@ -349,7 +349,7 @@ define(['app'], function(app) {
 
 			/* Add a click handler to the rows - this could be used as a callback */
 			$("#utilitycontent #setpointtimertable tbody").off();
-			$("#utilitycontent #setpointtimertable tbody").on('click', 'tr', function() {
+			$("#utilitycontent #setpointtimertable tbody").on('click', 'tr', function () {
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
 					$('#updelclr #timerupdate').attr("class", "btnstyle3-dis");
@@ -452,7 +452,7 @@ define(['app'], function(app) {
 			$('#modal').hide();
 		}
 
-		$.strPad = function(i, l, s) {
+		$.strPad = function (i, l, s) {
 			var o = i.toString();
 			if (!s) {
 				s = '0';
@@ -463,7 +463,7 @@ define(['app'], function(app) {
 			return o;
 		};
 
-		ShowSetpointTimers = function(id, name, isdimmer, stype, devsubtype) {
+		ShowSetpointTimers = function (id, name, isdimmer, stype, devsubtype) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -483,7 +483,7 @@ define(['app'], function(app) {
 				url: "json.htm?type=command&param=getSunRiseSet",
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.Sunrise != 'undefined') {
 						sunRise = data.Sunrise;
 						sunSet = data.Sunset;
@@ -514,7 +514,7 @@ define(['app'], function(app) {
 				dateFormat: "mm/dd/yy",
 				showWeek: true,
 				firstDay: 1,
-				onSelect: function() {
+				onSelect: function () {
 					if ($("#ssdate").val() != '') {
 						$("#utilitycontent #ssdate").datepicker("setDate", $("#ssdate").val());
 					}
@@ -523,7 +523,7 @@ define(['app'], function(app) {
 			$("#ssdate").datepicker('setDate', '0');
 			$("#utilitycontent #ssdate").datepicker('setDate', '0');
 
-			$("#utilitycontent #combotype").change(function() {
+			$("#utilitycontent #combotype").change(function () {
 				var timerType = $("#utilitycontent #combotype").val();
 				if (timerType == 5) {
 					$("#utilitycontent #timerparamstable #rdate").show();
@@ -605,20 +605,20 @@ define(['app'], function(app) {
 				$('#timerparamstable #days').append($('<option></option>').val(ii).html(ii));
 			}
 
-			$("#utilitycontent #timerparamstable #when_1").click(function() {
+			$("#utilitycontent #timerparamstable #when_1").click(function () {
 				EnableDisableSetpointDays("Everyday", true);
 			});
-			$("#utilitycontent #timerparamstable #when_2").click(function() {
+			$("#utilitycontent #timerparamstable #when_2").click(function () {
 				EnableDisableSetpointDays("Weekdays", true);
 			});
-			$("#utilitycontent #timerparamstable #when_3").click(function() {
+			$("#utilitycontent #timerparamstable #when_3").click(function () {
 				EnableDisableSetpointDays("Weekends", true);
 			});
-			$("#utilitycontent #timerparamstable #when_4").click(function() {
+			$("#utilitycontent #timerparamstable #when_4").click(function () {
 				EnableDisableSetpointDays("", false);
 			});
 
-			$("#utilitycontent #timerparamstable #combocommand").change(function() {
+			$("#utilitycontent #timerparamstable #combocommand").change(function () {
 				var cval = $("#utilitycontent #timerparamstable #combocommand").val();
 				var bShowLevel = false;
 			});
@@ -627,7 +627,7 @@ define(['app'], function(app) {
 			RefreshSetpointTimerTable(id);
 		}
 
-		MakeFavorite = function(id, isfavorite) {
+		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -642,13 +642,13 @@ define(['app'], function(app) {
 				url: "json.htm?type=command&param=makefavorite&idx=" + id + "&isfavorite=" + isfavorite,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					ShowUtilities();
 				}
 			});
 		}
 
-		ConfigureEditCustomSensorDialog = function() {
+		ConfigureEditCustomSensorDialog = function () {
 			if ($scope.HasInitializedEditCustomSensorDialog == true) {
 				return;
 			}
@@ -659,10 +659,10 @@ define(['app'], function(app) {
 				url: "json.htm?type=custom_light_icons",
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						var totalItems = data.result.length;
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							var bSelected = false;
 							if (i == 0) {
 								bSelected = true;
@@ -692,7 +692,7 @@ define(['app'], function(app) {
 			});
 		}
 
-		EditUtilityDevice = function(idx, name, description) {
+		EditUtilityDevice = function (idx, name, description) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -704,7 +704,7 @@ define(['app'], function(app) {
 			$("#dialog-editutilitydevice").dialog("open");
 		}
 
-		EditCustomSensorDevice = function(idx, name, description, customimage, sensortype, axislabel) {
+		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -725,7 +725,7 @@ define(['app'], function(app) {
 				imagePosition: "left"
 			});
 			//find our custom image index and select it
-			$.each($.ddData, function(i, item) {
+			$.each($.ddData, function (i, item) {
 				if (item.value == customimage) {
 					$('#dialog-editcustomsensordevice #combosensoricon').ddslick('select', {
 						index: i
@@ -737,7 +737,7 @@ define(['app'], function(app) {
 			$("#dialog-editcustomsensordevice").dialog("open");
 		}
 
-		EditDistanceDevice = function(idx, name, description, switchtype) {
+		EditDistanceDevice = function (idx, name, description, switchtype) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -750,7 +750,7 @@ define(['app'], function(app) {
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function(idx, name, description, switchtype, meteroffset, valuequantity, valueunits) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -767,7 +767,7 @@ define(['app'], function(app) {
 				$("#dialog-editmeterdevice #metertable #customcounter").show();
 			}
 
-			$("#dialog-editmeterdevice #combometertype").change(function() {
+			$("#dialog-editmeterdevice #combometertype").change(function () {
 				$("#dialog-editmeterdevice #metertable #customcounter").hide();
 				var meterType = $("#dialog-editmeterdevice #combometertype").val();
 				if (meterType == 3) { //Counter
@@ -783,7 +783,7 @@ define(['app'], function(app) {
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function(idx, name, description, switchtype, devoptions) {
+		EditEnergyDevice = function (idx, name, description, switchtype, devoptions) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -800,12 +800,12 @@ define(['app'], function(app) {
 			$("#dialog-editenergydevice").dialog("open");
 		}
 
-		EditSetPoint = function(idx, name, description, setpoint, isprotected) {
+		EditSetPoint = function (idx, name, description, setpoint, isprotected) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			HandleProtection(isprotected, function() {
+			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #devicename").val(unescape(name));
 				$("#dialog-editsetpointdevice #devicedescription").val(unescape(description));
@@ -817,12 +817,12 @@ define(['app'], function(app) {
 			});
 		}
 
-		EditThermostatClock = function(idx, name, description, daytime, isprotected) {
+		EditThermostatClock = function (idx, name, description, daytime, isprotected) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			HandleProtection(isprotected, function() {
+			HandleProtection(isprotected, function () {
 				var sarray = daytime.split(";");
 				$.devIdx = idx;
 				$("#dialog-editthermostatclockdevice #devicename").val(unescape(name));
@@ -836,8 +836,8 @@ define(['app'], function(app) {
 			});
 		}
 
-		EditThermostatMode = function(idx, name, description, actmode, modes, isprotected) {
-			HandleProtection(isprotected, function() {
+		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected) {
+			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = false;
@@ -859,8 +859,8 @@ define(['app'], function(app) {
 				$("#dialog-editthermostatmode").dialog("open");
 			});
 		}
-		EditThermostatFanMode = function(idx, name, description, actmode, modes, isprotected) {
-			HandleProtection(isprotected, function() {
+		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected) {
+			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = true;
@@ -883,11 +883,11 @@ define(['app'], function(app) {
 			});
 		}
 
-		AddUtilityDevice = function() {
+		AddUtilityDevice = function () {
 			bootbox.alert($.t('Please use the devices tab for this.'));
 		}
 
-		RefreshUtilities = function() {
+		RefreshUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -898,7 +898,7 @@ define(['app'], function(app) {
 				url: "json.htm?type=devices&filter=utility&used=true&order=Name&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.ServerTime != 'undefined') {
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
@@ -908,7 +908,7 @@ define(['app'], function(app) {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
 
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							id = "#utilitycontent #" + item.idx;
 							var obj = $(id);
 							if (typeof obj != 'undefined') {
@@ -1005,29 +1005,29 @@ define(['app'], function(app) {
 										}
 									}
 								}
-                                
-                                var newStatusClass = "statusNormal";
-                                if (item.Protected == true) {
-                                    newStatusClass = "statusProtected";
-                                }
-                                else if (item.HaveTimeout == true) {
-                                    newStatusClass = "statusTimeout";
-                                } 
-                                else {
-                                    var BatteryLevel = parseInt(item.BatteryLevel);
-                                    if (BatteryLevel != 255) {
-                                        if (BatteryLevel <= 10) {
-                                            newStatusClass = "statusLowBattery";
-                                        }
-                                    }
-                                }
-                                bigtext = "<span>" + bigtext + "</span>";
-                                status = "<span>" + status + "</span>";
-                                
-                                if(!$(id + ".item").hasClass(newStatusClass)) {
-                                    $(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery"); 
-                                    $(id + ".item").addClass(newStatusClass);
-                                }
+
+								var newStatusClass = "statusNormal";
+								if (item.Protected == true) {
+									newStatusClass = "statusProtected";
+								}
+								else if (item.HaveTimeout == true) {
+									newStatusClass = "statusTimeout";
+								}
+								else {
+									var BatteryLevel = parseInt(item.BatteryLevel);
+									if (BatteryLevel != 255) {
+										if (BatteryLevel <= 10) {
+											newStatusClass = "statusLowBattery";
+										}
+									}
+								}
+								bigtext = "<span>" + bigtext + "</span>";
+								status = "<span>" + status + "</span>";
+
+								if (!$(id + ".item").hasClass(newStatusClass)) {
+									$(id + ".item").removeClass("statusNormal").removeClass("statusProtected").removeClass("statusTimeout").removeClass("statusLowBattery");
+									$(id + ".item").addClass(newStatusClass);
+								}
 								if ($(id + " #status > span").html() != status) {
 									$(id + " #bigtext > span").html(bigtext);
 									$(id + " #status > span").html(status);
@@ -1053,33 +1053,33 @@ define(['app'], function(app) {
 					}
 				}
 			});
-			$scope.mytimer = $interval(function() {
+			$scope.mytimer = $interval(function () {
 				RefreshUtilities();
 			}, 10000);
 		}
 
-		ShowUtilities = function() {
+		ShowUtilities = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
 			$('#modal').show();
 
-            $("body").removeClass();
-            $("body").addClass("utility").addClass('frontStage');   
-            if ($scope.config.DashboardType == 0) {   
-                $("body").addClass("3column");
-            }
-            if ($scope.config.DashboardType == 1) {
-                $("body").addClass("4column");
-            }                    
-            if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
-                $("body").addClass("dashMobile");    
-            }    
-            if ($scope.config.DashboardType == 3) {
-                $("body").addClass("dashFloorplan");
-            }       
-            
+			$("body").removeClass();
+			$("body").addClass("utility").addClass('frontStage');
+			if ($scope.config.DashboardType == 0) {
+				$("body").addClass("3column");
+			}
+			if ($scope.config.DashboardType == 1) {
+				$("body").addClass("4column");
+			}
+			if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
+				$("body").addClass("dashMobile");
+			}
+			if ($scope.config.DashboardType == 3) {
+				$("body").addClass("dashFloorplan");
+			}
+
 			var htmlcontent = '';
 			var bShowRoomplan = false;
 			$.RoomPlans = [];
@@ -1087,7 +1087,7 @@ define(['app'], function(app) {
 				url: "json.htm?type=plans",
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						var totalItems = data.result.length;
 						if (totalItems > 0) {
@@ -1098,7 +1098,7 @@ define(['app'], function(app) {
 							}
 							if (bShowRoomplan == true) {
 								$("body").addClass("showRoomplan");
-								$.each(data.result, function(i, item) {
+								$.each(data.result, function (i, item) {
 									$.RoomPlans.push({
 										idx: item.idx,
 										name: item.Name
@@ -1115,16 +1115,16 @@ define(['app'], function(app) {
 			var tophtm = "";
 			if ($.RoomPlans.length == 0) {
 				tophtm +=
-                    '\t<div class="tophtm">\n' +
+					'\t<div class="tophtm">\n' +
 					'\t<table class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
 					'\t</tr>\n' +
 					'\t</table>\n' +
-                    '\t</div>\n';
+					'\t</div>\n';
 			} else {
 				tophtm +=
-                    '\t<div class="tophtm">\n' +
+					'\t<div class="tophtm">\n' +
 					'\t<table class="prebannav" border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
@@ -1135,7 +1135,7 @@ define(['app'], function(app) {
 					'</td>' +
 					'\t</tr>\n' +
 					'\t</table>\n';
-                    '\t</div>\n';            
+				'\t</div>\n';
 			}
 
 			var i = 0;
@@ -1143,12 +1143,12 @@ define(['app'], function(app) {
 				url: "json.htm?type=devices&filter=utility&used=true&order=Name&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
-				success: function(data) {
+				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						if (typeof data.ActTime != 'undefined') {
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
-						$.each(data.result, function(i, item) {
+						$.each(data.result, function (i, item) {
 							if (i % 3 == 0) {
 								//add devider
 								if (bHaveAddedDevider == true) {
@@ -1158,46 +1158,46 @@ define(['app'], function(app) {
 								htmlcontent += '<div class="row divider">\n';
 								bHaveAddedDevider = true;
 							}
-                                /* generate two item classes.  */
-                            
-                                /* type of device */
-                                var itemtypeclass = "";
-                                var itemsubtypeclass = "";
-                                if (typeof item.Type != 'undefined') {
-                                    var itemtypeclass = ' ' + item.Type.slice(0);
-                                    itemtypeclass = itemtypeclass.replace(/\s/g, '');
-                                    itemtypeclass = itemtypeclass.replace(/\\/g, '');
-                                    itemtypeclass = itemtypeclass.replace(/\//g, '');
-                                }
-                                if (typeof item.SubType != 'undefined') {
-                                    var itemsubtypeclass = item.SubType.split(' ').join('');
-                                    itemsubtypeclass = itemsubtypeclass.replace(/\\/g, '');
-                                    itemsubtypeclass = itemsubtypeclass.replace(/\//g, '');
-                                }
-                            
-                                /* generate protected/timeout/lowbattery status */
-                                var backgroundClass = "statusNormal";
-                                if (item.HaveTimeout == true) {
-                                    backgroundClass = "statusTimeout";
-                                } else {
-                                    var BatteryLevel = parseInt(item.BatteryLevel);
-                                    if (BatteryLevel != 255) {
-                                        if (BatteryLevel <= 10) {
-                                            backgroundClass = "statusLowBattery";
-                                        }
-                                    }
-                                }
+							/* generate two item classes.  */
 
-                                var count = 0;
-                                
-				                var xhtm = "";
-                                xhtm +=	'\t<div class="span4" id="' + item.idx + '">\n';
-                                xhtm += '\t  <div class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + '">\n'; //this could also do the whole "bigtexthtml vs statushtml" thing, which is in the dashboard,and use that to create a nicely designed list of outputs. But for now this will do.
-				                xhtm +='\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+							/* type of device */
+							var itemtypeclass = "";
+							var itemsubtypeclass = "";
+							if (typeof item.Type != 'undefined') {
+								var itemtypeclass = ' ' + item.Type.slice(0);
+								itemtypeclass = itemtypeclass.replace(/\s/g, '');
+								itemtypeclass = itemtypeclass.replace(/\\/g, '');
+								itemtypeclass = itemtypeclass.replace(/\//g, '');
+							}
+							if (typeof item.SubType != 'undefined') {
+								var itemsubtypeclass = item.SubType.split(' ').join('');
+								itemsubtypeclass = itemsubtypeclass.replace(/\\/g, '');
+								itemsubtypeclass = itemsubtypeclass.replace(/\//g, '');
+							}
+
+							/* generate protected/timeout/lowbattery status */
+							var backgroundClass = "statusNormal";
+							if (item.HaveTimeout == true) {
+								backgroundClass = "statusTimeout";
+							} else {
+								var BatteryLevel = parseInt(item.BatteryLevel);
+								if (BatteryLevel != 255) {
+									if (BatteryLevel <= 10) {
+										backgroundClass = "statusLowBattery";
+									}
+								}
+							}
+
+							var count = 0;
+
+							var xhtm = "";
+							xhtm += '\t<div class="span4" id="' + item.idx + '">\n';
+							xhtm += '\t  <div class="item ' + itemtypeclass + ' ' + itemsubtypeclass + ' ' + backgroundClass + '">\n'; //this could also do the whole "bigtexthtml vs statushtml" thing, which is in the dashboard,and use that to create a nicely designed list of outputs. But for now this will do.
+							xhtm += '\t    <table id="itemtable" class="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
-                                xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
-                                xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper"><span>';
-                            
+							xhtm += '\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n';
+							xhtm += '\t      <td id="bigtext" class="bigtext"><span class="wrapper"><span>';
+
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
 							} else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
@@ -1347,8 +1347,8 @@ define(['app'], function(app) {
 								'\t      <td id="status" class="status"><span class="wrapper"><span>' + status + '</span></span></td>\n' +
 								'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
 								'\t      <td id="type" class="type"><span>';
-                            if(item.Type != "General"){ xhtm += item.Type; }else{ xhtm += item.SubType; }
-                            xhtm += '</span></td>\n' +
+							if (item.Type != "General") { xhtm += item.Type; } else { xhtm += item.SubType; }
+							xhtm += '</span></td>\n' +
 								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
@@ -1538,7 +1538,7 @@ define(['app'], function(app) {
 			$('#utilitycontent').html(tophtm + htmlcontent);
 			$('#utilitycontent').i18n();
 			if (bShowRoomplan == true) {
-				$.each($.RoomPlans, function(i, item) {
+				$.each($.RoomPlans, function (i, item) {
 					var option = $('<option />');
 					option.attr('value', item.idx).text(item.name);
 					$("#utilitycontent #comboroom").append(option);
@@ -1546,7 +1546,7 @@ define(['app'], function(app) {
 				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
 					$("#utilitycontent #comboroom").val(window.myglobals.LastPlanSelected);
 				}
-				$("#utilitycontent #comboroom").change(function() {
+				$("#utilitycontent #comboroom").change(function () {
 					var idx = $("#utilitycontent #comboroom option:selected").val();
 					window.myglobals.LastPlanSelected = idx;
 					ShowUtilities();
@@ -1556,7 +1556,7 @@ define(['app'], function(app) {
 				if (permissions.hasPermission("Admin")) {
 					if (window.myglobals.ismobileint == false) {
 						$("#utilitycontent .span4").draggable({
-							drag: function() {
+							drag: function () {
 								if (typeof $scope.mytimer != 'undefined') {
 									$interval.cancel($scope.mytimer);
 									$scope.mytimer = undefined;
@@ -1567,7 +1567,7 @@ define(['app'], function(app) {
 							revert: true
 						});
 						$("#utilitycontent .span4").droppable({
-							drop: function() {
+							drop: function () {
 								var myid = $(this).attr("id");
 								$.devIdx.split(' ');
 								var roomid = $("#utilitycontent #comboroom option:selected").val();
@@ -1578,7 +1578,7 @@ define(['app'], function(app) {
 									url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
 									async: false,
 									dataType: 'json',
-									success: function(data) {
+									success: function (data) {
 										ShowUtilities();
 									}
 								});
@@ -1588,7 +1588,7 @@ define(['app'], function(app) {
 				}
 			}
 			$rootScope.RefreshTimeAndSun();
-			$scope.mytimer = $interval(function() {
+			$scope.mytimer = $interval(function () {
 				RefreshUtilities();
 			}, 10000);
 			return false;
@@ -1611,63 +1611,63 @@ define(['app'], function(app) {
 
 			$scope.MakeGlobalConfig();
 
-			$('#timerparamstable #combotype > option').each(function() {
+			$('#timerparamstable #combotype > option').each(function () {
 				$.myglobals.TimerTypesStr.push($(this).text());
 			});
-			$('#timerparamstable #occurence > option').each(function() {
+			$('#timerparamstable #occurence > option').each(function () {
 				$.myglobals.OccurenceStr.push($(this).text());
 			});
-			$('#timerparamstable #months > option').each(function() {
+			$('#timerparamstable #months > option').each(function () {
 				$.myglobals.MonthStr.push($(this).text());
 			});
-			$('#timerparamstable #weekdays > option').each(function() {
+			$('#timerparamstable #weekdays > option').each(function () {
 				$.myglobals.WeekdayStr.push($(this).text());
 			});
 
 			var dialog_editutilitydevice_buttons = {};
 
-			dialog_editutilitydevice_buttons[$.t("Update")] = function() {
+			dialog_editutilitydevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editutilitydevice #devicename"), 2, 100);
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editutilitydevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editutilitydevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editutilitydevice_buttons[$.t("Replace")] = function() {
+			dialog_editutilitydevice_buttons[$.t("Replace")] = function () {
 				$(this).dialog("close");
 				ReplaceDevice($.devIdx, ShowUtilities);
 			};
-			dialog_editutilitydevice_buttons[$.t("Cancel")] = function() {
+			dialog_editutilitydevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1679,14 +1679,14 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editutilitydevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editcustomsensordevice_buttons = {};
 
-			dialog_editcustomsensordevice_buttons[$.t("Update")] = function() {
+			dialog_editcustomsensordevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editcustomsensordevice #devicename"), 2, 100);
 				bValid = bValid && checkLength($("#dialog-editcustomsensordevice #sensoraxis"), 1, 100);
@@ -1698,44 +1698,44 @@ define(['app'], function(app) {
 
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
-							'&switchtype=0' +
-							'&customimage=' + CustomImage +
-							'&devoptions=' + encodeURIComponent(soptions) +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
+						'&switchtype=0' +
+						'&customimage=' + CustomImage +
+						'&devoptions=' + encodeURIComponent(soptions) +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editcustomsensordevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editcustomsensordevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editcustomsensordevice_buttons[$.t("Replace")] = function() {
+			dialog_editcustomsensordevice_buttons[$.t("Replace")] = function () {
 				$(this).dialog("close");
 				ReplaceDevice($.devIdx, ShowUtilities);
 			};
-			dialog_editcustomsensordevice_buttons[$.t("Cancel")] = function() {
+			dialog_editcustomsensordevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1747,51 +1747,51 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editcustomsensordevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editdistancedevice_buttons = {};
-			dialog_editdistancedevice_buttons[$.t("Update")] = function() {
+			dialog_editdistancedevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editdistancedevice #devicename"), 2, 100);
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
-							'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
+						'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editdistancedevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editdistancedevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editdistancedevice_buttons[$.t("Cancel")] = function() {
+			dialog_editdistancedevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1803,13 +1803,13 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editdistancedevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			}).i18n();
 
 			var dialog_editmeterdevice_buttons = {};
-			dialog_editmeterdevice_buttons[$.t("Update")] = function() {
+			dialog_editmeterdevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				var devOptionsParam = [],
 					devOptions = [];
@@ -1830,44 +1830,44 @@ define(['app'], function(app) {
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) +
-							'&switchtype=' + meterType +
-							'&addjvalue=' + meteroffset +
-							'&used=true' +
-							'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
+						'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) +
+						'&switchtype=' + meterType +
+						'&addjvalue=' + meteroffset +
+						'&used=true' +
+						'&options=' + btoa(encodeURIComponent(devOptionsParam.join(''))), // encode before b64 to prevent from character encoding issue
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editmeterdevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editmeterdevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editmeterdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editmeterdevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editmeterdevice_buttons[$.t("Replace")] = function() {
+			dialog_editmeterdevice_buttons[$.t("Replace")] = function () {
 				$(this).dialog("close");
 				ReplaceDevice($.devIdx, ShowUtilities);
 			};
-			dialog_editmeterdevice_buttons[$.t("Cancel")] = function() {
+			dialog_editmeterdevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1879,56 +1879,56 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editmeterdevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editenergydevice_buttons = {};
-			dialog_editenergydevice_buttons[$.t("Update")] = function() {
+			dialog_editenergydevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editenergydevice #devicename"), 2, 100);
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
-							'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&devoptions=' + $("#dialog-editenergydevice input:radio[name=devoptions]:checked").val() +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
+						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&devoptions=' + $("#dialog-editenergydevice input:radio[name=devoptions]:checked").val() +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editenergydevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editenergydevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editenergydevice_buttons[$.t("Replace")] = function() {
+			dialog_editenergydevice_buttons[$.t("Replace")] = function () {
 				$(this).dialog("close");
 				ReplaceDevice($.devIdx, ShowUtilities);
 			};
 
-			dialog_editenergydevice_buttons[$.t("Cancel")] = function() {
+			dialog_editenergydevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1940,53 +1940,53 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editenergydevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editsetpointdevice_buttons = {};
 
-			dialog_editsetpointdevice_buttons[$.t("Update")] = function() {
+			dialog_editsetpointdevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editsetpointdevice #devicename"), 2, 100);
 				if (bValid) {
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
-							'&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() +
-							'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
+						'&setpoint=' + $("#dialog-editsetpointdevice #setpoint").val() +
+						'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 
 				}
 			};
-			dialog_editsetpointdevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editsetpointdevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editsetpointdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editsetpointdevice_buttons[$.t("Cancel")] = function() {
+			dialog_editsetpointdevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -1998,14 +1998,14 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editsetpointdevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editthermostatclockdevice_buttons = {};
 
-			dialog_editthermostatclockdevice_buttons[$.t("Update")] = function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editthermostatclockdevice #devicename"), 2, 100);
 				if (bValid) {
@@ -2014,38 +2014,38 @@ define(['app'], function(app) {
 					var daytimestr = $("#dialog-editthermostatclockdevice #comboclockday").val() + ";" + $("#dialog-editthermostatclockdevice #clockhour").val() + ";" + $("#dialog-editthermostatclockdevice #clockminute").val();
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
-							'&clock=' + encodeURIComponent(daytimestr) +
-							'&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
+						'&clock=' + encodeURIComponent(daytimestr) +
+						'&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 				}
 			};
-			dialog_editthermostatclockdevice_buttons[$.t("Remove Device")] = function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editthermostatclockdevice_buttons[$.t("Cancel")] = function() {
+			dialog_editthermostatclockdevice_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -2057,14 +2057,14 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editthermostatclockdevice_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			var dialog_editthermostatmode_buttons = {};
 
-			dialog_editthermostatmode_buttons[$.t("Update")] = function() {
+			dialog_editthermostatmode_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editthermostatmode #devicename"), 2, 100);
 				if (bValid) {
@@ -2077,38 +2077,38 @@ define(['app'], function(app) {
 					}
 					$.ajax({
 						url: "json.htm?type=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) +
-							modestr +
-							'&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
-							'&used=true',
+						'&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) +
+						modestr +
+						'&protected=' + $('#dialog-editthermostatmode #protected').is(":checked") +
+						'&used=true',
 						async: false,
 						dataType: 'json',
-						success: function(data) {
+						success: function (data) {
 							ShowUtilities();
 						}
 					});
 				}
 			};
-			dialog_editthermostatmode_buttons[$.t("Remove Device")] = function() {
+			dialog_editthermostatmode_buttons[$.t("Remove Device")] = function () {
 				$(this).dialog("close");
-				bootbox.confirm($.t("Are you sure to remove this Device?"), function(result) {
+				bootbox.confirm($.t("Are you sure to remove this Device?"), function (result) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=setused&idx=" + $.devIdx +
-								'&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
-								'&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) +
-								'&used=false',
+							'&name=' + encodeURIComponent($("#dialog-editthermostatmode #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-editthermostatmode #devicedescription").val()) +
+							'&used=false',
 							async: false,
 							dataType: 'json',
-							success: function(data) {
+							success: function (data) {
 								ShowUtilities();
 							}
 						});
 					}
 				});
 			};
-			dialog_editthermostatmode_buttons[$.t("Cancel")] = function() {
+			dialog_editthermostatmode_buttons[$.t("Cancel")] = function () {
 				$(this).dialog("close");
 			};
 
@@ -2120,27 +2120,27 @@ define(['app'], function(app) {
 				resizable: false,
 				title: $.t("Edit Device"),
 				buttons: dialog_editthermostatmode_buttons,
-				close: function() {
+				close: function () {
 					$(this).dialog("close");
 				}
 			});
 
 			ShowUtilities();
 
-			$("#dialog-editutilitydevice").keydown(function(event) {
+			$("#dialog-editutilitydevice").keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;
 				}
 			});
-			$("#dialog-editcustomsensordevice").keydown(function(event) {
+			$("#dialog-editcustomsensordevice").keydown(function (event) {
 				if (event.keyCode == 13) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;
 				}
 			});
 		};
-		$scope.$on('$destroy', function() {
+		$scope.$on('$destroy', function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
