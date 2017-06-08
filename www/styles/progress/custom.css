@@ -1,0 +1,914 @@
+@import url("hip.css");
+
+html, body {height:100%}
+#main-view{padding-top:20px}
+td{box-sizing: border-box;}
+
+#IMain{
+    background-color:#ccc;
+    width:100%!important;
+    border-bottom: 39px solid #ccc;
+    border-top: 10px solid #ccc;
+    margin-top: -35px!important;
+}
+
+#appversion {
+    display: none;
+}
+
+#bannav {
+    width: auto;
+}
+
+#bannav td{
+    width:auto!important;
+}
+
+#bannav td a{
+    margin-right:10px;
+}
+
+#bannav td:last-of-type a{
+    margin-right:0;
+}
+
+#bigtext{
+    color: #444 !important;
+    font-size: 115%!important;
+    font-weight: normal!important;
+    white-space: nowrap;
+    line-height: 100%!important;
+    text-align: right;
+    overflow: hidden;
+    position: absolute;
+    top: 10px;
+    right: 40px;
+    width: 25%;
+    padding: 5px!important;
+    margin:0!important;
+}
+
+
+#status {
+    color: #777;
+    font-weight: normal!important;
+    white-space: nowrap;
+    overflow: hidden;
+    position: absolute;
+    top: 97px;
+    left: 20px;
+    width: 90%;
+    margin:0!important;
+    font-style: normal!important;
+    font-size:80%!important;
+    line-height: 1.4em;
+}
+
+#copyright {
+    background-color: #f1f1f1;
+    margin-top: 10px;
+    border: none;
+    height:auto;
+}
+
+#dashcontent td > div.dimslider{
+    position:absolute;
+    margin:0 2% 0 0!important;
+    right:0px;
+    top:42px;
+    width:96%!important;
+    border-color:transparent;
+    overflow:visible;
+    box-shadow: inset 0 -1px 0px 1px rgba(0, 0, 0, 0.1), 0 1px 5px 5px rgba(250, 250, 250, 0.4);
+    background-color: transparent!important;    
+}
+
+#dashcontent td > div.dimslider .ui-widget-content{
+    border-color:#ccc;
+}
+
+#dashcontent h2:first-of-type{
+    margin-top:0!important;
+}
+
+#holder h1, #holder h2, #holder h3 {
+    clear: both;
+    margin: 20px 0 20px 0;
+}
+
+#holder h1{padding-bottom: 10px;}
+#holder h2{padding-bottom: 5px;}
+
+
+#img {
+    margin: 0!important;
+    position: absolute;
+    top:7px;
+    right:7px;
+}
+
+#img1 {
+    margin: 0!important;
+    position: absolute;
+    top:7px;
+    right:7px;
+}
+
+#img2 {
+    margin: 0!important;
+    position: absolute;
+    top:7px;
+    right: 45px;
+}
+
+#img img, #img1 img, #img2 img {
+    height:30px;
+    width:auto
+}
+#dashcontent #img img, #dashcontent #img1 img, #dashcontent #img2 img {
+    height:40px;
+    width:auto
+}
+ #dashcontent #img2{right:60px}
+
+#itemtabledoubleicon td:last-of-type .lcursor, #itemtable td:last-of-type .lcursor, #itemtablenotype td:last-of-type .lcursor, #itemtablenostatus td:last-of-type .lcursor {
+    position: absolute;
+    top: -29px;
+    left: 10px;
+    border-radius: 5px;
+}
+
+#itemtablenostatus td:before {
+    font-style: normal;
+}
+
+#dashcontent #lastupdate, #itemtablesmall #lastupdate, #dashcontent #type, #itemtablesmall #type {
+    display: none;
+}
+
+.container .ui-draggable tr{
+    padding:0!important;
+    margin:5px 0!important;
+    width:100%!important;
+}
+
+#itemtablesmalldoubleicon tr, #itemtablesmall tr {
+    border-style: none;
+    padding: 0;
+    height: 55px!important;
+    position: relative;
+    overflow:hidden;
+}
+
+#dashcontent #itemtablesmalldoubleicon #bigtext{
+    display: none;
+}
+
+#dashcontent #bigtext{
+    top:15px;
+    right:50px;
+}
+
+#dashcontent #status{
+    display:none;
+}
+
+#dashcontent #img{
+    top:7px
+}
+
+#lastupdate {
+    color: #777;
+    font-style: normal;
+    white-space: nowrap;
+    position: absolute;
+    top: 81px;
+    left:20px;
+    width: 45%;
+}
+
+#lastupdate:before {
+    font-style: normal!important;
+}
+
+#name {
+    width: 55%;
+    height: 40px!important;
+    font-size: 115%!important;
+    border-style: none!important;
+    border-width:0!important;
+    color: #444!important;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 14px 5px 9px 35px!important;
+    position: absolute;
+    top:0;
+    left:0;
+    text-transform: uppercase;
+    width: 55%;
+    border-top-right-radius: 0!important;
+    border-bottom-right-radius: 0!important;
+    border-bottom-left-radius: 0!important;
+}
+
+#dashcontent #name {
+    display: flex;
+    align-items: center;
+    padding: 4px 0 0 20px!important;*/
+    width:55%;
+    height:100%!important;
+}
+
+#scenecontent #bigtext, #itemtablenostatus #bigtext {
+    display: none
+}
+
+#scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type, #scenecontent #itemtabledoubleicon td:last-of-type, #itemtable td:last-of-type, #itemtablenotype td:last-of-type, #itemtablenostatus td:last-of-type {
+    white-space: nowrap;
+    /*max-width:90%;*/
+    margin: 0!important;
+    padding:0!important;
+    position: absolute;
+    left: 0px;
+    top: 42px;
+}
+
+
+#itemtabledoubleicon tr, #itemtable tr, #itemtablenotype tr, #itemtablenostatus tr {
+    height: 130px;
+    position: relative;
+    padding:0!important;
+    overflow: hidden;
+}
+
+#timesun {height:0!important}
+#timesun div {
+    color:#aaa;
+    z-index:1000;
+    position:absolute;
+    left:20px;
+    bottom:0;
+}
+
+@media only screen and (max-width: 640px) {
+    #timesun div {display:none}
+    }
+
+#type:before {
+    font-style: normal!important;
+}
+
+#type {
+    color: #777;
+    white-space: nowrap;
+    padding:0 0 0 164px!important;
+    position: relative;
+    top: 81px;
+    left: 20px;
+    width: 90%;
+}
+
+#type > .dimslider {
+    position: absolute;
+    margin: 0!important;
+    top: 23px;
+    left: 0;
+    width: 100%!important;
+}
+
+.dropdown-submenu > a:after {
+    border-left-color: #0066cc;
+    margin-right: 0px;
+}
+
+/*
+.navbar-inverse .navbar-inner{background-color:transparent}
+*/
+
+.navbar .nav .current_page_item > a {
+    background-color: white!important;
+    color: #999!important;
+    background-image:none!important;
+    border:none!important;
+}
+
+.navbar .nav .dropdown-menu {
+    background-color: #eee;
+    background-image: none;
+    border-color: #ddd;
+}
+
+.navbar .nav .dropdown-menu li a {
+    background-color: #eee;
+}
+
+.navbar .nav li a {
+    background-color: #ddd;
+    background-image: none;
+    border: none;
+    color: #666;
+    font-weight: normal;
+}
+
+.navbar .nav li a:hover{
+    background-color: #ccc!important;
+    background-image:none;
+    border: none!important;
+    text-shadow: none;}
+
+#appnavbar li a {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    text-shadow:none;
+}
+
+.navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
+    box-shadow: none;
+    padding: 10px 0 0 0;
+}
+
+.navbar-inverse .brand, .navbar-inverse .nav > li > a{
+    text-shadow: none;
+}
+
+.navbar .brand{ 
+    margin-left:0;
+}
+
+.navbar .nav{
+    margin:0;
+}
+
+.row {
+    clear: both;
+}
+
+.row-fluid .span1,
+.row-fluid .span2,
+.row-fluid .span3, 
+.row-fluid .span4, 
+.row-fluid .span6, 
+.row-fluid .span8, 
+.row-fluid .span9, 
+.row-fluid .span12{
+    background-color: rgba(255,255,255,0.9);
+    padding: 0px 20px 20px 20px;
+    min-height:140px!important
+}
+
+.row-fluid h1,
+.row-fluid h2,
+.row-fluid h3 {
+    color:#666!important;
+}
+
+.ui-widget-content {
+    background-color: #fff!important;
+    background-image: none!important;
+    border-color: #999;
+    color: #333;
+}
+
+.btn-primary{
+    text-shadow:none;
+    text-decoration: none
+}
+
+a.btnsmall {
+    background-image: none;
+    margin-bottom: 10px;
+    padding:7px;
+}
+
+a.btnstyle, a.btnstylerev {
+    background-color: #777;
+    margin-right: 10px;
+    background-image:none;
+    padding: 0px 10px 0 10px;
+    background: #46b1d9;
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );  
+}
+
+a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
+    margin-right:0;
+}
+
+div.container {
+    border-style: none;
+}
+
+div.navbar-inner {
+    border-style: none;
+}
+
+p.ng-binding {
+    color: #ccc;
+    font-size: 12px;
+    padding-top: 2px
+}
+
+#protectiontable, #loghistory table, #notifications>table, #metercounters table, #othersettings table, #floorplans table, #settingscontent #ActiveTabs {
+    padding-left: 20px;
+}
+
+#restoredatabase center {
+    text-align: left;
+}
+
+.bannercontent {
+    padding-bottom: 50px;
+}
+
+#copyright p {
+    color: #ccc;
+    font-size:90%;
+    margin: 0 10px 0 0;
+    text-align: right;
+}
+
+#copyright a, #copyright a:visited {
+    color: #ccc;
+}
+
+.brand img {
+    height: 30px;
+    width: 30px;
+}
+
+.brand h1 {
+    font-size: 1em;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+    font-weight: 300;
+    margin-top: -30px;
+    margin-left: 26px
+}
+
+.sub-tabs-apply {
+    position:absolute;
+    bottom:60px;
+    left:10%;
+    border-radius:5px!important;
+    border:none!important;
+}
+
+.page-header-small {border:none!important; margin-top:0!important}
+
+#settingscontent {
+    margin-bottom:80px;
+}
+
+#settingscontent #othersettings > h2,
+#settingscontent #floorplans > h2,
+#settingscontent #metercounters > h2,
+#settingscontent #notifications > h2,
+#settingscontent #loghistory > h2,
+#settingscontent #system > h2 {
+    background-color:#e0e;
+    color: #666;
+    padding:10px 20px;
+    margin-top:20px;
+    margin-bottom:0;
+}
+
+#settingscontent .sub-tabs {
+    border-bottom:1px solid #ddd;
+}
+
+#tabs a:not(.sub-tabs-apply) {
+    background-color:#ddd;
+    margin-top:2px;
+}
+
+#tabs .active a{
+    background-color:#fff;
+}
+
+#settingscontent span{
+    display:inline-block;
+    padding-top:10px;
+    padding-bottom:5px;
+}
+
+.row-fluid{margin-bottom:20px;}
+
+#settingscontent #ActiveTabs h2{
+    color: #666;
+}
+
+#savetable{
+    background-color:#ccc;
+}
+
+#acceptnewhardwaretable td:first-of-type{
+    position:relative;
+}
+
+#acceptnewhardwaretable td:first-child button{
+    width:50%;
+    margin: 10px 50% 10px 0;
+}
+
+#notificationtable:not(.dataTable),
+#notifications>table, 
+#paramstable,
+#customlog, #timerparamstable,
+#linkparamstable, #influxremote,
+#linkhttpparamstable, #httpremote,
+#linkgooglepubsubparamstable, #googlepubsubremote,
+#fibaromain #linkparamstable, #fibaromain #fibaroremote,
+#userparamstable,#activeparamstable, #lightcontent paramstable, #scenecontent #paramstable, #notificationparamstable, #hardwareparamstable
+{
+    background-color:#eee;
+    border-top: 20px solid #eee;
+    border-bottom:20px solid #eee;
+}
+
+#utilitycontent #notificationparamstable,
+#plancontent #activeparamstable,
+#usercontent #userparamstable, #cameracontent #activeparamstable,
+#fibaromain #uservariablesedittable, #hardwarecontent #hardwareparamstable, #lightcontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)), #scenecontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)), #weathercontent #notificationparamstable ,#lightcontent #timerparamstable, #tempnotifications #notificationparamstable, #lightcontent #notificationparamstable, #scenecontent #timerparamstable{
+    margin-top:-21px;
+}
+
+#usercontent #updelclr{margin-top:20px}
+
+#updelclr { background-color:transparent;}
+
+#devicescontent .bannav td{ width:auto!important}
+
+#lightcontent >a.btnstyle3{ position:relative; top:-97px}
+
+#utilitycontent, #plancontent, #cameracontent, #usercontent, #weathercontent, #devicescontent .bannav tr, #fibaromain, #tempnotifications, #scenecontent, #notification, #lightcontent, #hardwarecontent {
+    display: -webkit-box;
+    display: -moz-box;
+    display: box;
+    -webkit-box-orient: vertical;
+    -moz-box-orient: vertical;
+    box-orient: vertical;
+}
+
+#fibaromain h2,
+#scenecontent #bannav {
+    float:none;
+    -webkit-box-ordinal-group: 1;
+    -moz-box-ordinal-group: 1;
+    box-ordinal-group: 1;
+}
+
+#fibaromain #uservariablestable_wrapper,
+#uservariablesedittable{
+    -webkit-box-ordinal-group: 2;
+    -moz-box-ordinal-group: 2;
+    box-ordinal-group: 2;
+}
+
+#usercontent #updelclr, #weathercontent #updelclr, #utilitycontent #updelclr, #scenecontent #updelclr, #tempnotifications #updelclr, #devicescontent .bannav td:first-of-type, #lightcontent #updelclr, #notification #updelclr {
+    -webkit-box-ordinal-group: 3;
+    -moz-box-ordinal-group: 3;
+    box-ordinal-group: 3;
+}
+
+#cameracontent #delclractive, #fibaromain table:first-of-type, #lightcontent #delclr, #hardwarecontent #updelclr {
+    -webkit-box-ordinal-group: 4;
+    -moz-box-ordinal-group: 4;
+    box-ordinal-group: 4;
+}
+
+#plancontent #delclractive,
+#scenecontent #delclr {
+    -webkit-box-ordinal-group: 5;
+    -moz-box-ordinal-group: 5;
+    box-ordinal-group: 5;
+}
+
+#uservariableupdate, #uservariabledelete{
+    position:relative;
+    top:-43px;
+    left:65px;
+    width:auto;
+    margin: 0;
+}
+
+#lightcontentx #updelclr a, #hardwarecontent #updelclr a{
+    position:relative;
+    left:211px;
+    top:-41px;
+}
+
+#hardwarecontent > div{
+   background-color: #eee;
+}
+
+#scenecontent #delclr{
+    position:relative;
+    top:-95px;
+}
+
+#lightcontent #delclr{
+    position:relative;
+    top:-40px;
+}
+
+#scenecontent > table:first-of-type{
+    width:auto;
+}
+
+#scenecontent #combodevice a{
+    position:relative;
+    left:-394px;
+    top: 140px;
+}
+
+#iconsman > h3{font-size:2em}
+
+#iconsmain > div.row{
+    margin-left:0!important;
+}
+
+.dataTables_wrapper{
+    margin-bottom:5px
+}
+
+.ui-toolbar, div.dataTables_wrapper .ui-widget-header{
+    color:#666;
+    background-color:#ccc;
+}
+
+.ui-corner-bottom, .ui-corner-br, .ui-corner-all, .ui-corner-top, .ui-corner-right, .ui-corner-left, .ui-corner-tr{
+    border-radius:0!important;
+}
+
+.ui-toolbar {
+    background-color:#ccc;
+    background-image:none;
+    border:none;
+}
+
+.ui-state-default, .ui-widget-header, .ui-state-disabled{
+    background-image:none;
+    color:#666;
+}
+
+.ui-state-default{
+    background-color:#ddd;
+    color:#444;
+    border:none;
+    border-right: 2px solid #ccc;
+    border-top:none;
+    border-bottom:none;
+}
+
+.uit-state-default:last-of-type{
+    border-right:none;
+}
+
+#uservariablesedittable{
+    background-color:#eee;
+    border-top:10px solid #eee;
+    margin-bottom:60px
+}
+
+#uservariablesedittable tr:last-of-type a{
+    top: 50px;
+    position:relative;
+}
+
+table.dataTable{
+    border-left:10px solid #ccc;
+    border-right:10px solid #ccc;
+}
+
+table.dataTable thead th{
+    padding: 8px
+}
+
+.dataTables_wrapper .ui-toolbar{
+    padding: 10px 10px 5px 10px
+}
+
+.dataTables_paginate{margin-right:0!important}
+
+.dataTables_filter input{
+    height:10px;
+    margin-left:10px;
+}
+
+#rgbw_popup{
+    left:50%!important;
+}
+
+.navbar-inverse .nav li.dropdown.open > .dropdown-toggle{
+    background-color:#ccc;
+}
+
+#appnavbar a:hover,#appnavbar li:hover{
+    background-color:#ccc;
+    background-image:none;
+    color:#666
+}
+
+.ui-draggable .selectorlevels{
+    position:absolute;
+    font-style:normal;
+    margin:0;
+    top: 14px!important;
+    left: 0!important;
+}    
+
+#dashcontent .selectorlevels {
+    width: calc(45% - 50px);
+    position:absolute;
+    top:0!important;
+    left:55%!important;
+    margin-top:0!important
+}
+
+#dashcontent .selectorlevels .state-default{
+    color:#666;
+}
+
+.selectorlevels .ui-buttonset .ui-button{
+    text-shadow:none;
+    font-style: normal;
+    background-image:none;
+    border-color:transparent!important;
+    font-weight:normal;
+    margin-right:0; /* newly added */
+}
+
+.selectorlevels  .ui-state-active{
+    background-color:#49afcd!important;
+    color:#fff;
+}
+    
+#dashcontent .selectorlevels .ui-buttonset .ui-button{
+    min-width: 50%;
+    margin-left: 0;
+    /*margin-right: -.3em;*/
+    border-radius: 0;
+    overflow:hidden;
+    border: none;
+}
+
+#dashcontent .selectorlevels .ui-buttonset label{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dashcontent .selectorlevels label .ui-button-text{
+    padding:0;
+}
+
+/*Change button size based on amount of buttons. CSS3 is awesome: */
+
+#dashcontent .selectorlevels .ui-buttonset .ui-button:nth-child(odd) {width:100%}
+
+#dashcontent .selectorlevels .ui-buttonset{
+    height:55px;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+    margin-right:0;
+}
+
+#dashcontent .selectorlevels .ui-buttonset .ui-button{
+    min-width:50%;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui-dialog-titlebar{
+    color:#fff;
+}
+
+.ui-dialog{height:auto}
+
+#holder #notification{
+    background-color:#333;
+    padding:20px    
+}
+
+#temptophtm {height:40px}
+#temptophtm .bannav{
+    position:relative; 
+    width:auto;
+    top:-20px
+}
+
+#temptophtm td:last-of-type span{
+    top: 2px;
+    background-color: #eee;
+    padding: 2px 10px 1px 10px;
+    right: -11px;
+    position: relative;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top: 1px solid #999;
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+
+#customlog #devicecontainer{
+    background-color:#ccc;
+}
+
+#utilitycontent {margin-top:30px}
+
+#logcontent table td:last-of-type{
+    vertical-align: middle;
+    background-color: #fff;
+    float: right;
+    padding: 5px 12px;
+}
+
+#logcontent div.log {
+    background-color:#fff;
+    border:5px solid #fff;
+    background: -moz-linear-gradient(top, #999 0%, #fff 50%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top, #999 0%,#fff 50%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom, #999 0%,#fff 50%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#999', endColorstr='#fff',GradientType=0 ); /* IE6-9 */
+    background-attachment: fixed;
+}
+
+#settingscontent .span6 tr{
+    border-top: 1px solid #e9e9e9;
+}
+#settingscontent .span6 tr:first-of-type{
+    border-top:none;
+}
+
+#settingscontent .span6 td{
+    padding:5px;
+    vertical-align: top; 
+}
+
+#settingscontent .span6 td:first-of-type{
+    min-width:80px; 
+    text-align:left!important;
+}
+#settingscontent .span6 td span{
+    padding-top:0;
+}
+
+label{white-space:nowrap}
+textarea{width:100%}
+select{min-width:220px; padding:5px 0}
+input{width:auto!important; min-width:210px; padding:5px}
+br{display:none; display: inline;}
+p {margin:5px 0!important}
+
+/* temporary fix for use of tables in odd places */
+#fibaromain > table > tbody > tr > td {display:block;}
+#fibaromain > table > tbody > tr > td > table {margin-bottom:20px}
+#influxmain > table > tbody > tr > td {display:block;}
+#influxmain > table > tbody > tr > td > table {margin-bottom:20px}
+#googlepubsubmain > table > tbody > tr > td {display:block;}
+#googlepubsubmain > table > tbody > tr > td > table {margin-bottom:20px}
+#httpmain > table > tbody > tr > td {display:block;}
+#httpmain > table > tbody > tr > td > table {margin-bottom:20px}
+
+#fibaromain #uservariablesedittable td{
+    display:table-cell;
+}
+
+#divprogress span{
+    display:inline-block;
+    background-color:#fff;
+    padding:20px;
+    color:#f33;
+}
+
+
+/* Media queries */
+
+@media all and (min-width: 481px) and (max-width: 979px){
+    
+    .navbar .brand{
+        margin-left:14px;
+    }
+    
+    .navbar .nav {
+        margin-right:20px
+    }
+}
+
+
+/* proposed new elements */
+
+.relatedIcon{
+    width:60%;
+    margin:10%;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    -ms-interpolation-mode: nearest-neighbor;
+    filter: contrast(1);
+    image-rendering: pixelated;
+}
+
