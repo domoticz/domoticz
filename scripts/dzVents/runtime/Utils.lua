@@ -17,9 +17,9 @@ end
 
 function self.getDevicesPath()
 	if (_G.TESTMODE) then
-		return debug.getinfo(1).source:match("@?(.*/)") .. '/tests/devices.lua'
+		return globalvariables['script_path'] .. '/tests/devices.lua'
 	else
-		return debug.getinfo(1).source:match("@?(.*/)") .. '../devices.lua' -- parent folder
+		return globalvariables['script_path'] .. '../devices.lua' -- parent folder
 	end
 end
 

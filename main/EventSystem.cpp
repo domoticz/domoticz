@@ -1101,14 +1101,28 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::string lua_Dir;
+	std::string dzv_Dir;
 #ifdef WIN32
 	lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
 #else
 	lua_Dir = szUserDataFolder + "scripts/lua/";
+	dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
 #endif
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
+	
+	DirectoryListing(FileEntries, dzv_Dir, false, true);
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	{
+		filename = *itt;
+		if (filename.find("dzVents") != std::string::npos)
+		{
+			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+		}
+	}
+
 	DirectoryListing(FileEntries, lua_Dir, false, true);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
@@ -2221,9 +2235,365 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 #endif // ENABLE_PYTHON
 
+
+
+struct _tHardwareListInt {
+	std::string Name;
+	int HardwareTypeVal;
+	std::string HardwareType;
+	bool Enabled;
+} tHardwareList;
+
+
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	
+
+	//Get All Hardware ID's/Names, need them later
+	std::vector<std::vector<std::string> > result;
+	CWebServer foo;
+
+	std::map<int, _tHardwareListInt> _hardwareNames;
+	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			_tHardwareListInt tlist;
+			int ID = atoi(sd[0].c_str());
+			tlist.Name = sd[1];
+			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
+			tlist.HardwareTypeVal = atoi(sd[3].c_str());
+
+			if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+			{
+				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+			}
+			else
+			{
+				tlist.HardwareType = foo.PluginHardwareDesc(ID);
+			}
+			_hardwareNames[ID] = tlist;
+		}
+	}
+
+	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
+
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	int additional_lines = 0;
+	int data_lines = 0;
+	const char* dev_type;
+	const char* sub_type;
+
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		dev_type = RFX_Type_Desc(sitem.devType, 1);
+		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
+		additional_lines = 0;
+		data_lines = 0;
+
+		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
+		result = m_sql.safe_query(
+			"SELECT DeviceID, HardwareID, Description, BatteryLevel, SignalLevel, Unit, "
+			"nValue, sValue "
+			"FROM DeviceStatus WHERE (ID=='%d')",
+			sitem.ID);
+		if (result.size() > 0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			additional_lines = 8;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
+		}
+
+		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+
+		lua_createtable(lua_state, 1, additional_lines+9);
+
+		lua_pushstring(lua_state, "name");
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "baseType");
+		lua_pushstring(lua_state, "device");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "devType");
+		lua_pushstring(lua_state, dev_type);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "subType");
+		lua_pushstring(lua_state, sub_type);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchType");
+		lua_pushstring(lua_state, Switch_Type_Desc((_eSwitchType)sitem.switchtype));
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchTypeValue");
+		lua_pushnumber(lua_state, (lua_Number)sitem.switchtype);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "level");
+		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "rawData");
+		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_rawset(lua_state, -3);
+
+		if (additional_lines > 0)
+		{
+			int hwID = atoi(result[0][1].c_str());
+			int bl = atoi(result[0][3].c_str());
+			int sl = atoi(result[0][4].c_str());
+
+			lua_pushstring(lua_state, "deviceID");
+			lua_pushstring(lua_state, result[0][0].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareID");
+			lua_pushstring(lua_state, result[0][1].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareName");
+			lua_pushstring(lua_state, _hardwareNames[hwID].Name.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareTypeID");
+			lua_pushnumber(lua_state, (lua_Number)_hardwareNames[hwID].HardwareTypeVal);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareType");
+			lua_pushstring(lua_state, _hardwareNames[hwID].HardwareType.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "description");
+			lua_pushstring(lua_state, result[0][2].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "batteryLevel");
+			lua_pushnumber(lua_state, (lua_Number)bl);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "signalLevel");
+			lua_pushnumber(lua_state, (lua_Number)bl);
+			lua_rawset(lua_state, -3);
+		}
+
+		lua_pushstring(lua_state, "data");
+		lua_createtable(lua_state, 0, 0);
+		
+		//get all svalues separate
+		std::vector<std::string> strarray;
+		StringSplit(sitem.sValue, ";", strarray);
+		
+		if (("Heating" == dev_type) && ("Zone" == sub_type))
+		{
+			lua_pushstring(lua_state, "setPoint");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "heatingMode");
+			lua_pushstring(lua_state, strarray[2].c_str());
+			lua_rawset(lua_state, -3);
+		}
+		
+		if (("Lux" == dev_type) && ("Lux" == sub_type))
+		{
+			lua_pushstring(lua_state, "lux");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("General" == dev_type) && ("kWh" == sub_type))
+		{
+			lua_pushstring(lua_state, "whTotal");
+			lua_pushstring(lua_state, strarray[1].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "whActual");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+		
+		if (("Usage" == dev_type) && ("Electric" == sub_type))
+		{
+			lua_pushstring(lua_state, "wActual");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("P1 Smart Meter" == dev_type) && ("Energy" == sub_type))
+		{
+			lua_pushstring(lua_state, "wActual");
+			lua_pushstring(lua_state, strarray[4].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (("Thermostat" == dev_type) && ("SetPoint" == sub_type))
+		{
+			lua_pushstring(lua_state, "setPoint");
+			lua_pushstring(lua_state, strarray[0].c_str());
+			lua_rawset(lua_state, -3);
+		}
+
+		if (m_tempValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_tempValuesByID.find(sitem.ID);
+			if (it != m_tempValuesByID.end())
+			{
+				lua_pushstring(lua_state, "temperature");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_dewValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_dewValuesByID.find(sitem.ID);
+			if (it != m_dewValuesByID.end())
+			{
+				lua_pushstring(lua_state, "dewPoint");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_humValuesByID.size() > 0)
+		{
+			std::map<uint64_t, int>::iterator it;
+			it = m_humValuesByID.find(sitem.ID);
+			if (it != m_humValuesByID.end())
+			{
+				lua_pushstring(lua_state, "humidity");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_baroValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_baroValuesByID.find(sitem.ID);
+			if (it != m_baroValuesByID.end())
+			{
+				lua_pushstring(lua_state, "pressure");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_utilityValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_utilityValuesByID.find(sitem.ID);
+			if (it != m_utilityValuesByID.end())
+			{
+				lua_pushstring(lua_state, "utility");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_rainValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_rainValuesByID.find(sitem.ID);
+			if (it != m_rainValuesByID.end())
+			{
+				lua_pushstring(lua_state, "rain");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_rainLastHourValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_rainLastHourValuesByID.find(sitem.ID);
+			if (it != m_rainLastHourValuesByID.end())
+			{
+				lua_pushstring(lua_state, "rainLastHour");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_uvValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_uvValuesByID.find(sitem.ID);
+			if (it != m_uvValuesByID.end())
+			{
+				lua_pushstring(lua_state, "uv");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_winddirValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_winddirValuesByID.find(sitem.ID);
+			if (it != m_winddirValuesByID.end())
+			{
+				lua_pushstring(lua_state, "windDir");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+		
+		if (m_windspeedValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_windspeedValuesByID.find(sitem.ID);
+			if (it != m_windspeedValuesByID.end())
+			{
+				lua_pushstring(lua_state, "windSpeed");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_windgustValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_windgustValuesByID.find(sitem.ID);
+			if (it != m_windgustValuesByID.end())
+			{
+				lua_pushstring(lua_state, "windGust");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_weatherValuesByID.size() > 0)
+		{
+			std::map<uint64_t, float>::iterator it;
+			it = m_weatherValuesByID.find(sitem.ID);
+			if (it != m_weatherValuesByID.end())
+			{
+				lua_pushstring(lua_state, "weather");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (m_zwaveAlarmValuesByID.size() > 0)
+		{
+			std::map<uint64_t, int>::iterator it;
+			it = m_zwaveAlarmValuesByID.find(sitem.ID);
+			if (it != m_zwaveAlarmValuesByID.end())
+			{
+				lua_pushstring(lua_state, "zwaveAlarm");
+				lua_pushnumber(lua_state, (lua_Number)it->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		lua_settable(lua_state, -3); // data table
+		lua_settable(lua_state, -3); // device entry
+	}
+	lua_setglobal(lua_state, "deviceData");
+
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2781,10 +3151,25 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		secstatusw = "Disarmed";
 	}
 
-	lua_createtable(lua_state, 1, 0);
+	std::stringstream lua_DirT;
+
+#ifdef WIN32
+	lua_DirT << szUserDataFolder << "scripts\\dzVents\\";
+#else
+	lua_DirT << szUserDataFolder << "scripts/dzVents/";
+#endif
+
+	lua_createtable(lua_state, 3, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "script_path");
+	lua_pushstring(lua_state, lua_DirT.str().c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "script_reason");
+	lua_pushstring(lua_state, reason.c_str());
+	lua_rawset(lua_state, -3);
+
 	lua_setglobal(lua_state, "globalvariables");
 
 	int status = 0;
@@ -3087,9 +3472,6 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
 
-		int devType = atoi(dtype.c_str());
-		int subType = atoi(dsubtype.c_str());
-
 		time_t now = time(0);
 		struct tm ltime;
 		localtime_r(&now, &ltime);
@@ -3097,14 +3479,16 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		char szLastUpdate[40];
 		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
 
-//		m_mainworker.UpdateDevice(atoi(hid.c_str()), did, atoi(dunit.c_str()), devType, subType, atoi(nvalue.c_str()), svalue, 12, 255, true);
-
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
 			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
+
 
 		uint64_t ulIdx = 0;
 		std::stringstream s_str(idx);
 		s_str >> ulIdx;
+
+		int devType = atoi(dtype.c_str());
+		int subType = atoi(dsubtype.c_str());
 
 		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
