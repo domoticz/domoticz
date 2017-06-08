@@ -6574,58 +6574,61 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 			_log.Log(LOG_TRACE, "SQLH HandleOnOffAction: OffAction:%s", OffAction.c_str());
 	}
 
+	std::string Action;
+
 	if (bIsOn)
 	{
 		if (OnAction.empty())
-			return true;
-
-		if ((OnAction.find("http://") != std::string::npos) || (OnAction.find("https://") != std::string::npos))
-		{
-			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
-		}
-		else if (OnAction.find("script://")!=std::string::npos)
-		{
-			//Execute possible script
-			std::string scriptname = OnAction.substr(9);
-#if !defined WIN32
-			if (scriptname.find("/") != 0)
-				scriptname = szUserDataFolder + "scripts/" + scriptname;
-#endif
-			std::string scriptparams="";
-			//Add parameters
-			int pindex=scriptname.find(' ');
-			if (pindex!=std::string::npos)
-			{
-				scriptparams=scriptname.substr(pindex+1);
-				scriptname=scriptname.substr(0,pindex);
-			}
-			if (file_exist(scriptname.c_str()))
-			{
-				AddTaskItem(_tTaskItem::ExecuteScript(0.2f,scriptname,scriptparams));
-			}
-			else
-				_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
-		}
-		return true;
+			return false;
+		Action = OnAction;
 	}
-
-	//Off action
-	if (OffAction.empty())
-		return true;
-
-	if ((OffAction.find("http://") != std::string::npos) || (OffAction.find("https://") != std::string::npos))
+	else
 	{
-		AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OffAction, "SwitchActionOff"));
+		if (OffAction.empty())
+			return false;
+		Action = OffAction;
 	}
-	else if (OffAction.find("script://") != std::string::npos)
+
+	float delay = -1;
+
+	size_t firstpipe = Action.find("|");
+	if (firstpipe != std::string::npos)
+	{
+		firstpipe++;
+		size_t secondpipe = Action.find("|", firstpipe);
+		if (secondpipe != std::string::npos)
+		{
+			if (secondpipe - firstpipe < 6)
+			{
+				std::string szTmp = Action.substr(firstpipe, secondpipe - firstpipe);
+				if (szTmp.find_first_not_of("0123456789.") == std::string::npos)
+				{
+					std::stringstream ss;
+					ss << szTmp;
+					ss >> delay;
+					szTmp = Action.substr(0, firstpipe - 1);
+					szTmp.append(Action.substr(secondpipe + 1));
+					Action = szTmp;
+				}
+			}
+		}
+	}
+
+	if ((Action.find("http://") != std::string::npos) || (Action.find("https://") != std::string::npos))
+	{
+		AddTaskItem(_tTaskItem::GetHTTPPage((delay != -1 ? delay : 0.2f), Action, bIsOn ? "SwitchActionOn" : "SwitchActionOff"));
+	}
+	else if (Action.find("script://") != std::string::npos)
 	{
 		//Execute possible script
-		std::string scriptname = OffAction.substr(9);
+		std::string scriptname = Action.substr(9);
+
 #if !defined WIN32
 		if (scriptname.find("/") != 0)
 			scriptname = szUserDataFolder + "scripts/" + scriptname;
 #endif
 		std::string scriptparams = "";
+		//Add parameters
 		int pindex = scriptname.find(' ');
 		if (pindex != std::string::npos)
 		{
@@ -6634,8 +6637,10 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		}
 		if (file_exist(scriptname.c_str()))
 		{
-			AddTaskItem(_tTaskItem::ExecuteScript(0.2f, scriptname, scriptparams));
+			AddTaskItem(_tTaskItem::ExecuteScript((delay != -1 ? delay : 0.2f), scriptname, scriptparams));
 		}
+		else
+			_log.Log(LOG_ERROR, "SQLHelper: Error script not found '%s'", scriptname.c_str());
 	}
 	return true;
 }
