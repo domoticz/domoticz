@@ -491,6 +491,14 @@ Note that if you do not find your specific device type here you can always inspe
  - **percentage**: *Number*.
  - **updatePercentage(percentage)**: *Function*.
 
+#### Philips Hue Light
+ - **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
+ - **maxDimLevel**: *Number*.
+ - **switchOff()**: *Function*. Switch device off it is supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **switchOn()**: *Function*. Switch device on if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+(#Switch_timing_options_.28delay.2C_duration.29).
+ - **toggleSwitch()**: *Function*. Toggles the state of the switch (if it is toggle-able) like On/Off, Open/Close etc.
+
 #### Pressure
  - **pressure**: *Number*.
  - **updatePressure(pressure)**: *Function*.

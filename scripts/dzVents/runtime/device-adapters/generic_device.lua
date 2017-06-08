@@ -15,13 +15,11 @@ local function stateToBool(state, _states)
 end
 
 local function setStateAttribute(state, device, _states)
-	local level;
-	if (state and string.find(state, 'Set Level')) then
-		level = string.match(state, "%d+") -- extract dimming value
-		state = 'On' -- consider the device to be on
-	end
+
+	local level = string.match(state ~= nil and state or '', 'Set Level: (%d+)%%')
 
 	if (level) then
+		state = 'On'
 		device['level'] = tonumber(level)
 	end
 

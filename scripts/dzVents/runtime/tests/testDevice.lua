@@ -825,23 +825,34 @@ describe('device', function()
 
 		end)
 
+		it('should detect a huelight', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myHue',
+				['state'] = 'Set Level: 88%',
+				['type'] = 'Lighting 2'
+			})
+
+			assert.is_same( 88, device.level)
+
+			device.toggleSwitch()
+			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
+
+			commandArray = {}
+			device.switchOn()
+			assert.is_same({ { ["myHue"] = "On" } }, commandArray)
+
+
+			commandArray = {}
+			device.switchOff()
+			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
+		end)
+
 		it('should detect a group', function()
 			local group = getDevice(domoticz, {
 				['baseType'] = 'group',
 				['name'] = 'myGroup',
 				['state'] = 'On'
 			})
-
-			group.switchOn()
-			assert.is_same({ { ['Group:myGroup'] = 'On' } }, commandArray)
-
-			commandArray = {}
-			group.toggleGroup()
-			assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
-
-			commandArray = {}
-			group.switchOff()
-			assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
 		end)
 
 		describe('Kodi', function()
@@ -950,14 +961,14 @@ describe('device', function()
 	end)
 
 	it('should extract level', function()
-		local device = getDevice_(domoticz, 'myDevice', 'Set Level 55%', false)
+		local device = getDevice_(domoticz, 'myDevice', 'Set Level: 55%', false)
 		assert.is_same('On', device.state)
 		assert.is_number(device.level)
 		assert.is_same(55, device.level)
 	end)
 
 	it('should have a bState when possible', function()
-		local device = getDevice_(domoticz, 'myDevice', 'Set Level 55%', false)
+		local device = getDevice_(domoticz, 'myDevice', 'Set Level: 55%', false)
 		assert.is_true(device.bState)
 
 		device = getDevice_(domoticz, 'myDevice', '', false)
