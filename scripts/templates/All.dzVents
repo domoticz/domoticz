@@ -1,4 +1,5 @@
--- Check the wiki at ... todo ..
+-- Check the wiki at
+-- http://www.domoticz.com/wiki/%27dzVents%27:_next_generation_LUA_scripting
 return {
 
 	-- 'active' controls if this entire script is considered or not
