@@ -2221,9 +2221,169 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 #endif // ENABLE_PYTHON
 
+
+
+struct _tHardwareListInt {
+	std::string Name;
+	int HardwareTypeVal;
+	std::string HardwareType;
+	bool Enabled;
+} tHardwareList;
+
+
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	
+
+	//Get All Hardware ID's/Names, need them later
+	std::vector<std::vector<std::string> > result;
+	CWebServer foo;
+
+	std::map<int, _tHardwareListInt> _hardwareNames;
+	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		int ii = 0;
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd = *itt;
+			_tHardwareListInt tlist;
+			int ID = atoi(sd[0].c_str());
+			tlist.Name = sd[1];
+			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
+			tlist.HardwareTypeVal = atoi(sd[3].c_str());
+
+			if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
+			{
+				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
+			}
+			else
+			{
+				tlist.HardwareType = foo.PluginHardwareDesc(ID);
+			}
+			_hardwareNames[ID] = tlist;
+		}
+	}
+
+	_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
+
+	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	int i = 0;
+	int additional_lines = 0;
+
+	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	{
+		_tDeviceStatus sitem = iterator->second;
+		additional_lines = 0;
+
+		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
+		result = m_sql.safe_query(
+			"SELECT DeviceID, HardwareID, Description, BatteryLevel, SignalLevel, Unit, "
+			"nValue, sValue "
+			"FROM DeviceStatus WHERE (ID=='%d')",
+			sitem.ID);
+		if (result.size() > 0)
+		{
+			std::vector<std::vector<std::string> >::const_iterator itt;
+			additional_lines = 8;
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
+		}
+
+		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+
+		lua_createtable(lua_state, 1, additional_lines+8);
+
+		lua_pushstring(lua_state, "name");
+		lua_pushstring(lua_state, sitem.deviceName.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "baseType");
+		lua_pushstring(lua_state, "device");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "devType");
+		lua_pushstring(lua_state, RFX_Type_Desc(sitem.devType, 1));
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "subType");
+		lua_pushstring(lua_state, RFX_Type_SubType_Desc(sitem.devType, sitem.subType));
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchType");
+		lua_pushstring(lua_state, Switch_Type_Desc((_eSwitchType)sitem.switchtype));
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "switchTypeValue");
+		lua_pushnumber(lua_state, (lua_Number)sitem.switchtype);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "lastUpdate");
+		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "level");
+		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
+		lua_rawset(lua_state, -3);
+
+
+		if (additional_lines > 0)
+		{
+			int hwID = atoi(result[0][1].c_str());
+			int bl = atoi(result[0][3].c_str());
+			int sl = atoi(result[0][4].c_str());
+
+			lua_pushstring(lua_state, "deviceID");
+			lua_pushstring(lua_state, result[0][0].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareID");
+			lua_pushstring(lua_state, result[0][1].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareName");
+			lua_pushstring(lua_state, _hardwareNames[hwID].Name.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareTypeID");
+			lua_pushnumber(lua_state, (lua_Number)_hardwareNames[hwID].HardwareTypeVal);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "hardwareType");
+			lua_pushstring(lua_state, _hardwareNames[hwID].HardwareType.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "description");
+			lua_pushstring(lua_state, result[0][2].c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "batteryLevel");
+			lua_pushnumber(lua_state, (lua_Number)bl);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "signalLevel");
+			lua_pushnumber(lua_state, (lua_Number)bl);
+			lua_rawset(lua_state, -3);
+
+		}
+
+
+		
+//		lua_pushstring(lua_state, "data");
+//		lua_createtable(lua_state, 0, 1);
+//		lua_pushstring(lua_state, "temperature");
+//		lua_pushstring(lua_state, "1234");
+//		lua_rawset(lua_state, -3);
+//		lua_settable(lua_state, -3);
+
+		lua_settable(lua_state, -3);
+
+		i++;
+	
+	}
+	lua_setglobal(lua_state, "deviceData");
+
+
+
+	unsigned char lastLevel;
+	unsigned char switchtype;
+
+
+
+
+
+
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2781,9 +2941,20 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 		secstatusw = "Disarmed";
 	}
 
-	lua_createtable(lua_state, 1, 0);
+	std::stringstream lua_DirT;
+
+#ifdef WIN32
+	lua_DirT << szUserDataFolder << "scripts\\lua\\";
+#else
+	lua_DirT << szUserDataFolder << "scripts/lua/";
+#endif
+
+	lua_createtable(lua_state, 2, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "script_path");
+	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 
