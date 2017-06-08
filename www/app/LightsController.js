@@ -2286,11 +2286,11 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Blinds Percentage Inverted") {
 									isdimmer = true;
-									if ((item.Status == 'Closed') || (item.Status.indexOf('Set ') != 0)) {
+									if (item.Status == 'Closed') {
 										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
-									else {
+									else if ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
