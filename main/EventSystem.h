@@ -57,6 +57,12 @@ public:
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		uint8_t switchtype;
+		std::string description;
+		std::string deviceID;
+		int batteryLevel;
+		int signalLevel;
+		int unit;
+		int hardwareID;
 	};
 
 	struct _tUserVariable

@@ -329,7 +329,6 @@ void CEventSystem::GetCurrentStates()
 	m_devicestates.clear();
 
 	result = m_sql.safe_query(
-		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options "
 		"FROM DeviceStatus AS A, Hardware AS B "
 		"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)");
 	if (result.size()>0)
@@ -348,6 +347,8 @@ void CEventSystem::GetCurrentStates()
 			std::string l_sValue;			l_sValue.reserve(200);
 			std::string l_nValueWording;	l_nValueWording.reserve(20);
 			std::string l_lastUpdate;		l_lastUpdate.reserve(30);
+			std::string l_description;		l_description.reserve(200);
+			std::string l_deviceID;			l_deviceID.reserve(25);
 
 			std::stringstream s_str(sd[1]);
 			s_str >> sitem.ID;
@@ -363,6 +364,12 @@ void CEventSystem::GetCurrentStates()
 			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
+			sitem.description = l_sValue.assign(sd[11]);
+			sitem.batteryLevel = atoi(sd[12].c_str());
+			sitem.signalLevel = atoi(sd[13].c_str());
+			sitem.unit = atoi(sd[14].c_str());
+			sitem.deviceID = l_deviceID.assign(sd[15]);
+			sitem.hardwareID = atoi(sd[0].c_str());
 			m_devicestates[sitem.ID] = sitem;
 		}
 	}
@@ -2394,7 +2401,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		_tDeviceStatus sitem = iterator->second;
 		dev_type = RFX_Type_Desc(sitem.devType, 1);
 		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
-		additional_lines = 0;
 		data_lines = 0;
 
 		Json::Value tempjson;
@@ -2403,25 +2409,9 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
-		result = m_sql.safe_query(
-			"SELECT DeviceID, HardwareID, Description, BatteryLevel, SignalLevel, Unit, "
-			"nValue, sValue "
-			"FROM DeviceStatus WHERE (ID=='%d')",
-			sitem.ID);
-		if (result.size() > 0)
-		{
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			additional_lines = 8;
-		}
-		else
-		{
-			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
-		}
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		timed_out = (now - checktime >= SensorTimeOut * 60);
-
-		//_log.Log(LOG_STATUS, "Device %s, diff =  %d", sitem.deviceName.c_str(), (now-checktime));
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -2490,37 +2480,27 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		}
 		lua_settable(lua_state, -3); // rawData table
 
-		if (additional_lines > 0)
-		{
-			int hwID = atoi(result[0][1].c_str());
-			int bl = atoi(result[0][3].c_str());
-			int sl = atoi(result[0][4].c_str());
-
-			lua_pushstring(lua_state, "deviceID");
-			lua_pushstring(lua_state, result[0][0].c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareID");
-			lua_pushstring(lua_state, result[0][1].c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareName");
-			lua_pushstring(lua_state, _hardwareNames[hwID].Name.c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareTypeValue");
-			lua_pushnumber(lua_state, (lua_Number)_hardwareNames[hwID].HardwareTypeVal);
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "hardwareType");
-			lua_pushstring(lua_state, _hardwareNames[hwID].HardwareType.c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "description");
-			lua_pushstring(lua_state, result[0][2].c_str());
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "batteryLevel");
-			lua_pushnumber(lua_state, (lua_Number)bl);
-			lua_rawset(lua_state, -3);
-			lua_pushstring(lua_state, "signalLevel");
-			lua_pushnumber(lua_state, (lua_Number)bl);
-			lua_rawset(lua_state, -3);
-		}
+		lua_pushstring(lua_state, "deviceID");
+		lua_pushstring(lua_state, sitem.deviceID.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "hardwareID");
+		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "hardwareName");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "hardwareTypeValue");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "hardwareType");
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "description");
+		lua_pushstring(lua_state, sitem.description.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "batteryLevel");
+		lua_pushnumber(lua_state, (lua_Number)sitem.batteryLevel);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "signalLevel");
+		lua_pushnumber(lua_state, (lua_Number)sitem.signalLevel);
+		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
 		lua_createtable(lua_state, 0, 0);
