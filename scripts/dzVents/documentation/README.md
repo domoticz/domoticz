@@ -66,6 +66,7 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 # Using dzVents with Domoticz
 In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked.
+Also make sure that in the Security section in the settings you allow `127.0.0.1` to not need a password. dzVents uses that port to send certain commands to Domoticz.
 
 There are two ways of creating dzVents event script in Domoticz:
 
@@ -606,7 +607,9 @@ To specify a duration or a delay for the various switch command you can do this:
 Note that **dimTo()** doesn't support **forMin()**.
 
 ### Create your own device adapter
-It is possible that your device is not recognized by dzVents. You can still operate it using the generic device attributes and methods but it is much nicer if you have device specific attributes and methods. Take a look at the existing adapters. You can find them in `/path/to/domoticz/scripts/dzVents/runtime/device-adapters`.  Just copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file `domoticzData.lua` in the dzVents folder. There you can see what the unique signature is for your device type. Usually it is a combination of deviceType and deviceSubType. But you can use any of the device attributes in the `matches` function. The matches function checks if the device type is suitable for your adapter and the `process` function actually creates your specific attributes and methods. Finally register your adapter in `Adapters.lua`. Please share your adapter when it is ready and working.
+It is possible that your device is not recognized by dzVents. You can still operate it using the generic device attributes and methods but it is much nicer if you have device specific attributes and methods. Take a look at the existing adapters. You can find them in `/path/to/domoticz/scripts/dzVents/runtime/device-adapters`.  Just copy an existing adapter and adapt it to your needs. You can turn debug logging on and inspect the file `domoticzData.lua` in the dzVents folder. There you can see what the unique signature is for your device type. Usually it is a combination of deviceType and deviceSubType. But you can use any of the device attributes in the `matches` function. The matches function checks if the device type is suitable for your adapter and the `process` function actually creates your specific attributes and methods.
+Also, if you call `myDevice.dump()` you will see all attributes and methods and the attribute `_adapters` shows you a list of applied adapters for that device.
+Finally register your adapter in `Adapters.lua`. Please share your adapter when it is ready and working.
 
 ## Variable object API
 User variables created in Domoticz have these attributes and methods:
