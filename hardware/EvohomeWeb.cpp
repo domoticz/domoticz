@@ -255,8 +255,8 @@ bool CEvohomeWeb::GetStatus()
 	DecodeControllerMode(m_tcs);
 
 	// cycle all zones for status
-	for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
-		DecodeZone(&m_tcs->zones[it->first]);
+	for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
+		DecodeZone(&m_tcs->zones[i]);
 
 	// hot water status
 	if (has_dhw(m_tcs))
@@ -268,33 +268,33 @@ bool CEvohomeWeb::GetStatus()
 
 bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 {
-	std::string oldmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
-	std::string newmode = GetWebAPIModeName(sysmode);
+	std::string sznewmode = GetWebAPIModeName(sysmode);
 	if (set_system_mode(m_tcs->systemId, (int)(m_dczToEvoWebAPIMode[sysmode])))
 	{
 		_log.Log(LOG_NORM, "(%s) changed system status to %s", this->Name.c_str(), GetControllerModeName(sysmode));
 
-		if (newmode == "HeatingOff")
+		if (sznewmode == "HeatingOff")
 		{
 			// cycle my zones to reflect the HeatingOff mode
-			for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
+			for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
 			{
-				zone* hz = &m_tcs->zones[it->first];
-				std::string zoneId = (*hz->status)["zoneId"].asString();
-				std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
-				unsigned long evoID = atol(zoneId.c_str());
+				zone* hz = &m_tcs->zones[i];
+				std::string szId = (*hz->status)["zoneId"].asString();
+				std::string sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+				unsigned long evoID = atol(szId.c_str());
+
 				std::stringstream ssUpdateStat;
-				ssUpdateStat << temperature << ";5;" << newmode;
+				ssUpdateStat << sztemperature << ";5;" << sznewmode;
 				std::string sdevname;
-				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 			}
 			return true;
 		}
 
 		// cycle my zones to restore scheduled temps
-		for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
+		for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
 		{
-			zone* hz = &m_tcs->zones[it->first];
+			zone* hz = &m_tcs->zones[i];
 			std::string zonemode = "";
 			if (hz->status->isMember("heatSetpointStatus"))
 				zonemode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
@@ -309,7 +309,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			 */
 
 			// Away unconditionally sets all zones to a preset temperature, even if Normal mode is lower
-			if (newmode == "Away")
+			if (sznewmode == "Away")
 			{
 				setpoint = m_awaysetpoint;
 				szuntil = "";
@@ -324,24 +324,25 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
 				// if the resulting setpoint is below the Away setpoint
-				if ((newmode == "AutoWithEco") && (setpoint >= (m_awaysetpoint + 3)))
+				if ((sznewmode == "AutoWithEco") && (setpoint >= (m_awaysetpoint + 3)))
 					setpoint -= 3;
 			}
 
-			std::string zoneId = (*hz->status)["zoneId"].asString();
-			std::string temperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
-			unsigned long evoID = atol(zoneId.c_str());
+			std::string szId = (*hz->status)["zoneId"].asString();
+			std::string sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+
+			unsigned long evoID = atol(szId.c_str());
 			std::stringstream ssUpdateStat;
 			if (setpoint < 5) // there was an error - no schedule?
-				ssUpdateStat << temperature << ";5;Unknown";
+				ssUpdateStat << sztemperature << ";5;Unknown";
 			else
 			{
-				ssUpdateStat << temperature << ";" << setpoint << ";" << newmode;
+				ssUpdateStat << sztemperature << ";" << setpoint << ";" << sznewmode;
 				if ((m_showschedule) && (!szuntil.empty()))
 					ssUpdateStat << ";" << szuntil;
 			}
 			std::string sdevname;
-			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
 		return true;
 	}
@@ -445,12 +446,11 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
 	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
-	std::map<std::string, std::string> ret;
+	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 
-	ret["systemMode"] = (*tcs->status)["systemModeStatus"]["mode"].asString();
-
-	while (sysmode < 7 && strcmp(ret["systemMode"].c_str(), m_szWebAPIMode[sysmode]) != 0)
+	szsystemMode = (*tcs->status)["systemModeStatus"]["mode"].asString();
+	while (sysmode < 7 && strcmp(szsystemMode.c_str(), m_szWebAPIMode[sysmode]) != 0)
 		sysmode++;
 
 	REVOBUF tsen;
@@ -465,16 +465,16 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 
 	if (GetControllerName().empty() || m_updatedev)
 	{
-		ret["modelType"] = (*tcs->installationInfo)["modelType"].asString();
-		SetControllerName(ret["modelType"]);
-		if (ret["modelType"].empty())
+		szmodelType = (*tcs->installationInfo)["modelType"].asString();
+		SetControllerName(szmodelType);
+		if (szmodelType.empty())
 			return;
 
 		std::string devname;
 		if (m_showlocation)
-			devname = m_szlocationName + ": " + ret["modelType"];
+			devname = m_szlocationName + ": " + szmodelType;
 		else
-			devname = ret["modelType"];
+			devname = szmodelType;
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name, StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
@@ -495,68 +495,63 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 {
 	// no sense in using REVOBUF EVOHOME2 to send this to mainworker as this requires breaking up our data
 	// only for mainworker to reassemble it.
-	std::map<std::string, std::string> zonedata;
-	Json::Value::Members keys1, keys2;
-	keys1 = (*hz->status).getMemberNames();
-	for (size_t i = 0; i < keys1.size(); ++i) {
-		if ((keys1[i] == "zoneId") || (keys1[i] == "name"))
-			zonedata[keys1[i]] = (*hz->status)[keys1[i]].asString();
-		else if ((keys1[i] == "temperatureStatus") || (keys1[i] == "heatSetpointStatus"))
-		{
-			keys2 = (*hz->status)[keys1[i]].getMemberNames();
-			for (size_t j = 0; j < keys2.size(); ++j) {
-				zonedata[keys2[j]] = (*hz->status)[keys1[i]][keys2[j]].asString();
-			}
-		}
-	}
 
-	unsigned long evoID = atol(zonedata["zoneId"].c_str());
+	std::string szId, sztemperature, szsetpoint, szmode;
+	std::string szuntil= "";
 	std::stringstream ssUpdateStat;
-	std::string sysMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
-	if ((sysMode == "Away") && (zonedata["setpointMode"] == "FollowSchedule"))
+
+	szId = (*hz->status)["zoneId"].asString();
+	sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+	szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
+	szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
+	if (szmode == "TemporaryOverride")
+		szuntil = (*hz->status)["stateStatus"]["until"].asString();
+
+	unsigned long evoID = atol(szId.c_str());
+	std::string szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+	if ((szsysmode == "Away") && (szmode == "FollowSchedule"))
 	{
-		double new_awaysetpoint = strtod(zonedata["targetTemperature"].c_str(), NULL);
+		double new_awaysetpoint = strtod(szsetpoint.c_str(), NULL);
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
 			m_awaysetpoint = new_awaysetpoint;
 			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%0.2f' WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_awaysetpoint, this->m_HwdID, m_tcs->systemId.c_str());
 		}
-		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << sysMode;
+		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
-	else if (sysMode == "HeatingOff")
-		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";" << sysMode;
+	else if (szsysmode == "HeatingOff")
+		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	else
 	{
-		ssUpdateStat << zonedata["temperature"] << ";" << zonedata["targetTemperature"] << ";";
-		if (zonedata["setpointMode"] != "FollowSchedule")
-			ssUpdateStat << zonedata["setpointMode"];
+		ssUpdateStat << sztemperature << ";" << szsetpoint << ";";
+		if (szmode != "FollowSchedule")
+			ssUpdateStat << szmode;
 		else
 		{
-			ssUpdateStat << sysMode;
-			if (m_showschedule && zonedata["until"].empty())
-				zonedata["until"] = local_to_utc(get_next_switchpoint(hz));
-			if (!zonedata["until"].empty())
-				ssUpdateStat << ";" << zonedata["until"];
+			ssUpdateStat << szsysmode;
+			if (m_showschedule && szuntil.empty())
+				szuntil = local_to_utc(get_next_switchpoint(hz));
+			if (!szuntil.empty())
+				ssUpdateStat << ";" << szuntil;
 		}
 	}
 
 	std::string sdevname;
-	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, zonedata["zoneId"].c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 
 	if (m_updatedev && (DevRowIdx != -1))
 	{
-		std::string ndevname;
+		std::stringstream ssnewname;
 		if (m_showlocation)
-			ndevname = m_szlocationName + ": " + zonedata["name"];
-		else
-			ndevname = zonedata["name"];
+			ssnewname << m_szlocationName << ": ";
+		ssnewname << (*hz->status)["name"].asString();
 
-		if (sdevname != ndevname)
+		if (sdevname != ssnewname.str())
 		{
-			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ssnewname.str().c_str(), DevRowIdx);
 			if (sdevname.find("zone ") != std::string::npos)
-				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ndevname.c_str());
+				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ssnewname.str().c_str());
 		}
 	}
 }
@@ -565,20 +560,20 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
 	// Hot Water is essentially just another zone
-	std::map<std::string, std::string> dhwdata;
-	if (tcs->status->isMember("dhw"))
-	{
-		dhwdata["until"] = "";
-		dhwdata["dhwId"] = (*tcs->status)["dhw"]["dhwId"].asString();
-		dhwdata["temperature"] = (*tcs->status)["dhw"]["temperatureStatus"]["temperature"].asString();
-		if (tcs->status->isMember("stateStatus"))
-		{
-			dhwdata["state"] = (*tcs->status)["stateStatus"]["state"].asString();
-			dhwdata["mode"] = (*tcs->status)["stateStatus"]["mode"].asString();
-			if (dhwdata["mode"] == "TemporaryOverride")
-				dhwdata["until"] = (*tcs->status)["stateStatus"]["until"].asString();
-		}
-	}
+	if ((!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
+		return;
+
+	std::string szId, szmode;
+	std::string szuntil= "";
+	std::stringstream ssUpdateStat;
+
+	szId = (*tcs->status)["dhw"]["dhwId"].asString();
+	ssUpdateStat << (*tcs->status)["dhw"]["temperatureStatus"]["temperature"].asString() << ";";
+	ssUpdateStat << (*tcs->status)["dhw"]["stateStatus"]["state"].asString() << ";";
+	szmode = (*tcs->status)["dhw"]["stateStatus"]["mode"].asString();
+	ssUpdateStat << szmode;
+	if (szmode == "TemporaryOverride")
+		szuntil = (*tcs->status)["dhw"]["stateStatus"]["until"].asString();
 
 	if (m_updatedev) // create/update and return the first free unit
 	{
@@ -595,28 +590,26 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		if (result.size() < 1) // create device
 		{
 			std::string sdevname;
-			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, dhwdata["dhwId"].c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, "0.0;Off;Auto", sdevname);
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")", ndevname.c_str(), DevRowIdx);
 		}
-		else if ((result[0][1] != dhwdata["dhwId"]) || (result[0][2] != ndevname))
+		else if ((result[0][1] != szId) || (result[0][2] != ndevname))
 		{
 			uint64_t DevRowIdx;
 			std::stringstream s_str(result[0][0]);
 			s_str >> DevRowIdx;
-			// also wipe StrParam1 - we do not also want to call the old (python) script when changing the setpoint
-			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", dhwdata["dhwId"].c_str(), ndevname.c_str(), DevRowIdx);
+			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", szId.c_str(), ndevname.c_str(), DevRowIdx);
 		}
 	}
 
-	std::stringstream ssUpdateStat;
-	ssUpdateStat << dhwdata["temperature"] << ";" << dhwdata["state"] << ";" << dhwdata["mode"];
-	if (m_showschedule && dhwdata["until"].empty())
-		dhwdata["until"] = local_to_utc(get_next_switchpoint(tcs, atoi(dhwdata["dhwId"].c_str())));
-	if (!dhwdata["until"].empty())
-		ssUpdateStat << ";" << dhwdata["until"];
+	if (m_showschedule && szuntil.empty())
+		szuntil = local_to_utc(get_next_switchpoint(tcs, atoi(szId.c_str())));
+	if (!szuntil.empty())
+		ssUpdateStat << ";" << szuntil;
 
 	std::string sdevname;
-	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, dhwdata["dhwId"].c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
+	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
 }
 
 
@@ -740,10 +733,8 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
  *									*
  ************************************************************************/
 
-bool CEvohomeWeb::login(std::string user, std::string password)
+bool CEvohomeWeb::login(const std::string &user, const std::string &password)
 {
-	m_auth_info.clear();
-
 	std::stringstream pdata;
 	pdata << "installationInfo-Type=application%2Fx-www-form-urlencoded;charset%3Dutf-8";
 	pdata << "&Host=rs.alarmnet.com%2F";
@@ -799,7 +790,6 @@ bool CEvohomeWeb::login(std::string user, std::string password)
 		return false;
 	}
 
-
 	std::stringstream atoken;
 	atoken << "Authorization: bearer " << j_login["access_token"].asString();
 
@@ -819,7 +809,6 @@ bool CEvohomeWeb::login(std::string user, std::string password)
  */
 bool CEvohomeWeb::user_account()
 {
-	m_account_info.clear();
 	std::string s_res;
 	if (!HTTPClient::GET(EVOHOME_HOST"/WebAPI/emea/api/v1/userAccount", m_SessionHeaders, s_res))
 	{
@@ -830,11 +819,10 @@ bool CEvohomeWeb::user_account()
 	Json::Reader jReader;
 	bool ret = jReader.parse(s_res.c_str(), j_account);
 
-	Json::Value::Members keys = j_account.getMemberNames();
-	for (size_t i = 0; i < keys.size(); ++i) {
-		m_account_info[keys[i]] = j_account[keys[i]].asString();
-	}
+	if (!j_account.isMember("userId"))
+		return false;
 
+	m_evouid = j_account["userId"].asString();
 	return true;
 }
 
@@ -912,7 +900,7 @@ bool CEvohomeWeb::full_installation()
 {
 	m_locations.clear();
 	std::stringstream url;
-	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/installationInfo?userId=" << m_account_info["userId"] << "&includeTemperatureControlSystems=True";
+	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/location/installationInfo?userId=" << m_evouid << "&includeTemperatureControlSystems=True";
 
 	std::string s_res;
 	if (!HTTPClient::GET(url.str(), m_SessionHeaders, s_res))

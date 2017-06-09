@@ -76,7 +76,7 @@ private:
 	bool SetDHWState(const char *pdata);
 
 	// evohome client library - don't ask about naming convention - these are imported from another project
-	bool login(std::string user, std::string password);
+	bool login(const std::string &user, const std::string &password);
 	bool user_account();
 
 	void get_gateways(int location);
@@ -146,8 +146,7 @@ private:
 	Json::Value m_j_fi;
 	Json::Value m_j_stat;
 
-	std::map<std::string, std::string> m_auth_info;
-	std::map<std::string, std::string> m_account_info;
+	std::string m_evouid;
 	std::map<int, location> m_locations;
 
 	temperatureControlSystem* m_tcs;
