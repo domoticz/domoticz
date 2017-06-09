@@ -2614,7 +2614,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.size() == 0)
 		{
-			//_log.Log(LOG_ERROR, "EventSystem: Failed to read scene/group description for id %d", sgitem.ID);
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read scene/group description for id %d", sgitem.ID);
 		}
 		else
 		{
