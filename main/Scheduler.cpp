@@ -758,18 +758,11 @@ void CScheduler::CheckSchedules()
 							{
 								if (itt->timerCmd == TCMD_ON)
 								{
-									if (itt->Level == 100)
-										switchcmd = "On";
-									else
-									{
-										switchcmd = "Set Level";
-										float fLevel = (maxDimLevel / 100.0f)*itt->Level;
-										if (fLevel > 100)
-											fLevel = 100;
-										ilevel = int(fLevel);
-										ilevel++;
-										_log.Log(LOG_STATUS, "Schedule level: %d", ilevel);
-									}
+									switchcmd = "Set Level";
+									float fLevel = (maxDimLevel / 100.0f)*itt->Level;
+									if (fLevel > 100)
+										fLevel = 100;
+									ilevel = int(fLevel) + 1;
 								}
 								else if (itt->timerCmd == TCMD_OFF)
 									ilevel = 0;
