@@ -179,7 +179,7 @@ h1,h2,h3{color:#999}
 
 .item .options {
     height: 30px;
-    background-color: rgba(0,0,0,0.02);
+    /*background-color: rgba(0,0,0,0.02);*/
 }
 
 .options a.[class^="btnsmall"]:hover{
@@ -289,11 +289,14 @@ body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{border-radius:3px!
 
 .ui-draggable:not(.ui-dialog) tr td.options a[class^="btnsmall"]{
     color:#2e8ebc;
-    background-color:transparent;
+    background-color: #1f2e3e;
     margin-top:0px;
     margin-left:0px;
-    padding:0px 5px;  
+    padding:0px 15px;  
     background-image:none;
+    border-radius:3px;
+    position: relative;
+    left: -28px;
     /*background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
     background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
     background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
@@ -310,12 +313,12 @@ body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{border-radius:3px!
     /*color:#af2aaf;*/ /* #446cce*/
     background-color:#af2aaf;
     color: #ddd;
-    border-radius: 0;
-    padding: 2px;
+    /*border-radius: 3px;*/
+    /*padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
     height: 24px;
-    display: inline-block;
+    display: inline-block;*/
 }
 
 /*
