@@ -11674,32 +11674,11 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
-			else if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageInverted)
-			{
-				if (gswitch.cmnd == gswitch_sOn)
-				{
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-						HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
-					if (result.size() == 1)
-					{
-						int llevel = atoi(result[0][0].c_str());
-						if (llevel > 0 && llevel < 100)
-						{
-							level = llevel;
-							gswitch.cmnd = gswitch_sSetLevel;
-						}
-					}
-				}
-				else if (gswitch.cmnd == gswitch_sSetLevel)
-				{
-					if (level == 0)
-						gswitch.cmnd = gswitch_sOff;
-
-					else if (level == 100)
+			else if (((switchtype == STYPE_BlindsPercentage) ||
+					(switchtype == STYPE_BlindsPercentageInverted)) &&
+					(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
 						gswitch.cmnd = gswitch_sOn;
-				}
-			}
+
 			gswitch.level = (unsigned char)level;
 			gswitch.rssi = 12;
 			if (switchtype != STYPE_Motion) //dont send actual motion off command
