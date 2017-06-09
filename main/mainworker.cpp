@@ -484,10 +484,9 @@ bool MainWorker::GetSunSettings()
 {
 	int nValue;
 	std::string sValue;
-	if (!m_sql.GetPreferencesVar("Location",nValue,sValue))
-		return false;
 	std::vector<std::string> strarray;
-	StringSplit(sValue, ";", strarray);
+	if (m_sql.GetPreferencesVar("Location",nValue,sValue))
+		StringSplit(sValue, ";", strarray);
 
 	if (strarray.size() != 2)
 	{
