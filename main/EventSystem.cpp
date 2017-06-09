@@ -365,7 +365,8 @@ void CEventSystem::GetCurrentStates()
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
-			_log.Log(LOG_STATUS, "id=%s", sitem.ID);
+//			_log.Log(LOG_STATUS, "id=%s", sitem.ID);
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
 			_log.Log(LOG_STATUS, "name=%s", sitem.deviceName.c_str());
 
 		}
@@ -2412,6 +2413,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			"nValue, sValue "
 			"FROM DeviceStatus WHERE (ID=='%d')",
 			sitem.ID);
+
+
 		if (result.size() > 0)
 		{
 			std::vector<std::vector<std::string> >::const_iterator itt;
@@ -2419,7 +2422,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		}
 		else
 		{
-			//_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
+			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
 		}
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
