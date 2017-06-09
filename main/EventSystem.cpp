@@ -367,6 +367,7 @@ void CEventSystem::GetCurrentStates()
 			m_devicestates[sitem.ID] = sitem;
 //			_log.Log(LOG_STATUS, "id=%s", sitem.ID);
 			_log.Log(LOG_ERROR, "id=%d", sitem.ID);
+			printf("id=%d", sitem.ID);
 			_log.Log(LOG_STATUS, "name=%s", sitem.deviceName.c_str());
 
 		}
