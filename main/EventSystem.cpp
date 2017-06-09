@@ -366,7 +366,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
 			_log.Log(LOG_STATUS, "id=%s", sitem.ID);
-			_log.Log(LOG_STATUS, "name=%s", sitem.deviceName);
+			_log.Log(LOG_STATUS, "name=%s", sitem.deviceName.c_str());
 
 		}
 	}
