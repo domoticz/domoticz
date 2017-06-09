@@ -274,7 +274,7 @@ local function Domoticz(settings)
 					self.devices[item.name] = newDevice
 					self.devices[item.id] = newDevice
 				else
-					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
 				end
 
 			elseif (item.baseType == 'scene') then
@@ -285,7 +285,7 @@ local function Domoticz(settings)
 					self.scenes[item.name] = newScene
 					self.scenes[item.id] = newScene
 				else
-					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
 				end
 
 			elseif (item.baseType == 'group') then
@@ -295,7 +295,7 @@ local function Domoticz(settings)
 					self.groups[item.name] = newGroup
 					self.groups[item.id] = newGroup
 				else
-					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_ERROR)
+					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
 				end
 
 			elseif (item.baseType == 'uservariable') then
