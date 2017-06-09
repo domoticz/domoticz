@@ -365,8 +365,8 @@ void CEventSystem::GetCurrentStates()
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
 			m_devicestates[sitem.ID] = sitem;
-			_log.Log(LOG_STATUS, sitem.ID);
-			_log.Log(LOG_STATUS, sitem.deviceName);
+			_log.Log(LOG_STATUS, sitem.ID.c_str());
+			_log.Log(LOG_STATUS, sitem.deviceName.c_str());
 
 		}
 	}
