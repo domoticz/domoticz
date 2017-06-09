@@ -2419,7 +2419,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
+			//_log.Log(LOG_ERROR, "EventSystem: Failed to read DeviceStatus entry for device %d", sitem.ID);
 		}
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
