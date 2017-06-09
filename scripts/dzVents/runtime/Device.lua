@@ -45,9 +45,12 @@ local function Device(domoticz, data, dummyLogger)
 	-- get a specific adapter for the current device
 	local adapters = adapterManager.getDeviceAdapters(self)
 
+	self._adapters = {}
+
 	for i, adapter in pairs(adapters) do
 		utils.log('Processing device-adapter for ' .. self.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 		adapter.process(self, data, domoticz, utils, adapterManager)
+		table.insert(self._adapters, adapter.name)
 	end
 
 	if (_G.TESTMODE) then
