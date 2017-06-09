@@ -10885,64 +10885,48 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	case pTypeLighting2:
 		{
 			tRBUF lcmd;
-			lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
-			lcmd.LIGHTING2.packettype = dType;
-			lcmd.LIGHTING2.subtype = dSubType;
-			lcmd.LIGHTING2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING2.id1 = ID1;
-			lcmd.LIGHTING2.id2 = ID2;
-			lcmd.LIGHTING2.id3 = ID3;
-			lcmd.LIGHTING2.id4 = ID4;
-			lcmd.LIGHTING2.unitcode = Unit;
+			lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
+			lcmd.LIGHTING2.packettype=dType;
+			lcmd.LIGHTING2.subtype=dSubType;
+			lcmd.LIGHTING2.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
+			lcmd.LIGHTING2.id1=ID1;
+			lcmd.LIGHTING2.id2=ID2;
+			lcmd.LIGHTING2.id3=ID3;
+			lcmd.LIGHTING2.id4=ID4;
+			lcmd.LIGHTING2.unitcode=Unit;
 			lcmd.LIGHTING2.filler = 0;
 			lcmd.LIGHTING2.rssi = 12;
 
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING2.cmnd, options))
+			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd, options))
 				return false;
-
-			if (switchtype == STYPE_Doorbell)
-			{
+			if (switchtype==STYPE_Doorbell) {
 				int rnvalue=0;
 				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
-				if (rnvalue == 0)
+				if (rnvalue==0)
 					lcmd.LIGHTING2.cmnd=light2_sGroupOn;
 				else
 					lcmd.LIGHTING2.cmnd=light2_sOn;
-				level = 15;
+				level=15;
 			}
-			else if (switchtype==STYPE_X10Siren)
-				level = 15;
-
-			else if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageInverted)
-			{
-				if (lcmd.LIGHTING2.cmnd == light2_sOn)
+			else if (switchtype==STYPE_X10Siren) {
+				level=15;
+			}
+			else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
+				if (lcmd.LIGHTING2.cmnd==light2_sSetLevel)
 				{
-					std::vector<std::vector<std::string> > result;
-					result = m_sql.safe_query("SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-						HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
-					if (result.size() == 1)
+					if (level==15)
 					{
-						int llevel = atoi(result[0][0].c_str());
-						if (llevel > 0 && llevel < 100)
-						{
-							level = llevel;
-							lcmd.LIGHTING2.cmnd = light2_sSetLevel;
-						}
+						lcmd.LIGHTING2.cmnd=light2_sOn;
 					}
-				}
-				else if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
-				{
-					if (level == 0)
-						lcmd.LIGHTING2.cmnd = light2_sOff;
-
-					else if (level == 100)
-						lcmd.LIGHTING2.cmnd = light2_sOn;
+					else if (level==0)
+					{
+						lcmd.LIGHTING2.cmnd=light2_sOff;
+					}
 				}
 			}
 			else if (switchtype == STYPE_Media)
 			{
-				if (switchcmd == "Set Volume")
-				{
+				if (switchcmd == "Set Volume") {
 					level = (level < 0) ? 0 : level;
 					level = (level > 100) ? 100 : level;
 				}
@@ -10952,15 +10936,15 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 			lcmd.LIGHTING2.level=(unsigned char)level;
 			//Special Teach-In for EnOcean Dimmers
-			if ((pHardware->HwdType == HTYPE_EnOceanESP2) && (IsTesting) && (switchtype == STYPE_Dimmer))
+			if ((pHardware->HwdType == HTYPE_EnOceanESP2)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
 			{
 				CEnOceanESP2 *pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
-				pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
+				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			}
-			else if ((pHardware->HwdType == HTYPE_EnOceanESP3) && (IsTesting) && (switchtype==STYPE_Dimmer))
+			else if ((pHardware->HwdType == HTYPE_EnOceanESP3)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
 			{
 				CEnOceanESP3 *pEnocean = reinterpret_cast<CEnOceanESP3*>(pHardware);
-				pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
+				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
 			}
 			else
 			{
@@ -10971,8 +10955,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				}
 			}
 
-			if (!IsTesting)
-			{
+			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
 			}
