@@ -2487,10 +2487,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "hardwareName");
+		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].Name.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "hardwareTypeValue");
+		lua_pushnumber(lua_state, (lua_Number)_hardwareNames[sitem.hardwareID].HardwareTypeVal);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "hardwareType");
+		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].HardwareType.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "description");
 		lua_pushstring(lua_state, sitem.description.c_str());
