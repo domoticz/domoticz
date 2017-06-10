@@ -982,7 +982,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								}
 								if (voltage != "") {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
-								}								
+								}
 							}
 						}
 					}
