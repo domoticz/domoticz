@@ -3,7 +3,7 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 
 #include "PluginManager.h"
 #include "Plugins.h"
@@ -26,6 +26,10 @@
 #endif
 
 #include "DelayedLink.h"
+
+#ifdef ENABLE_PYTHON
+#include "../../main/EventsPythonModule.h"
+#endif
 
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
@@ -53,8 +57,13 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
+#ifdef ENABLE_PYTHON
+    // Need forward decleration
+    // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
+#endif // ENABLE_PYTHON
+
 	boost::mutex PluginMutex;	// controls accessto the message queue
-	std::queue<CPluginMessage*>	PluginMessageQueue;
+	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -117,8 +126,16 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
 				return false;
 			}
+#ifdef ENABLE_PYTHON
+            if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
+			{
+				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
+				return false;
+			}
+#endif //ENABLE_PYTHON
 
 			Py_Initialize();
+			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
@@ -191,6 +208,7 @@ namespace Plugins {
 						}
 					}
 				}
+				FileEntries.clear();
 			}
 		}
 	}
@@ -239,7 +257,7 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					if (pPlugin && pPlugin->IoThreadRequired())
 					{
 						bIos_required = true;
 						break;
@@ -258,14 +276,14 @@ namespace Plugins {
 			bool	bProcessed = true;
 			while (bProcessed)
 			{
-				CPluginMessage* Message = NULL;
+				CPluginMessageBase* Message = NULL;
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					CPluginMessage* FrontMessage = PluginMessageQueue.front();
+					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
 					if (FrontMessage->m_When <= Now)
 					{
@@ -277,25 +295,16 @@ namespace Plugins {
 					PluginMessageQueue.push(FrontMessage);
 				}
 
-				if (Message && Message->m_Type != PMT_NULL)
+				if (Message)
 				{
 					bProcessed = true;
-					if (!m_pPlugins.count(Message->m_HwdID))
+					try
 					{
-						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message->m_HwdID);
+						Message->Process();
 					}
-					else
+					catch(...)
 					{
-						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message->m_HwdID];
-						if (pPlugin)
-						{
-							pPlugin->HandleMessage(Message);
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message->m_HwdID);
-						}
-
+						_log.Log(LOG_ERROR, "PluginSystem: Exception processing message.");
 					}
 				}
 				// Free the memory for the message
@@ -318,12 +327,6 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
-		if (Py_LoadLibrary())
-		{
-			if (Py_IsInitialized()) {
-				Py_Finalize();
-			}
-		}
 		// Hardware should already be stopped to just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
@@ -332,6 +335,14 @@ namespace Plugins {
 		}
 
 		m_pPlugins.clear();
+
+		if (Py_LoadLibrary()  && m_InitialPythonThread)
+		{
+			if (Py_IsInitialized()) {
+				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
+				Py_Finalize();
+			}
+		}
 
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;
@@ -345,7 +356,7 @@ namespace Plugins {
 		{
 			if (itt->second)
 			{
-				SettingsDirective*	Message = new SettingsDirective(itt->second->m_HwdID);
+				SettingsDirective*	Message = new SettingsDirective((CPlugin*)itt->second);
 				PluginMessageQueue.push(Message);
 			}
 			else
@@ -370,7 +381,7 @@ namespace http {
 				XmlDoc.Parse(it_type->second.c_str());
 				if (XmlDoc.Error())
 				{
-					_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+					_log.Log(LOG_ERROR, "%s: Parsing '%s', '%s' at line %d column %d in XML '%s'.", __func__, it_type->first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
 				}
 				else
 				{
@@ -431,7 +442,7 @@ namespace http {
 						}
 					}
 				}
-			}  
+			}
 		}
 
 		void CWebServer::PluginLoadConfig()

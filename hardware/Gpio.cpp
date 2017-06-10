@@ -79,7 +79,7 @@ Connection information:
 // List of GPIO pin numbers, ordered as listed
 std::vector<CGpioPin> CGpio::pins;
 
-boost::shared_ptr<boost::thread> m_thread_interrupt[GPIO_PIN_MAX+1];
+boost::shared_ptr<boost::thread> m_thread_interrupt[GPIO_PIN_MAX + 1];
 
 /*
  * Direct GPIO implementation, inspired by other hardware implementations such as PiFace and EnOcean
@@ -251,36 +251,17 @@ bool CGpio::StartHardware()
 		 	_log.Log(LOG_NORM, "GPIO: Error creating pins in DB, aborting...");
 		 	m_stoprequested=true;
 		 }*/
-		 if (!m_stoprequested)
-		 {
-			//  Read all exported GPIO ports and set the device status accordingly.
-			//  No need for delayed startup and force update when no masters are able to connect.
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
-			if (result.size() > 0)
-			{
-				for (int i = 0; i < DELAYED_STARTUP_SEC; ++i)
-				{
-					sleep_milliseconds(1000);
-					if (m_stoprequested)
-						break;
-				}
-				_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
-				UpdateDeviceStates(true);
-			}
-			else
-				UpdateDeviceStates(false);
+	 	m_thread_updatestartup = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::UpdateStartup, this)));
 
-			if (m_pollinterval > 0)
-				m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
-		}
+		if (m_pollinterval > 0)
+			m_thread_poller = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CGpio::Poller, this)));
 	}
 	else
 	{
 		_log.Log(LOG_NORM, "GPIO: No exported pins found, aborting...");
-		m_stoprequested=true;
+		m_stoprequested = true;
 	}
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
 	return (m_thread != NULL);
@@ -288,10 +269,13 @@ bool CGpio::StartHardware()
 
 bool CGpio::StopHardware()
 {
-	m_stoprequested=true;
+	m_stoprequested = true;
 
 	if (m_thread_poller != NULL)
 		m_thread_poller->join();
+
+	if (m_thread_updatestartup != NULL)
+		m_thread_updatestartup->join();
 
 	boost::mutex::scoped_lock lock(m_pins_mutex);
 	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
@@ -329,6 +313,27 @@ bool CGpio::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 		}
 	return false;
+}
+
+void CGpio::UpdateStartup()
+{
+	//  Read all exported GPIO ports and set the device status accordingly.
+	//  No need for delayed startup and force update when no masters are able to connect.
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
+	if (result.size() > 0)
+	{
+		for (int i = 0; i < DELAYED_STARTUP_SEC; ++i)
+		{
+			sleep_milliseconds(1000);
+			if (m_stoprequested)
+				return;
+		}
+		_log.Log(LOG_NORM, "GPIO: Optional connected Master Domoticz now updates its status");
+		UpdateDeviceStates(true);
+	}
+	else
+		UpdateDeviceStates(false);
 }
 
 void CGpio::Poller()
@@ -471,7 +476,7 @@ bool CGpio::InitPins()
 		snprintf(path, GPIO_MAX_PATH, "%s%d", GPIO_PATH, gpio_pin);
 		fd = open(path, O_RDONLY);
 
-		if (fd != -1) /* GPIO export found */
+		if (fd != -1)
 		{
 			result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID, gpio_pin);
@@ -541,7 +546,7 @@ int CGpio::GPIORead(int gpio_pin, const char *param)
 	bytecount = read(fd, value_str, GPIO_MAX_VALUE_SIZE);
 	close(fd);
 
-	if (-1 == bytecount)
+	if (bytecount == -1)
 	{
 		close(fd);
 		return -1;
@@ -569,33 +574,14 @@ int CGpio::GPIOReadFd(int fd)
 int CGpio::GPIOWrite(int gpio_pin, bool value)
 {
 	char path[GPIO_MAX_PATH];
-	int fd;
-	bool new_state = false;
-	int active_low = -1;
-	for(std::vector<CGpioPin>::iterator it = pins.begin(); it != pins.end(); ++it)
-	{
-		if (it->GetPin() == gpio_pin)
-		{
-			active_low = it->GetActiveLow();
-			break;
-		}
-	}
-
-	if (active_low == -1)
-		return -1;
-
-	if (active_low == 1)
-		value ? new_state = false : new_state = true;
-	else
-		value ? new_state = true : new_state = false;
 
 	snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, gpio_pin);
-	fd = open(path, O_WRONLY);
+	int fd = open(path, O_WRONLY);
 
 	if (fd == -1)
 		return -1;
 
-	if (1 != write(fd, GPIO_LOW == new_state ? "0" : "1", 1))
+	if (write(fd, value ? "1" : "0", 1) != 1)
 	{
 		close(fd);
 		return -1;

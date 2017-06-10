@@ -14,7 +14,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 extern "C" {
 #include <Python.h>
 }
@@ -26,6 +26,10 @@ extern std::string szUserDataFolder;
 
 // this should be filled in by the preprocessor
 extern const char * Python_exe;
+
+#ifdef ENABLE_PYTHON_DECAP
+static struct PyModuleDef eventModuledef;
+#endif //ENABLE_PYTHON_DECAP
 
 CGooglePubSubPush::CGooglePubSubPush()
 {
@@ -62,7 +66,7 @@ void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const uint64_t Devic
 }
 
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 static int numargs = 0;
 
 /* Return the number of arguments of the application command line */
@@ -99,7 +103,7 @@ boost::python::dict toPythonDict(std::map<K, V> map) {
 #endif
 
 void CGooglePubSubPush::DoGooglePubSubPush()
-{			
+{
 	std::string googlePubSubData = "";
 
 	int googlePubSubDebugActiveInt;
@@ -186,7 +190,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			std::string lunit = getUnit(delpos, metertype);
 			std::string lType = RFX_Type_Desc(dType,1);
 			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
-			
+
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
 
@@ -225,7 +229,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			if (sendValue != "") {
 				std::stringstream python_DirT;
 
-#ifdef ENABLE_PYTHON
+#ifdef ENABLE_PYTHON_DECAP
 #ifdef WIN32
 				python_DirT << szUserDataFolder << "scripts\\python\\";
 				std::string filename = szUserDataFolder + "scripts\\python\\" + "googlepubsub.py";
@@ -234,15 +238,15 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				std::string filename = szUserDataFolder + "scripts/python/" + "googlepubsub.py";
 #endif
 
-				char * argv[1];
-				argv[0]=(char *)filename.c_str();
+				wchar_t * argv[1];
+				argv[0]=(wchar_t *)filename.c_str();
 				PySys_SetArgv(1,argv);
 
 				std::string python_Dir = python_DirT.str();
 				if (!Py_IsInitialized()) {
-					Py_SetProgramName((char*)Python_exe); // will this cast lead to problems ?
-					Py_Initialize();
-					Py_InitModule("domoticz_", DomoticzMethods);
+					Py_SetProgramName(Py_GetProgramFullPath());
+					ialize();
+                    PyModule_Create(&eventModuledef);
 
 					// TODO: may have a small memleak, remove references in destructor
 					PyObject* sys = PyImport_ImportModule("sys");

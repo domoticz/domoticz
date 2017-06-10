@@ -110,7 +110,6 @@ define(['app'], function (app) {
 					bFavorites = 0;
 				}
 			}
-
 			$.ajax({
 				url: "json.htm?type=devices&filter=all&used=true&favorite=" + bFavorites + "&order=Name&plan=" + window.myglobals.LastPlanSelected + "&lastupdate=" + $scope.LastUpdateTime,
 				async: false,
@@ -1092,14 +1091,14 @@ define(['app'], function (app) {
 											if (typeof item.ForecastStr != 'undefined') {
 												status = item.Barometer + ' hPa, ' + $.t('Prediction') + ': ' + $.t(item.ForecastStr);
 
-												$(id + " #div.item");
-												var classList = $(id + " #div.item").attr('class').split(' ');
-
-												$.each(classList, function (cssid, cssitem) {
-													if (item.indexOf('itlookstobe-') == 0) $(id + " #div.item").removeClass(item);
-												});
-
-												$(id + " #div.item").addClass('itslookstobe-' + item.ForecastStr);
+												var clistClass = $(id + " #div.item").attr('class');
+												if (typeof clistClass != 'undefined') {
+													var classList = clistClass.split(' ');
+													$.each(classList, function (cssid, cssitem) {
+														if (item.indexOf('itlookstobe-') == 0) $(id + " #div.item").removeClass(item);
+													});
+													$(id + " #div.item").addClass('itslookstobe-' + item.ForecastStr);
+												}
 											}
 											else {
 												status = item.Barometer + ' hPa';
@@ -1429,10 +1428,14 @@ define(['app'], function (app) {
 												status += '' + $.t("Usage") + ': ' + item.CounterToday;
 											}
 											else {
-												if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
-													status += 'U: T: ' + item.CounterToday;
+												if (typeof item.CounterDeliv == 'undefined') {
+													status = item.CounterToday;
 												} else {
-													status += 'T: ' + item.CounterToday;
+													if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
+														status += 'U: T: ' + item.CounterToday;
+													} else {
+														status += 'T: ' + item.CounterToday;
+													}
 												}
 											}
 										}
@@ -1470,7 +1473,9 @@ define(['app'], function (app) {
 											}
 										}
 										else if (item.SubType == "Alert") {
-											status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
 										}
 										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1478,12 +1483,21 @@ define(['app'], function (app) {
 										else if (item.SubType == "Smartwares") {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
 										}
-										if (typeof item.Usage != 'undefined') {
-											if ($scope.config.DashboardType == 0) {
-												status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+
+										var bHaveReturnUsage = false;
+										if (typeof item.CounterDeliv != 'undefined') {
+											if (item.UsageDeliv.charAt(0) != 0) {
+												bHaveReturnUsage = true;
 											}
-											else {
-												status += ", A: " + item.Usage;
+										}
+										if (!bHaveReturnUsage) {
+											if (typeof item.Usage != 'undefined') {
+												if ($scope.config.DashboardType == 0) {
+													status += '<br>' + $.t("Actual") + ': ' + item.Usage;
+												}
+												else {
+													status += ", A: " + item.Usage;
+												}
 											}
 										}
 										if (typeof item.CounterDeliv != 'undefined') {
@@ -1494,7 +1508,13 @@ define(['app'], function (app) {
 												}
 												else {
 													status += '<br>R: T: ' + item.CounterDelivToday;
-													status += ", A: " + item.UsageDeliv;
+													if (bHaveReturnUsage) {
+														status += ", A: ";
+														if (parseInt(item.UsageDeliv) > 0) {
+															status += "-";
+														}
+														status += item.UsageDeliv;
+													}
 												}
 											}
 										}
@@ -1556,7 +1576,9 @@ define(['app'], function (app) {
 										}
 										else if (item.SubType == "Alert") {
 											status = item.Data;
-											img = '<img src="images/Alert48_' + item.Level + '.png" height="40" width="40">';
+											var aLevel = item.Level;
+											if (aLevel > 4) aLevel = 4;
+											img = '<img src="images/Alert48_' + aLevel + '.png" height="40" width="40">';
 										}
 										else if (item.Type == "Lux") {
 											status = item.Data;
@@ -1590,13 +1612,11 @@ define(['app'], function (app) {
 											bigtext = item.Usage;
 											if (item.Type != "P1 Smart Meter") {
 												if ($scope.config.DashboardType == 0) {
-													//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 													if (typeof item.CounterToday != 'undefined') {
 														status += '<br>' + $.t("Today") + ': ' + item.CounterToday;
 													}
 												}
 												else {
-													//status+=", A: " + item.Usage;
 													if (typeof item.CounterToday != 'undefined') {
 														status += ', T: ' + item.CounterToday;
 													}
@@ -3500,8 +3520,7 @@ define(['app'], function (app) {
 										else {
 											if ((typeof item.CounterDeliv != 'undefined') && (item.CounterDeliv != 0)) {
 												status = 'U: T: ' + item.CounterToday;
-											}
-											else {
+											} else {
 												status = 'T: ' + item.CounterToday;
 											}
 										}
@@ -3540,7 +3559,9 @@ define(['app'], function (app) {
 										}
 									}
 									else if (item.SubType == "Alert") {
-										status = item.Data + ' <img src="images/Alert48_' + item.Level + '.png" height="16" width="16">';
+										var aLevel = item.Level;
+										if (aLevel > 4) aLevel = 4;
+										status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
@@ -3552,23 +3573,40 @@ define(['app'], function (app) {
 									else if ((item.SubType == "Thermostat Mode") || (item.SubType == "Thermostat Fan Mode")) {
 										status = item.Data;
 									}
+
+									var bHaveReturnUsage = false;
+									if (typeof item.CounterDeliv != 'undefined') {
+										if (item.UsageDeliv.charAt(0) != 0) {
+											bHaveReturnUsage = true;
+										}
+									}
+
 									if (typeof item.Usage != 'undefined') {
 										if ($scope.config.DashboardType == 0) {
 											status += '<br>' + $.t("Actual") + ': ' + item.Usage;
 										}
 										else {
-											status += ", A: " + item.Usage;
+											if (!bHaveReturnUsage) {
+												status += ", A: " + item.Usage;
+											}
 										}
 									}
+
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
 											if ($scope.config.DashboardType == 0) {
 												status += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
-												status += '<br>' + $.t("Actual") + ': ' + item.UsageDeliv;
+												status += '<br>' + $.t("Actual") + ': -' + item.UsageDeliv;
 											}
 											else {
-												status += 'T: ' + item.CounterDelivToday;
-												status += ", A: " + item.UsageDeliv;
+												status += '<br>R: T: ' + item.CounterDelivToday;
+												if (bHaveReturnUsage) {
+													status += ", A: ";
+													if (parseInt(item.UsageDeliv) > 0) {
+														status += "-";
+													}
+													status += item.UsageDeliv;
+												}
 											}
 										}
 									}
@@ -3632,19 +3670,14 @@ define(['app'], function (app) {
 										bigtexthtml += item.Usage;
 									}
 									else if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv != 'undefined')) {
-										if (item.Usage.charAt(0) != 0) {
+										if (parseInt(item.Usage) > 0) {
 											bigtexthtml += item.Usage;
 										}
-										// if (item.UsageDeliv.charAt(0) != 0) {
-										// xhtm+='</span><span>' + item.UsageDeliv;
-										// }
-
-										// a small test addition, tring to get wattage into bigtext
-										if ((item.UsageDeliv.charAt(0) == 0) || (parseInt(item.Usage) != 0)) {
-											bigtexthtml += item.Usage;
+										else if (parseInt(item.UsageDeliv) > 0) {
+											bigtexthtml += "-" + item.UsageDeliv;
 										}
-										if (item.UsageDeliv.charAt(0) != 0) {
-											bigtexthtml += '</span><span class="value2">' + item.UsageDeliv;
+										else {
+											bigtexthtml += item.Usage;
 										}
 									}
 									else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
@@ -3672,8 +3705,6 @@ define(['app'], function (app) {
 										(item.SubType == "RFXMeter counter") ||
 										(item.SubType == "Counter Incremental") ||
 										(item.SubType == "Custom Sensor")
-
-
 									) {
 										bigtexthtml += item.Data;
 									}
@@ -3848,7 +3879,7 @@ define(['app'], function (app) {
 									if (typeof item.CounterDeliv != 'undefined') {
 										if (item.CounterDeliv != 0) {
 											statushtml += '</span><span class="value2">';
-											statushtml += '' + $.t("Return") + ': ' + item.CounterDelivToday;
+											statushtml += '<br>' + $.t("Return") + ': ' + item.CounterDelivToday;
 										}
 									}
 									statushtml = '<span class="value1">' + statushtml + '</span>';
