@@ -7,7 +7,7 @@
 #   It then does a subsequent GET on the Location specified in the 302 response and receives a 200 response.
 #
 """
-<plugin key="Google" name="Goolgle Home page example" author="Dnpwwo" version="1.0.0" externallink="https://www.google.com">
+<plugin key="Google" name="Goolgle Home page example" author="Dnpwwo" version="1.1.0" externallink="https://www.google.com">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="www.google.com"/>
         <param field="Port" label="Port" width="30px" required="true" default="80"/>
@@ -24,6 +24,7 @@ import Domoticz
 
 class BasePlugin:
     httpConn = None
+    runAgain = 6
    
     def __init__(self):
         return
@@ -83,10 +84,17 @@ class BasePlugin:
 
     def onDisconnect(self, Connection):
         Domoticz.Log("onDisconnect called for connection to: "+Connection.Address+":"+Connection.Port)
-        self.httpConn = None
 
     def onHeartbeat(self):
-        Domoticz.Debug("onHeartbeat called")
+        if (self.httpConn.Connecting() or self.httpConn.Connected()):
+            Domoticz.Debug("onHeartbeat called, Connection is alive.")
+        else:
+            self.runAgain = self.runAgain - 1
+            if self.runAgain <= 0:
+                self.httpConn.Connect()
+                self.runAgain = 6
+            else:
+                Domoticz.Debug("onHeartbeat called, run again in "+str(self.runAgain)+" heartbeats.")
 
 global _plugin
 _plugin = BasePlugin()

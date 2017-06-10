@@ -53,6 +53,7 @@ namespace Plugins {
 		{
 			if (!m_Socket)
 			{
+				m_bConnecting = false;
 				m_bConnected = false;
 				m_Resolver = new boost::asio::ip::tcp::resolver(ios);
 				m_Socket = new boost::asio::ip::tcp::socket(ios);
@@ -83,6 +84,8 @@ namespace Plugins {
 			return false;
 		}
 
+		m_bConnecting = true;
+
 		return true;
 	}
 
@@ -95,6 +98,8 @@ namespace Plugins {
 		}
 		else
 		{
+			m_bConnecting = false;
+
 			delete m_Resolver;
 			m_Resolver = NULL;
 			delete m_Socket;
@@ -135,6 +140,8 @@ namespace Plugins {
 		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
+
+		m_bConnecting = false;
 	}
 
 	bool CPluginTransportTCP::handleListen()
