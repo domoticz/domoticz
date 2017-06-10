@@ -28,6 +28,7 @@ class CEvohomeWeb : public CEvohomeBase
 		Json::Value *installationInfo;
 		Json::Value *status;
 		Json::Value schedule;
+		std::string hdtemp;
 	};
 
 	struct temperatureControlSystem
@@ -137,6 +138,8 @@ private:
 	uint8_t m_gatewayId;
 	uint8_t m_systemId;
 	double m_awaysetpoint;
+	bool m_showhdtemps;
+	uint8_t m_hdprecision;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
@@ -150,5 +153,12 @@ private:
 	std::map<int, location> m_locations;
 
 	temperatureControlSystem* m_tcs;
+
+	// Evohome v1 API
+	std::string m_v1uid;
+	std::vector<std::string> m_v1SessionHeaders;
+
+	bool v1_login(const std::string &user, const std::string &password);
+	void get_v1_temps();
 };
 
