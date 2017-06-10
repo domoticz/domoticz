@@ -450,7 +450,6 @@ i18n/domoticz-sr.json
 i18n/domoticz-sv.json
 i18n/domoticz-tr.json
 i18n/domoticz-zh.json
-i18n/domoticz-ua.json
 
 # Scripts
 app/AboutController.js
