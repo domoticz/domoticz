@@ -432,7 +432,7 @@ a.btnsmall {
     background-color: rgba(250,250,250,0.4);
     width: 32px!important;
     height: 32px!important;    
-    margin: 10px;
+    margin: 10px 10px 0 10px;
     margin-right: 10px!important;
     border-radius:50%;
     /*image-rendering: -moz-crisp-edges;
