@@ -243,6 +243,9 @@ body:not(.dashboard) h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowB
 
 #bigtext > span {border-radius:3px}
 
+#dashcontent #bigtext > span{padding:0}
+#lastupdate {font-size:11px!important}
+
 #img img, 
 #img1 img,
 #img2 img,    
@@ -432,7 +435,7 @@ a.btnsmall {
     background-color: rgba(250,250,250,0.4);
     width: 32px!important;
     height: 32px!important;    
-    margin: 10px 10px 0 10px;
+    margin: 10px;
     margin-right: 10px!important;
     border-radius:50%;
     /*image-rendering: -moz-crisp-edges;
@@ -543,7 +546,7 @@ body:hover .ui-dialog {
         color:#53b4e3;
     }
     
-    .item #bigtex .swrapper{background-color:transparent}
+    .item #bigtex .wrapper{background-color:transparent}
     
     
     #dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
