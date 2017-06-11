@@ -205,7 +205,7 @@ local testData = {
 			["changedAttribute"] = nil --tbd
 		},
 		[7] = {
-			["id"] = 6,
+			["id"] = 7,
 			["name"] = "device7",
 			["description"] = "";
 			["batteryLevel"] = 10,

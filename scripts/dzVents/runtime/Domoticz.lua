@@ -257,13 +257,91 @@ local function Domoticz(settings)
 		dumpTable(device, '> ')
 	end
 
-	local function setIterators2(collection)
+	self.__devices = {}
+	self.__scenes = {}
+	self.__groups = {}
+	self.__variables = {}
+
+	function getItemFromData(baseType, id)
+
+		for index, item in pairs(_G.domoticzData) do
+			if (item.baseType == baseType and (item.id == id or item.name == id)) then
+				return item
+			end
+		end
+
+		return nil
+	end
+
+	function getObject(baseType, id, data)
+		local cache
+		local constructor
+		if (baseType == 'device') then
+			cache = self.__devices
+			constructor = Device
+		elseif (baseType == 'group') then
+			cache = self.__groups
+			constructor = Device
+		elseif (baseType == 'scene') then
+			cache = self.__scenes
+			constructor = Device
+		elseif (baseType == 'uservariable') then
+			cache = self.__variables
+			constructor = Variable
+		else
+			-- ehhhh
+		end
+
+		local item = cache[id]
+
+		if (item ~= nil) then
+			return item
+		end
+
+		if (data == nil) then
+			data = getItemFromData(baseType, id)
+		end
+
+		if (data ~= nil) then
+			local newItem = constructor(self, data)
+			cache[data.id] = newItem
+			cache[data.name] = newItem
+
+			return newItem
+		end
+
+		utils.log('There is no ' .. baseType .. ' with that name or id: ' .. id, utils.LOG_ERROR)
+
+	end
+
+
+	local function setIterators2(collection, initial, baseType, filterForChanged)
+
+		local _collection
+
+		if (initial) then
+			_collection = _G.domoticzData
+		else
+			_collection = collection
+		end
 
 		collection['forEach'] = function(func)
 			local res
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					res = func(item, i, collection)
+			for i, item in pairs(_collection) do
+
+				local _item
+
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
+
+
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					res = func(_item)
 					if (res == false) then -- abort
 						return
 					end
@@ -272,9 +350,21 @@ local function Domoticz(settings)
 		end
 
 		collection['reduce'] = function(func, accumulator)
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					accumulator = func(accumulator, item, i, collection)
+			for i, item in pairs(_collection) do
+
+				local _item
+
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
+
+--				_.print(111, initial, type(_item), type(i)) --                    TODO - >> REMOVE << -
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					accumulator = func(accumulator, _item)
 				end
 			end
 			return accumulator
@@ -282,122 +372,145 @@ local function Domoticz(settings)
 
 		collection['filter'] = function(filter)
 			local res = {}
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					if (filter(item)) then
-						res[i] = item
+			for i, item in pairs(_collection) do
+
+				local _item
+
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
+
+				if (_item and type(_item) ~= 'function' and ( (initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					if (filter(_item)) then
+						res[i] = _item
 					end
 				end
 			end
-			setIterators(res)
+			setIterators2(res, false, baseType)
 			return res
 		end
+
+		return collection
 	end
 
 
-	local _devices
 
-	function getItemFromData(baseType, id)
 
-		for index, item in pairs(domoticzData) do
-			if (item.baseType == baseType and (item.id == id or item.name == id)) then
-				return item
-			end
-		end
-
-		return nil
-
-	end
-
-	function self._devices(id)
-
+	function self.devices(id)
 		if (id ~= nil) then
-
-			local device = _devices[id]
-
-			if (device ~=nil) then
-				return device
-			end
-
-			local data = getDeviceFromData('device', id)
-			if (data ~= nil) then
-				local newDevice = Device(self, data)
-				_devices[data.id] = newDevice
-				_devices[data.name] = newDevice
-
-				return newDevice
-			end
+			return getObject('device', id)
 		else
-
-
-
+			return setIterators2({}, true, 'device', false)
 		end
-
 	end
 
-	local function bootstrap()
-
-
-		for index, item in pairs(domoticzData) do
-
-			if (item.baseType == 'device') then
-
-				local newDevice = Device(self, item)
-				if (item.changed) then
-					self.changedDevices[item.name] = newDevice
-					self.changedDevices[item.id] = newDevice-- id lookup
-				end
-
-				if (self.devices[item.name] == nil) then
-					self.devices[item.name] = newDevice
-					self.devices[item.id] = newDevice
-				else
-					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
-				end
-
-			elseif (item.baseType == 'scene') then
-
-				local newScene = Device(self, item)
-
-				if (self.scenes[item.name] == nil) then
-					self.scenes[item.name] = newScene
-					self.scenes[item.id] = newScene
-				else
-					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
-				end
-
-			elseif (item.baseType == 'group') then
-				local newGroup = Device(self, item)
-
-				if (self.groups[item.name] == nil) then
-					self.groups[item.name] = newGroup
-					self.groups[item.id] = newGroup
-				else
-					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
-				end
-
-			elseif (item.baseType == 'uservariable') then
-				local var = Variable(self, item)
-				self.variables[item.name] = var
-
-
-				if (item.changed) then
-					self.changedVariables[item.name] = var
-				end
-			end
-
+	function self.groups(id)
+		if (id ~= nil) then
+			return getObject('group', id)
+		else
+			return setIterators2({}, true, 'group', false)
 		end
-
 	end
 
-	bootstrap()
+	function self.scenes(id)
+		if (id ~= nil) then
+			return getObject('scene', id)
+		else
+			return setIterators2({}, true, 'scene', false)
+		end
+	end
 
-	setIterators(self.devices)
-	setIterators(self.changedDevices)
-	setIterators(self.variables)
-	setIterators(self.changedVariables)
-	setIterators(self.scenes)
-	setIterators(self.groups)
+	function self.variables(id)
+		if (id ~= nil) then
+			return getObject('uservariable', id)
+		else
+			return setIterators2({}, true, 'uservariable', false)
+		end
+	end
+
+	function self.changedDevices(id)
+		if (id ~= nil) then
+			return getObject('device', id)
+		else
+			return setIterators2({}, true, 'device', true)
+		end
+	end
+
+	function self.changedVariables(id)
+		if (id ~= nil) then
+			return getObject('uservariable', id)
+		else
+			return setIterators2({}, true, 'uservariable', true)
+		end
+	end
+
+--	local function bootstrap()
+--
+--
+--		for index, item in pairs(_G.domoticzData) do
+--
+--			if (item.baseType == 'device') then
+--
+--				local newDevice = Device(self, item)
+--				if (item.changed) then
+--					self.changedDevices[item.name] = newDevice
+--					self.changedDevices[item.id] = newDevice-- id lookup
+--				end
+--
+--				if (self.devices[item.name] == nil) then
+--					self.devices[item.name] = newDevice
+--					self.devices[item.id] = newDevice
+--				else
+--					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
+--				end
+--
+--			elseif (item.baseType == 'scene') then
+--
+--				local newScene = Device(self, item)
+--
+--				if (self.scenes[item.name] == nil) then
+--					self.scenes[item.name] = newScene
+--					self.scenes[item.id] = newScene
+--				else
+--					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
+--				end
+--
+--			elseif (item.baseType == 'group') then
+--				local newGroup = Device(self, item)
+--
+--				if (self.groups[item.name] == nil) then
+--					self.groups[item.name] = newGroup
+--					self.groups[item.id] = newGroup
+--				else
+--					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
+--				end
+--
+--			elseif (item.baseType == 'uservariable') then
+--				local var = Variable(self, item)
+--				self.variables[item.name] = var
+--
+--
+--				if (item.changed) then
+--					self.changedVariables[item.name] = var
+--				end
+--			end
+--
+--		end
+--
+--	end
+--
+--	bootstrap()
+--
+--	setIterators(self.devices)
+--	setIterators(self.changedDevices)
+--	setIterators(self.variables)
+--	setIterators(self.changedVariables)
+--	setIterators(self.scenes)
+--	setIterators(self.groups)
 
 
 	return self

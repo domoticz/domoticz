@@ -314,7 +314,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				setpoint = m_awaysetpoint;
 				szuntil = "";
 			}
-			else 
+			else
 			{
 				if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
 				{

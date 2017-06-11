@@ -687,8 +687,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local allEventScripts = self.getEventBindings()
 
-		domoticz.changedDevices.forEach( function(device)
-
+		domoticz.changedDevices().forEach( function(device)
 			utils.log('Device-event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
 
 			local scriptsToExecute
@@ -739,7 +738,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local allEventScripts = self.getVariableHandlers()
 
-		domoticz.changedVariables.forEach(function(variable)
+		domoticz.changedVariables().forEach(function(variable)
 
 			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. variable.value, utils.LOG_DEBUG)
 
@@ -748,7 +747,6 @@ local function EventHelpers(domoticz, mainMethod)
 			-- first search by name
 
 			scriptsToExecute = self.findScriptForChangedItem(variable.name, allEventScripts)
-
 			if (scriptsToExecute == nil) then
 				-- search by id
 				scriptsToExecute = allEventScripts[variable.id]

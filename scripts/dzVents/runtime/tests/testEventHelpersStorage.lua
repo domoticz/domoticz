@@ -34,16 +34,19 @@ describe('event helper storage', function()
 		['settings'] = {},
 		['name'] = 'domoticz', -- used in script1
 		['time'] = Time('2017-06-03 12:04:00'),
-		['devices'] = {
-			['device1'] = { name = '' },
-			['onscript1'] = { name = 'onscript1', id = 1 },
-			['onscript4'] = { name = 'onscript4', id = 4 },
-			['on_script_5'] = { name = 'on_script_5', id = 5 },
-			['wildcard'] = { name = 'wildcard', id = 6 },
-			['someweirddevice'] = { name = 'someweirddevice', id = 7 },
-			['mydevice'] = { name = 'mydevice', id = 8 },
-			['someswitch'] = { name = 'someswitch', id = 9 },
-		}
+		['devices'] = function(id)
+			local devs = {
+				['device1'] = { name = '' },
+				['onscript1'] = { name = 'onscript1', id = 1 },
+				['onscript4'] = { name = 'onscript4', id = 4 },
+				['on_script_5'] = { name = 'on_script_5', id = 5 },
+				['wildcard'] = { name = 'wildcard', id = 6 },
+				['someweirddevice'] = { name = 'someweirddevice', id = 7 },
+				['mydevice'] = { name = 'mydevice', id = 8 },
+				['someswitch'] = { name = 'someswitch', id = 9 },
+			}
+			return devs[id]
+		end
 	}
 
 	setup(function()

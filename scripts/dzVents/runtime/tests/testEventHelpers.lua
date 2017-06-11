@@ -22,6 +22,15 @@ end
 describe('event helpers', function()
 	local EventHelpers, helpers, utils, settings, domoticz
 
+	local devs = {
+		['device1'] = { name = '', id = 3 },
+		['onscript1'] = { name = 'onscript1', id = 1 },
+		['onscript4'] = { name = 'onscript4', id = 4 },
+		['on_script_5'] = { name = 'on_script_5', id = 5 },
+		['wildcard'] = { name = 'wildcard', id = 6 },
+		['someweirddevice'] = { name = 'someweirddevice', id = 7 },
+		['mydevice'] = { name = 'mydevice', id = 8 }
+	}
 
 	setup(function()
 		settings = {
@@ -51,6 +60,9 @@ describe('event helpers', function()
 	end)
 
 	before_each(function()
+
+
+
 		domoticz = {
 			['EVENT_TYPE_TIMER'] = 'timer',
 			['EVENT_TYPE_DEVICE'] = 'device',
@@ -63,16 +75,21 @@ describe('event helpers', function()
 			['radixSeparator'] = '.',
 			['security'] = 'Armed Away',
 			['time'] = Time('2017-06-03 12:04:00'),
-			['name'] = 'domoticz', -- used in script1
-			['devices'] = {
-				['device1'] = { name = '' },
-				['onscript1'] = { name = 'onscript1', id = 1 },
-				['onscript4'] = { name = 'onscript4', id = 4 },
-				['on_script_5'] = { name = 'on_script_5', id = 5 },
-				['wildcard'] = { name = 'wildcard', id = 6 },
-				['someweirddevice'] = { name = 'someweirddevice', id = 7 },
-				['mydevice'] = { name = 'mydevice', id = 8 }
-			}
+			['name'] = 'domoticz', -- used in script1,
+			['devices'] = function(id)
+
+				return devs[id]
+			end,
+--
+--			['devices'] = {
+--				['device1'] = { name = '' },
+--				['onscript1'] = { name = 'onscript1', id = 1 },
+--				['onscript4'] = { name = 'onscript4', id = 4 },
+--				['on_script_5'] = { name = 'on_script_5', id = 5 },
+--				['wildcard'] = { name = 'wildcard', id = 6 },
+--				['someweirddevice'] = { name = 'someweirddevice', id = 7 },
+--				['mydevice'] = { name = 'mydevice', id = 8 }
+--			}
 		}
 
 		helpers = EventHelpers(domoticz)
@@ -237,12 +254,12 @@ describe('event helpers', function()
 		end)
 
 		it('should evaluate active functions', function()
-			domoticz.devices['device1'].name = 'Device 1'
+			devs['device1'].name = 'Device 1'
 			local modules = helpers.getEventBindings()
 
 			local script = modules['onscript_active']
 			assert.is_not_nil(script)
-			domoticz.devices['device1'].name = ''
+			devs['device1'].name = ''
 		end)
 
 		it('should handle combined triggers', function()
@@ -587,7 +604,11 @@ describe('event helpers', function()
 				end)
 				table.insert(devices, _device.name)
 			end
-			local res = helpers.dispatchDeviceEventsToScripts({['changedDevices'] = devicechanged})
+			local res = helpers.dispatchDeviceEventsToScripts({
+				['changedDevices'] = function()
+					return devicechanged
+				end
+			})
 
 			table.sort(scripts)
 			table.sort(devices)
@@ -711,7 +732,11 @@ describe('event helpers', function()
 				end)
 				table.insert(variables, _variable.name)
 			end
-			local res = helpers.dispatchVariableEventsToScripts({ ['changedVariables'] = varchanged })
+			local res = helpers.dispatchVariableEventsToScripts({
+				['changedVariables'] = function()
+					return varchanged
+				end
+			})
 
 			table.sort(scripts)
 			table.sort(variables)

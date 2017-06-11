@@ -4,7 +4,7 @@ return {
 		'timer'
 	},
 	execute = function(domoticz)
-		domoticz.devices['onscript1'].switchOff()
+		domoticz.devices('onscript1').switchOff()
 		return 'script_timer_classic'
 	end
 }
