@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		'timer'
+		timer = {'every minute'}
 	},
 	execute = function(domoticz)
 		domoticz.devices('onscript1').switchOff()

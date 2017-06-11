@@ -1,8 +1,8 @@
 return {
 	active = true,
 	on = {
-		['deviceZork'] = { 'on mon, tue' },
-		['devices'] = {
+		devices = {
+			['deviceZork'] = { 'on mon, tue' },
 			['deviceDork'] = { 'on sun' },
 			'deviceGork'
 		}

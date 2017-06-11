@@ -476,21 +476,7 @@ local function EventHelpers(domoticz, mainMethod)
 								module.dataFilePath = _G.dataFolderPath .. '/__data_' .. moduleName .. '.lua'
 								for j, event in pairs(module.on) do
 									if (mode == 'timer') then
-										if (type(j) == 'number' and type(event) == 'string' and event == 'timer') then
-											-- { 'timer' }
-											-- execute every minute (old style)
-											module.trigger = event
-											table.insert(bindings, module)
-											deprecationWarning(moduleName, 'timer', event, true)
-										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'string') then
-											-- { ['timer'] = 'every minute' }
-											deprecationWarning(moduleName, 'timer', event, true)
---											if (self.evalTimeTrigger(event)) then
-											if (self.processTimeRules({event}, testTime)) then
-												module.trigger = event
-												table.insert(bindings, module)
-											end
-										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
+										if (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
 											-- { ['timer'] = { 'every minute ', 'every hour' } }
 											local triggered, def = self.processTimeRules(event)
 											if (triggered) then
@@ -519,44 +505,17 @@ local function EventHelpers(domoticz, mainMethod)
 														addBindingEvent(bindings, devName, module)
 													end
 												end
-
-											elseif (type(j) == 'string' and j ~= 'devices' and type(event) == 'table') then
-												-- [devicename] = { ...timedefs}
-												deprecationWarning(moduleName, 'devices', '...<device triggers> ...', false)
-												local triggered, def = self.processTimeRules(event, testTime)
-												if (triggered) then
-													addBindingEvent(bindings, j, module)
-												end
-											else
-												-- single device name or id
-												-- let's not try to resolve indexes to names here for performance reasons
-												if (type(event) == 'string') then
-													deprecationWarning(moduleName, 'devices', event, true)
-												else
-													deprecationWarning(moduleName, 'devices', tostring(event), false)
-												end
-												addBindingEvent(bindings, event, module)
 											end
 										end
 									elseif (mode == 'variable') then
-										if (type(j) == 'string' and j == 'variable'  and type(event) == 'string') then
-											-- { ['variable'] = 'myvar' }
-											addBindingEvent(bindings, event, module)
-											deprecationWarning(moduleName, 'variables', event, true)
-										elseif (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
+										if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
 											-- { ['variables'] = { 'varA', 'varB' }
 											for devIdx, varName in pairs(event) do
 												addBindingEvent(bindings, varName, module)
 											end
 										end
 									elseif (mode == 'security') then
-										if (type(j) == 'string' and j == 'security' and type(event) == 'string') then
-											deprecationWarning(moduleName, 'security', event, true)
-											if (event == self.domoticz.security) then
-												table.insert(bindings, module)
-												module.trigger = event
-											end
-										elseif (type(j) == 'string' and j == 'security' and type(event) == 'table') then
+										if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
 
 											local triggered, def = self.checkSecurity(event, self.domoticz.security)
 											if (triggered) then

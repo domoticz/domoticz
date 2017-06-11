@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		'mySwitch'
+		devices = {'mySwitch'}
 	},
 	data = {
 		x = { initial = 4 }

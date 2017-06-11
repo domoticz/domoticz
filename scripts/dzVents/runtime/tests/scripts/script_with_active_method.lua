@@ -3,7 +3,7 @@ return {
 		return (domoticz.devices('device1').name == 'Device 1')
 	end,
 	on = {
-		'onscript_active'
+		devices = {'onscript_active'}
 	},
 	execute = function(domoticz, device)
 		return 'script_with_active_method'

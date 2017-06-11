@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		['variable'] = 'myVar3',
+		['variables'] = {'myVar3'}
 	},
 	execute = function(domoticz, variable, info)
 

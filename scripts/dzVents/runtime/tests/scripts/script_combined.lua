@@ -1,8 +1,10 @@
 return {
 	active = true,
 	on = {
-		'onscript1',
-		'onscript2'
+		devices = {
+			'onscript1',
+			'onscript2'
+		}
 	},
 	execute = function(domoticz, device)
 		domoticz.notify('Yo')

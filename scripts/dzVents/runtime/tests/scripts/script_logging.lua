@@ -5,7 +5,7 @@ return {
 		marker = "Hey you"
 	},
 	on = {
-		'loggingstuff'
+		devices = {'loggingstuff'}
 	},
 	execute = function(domoticz, device, triggerInfo)
 

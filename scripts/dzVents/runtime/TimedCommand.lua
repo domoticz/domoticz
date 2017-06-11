@@ -92,60 +92,7 @@ local function TimedCommand(domoticz, name, value)
 					latest[command] = constructCommand()
 				end
 			}
-		end,
-		['for_min'] = function(minutes)
-			deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
-			forValue = minutes
-			latest[command] = constructCommand()
-			return {
-				['after_sec'] = function(seconds)
-					deprecationWarning('dzVents depecration warning: please use afterSec instead of after_sec.', LOG_ERROR)
-					afterValue = seconds
-					latest[command] = constructCommand()
-				end,
-				['after_min'] = function(minutes)
-					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
-					afterValue = minutes * 60
-					latest[command] = constructCommand()
-				end
-			}
-		end,
-		['after_sec'] = function(seconds)
-			deprecationWarning('dzVents depecration warning: please use afterSec instead of after_sec.', LOG_ERROR)
-			afterValue = seconds
-			latest[command] = constructCommand()
-			return {
-				['for_min'] = function(minutes)
-					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
-					forValue = minutes
-					latest[command] = constructCommand()
-				end
-			}
-		end,
-		['within_min'] = function(minutes)
-			deprecationWarning('dzVents depecration warning: please use withinMin instead of within_min', LOG_ERROR)
-			randomValue = minutes
-			latest[command] = constructCommand()
-			return {
-				['for_min'] = function(minutes)
-					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
-					forValue = minutes
-					latest[command] = constructCommand()
-				end
-			}
-		end,
-		['after_min'] = function(minutes)
-			deprecationWarning('dzVents depecration warning: please use afterMin instead of after_min', LOG_ERROR)
-			afterValue = minutes * 60
-			latest[command] = constructCommand()
-			return {
-				['for_min'] = function(minutes)
-					deprecationWarning('dzVents depecration warning: please use forMin instead of for_min', LOG_ERROR)
-					forValue = minutes
-					latest[command] = constructCommand()
-				end
-			}
-		end,
+		end
 	}
 end
 
