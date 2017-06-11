@@ -11,8 +11,8 @@ Let's start with an example. Let's say you have a switch that when activated, it
     		}
     	},
     	execute = function(domoticz, roomSwitch)
-    		if (roomSwitch.state == 'On' and domoticz.devices['Living room'].temperature > 18) then
-    			domoticz.devices['Another switch'].switchOn()
+    		if (roomSwitch.state == 'On' and domoticz.devices('Living room').temperature > 18) then
+    			domoticz.devices('Another switch').switchOn()
     			domoticz.notify('This rocks!',
     			                'Turns out that it is getting warm here',
     			                domoticz.PRIORITY_LOW)
@@ -30,12 +30,12 @@ Or you have a timer script that should be executed every 10 minutes but only on 
     	},
     	execute = function(domoticz)
     		-- check time of the day
-    		if (domoticz.time.isDayTime and domoticz.variables['myVar'].value == 10) then
-    			domoticz.variables['anotherVar'].set(15)
+    		if (domoticz.time.isDayTime and domoticz.variables('myVar').value == 10) then
+    			domoticz.variables('anotherVar').set(15)
     			--activate my scene
     			domoticz.setScene('Evening lights', 'On')
-    			if (domoticz.devices['My PIR'].lastUpdate.minutesAgo > 5) then
-                    domoticz.devices['Bathroom lights'].switchOff()
+    			if (domoticz.devices('My PIR').lastUpdate.minutesAgo > 5) then
+                    domoticz.devices('Bathroom lights').switchOff()
                 end
     		end
     	end
@@ -52,10 +52,10 @@ Or you want to detect a humidity rise within the past 5 minutes:
 	    	previousHumidity = { initial = 100 }
     	},
     	execute = function(domoticz)
-    		local bathroomSensor = domoticz.devices['BathroomSensor']
+    		local bathroomSensor = domoticz.devices('BathroomSensor')
     		if (bathroomSensor.humidity - domoticz.data.previousHumidity) >= 5) then
     			-- there was a significant rise
-    			domoticz.devices['Ventilator'].switchOn()
+    			domoticz.devices('Ventilator').switchOn()
     		end
     		-- store current value for next cycle
     		domoticz.data.previousHumidity = bathroomSensor.humidity
@@ -246,11 +246,11 @@ Fear no more: introducing the **domoticz object**.
 
 The domoticz object contains everything that you need to know in your scripts and all the methods to manipulate your devices and sensors. Getting this information has never been more easy:
 
-`domoticz.time.isDayTime` or `domoticz.devices['My sensor'].temperature` or `domoticz.devices['My sensor'].lastUpdate.minutesAgo`.
+`domoticz.time.isDayTime` or `domoticz.devices('My sensor').temperature` or `domoticz.devices('My sensor').lastUpdate.minutesAgo`.
 
-So this object structure contains all the information logically arranged where you would expect it to be. Also, it harbors methods to manipulate Domoticz or devices. dzVents will create the commandArray contents for you and all you have to do is something like `domoticz.devices[123].switchOn().forMin(5).afterSec(10)` or `domoticz.devices['My dummy sensor'].updateBarometer(1034, domoticz.BARO_THUNDERSTORM)`.
+So this object structure contains all the information logically arranged where you would expect it to be. Also, it harbors methods to manipulate Domoticz or devices. dzVents will create the commandArray contents for you and all you have to do is something like `domoticz.devices(123).switchOn().forMin(5).afterSec(10)` or `domoticz.devices('My dummy sensor').updateBarometer(1034, domoticz.BARO_THUNDERSTORM)`.
 
-*The intention is that you don't have to construct low-level commandArray-commands for Domoticz anymore!* The domoticz object tries to encapsulate every low-level commandArray-command into a nice API.  If there is still something missing, please file a report in the Domoticz issue-tracker on github and until then you can always use the sendCommand method which will dispatch the command to the commandArray
+*The intention is that you don't have to construct low-level commandArray-commands for Domoticz anymore!* The domoticz object tries to encapsulate every low-level commandArray-command into a nice API.  If there is still something missing, please file a report in the Domoticz issue-tracker on GitHub and until then you can always use the sendCommand method which will dispatch the command to the commandArray
 
 One tip:
 **Make sure that all your devices have unique names!! dzVents doesn't check for duplicates!!**
@@ -260,12 +260,12 @@ The domoticz object holds all information about your Domoticz system. It has a c
 
 ### Domoticz attributes:
 
- - **changedDevices**: *Table*. A collection holding all the devices that have been updated in this cycle.
- - **changedVariables**: *Table*. A collection holding all the variables that have been updated in this cycle.
- - **devices**: *Table*. A collection with all the *device objects*. You can get a device by its name or id: `domoticz.devices[123]` or `domoticz.devices['My switch']`. See [Device object API](#Device_object_API) below.
- - **groups**: *Table*: A collection with all the groups. Each group has the same interface as a device. Of course a group has far less properties than a regular device.
+ - **changedDevices(id/name)**: *Function*. A function returning the device by id (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..). See [Iterators](#Iterators).
+ - **changedVariables(id/name)**: *Function*. A function returning the user variable by id or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..). See [Iterators](#Iterators).
+ - **devices(id/name)**: *Function*. A function returning a device  by id or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..). See [Iterators](#Iterators).
+ - **groups(id/name)**: *Function*: A function returning a group by name or id. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..). See [Iterators](#Iterators).
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Creating shared helper functions](#Creating_shared_helper_functions).
- - **scenes**: *Table*: A collection with all the scenes. Each scene has the same interface as a device. See [Device object API](#Device_object_API). Of course a scene has far less properties than a regular device.
+ - **scenes(id/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..). See [Iterators](#Iterators).
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **time**: Current system time:
 	 - **day**: *Number*
@@ -284,7 +284,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 	 - **sunriseInMinutes**
 	 - **wday**: *Number*. Day of the week ( 0 == sunday)
 	 - **year**: *Number*
- - **variables**: *Table*. A collection holding all the user *variable objects* as defined in Domoticz. See  [Variable object API](#Variable_object_API) for the attributes.
+ - **variables(id/name)**: *Function*. A function returning a variable by it's name or id. See  [Variable object API](#Variable_object_API) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..). See [Iterators](#Iterators).
 
 ### Domoticz methods
 
@@ -306,7 +306,7 @@ The domoticz object has a couple of collections (tables): devices, scenes, group
 
 Best to illustrate with an example:
 
-    domoticz.devices.forEach(function(device, key)
+    domoticz.devices().forEach(function(device, key)
     	if (device.batteryLevel < 20) then
     		-- do something
     	end
@@ -314,7 +314,7 @@ Best to illustrate with an example:
 
 Or using a filter:
 
-	local deadDevices = domoticz.devices.filter(function(device)
+	local deadDevices = domoticz.devices().filter(function(device)
 		return (device.lastUpdate.minutesAgo > 60)
 	end)
 	deadDevices.forEach(function(zombie)
@@ -323,7 +323,7 @@ Or using a filter:
 
 Of course you can chain:
 
-	domoticz.devices.filter(function(device)
+	domoticz.devices().filter(function(device)
 		return (device.lastUpdate.minutesAgo > 60)
 	end).forEach(function(zombie)
 		-- do something with the zombie
@@ -331,7 +331,7 @@ Of course you can chain:
 
 Using a reducer to count all devices that are switched on:
 
-    local count = domoticz.devices.(function(acc, device)
+    local count = domoticz.devices().reduce(function(acc, device)
 	    if (device.state == 'On') then
 		    acc = acc + 1 -- increase the accumulator
 	    end
@@ -355,7 +355,7 @@ Using a reducer to count all devices that are switched on:
  - **SOUND_ALIEN** , **SOUND_BIKE**, **SOUND_BUGLE**, **SOUND_CASH_REGISTER**, **SOUND_CLASSICAL**, **SOUND_CLIMB** , **SOUND_COSMIC**, **SOUND_DEFAULT** , **SOUND_ECHO**, **SOUND_FALLING**  , **SOUND_GAMELAN**, **SOUND_INCOMING**, **SOUND_INTERMISSION**, **SOUND_MAGIC** , **SOUND_MECHANICAL**, **SOUND_NONE**, **SOUND_PERSISTENT**, **SOUND_PIANOBAR** , **SOUND_SIREN** , **SOUND_SPACEALARM**, **SOUND_TUGBOAT**  , **SOUND_UPDOWN**: For notification sounds.
 
 ## Device object API
-Each device in Domoticz can be found in the `domoticz.devices` collection as listed above. The device object has a set of fixed attributes like *name* and *id*. Many devices though have different attributes and methods depending on there (hardware)type, subtype and other device specific identifiers. So it is possible that you will get an error if you call a method on a device that doesn't support it. If that is the case please check the device properties (can also be done in your script code!).
+Each device in Domoticz can be found in the `domoticz.devices()` collection as listed above. The device object has a set of fixed attributes like *name* and *id*. Many devices though have different attributes and methods depending on there (hardware)type, subtype and other device specific identifiers. So it is possible that you will get an error if you call a method on a device that doesn't support it. If that is the case please check the device properties (can also be done in your script code!).
 
 dzVents already recognizes most of the devices and creates the proper attributes and methods. It is always possible that your device-type has attributes that are not recognized. If that's the case please create a ticket in Domoticz issue-tracker on GitHub and an adapter for that device will be added.
 
@@ -719,7 +719,7 @@ No requires or dofiles needed.  Simple as that.
 
 # Persistent data
 
-In many situations you need to store some device state or other information in your scripts for later use. Like knowing what the state was of a device the previous time the script was executed or what the temperature in a room was 10 minutes ago. Without dzVents you had to resort to user variables. These are global variables that you create in the Domoticz GUI and that you can access in your scripts like: domoticz.variables['previousTemperature'].
+In many situations you need to store some device state or other information in your scripts for later use. Like knowing what the state was of a device the previous time the script was executed or what the temperature in a room was 10 minutes ago. Without dzVents you had to resort to user variables. These are global variables that you create in the Domoticz GUI and that you can access in your scripts like: domoticz.variables('previousTemperature').
 
 Now, for some this is rather inconvenient and they want to control this state information in the event scripts themselves or want to use all of Lua's variable types. dzVents has a solution for that: **persistent script data**. This can either be on the script level or on a global level.
 

@@ -1,27 +1,28 @@
  [2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
+ - **BREAKING CHANGE**:  Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections. If you want to use the iterators like forEach, filter and reduce you do this: `domoticz.devices().forEach(function() .. end)`. This change makes dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
+ - **BREAKING CHANGE**: after_sec, for_min, after_min, within_min methods have been renamed to the camel-cased variants afterSec, forMin, afterMin, withinMin. Please rename the calls in your script.
+ - **BREAKING CHANGE**: There is no longer an option to check if an attribute was changed as this was quite useless. The device has a changed flag. You can use that. Please change your existing scripts.
+ - **BREAKING CHANGE**:  Many device attributes are now in the appropriate type (Number instead of Strings) so you can easily make calculations with them. Units are stripped from the values as much as possible. **Check your scripts as this may break stuff.**
+ - **BREAKING CHANGE**:  on-section now requires subsections for `devices`, `timer`, `variables`, and `security`. The old way no longer works! Please convert your existing scripts!
  - dzVents is no longer a separate library that you have to get from GitHub. All integrated into Domoticz.
  - Added option to create shared utility/helper functions and have them available in all your scripts. Simply add a `helpers = { myFunction = function() ... end }` to the `global_data.lua` file in your scripts folder and you can access the function everywhere: `domoticz.helpers.myFunction()`.
  - Created a pluggable system for device adapters so people can easily contribute by creating specific adapters for specific devices. An adapter makes sure that you get the proper methods and attributes for that device. See `/path/to/domoticz/scripts/dzVents/runtime/device-adapters`.
  - Added a `reduce()` iterator to the collections in the domoticz object so you can now easily collect data about all your devices. See documentation about iterators.
  - Variables (uservariables) have more attributes. The `value` is now the same type as it is defined in Domoticz. So no more need for a converted nValue attribute. You can inspect the type using `myVar.type`. If it is a time variable or date variable you an extra `date` or `time` attribute with the same methods as with all other date/time related attributes like `lastUpdate`. .E.g. `myVar.date.minutesAgo`.
- - There is no longer an option to check if an attribute was changed as this was quite useless. The device has a changed flag. You can use that.
  - Settings are now moved to the Domoticz GUI (**Setup > Settings > Other**) and no longer in a settings file.
  - You can now override the log settings per script. So you can turn-off logging globally (see log level in the settings) and still have debug-level logging for that one script you are working on. You can even add a prefix string to the log messages for easy filtering in the Domoticz log. See the documentation about the `logging = { .. }` section.
  - No more need to do http-calls to get extended data from Domoticz. All relevant internal Domoticz state-data is now available inside your dzVents scripts. Thanks Scotty!!
  - Support for many many more device types and their specific methods. See the documentation for the list of attributes and events that are available. Note that device-type specific attributes are only available for those type of devices. You will receive an error in the log if you try to access an attribute that doesn't exist for that particular device. Hopefully you don't have to use the rawData table anymore. If you still do please file a report or create a device adapter yourself.
- - Many device attributes are now in the appropriate type (Number instead of Strings) so you can easily make calculations with them. Units are stripped from the values as much as possible. **Check your scripts as this may break stuff.**
  - You can now write dzVents scripts using the internal editor in Domoticz. These scripts will be automatically exported to the filesystem (one-way only) so dzVents can execute them (generated_scripts folder).  Thanks again Scotty!
  - Support for security change events (`on = { variables = { 'varA', 'varB'} }`)
  - Support for variable change events (`on = { security = { domoticz.SECURITY_ARMEDAWAY } }`)
  - The triggerInfo passed to the execute function now includes information about which security state triggered the script if it was a security event.
  - Extended the timer-rule with time range e.g. `at 16:45-21:00` and `at nighttime` and `at daytime` and you can provide a custom function. See documentation for examples. The timer rules can be combined as well.
  - Timer rules for `every xx minutes` or `every xx hours` are now limited to intervals that will reach *:00 minutes or hours. So for minutes you can only do these intervals: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30. Likewise for hours.
- - on-section now requires subsections for `devices`, `timer`, `variables`, and `security`. The old way is now deprecated and a log warning will be shown. Please convert your existing scripts!
  - A device trigger can have a time-rule constraint: ` on = { devices = { ['myDevice'] = 'at nighttime' } }`. This only triggers the script when myDevice was changed **and** the time is after sunset and before sunrise.
  - Add support for subsystem selection for domoticz.notify function.
- - after_sec, for_min, after_min, within_min methods are now deprecated in favor the camel-cased variants afterSec, forMin, afterMin, withinMin. Please rename the calls in your script.
  - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
 
 [1.1.2]
