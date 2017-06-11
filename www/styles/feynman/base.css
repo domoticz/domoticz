@@ -1332,6 +1332,9 @@ body div.selectorlevels .ui-buttonset label.ui-button:hover span{
 #metercounters #rfxmetertable td:nth-child(even){text-align: left;}
 #metercounters #rfxmetertable td:first-of-type{min-width:40px;padding-right:10px;text-align:left!important}
 
+input#AcceptNewHardware:checked ~ button {
+    display:none
+}
 
 /* SETTINGS */
 
