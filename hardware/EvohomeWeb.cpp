@@ -137,14 +137,17 @@ bool CEvohomeWeb::StartSession()
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
-		if (result.empty()) // shouldn't happen
-			return false;
-		std::vector<std::string> splitresults;
-		StringSplit(result[0][0], ";", splitresults);
-		if (splitresults.size()>0)
-			m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
-		if (m_awaysetpoint == 0)
-			m_awaysetpoint = 15; // use default 'Away' setpoint value
+		if (result.empty()) // unitialized hardware
+ 			m_awaysetpoint = 15; // use default 'Away' setpoint value
+		else
+		{
+			std::vector<std::string> splitresults;
+			StringSplit(result[0][0], ";", splitresults);
+			if (splitresults.size()>0)
+				m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+			if (m_awaysetpoint == 0)
+				m_awaysetpoint = 15; // use default 'Away' setpoint value
+		}
 	}
 
 	if (m_showhdtemps)
