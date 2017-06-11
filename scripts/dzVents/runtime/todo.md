@@ -4,5 +4,6 @@
 
 *co2 device?
 
+batlevel percentage isn't right
 
 pandoc -r markdown README.md -t mediawiki -o README.wiki
