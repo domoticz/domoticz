@@ -1048,64 +1048,76 @@ namespace Plugins {
 
 	PyObject * CConnection_connect(CConnection * self)
 	{
+		Py_INCREF(Py_None);
+
 		if (!self->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
-		}
-		else
-		{
-			//	Add connect command to message queue unless already connected
-			if (self->pPlugin->m_stoprequested)
-			{
-				_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
-			}
-			else
-				if ((self->pTransport) && (!self->pTransport->IsConnected()))
-				{
-					_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
-				}
-				else
-				{
-					ConnectDirective*	Message = new ConnectDirective(self->pPlugin, (PyObject*)self);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+			return Py_None;
 		}
 
-		Py_INCREF(Py_None);
+		//	Add connect command to message queue unless already connected
+		if (self->pPlugin->m_stoprequested)
+		{
+			_log.Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
+		}
+
+		if (self->pTransport && self->pTransport->IsConnecting())
+		{
+			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
+		}
+
+		if (self->pTransport && self->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "%s, connect request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
+		}
+
+		ConnectDirective*	Message = new ConnectDirective(self->pPlugin, (PyObject*)self);
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		PluginMessageQueue.push(Message);
+
 		return Py_None;
 	}
 
 	PyObject * CConnection_listen(CConnection * self)
 	{
+		Py_INCREF(Py_None);
+
 		if (!self->pPlugin)
 		{
 			_log.Log(LOG_ERROR, "%s:, illegal operation, Plugin has not started yet.", __func__);
+			return Py_None;
 		}
-		else
+
+		//	Add connect command to message queue unless already connected
+		if (self->pPlugin->m_stoprequested)
 		{
-			//	Add connect command to message queue unless already connected
-			if (self->pPlugin->m_stoprequested)
-			{
-				_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
-			}
-			else
-				if ((self->pTransport) && (!self->pTransport->IsConnected()))
-				{
-					_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
-				}
-				else
-				{
-					Py_XDECREF(self->Address);
-					self->Address = PyUnicode_FromString("127.0.0.1");
-
-					ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+			_log.Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
 		}
 
-		Py_INCREF(Py_None);
+		if (self->pTransport && self->pTransport->IsConnecting())
+		{
+			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connecting.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
+		}
+
+		if (self->pTransport && self->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
+			return Py_None;
+		}
+
+		Py_XDECREF(self->Address);
+		self->Address = PyUnicode_FromString("127.0.0.1");
+
+		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		PluginMessageQueue.push(Message);
+
 		return Py_None;
 	}
 
@@ -1153,14 +1165,14 @@ namespace Plugins {
 	{
 		if (self->pTransport)
 		{
-			if (self->pTransport->IsConnected())
+			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
 				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin, (PyObject*)self);
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
 			else
-				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connected.", __func__, self->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->Name.c_str());
 		}
 		else
 			_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport does not exist.", __func__, self->pPlugin->Name.c_str());
@@ -1172,6 +1184,16 @@ namespace Plugins {
 	PyObject * CConnection_bytes(CConnection * self)
 	{
 		return PyLong_FromLong(self->pTransport->TotalBytes());
+	}
+
+	PyObject * CConnection_isconnecting(CConnection * self)
+	{
+		if (self->pTransport)
+		{
+			return PyBool_FromLong(self->pTransport->IsConnecting());
+		}
+
+		return PyBool_FromLong(0);
 	}
 
 	PyObject * CConnection_isconnected(CConnection * self)
