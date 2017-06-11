@@ -576,7 +576,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 			// also wipe StrParam1 - we do not want a double action from the old (python) script when changing the setpoint
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', StrParam1='' WHERE (ID == %" PRIu64 ")", ssnewname.str().c_str(), DevRowIdx);
 			if (sdevname.find("zone ") != std::string::npos)
-				_log.Log(LOG_STATUS, "(%s) register new zone '%c'", this->Name.c_str(), ssnewname.str().c_str());
+				_log.Log(LOG_STATUS, "(%s) register new zone '%s'", this->Name.c_str(), ssnewname.str().c_str());
 		}
 	}
 }
