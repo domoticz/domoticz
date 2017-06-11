@@ -257,6 +257,84 @@ local function Domoticz(settings)
 		dumpTable(device, '> ')
 	end
 
+	local function setIterators2(collection)
+
+		collection['forEach'] = function(func)
+			local res
+			for i, item in pairs(collection) do
+				if (type(item) ~= 'function' and type(i) ~= 'number') then
+					res = func(item, i, collection)
+					if (res == false) then -- abort
+						return
+					end
+				end
+			end
+		end
+
+		collection['reduce'] = function(func, accumulator)
+			for i, item in pairs(collection) do
+				if (type(item) ~= 'function' and type(i) ~= 'number') then
+					accumulator = func(accumulator, item, i, collection)
+				end
+			end
+			return accumulator
+		end
+
+		collection['filter'] = function(filter)
+			local res = {}
+			for i, item in pairs(collection) do
+				if (type(item) ~= 'function' and type(i) ~= 'number') then
+					if (filter(item)) then
+						res[i] = item
+					end
+				end
+			end
+			setIterators(res)
+			return res
+		end
+	end
+
+
+	local _devices
+
+	function getItemFromData(baseType, id)
+
+		for index, item in pairs(domoticzData) do
+			if (item.baseType == baseType and (item.id == id or item.name == id)) then
+				return item
+			end
+		end
+
+		return nil
+
+	end
+
+	function self._devices(id)
+
+		if (id ~= nil) then
+
+			local device = _devices[id]
+
+			if (device ~=nil) then
+				return device
+			end
+
+			local data = getDeviceFromData('device', id)
+			if (data ~= nil) then
+				local newDevice = Device(self, data)
+				_devices[data.id] = newDevice
+				_devices[data.name] = newDevice
+
+				return newDevice
+			end
+		else
+
+
+
+		end
+
+	end
+
 	local function bootstrap()
 
 
