@@ -137,8 +137,8 @@ bool CEvohomeWeb::StartSession()
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
-		if (result.empty()) // unitialized hardware
- 			m_awaysetpoint = 15; // use default 'Away' setpoint value
+		if (result.empty()) // adding hardware
+			m_awaysetpoint = 15; // use default 'Away' setpoint value
 		else
 		{
 			std::vector<std::string> splitresults;
@@ -347,6 +347,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 
 			szId = (*hz->status)["zoneId"].asString();
 			sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
+			if ((m_showhdtemps) && hz->hdtemp.empty())
+				sznewmode = "Offline";
 
 			unsigned long evoID = atol(szId.c_str());
 			std::stringstream ssUpdateStat;
@@ -521,9 +523,14 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	szId = (*hz->status)["zoneId"].asString();
 	sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
 	szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
-	szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
-	if (szmode == "TemporaryOverride")
-		szuntil = (*hz->status)["stateStatus"]["until"].asString();
+	if ((m_showhdtemps) && hz->hdtemp.empty())
+		szmode = "Offline";
+	else 
+	{
+		szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
+		if (szmode == "TemporaryOverride")
+			szuntil = (*hz->status)["stateStatus"]["until"].asString();
+	}
 
 	unsigned long evoID = atol(szId.c_str());
 	std::string szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
@@ -1388,9 +1395,10 @@ void CEvohomeWeb::get_v1_temps()
 			if (v2zone != NULL)
 			{
 				double v1temp = (*j_dev)["thermostat"]["indoorTemperature"].asDouble();
-				if (v1temp > 120)
+				if (v1temp > 127) // allow rounding error
 				{
-					_log.Log(LOG_ERROR, "(%s) received invalid temperature %0.2f for zone %s", this->Name.c_str(), v1temp, zoneId.c_str());
+					_log.Log(LOG_ERROR, "(%s) zone %s does not report a temperature", this->Name.c_str(), zoneId.c_str());
+					v2zone->hdtemp = "";
 					continue;
 				}
 				std::stringstream sstemp;
