@@ -101,6 +101,7 @@ namespace Plugins {
         DECLARE_PYTHON_SYMBOL(int, PyRun_SimpleFileExFlags, FILE* COMMA const char* COMMA int COMMA PyCompilerFlags*);
 		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
 		DECLARE_PYTHON_SYMBOL(void*, PyType_GenericAlloc, const PyTypeObject * COMMA Py_ssize_t);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_DecodeUTF8, const char * COMMA Py_ssize_t COMMA const char *);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -199,6 +200,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyBool_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
 					RESOLVE_PYTHON_SYMBOL(PyType_GenericAlloc);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_DecodeUTF8);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -357,4 +359,5 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
 #define PyCapsule_Import		pythonLib->PyCapsule_Import
 #define PyType_GenericAlloc		pythonLib->PyType_GenericAlloc
+#define PyUnicode_DecodeUTF8	pythonLib->PyUnicode_DecodeUTF8
 }

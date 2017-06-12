@@ -38,7 +38,7 @@ namespace Plugins {
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
-	boost::mutex PythonMutex;	// only used during startup when multiple threads could use Python
+	boost::mutex PythonMutex;		// only used during startup when multiple threads could use Python
 
 	//
 	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
@@ -587,6 +587,7 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		if (m_Transports.size())
 		{
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
@@ -617,6 +618,7 @@ namespace Plugins {
 
 	void CPlugin::AddConnection(CPluginTransport *pTransport)
 	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		m_Transports.push_back(pTransport);
 	}
 
@@ -642,6 +644,7 @@ namespace Plugins {
 			// If we have connections queue disconnects
 			if (m_Transports.size())
 			{
+				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 				for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 				{
 					CPluginTransport*	pPluginTransport = *itt;
@@ -711,6 +714,7 @@ namespace Plugins {
 			// Check all connections are still valid, vector could be affected by a disconnect on another thread
 			try
 			{
+				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 				if (m_Transports.size())
 				{
 					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
@@ -1041,11 +1045,11 @@ namespace Plugins {
 		}
 		if (pConnection->pTransport->handleConnect())
 		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, transport connect initiated successfully.", Name.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, action initiated successfully.", Name.c_str());
 		}
 		else
 		{
-			_log.Log(LOG_NORM, "(%s) Connect directive received, transport connect initiation failed.", Name.c_str());
+			_log.Log(LOG_NORM, "(%s) Connect directive received, action initiation failed.", Name.c_str());
 		}
 	}
 
@@ -1079,15 +1083,16 @@ namespace Plugins {
 		}
 		if (pConnection->pTransport)
 		{
+			boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 			m_Transports.push_back(pConnection->pTransport);
 		}
 		if (pConnection->pTransport->handleListen())
 		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, transport listen initiated successfully.", Name.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Listen directive received, action initiated successfully.", Name.c_str());
 		}
 		else
 		{
-			_log.Log(LOG_NORM, "(%s) Listen directive received, transport listen initiation failed.", Name.c_str());
+			_log.Log(LOG_NORM, "(%s) Listen directive received, action initiation failed.", Name.c_str());
 		}
 	}
 
@@ -1153,13 +1158,16 @@ namespace Plugins {
 		}
 		if (pConnection->pTransport)
 		{
-			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 			{
-				CPluginTransport*	pPluginTransport = *itt;
-				if (pConnection->pTransport == pPluginTransport)
+				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+				for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 				{
-					m_Transports.erase(itt);
-					break;
+					CPluginTransport*	pPluginTransport = *itt;
+					if (pConnection->pTransport == pPluginTransport)
+					{
+						m_Transports.erase(itt);
+						break;
+					}
 				}
 			}
 			delete pConnection->pTransport;
