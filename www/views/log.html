@@ -1,5 +1,5 @@
 <div id="logcontent" class="logcontent container">
-	<table id="logcontenttable" style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
+	<table style="width: 100%;" border="0" cellpadding="0" cellspacing="0">
 		<tr>
 			<td align="left">
 				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
@@ -8,9 +8,9 @@
 					<li><a data-target="#taberror" data-toggle="tab" data-i18n="Error">Error</a></li>
 				</ul>
 			</td>
-			<td class="filter" align="right" valign="bottom">
-				<span class="filterExplanation" data-i18n="Filter">Filter</span>: <input class="filterInput" ng-model='filterExpr'>
-				<a class="filterX lcursor" ng-click="ClearLog()"><span>X</span></a>
+			<td align="right" valign="bottom">
+				<span data-i18n="Filter">Filter</span>: <input ng-model='filterExpr'>
+				<a class="lcursor" style="color: red;font-weight: bold;" ng-click="ClearLog()"><b>X</b></a>
 			</td>
 		</tr>
 	</table>
