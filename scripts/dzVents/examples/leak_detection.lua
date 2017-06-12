@@ -1,7 +1,7 @@
 -- Water leak detection
 --
 -- assumptions:
--- need 2 devices : 
+-- need 2 devices :
 -- a Water Flow devices name "Water_Flow"
 -- a Dummy Device type percentage "Leakage_Percent"
 --
@@ -21,7 +21,9 @@ local LEAK_DEVICE = 'Leakage_Percent' -- percent dummy device
 return {
     active = true,
     on = {
-        ['timer'] = 'every minute'
+        ['timer'] = {
+            'every minute'
+        }
     },
     data = {
 		time_0_flow = { initial = 0 },
@@ -29,27 +31,27 @@ return {
     },
     execute = function(domoticz)
     	-- Flow in liter/minute
-        local flow = tonumber(domoticz.devices[FLOW_DEVICE].rawData[1])
+        local flow = tonumber(domoticz.devices(FLOW_DEVICE).rawData[1])
         -- Dummy device in %
-        local leakage = domoticz.devices[LEAK_DEVICE]
+        local leakage = domoticz.devices(LEAK_DEVICE)
         local time_with_flow = tonumber(leakage.rawData[1])
         local new_time_with_flow = time_with_flow
-        
--- 1 / leakage "open valve"
+
+		-- 1 / leakage "open valve"
         if (flow > 0) then
-           domoticz.data.time_0_flow = 0  -- there is a flow
-           new_time_with_flow = new_time_with_flow + 1 -- time with flow
-           if (new_time_with_flow > 100) then
-             	new_time_with_flow = 100
-           end
+			domoticz.data.time_0_flow = 0  -- there is a flow
+			new_time_with_flow = new_time_with_flow + 1 -- time with flow
+			if (new_time_with_flow > 100) then
+			    new_time_with_flow = 100
+			end
         else
            new_time_with_flow = 0
            domoticz.data.time_0_flow = domoticz.data.time_0_flow + 1 -- time without flow
         end
-        
--- 2 / flight type "micro continuous flow" (drip)
+
+		-- 2 / flight type "micro continuous flow" (drip)
         domoticz.data.total_time = domoticz.data.total_time + 1 -- time without since last 2 hours with no flow
-        
+
         if (domoticz.data.time_0_flow > 120) then
             -- 2 hours with no flow
             domoticz.data.total_time = 0
@@ -57,14 +59,14 @@ return {
         	-- 24 heures since last 2 hours with no flow
         	new_time_with_flow = 100
         end
--- log
+		-- log
         domoticz.log(new_time_with_flow .. ' minutes with flow ')
         domoticz.log(domoticz.data.time_0_flow .. ' minutes without flow ')
         domoticz.log(domoticz.data.total_time .. ' minutes without 2hrs without flow ')
- 
- -- update dummy device %       
+
+        -- update dummy device %
         if (time_with_flow ~= new_time_with_flow) then
-         leakage.update(0,new_time_with_flow)
+	        leakage.update(0,new_time_with_flow)
         end
     end
 }
