@@ -49,7 +49,15 @@ return {
 
 		local _states = adapterManager.states
 
+
+
 		if (data.baseType == 'device') then
+
+			local bat
+			local sig
+
+			if (data.batteryLevel <= 100) then bat = data.batteryLevel end
+			if (data.signalLevel <= 100) then sig = data.signalLevel end
 
 			device['changed'] = data.changed
 			device['description'] = data.description
@@ -61,10 +69,8 @@ return {
 			device['switchType'] = data.switchType
 			device['switchTypeValue'] = data.switchTypeValue
 			device['timedOut'] = data.timedOut
-			device['batteryLevel'] = data.batteryLevel  -- 0-255
-			device['batteryPercentage'] = math.floor(data.batteryLevel ~= nil and ((data.batteryLevel / 255) * 100) or 255)
-			device['signalLevel'] = data.signalLevel
-			device['signalPercentage'] = math.floor(data.signalLevel ~= nil and ((data.signalLevel / 255) * 100) or 255)
+			device['batteryLevel'] = bat
+			device['signalLevel'] = sig
 			device['deviceSubType'] = data.subType
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData

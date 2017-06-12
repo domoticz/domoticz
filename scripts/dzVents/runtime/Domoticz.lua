@@ -362,7 +362,6 @@ local function Domoticz(settings)
 					_item = item
 				end
 
---				_.print(111, initial, type(_item), type(i)) --                    TODO - >> REMOVE << -
 				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
 					accumulator = func(accumulator, _item)
 				end

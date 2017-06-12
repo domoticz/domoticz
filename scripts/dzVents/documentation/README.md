@@ -364,7 +364,7 @@ dzVents already recognizes most of the devices and creates the proper attributes
 Most of the time when your device is not recognized you can always use the `rawData` attribute as that will almost always hold all the data that is available in Domoticz.
 
 ### Device attributes for all devices
- - **batteryLevel**: *Number* (note this is the raw value from Domoticcz and can be 255).
+ - **batteryLevel**: *Number* If applicable for that device then it will be from 0-100.
  -  **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
  - **changed**: *Boolean*. True if the device was changed
  - **description**: *String*. Description of the device.
@@ -397,6 +397,7 @@ Most of the time when your device is not recognized you can always use the `rawD
  - **rawData**: *Table*: All values are *String* types and hold the raw data received from Domoticz.
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
 - **state**: *String*. For switches this holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
+ - **signalLevel**: *Number* If applicable for that device then it will be from 0-100.
  - **switchType**: *String*. See Domoticz devices table in Domoticz GUI.
  - **switchTypeValue**: *Number*. See Domoticz devices table in Domoticz GUI.
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.

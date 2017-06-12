@@ -18,7 +18,6 @@ return {
 
 		-- from data: quality
 
-		-- todo this doesn't work just yet
 		device['co2'] = tonumber(data.data._nValue) -- co2 (ppm)
 
 		-- quality is automatically added (named)
