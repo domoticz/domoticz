@@ -39,10 +39,10 @@ function SendNotification()
 	if (typeof csettings == 'undefined') {
 		return;
 	}
-
+	
 	$.ajax({
 		 url: "json.htm?type=command&param=sendnotification&subject=" + encodeURIComponent(csettings.subject) + "&body=" + encodeURIComponent(csettings.body),
-		 async: false,
+		 async: false, 
 		 dataType: 'json',
 		 success: function(data) {
 			ShowNotify($.t("Notification Send"),2500);
@@ -50,11 +50,11 @@ function SendNotification()
 		 },
 		 error: function(){
 			ShowNotify($.t('Problem Sending Notification!'), 2500, true);
-		 }
-	});
+		 }     
+	});		
 }
 
 $(document).ready(function() {
 	$('html').i18n();
-} );
+} );  
 </script>
