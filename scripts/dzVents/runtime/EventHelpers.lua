@@ -308,26 +308,29 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 			end
 
-			local scriptType = eventHandler.type == 'external' and '>>> External script: ' or '>>> Internal script: '
-
-			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
-			utils.log(scriptType .. eventHandler.name .. '.lua', utils.LOG_MODULE_EXEC_INFO)
-
-			if (device) then
-				utils.log('>>> Device: "' .. device.name .. ' (' .. device.hardwareName .. ') " Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
-			elseif (variable) then
-				utils.log('>>> Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id), utils.LOG_MODULE_EXEC_INFO)
-			elseif (security) then
-				utils.log('>>> Security: "' .. security .. '"', utils.LOG_MODULE_EXEC_INFO)
+			local moduleLabel
+			local moduleLabelInfo = ''
+			local triggerInfo
+			local scriptType = eventHandler.type == 'external' and 'external script: ' or 'internal script: '
+			if (eventHandler.type == 'external') then
+				moduleLabel = eventHandler.name .. '.lua'
+			else
+				moduleLabel = eventHandler.name .. ''
 			end
 
-			utils.log('.....................................................', utils.LOG_INFO)
+			if (device) then
+				moduleLabelInfo = ' Device: "' .. device.name .. ' (' .. device.hardwareName .. ')", Index: ' .. tostring(device.id)
+			elseif (variable) then
+				moduleLabelInfo = ' Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id)
+			elseif (security) then
+				moduleLabelInfo = ' Security: "' .. security .. '"'
+			end
 
+			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
+
+			utils.log('------ Start ' ..  scriptType ..  moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
 			self.callEventHandler(eventHandler, device, variable, security)
-
-			utils.log('.....................................................', utils.LOG_INFO)
-			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
-			utils.log('-----------------------------------------------------', utils.LOG_MODULE_EXEC_INFO)
+			utils.log('------ Finished ' .. moduleLabel, utils.LOG_MODULE_EXEC_INFO)
 
 			restoreLogging()
 		end

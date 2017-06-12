@@ -1,6 +1,6 @@
 local self = {
 	LOG_ERROR = 1,
-	LOG_FORCE = 1,
+	LOG_FORCE = 1.1,
 	LOG_MODULE_EXEC_INFO = 2,
 	LOG_INFO = 3,
 	LOG_DEBUG = 4,
@@ -35,6 +35,10 @@ function self.log(msg, level)
 
 	if (_G.logMarker ~= nil) then
 		marker = _G.logMarker .. ': '
+	end
+
+	if (level == self.LOG_ERROR) then
+		marker = marker .. 'ERROR: '
 	end
 
 	if (level <= lLevel) then
