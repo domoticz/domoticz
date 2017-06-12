@@ -17,11 +17,12 @@
  - No more need to do http-calls to get extended data from Domoticz. All relevant internal Domoticz state-data is now available inside your dzVents scripts. Thanks Scotty!!
  - Support for many many more device types and their specific methods. See the documentation for the list of attributes and events that are available. Note that device-type specific attributes are only available for those type of devices. You will receive an error in the log if you try to access an attribute that doesn't exist for that particular device. Hopefully you don't have to use the rawData table anymore. If you still do please file a report or create a device adapter yourself.
  - You can now write dzVents scripts using the internal editor in Domoticz. These scripts will be automatically exported to the filesystem (one-way only) so dzVents can execute them (generated_scripts folder).  Thanks again Scotty!
- - Support for security change events (`on = { variables = { 'varA', 'varB'} }`)
- - Support for variable change events (`on = { security = { domoticz.SECURITY_ARMEDAWAY } }`)
+ - Support for variable change events (`on = { variables = { 'varA', 'varB'} }`)
+ - Support for security change events (`on = { security = { domoticz.SECURITY_ARMEDAWAY } }`)
  - The triggerInfo passed to the execute function now includes information about which security state triggered the script if it was a security event.
  - Extended the timer-rule with time range e.g. `at 16:45-21:00` and `at nighttime` and `at daytime` and you can provide a custom function. See documentation for examples. The timer rules can be combined as well.
  - Timer rules for `every xx minutes` or `every xx hours` are now limited to intervals that will reach *:00 minutes or hours. So for minutes you can only do these intervals: 1, 2, 3, 4, 5, 6, 10, 12, 15, 20 and 30. Likewise for hours.
+ - The Time object (e.g. domoticz.time) now has a method `matchesRule(rule)`. `rule` is a string same as you use for timer options: `if (domoticz.time.matchesRule('at 16:32-21:33 on mon,tue,wed')) then ... end`. The rule matches if the current system time matches with the rule.
  - A device trigger can have a time-rule constraint: ` on = { devices = { ['myDevice'] = 'at nighttime' } }`. This only triggers the script when myDevice was changed **and** the time is after sunset and before sunrise.
  - Add support for subsystem selection for domoticz.notify function.
  - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
