@@ -562,14 +562,14 @@ local function EventHelpers(domoticz, mainMethod)
 		for k, v in pairs(commandArray) do
 			if (type(v) == 'table') then
 				for kk, vv in pairs(v) do
-					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. vv, utils.LOG_MODULE_EXEC_INFO)
+					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. vv, utils.LOG_DEBUG)
 				end
 			else
-				utils.log(k .. ': ' .. v, utils.LOG_MODULE_EXEC_INFO)
+				utils.log(k .. ': ' .. v, utils.LOG_DEBUG)
 			end
 			printed = true
 		end
-		if (printed) then utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO) end
+		if (printed) then utils.log('=====================================================', utils.LOG_DEBUG) end
 	end
 
 	function self.findScriptForChangedItem(changedItemName, allEventScripts)

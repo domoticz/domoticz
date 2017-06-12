@@ -291,7 +291,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 ### Domoticz methods
 
  - **email(subject, message, mailTo)**: Send email.
- - **log(message, [level])**: Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG` or `domoticz.LOG_ERROR`. In Domoticz settings you can set the log level for dzVents.
+ - **log(message, [level])**: Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
  - **notify(subject, message, priority, sound, extra, subsystem)**: Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
  - **openURL(url)**: Have Domoticz 'call' a URL.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
@@ -349,7 +349,7 @@ Using a reducer to count all devices that are switched on:
  - **EVOHOME_MODE_AUTO**, **EVOHOME_MODE_TEMPORARY_OVERRIDE**, **EVOHOME_MODE_PERMANENT_OVERRIDE**: mode for EvoHome system.
  - **HUM_COMFORTABLE**, **HUM_DRY**, **HUM_NORMAL**, **HUM_WET**: Constant for humidity status.
  - **INTEGER**, **FLOAT**, **STRING**, **DATE**, **TIME**: variable types.
- - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**: For logging messages.
+ - **LOG_DEBUG**, **LOG_ERROR**, **LOG_INFO**, **LOG_FORCE**: For logging messages. LOG_FORCE is at the same level as LOG_ERROR.
  - **NSS_GOOGLE_CLOUD_MESSAGING**, **NSS_HTTP**,
 **NSS_KODI**, **NSS_LOGITECH_MEDIASERVER**, **NSS_NMA**,**NSS_PROWL**, **NSS_PUSHALOT**, **NSS_PUSHBULLET**, **NSS_PUSHOVER**, **NSS_PUSHSAFER**: for notification subsystem
  - **PRIORITY_LOW**, **PRIORITY_MODERATE**, **PRIORITY_NORMAL**, **PRIORITY_HIGH**, **PRIORITY_EMERGENCY**: For notification priority.
@@ -1106,9 +1106,9 @@ There are a couple of settings for dzVents. They can be found in Domoticz GUI: *
  - **dzVents disabled**: Tick this if you don't want any dzVents script to be executed.
  - **Log level**: Note that you can override this setting in the logging section of your script:
     - *Errors*,
-    - *Errors + execution info* about the execution of individual scripts and a dump of the commands sent back to Domoticz,
-    - *Errors + more info*. Even more information about script execution and a bit more log formatting.
-    - *Debug info + Errors + Info*. When in debug mode, dzVents will create a file `domoticzData.lua` in the dzVents folder. This is a dump of all the data that is received by dzVents from Domoticz.. That data is used to create the entire dzVents data structure.
+    - *Errors + minimal execution info*: Errors and some minimal information about which script is being executed and why,
+    - *Errors + minimal execution info + generic info*. Even more information about script execution and a bit more log formatting.
+    - *Debug*. Shows everything and dzVents will create a file `domoticzData.lua` in the dzVents folder. This is a dump of all the data that is received by dzVents from Domoticz.. That data is used to create the entire dzVents data structure.
     - *No logging*. As silent as possible.
 
 # Change log
