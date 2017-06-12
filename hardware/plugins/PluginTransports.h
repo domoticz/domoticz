@@ -32,7 +32,7 @@ namespace Plugins {
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&) = 0;
 		virtual	bool		handleDisconnect() { return false; };
-		~CPluginTransport()
+		virtual ~CPluginTransport()
 		{
 			Py_DECREF(m_pConnection);
 		}

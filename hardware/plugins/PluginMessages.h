@@ -166,33 +166,42 @@ namespace Plugins {
 	class ReceivedMessage : public CCallbackBase, public CHasConnection
 	{
 	public:
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Data(NULL), m_Extra(NULL)
 		{
 			m_Buffer.reserve(Buffer.length());
 			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Object(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Data(NULL), m_Extra(NULL)
 		{
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer, const int Status, PyObject*	Object) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer, const int Status, PyObject*	pObject) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
 		{
 			m_Buffer = Buffer;
 			m_Status = Status;
-			m_Object = Object;
+			m_Extra = pObject;
+		};
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData, const int Status, PyObject*	pObject) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
+		{
+			m_Status = Status;
+			m_Data = pData;
+			m_Extra = pObject;
 		};
 		std::vector<byte>		m_Buffer;
 		int						m_Status;
-		PyObject*				m_Object;
+		PyObject*				m_Data;
+		PyObject*				m_Extra;
 
 		virtual void Process()
 		{
+			PyObject*	pParams = NULL;
+
+			// Data is stored in a single vector of bytes
 			if (m_Buffer.size())
 			{
-				PyObject*	pParams;
-				if (m_Object)
+				if (m_Extra)
 				{
-					PyObject*	pHeaders = m_Object;
+					PyObject*	pHeaders = m_Extra;
 					pParams = Py_BuildValue("Oy#iO", m_pConnection, &m_Buffer[0], m_Buffer.size(), m_Status, pHeaders);
 					Py_XDECREF(pHeaders);
 				}
@@ -203,6 +212,24 @@ namespace Plugins {
 				}
 				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
 				Callback(pParams);
+			}
+
+			// Data is in a dictionary
+			if (m_Data)
+			{
+				if (m_Extra)
+				{
+					pParams = Py_BuildValue("OOiO", m_pConnection, m_Data, m_Status, m_Extra);
+					Py_XDECREF(m_Extra);
+				}
+				else
+				{
+					Py_INCREF(Py_None);
+					pParams = Py_BuildValue("OOiO", m_pConnection, m_Data, m_Status, Py_None);
+				}
+				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+				Callback(pParams);
+				Py_XDECREF(m_Data);
 			}
 		}
 	};
