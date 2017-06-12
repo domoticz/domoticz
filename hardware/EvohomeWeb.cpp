@@ -68,10 +68,6 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 	m_showhdtemps = ((UseFlags & 8) > 0);
 	m_hdprecision = ((UseFlags & 16) > 0) ? 100 : 10;
 
-	// fixed values for now
-	m_showhdtemps = true;
-	m_hdprecision = 10;
-
 	if (m_refreshrate < 10)
 		m_refreshrate = 60;
 

@@ -880,6 +880,9 @@ define(['app'], function (app) {
 					UseFlags = UseFlags | 2;
 				}
 
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
+
 				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
@@ -1699,6 +1702,9 @@ define(['app'], function (app) {
 				{
 					UseFlags = UseFlags | 2;
 				}
+
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
 
 				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
@@ -5170,9 +5176,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
 							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
 							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
+							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
 
 							var Location = parseInt(data["Mode5"]);
-							for (var i=0;i<10;i++){
+							for (var i=1;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
