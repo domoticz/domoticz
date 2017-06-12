@@ -124,7 +124,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	int m_SecStatus;
 
-
 	//our thread
 	void Do_Work();
 	void ProcessMinute();

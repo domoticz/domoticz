@@ -43,6 +43,8 @@ extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
+std::string m_printprefix;
+
 struct _tJsonLuaMap {
 	const char* szOriginal;
 	const char* szNew;
@@ -99,6 +101,7 @@ CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
 	m_bEnabled = true;
+	m_printprefix = "LUA";
 }
 
 
@@ -202,7 +205,6 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-
 				s = dzv_Dir + eitem.Name.c_str() + ".lua";
 				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
 				FILE *fOut = fopen(s.c_str(), "wb+");
@@ -250,7 +252,6 @@ void CEventSystem::Do_Work()
 	//bool bFirstTime = true;
 	struct tm tmptime;
 	struct tm ltime;
-
 
 	localtime_r(&lasttime, &tmptime);
 	int _LastMinute = tmptime.tm_min;
@@ -1210,6 +1211,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
+		std::string temp_prefix = m_printprefix;
+		m_printprefix = "dzVents";
 		DirectoryListing(FileEntries, dzv_Dir, false, true);
 		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 		{
@@ -1219,6 +1222,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 				EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
 			}
 		}
+		m_printprefix = temp_prefix;
 	}
 
 	DirectoryListing(FileEntries, lua_Dir, false, true);
@@ -4130,7 +4134,7 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 		if (lua_isstring(lua_state, i))
 		{
 			//std::string lstring=lua_tostring(lua_state, i);
-			_log.Log(LOG_STATUS, "LUA: %s", lua_tostring(lua_state, i));
+			_log.Log(LOG_STATUS, "%s: %s", m_printprefix.c_str(), lua_tostring(lua_state, i));
 		}
 		else
 		{
