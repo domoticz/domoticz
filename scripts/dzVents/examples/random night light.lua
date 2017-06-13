@@ -11,12 +11,12 @@ return {
 
 		if (domoticz.security ~= domoticz.SECURITY_DISARMED) then
 
-			local light = domoticz.devices('Window light')
+			local light = domoticz.devices['Window light']
 
 			if (not light.bState) then -- i.e. state == 'On'
-				light.switchOn().withinMin(RANDOM_DELAY_MINS)
+				light.switchOn().within_min(RANDOM_DELAY_MINS)
 			else
-				light.switchOff().withinMin(RANDOM_DELAY_MINS)
+				light.switchOff().within_min(RANDOM_DELAY_MINS)
 			end
 
 		end

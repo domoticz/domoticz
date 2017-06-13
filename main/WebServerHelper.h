@@ -48,7 +48,6 @@ namespace http {
 				const std::string &hardwareid = "");
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
-			std::string our_listener_port;
 		private:
 			boost::shared_ptr<CWebServer> plainServer_;
 #ifdef WWW_ENABLE_SSL
@@ -58,7 +57,6 @@ namespace http {
 			std::vector<boost::shared_ptr<CWebServer> > serverCollection;
 
 			std::string our_serverpath;
-
 #ifndef NOCLOUD
 			std::vector<boost::shared_ptr<CProxyManager> > proxymanagerCollection;
 			int GetNrMyDomoticzThreads();

@@ -1,9 +1,7 @@
 return {
 	active = true,
 	on = {
-		devices = {
-			'My switch'
-		}
+		'My switch'
 	},
 
 	execute = function(domoticz, mySwitch)

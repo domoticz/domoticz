@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		devices = {8}
+		8
 	},
 	execute = function(domoticz, device)
 		return 'script5'

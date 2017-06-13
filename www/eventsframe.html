@@ -1,11 +1,10 @@
-﻿﻿
 <html>
-<head>
-	<meta charset="utf-8">
-	<script type="text/javascript" src="js/blockly_compressed.js"></script>
-	<script type="text/javascript" src="js/blocks_compressed.js"></script>
-	<script type="text/javascript" src="js/en_compressed.js"></script>
-	<script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
+  <head>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="js/blockly_compressed.js"></script>
+    <script type="text/javascript" src="js/blocks_compressed.js"></script>
+    <script type="text/javascript" src="js/en_compressed.js"></script>
+    <script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/bootbox.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
@@ -576,15 +575,8 @@
 								$("#blockId").html(id);
 							}
 							else {
-								if (data.result[0].interpreter == 'dzVents') {
-									editor.getSession().setMode("ace/mode/lua");
-									$("#eventType").val(data.result[0].type).prop('disabled', true);
-								}
-								else {
-									editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
-									$("#eventType").val(data.result[0].type).prop('disabled', false);
-								}
 								editor.setValue("");
+								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
 								editor.scrollToLine(1, true, true, function () { });
@@ -626,6 +618,7 @@
 					}
 				});
 			}
+<<<<<<< HEAD
 			else {
 				bootbox.alert("Nothing selected!")
 			}
@@ -636,10 +629,29 @@
 			select.options.length = 0;
 			var interpreters = document.getElementById("interpreter");
 			interpreters.options.length = 0;
+=======
+		  });
+	  }
+	  
+	function new_block() {
+		$("#blockId").html("");
+		Blockly.mainWorkspace.clear();
+		editor.setValue("");
+		$("#eventName").val("");
+		$("#savedEvents").val("");
+		$("#interpreter").prop('disabled', false);
+		$('#btnDelete').attr("class", "btnstyle3-dis");
+		if ($("#interpreter").val() == "Blockly") {
+			ResizeBlockyWindow();
+		}
+		else {
+			editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+>>>>>>> 97ddedc23b8245c890d0b63cea0a2b36bf68dd74
 			$.ajax({
 				url: "json.htm?type=events&param=list",
 				async: false,
 				dataType: 'json',
+<<<<<<< HEAD
 				success: function (data) {
 					var aInterpreters = data.interpreters.split(':');
 					$.each(aInterpreters, function (i, item) {
@@ -661,6 +673,13 @@
 							}
 							select.appendChild(option);
 						});
+=======
+				success: function(data) {
+					if (typeof data.template != 'undefined') {
+						editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+						editor.setValue(data.template);
+						editor.gotoLine(1);
+>>>>>>> 97ddedc23b8245c890d0b63cea0a2b36bf68dd74
 					}
 				}
 			});
@@ -1086,6 +1105,7 @@
 							</menu>
 							<menuitem label="Auto Complete" type="checkbox" checked="true" onclick="editor.setOptions({enableLiveAutocompletion: this.getAttribute('checked')=='false'}); this.setAttribute('checked',this.getAttribute('checked')=='false');"></menuitem>
 						</menu>
+<<<<<<< HEAD
 						<div id="aceDiv" class="ui-corner-all" style="display:none;" contextmenu="acemenu"></div>
 						<div id="blocklyDiv"></div>
 					</td>
@@ -1126,6 +1146,49 @@
 						<div id="blockId" style="display:none;" />
 					</td>
 				</tr>
+=======
+						<menuitem label="Auto Complete" type="checkbox" checked="true" onclick="editor.setOptions({enableLiveAutocompletion: this.getAttribute('checked')=='false'}); this.setAttribute('checked',this.getAttribute('checked')=='false');"></menuitem>
+					</menu>
+					<div id="aceDiv" class="ui-corner-all" style="display:none;" contextmenu="acemenu"></div>
+					<div id="blocklyDiv"></div>
+				</td>
+				<td style="width:250px" valign="top">
+					<label for="eventName">Event name:</label><br>
+					<input type="input" id="eventName" name="eventName" oninput="SetSaveButton();" onchange="SetSaveButton();" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+					<p>
+					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">
+					  <option selected="selected">Blockly</option>
+					  <option>Lua</option>
+					  <option>Python</option>
+					</select>
+					<p>
+					<select name="eventType" id="eventType" class="ui-widget-content ui-corner-all" style="width: 12em; padding: .2em;">
+					  <option selected="selected">All</option>
+					  <option>Device</option>
+					  <option>Security</option>
+					  <option>Time</option>
+					  <option>UserVariable</option>
+					</select>
+					<p>
+					<label for="eventActive">Event active:</label>
+					<input type="checkbox" id="eventActive" name="eventActive"/>
+					</p>
+					<p>
+					<a class="btnstyle3-dis" id="btnSave" href="javascript:save_block()">Save</a>
+					<a class="btnstyle3" href="javascript:new_block()">New</a>
+					</p>
+					<p>
+					<label for="savedEvents">Saved events:</label><br>
+					<select size="20" width="100%" style="width: 100%" id="savedEvents" name="savedEvents" onchange="loadSelectedEvent(this.value);"></select>
+					</p>
+					<p>
+					<a class="btnstyle3-dis" id="btnDelete" style="width: 80%" href="javascript:delete_block()">Delete selected</a></br>
+					<a class="btnstyle3" style="width: 80%; margin-top: 0.4em;" href="javascript:show_states()">Show current states</a>
+					</p>
+					<div id="blockId" style="display:none;"/>
+				</td>
+			</tr>
+>>>>>>> 97ddedc23b8245c890d0b63cea0a2b36bf68dd74
 			</table>
 		</div>
 	</div>
