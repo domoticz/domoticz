@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		devices = {'somedevice'}
+		'somedevice'
 	},
 	data = {
 		a = { initial = '' },
