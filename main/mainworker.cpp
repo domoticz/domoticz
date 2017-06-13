@@ -484,10 +484,9 @@ bool MainWorker::GetSunSettings()
 {
 	int nValue;
 	std::string sValue;
-	if (!m_sql.GetPreferencesVar("Location",nValue,sValue))
-		return false;
 	std::vector<std::string> strarray;
-	StringSplit(sValue, ";", strarray);
+	if (m_sql.GetPreferencesVar("Location",nValue,sValue))
+		StringSplit(sValue, ";", strarray);
 
 	if (strarray.size() != 2)
 	{
@@ -9760,6 +9759,10 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			return;
 		m_notifications.CheckAndHandleValueNotification(DevRowIdx, procResult.DeviceName, pMeter->intval2);
 	}
+	else if (subType == sTypeTextStatus)
+	{
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->text, procResult.DeviceName);
+	}
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9873,6 +9876,11 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		case sTypeZWaveAlarm:
 			WriteMessage("subtype       = Alarm");
 			sprintf(szTmp, "Level = %d (0x%02X)", pMeter->intval2, pMeter->intval2);
+			WriteMessage(szTmp);
+			break;
+		case sTypeTextStatus:
+			WriteMessage("subtype       = Text");
+			sprintf(szTmp, "Text = %s", pMeter->text);
 			WriteMessage(szTmp);
 			break;
 		default:
@@ -11607,16 +11615,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		return true;
 	case pTypeGeneralSwitch:
 		{
+
 			_tGeneralSwitch gswitch;
 			gswitch.type = dType;
 			gswitch.subtype = dSubType;
 			gswitch.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 			gswitch.id = ID;
 			gswitch.unitcode = Unit;
+
 			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
 				return false;
 
-			if ((switchtype != STYPE_Selector) && (dSubType != sSwitchGeneralSwitch)) {
+			if ((switchtype != STYPE_Selector) && (dSubType != sSwitchGeneralSwitch))
+			{
 				level = (level > 99) ? 99 : level;
 			}
 
@@ -11646,6 +11657,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
+			else if (((switchtype == STYPE_BlindsPercentage) ||
+					(switchtype == STYPE_BlindsPercentageInverted)) &&
+					(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
+						gswitch.cmnd = gswitch_sOn;
 
 			gswitch.level = (unsigned char)level;
 			gswitch.rssi = 12;
@@ -12953,6 +12968,19 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				if (devidx == -1)
 					return false;
 				m_notifications.CheckAndHandleNotification(devidx, devname, devType, subType, NTYPE_USAGE, static_cast<float>(nValue));
+				return true;
+			}
+			else if (subType == sTypeTextStatus)
+			{
+				std::string sstatus = sValue;
+				if (sstatus.size() > 63)
+					sstatus = sstatus.substr(0, 63);
+				_tGeneralDevice gDevice;
+				gDevice.subtype = subType;
+				gDevice.id = unit;
+				gDevice.intval1 = static_cast<int>(ID);
+				strcpy(gDevice.text, sstatus.c_str());
+				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
 		}

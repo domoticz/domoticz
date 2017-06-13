@@ -34,40 +34,51 @@ define([
 			'ngWebsocket']
 		);
 
-		isOnline = false;
-		dashboardType = 1;
+	isOnline = false;
+	dashboardType = 1;
 
-		app.factory('permissions', function ($rootScope) {
-			var permissionList;
-			return {
-				setPermissions: function (permissions) {
-					permissionList = permissions;
-					window.my_config =
-						{
-							userrights: permissionList.rights
-						};
-					$rootScope.$broadcast('permissionsChanged');
-				},
-				hasPermission: function (permission) {
-					if (permission == "Admin") {
-						return (permissionList.rights == 2);
-					}
-					if (permission == "User") {
-						return (permissionList.rights >= 0);
-					}
-					if (permission == "Viewer") {
-						return (permissionList.rights == 0);
-					}
-					alert("Unknown permission request: " + permission);
-					return false;
-				},
-				hasLogin: function (isloggedin) {
-					return (permissionList.isloggedin == isloggedin);
-				},
-				isAuthenticated: function () {
-					return (permissionList.rights != -1);
+	app.factory('permissions', function ($rootScope) {
+		var permissionList;
+		return {
+			setPermissions: function (permissions) {
+				permissionList = permissions;
+				window.my_config =
+					{
+						userrights: permissionList.rights
+					};
+				$rootScope.$broadcast('permissionsChanged');
+			},
+			hasPermission: function (permission) {
+				if (permission == "Admin") {
+					return (permissionList.rights == 2);
 				}
-			};
+				if (permission == "User") {
+					return (permissionList.rights >= 0);
+				}
+				if (permission == "Viewer") {
+					return (permissionList.rights == 0);
+				}
+				alert("Unknown permission request: " + permission);
+				return false;
+			},
+			hasLogin: function (isloggedin) {
+				return (permissionList.isloggedin == isloggedin);
+			},
+			isAuthenticated: function () {
+				return (permissionList.rights != -1);
+			}
+		};
+	});
+		app.directive('hasPermission', function (permissions) {
+			return {
+				link: function (scope, element, attrs) {
+					var value = attrs.hasPermission.trim();
+					var notPermissionFlag = value[0] === '!';
+					if (notPermissionFlag) {
+						value = value.slice(1).trim();
+					}
+				}
+			}
 		});
 		app.directive('hasPermission', function (permissions) {
 			return {

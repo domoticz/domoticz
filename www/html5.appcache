@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1391
+# ref 1394
 
 CACHE:
 # CSS
@@ -449,6 +449,7 @@ i18n/domoticz-sl.json
 i18n/domoticz-sr.json
 i18n/domoticz-sv.json
 i18n/domoticz-tr.json
+i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts

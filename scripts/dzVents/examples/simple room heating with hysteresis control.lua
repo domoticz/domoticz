@@ -11,9 +11,13 @@ local LOGGING = true
 
 return {
 	on = {
-		['timer'] = 'every minute',
-		TEMPERATURE_SENSOR,
-		SETPOINT_DEVICE
+		['timer'] = {
+			'every minute',
+		},
+		devices = {
+			TEMPERATURE_SENSOR,
+			SETPOINT_DEVICE
+		}
 	},
 	data = {
 		temperatureReadings = { history = true, maxItems = SMOOTH_FACTOR }
@@ -27,9 +31,9 @@ return {
 		-- first check if the sensor got a new reading or the setpoint was changed:
 		if (triggerInfo.type == domoticz.EVENT_TYPE_DEVICE) then
 
-			local sensor = domoticz.devices[TEMPERATURE_SENSOR]
+			local sensor = domoticz.devices(TEMPERATURE_SENSOR)
 
-			if (sensor.changed and sensor.attributeChanged('temperature')) then
+			if (sensor.changed) then
 				-- sensor just reported a new reading
 				-- add it to the readings table
 
@@ -43,7 +47,7 @@ return {
 					return
 				end
 
-			elseif (domoticz.devices[SETPOINT_DEVICE].changed) then
+			elseif (domoticz.devices(SETPOINT_DEVICE).changed) then
 				-- a new setpoint was set
 				if LOGGING then domoticz.log('Setpoint was set to ' .. device.state) end
 			else
@@ -54,8 +58,8 @@ return {
 
 		-- now determine what to do
 
-		local boiler = domoticz.devices[BOILER_DEVICE]
-		local setpoint = domoticz.devices[SETPOINT_DEVICE]
+		local boiler = domoticz.devices(BOILER_DEVICE)
+		local setpoint = domoticz.devices(SETPOINT_DEVICE)
 
 		if (setpoint.state == nil or setpoint.state == 'Off') then
 			boiler.switchOff()

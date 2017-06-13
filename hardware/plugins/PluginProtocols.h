@@ -44,6 +44,8 @@ namespace Plugins {
 		std::string		m_Password;
 		bool			m_Chunked;
 		size_t			m_RemainingChunk;
+
+		void			ExtractHeaders(std::string*	pData);
 	public:
 		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);

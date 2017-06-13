@@ -619,7 +619,7 @@ define(['app'], function (app) {
 							}
 						}
 					});
-					ctrl.nbackcolor = function () { // this can stay for now because EvoSetPointColor seems to use it?
+					ctrl.nbackcolor = function () {
 						var nbackcolor = "#D4E1EE";
 						if (item.HaveTimeout == true) {
 							nbackcolor = "#DF2D3A";

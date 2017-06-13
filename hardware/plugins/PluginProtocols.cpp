@@ -187,31 +187,54 @@ namespace Plugins {
 		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
+	void CPluginProtocolHTTP::ExtractHeaders(std::string * pData)
+	{
+		// Remove headers
+		if (m_Headers)
+		{
+			Py_DECREF(m_Headers);
+		}
+		m_Headers = (PyObject*)PyDict_New();
+
+		*pData = pData->substr(pData->find_first_of('\n') + 1);
+		while (pData->length() && ((*pData)[0] != '\r'))
+		{
+			std::string		sHeaderLine = pData->substr(0, pData->find_first_of('\r'));
+			std::string		sHeaderName = pData->substr(0, sHeaderLine.find_first_of(':'));
+			std::string		uHeaderName = sHeaderName;
+			stdupper(uHeaderName);
+			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
+			if (uHeaderName == "CONTENT-LENGTH")
+			{
+				m_ContentLength = atoi(sHeaderText.c_str());
+			}
+			if (uHeaderName == "TRANSFER-ENCODING")
+			{
+				std::string		uHeaderText = sHeaderText;
+				stdupper(uHeaderText);
+				if (uHeaderText == "CHUNKED")
+					m_Chunked = true;
+			}
+			PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
+			if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+			}
+			Py_DECREF(pObj);
+			*pData = pData->substr(pData->find_first_of('\n') + 1);
+		}
+	}
+
+#define ADD_UTF8_TO_DICT(pDict, key, value) \
+		{	\
+			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());	\
+			if (PyDict_SetItem(pDict, key, pObj) == -1)	\
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", m_PluginKey.c_str(), key, value.c_str());	\
+			Py_DECREF(pObj); \
+		}
+
 	void CPluginProtocolHTTP::ProcessInbound(const ReadMessage* Message)
 	{
-		// HTTP/1.0 404 Not Found
-		// Content-Type: text/html; charset=UTF-8
-		// Content-Length: 1570
-		// Date: Thu, 05 Jan 2017 05:50:33 GMT
-		//
-		// <!DOCTYPE html>
-		// <html lang=en>
-		//   <meta charset=utf-8>
-		//   <meta name=viewport...
-
-		// HTTP/1.1 200 OK
-		// Content-Type: text/html; charset=UTF-8
-		// Transfer-Encoding: chunked
-		// Date: Thu, 05 Jan 2017 05:50:33 GMT
-		//
-		// 40d
-		// <!DOCTYPE html>
-		// <html lang=en>
-		//   <meta charset=utf-8>
-		// ...
-		// </html>
-		// 0
-
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
 		// HTML is non binary so use strings
@@ -222,101 +245,142 @@ namespace Plugins {
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
-		// Process response header (HTTP/1.1 200 OK)
-		std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
-		sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
-		sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
-		m_Status = atoi(sFirstLine.c_str());
-		sData = sData.substr(sData.find_first_of('\n') + 1);
-
-		// Remove headers
-		PyObject *pHeaderDict = PyDict_New();
-		while (sData.length() && (sData[0] != '\r'))
+		if (sData.substr(0, 4) == "HTTP")
 		{
-			std::string		sHeaderLine = sData.substr(0, sData.find_first_of('\r'));
-			std::string		sHeaderName = sData.substr(0, sHeaderLine.find_first_of(':'));
-			std::string		uHeaderName = sHeaderName;
-			stdupper(uHeaderName);
-			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
-			if (uHeaderName == "CONTENT-LENGTH")
-			{
-				m_ContentLength = atoi(sHeaderText.c_str());
-			}
-			if (uHeaderName == "TRANSFER-ENCODING") 
-			{
-				std::string		uHeaderText = sHeaderText;
-				stdupper(uHeaderText);
-				if (uHeaderText == "CHUNKED")
-					m_Chunked = true;
-			}
-			PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
-			if (PyDict_SetItemString(pHeaderDict, sHeaderName.c_str(), pObj) == -1)
-			{
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
-			}
-			Py_DECREF(pObj);
-			sData = sData.substr(sData.find_first_of('\n') + 1);
-		}
+			// HTTP/1.0 404 Not Found
+			// Content-Type: text/html; charset=UTF-8
+			// Content-Length: 1570
+			// Date: Thu, 05 Jan 2017 05:50:33 GMT
+			//
+			// <!DOCTYPE html>
+			// <html lang=en>
+			//   <meta charset=utf-8>
+			//   <meta name=viewport...
 
-		// not enough data arrived to complete header processing
-		if (!sData.length())
-		{
-			Py_DECREF(pHeaderDict);
-			return;
-		}
+			// HTTP/1.1 200 OK
+			// Content-Type: text/html; charset=UTF-8
+			// Transfer-Encoding: chunked
+			// Date: Thu, 05 Jan 2017 05:50:33 GMT
+			//
+			// 40d
+			// <!DOCTYPE html>
+			// <html lang=en>
+			//   <meta charset=utf-8>
+			// ...
+			// </html>
+			// 0
 
-		m_Headers = pHeaderDict;
-		sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
+			// Process response header (HTTP/1.1 200 OK)
+			std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
+			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
+			sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
+			m_Status = atoi(sFirstLine.c_str());
 
-		// Process the message body
-		if (m_Status)
-		{
-			if (!m_Chunked)
+			ExtractHeaders(&sData);
+
+			// not enough data arrived to complete header processing
+			if (!sData.length())
 			{
-				// If full message then return it
-				if (m_ContentLength == sData.length())
+				return;
+			}
+
+			sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
+
+			// Process the message body
+			if (m_Status)
+			{
+				if (!m_Chunked)
 				{
-					std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vData, m_Status, (PyObject*)m_Headers);
+					// If full message then return it
+					if (m_ContentLength == sData.length())
+					{
+						std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
+						ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vData, m_Status, (PyObject*)m_Headers);
+						boost::lock_guard<boost::mutex> l(PluginMutex);
+						PluginMessageQueue.push(RecvMessage);
+						m_sRetainedData.clear();
+						m_Headers = NULL;
+					}
+				}
+				else
+				{
+					// Process available chunks
+					std::vector<byte>	vHTML;
+					while (sData.length() && (sData != "\r\n"))
+					{
+						if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
+						{
+							if (sData[0] == '\r')
+							{
+								sData = sData.substr(sData.find_first_of('\n') + 1);
+							}
+							std::string		sChunkLine = sData.substr(0, sData.find_first_of('\r'));
+							m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
+							sData = sData.substr(sData.find_first_of('\n') + 1);
+							if (!m_RemainingChunk)	// last chunk is zero length
+							{
+								ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vHTML, m_Status, (PyObject*)m_Headers);
+								boost::lock_guard<boost::mutex> l(PluginMutex);
+								PluginMessageQueue.push(RecvMessage);
+								m_sRetainedData.clear();
+								m_Headers = NULL;
+								break;
+							}
+						}
+
+						if (sData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
+						{
+							break;
+						}
+
+						vHTML.insert(vHTML.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
+						sData = sData.substr(m_RemainingChunk);
+						m_RemainingChunk = 0;
+					}
+				}
+			}
+		}
+		else
+		{
+			// GET / HTTP / 1.1\r\n
+			// Host: 127.0.0.1 : 9090\r\n
+			// User - Agent: Mozilla / 5.0 (Windows NT 10.0; WOW64; rv:53.0) Gecko / 20100101 Firefox / 53.0\r\n
+			// Accept: text / html, application / xhtml + xml, application / xml; q = 0.9, */*;q=0.8\r\n
+			std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
+			sFirstLine = sFirstLine.substr(0, sFirstLine.find_last_of(' '));
+
+			ExtractHeaders(&sData);
+			if (sData.substr(0,2) == "\r\n")
+			{
+				std::string		sPayload = sData.substr(2);
+				if (!m_ContentLength || (m_ContentLength == sPayload.length()))
+				{
+					PyObject* DataDict = PyDict_New();
+					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
+					PyObject*	pObj = Py_BuildValue("s", sVerb.c_str());
+					if (PyDict_SetItemString(DataDict, "Verb", pObj) == -1)
+						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Verb", sVerb.c_str());
+					Py_DECREF(pObj);
+
+					std::string		sURL = sFirstLine.substr(sVerb.length() + 1, sFirstLine.find_first_of(' ', sVerb.length() + 1));
+					pObj = Py_BuildValue("s", sURL.c_str());
+					if (PyDict_SetItemString(DataDict, "URL", pObj) == -1)
+						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "URL", sURL.c_str());
+					Py_DECREF(pObj);
+
+					if (sPayload.length())
+					{
+						pObj = Py_BuildValue("y#", sPayload.c_str(), sPayload.length());
+						if (PyDict_SetItemString(DataDict, "Data", pObj) == -1)
+							_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Data", sPayload.c_str());
+						Py_DECREF(pObj);
+					}
+
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, DataDict, m_Status, (PyObject*)m_Headers);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
 					m_sRetainedData.clear();
-				}
-			}
-			else
-			{
-				// Process available chunks
-				std::vector<byte>	vHTML;
-				while (sData.length() && (sData != "\r\n"))
-				{
-					if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
-					{
-						if (sData[0] == '\r')
-						{
-							sData = sData.substr(sData.find_first_of('\n') + 1);
-						}
-						std::string		sChunkLine = sData.substr(0, sData.find_first_of('\r'));
-						m_RemainingChunk = strtol(sChunkLine.c_str(), NULL, 16);
-						sData = sData.substr(sData.find_first_of('\n') + 1);
-						if (!m_RemainingChunk)	// last chunk is zero length
-						{
-							ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vHTML, m_Status, (PyObject*)m_Headers);
-							boost::lock_guard<boost::mutex> l(PluginMutex);
-							PluginMessageQueue.push(RecvMessage);
-							m_sRetainedData.clear();
-							break;
-						}
-					}
-
-					if (sData.length() <= m_RemainingChunk)		// Read data is just part of a chunk
-					{
-						Py_DECREF(pHeaderDict);
-						break;
-					}
-
-					vHTML.insert(vHTML.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
-					sData = sData.substr(m_RemainingChunk);
-					m_RemainingChunk = 0;
+					m_Headers = NULL;
 				}
 			}
 		}

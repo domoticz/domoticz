@@ -3,14 +3,16 @@ local BATTERY_THRESHOLD = 10
 return {
 	active = true,
 	on = {
-		['timer'] = 'every hour'
+		['timer'] = {
+			'every hour'
+		}
 	},
 	execute = function(domoticz)
 
 		local message
 
 		-- first filter on low battery level
-		local lowOnBat = domoticz.devices.filter(function(device)
+		local lowOnBat = domoticz.devices().filter(function(device)
 
 			local level = device.batteryLevel
 			return (level ~= nil and -- not all devices have this attribute

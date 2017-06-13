@@ -1,0 +1,6 @@
+# Created by .ignore support plugin (hsz.mobi)
+/domoticzData.lua
+scripts/*.lua
+data/*.lua
+generated_scripts/*.lua
+!/runtime/tests/data/README.md
