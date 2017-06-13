@@ -2,7 +2,7 @@ local min = 'minute'
 return {
 	active = true,
 	on = {
-		['timer'] = {'every ' .. min}
+		['timer'] = 'every ' .. min
 	},
 	execute = function(domoticz, device, triggerInfo)
 		domoticz.notify('Me', triggerInfo.type .. ' ' .. triggerInfo.trigger)

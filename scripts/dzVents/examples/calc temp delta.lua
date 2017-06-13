@@ -8,15 +8,15 @@
 return {
 	active = true,
 	on = {
-		['timer'] = {'every 5 minutes'}
+		['timer'] = 'every 5 minutes'
 	},
 	execute = function(domoticz)
-		local inTemp = domoticz.devices('Temp in').temperature
-		local outTemp = domoitcz.devices('Temp out').temperature
+		local inTemp = domoticz.devices['Temp in'].temperature
+		local outTemp = domoitcz.devices['Temp out'].temperature
 		local delta = outTemp - inTemp -- how much did the temperature drop?
 
 		-- update the dummy sensor
-		domoticz.devices('Delta temp').updateTemperature(delta)
+		domoticz.devices['Delta temp'].updateTemperature(delta)
 
 	end
 }

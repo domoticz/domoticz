@@ -186,7 +186,7 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "request");
 
-	m_mainworker.m_eventsystem.ExportDeviceStatesToLua(lua_state);
+	m_mainworker.m_eventsystem.exportDeviceStatesToLua(lua_state);
 
 	// Push all url parameters as a map indexed by the parameter name
 	// Each entry will be uri[<param name>] = <param value>
