@@ -1,4 +1,4 @@
-local scriptPath = _G.globalvariables['script_path']
+local scriptPath = debug.getinfo(1).source:match("@?(.*/)")
 package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
@@ -8,10 +8,6 @@ local utils = require('Utils')
 -- switch(v1).for_min(v2).after_sec/min(v3)
 -- switch(v1).within_min(v2).for_min(v3)
 -- switch(v1).after_sec(v2).for_min(v3)
-
-local function deprecationWarning(msg)
-	utils.log(msg, utils.LOG_ERROR)
-end
 
 local function TimedCommand(domoticz, name, value)
 	local valueValue = value
@@ -37,7 +33,7 @@ local function TimedCommand(domoticz, name, value)
 
 		local sCommand = table.concat(command, " ")
 
-		utils.log('Constructed timed-command: ' .. sCommand, utils.LOG_DEBUG)
+		utils.log('Constructed command: ' .. sCommand, utils.LOG_DEBUG)
 
 		return sCommand
 	end
@@ -49,45 +45,46 @@ local function TimedCommand(domoticz, name, value)
 	return {
 		['_constructCommand'] = constructCommand, -- for testing purposes
 		['_latest'] = latest, -- for testing purposes
-		['afterSec'] = function(seconds)
+		['after_sec'] = function(seconds)
 			afterValue = seconds
 			latest[command] = constructCommand()
 			return {
-				['forMin'] = function(minutes)
+				['for_min'] = function(minutes)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end
 			}
 		end,
-		['afterMin'] = function(minutes)
+		['after_min'] = function(minutes)
 			afterValue = minutes * 60
 			latest[command] = constructCommand()
 			return {
-				['forMin'] = function(minutes)
+				['for_min'] = function(minutes)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end
 			}
 		end,
-		['forMin'] = function(minutes)
+		['for_min'] = function(minutes)
 			forValue = minutes
 			latest[command] = constructCommand()
 			return {
-				['afterSec'] = function(seconds)
+				['after_sec'] = function(seconds)
 					afterValue = seconds
 					latest[command] = constructCommand()
 				end,
-				['afterMin'] = function(minutes)
+				['after_min'] = function(minutes)
 					afterValue = minutes * 60
 					latest[command] = constructCommand()
 				end
+
 			}
 		end,
-		['withinMin'] = function(minutes)
+		['within_min'] = function(minutes)
 			randomValue = minutes
 			latest[command] = constructCommand()
 			return {
-				['forMin'] = function(minutes)
+				['for_min'] = function(minutes)
 					forValue = minutes
 					latest[command] = constructCommand()
 				end

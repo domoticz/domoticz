@@ -1,1 +1,0 @@
-This folder will contains the data files for scripts. If a script uses the `data` section then dzVents stores the persistent data in this folder. If a script doesn't seem to work properly with regards to the persistent data, then you can remove the corresponding data file here.

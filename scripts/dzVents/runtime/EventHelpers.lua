@@ -1,3 +1,4 @@
+local MAIN_METHOD = 'execute'
 local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
@@ -10,26 +11,26 @@ local persistence = require('persistence')
 
 local HistoricalStorage = require('HistoricalStorage')
 
-local function EventHelpers(domoticz, mainMethod)
+local function EventHelpers(settings, domoticz, mainMethod)
 
 	local globalsDefinition
 
-	local currentPath = globalvariables['script_path']
+	local currentPath = debug.getinfo(1).source:match("@?(.*/)")
 
 	if (_G.TESTMODE) then
-		-- make sure you run the tests from the tests folder !!!!
-		_G.scriptsFolderPath = currentPath .. 'scripts'
-		package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
-		package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
+		scriptsFolderPath = currentPath .. 'tests/scripts'
+		package.path = package.path .. ';' .. currentPath .. '/tests/scripts/?.lua'
+		package.path = package.path .. ';' .. currentPath .. '/tests/scripts/storage/?.lua'
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
-
-
 	end
 
-	local settings = {
-		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
-		['Domoticz url'] = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
-	}
+	if (settings == nil) then
+		ok, settings = pcall(require, 'dzVents_settings')
+		if (not ok) then
+			utils.log('Error reading the settings file dzVents_settings.lua. Make sure you have it. You can rename dzVents_settings_example.lua and use that as an example.', utils.LOG_ERROR)
+			utils.log(settings, utils.LOG_ERROR)
+		end
+	end
 
 	_G.logLevel = settings['Log level']
 
@@ -42,20 +43,28 @@ local function EventHelpers(domoticz, mainMethod)
 		['utils'] = utils, -- convenient for testing and stubbing
 		['domoticz'] = domoticz,
 		['settings'] = settings,
+		['mainMethod'] = mainMethod or MAIN_METHOD,
+		['deviceValueExtentions'] = {
+			['_Temperature'] = true,
+			['_Dewpoint'] = true,
+			['_Humidity'] = true,
+			['_Barometer'] = true,
+			['_Utility'] = true,
+			['_Weather'] = true,
+			['_Rain'] = true,
+			['_RainLastHour'] = true,
+			['_UV'] = true
+		}
 	}
 
 	if (_G.TESTMODE) then
 		self.scriptsFolderPath = scriptsFolderPath
-		self.dataFolderPath = _G.dataFolderPath
-		function self._getUtilsInstance()
-			return utils
-		end
 	end
 
 	function self.getStorageContext(storageDef, module)
 
 		local storageContext = {}
-		local fileStorage, value, ok
+		local fileStorage, value
 
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
@@ -68,13 +77,7 @@ local function EventHelpers(domoticz, mainMethod)
 					if (def.history ~= nil and def.history == true) then
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
-						if (fileStorage[var] == nil) then
-							-- obviously this is a var that was added later
-							-- initialize it
-							storageContext[var] = storageDef[var].initial
-						else
-							storageContext[var] = fileStorage[var]
-						end
+						storageContext[var] = fileStorage[var]
 					end
 				end
 			else
@@ -110,8 +113,11 @@ local function EventHelpers(domoticz, mainMethod)
 					data[var] = storageContext[var]
 				end
 			end
+			if (not utils.fileExists(scriptsFolderPath .. '/storage')) then
+				os.execute('mkdir ' .. scriptsFolderPath .. '/storage')
+			end
 
-			local ok, err = pcall(persistence.store, dataFilePath, data)
+			ok, err = pcall(persistence.store, dataFilePath, data)
 
 			-- make sure there is no cache for this 'data' module
 			package.loaded[dataFileModuleName] = nil
@@ -122,34 +128,20 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
-	local function getEventInfo(eventHandler, mode)
+	local function getEventInfo(eventHandler)
 		local res = {}
-		res.type = mode
 		if (eventHandler.trigger ~= nil) then
+			res.type = self.domoticz.EVENT_TYPE_TIMER
 			res.trigger = eventHandler.trigger
+		else
+			res.type = self.domoticz.EVENT_TYPE_DEVICE
 		end
 		return res
 	end
 
-	local function deprecationWarning(moduleName, key, value, quoted)
-		local msg
-
-		if quoted then
-			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { \'' .. tostring(value) .. '\' } }". Module: ' .. moduleName
-		else
-			msg = 'dzVents deprecation warning: please use "on = { [\'' .. key .. '\'] = { ' .. tostring(value) .. ' } }". Module: ' .. moduleName
-		end
-
-		utils.log(msg, utils.LOG_ERROR)
-	end
-
-	function self.callEventHandler(eventHandler, device, variable, security)
-
-
+	function self.callEventHandler(eventHandler, device)
 		local useStorage = false
-
-
-		if (eventHandler['execute'] ~= nil) then
+		if (eventHandler[self.mainMethod] ~= nil) then
 
 			-- ==================
 			-- Prepare storage
@@ -175,24 +167,8 @@ local function EventHelpers(domoticz, mainMethod)
 			-- ==================
 			-- Run script
 			-- ==================
-			local ok, res, info
-
-
-			if (device ~= nil) then
-				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_DEVICE)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, device, info)
-			elseif (variable ~= nil) then
-				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_VARIABLE)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
-			elseif (security ~= nil) then
-				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SECURITY)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
-			else
-				-- timer
-				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
-			end
-
+			local info = getEventInfo(eventHandler)
+			local ok, res = pcall(eventHandler[self.mainMethod], self.domoticz, device, info)
 			if (ok) then
 
 				-- ==================
@@ -208,8 +184,8 @@ local function EventHelpers(domoticz, mainMethod)
 
 				if (globalsDefinition) then
 					self.writeStorageContext(globalsDefinition,
-						_G.dataFolderPath .. '/__data_global_data.lua',
-						_G.dataFolderPath .. '/__data_global_data',
+						scriptsFolderPath .. '/storage/__data_global_data.lua',
+						scriptsFolderPath .. '/storage/__data_global_data',
 						self.domoticz[GLOBAL_DATA])
 				end
 
@@ -222,225 +198,277 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log(res, utils.LOG_ERROR) -- error info
 			end
 		else
-			utils.log('No "execute" function found in event handler ' .. eventHandler, utils.LOG_ERROR)
+			utils.log('No' .. self.mainMethod .. 'function found in event handler ' .. eventHandler, utils.LOG_ERROR)
 		end
 
 		self.domoticz[SCRIPT_DATA] = nil
 		self.domoticz[GLOBAL_DATA] = nil
 	end
 
-	function self.scandir(directory, type)
+	function self.reverseFind(s, target)
+		-- string: 'this long string is a long string'
+		-- string.findReverse('long') > 23, 26
+
+		local reversed = string.reverse(s)
+		local rTarget = string.reverse(target)
+		-- reversed: gnirts gnol a si gnirts gnol siht
+		-- rTarget = gnol
+
+		local from, to = string.find(reversed, rTarget)
+		if (from ~= nil) then
+			-- return 1 less
+			local targetPos = string.len(s) - to + 1
+			return targetPos, targetPos + string.len(target) - 1
+		else
+			return nil, nil
+		end
+	end
+
+	function self.getDeviceNameByEvent(event)
+		-- event can be of the form <device name>_<value extension>
+		-- where device name can contain underscores as well
+		-- we have to extract the device name here and peel away the
+		-- known value extension
+
+		local pos, len = self.reverseFind(event, '_')
+
+		local name = event
+		if (pos ~= nil and pos > 1) then -- cannot start with _ (we use that for our _always script)
+		local valueExtension = string.sub(event, pos)
+
+		-- only peel away the first part if the extension is known
+		if (self.deviceValueExtentions[valueExtension]) then
+			name = string.sub(event, 1, pos - 1)
+		end
+		end
+		return name
+	end
+
+	function self.scandir(directory)
 		local pos, len
 		local i, t, popen = 0, {}, io.popen
 		local sep = string.sub(package.config, 1, 1)
 		local cmd
-		local namesLookup = {}
-
-		if (directory == nil) then
-			return {}
-		end
 
 		if (sep == '/') then
 			cmd = 'ls -a "' .. directory .. '"'
 		else
 			-- assume windows for now
-			cmd = 'dir "' .. directory .. '" /B'
+			cmd = 'dir "' .. directory .. '" /b /ad'
 		end
 
 		t = {}
 		local pfile = popen(cmd)
 		for filename in pfile:lines() do
-			pos, len = string.find(filename, '.lua', 1, true)
-			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
+			pos, len = string.find(filename, '.lua')
 
-				local name = string.sub(filename, 1, pos - 1)
-				table.insert(t, {
-					['type'] = type,
-					['name'] = name
-				})
-
-				namesLookup[name] = true -- for quick lookup for filename
-
-				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
+			if (pos and pos > 0) then
+				table.insert(t, string.sub(filename, 1, pos - 1))
+				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t], utils.LOG_DEBUG)
 			end
 		end
 		pfile:close()
-		return t, namesLookup
+		return t
 	end
 
-	function self.processTimeRuleFunction(fn)
+	function self.getDayOfWeek(testTime)
+		local d
+		if (testTime ~= nil) then
+			d = testTime.day
+		else
+			d = os.date('*t').wday
+		end
 
-		local ok, res = pcall(fn, self.domoticz)
+		local lookup = { 'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat' }
+		utils.log('Current day .. ' .. lookup[d], utils.LOG_DEBUG)
+		return lookup[d]
+	end
 
-		if (not ok) then
-			utils.log('Error executing custom timer function.', utils.LOG_ERROR)
-			utils.log(res, utils.LOG_ERROR)
-			if (_G.TESTMODE) then
-				print(res)
+	function self.getNow(testTime)
+		if (testTime == nil) then
+			local timenow = os.date("*t")
+			return timenow
+		else
+			utils.log('h=' .. testTime.hour .. ' m=' .. testTime.min)
+			return testTime
+		end
+	end
+
+	function self.isTriggerByMinute(m, testTime)
+		local time = self.getNow(testTime)
+		return (time.min / m == math.floor(time.min / m))
+	end
+
+	function self.isTriggerByHour(h, testTime)
+		local time = self.getNow(testTime)
+		return (time.hour / h == math.floor(time.hour / h) and time.min == 0)
+	end
+
+	function self.isTriggerByTime(t, testTime)
+		local tm, th
+		local time = self.getNow(testTime)
+
+		-- specials: sunset, sunrise
+		if (t == 'sunset' or t == 'sunrise') then
+			local minutesnow = time.min + time.hour * 60
+
+			if (testTime ~= nil) then
+				if (t == 'sunset') then
+					return (minutesnow == testTime['SunsetInMinutes'])
+				else
+					return (minutesnow == testTime['SunriseInMinutes'])
+				end
+			else
+				if (t == 'sunset') then
+					return (minutesnow == timeofday['SunsetInMinutes'])
+				else
+					return (minutesnow == timeofday['SunriseInMinutes'])
+				end
 			end
+		end
+
+		local pos = string.find(t, ':')
+
+		if (pos ~= nil and pos > 0) then
+			th = string.sub(t, 1, pos - 1)
+			tm = string.sub(t, pos + 1)
+
+			if (tm == '*') then
+				return (time.hour == tonumber(th))
+			elseif (th == '*') then
+				return (time.min == tonumber(tm))
+			elseif (th ~= '*' and tm ~= '*') then
+				return (tonumber(tm) == time.min and tonumber(th) == time.hour)
+			else
+				utils.log('wrong time format', utils.LOG_ERROR)
+				return false
+			end
+
+		else
+			utils.log('Wrong time format, should be hh:mm ' .. tostring(t), utils.LOG_DEBUG)
 			return false
 		end
-		return res
-
 	end
 
-	function self.handleEvents(events, device, variable, security)
+	function self.evalTimeTrigger(t, testTime)
+		if (testTime) then utils.log(t, utils.LOG_INFO) end
 
-		local originalLogLevel = _G.logLevel -- a script can override the level
+		-- t is a single timer definition
+		t = string.lower(t) -- normalize
 
-		local function restoreLogging()
-			_G.logLevel = originalLogLevel
-			_G.logMarker = nil
+		-- first get a possible on section (days)
+		local onPos = string.find(t, ' on ')
+		local days
+
+		if (onPos ~= nil and onPos > 0) then
+			days = string.sub(t, onPos + 4)
+			t = string.sub(t, 1, onPos - 1)
 		end
 
+		-- now we can skip everything if the current day
+		-- cannot be found in the days string
+		if (days ~= nil and string.find(days, self.getDayOfWeek(testTime)) == nil) then
+			-- today is not part of this trigger definition
+			return false
+		end
+
+		local m, h
+		local words = {}
+		for w in t:gmatch("%S+") do
+			table.insert(words, w)
+		end
+
+		-- specials
+		if (t == 'every minute') then
+			return self.isTriggerByMinute(1, testTime)
+		end
+
+		if (t == 'every other minute') then
+			return self.isTriggerByMinute(2, testTime)
+		end
+
+		if (t == 'every hour') then
+			return self.isTriggerByHour(1, testTime)
+		end
+
+		if (t == 'every other hour') then
+			return self.isTriggerByHour(2, testTime)
+		end
+
+		-- others
+
+		if (words[1] == 'every') then
+
+			if (words[3] == 'minutes') then
+				m = tonumber(words[2])
+				if (m ~= nil) then
+					return self.isTriggerByMinute(m, testTime)
+				else
+					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
+				end
+			elseif (words[3] == 'hours') then
+				h = tonumber(words[2])
+				if (h ~= nil) then
+					return self.isTriggerByHour(h, testTime)
+				else
+					utils.log(t .. ' is not a valid timer definition', utils.LOG_ERROR)
+				end
+			end
+		elseif (words[1] == 'at' or words[1] == 'at:') then
+			-- expect a time stamp
+			local time = words[2]
+			return self.isTriggerByTime(time, testTime)
+		end
+	end
+
+	function self.handleEvents(events, device)
 		if (type(events) ~= 'table') then
 			return
 		end
 
 		for eventIdx, eventHandler in pairs(events) do
-
-			if (eventHandler.logging) then
-				if (eventHandler.logging.level ~= nil) then
-					_G.logLevel = eventHandler.logging.level
-				end
-				if (eventHandler.logging.marker ~= nil) then
-					_G.logMarker = eventHandler.logging.marker
-				end
-			end
-
-			local moduleLabel
-			local moduleLabelInfo = ''
-			local triggerInfo
-			local scriptType = eventHandler.type == 'external' and 'external script: ' or 'internal script: '
-			if (eventHandler.type == 'external') then
-				moduleLabel = eventHandler.name .. '.lua'
-			else
-				moduleLabel = eventHandler.name .. ''
-			end
-
+			utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO)
+			utils.log('>>> Handler: ' .. eventHandler.name, utils.LOG_MODULE_EXEC_INFO)
 			if (device) then
-				moduleLabelInfo = ' Device: "' .. device.name .. ' (' .. device.hardwareName .. ')", Index: ' .. tostring(device.id)
-			elseif (variable) then
-				moduleLabelInfo = ' Variable: "' .. variable.name .. '" Index: ' .. tostring(variable.id)
-			elseif (security) then
-				moduleLabelInfo = ' Security: "' .. security .. '"'
+				utils.log('>>> Device: "' .. device.name .. '" Index: ' .. tostring(device.id), utils.LOG_MODULE_EXEC_INFO)
 			end
 
-			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
+			utils.log('.....................................................', utils.LOG_INFO)
 
-			utils.log('------ Start ' ..  scriptType ..  moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
-			self.callEventHandler(eventHandler, device, variable, security)
-			utils.log('------ Finished ' .. moduleLabel, utils.LOG_MODULE_EXEC_INFO)
+			self.callEventHandler(eventHandler, device)
 
-			restoreLogging()
+			utils.log('.....................................................', utils.LOG_INFO)
+			utils.log('<<< Done ', utils.LOG_MODULE_EXEC_INFO)
+			utils.log('-----------------------------------------------------', utils.LOG_MODULE_EXEC_INFO)
 		end
 	end
 
-	function self.processTimeRules(timeRules, testTime)
+	function self.checkTimeDefs(timeDefs, testTime)
 		-- accepts a table of timeDefs, if one of them matches with the
 		-- current time, then it returns true
 		-- otherwise it returns false
-
-		local now
-		if (testTime == nil) then
-			now = self.domoticz.time
-		else
-			now = testTime
-		end
-
-		for i, _rule in pairs(timeRules) do
-
-			if (type(_rule) == 'function') then
-				return self.processTimeRuleFunction(_rule), 'function'
-			end
-
-			local rule = string.lower(_rule)
-
-			if (now.matchesRule(rule)) then
-				return true, rule
+		for i, timeDef in pairs(timeDefs) do
+			if (self.evalTimeTrigger(timeDef, testTime)) then
+				return true, timeDef
 			end
 		end
-
 		return false
 	end
 
-	function self.checkSecurity(securityDefs, security)
-
-		for i, def in pairs(securityDefs) do
-			if (def == security) then
-				return true, def
-			end
-		end
-
-		return false
-	end
-
-	local function addBindingEvent(bindings, event, module)
-		if (bindings[event] == nil) then
-			bindings[event] = {}
-		end
-		table.insert(bindings[event], module)
-	end
-
-	function self.getEventBindings(mode, testTime)
+	function self.getEventBindings(mode)
 		local bindings = {}
 		local errModules = {}
-		local internalScripts
-		local hasInternals = false
-		local ok, diskScripts, externalNames, moduleName, i, event, j, device, err
-		local modules = {}
-
-
-		ok, diskScripts, externalNames = pcall(self.scandir, _G.scriptsFolderPath, 'external')
-
+		local ok, modules, moduleName, i, event, j, device
+		ok, modules = pcall(self.scandir, scriptsFolderPath)
 		if (not ok) then
-			utils.log(diskScripts, utils.LOG_ERROR)
-		else
-			modules = diskScripts
+			utils.log(modules, utils.LOG_ERROR)
+			return nil
 		end
 
-		ok = true
-
-		ok, internalScripts = pcall(self.scandir, _G.generatedScriptsFolderPath, 'internal')
-
-		if (not ok) then
-			utils.log(internalScripts, utils.LOG_ERROR)
-		else
-			for i, internal in pairs(internalScripts) do
-				if (externalNames[internal.name]) then
-					-- oops already there, skipping
-					utils.log('There is already an external script with the name "' .. internal.name .. '.lua". Please rename in the internal script.', utils.LOG_ERROR)
-				else
-					table.insert(modules, internal)
-				end
-			end
-		end
-
-
-		if (mode == nil) then mode = 'device' end
-
-		for i, moduleInfo in pairs(modules) do
+		for i, moduleName in pairs(modules) do
 
 			local module, skip
-
-			local moduleName = moduleInfo.name
-			local logScript = (moduleInfo.type == 'external' and 'Script ' or 'Internal script ')
-
-			_G.domoticz = {
-				['LOG_INFO'] = utils.LOG_INFO,
-				['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
-				['LOG_DEBUG'] = utils.LOG_DEBUG,
-				['LOG_ERROR'] = utils.LOG_ERROR,
-				['SECURITY_DISARMED'] = self.domoticz.SECURITY_DISARMED,
-				['SECURITY_ARMEDAWAY'] = self.domoticz.SECURITY_ARMEDAWAY,
-				['SECURITY_ARMEDHOME'] = self.domoticz.SECURITY_ARMEDHOME,
-			}
-
-			ok = true
-
 			ok, module = pcall(require, moduleName)
-
-			_G.domoticz = nil
 
 			if (ok) then
 
@@ -450,12 +478,9 @@ local function EventHelpers(domoticz, mainMethod)
 						if (_G.TESTMODE) then
 							self.globalsDefinition = globalsDefinition
 						end
+					else
+						utils.log('Globals module has no storage section', utils.LOG_ERROR)
 					end
-
-					if (module.helpers ~= nil) then
-						self.domoticz.helpers = module.helpers
-					end
-
 				else
 					if (type(module) == 'table') then
 						skip = false
@@ -472,70 +497,63 @@ local function EventHelpers(domoticz, mainMethod)
 							end
 						end
 						if (not skip) then
-							if (module.on ~= nil and module['execute'] ~= nil) then
+							if (module.on ~= nil and module[self.mainMethod] ~= nil) then
 								module.name = moduleName
-								module.type = moduleInfo.type
 								module.dataFileName = '__data_' .. moduleName
-								module.dataFilePath = _G.dataFolderPath .. '/__data_' .. moduleName .. '.lua'
+								module.dataFilePath = scriptsFolderPath .. '/storage/__data_' .. moduleName .. '.lua'
 								for j, event in pairs(module.on) do
 									if (mode == 'timer') then
-										if (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
+										if (type(j) == 'number' and type(event) == 'string' and event == 'timer') then
+											-- { 'timer' }
+											-- execute every minute (old style)
+											module.trigger = event
+											table.insert(bindings, module)
+										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'string') then
+											-- { ['timer'] = 'every minute' }
+											if (self.evalTimeTrigger(event)) then
+												module.trigger = event
+												table.insert(bindings, module)
+											end
+										elseif (type(j) == 'string' and j == 'timer' and type(event) == 'table') then
 											-- { ['timer'] = { 'every minute ', 'every hour' } }
-											local triggered, def = self.processTimeRules(event)
+											local triggered, def = self.checkTimeDefs(event)
 											if (triggered) then
 												-- this one can be executed
 												module.trigger = def
 												table.insert(bindings, module)
 											end
 										end
-									elseif (mode == 'device') then
-										if (event ~= 'timer' and j ~= 'timer' and j~= 'variable' and j~='variables' and j~='security') then
+									else
+										if (event ~= 'timer' and j ~= 'timer') then
 
 											if (type(j) == 'string' and j == 'devices' and type(event) == 'table') then
 
-												-- { ['devices'] = { 'devA', ['devB'] = { ..timedefs }, .. }
+												-- { ['devices'] = { 'devA', 'devB', .. }
 
 												for devIdx, devName in pairs(event) do
-
-													-- detect if devName is of the form ['devB'] = { 'every hour' }
-													if (type(devName) == 'table') then
-														local triggered, def = self.processTimeRules(devName, testTime)
-														if (triggered) then
-															addBindingEvent(bindings, devIdx, module)
-														end
-													else
-														-- a single device name (or id)
-														addBindingEvent(bindings, devName, module)
+													if (bindings[devName] == nil) then
+														bindings[devName] = {}
 													end
+													table.insert(bindings[devName], module)
 												end
-											end
-										end
-									elseif (mode == 'variable') then
-										if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
-											-- { ['variables'] = { 'varA', 'varB' }
-											for devIdx, varName in pairs(event) do
-												addBindingEvent(bindings, varName, module)
-											end
-										end
-									elseif (mode == 'security') then
-										if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
 
-											local triggered, def = self.checkSecurity(event, self.domoticz.security)
-											if (triggered) then
-												table.insert(bindings, module)
-												module.trigger = def
+											else
+												-- let's not try to resolve indexes to names here for performance reasons
+												if (bindings[event] == nil) then
+													bindings[event] = {}
+												end
+												table.insert(bindings[event], module)
 											end
-
 										end
 									end
 								end
 							else
-								utils.log(logScript .. moduleName .. '.lua has no "on" and/or "execute" section. Skipping', utils.LOG_ERROR)
+								utils.log('Script ' .. moduleName .. '.lua has no "on" and/or "' .. self.mainMethod .. '" section. Skipping', utils.LOG_ERROR)
 								table.insert(errModules, moduleName)
 							end
 						end
 					else
-						utils.log(logScript .. moduleName .. '.lua is not a valid module. Skipping', utils.LOG_ERROR)
+						utils.log('Script ' .. moduleName .. '.lua is not a valid module. Skipping', utils.LOG_ERROR)
 						table.insert(errModules, moduleName)
 					end
 				end
@@ -552,12 +570,19 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('timer')
 	end
 
-	function self.getVariableHandlers()
-		return self.getEventBindings('variable')
-	end
+	function self.fetchHttpDomoticzData(ip, port, interval)
 
-	function self.getSecurityHandlers()
-		return self.getEventBindings('security')
+		local sep = string.sub(package.config, 1, 1)
+		if (sep ~= '/') then return end -- only on linux
+
+		if (ip == nil or port == nil) then
+			utils.log('Invalid ip for contacting Domoticz', utils.LOG_ERROR)
+			return
+		end
+
+		if (self.evalTimeTrigger(interval)) then
+			self.utils.requestDomoticzData(ip, port)
+		end
 	end
 
 	function self.dumpCommandArray(commandArray)
@@ -565,164 +590,127 @@ local function EventHelpers(domoticz, mainMethod)
 		for k, v in pairs(commandArray) do
 			if (type(v) == 'table') then
 				for kk, vv in pairs(v) do
-					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. vv, utils.LOG_DEBUG)
+					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. vv, utils.LOG_MODULE_EXEC_INFO)
 				end
 			else
-				utils.log(k .. ': ' .. v, utils.LOG_DEBUG)
+				utils.log(k .. ': ' .. v, utils.LOG_MODULE_EXEC_INFO)
 			end
 			printed = true
 		end
-		if (printed) then utils.log('=====================================================', utils.LOG_DEBUG) end
+		if (printed) then utils.log('=====================================================', utils.LOG_MODULE_EXEC_INFO) end
 	end
 
-	function self.findScriptForChangedItem(changedItemName, allEventScripts)
+	function self.findScriptForChangedDevice(changedDeviceName, allEventScripts)
 		-- event could be like: myPIRLivingRoom
 		-- or myPir(.*)
-		utils.log('Searching for scripts for changed item: ' .. changedItemName, utils.LOG_DEBUG)
-
-		--[[
-
-			allEventScripts is a dictionary where
-			each key is the name or id of a device and the value
-			is a table with all the modules for this device
-
-			{
-				['myDevice'] = {
-					modA, modB, modC
-				},
-				['anotherDevice'] = {
-					modD
-				},
-				12 = {
-					modE, modF
-				},
-				['myDev*'] = {
-					modG, modH
-				}
-			}
-
-		]]--
-
-		local modules
-
-		-- only search for named and wildcard triggers,
-		-- id is done later
+		utils.log('Searching for scripts for changed device: ' .. changedDeviceName, utils.LOG_DEBUG)
 
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
-				-- turn it into a valid regexp
-				scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
+			-- turn it into a valid regexp
+			scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
 
-				if (string.match(changedItemName, scriptTrigger)) then
-					-- there is trigger for this changedItemName
-
-					if modules == nil then modules = {} end
-
-					for i, mod in pairs(scripts) do
-						table.insert(modules, mod)
-					end
-
-				end
-
+			if (string.match(changedDeviceName, scriptTrigger)) then
+				-- there is trigger for this changedDeviceName
+				return scripts
+			end
 			else
-				if (scriptTrigger == changedItemName) then
-					-- there is trigger for this changedItemName
-
-					if modules == nil then modules = {} end
-
-					for i, mod in pairs(scripts) do
-						table.insert(modules, mod)
-					end
-
+				if (scriptTrigger == changedDeviceName) then
+					-- there is trigger for this changedDeviceName
+					return scripts
 				end
 			end
 		end
 
-		return modules
+		return nil
 	end
 
-	function self.dispatchDeviceEventsToScripts(domoticz)
-
-		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
-			domoticz = self.domoticz
+	function self.dispatchDeviceEventsToScripts(changedDevices)
+		if (changedDevices == nil) then
+			-- get it from the globals
+			changedDevices = devicechanged
 		end
 
 		local allEventScripts = self.getEventBindings()
 
-		domoticz.changedDevices().forEach( function(device)
-			utils.log('Device-event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
+		local handledDevices = {}
 
-			local scriptsToExecute
+		if (changedDevices ~= nil) then
 
-			-- first search by name
+			-- check if there's a new devices.lua file waiting to be activated
+			utils.activateDevicesFile()
 
-			scriptsToExecute = self.findScriptForChangedItem(device.name, allEventScripts)
+			for changedDeviceName, changedDeviceValue in pairs(changedDevices) do
 
-			if (scriptsToExecute == nil) then
-				-- search by id
-				scriptsToExecute = allEventScripts[device.id]
+				utils.log('Event in devicechanged: ' .. changedDeviceName .. ' value: ' .. changedDeviceValue, utils.LOG_DEBUG)
+				local scriptsToExecute
+
+				-- find the device for this name
+				-- could be MySensor or MySensor_Temperature
+				-- the device returned would be MySensor in that case
+				local baseName = self.getDeviceNameByEvent(changedDeviceName)
+				local device = self.domoticz.devices[baseName]
+
+				if (device ~= nil) then
+
+					if (handledDevices[tostring(device.id)] == nil) then -- make sure a device is only handled once (so not for MySensor and MySensor_Temperature)
+
+						-- first search by name
+						scriptsToExecute = self.findScriptForChangedDevice(device.name, allEventScripts)
+
+						if (scriptsToExecute == nil) then
+							-- search by id
+							scriptsToExecute = allEventScripts[device.id]
+						end
+
+						if (scriptsToExecute ~= nil) then
+							utils.log('Handling events for: "' .. changedDeviceName .. '", value: "' .. changedDeviceValue .. '"', utils.LOG_INFO)
+							self.handleEvents(scriptsToExecute, device)
+						end
+
+						-- mark as handled
+						handledDevices[tostring(device.id)] = true
+					else
+						utils.log('Skipping: ' .. changedDeviceName .. '. Already processed', utils.LOG_DEBUG)
+					end
+				else
+					-- this is weird.. basically impossible because the list of device objects is based on what
+					-- Domoticz passes along.
+				end
 			end
-
-			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. device.name .. '", value: "' .. device.state .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, device, nil, nil)
-			end
-
-		end)
-
-
+		end
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
+	end
+
+	function self.autoFetchHttpDomoticzData()
+		-- this is indirectly triggered by the timer script
+		if (settings['Enable http fetch']) then
+			self.fetchHttpDomoticzData(settings['Domoticz ip'],
+				settings['Domoticz port'],
+				settings['Fetch interval'])
+		end
 	end
 
 	function self.dispatchTimerEventsToScripts()
 		local scriptsToExecute = self.getTimerHandlers()
 
 		self.handleEvents(scriptsToExecute)
-		self.dumpCommandArray(self.domoticz.commandArray)
 
-		return self.domoticz.commandArray
+		self.autoFetchHttpDomoticzData()
 
-	end
+		-- check if there's a new devices.lua file waiting to be activated
+		utils.activateDevicesFile()
 
-	function self.dispatchSecurityEventsToScripts()
-		local scriptsToExecute = self.getSecurityHandlers()
-		self.handleEvents(scriptsToExecute, nil, nil, self.domoticz.security)
 		self.dumpCommandArray(self.domoticz.commandArray)
 
 		return self.domoticz.commandArray
 	end
 
-	function self.dispatchVariableEventsToScripts(domoticz)
-		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
-			domoticz = self.domoticz
+	if (_G.TESTMODE) then
+		function self._getUtilsInstance()
+			return utils
 		end
-
-		local allEventScripts = self.getVariableHandlers()
-
-		domoticz.changedVariables().forEach(function(variable)
-
-			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. variable.value, utils.LOG_DEBUG)
-
-			local scriptsToExecute
-
-			-- first search by name
-
-			scriptsToExecute = self.findScriptForChangedItem(variable.name, allEventScripts)
-			if (scriptsToExecute == nil) then
-				-- search by id
-				scriptsToExecute = allEventScripts[variable.id]
-			end
-
-			if (scriptsToExecute ~= nil) then
-				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. variable.value .. '"', utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, nil, variable, nil)
-			end
-		end)
-
-
-		self.dumpCommandArray(self.domoticz.commandArray)
-		return self.domoticz.commandArray
 	end
 
 	return self
