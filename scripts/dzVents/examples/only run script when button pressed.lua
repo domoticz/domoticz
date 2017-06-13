@@ -7,11 +7,13 @@ return {
 	-- executed in every cycle, even when 'My switch' hasn't changed!!
 
 	active = function(domoticz)
-		return (domoticz.devices['script_blabla'].state == 'On')
+		return (domoticz.devices('script_blabla').state == 'On')
 	end,
 
 	on = {
-		'My switch'
+		devices = {
+			'My switch'
+		}
 	},
 
 	execute = function(domoticz, mySwitch)

@@ -1,7 +1,9 @@
 return {
 	active = true,
 	on = {
-		'My sensor'
+		devices = {
+			'My sensor'
+		}
 	},
 	execute = function(domoticz, mySensor)
 

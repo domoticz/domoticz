@@ -1,4 +1,4 @@
-<html>
+﻿﻿<html>
   <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="js/blockly_compressed.js"></script>
@@ -574,8 +574,15 @@
 								$("#blockId").html(id);
 							}
 							else {
+								if (data.result[0].interpreter == 'dzVents') {
+									editor.getSession().setMode("ace/mode/lua");
+									$("#eventType").val(data.result[0].type).prop('disabled', true);
+								}
+								else {
+									editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+									$("#eventType").val(data.result[0].type).prop('disabled', false);
+								}
 								editor.setValue("");
-								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
 								editor.scrollToLine(1, true, true, function () {});
@@ -658,9 +665,12 @@
 	  }
 	  
 	function new_block() {
+		var eventInterpreter = $("#interpreter").val().toLowerCase();
 		$("#blockId").html("");
 		Blockly.mainWorkspace.clear();
 		editor.setValue("");
+		$("#eventType").val("All");
+		$("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
 		$("#interpreter").prop('disabled', false);
@@ -669,14 +679,18 @@
 			ResizeBlockyWindow();
 		}
 		else {
-			editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+			if (eventInterpreter == "dzvents") {
+				eventInterpreter = "lua";
+				$("#eventType").prop('disabled', true);
+			}
+			editor.getSession().setMode("ace/mode/" + eventInterpreter);
 			$.ajax({
 				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data.template != 'undefined') {
-						editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+						editor.getSession().setMode("ace/mode/" + eventInterpreter);
 						editor.setValue(data.template);
 						editor.gotoLine(1);
 					}
@@ -1083,6 +1097,7 @@
 					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">
 					  <option selected="selected">Blockly</option>
 					  <option>Lua</option>
+                      <option>dzVents</option>
 					  <option>Python</option>
 					</select>
 					<p>
