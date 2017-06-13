@@ -3308,7 +3308,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_DirT << szUserDataFolder << "scripts/dzVents/";
 #endif
 
-	lua_createtable(lua_state, 3, 0);
+	lua_createtable(lua_state, 7, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
