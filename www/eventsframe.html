@@ -1,4 +1,4 @@
-﻿<html>
+﻿﻿<html>
   <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="js/blockly_compressed.js"></script>
@@ -545,44 +545,44 @@
 	      return [conditionArray,setArray];     
       }
       
-        function loadSelectedEvent(id) {
-            $.ajax({
-                url: "json.htm?type=events&param=load&event=" + id,
-                async: false,
-                dataType: 'json',
-                success: function (data) {
-                    if (typeof data.result != 'undefined') {
-                        if (data.editortheme != 'undefined') {
-                            editor.setTheme(data.editortheme);
-                        }
-                        if (data.status == "OK") {
-                            $("#eventName").val(data.result[0].name);
-                            $("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
-                            $("#eventType").val(data.result[0].type);
-                            if (data.result[0].eventstatus == '1') {
-                                $("#eventActive").prop('checked', true);
-                            }
-                            else {
-                                $("#eventActive").prop('checked', false);
-                            }
-                            if (data.result[0].interpreter == 'Blockly') {
-                                ResizeBlockyWindow();
-                                var xmltemp = data.result[0].xmlstatement;
-                                var xml = Blockly.Xml.textToDom(xmltemp);
-                                Blockly.mainWorkspace.clear();
-                                Blockly.Xml.domToWorkspace(Blockly.mainWorkspace, xml);
-                                $("#blockId").html(id);
-                            }
-                            else {
-                                if (data.result[0].interpreter == 'dzVents') {
-                                    editor.getSession().setMode("ace/mode/lua");
-                                    $("#eventType").val(data.result[0].type).prop('disabled', true);
-                                }
-                                else {
-                                    editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
-                                    $("#eventType").val(data.result[0].type).prop('disabled', false);
-                                }
-                                editor.setValue("");
+      function loadSelectedEvent(id) {
+      		$.ajax({
+			  	url: "json.htm?type=events&param=load&event="+id, 
+			  	async: false, 
+			  	dataType: 'json',
+			  	success: function(data) {
+				  	if (typeof data.result != 'undefined') {
+						if (data.editortheme != 'undefined') {
+							editor.setTheme(data.editortheme);
+						}
+				  		if (data.status=="OK") {
+							$("#eventName").val(data.result[0].name);
+							$("#interpreter").val(data.result[0].interpreter).prop('disabled', true);
+							$("#eventType").val(data.result[0].type);
+							if (data.result[0].eventstatus == '1') {
+								$("#eventActive").prop('checked', true);
+							}
+							else {
+								$("#eventActive").prop('checked',false);
+							}
+							if (data.result[0].interpreter == 'Blockly') {
+								ResizeBlockyWindow();
+								var xmltemp = data.result[0].xmlstatement;
+								var xml = Blockly.Xml.textToDom(xmltemp);
+								Blockly.mainWorkspace.clear();
+								Blockly.Xml.domToWorkspace( Blockly.mainWorkspace, xml );
+								$("#blockId").html(id);
+							}
+							else {
+								if (data.result[0].interpreter == 'dzVents') {
+									editor.getSession().setMode("ace/mode/lua");
+									$("#eventType").val(data.result[0].type).prop('disabled', true);
+								}
+								else {
+									editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+									$("#eventType").val(data.result[0].type).prop('disabled', false);
+								}
+								editor.setValue("");
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
 								editor.scrollToLine(1, true, true, function () {});
@@ -664,13 +664,13 @@
 		  });
 	  }
 	  
-      function new_block() {
-        var eventInterpreter = $("#interpreter").val().toLowerCase();
-        $("#blockId").html("");
+	function new_block() {
+		var eventInterpreter = $("#interpreter").val().toLowerCase();
+		$("#blockId").html("");
 		Blockly.mainWorkspace.clear();
-        editor.setValue("");
-        $("#eventType").val("All");
-        $("#eventType").prop('disabled', false);
+		editor.setValue("");
+		$("#eventType").val("All");
+		$("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
 		$("#interpreter").prop('disabled', false);
@@ -678,13 +678,13 @@
 		if ($("#interpreter").val() == "Blockly") {
 			ResizeBlockyWindow();
 		}
-        else {
-            if (eventInterpreter == "dzvents") {
-                eventInterpreter = "lua";
-                $("#eventType").prop('disabled', true);
-            }
-            editor.getSession().setMode("ace/mode/" + eventInterpreter);
-            $.ajax({
+		else {
+			if (eventInterpreter == "dzvents") {
+				eventInterpreter = "lua";
+				$("#eventType").prop('disabled', true);
+			}
+			editor.getSession().setMode("ace/mode/" + eventInterpreter);
+			$.ajax({
 				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
 				async: false, 
 				dataType: 'json',

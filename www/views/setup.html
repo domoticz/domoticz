@@ -1033,18 +1033,23 @@
 									<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
 								</td>
 							</tr>
-                            <tr>
-                                <td style="width:90px"></td>
-                                <td>
-                                    <input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger" />
-                                    <label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label>
-                                </td>
-                            </tr>
 							<tr>
-								<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"> <label>dzVents <span data-i18n="Disabled"></span></label></td>
+								<td style="width:90px"></td>
+								<td>
+							 		<input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger" />
+									<label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label>
+								</td>
+							</tr>
+							</table>
+							<br>
+							<h2><span data-i18n="dzVents">dzVents</span>:</h2>
+							<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><span data-i18n="Disabled"></span></td>
+								<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"></td>
 							</tr>
 							<tr>
-								<td><label>dzVents Log Level:</label></td>
+								<td align="right"><label>Log Level:</label></td>
 								<td>
 									<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
 										<option data-i18n="Silent" value="0">
