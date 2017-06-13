@@ -525,7 +525,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	{
 		szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
 		if (szmode == "TemporaryOverride")
-			szuntil = (*hz->status)["stateStatus"]["until"].asString();
+			szuntil = (*hz->status)["heatSetpointStatus"]["until"].asString();
 	}
 
 	unsigned long evoID = atol(szId.c_str());
@@ -552,9 +552,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 			ssUpdateStat << szsysmode;
 			if (m_showschedule && szuntil.empty())
 				szuntil = local_to_utc(get_next_switchpoint(hz));
-			if (!szuntil.empty())
-				ssUpdateStat << ";" << szuntil;
 		}
+		if (!szuntil.empty())
+			ssUpdateStat << ";" << szuntil;
 	}
 
 	std::string sdevname;
