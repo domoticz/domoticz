@@ -468,6 +468,9 @@
     <Filter Include="Devices\RTL_433">
       <UniqueIdentifier>{0e8b8072-43d4-44a2-b5de-8a4eb7887d1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OnkyoAVTCP">
+      <UniqueIdentifier>{64b3714e-88ea-41cb-99ee-398abbc7acb1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2017,6 +2020,15 @@
     <ClInclude Include="..\hardware\Rtl433.h">
       <Filter>Devices\RTL_433</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OnkyoAVTCP.h">
+      <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2690,6 +2702,15 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Rtl433.cpp">
       <Filter>Devices\RTL_433</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
+      <Filter>Devices\OnkyoAVTCP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

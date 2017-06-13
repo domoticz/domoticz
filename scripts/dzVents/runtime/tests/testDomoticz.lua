@@ -1,7 +1,17 @@
 local _ = require 'lodash'
 _G._ = _
-package.path = package.path .. ";../?.lua"
 
+local scriptPath = ''
+
+--package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+
+local testData = require('tstData')
+local function values(t)
+	local values = _.values(t)
+	table.sort(values)
+	return values
+end
 describe('Domoticz', function()
 	local Domoticz, domoticz, settings, d1, d2, d3, d4
 
@@ -16,101 +26,17 @@ describe('Domoticz', function()
 		}
 
 		_G.globalvariables = {
-			Security = 'sec'
-		}
-		_G.devicechanged = {
-			['device1'] = 'On',
-			['device2'] = 'Off',
-			['device1_Temperature'] = 123
-		}
-		_G.otherdevices = {
-			['device1'] = 'On',
-			['device2'] = 'Off',
-			['device3'] = 120,
-			['device4'] = 'Set Level 5%',
-			['device5'] = 'On',
-			['device7'] = '16.5',
+			Security = 'sec',
+			['radix_separator'] = '.',
+			['script_reason'] = 'device',
+			['script_path'] = scriptPath,
+			['domoticz_listening_port'] = '8080'
 		}
 
-		_G.otherdevices_temperature = {
-			['device1'] = 37,
-			['device2'] = 12
-		}
-
-		_G.otherdevices_dewpoint = {
-			['device1'] = 55,
-			['device2'] = 66
-		}
-		_G.otherdevices_humidity = {
-			['device1'] = 66,
-			['device2'] = 67
-		}
-
-		_G.otherdevices_barometer = {
-			['device4'] = 333,
-		}
-		_G.otherdevices_utility = {
-			['device4'] = 123,
-		}
-		_G.otherdevices_weather = {
-			['device4'] = 'Nice',
-		}
-		_G.otherdevices_rain = {
-			['device4'] = 666
-		}
-		_G.otherdevices_rain_lasthour = {
-			['device4'] = 12
-		}
-		_G.otherdevices_uv = {
-			['device3'] = 23
-		}
-		_G.otherdevices_lastupdate = {
-			['device1'] = '2016-03-20 12:23:00',
-			['device2'] = '2016-03-20 12:23:00',
-			['device3'] = '2016-03-20 12:23:00',
-			['device4'] = '2016-03-20 12:23:00'
-		}
-		_G.otherdevices_idx = {
-			['device1'] = 1,
-			['device2'] = 2,
-			['device3'] = 3,
-			['device4'] = 4,
-			['device5'] = 5,
-			['device6'] = 6,
-			['device7'] = 7
-		}
-
-		_G.otherdevices_svalues = {
-			['device1'] = '1;2;3',
-			['device2'] = '4;5;6',
-			['device3'] = '7;8;9;10;11',
-			['device4'] = '10;11;12',
-			['device5'] = '13;14;15',
-			['device7'] = '16.5'
-
-		}
-
-		_G.otherdevices_scenesandgroups = {
-			['Scene1'] = 'Off',
-			['Scene2'] = 'Off',
-			['Group1'] = 'On',
-			['Group2'] = 'Mixed',
-		}
-
-		_G.uservariables = {
-			x = 1,
-			y = 2
-		}
-
-		_G['uservariables_lastupdate'] = {
-			['myVar'] = '2016-03-20 12:23:00'
-		}
+		_G.domoticzData = testData.domoticzData
 
 		settings = {
-			['Domoticz ip'] = '10.0.0.8',
-			['Domoticz port'] = '8080',
-			['Fetch interval'] = 'every 30 minutes',
-			['Enable http fetch'] = true,
+			['Domoticz url'] = 'http://127.0.0.1:8080',
 			['Log level'] = 2
 		}
 
@@ -126,10 +52,10 @@ describe('Domoticz', function()
 
 	before_each(function()
 		domoticz = Domoticz(settings)
-		d1 = domoticz.devices['device1']
-		d2 = domoticz.devices['device2']
-		d3 = domoticz.devices['device3']
-		d4 = domoticz.devices['device4']
+		d1 = domoticz.devices('device1')
+		d2 = domoticz.devices('device2')
+		d3 = domoticz.devices('device3')
+		d4 = domoticz.devices('device4')
 	end)
 
 	after_each(function()
@@ -200,13 +126,15 @@ describe('Domoticz', function()
 		end)
 
 		it('should have barometer constants', function()
-			assert.is_same(domoticz['BARO_STABLE'], 0)
-			assert.is_same(domoticz['BARO_SUNNY'], 1)
-			assert.is_same(domoticz['BARO_CLOUDY'], 2)
-			assert.is_same(domoticz['BARO_UNSTABLE'], 3)
-			assert.is_same(domoticz['BARO_THUNDERSTORM'], 4)
-			assert.is_same(domoticz['BARO_UNKNOWN'], 5)
-			assert.is_same(domoticz['BARO_CLOUDY_RAIN'], 6)
+			assert.is_same(domoticz['BARO_STABLE'], 'stable')
+			assert.is_same(domoticz['BARO_SUNNY'], 'sunny')
+			assert.is_same(domoticz['BARO_CLOUDY'], 'cloudy')
+			assert.is_same(domoticz['BARO_UNSTABLE'], 'unstable')
+			assert.is_same(domoticz['BARO_THUNDERSTORM'], 'thunderstorm')
+			assert.is_same(domoticz['BARO_PARTLYCLOUDY'], 'partlycloudy')
+			assert.is_same(domoticz['BARO_RAIN'], 'rain')
+			assert.is_same(domoticz['BARO_NOINFO'], 'noinfo')
+
 		end)
 
 		it('should have alert level constants', function()
@@ -224,9 +152,10 @@ describe('Domoticz', function()
 		end)
 
 		it('should have log constants', function()
-			assert.is_same(domoticz['LOG_INFO'], 2)
-			assert.is_same(domoticz['LOG_DEBUG'], 3)
+			assert.is_same(domoticz['LOG_INFO'], 3)
+			assert.is_same(domoticz['LOG_DEBUG'], 4)
 			assert.is_same(domoticz['LOG_ERROR'], 1)
+			assert.is_same(domoticz['LOG_MODULE_EXEC_INFO'], 2)
 		end)
 	end)
 
@@ -235,13 +164,13 @@ describe('Domoticz', function()
 			local res, command, value = domoticz.sendCommand('do', 'it')
 			assert.is_same('do', command)
 			assert.is_same('it', value)
-			assert.is_same({['do'] = 'it' }, res)
+			assert.is_same({ ['do'] = 'it' }, res)
 		end)
 
 		it('should send multiple commands', function()
 			domoticz.sendCommand('do', 'it')
 			domoticz.sendCommand('and', 'some more')
-			assert.is_same({{["do"]="it"}, {["and"]="some more"}}, domoticz.commandArray)
+			assert.is_same({ { ["do"] = "it" }, { ["and"] = "some more" } }, domoticz.commandArray)
 		end)
 
 		it('should return a reference to a commandArray item', function()
@@ -249,48 +178,434 @@ describe('Domoticz', function()
 			domoticz.sendCommand('and', 'some more')
 			-- now change it
 			res['do'] = 'cancel it'
-			assert.is_same({{["do"]="cancel it"}, {["and"]="some more"}}, domoticz.commandArray)
+			assert.is_same({ { ["do"] = "cancel it" }, { ["and"] = "some more" } }, domoticz.commandArray)
 		end)
 
 		it('should notify', function()
-			domoticz.notify('sub', 'mes', 1, 'noise')
-			assert.is_same({{['SendNotification'] = 'sub#mes#1#noise'}}, domoticz.commandArray)
+			domoticz.notify('sub', 'mes', 1, 'noise', 'extra', domoticz.NSS_NMA)
+
+			assert.is_same({ { ['SendNotification'] = 'sub#mes#1#noise#extra#nma' } }, domoticz.commandArray)
 		end)
 
 		it('should notify with defaults', function()
 			domoticz.notify('sub')
-			assert.is_same({{['SendNotification'] = 'sub##0#pushover'}}, domoticz.commandArray)
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with multiple subsystems as string', function()
+			domoticz.notify('sub', nil, nil, nil, nil, domoticz.NSS_HTTP .. ';' .. domoticz.NSS_PROWL)
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
+		end)
+
+		it('should notify with multiple subsystems as table', function()
+			domoticz.notify('sub', nil, nil, nil, nil, { domoticz.NSS_HTTP, domoticz.NSS_PROWL })
+			assert.is_same({ { ['SendNotification'] = 'sub##0#pushover##http;prowl' } }, domoticz.commandArray)
 		end)
 
 		it('should send email', function()
 			domoticz.email('sub', 'mes', 'to@someone')
-			assert.is_same({{['SendEmail'] = 'sub#mes#to@someone'}}, domoticz.commandArray)
+			assert.is_same({ { ['SendEmail'] = 'sub#mes#to@someone' } }, domoticz.commandArray)
 		end)
 
 		it('should send sms', function()
 			domoticz.sms('mes')
-			assert.is_same({{['SendSMS'] = 'mes'}}, domoticz.commandArray)
+			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
 		it('should open a url', function()
 			domoticz.openURL('some url')
-			assert.is_same({{['OpenURL'] = 'some url'}}, domoticz.commandArray)
+			assert.is_same({ { ['OpenURL'] = 'some url' } }, domoticz.commandArray)
 		end)
 
 		it('should set a scene', function()
 			local res = domoticz.setScene('scene1', 'on')
 			assert.is_table(res)
-			assert.is_same({{['Scene:scene1'] = 'on' }}, domoticz.commandArray)
+			assert.is_same({ { ['Scene:scene1'] = 'on' } }, domoticz.commandArray)
 		end)
 
 		it('should switch a group', function()
 			local res = domoticz.switchGroup('group1', 'on')
 			assert.is_table(res)
-			assert.is_same({{['Group:group1'] = 'on' }}, domoticz.commandArray)
+			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
+		end)
+	end)
+
+	describe('todo accessors', function() --todo
+
+		it('should give you a device when you need one', function()
+
+			assert.is_same('device1', domoticz.devices('device1').name)
+
+			-- should be in the cache
+			assert.is_same('device1', domoticz.__devices['device1'].name)
+			assert.is_same(1, domoticz.__devices[1].id)
+
+			-- test if next call uses the case
+			domoticz.__devices[1].id = 1111
+			assert.is_same(1111, domoticz.devices(1).id)
+
+		end)
+
+		it('should return nil if you ask for a non-existing device', function()
+			assert.is_nil(domoticz.devices('bla'))
+		end)
+
+		it('should return iterators when called with no id', function()
+
+			local collection = domoticz.devices()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(device)
+				table.insert(res, device.name)
+			end)
+			assert.is_same({ "device1", "device3", "device7", "device8", "device4", "device2", "device5", "device6" }, res)
+
+
+			local filtered = collection.filter(function(device)
+				return device.id < 4
+			end)
+
+			local _f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device1", "device2", "device3" })
+
+			local res2 = {}
+			filtered.forEach(function(device)
+				table.insert(res2, device.id)
+			end)
+
+			assert.is_same({1,2,3}, res2)
+
+
+			local reduced = collection.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+
+			end, 0)
+
+			assert.is_same(36, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(6, reduced2)
+		end)
+
+		it('should give you a scene when you need one', function()
+
+			assert.is_same('Scene1', domoticz.scenes('Scene1').name)
+
+			-- should be in the cache
+			assert.is_same('Scene1', domoticz.__scenes['Scene1'].name)
+			assert.is_same(1, domoticz.__scenes[1].id)
+
+			-- test if next call uses the case
+			domoticz.__scenes[1].id = 1111
+			assert.is_same(1111, domoticz.scenes(1).id)
+		end)
+
+		it('should return nil if you ask for a non-existing scene', function()
+			assert.is_nil(domoticz.scenes('bla'))
+		end)
+
+		it('should return scene iterators when called with no id', function()
+
+			local collection = domoticz.scenes()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(scene)
+				table.insert(res, scene.name)
+			end)
+			assert.is_same({ "Scene1", "Scene2" }, res)
+
+
+			local filtered = collection.filter(function(scene)
+				return scene.id < 2
+			end)
+
+			local _f = _.pluck(filtered, { 'name' })
+			assert.is_same(_f, { "Scene1" })
+
+			local res2 = {}
+			filtered.forEach(function(scene)
+				table.insert(res2, scene.id)
+			end)
+
+			assert.is_same({ 1 }, res2)
+
+
+			local reduced = collection.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(3, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(1, reduced2)
+		end)
+
+		it('should give you a group when you need one', function()
+
+			assert.is_same('Group1', domoticz.groups('Group1').name)
+
+			-- should be in the cache
+			assert.is_same('Group1', domoticz.__groups['Group1'].name)
+			assert.is_same(3, domoticz.__groups[3].id)
+
+			-- test if next call uses the case
+			domoticz.__groups[3].id = 1111
+			assert.is_same(1111, domoticz.groups(3).id)
+		end)
+
+		it('should return nil if you ask for a non-existing group', function()
+			assert.is_nil(domoticz.groups('bla'))
+		end)
+
+		it('should return group iterators when called with no id', function()
+
+			local collection = domoticz.groups()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(group)
+				table.insert(res, group.name)
+			end)
+			assert.is_same({ "Group1", "Group2" }, res)
+
+
+			local filtered = collection.filter(function(group)
+				return group.id < 4
+			end)
+
+			local _f = _.pluck(filtered, { 'name' })
+			assert.is_same(_f, { "Group1" })
+
+			local res2 = {}
+			filtered.forEach(function(group)
+				table.insert(res2, group.id)
+			end)
+
+			assert.is_same({ 3 }, res2)
+
+
+			local reduced = collection.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(7, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(3, reduced2)
 		end)
 
 
+		it('should give you a variable when you need one', function()
 
+			assert.is_same('x', domoticz.variables('x').name)
+
+			-- should be in the cache
+			assert.is_same('x', domoticz.__variables['x'].name)
+			assert.is_same(1, domoticz.__variables[1].id)
+
+			-- test if next call uses the case
+			domoticz.__variables[1].id = 1111
+			assert.is_same(1111, domoticz.variables(1).id)
+		end)
+
+		it('should return nil if you ask for a non-existing variable', function()
+			assert.is_nil(domoticz.variables('bla'))
+		end)
+
+		it('should return variable iterators when called with no id', function()
+
+			local collection = domoticz.variables()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(variable)
+				table.insert(res, variable.name)
+			end)
+			assert.is_same({ "x", "y", "z", "a", "b" }, res)
+
+
+			local filtered = collection.filter(function(variable)
+				return variable.id < 4
+			end)
+
+			local _f = _.pluck(filtered, { 'name' })
+			assert.is_same(_f, { "x", "y", "z" })
+
+			local res2 = {}
+			filtered.forEach(function(variable)
+				table.insert(res2, variable.id)
+			end)
+
+			assert.is_same({ 1, 2, 3 }, values(res2))
+
+
+			local reduced = collection.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(15, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(6, reduced2)
+		end)
+
+		it('should give you a changed device when you need one', function()
+
+			assert.is_same('device1', domoticz.changedDevices('device1').name)
+
+			-- should be in the cache
+			assert.is_same('device1', domoticz.__devices['device1'].name)
+			assert.is_same(1, domoticz.__devices[1].id)
+
+			-- test if next call uses the case
+			domoticz.__devices[1].id = 1111
+			assert.is_same(1111, domoticz.devices(1).id)
+		end)
+
+		it('should return nil if you ask for a non-existing device', function()
+			assert.is_nil(domoticz.changedDevices('bla'))
+		end)
+
+		it('should return changed device iterators when called with no id', function()
+
+			local collection = domoticz.changedDevices()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(device)
+				table.insert(res, device.name)
+			end)
+			assert.is_same({ "device1", "device2", "device5", "device6", "device7", "device8" }, values(res))
+
+
+			local filtered = collection.filter(function(device)
+				return device.id < 4
+			end)
+
+			local _f = _.pluck(filtered, { 'name' })
+			assert.is_same(_f, { "device1", "device2" })
+
+			local res2 = {}
+			filtered.forEach(function(device)
+				table.insert(res2, device.id)
+			end)
+
+			assert.is_same({ 1, 2}, res2)
+
+
+			local reduced = collection.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(29, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, device)
+				acc = acc + device.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(3, reduced2)
+		end)
+
+		it('should give you a changed vars when you need one', function()
+
+			assert.is_same('x', domoticz.changedVariables('x').name)
+
+			-- should be in the cache
+			assert.is_same('x', domoticz.__variables['x'].name)
+			assert.is_same(1, domoticz.__variables[1].id)
+
+			-- test if next call uses the case
+			domoticz.__variables[1].id = 1111
+			assert.is_same(1111, domoticz.changedVariables(1).id)
+		end)
+
+		it('should return nil if you ask for a non-existing device', function()
+			assert.is_nil(domoticz.changedVariables('bla'))
+		end)
+
+		it('should return changed variable iterators when called with no id', function()
+
+			local collection = domoticz.changedVariables()
+			assert.is_function(collection.forEach)
+
+			local res = {}
+
+			collection.forEach(function(var)
+				table.insert(res, var.name)
+			end)
+			assert.is_same({ "a", "b", "x", "z",  }, values(res))
+
+
+			local filtered = collection.filter(function(var)
+				return var.id < 4
+			end)
+
+			local _f = _.pluck(filtered, { 'name' })
+			assert.is_same(_f, { "x", "z" })
+
+			local res2 = {}
+			filtered.forEach(function(var)
+				table.insert(res2, var.id)
+			end)
+
+			assert.is_same({ 1, 3 }, values(res2))
+
+
+			local reduced = collection.reduce(function(acc, var)
+				acc = acc + var.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(13, reduced)
+
+			local reduced2 = filtered.reduce(function(acc, var)
+				acc = acc + var.id
+
+				return acc
+			end, 0)
+
+			assert.is_same(4, reduced2)
+		end)
 	end)
 
 	describe('devices', function()
@@ -332,81 +647,94 @@ describe('Domoticz', function()
 		end)
 
 		it('should have set rawData', function()
-			assert.is_same({'1','2','3'}, d1.rawData)
-			assert.is_same({'4','5','6'}, d2.rawData)
-			assert.is_same({'7','8','9', '10', '11'}, d3.rawData)
-			assert.is_same({'10','11','12'}, d4.rawData)
+			assert.is_same({ '1', '2', '3' }, d1.rawData)
+			assert.is_same({ '4', '5', '6' }, d2.rawData)
+			assert.is_same({ '7', '8', '9', '10', '11' }, d3.rawData)
+			assert.is_same({ '10', '11', '12' }, d4.rawData)
 		end)
 
 		it('should have created id entries', function()
-			assert.is_equal(d1, domoticz.devices[1])
-			assert.is_equal(d2, domoticz.devices[2])
-			assert.is_equal(d3, domoticz.devices[3])
-			assert.is_equal(d4, domoticz.devices[4])
+			assert.is_equal(d1, domoticz.devices(1))
+			assert.is_equal(d2, domoticz.devices(2))
+			assert.is_equal(d3, domoticz.devices(3))
+			assert.is_equal(d4, domoticz.devices(4))
 		end)
 
-		it('should have created changedDevices collection', function()
-			assert.is_equal(d1, domoticz.changedDevices[1])
-			assert.is_equal(d2, domoticz.changedDevices[2])
-			assert.is_equal(d1, domoticz.changedDevices['device1'])
-			assert.is_equal(d2, domoticz.changedDevices['device2'])
-			assert.is_nil(domoticz.changedDevices[3])
-			assert.is_nil(domoticz.changedDevices[4])
-			assert.is_nil(domoticz.changedDevices['device3'])
-			assert.is_nil(domoticz.changedDevices['device4'])
+		it('should have created a text device', function()
+			assert.is_same('device8', domoticz.devices('device8').name)
 		end)
-
-		it('should have created a device that only lives in devices.lua (http data)', function()
-			assert.is_same('Text1', domoticz.devices['Text1'].name)
-		end)
-
 	end)
 
-	it('should have created iterators', function()
-		assert.is_function(domoticz.devices.forEach)
-		assert.is_function(domoticz.devices.filter)
-		assert.is_function(domoticz.devices.filter(function()
-		end).forEach)
+--	it('should have created iterators', function()
+--		assert.is_function(domoticz.devices.forEach)
+--		assert.is_function(domoticz.devices.filter)
+--		assert.is_function(domoticz.devices.reduce)
+--		assert.is_function(domoticz.devices.filter(function()
+--		end).forEach)
+--		assert.is_function(domoticz.devices.filter(function()
+--		end).reduce)
+--
+--		assert.is_function(domoticz.changedDevices.forEach)
+--		assert.is_function(domoticz.changedDevices.filter)
+--		assert.is_function(domoticz.changedDevices.reduce)
+--		assert.is_function(domoticz.changedDevices.filter(function()
+--		end).forEach)
+--		assert.is_function(domoticz.changedDevices.filter(function()
+--		end).reduce)
+--
+--		assert.is_function(domoticz.variables.forEach)
+--		assert.is_function(domoticz.variables.filter)
+--		assert.is_function(domoticz.variables.reduce)
+--		assert.is_function(domoticz.variables.filter(function()
+--		end).forEach)
+--		assert.is_function(domoticz.variables.filter(function()
+--		end).reduce)
+--	end)
 
-		assert.is_function(domoticz.changedDevices.forEach)
-		assert.is_function(domoticz.changedDevices.filter)
-		assert.is_function(domoticz.changedDevices.filter(function()
-		end).forEach)
-
-		assert.is_function(domoticz.variables.forEach)
-		assert.is_function(domoticz.variables.filter)
-		assert.is_function(domoticz.variables.filter(function()
-		end).forEach)
-	end)
-
-	it('should have a working filter and foreach', function()
-		local devices = {}
-		domoticz.devices.filter(function(d)
-			return (d.id == 1 or d.id == 3)
-		end).forEach(function(d)
-			table.insert(devices, d.id)
-		end)
-
-		table.sort(devices)
-		assert.is_same({1,3}, devices)
-	end)
-
-	it('should have created variables', function()
-		assert.is_same(1, domoticz.variables['x'].nValue)
-		assert.is_same(2, domoticz.variables['y'].nValue)
-	end)
-
-	it('should have created scenes', function()
-		assert.is_same({1, 2, 'Scene1', 'Scene2', 'filter', 'forEach'}, _.keys(domoticz.scenes))
-		assert.is_same({'Scene1', 'Scene2', 'Scene1', 'Scene2'}, _.pluck(domoticz.scenes, {'name'}))
-		assert.is_same({'Off', 'Off', 'Off', 'Off'}, _.pluck(domoticz.scenes, {'state'}))
-	end)
-
-	it('should have created groups', function()
-		assert.is_same({3, 4, 'Group1', 'Group2', 'filter', 'forEach'}, _.keys(domoticz.groups))
-		assert.is_same({'Group1', 'Group2', 'Group1', 'Group2'}, _.pluck(domoticz.groups, {'name'}))
-		assert.is_same({'On', 'Mixed', 'On', 'Mixed'}, _.pluck(domoticz.groups, {'state'}))
-	end)
+--	it('should have a working filter and foreach', function()
+--		local devices = {}
+--		domoticz.devices.filter(function(d)
+--			return (d.id == 1 or d.id == 3)
+--		end).forEach(function(d)
+--			table.insert(devices, d.id)
+--		end)
+--
+--		table.sort(devices)
+--		assert.is_same({ 1, 3 }, devices)
+--	end)
+--
+--	it('should have a working reducer', function()
+--
+--		local result = domoticz.devices.reduce(function(acc, item)
+--			return acc + 1
+--		end, 1)
+--
+--		assert.is_same(9, result)
+--	end)
+--
+--	it('should have a filter that return {} when nothing matches', function()
+--		local res = domoticz.devices.filter(function(d)
+--			return false
+--		end)
+--		assert.is_same({ 'filter', 'forEach', 'reduce' }, _.keys(res))
+--	end)
+--
+--	it('should have created variables', function()
+--		assert.is_same(1, domoticz.variables['x'].nValue)
+--		assert.is_same(2.3, domoticz.variables['y'].nValue)
+--	end)
+--
+--	it('should have created scenes', function()
+--		assert.is_same({ 1, 2, 'Scene1', 'Scene2', 'filter', 'forEach', 'reduce' }, _.keys(domoticz.scenes))
+--		assert.is_same({ 'Scene1', 'Scene2', 'Scene1', 'Scene2' }, _.pluck(domoticz.scenes, { 'name' }))
+--		assert.is_same({ 'Off', 'Off', 'Off', 'Off' }, _.pluck(domoticz.scenes, { 'state' }))
+--	end)
+--
+--	it('should have created groups', function()
+--		assert.is_same({ 3, 4, 'Group1', 'Group2', 'filter', 'forEach', 'reduce' }, _.keys(domoticz.groups))
+--		assert.is_same({ 'Group1', 'Group2', 'Group1', 'Group2' }, _.pluck(domoticz.groups, { 'name' }))
+--		assert.is_same({ 'On', 'Mixed', 'On', 'Mixed' }, _.pluck(domoticz.groups, { 'state' }))
+--	end)
 
 	it('should log', function()
 		local utils = domoticz._getUtilsInstance()
@@ -420,109 +748,5 @@ describe('Domoticz', function()
 		assert.is_true(logged)
 	end)
 
-	describe('http data', function()
-
-		it('should fetch http data from domoticz', function()
-			local utils = domoticz._getUtilsInstance()
-			local ip, port
-			utils.requestDomoticzData = function(i, p)
-				ip = i
-				port = p
-			end
-			domoticz.fetchHttpDomoticzData()
-			assert.is_same(settings['Domoticz ip'], ip)
-			assert.is_same(settings['Domoticz port'], port)
-		end)
-
-		it('should read http data', function()
-			local data = domoticz._readHttpDomoticzData()
-			_.print(res)
-		end)
-
-		it('should have processed http data', function()
-			assert.is_same(10, d1.batteryLevel)
-			assert.is_same(20, d2.batteryLevel)
-			assert.is_same(30, d3.batteryLevel)
-			assert.is_same(40, d4.batteryLevel)
-			assert.is_same('Description 1', d1.description)
-			assert.is_same('Description 2', d2.description)
-			assert.is_same('Description 3', d3.description)
-			assert.is_same('Description 4', d4.description)
-
-			assert.is_same('10', d1.signalLevel)
-			assert.is_same('20', d2.signalLevel)
-			assert.is_same('30', d3.signalLevel)
-			assert.is_same('-', d4.signalLevel)
-
-			assert.is_same('Zone', d1.deviceSubType)
-			assert.is_same('Lux', d2.deviceSubType)
-			assert.is_same('Energy', d3.deviceSubType)
-			assert.is_same('SetPoint', d4.deviceSubType)
-
-			assert.is_same('Heating', d1.deviceType)
-			assert.is_same('Lux', d2.deviceType)
-			assert.is_same('P1 Smart Meter', d3.deviceType)
-			assert.is_same('Thermostat', d4.deviceType)
-
-			assert.is_same('hw1', d1.hardwareName)
-			assert.is_same('hw2', d2.hardwareName)
-			assert.is_same('hw3', d3.hardwareName)
-			assert.is_same('hw4', d4.hardwareName)
-
-			assert.is_same('ht1', d1.hardwareType)
-			assert.is_same('ht2', d2.hardwareType)
-			assert.is_same('ht3', d3.hardwareType)
-			assert.is_same('ht4', d4.hardwareType)
-
-			assert.is_same(1, d1.hardwareId)
-			assert.is_same(2, d2.hardwareId)
-			assert.is_same(3, d3.hardwareId)
-			assert.is_same(4, d4.hardwareId)
-
-			assert.is_same(1, d1.hardwareTypeVal)
-			assert.is_same(2, d2.hardwareTypeVal)
-			assert.is_same(3, d3.hardwareTypeVal)
-			assert.is_same(4, d4.hardwareTypeVal)
-
-			assert.is_same('Contact', d1.switchType)
-			assert.is_same('Motion Sensor', d2.switchType)
-			assert.is_same('On/Off', d3.switchType)
-			assert.is_same('Security', d4.switchType)
-
-			assert.is_same(2, d1.switchTypeValue)
-			assert.is_same(8, d2.switchTypeValue)
-			assert.is_same(0, d3.switchTypeValue)
-			assert.is_same(0, d4.switchTypeValue)
-
-			assert.is_true(d1.timedOut)
-			assert.is_false(d2.timedOut)
-			assert.is_false(d3.timedOut)
-			assert.is_false(d4.timedOut)
-
-			assert.is_same(2, d1.setPoint)
-			assert.is_same('3', d1.heatingMode)
-
-			assert.is_same(4, d2.lux)
-
-			local d5 = domoticz.devices['device5']
-			assert.is_same(14, d5.WhTotal)
-			assert.is_same(1.234, d5.WhToday)
-			assert.is_same(13, d5.WActual)
-			assert.is_same('1.234 kWh', d5.counterToday)
-			assert.is_same('567 kWh', d5.counterTotal)
-			assert.is_same(10, d5.level)
-
-			assert.is_same(11, d3.WActual)
-
-			assert.is_same(10, d4.setPoint)
-
-			local d7 = domoticz.devices['device7']
-			assert.is_same(16.5, d7.WActual)
-		end)
-
-		it('should have noted that the attribute was changed', function()
-			assert.is_true(d1.attributeChanged('temperature'))
-		end)
-
-	end)
+--
 end)

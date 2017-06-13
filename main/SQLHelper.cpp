@@ -31,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 114
+#define DB_VERSION 115
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -648,6 +648,7 @@ CSQLHelper::CSQLHelper(void)
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
 	m_bDisableEventSystem = false;
+	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
 
@@ -2227,6 +2228,37 @@ bool CSQLHelper::OpenDatabase()
                         szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
                         query(szQuery2.str());
                 }
+		if (dbversion < 115)
+		{
+			//Patch for Evohome Web
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Name, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string lowerName="fitbit";
+					for (uint8_t i = 0; i < 6; i++)
+						lowerName[i] = sd[1][i] | 0x20;
+					if (lowerName == "fitbit")
+						safe_query("DELETE FROM Hardware WHERE ID=%s", sd[0].c_str());
+					else
+					{
+						int newParams = (sd[3]=="0") ? 0 : 1;
+						if (sd[4]=="1")
+							newParams += 2;
+						if (sd[5]=="1")
+							newParams += 4;
+						m_sql.safe_query("UPDATE Hardware SET Mode2=%d, Mode3=%s, Mode4=0, Mode5=0 WHERE ID=%s", newParams, sd[6].c_str(), sd[0].c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='' WHERE HardwareID=%s", sd[0].c_str());
+					}
+				}
+			}
+		}
 
 	}
 	else if (bNewInstall)
@@ -2243,7 +2275,7 @@ bool CSQLHelper::OpenDatabase()
 	std::string sValue;
 	if (!GetPreferencesVar("Title", sValue))
         {
-                UpdatePreferencesVar("Title", "Domoticz"); 
+                UpdatePreferencesVar("Title", "Domoticz");
         }
         if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
@@ -2555,6 +2587,19 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 0;
 	}
 	m_bDisableEventSystem = (nValue==1);
+
+	nValue = 0;
+	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))
+	{
+		UpdatePreferencesVar("DisableDzVentsSystem", 0);
+		nValue = 0;
+	}
+	m_bDisableDzVentsSystem = (nValue == 1);
+
+	if (!GetPreferencesVar("DzVentsLogLevel", nValue))
+	{
+		UpdatePreferencesVar("DzVentsLogLevel", 0);
+	}
 
 	nValue = 1;
 	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
@@ -3427,7 +3472,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
+			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
 	        //~ use different update queries based on the device type
@@ -3540,8 +3585,15 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
-			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255) ||
+				(switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
+				if (((switchtype == STYPE_BlindsPercentage) ||
+					(switchtype == STYPE_BlindsPercentageInverted)) &&
+					(nValue == light2_sOn))
+				{
+						llevel = 100;
+				}
 				//update level for device
 				safe_query(
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",

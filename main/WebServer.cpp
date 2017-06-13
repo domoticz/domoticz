@@ -107,6 +107,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
+	{ "uk", "Ukrainian" },
 	{ NULL, NULL }
 };
 
@@ -993,8 +994,7 @@ namespace http {
 				{
 					bDoAdd = false;
 				}
-#endif
-#ifndef WITH_SYSFS_GPIO
+
 				if (ii == HTYPE_SysfsGpio)
 				{
 					bDoAdd = false;
@@ -1015,7 +1015,7 @@ namespace http {
 				ii++;
 			}
 
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 			// Append Plugin list as well
 			PluginList(root["result"]);
 #endif
@@ -1095,7 +1095,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1461,7 +1461,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
 				if (address == "")
@@ -3668,7 +3668,7 @@ namespace http {
 			{
 				//used by Add Manual Light/Switch dialog
 				root["title"] = "GetSysfsGpio";
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 				std::vector<int> gpio_ids = CSysfsGpio::GetGpioIds();
 				std::vector<std::string> gpio_names = CSysfsGpio::GetGpioNames();
 
@@ -4166,7 +4166,7 @@ namespace http {
 				}
 				else if (lighttype == 69)
 				{
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 
 					sunitcode = request::findValue(&req, "unitcode"); // sysfs-gpio number
 					int unitcode = atoi(sunitcode.c_str());
@@ -4706,7 +4706,7 @@ namespace http {
 				}
 				else if (lighttype == 69)
 				{
-#ifdef WITH_SYSFS_GPIO
+#ifdef WITH_GPIO
 					dtype = pTypeLighting2;
 					subtype = sTypeAC;
 					devid = "0";
@@ -7787,6 +7787,15 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			rnOldvalue = 0;
+			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
+			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
+			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+
+			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
+
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
 			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
@@ -7889,7 +7898,7 @@ namespace http {
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
 			m_notifications.LoadConfig();
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 			//Signal plugins to update Settings dictionary
 			PluginLoadConfig();
 #endif
@@ -7965,7 +7974,7 @@ namespace http {
 					tlist.Name = sd[1];
 					tlist.Enabled = (atoi(sd[2].c_str()) != 0);
 					tlist.HardwareTypeVal = atoi(sd[3].c_str());
-#ifndef USE_PYTHON_PLUGINS
+#ifndef ENABLE_PYTHON
 					tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 #else
 					if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
@@ -8003,11 +8012,11 @@ namespace http {
 			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order.c_str();
-			for(int i = 0; i < orderBy.size(); i++) {
-                                if( !isalpha(orderBy[i])) {
-                                        isAlpha = false;
-                                }
-                        }
+			for (size_t i = 0; i < orderBy.size(); i++) {
+				if (!isalpha(orderBy[i])) {
+					isAlpha = false;
+				}
+			}
 			if (order.empty() || (!isAlpha)) {
 				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 			} else {
@@ -12527,6 +12536,14 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "DisableDzVentsSystem")
+				{
+					root["DisableDzVentsSystem"] = nValue;
+				}
+				else if (Key == "DzVentsLogLevel")
+				{
+					root["DzVentsLogLevel"] = nValue;
 				}
 				else if (Key == "LogEventScriptTrigger")
 				{

@@ -1538,7 +1538,7 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divevohomeweb">
+		<div id="divevohomeweb" style="display:none;">
 			<br />
 			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">      
 				<tr valign="top">
@@ -1583,11 +1583,24 @@
 						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Select location">Select location</span>: </label>
 					</td>
 					<td>
-						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"></select>,
-						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"></select>,
-						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"></select>
+						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"><option value="0">0</option></select>
+						<span data-i18n="(keep at [0,0,0] if you only have one Evohome installation)">(keep at [0,0,0] if you only have one Evohome installation)</span><br />&nbsp;<br />
 					</td>
+				</tr>
 
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblprecisionevohomeweb" for="name"><span data-i18n="Temperature precision">Temperature precision</span>: </label>
+					</td>
+					<td><select id="comboevoprecision" style="width:200px" class="combobox ui-corner-all">
+						<option selected="selected" value="0">Same as controller (quickest)</option>
+						<option value="8">1 decimal</option>
+						<option value="24">2 decimals</option>
+						</select>
+					</td>
+				</tr>
 			</table>
 		</div>
 		<div>

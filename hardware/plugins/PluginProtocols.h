@@ -12,7 +12,7 @@ namespace Plugins {
 	public:
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
-		virtual void				Flush(const int HwdID);
+		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);
 		virtual int					Length() { return m_sRetainedData.size(); };
 	};
 
@@ -44,6 +44,8 @@ namespace Plugins {
 		std::string		m_Password;
 		bool			m_Chunked;
 		size_t			m_RemainingChunk;
+
+		void			ExtractHeaders(std::string*	pData);
 	public:
 		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);

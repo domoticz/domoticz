@@ -1962,7 +1962,7 @@ define(['app'], function (app) {
 				option.attr('value', item.idx).text(item.name);
 				$("#combogpio").append(option);
 			});
-			
+
 			RefreshSysfsGpioComboArray();
 			$("#combosysfsgpio").html("");
 			$.each($.ComboSysfsGpio, function (i, item) {
@@ -2009,7 +2009,7 @@ define(['app'], function (app) {
 				}
 			});
 		}
-		
+
 		RefreshSysfsGpioComboArray = function () {
 			$.ComboSysfsGpio = [];
 			$.ajax({
@@ -2275,13 +2275,13 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Blinds Percentage") {
 									isdimmer = true;
-									if (item.Status == 'Closed') {
-										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-									}
-									else {
+									if (item.Status == 'Open') {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+									}
+									else {
+										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
 								}
 								else if (item.SwitchType == "Blinds Percentage Inverted") {
@@ -2290,7 +2290,7 @@ define(['app'], function (app) {
 										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
-									else {
+									else if ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
@@ -2872,13 +2872,13 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Blinds Percentage") {
 								bIsDimmer = true;
-								if (item.Status == 'Closed') {
-									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-								}
-								else {
+								if (item.Status == 'Open') {
 									xhtm += '\t      <td id="img"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 									xhtm += '\t      <td id="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+								}
+								else {
+									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Blinds Percentage Inverted") {
@@ -3833,7 +3833,7 @@ define(['app'], function (app) {
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
 				var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 401) {
@@ -3841,7 +3841,7 @@ define(['app'], function (app) {
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
 				var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 402) {
