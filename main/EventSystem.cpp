@@ -4036,7 +4036,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		bool bIsOn = IsLightSwitchOn(lstatus);
 		if (bIsOn)
 		{
-			lstatus = "Open";
+lstatus = "Open";
 		}
 		else if (lstatus == "Off")
 		{
@@ -4134,8 +4134,15 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 	{
 		if (lua_isstring(lua_state, i))
 		{
-			//std::string lstring=lua_tostring(lua_state, i);
-			_log.Log(LOG_STATUS, "%s: %s", m_printprefix.c_str(), lua_tostring(lua_state, i));
+			std::string lstring = lua_tostring(lua_state, i);
+			if (lstring.find("Error ") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "%s: %s", m_printprefix.c_str(), lstring.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "%s: %s", m_printprefix.c_str(), lstring.c_str());
+			}
 		}
 		else
 		{
