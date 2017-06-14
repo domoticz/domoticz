@@ -3211,7 +3211,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	ExportDeviceStatesToLua(lua_state);
 
-	//ExportDomoticzDataToLua(lua_state, DeviceID, varId);
+	ExportDomoticzDataToLua(lua_state, DeviceID, varId);
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
