@@ -101,7 +101,6 @@ CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
 	m_bEnabled = true;
-	m_printprefix = "LUA";
 }
 
 
@@ -119,6 +118,7 @@ CEventSystem::~CEventSystem(void)
 
 void CEventSystem::StartEventSystem()
 {
+	m_printprefix = "LUA";
 	StopEventSystem();
 	if (!m_bEnabled)
 		return;
