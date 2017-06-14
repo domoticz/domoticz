@@ -41,7 +41,7 @@ extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds
 #endif
 
 extern std::string szUserDataFolder;
-//extern http::server::CWebServerHelper m_webservers;
+extern http::server::CWebServerHelper m_webservers;
 
 std::string m_printprefix;
 
@@ -2410,7 +2410,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		Json::Value tempjson;
 		std::stringstream sstr;
 		sstr << sitem.ID;
-//		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
+		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
@@ -3344,9 +3344,10 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_pushstring(lua_state, "dzVents_log_level");
 	lua_pushnumber(lua_state, (lua_Number)rnvalue);
 	lua_rawset(lua_state, -3);
-//	lua_pushstring(lua_state, "domoticz_listening_port");
-//	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
-//	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "domoticz_listening_port");
+//	lua_pushstring(lua_state, "8080");
+	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 
 	int status = 0;
