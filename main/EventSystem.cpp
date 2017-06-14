@@ -365,7 +365,7 @@ void CEventSystem::GetCurrentStates()
 			sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
 			sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
 			sitem.lastLevel = atoi(sd[9].c_str());
-			sitem.description = l_sValue.assign(sd[11]);
+			sitem.description = l_description.assign(sd[11]);
 			sitem.batteryLevel = atoi(sd[12].c_str());
 			sitem.signalLevel = atoi(sd[13].c_str());
 			sitem.unit = atoi(sd[14].c_str());
