@@ -34,7 +34,7 @@ namespace http {
 			plainServer_.reset(new CWebServer());
 			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
-//			our_listener_port = web_settings.listening_port;
+			our_listener_port = web_settings.listening_port;
 #ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
 				SSL_library_init();

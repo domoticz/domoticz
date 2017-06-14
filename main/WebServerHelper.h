@@ -48,7 +48,7 @@ namespace http {
 				const std::string &hardwareid = "");
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
-			//std::string our_listener_port;
+			std::string our_listener_port;
 		private:
 			boost::shared_ptr<CWebServer> plainServer_;
 #ifdef WWW_ENABLE_SSL
