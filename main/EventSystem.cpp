@@ -101,7 +101,6 @@ CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
 	m_bEnabled = true;
-	m_printprefix = "LUA";
 }
 
 
@@ -119,6 +118,7 @@ CEventSystem::~CEventSystem(void)
 
 void CEventSystem::StartEventSystem()
 {
+	m_printprefix = "LUA";
 	StopEventSystem();
 	if (!m_bEnabled)
 		return;
@@ -2384,6 +2384,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			{
 				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 			}
+			else tlist.HardwareType = "";
 
 			// TODO remove comments
 			//			else
@@ -3308,7 +3309,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_DirT << szUserDataFolder << "scripts/dzVents/";
 #endif
 
-	lua_createtable(lua_state, 3, 0);
+	lua_createtable(lua_state, 7, 0);
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
