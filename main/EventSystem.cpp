@@ -2384,6 +2384,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			{
 				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
 			}
+			else tlist.HardwareType = "";
 
 			// TODO remove comments
 			//			else
