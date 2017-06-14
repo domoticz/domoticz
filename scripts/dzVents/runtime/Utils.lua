@@ -33,12 +33,20 @@ function self.log(msg, level)
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
 	local marker = ''
 
-	if (_G.logMarker ~= nil) then
-		marker = _G.logMarker .. ': '
-	end
+
 
 	if (level == self.LOG_ERROR) then
-		marker = marker .. 'ERROR: '
+		marker = marker .. 'Error: '
+	elseif (level == self.LOG_DEBUG) then
+		marker = marker .. 'Debug: '
+	elseif (level == self.LOG_INFO or level == self.LOG_MODULE_EXEC_INFO) then
+		marker = marker .. 'Info:  '
+	elseif (level == self.LOG_FORCE) then
+		marker = marker .. 'Info:  '
+	end
+
+	if (_G.logMarker ~= nil) then
+		marker = marker .. _G.logMarker .. ': '
 	end
 
 	if (level <= lLevel) then

@@ -1,4 +1,4 @@
-'''For people working with dzVents prior to version 2.0: Please read the [[#Change_log|change log]] below as there are a couple of (easy-to-fix) breaking changes. '''
+'''For people working with dzVents prior to version 2.0: Please read the [[#Change_log|change log]] below as there are a couple of (easy-to-fix) breaking changes. Or check [[#Migrating_from_.3C2.0|Migrating from &lt; 2.0]]'''
 
 = About dzVents 2.0.0 =
 
@@ -1193,6 +1193,111 @@ There are a couple of settings for dzVents. They can be found in Domoticz GUI: '
 ** ''Errors + minimal execution info + generic info''. Even more information about script execution and a bit more log formatting.
 ** ''Debug''. Shows everything and dzVents will create a file <code>domoticzData.lua</code> in the dzVents folder. This is a dump of all the data that is received by dzVents from Domoticz.. That data is used to create the entire dzVents data structure.
 ** ''No logging''. As silent as possible.
+
+= Migrating from &lt;2.0 =
+
+As you can read in the change log below there are a couple of changes in 2.0 that will break older scrtips.
+
+== The 'on={..}' section. ==
+
+The on-section needs the items to be grouped based on their type. So prior to 2.0 you had
+
+<pre>    on = {
+        'myDevice',
+        'anotherDevice'
+    }</pre>
+In 2.0+ you have:
+
+<pre>    on = {
+        devices = {
+            'myDevice',
+            'anotherDevice'
+        }
+    }</pre>
+The same for timer options, &lt; 2.0:
+
+<pre>    on = {
+        ['timer'] = 'every 10 minutes on mon,tue'
+    }</pre>
+2.0:
+
+<pre>    on = {
+        timer = {
+            'every 10 minutes on mon,tue'
+        }
+    }</pre>
+Or when you have a combination, &lt; 2.0
+
+<pre>    on = {
+            'myDevice',
+            ['timer'] = 'every 10 minutes on mon,tue'
+        }
+    }
+</pre>
+2.0:
+
+<pre>    on = {
+        devices = {
+            'myDevice'
+        }
+        timer = {
+            'every 10 minutes on mon,tue'
+        }
+    }
+</pre>
+== Getting devices, groups, scenes etc. ==
+
+Prior to 2.0 you did this to get a device:
+
+<pre>    domoticz.devices['myDevice']
+    domoticz.groups['myGroup']
+    domoticz.scenes['myScene']
+    domoticz.variables['myVariable']
+    domoticz.changedDevices['myDevices']
+    domoticz.changeVariables['myVariable']</pre>
+Change that to:
+
+<pre>    domoticz.devices('myDevice') -- a function call
+    domoticz.groups('myGroup')
+    domoticz.scenes('myScene')
+    domoticz.variables('myVariable')
+    domoticz.changedDevices('myDevices')
+    domoticz.changeVariables('myVariable')</pre>
+Also, if you create a loop (iterator), &lt; 2.0:
+
+<pre>    domoticz.devices.forEach(function(d)
+        -- do something
+    end)</pre>
+In 2.0:
+
+<pre>    domoticz.devices().forEach(function(d)
+        -- do something
+    end)</pre>
+== Timed commands ==
+
+Prior to 2.0 you did this if you wanted to turn a switch off after a couple seconds:
+
+<pre>    domoticz.devices['mySwitch'].switchOff().after_sec(10)</pre>
+In 2.0:
+
+<pre>    domoticz.devices('mySwitch').switchOff().afterSec(10)</pre>
+The same applies for for_min and with_min.
+
+== Device attributes ==
+
+One thing you have to check is that some device attributes are no longer formatted strings with units in there like WhToday. It is possible that you have some scripts that deal with strings instead of values.
+
+== Changed attributes ==
+
+In &lt; 2.0 you had a changedAttributes collection on a device. That is no longer there. Just remove it and just check for the device to be changed instead.
+
+== Using rawData ==
+
+Prior to 2.0 you likely used the rawData attribute to get to certain device values. With 2.0 this is likely not needed anymore. Check the various device types above and check if there isn't a named attribute for you device type. dzVents 2.0 uses so called device adapters which should take care of interpreting raw values and put them in named attributes for you. If you miss your device you can file a ticket or create an adapter yourself. See [[File:#Create_your_own_device_adapter|Create your own device adapter]].
+
+== What happened to fetch http data? ==
+
+In 2.0+ it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
 
