@@ -79,8 +79,8 @@ There are two ways of creating dzVents event script in Domoticz:
 If you made sure that dzVents system is active we can do a quick test if everything works:
 
 <ul>
-<li>Pick a switch in your Domoticz system. Note down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.</li>
-<li>Create a new script in the <code>scripts/</code> folder (or in Domoticz). Call it <code>test.lua</code>. ''Note: when you create a script in the web-editor you don't have to add the '''.lua''' extension.''</li>
+<li>Pick a switch in your Domoticz system. Write down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.</li>
+<li>Create a new file in the <code>/path/to/domoticz/scripts/dzVents/scripts/</code> folder (or using the web-editor in Domoticz, swtich to dzVents mode first.). Call the file <code>test.lua</code>. ''Note: when you create a script in the web-editor you do '''not''' add the .lua extension!''</li>
 <li><p>Open <code>test.lua</code> in an editor and fill it with this code and change <code>&lt;exact name of the switch&gt;</code> with the .. you guessed it... exact name of the switch device:</p>
 <pre> return {
     active = true,
@@ -91,19 +91,16 @@ If you made sure that dzVents system is active we can do a quick test if everyth
     },
     execute = function(domoticz, switch)
         if (switch.state == 'On') then
-            domoticz.notify('Hey!', 'I am on!',
-                domoticz.PRIORITY_NORMAL)
+            domoticz.log('Hey! I am on!')
         else
-            domoticz.notify('Hey!', 'I am off!',
-                domoticz.PRIORITY_NORMAL)
+            domoticz.log('Hey! I am off!')
         end
     end
 }</pre></li>
 <li>Save the script</li>
 <li>Open the Domoticz log in the browser</li>
 <li>In Domoticz GUI (perhaps in another browser tab) press the switch.</li>
-<li>You can watch the log in Domoticz and it should show you that indeed it triggered your script.</li>
-<li><p>Assuming of course that you have configured the notify options in Domoticz setup. Otherwise you can change the lines with <code>domoticz.notify</code> to <code>domoticz.email(&lt;your address&gt;)</code>.</p></li></ul>
+<li><p>You can watch the log in Domoticz and it should show you that indeed it triggered your script and you should see the log messages.</p></li></ul>
 
 See the examples folder <code>/path/to/domoticz/scripts/dzVents/examples</code> for more examples.
 
@@ -157,11 +154,11 @@ If the active-setting is false then the script is not activated. dzVents will ig
 
 === on = { ... } ===
 
-The on-section holds all the events/triggers that are monitored by dzVents. If any of the events or triggers matches with the current event then the execute part of the script is executed. The on-section has four kinds of subsections that ''can all be used simultaneously!'' :
+The on-section holds all the events/triggers that are monitored by dzVents. If any of the events or triggers matches with the current event coming from Domoticz then the <code>execute</code> part of the script is executed. The on-section has four kinds of subsections that ''can all be used simultaneously!'' :
 
 * '''devices = { ...}''': this is a list of devices. Each device can be:
 ** The name of your device between string quotes. '''You can use the asterisk (*) wild-card here e.g. <code>PIR_*</code> or <code>*_PIR</code>'''. E.g.: <code>devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }</code>
-** The index of your device (the name may change, the index will usually stay the same),
+** The index of your device (the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz),
 ** The name/id of your device followed by a time constraint (similar to what you can do):
 *** <code>['myDevice']  = { 'at 15:*', 'at 22:** on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed and it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
 * '''timer = { ... }''': a list of time triggers like <code>every minute</code> or <code>at 17:*</code>. See [[#timer_trigger_options|below]].

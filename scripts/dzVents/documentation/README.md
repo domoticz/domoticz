@@ -80,8 +80,8 @@ There are two ways of creating dzVents event script in Domoticz:
 ## Quickstart
 If you made sure that dzVents system is active we can do a quick test if everything works:
 
- - Pick a switch in your Domoticz system. Note down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.
- - Create a new script in the `scripts/` folder (or in Domoticz). Call it `test.lua`. *Note: when you create a script in the web-editor you don't have to add the **.lua** extension.*
+ - Pick a switch in your Domoticz system. Write down the exact name of the switch. If you don't have a switch then you can create a Dummy switch and use that one.
+ - Create a new file in the `/path/to/domoticz/scripts/dzVents/scripts/` folder (or using the web-editor in Domoticz, swtich to dzVents mode first.). Call the file `test.lua`. *Note: when you create a script in the web-editor you do **not** add the .lua extension!*
  - Open `test.lua` in an editor and fill it with this code and change `<exact name of the switch>` with the .. you guessed it... exact name of the switch device:
 ```
      return {
@@ -93,11 +93,9 @@ If you made sure that dzVents system is active we can do a quick test if everyth
     	},
     	execute = function(domoticz, switch)
     		if (switch.state == 'On') then
-    			domoticz.notify('Hey!', 'I am on!',
-	    			domoticz.PRIORITY_NORMAL)
+    			domoticz.log('Hey! I am on!')
     		else
-    			domoticz.notify('Hey!', 'I am off!',
-	    			domoticz.PRIORITY_NORMAL)
+    			domoticz.log('Hey! I am off!')
     		end
     	end
     }
@@ -105,8 +103,7 @@ If you made sure that dzVents system is active we can do a quick test if everyth
  - Save the script
  - Open the Domoticz log in the browser
  - In Domoticz  GUI (perhaps in another browser tab) press the switch.
- - You can watch the log in Domoticz and it should show you that indeed it triggered your script.
- - Assuming of course that you have configured the notify options in Domoticz setup. Otherwise you can change the lines with `domoticz.notify` to `domoticz.email(<your address>)`.
+ - You can watch the log in Domoticz and it should show you that indeed it triggered your script and you should see the log messages.
 
 See the examples folder `/path/to/domoticz/scripts/dzVents/examples` for more examples.
 
@@ -159,12 +156,12 @@ The active setting can either be:
  - **function**: A function returning `true` or `false`. The function will receive the domoticz object with all the information about you domoticz instance: `active = function(domoticz) .... end`. So for example you could check for a Domoticz variable or switch and prevent the script from being executed. **However, be aware that for *every script* in your scripts folder, this active function will be called, every cycle!! So, it is better to put all your logic in the execute function instead of in the active function.**
 
 ### on = { ... }
-The on-section holds all the events/triggers that are monitored by dzVents. If any of the events or triggers matches with the current event then the execute part of the script is executed.
+The on-section holds all the events/triggers that are monitored by dzVents. If any of the events or triggers matches with the current event coming from Domoticz then the `execute` part of the script is executed.
 The on-section has four kinds of subsections that *can all be used simultaneously!* :
 
  - **devices = { ...}**: this is a list of devices. Each device can be:
 	 -  The name of your device between string quotes. **You can use the asterisk (\*) wild-card here e.g. `PIR_*` or `*_PIR`**.  E.g.: `devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }`
-	 - The index of your device (the name may change, the index will usually stay the same),
+	 - The index of your device (the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz),
 	 - The name/id of your device followed by a time constraint (similar to what you can do):
 		 - `['myDevice']  = { 'at 15:*', 'at 22:** on sat, sun' }` The script will be executed if `myDevice` was changed and it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
  - **timer = { ... }**: a list of time triggers like `every minute` or `at 17:*`. See [below](#timer_trigger_options).
