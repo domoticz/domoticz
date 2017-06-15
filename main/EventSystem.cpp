@@ -415,6 +415,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 	//char szTmp[300];
 
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
@@ -1119,9 +1120,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		return;
 	GetCurrentUserVariables();
 
-	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
-
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
@@ -1138,6 +1136,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		{
 			if (reason == "device" && filename.find("_device_") != std::string::npos)
 			{
+				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 				std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
 				for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
 				{
@@ -1147,13 +1146,17 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 						bDeviceFileFound = true;
 						if (deviceName == SpaceToUnderscore(LowerCase(devname)))
 						{
+							devicestatesMutexLock.unlock();
 							EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 							break;
 						}
 					}
 				}
 				if (!bDeviceFileFound)
+				{
+					devicestatesMutexLock.unlock();
 					EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+				}
 			}
 			else if (reason == "time" && filename.find("_time_") != std::string::npos)
 			{
@@ -1174,10 +1177,11 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 #ifdef ENABLE_PYTHON
 	try
 	{
+		bDeviceFileFound = false;
 		FileEntries.clear();
+
 		DirectoryListing(FileEntries, python_Dir, false, true);
 
-		bDeviceFileFound = false;
 		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 		{
 			filename = *itt;
@@ -1187,6 +1191,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 			{
 				if (reason == "device" && filename.find("_device_") != std::string::npos)
 				{
+					boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 					std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
 					for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
 					{
@@ -1196,13 +1201,17 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 							bDeviceFileFound = true;
 							if (deviceName == SpaceToUnderscore(LowerCase(devname)))
 							{
+								devicestatesMutexLock.unlock();
 								EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 								break;
 							}
 						}
 					}
 					if (!bDeviceFileFound)
+					{
+						devicestatesMutexLock.unlock();
 						EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+					}
 				}
 				else if (reason == "time" && filename.find("_time_") != std::string::npos)
 				{
@@ -1224,6 +1233,8 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	{
 	}
 #endif
+
+	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
 
 	// handle database held scripts
 	try {
@@ -2272,7 +2283,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 
 void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 {
-	//boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2326,7 +2337,7 @@ void CEventSystem::exportDeviceStatesToLua(lua_State *lua_state)
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastlevel");
-	//devicestatesMutexLock2.unlock();
+	devicestatesMutexLock2.unlock();
 }
 
 void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId)
@@ -2341,7 +2352,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 void CEventSystem::EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
 {
-	boost::lock_guard<boost::mutex> l(luaMutex);
+	//boost::lock_guard<boost::mutex> l(luaMutex);
 
 	//if (isEventscheduled(filename))
 	//{
