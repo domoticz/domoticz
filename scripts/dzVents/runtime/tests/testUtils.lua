@@ -38,7 +38,7 @@ describe('event helpers', function()
 			end
 
 			utils.log('abc', utils.LOG_ERROR)
-			assert.is_same('ERROR: abc', printed)
+			assert.is_same('Error: abc', printed)
 		end)
 
 		it('shoud log INFO by default', function()
@@ -52,7 +52,7 @@ describe('event helpers', function()
 
 			utils.log('something')
 
-			assert.is_same('something', printed)
+			assert.is_same('Info:  something', printed)
 		end)
 
 		it('shoud not log above level', function()

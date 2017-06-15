@@ -97,6 +97,7 @@ local function Domoticz(settings)
 		['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
 		['LOG_DEBUG'] = utils.LOG_DEBUG,
 		['LOG_ERROR'] = utils.LOG_ERROR,
+		['LOG_FORCE'] = utils.LOG_FORCE,
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
 		['EVENT_TYPE_VARIABLE'] = 'variable',
@@ -120,43 +121,6 @@ local function Domoticz(settings)
 		['NSS_PUSHOVER'] = 'pushover',
 		['NSS_PUSHSAFER'] = 'pushsafer'
 	}
-
-	local function setIterators(collection)
-
-		collection['forEach'] = function(func)
-			local res
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					res = func(item, i, collection)
-					if (res == false) then -- abort
-					return
-					end
-				end
-			end
-		end
-
-		collection['reduce'] = function(func, accumulator)
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					accumulator = func(accumulator, item, i, collection)
-				end
-			end
-			return accumulator
-		end
-
-		collection['filter'] = function(filter)
-			local res = {}
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					if (filter(item)) then
-						res[i] = item
-					end
-				end
-			end
-			setIterators(res)
-			return res
-		end
-	end
 
 	-- add domoticz commands to the commandArray
 	function self.sendCommand(command, value)
@@ -315,7 +279,7 @@ local function Domoticz(settings)
 	end
 
 
-	local function setIterators2(collection, initial, baseType, filterForChanged)
+	local function setIterators(collection, initial, baseType, filterForChanged)
 
 		local _collection
 
@@ -389,7 +353,7 @@ local function Domoticz(settings)
 					end
 				end
 			end
-			setIterators2(res, false, baseType)
+			setIterators(res, false, baseType)
 			return res
 		end
 
@@ -397,13 +361,11 @@ local function Domoticz(settings)
 	end
 
 
-
-
 	function self.devices(id)
 		if (id ~= nil) then
 			return getObject('device', id)
 		else
-			return setIterators2({}, true, 'device', false)
+			return setIterators({}, true, 'device', false)
 		end
 	end
 
@@ -411,7 +373,7 @@ local function Domoticz(settings)
 		if (id ~= nil) then
 			return getObject('group', id)
 		else
-			return setIterators2({}, true, 'group', false)
+			return setIterators({}, true, 'group', false)
 		end
 	end
 
@@ -419,7 +381,7 @@ local function Domoticz(settings)
 		if (id ~= nil) then
 			return getObject('scene', id)
 		else
-			return setIterators2({}, true, 'scene', false)
+			return setIterators({}, true, 'scene', false)
 		end
 	end
 
@@ -427,7 +389,7 @@ local function Domoticz(settings)
 		if (id ~= nil) then
 			return getObject('uservariable', id)
 		else
-			return setIterators2({}, true, 'uservariable', false)
+			return setIterators({}, true, 'uservariable', false)
 		end
 	end
 
@@ -435,7 +397,7 @@ local function Domoticz(settings)
 		if (id ~= nil) then
 			return getObject('device', id)
 		else
-			return setIterators2({}, true, 'device', true)
+			return setIterators({}, true, 'device', true)
 		end
 	end
 
@@ -443,74 +405,9 @@ local function Domoticz(settings)
 		if (id ~= nil) then
 			return getObject('uservariable', id)
 		else
-			return setIterators2({}, true, 'uservariable', true)
+			return setIterators({}, true, 'uservariable', true)
 		end
 	end
-
---	local function bootstrap()
---
---
---		for index, item in pairs(_G.domoticzData) do
---
---			if (item.baseType == 'device') then
---
---				local newDevice = Device(self, item)
---				if (item.changed) then
---					self.changedDevices[item.name] = newDevice
---					self.changedDevices[item.id] = newDevice-- id lookup
---				end
---
---				if (self.devices[item.name] == nil) then
---					self.devices[item.name] = newDevice
---					self.devices[item.id] = newDevice
---				else
---					utils.log('Device found with a duplicate name. This device will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
---				end
---
---			elseif (item.baseType == 'scene') then
---
---				local newScene = Device(self, item)
---
---				if (self.scenes[item.name] == nil) then
---					self.scenes[item.name] = newScene
---					self.scenes[item.id] = newScene
---				else
---					utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
---				end
---
---			elseif (item.baseType == 'group') then
---				local newGroup = Device(self, item)
---
---				if (self.groups[item.name] == nil) then
---					self.groups[item.name] = newGroup
---					self.groups[item.id] = newGroup
---				else
---					utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. item.name, utils.LOG_DEBUG)
---				end
---
---			elseif (item.baseType == 'uservariable') then
---				local var = Variable(self, item)
---				self.variables[item.name] = var
---
---
---				if (item.changed) then
---					self.changedVariables[item.name] = var
---				end
---			end
---
---		end
---
---	end
---
---	bootstrap()
---
---	setIterators(self.devices)
---	setIterators(self.changedDevices)
---	setIterators(self.variables)
---	setIterators(self.changedVariables)
---	setIterators(self.scenes)
---	setIterators(self.groups)
-
 
 	return self
 end

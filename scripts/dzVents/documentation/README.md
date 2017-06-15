@@ -1,4 +1,4 @@
-**For people working with dzVents prior to version 2.0: Please read the [change log](#Change_log) below as there are a couple of (easy-to-fix) breaking changes. Or check [Migrating from < 2.0](#Migrating_from_.3C2.0)**
+**For people working with dzVents prior to version 2.0: Please read the [change log](#Change_log) below as there are a couple of (easy-to-fix) breaking changes. Or check [Migrating from version 1.x.x](#Migrating_from_version_1.x.x)**
 
 # About dzVents 2.0.0
 dzVents (|diː ziː vɛnts| short for Domoticz Easy Events) brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticzs in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
@@ -262,12 +262,12 @@ The domoticz object holds all information about your Domoticz system. It has a c
 
 ### Domoticz attributes:
 
- - **changedDevices(id/name)**: *Function*. A function returning the device by id (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..). See [Iterators](#Iterators).
- - **changedVariables(id/name)**: *Function*. A function returning the user variable by id or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..). See [Iterators](#Iterators).
- - **devices(id/name)**: *Function*. A function returning a device  by id or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..). See [Iterators](#Iterators).
- - **groups(id/name)**: *Function*: A function returning a group by name or id. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..). See [Iterators](#Iterators).
+ - **changedDevices(id/name)**: *Function*. A function returning the device by id (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.changedDevices()) do .. end`.
+ - **changedVariables(id/name)**: *Function*. A function returning the user variable by id or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.changedVariables()) do .. end`.
+ - **devices(id/name)**: *Function*. A function returning a device  by id or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
+ - **groups(id/name)**: *Function*: A function returning a group by name or id. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`.
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Creating shared helper functions](#Creating_shared_helper_functions).
- - **scenes(id/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..). See [Iterators](#Iterators).
+ - **scenes(id/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`.
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **time**: Current system time:
 	 - **day**: *Number*
@@ -286,7 +286,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 	 - **sunriseInMinutes**
 	 - **wday**: *Number*. Day of the week ( 0 == sunday)
 	 - **year**: *Number*
- - **variables(id/name)**: *Function*. A function returning a variable by it's name or id. See  [Variable object API](#Variable_object_API) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..). See [Iterators](#Iterators).
+ - **variables(id/name)**: *Function*. A function returning a variable by it's name or id. See  [Variable object API](#Variable_object_API) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`.
 
 ### Domoticz methods
 
@@ -1111,7 +1111,7 @@ There are a couple of settings for dzVents. They can be found in Domoticz GUI: *
     - *Debug*. Shows everything and dzVents will create a file `domoticzData.lua` in the dzVents folder. This is a dump of all the data that is received by dzVents from Domoticz.. That data is used to create the entire dzVents data structure.
     - *No logging*. As silent as possible.
 
-# Migrating from <2.0
+# Migrating from version 1.x.x
 As you can read in the change log below there are a couple of changes in 2.0 that will break older scrtips.
 
 ## The 'on={..}' section.
@@ -1122,7 +1122,7 @@ The on-section needs the items to be grouped based on their type. So prior to 2.
 		'anotherDevice'
 	}
 ```
-In 2.0+ you have:
+In 2.x you have:
 ```
 	on = {
 		devices = {
@@ -1131,13 +1131,13 @@ In 2.0+ you have:
 		}
 	}
 ```
-The same for timer options, < 2.0:
+The same for timer options, in 1.x.x:
 ```
 	on = {
 		['timer'] = 'every 10 minutes on mon,tue'
 	}
 ```
-2.0:
+2.x:
 ```
 	on = {
 		timer = {
@@ -1145,7 +1145,7 @@ The same for timer options, < 2.0:
 		}
 	}
 ```
-Or when you have a combination, < 2.0
+Or when you have a combination, in 1.x.x
 ```
 	on = {
 			'myDevice',
@@ -1154,7 +1154,7 @@ Or when you have a combination, < 2.0
 	}
 
 ```
-2.0:
+2.x:
 ```
 	on = {
 		devices = {
@@ -1167,7 +1167,7 @@ Or when you have a combination, < 2.0
 
 ```
 ## Getting devices, groups, scenes etc.
-Prior to 2.0 you did this to get a device:
+Prior to 2.x you did this to get a device:
 ```
 	domoticz.devices['myDevice']
 	domoticz.groups['myGroup']
@@ -1185,24 +1185,36 @@ Change that to:
 	domoticz.changedDevices('myDevices')
 	domoticz.changeVariables('myVariable')
 ```
-Also,  if you create a loop (iterator), < 2.0:
+## Looping through the devices (and other dzVents collections), iterators
+Earlier you could do this:
 ```
-	domoticz.devices.forEach(function(d)
-		-- do something
+	for i, device in pairs(domoticz.devices) do
+		domoticz.log(device.name)
+	end
+```
+In 2.x that is no longer possible. You now have to do this:
+```
+	domoticz.devices().forEach(function(device)
+		domoticz.log(device.name)
 	end)
 ```
-In 2.0:
+The same applies for the other collections like groups, scenes, variables, changedDevices and changedVariables.
+Note that you can easily search for a device like this as well:
 ```
-	domoticz.devices().forEach(function(d)
-		-- do something
+	domoticz.devices().forEach(function(device)
+		if (device.name == 'deviceImLookingFor') then
+			return false -- loop is stopped
+		end
 	end)
 ```
+For more information about these iterators see: [Iterators](#Iterators).
+
 ## Timed commands
 Prior to 2.0 you did this if you wanted to turn a switch off after a couple seconds:
 ```
 	domoticz.devices['mySwitch'].switchOff().after_sec(10)
 ```
-In 2.0:
+In 2.x:
 ```
 	domoticz.devices('mySwitch').switchOff().afterSec(10)
 ```
@@ -1212,13 +1224,13 @@ The same applies for for_min and with_min.
 One thing you have to check is that some device attributes are no longer formatted strings with units in there like WhToday. It is possible that you have some scripts that deal with strings instead of values.
 
 ## Changed attributes
-In < 2.0 you had a changedAttributes collection on a device. That is no longer there. Just remove it and just check for the device to be changed instead.
+In 1.x.x you had a changedAttributes collection on a device. That is no longer there. Just remove it and just check for the device to be changed instead.
 
 ## Using rawData
-Prior to 2.0 you likely used the rawData attribute to get to certain device values. With 2.0 this is likely not needed anymore. Check the various device types above and check if there isn't a named attribute for you device type. dzVents 2.0 uses so called device adapters which should take care of interpreting raw values and put them in named attributes for you. If you miss your device you can file a ticket or create an adapter yourself. See ![Create your own device adapter](#Create_your_own_device_adapter).
+Prior to 2.x you likely used the rawData attribute to get to certain device values. With 2.x this is likely not needed anymore. Check the various device types above and check if there isn't a named attribute for you device type. dzVents 2.x uses so called device adapters which should take care of interpreting raw values and put them in named attributes for you. If you miss your device you can file a ticket or create an adapter yourself. See ![Create your own device adapter](#Create_your_own_device_adapter).
 
 ## What happened to fetch http data?
-In 2.0+ it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy.
+In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy.
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
@@ -1226,7 +1238,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  [2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
- - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to use the iterators like forEach, filter and reduce you do this: `domoticz.devices().forEach(function() .. end)`. This change makes dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
+ - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to loop over these collection **you can no longer use the standard Lua for..pairs or for..ipairs construct**. You have to use the iterators like forEach, filter and reduce: `domoticz.devices().forEach(function() .. end)` (see [Iterators](#Iterators)). This was a necessary change to make dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
  - **BREAKING CHANGE**: after_sec, for_min, after_min, within_min methods have been renamed to the camel-cased variants afterSec, forMin, afterMin, withinMin. Please rename the calls in your script.
  - **BREAKING CHANGE**: There is no longer an option to check if an attribute was changed as this was quite useless. The device has a changed flag. You can use that. Please change your existing scripts.
  - **BREAKING CHANGE**: Many device attributes are now in the appropriate type (Number instead of Strings) so you can easily make calculations with them. Units are stripped from the values as much as possible. **Check your scripts as this may break stuff.**
