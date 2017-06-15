@@ -127,7 +127,8 @@ void CDarkSky::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = m_Location;
-	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc;
+	std::string szExclude = "minutely,hourly,daily,alerts,flags";
+	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc << "?exclude=" << szExclude;
 	try
 	{
 		bool bret;
