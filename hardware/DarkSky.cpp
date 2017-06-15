@@ -90,7 +90,7 @@ void CDarkSky::Do_Work()
 {
 	_log.Log(LOG_STATUS, "DarkSky: Started...");
 
-	int sec_counter = 590;
+	int sec_counter = 290;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -338,14 +338,14 @@ void CDarkSky::GetMeterDetails()
 	}
 
 	//UV
-	if (root["currently"]["UV"].empty()==false)
+	if (root["currently"]["uvIndex"].empty() == false)
 	{
-		if ((root["currently"]["UV"] != "N/A") && (root["currently"]["UV"] != "--"))
+		if ((root["currently"]["uvIndex"] != "N/A") && (root["currently"]["uvIndex"] != "--"))
 		{
-			float UV = static_cast<float>(atof(root["currently"]["UV"].asString().c_str()));
-			if ((UV<16)&&(UV>=0))
+			float UV = root["currently"]["uvIndex"].asFloat();
+			if ((UV < 16) && (UV >= 0))
 			{
-				SendUVSensor(0, 1, 255, UV, "UV");
+				SendUVSensor(0, 1, 255, UV, "UV Index");
 			}
 		}
 	}
@@ -370,21 +370,6 @@ void CDarkSky::GetMeterDetails()
 
 				tsen.RAIN.rainrateh=0;
 				tsen.RAIN.rainratel=0;
-
-				if (root["currently"]["precip_1hr_metric"].empty()==false)
-				{
-					if ((root["currently"]["precip_1hr_metric"] != "N/A") && (root["currently"]["precip_1hr_metric"] != "--"))
-					{
-						float rainrateph = static_cast<float>(atof(root["currently"]["precip_1hr_metric"].asString().c_str()));
-						if (rainrateph!=-9999.00f)
-						{
-							int at10=round(std::abs(rainrateph*10.0f));
-							tsen.RAIN.rainrateh=(BYTE)(at10/256);
-							at10-=(tsen.RAIN.rainrateh*256);
-							tsen.RAIN.rainratel=(BYTE)(at10);
-						}
-					}
-				}
 
 				int tr10=int((float(RainCount)*10.0f));
 				tsen.RAIN.raintotal1=0;
