@@ -98,7 +98,7 @@ void CDarkSky::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 600 == 0)
+		if (sec_counter % 300 == 0)
 		{
 			GetMeterDetails();
 		}
