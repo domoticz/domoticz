@@ -2598,7 +2598,7 @@ bool CSQLHelper::OpenDatabase()
 
 	if (!GetPreferencesVar("DzVentsLogLevel", nValue))
 	{
-		UpdatePreferencesVar("DzVentsLogLevel", 0);
+		UpdatePreferencesVar("DzVentsLogLevel", 3);
 	}
 
 	nValue = 1;
