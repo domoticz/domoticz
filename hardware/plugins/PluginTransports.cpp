@@ -272,10 +272,10 @@ namespace Plugins {
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				PluginMessageQueue.push(pDisconnectedEvent);
 			}
 			m_bDisconnectQueued = true;
 		}
@@ -309,7 +309,14 @@ namespace Plugins {
 			{
 				boost::system::error_code e;
 				m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
-				m_Socket->close();
+				if (e)
+				{
+					_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
+				}
+				else
+				{
+					m_Socket->close();
+				}
 				delete m_Socket;
 				m_Socket = NULL;
 			}
@@ -329,6 +336,17 @@ namespace Plugins {
 
 		return true;
 	}
+
+	CPluginTransportTCP::~CPluginTransportTCP()
+	{
+		if (m_Socket)
+		{
+			handleDisconnect();
+			delete m_Socket;
+		}
+		if (m_Resolver) delete m_Resolver;
+		if (m_Acceptor) delete m_Acceptor;
+	};
 
 	bool CPluginTransportUDP::handleConnect()
 	{

@@ -1143,7 +1143,7 @@ namespace Plugins {
 	{
 		DisconnectDirective*	pMessage = (DisconnectDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
-		if (pConnection->pTransport && (pConnection->pTransport->IsConnected()))
+		if (pConnection->pTransport && (pConnection->pTransport->IsConnecting() || pConnection->pTransport->IsConnected()))
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
 			pConnection->pTransport->handleDisconnect();
@@ -1151,11 +1151,13 @@ namespace Plugins {
 			{
 				pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
 			}
-			// inform the plugin
-			DisconnectMessage*	Message = new DisconnectMessage(this, (PyObject*)pConnection);
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
 		}
+	}
+
+	void CPlugin::DisconnectEvent(CEventBase * pMess)
+	{
+		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pTransport)
 		{
 			{
@@ -1182,6 +1184,10 @@ namespace Plugins {
 				}
 			}
 
+			// inform the plugin
+			DisconnectMessage*	Message = new DisconnectMessage(this, (PyObject*)pConnection);
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
 		}
 	}
 
