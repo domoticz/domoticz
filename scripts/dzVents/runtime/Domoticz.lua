@@ -313,6 +313,31 @@ local function Domoticz(settings)
 			end
 		end
 
+		collection['find'] = function(func)
+			local res
+			local ret
+			for i, item in pairs(_collection) do
+
+				local _item
+
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
+
+
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					ret = func(_item)
+					if (ret == true) then
+						return _item
+					end
+				end
+			end
+		end
+	
 		collection['reduce'] = function(func, accumulator)
 			for i, item in pairs(_collection) do
 

@@ -297,18 +297,27 @@ The domoticz object holds all information about your Domoticz system. It has a c
 
 The domoticz object has a couple of collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. In order to make iterating over these collections easier, dzVents has three iterator methods so you don't need to use the <code>pair()</code> or <code>ipairs()</code> function anymore (less code to write):
 
-# '''forEach(function):''' Executes a provided function once per array element. The function receives the item in the collection (device or variable) and the key and the collection itself. If you return ''false'' in the function then the loop is aborted.
-# '''filter(function):''' returns items in the collection for which the function returns true.
+# '''find(function)''': Returns the item in the collection for which <code>function</code> returns true. When no item is found <code>find</code> returns nil.
+# '''forEach(function)''': Executes a provided function once per array element. The function receives the item in the collection (device or variable). If you return ''false'' in the function then the loop is aborted.
+# '''filter(function)''': returns items in the collection for which the function returns true.
 # '''reduce(function, initial)''': Loop over all items in the collection and do some calculation with it. You call it with the function and the initial value. Each iteration the function is called with the accumulator and the item in the collection. The function does something with the accumulator and returns a new value for it.
 
 Best to illustrate with an example:
 
-<pre>domoticz.devices().forEach(function(device, key)
+find():
+
+<pre>local myDevice = domoticz.devices().find(function(device)
+    return device.name == 'myDevice'
+end)
+domoticz.log('Id: ' .. myDevice.id)</pre>
+forEach():
+
+<pre>domoticz.devices().forEach(function(device)
     if (device.batteryLevel &lt; 20) then
         -- do something
     end
 end)</pre>
-Or using a filter:
+filter():
 
 <pre>local deadDevices = domoticz.devices().filter(function(device)
     return (device.lastUpdate.minutesAgo &gt; 60)
@@ -1272,12 +1281,10 @@ In 2.x that is no longer possible. You now have to do this:
 <pre>    domoticz.devices().forEach(function(device)
         domoticz.log(device.name)
     end)</pre>
-The same applies for the other collections like groups, scenes, variables, changedDevices and changedVariables. Note that you can easily search for a device like this as well:
+The same applies for the other collections like groups, scenes, variables, changedDevices and changedVariables. Note that you can easily search for a device using iterators as well:
 
-<pre>    domoticz.devices().forEach(function(device)
-        if (device.name == 'deviceImLookingFor') then
-            return false -- loop is stopped
-        end
+<pre>    local myDevice = domoticz.devices().find(function(device)
+        return device.name == 'deviceImLookingFor'
     end)</pre>
 For more information about these iterators see: [[#Iterators|Iterators]].
 
@@ -1322,7 +1329,8 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * dzVents is no longer a separate library that you have to get from GitHub. All integrated into Domoticz.
 * Added option to create shared utility/helper functions and have them available in all your scripts. Simply add a <code>helpers = { myFunction = function() ... end }</code> to the <code>global_data.lua</code> file in your scripts folder and you can access the function everywhere: <code>domoticz.helpers.myFunction()</code>.
 * Created a pluggable system for device adapters so people can easily contribute by creating specific adapters for specific devices. An adapter makes sure that you get the proper methods and attributes for that device. See <code>/path/to/domoticz/scripts/dzVents/runtime/device-adapters</code>.
-* Added a <code>reduce()</code> iterator to the collections in the domoticz object so you can now easily collect data about all your devices. See documentation about iterators.
+* Added a <code>reduce()</code> iterator to the collections in the domoticz object so you can now easily collect data about all your devices. See [[#Iterators|Iterators]].
+* Added a <code>find()</code> iterator so you can easily find an item in one of the collection (devices, scenes, groups etc.). See [[#Iterators|Iterators]].
 * Variables (uservariables) have more attributes. The <code>value</code> is now the same type as it is defined in Domoticz. So no more need for a converted nValue attribute. You can inspect the type using <code>myVar.type</code>. If it is a time variable or date variable you an extra <code>date</code> or <code>time</code> attribute with the same methods as with all other date/time related attributes like <code>lastUpdate</code>. .E.g. <code>myVar.date.minutesAgo</code>.
 * Settings are now moved to the Domoticz GUI ('''Setup &gt; Settings &gt; Other''') and no longer in a settings file.
 * You can now override the log settings per script. So you can turn-off logging globally (see log level in the settings) and still have debug-level logging for that one script you are working on. You can even add a prefix string to the log messages for easy filtering in the Domoticz log. See the documentation about the <code>logging = { .. }</code> section.

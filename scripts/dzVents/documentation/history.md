@@ -1,3 +1,4 @@
+
  [2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
@@ -11,7 +12,8 @@
  - dzVents is no longer a separate library that you have to get from GitHub. All integrated into Domoticz.
  - Added option to create shared utility/helper functions and have them available in all your scripts. Simply add a `helpers = { myFunction = function() ... end }` to the `global_data.lua` file in your scripts folder and you can access the function everywhere: `domoticz.helpers.myFunction()`.
  - Created a pluggable system for device adapters so people can easily contribute by creating specific adapters for specific devices. An adapter makes sure that you get the proper methods and attributes for that device. See `/path/to/domoticz/scripts/dzVents/runtime/device-adapters`.
- - Added a `reduce()` iterator to the collections in the domoticz object so you can now easily collect data about all your devices. See documentation about iterators.
+ - Added a `reduce()` iterator to the collections in the domoticz object so you can now easily collect data about all your devices. See  [Iterators](#Iterators).
+ - Added a `find()` iterator so you can easily find an item in one of the collection (devices, scenes, groups etc.). See  [Iterators](#Iterators).
  - Variables (uservariables) have more attributes. The `value` is now the same type as it is defined in Domoticz. So no more need for a converted nValue attribute. You can inspect the type using `myVar.type`. If it is a time variable or date variable you an extra `date` or `time` attribute with the same methods as with all other date/time related attributes like `lastUpdate`. .E.g. `myVar.date.minutesAgo`.
  - Settings are now moved to the Domoticz GUI (**Setup > Settings > Other**) and no longer in a settings file.
  - You can now override the log settings per script. So you can turn-off logging globally (see log level in the settings) and still have debug-level logging for that one script you are working on. You can even add a prefix string to the log messages for easy filtering in the Domoticz log. See the documentation about the `logging = { .. }` section.

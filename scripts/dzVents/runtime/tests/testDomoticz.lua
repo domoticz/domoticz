@@ -230,7 +230,7 @@ describe('Domoticz', function()
 		end)
 	end)
 
-	describe('todo accessors', function() --todo
+	describe('Interacting with the collections', function() --todo
 
 		it('should give you a device when you need one', function()
 
@@ -263,6 +263,18 @@ describe('Domoticz', function()
 			assert.is_same({ "device1", "device3", "device7", "device8", "device4", "device2", "device5", "device6" }, res)
 
 
+			local found = collection.find(function(device)
+				return device.name == 'device8'
+			end)
+		
+			assert.is_same(8, found.id)
+
+			found = collection.find(function(device)
+				return device.name == 'device8asdfads'
+			end)
+
+			assert.is_nil(found)
+		
 			local filtered = collection.filter(function(device)
 				return device.id < 4
 			end)
@@ -277,7 +289,13 @@ describe('Domoticz', function()
 
 			assert.is_same({1,2,3}, res2)
 
-
+			-- check if the filtered set also has a find function
+			found = filtered.find(function(d)
+				return d.name == 'device3'
+			end)
+		
+			assert.is_same(3, found.id)
+		
 			local reduced = collection.reduce(function(acc, device)
 				acc = acc + device.id
 
