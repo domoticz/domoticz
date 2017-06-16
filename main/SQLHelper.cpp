@@ -648,6 +648,7 @@ CSQLHelper::CSQLHelper(void)
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
 	m_bDisableEventSystem = false;
+	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
 
@@ -2586,6 +2587,19 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 0;
 	}
 	m_bDisableEventSystem = (nValue==1);
+
+	nValue = 0;
+	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))
+	{
+		UpdatePreferencesVar("DisableDzVentsSystem", 0);
+		nValue = 0;
+	}
+	m_bDisableDzVentsSystem = (nValue == 1);
+
+	if (!GetPreferencesVar("DzVentsLogLevel", nValue))
+	{
+		UpdatePreferencesVar("DzVentsLogLevel", 3);
+	}
 
 	nValue = 1;
 	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
