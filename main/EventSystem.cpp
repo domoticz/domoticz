@@ -1136,6 +1136,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		{
 			if (reason == "device" && filename.find("_device_") != std::string::npos)
 			{
+				bDeviceFileFound = false;
 				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 				std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
 				for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
@@ -1177,7 +1178,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 #ifdef ENABLE_PYTHON
 	try
 	{
-		bDeviceFileFound = false;
 		FileEntries.clear();
 
 		DirectoryListing(FileEntries, python_Dir, false, true);
@@ -1191,6 +1191,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 			{
 				if (reason == "device" && filename.find("_device_") != std::string::npos)
 				{
+					bDeviceFileFound = false;
 					boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 					std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
 					for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
