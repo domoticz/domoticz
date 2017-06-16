@@ -29,7 +29,6 @@ bool CNotificationPushover::SendMessageImplementation(
 	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
 	std::string cText = Text;
 	std::string cSound = Sound;
-	int cPriority = Priority;
 
 	bool bRet;
 	std::string sResult;
@@ -37,14 +36,13 @@ bool CNotificationPushover::SendMessageImplementation(
 
 	std::vector<std::string> splitresults;
 	StringSplit(CURLEncode::URLDecode(Text), "#", splitresults);
-	if (splitresults.size() > 2)
+	if (splitresults.size() > 1)
 	{
 		cText = splitresults[0];
-		cPriority = atoi(splitresults[1].c_str());
-		cSound = splitresults[2];
+		cSound = splitresults[1];
 	}
 
-	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << cPriority << "&title=" << cSubject << "&message=" << cText;
+	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << cSubject << "&message=" << cText;
 
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
@@ -59,7 +57,7 @@ bool CNotificationPushover::SendMessageImplementation(
 		sPostData << "&sound=" << cSound;
 	}
 
-	if (cPriority == 2) {
+	if (Priority == 2) {
 		sPostData << "&retry=300&expire=3600";
 	}
 	std::vector<std::string> ExtraHeaders;
