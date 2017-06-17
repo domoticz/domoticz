@@ -168,7 +168,6 @@ namespace Plugins {
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
-				m_bConnected = true;
 			}
 		}
 		catch (std::exception& e)
@@ -233,12 +232,24 @@ namespace Plugins {
 
 			pTcpTransport->m_Socket->async_read_some(boost::asio::buffer(pTcpTransport->m_Buffer, sizeof pTcpTransport->m_Buffer),
 				boost::bind(&CPluginTransportTCP::handleRead, pTcpTransport, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-		}
 
-		// Requeue listener
-		if (m_Acceptor)
+			// Requeue listener
+			if (m_Acceptor)
+			{
+				handleListen();
+			}
+		}
+		else
 		{
-			handleListen();
+			if (err != boost::asio::error::operation_aborted)
+				_log.Log(LOG_ERROR, "Plugin: Accept Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+
+			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(pDisconnectedEvent);
+			}
+			m_bDisconnectQueued = true;
 		}
 	}
 
@@ -268,7 +279,7 @@ namespace Plugins {
 			if ((e.value() != 2) && 
 				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 				(e.value() != 125) &&	// Operation cancelled
-				(e.value() != 995) &&	// Abort due to shutdown during disconnect
+				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
 
@@ -320,19 +331,17 @@ namespace Plugins {
 				delete m_Socket;
 				m_Socket = NULL;
 			}
-			if (m_Acceptor)
-			{
-				boost::asio::ip::tcp::acceptor*	tAcceptor = m_Acceptor;
-				m_Acceptor = NULL; // make sure there is not a race condition with listen being resubmitted
-				tAcceptor->cancel();
-				delete tAcceptor;
-			}
+		}
 
-			m_bConnected = false;
-			m_bDisconnectQueued = false;
+		if (m_Acceptor)
+		{
+			m_Acceptor->cancel();
 		}
 
 		if (m_Resolver) delete m_Resolver;
+
+		m_bConnected = false;
+		m_bDisconnectQueued = false;
 
 		return true;
 	}
@@ -345,7 +354,10 @@ namespace Plugins {
 			delete m_Socket;
 		}
 		if (m_Resolver) delete m_Resolver;
-		if (m_Acceptor) delete m_Acceptor;
+		if (m_Acceptor)
+		{
+			delete m_Acceptor;
+		}
 	};
 
 	bool CPluginTransportUDP::handleConnect()
