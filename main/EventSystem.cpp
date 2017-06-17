@@ -1314,6 +1314,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "device");
+	devicestatesMutexLock.unlock();
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
@@ -1345,8 +1346,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 
 	boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 	GetCurrentMeasurementStates();
-
-	devicestatesMutexLock.unlock();
 
 	if (m_tempValuesByID.size() > 0) {
 		lua_createtable(lua_state, (int)m_tempValuesByID.size(), 0);
