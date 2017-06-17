@@ -815,8 +815,7 @@ define(['app'], function (app) {
 				}
 			});
 
-			$('#themesettingscontainer').load('/acttheme/themesettings.html');
-			$("#maindiv")
+			//$('#themesettingscontainer').load('/acttheme/themesettings.html');
 			$("#maindiv").i18n();
 			$scope.ShowSettings();
 		};
