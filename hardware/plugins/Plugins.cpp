@@ -649,7 +649,7 @@ namespace Plugins {
 				{
 					CPluginTransport*	pPluginTransport = *itt;
 					// Tell transport to disconnect if required
-					if ((pPluginTransport) && (pPluginTransport->IsConnected()))
+					if (pPluginTransport)
 					{
 						DisconnectDirective*	DisconnectMessage = new DisconnectDirective(this, pPluginTransport->Connection());
 						boost::lock_guard<boost::mutex> l(PluginMutex);
@@ -1143,19 +1143,24 @@ namespace Plugins {
 	{
 		DisconnectDirective*	pMessage = (DisconnectDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
-		if (pConnection->pTransport && (pConnection->pTransport->IsConnected()))
+
+		// Return any partial data to plugin
+		if (pConnection->pProtocol)
+		{
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
+		}
+
+		if (pConnection->pTransport)
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
 			pConnection->pTransport->handleDisconnect();
-			if (pConnection->pProtocol)
-			{
-				pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
-			}
-			// inform the plugin
-			DisconnectMessage*	Message = new DisconnectMessage(this, (PyObject*)pConnection);
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
 		}
+	}
+
+	void CPlugin::DisconnectEvent(CEventBase * pMess)
+	{
+		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pTransport)
 		{
 			{
@@ -1173,7 +1178,15 @@ namespace Plugins {
 			delete pConnection->pTransport;
 			pConnection->pTransport = NULL;
 
-			if (m_stoprequested && !m_Transports.size()) // Plugin exiting, forced stop
+			// inform the plugin
+			{
+				DisconnectMessage*	Message = new DisconnectMessage(this, (PyObject*)pConnection);
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			// Plugin exiting and all connections have disconnect messages queued
+			if (m_stoprequested && !m_Transports.size()) 
 			{
 				StopMessage*	Message = new StopMessage(this);
 				{
@@ -1181,7 +1194,6 @@ namespace Plugins {
 					PluginMessageQueue.push(Message);
 				}
 			}
-
 		}
 	}
 

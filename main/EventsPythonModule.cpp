@@ -12,7 +12,9 @@
     namespace Plugins {
         #define GETSTATE(m) ((struct eventModule_state*)PyModule_GetState(m))
 
-        void*   m_PyInterpreter;
+		extern boost::mutex PythonMutex;		// only used during startup when multiple threads could use Python
+
+		void*   m_PyInterpreter;
         bool ModuleInitalized = false;
         
         struct eventModule_state {
@@ -119,7 +121,8 @@
                 return false;
             }
             
-            m_PyInterpreter = Py_NewInterpreter();
+			boost::lock_guard<boost::mutex> l(PythonMutex);
+			m_PyInterpreter = Py_NewInterpreter();
             if (!m_PyInterpreter)
             {
                 _log.Log(LOG_ERROR, "EventSystem - Python: Failed to create interpreter.");
