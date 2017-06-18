@@ -3129,6 +3129,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			variableValue = variableType.substr(5);
 			varTypeNum = "4";
 		}
+		else
+		{
+			// defaults to string
+			variableValue = variableType;
+			varTypeNum = "2";
+		}
 		m_sql.SaveUserVariable(variableName, varTypeNum, variableValue);
 		scriptTrue = true;
 	}
