@@ -3097,6 +3097,41 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			scriptTrue = true;
 		}
 	}
+	else if (lCommand.find("AddVariable:") == 0)
+	{
+		std::string variableName = lCommand.substr(12);
+		std::string variableType = lua_tostring(lua_state, -1);
+		std::string variableValue;
+		std::string varTypeNum;
+
+		if (variableType.find("Integer:") == 0)
+		{
+			variableValue = variableType.substr(8);
+			varTypeNum = "0";
+		}
+		else if (variableType.find("Float:") == 0)
+		{
+			variableValue = variableType.substr(6);
+			varTypeNum = "1";
+		}
+		else if (variableType.find("String:") == 0)
+		{
+			variableValue = variableType.substr(7);
+			varTypeNum = "2";
+		}
+		else if (variableType.find("Date:") == 0)
+		{
+			variableValue = variableType.substr(5);
+			varTypeNum = "3";
+		}
+		else if (variableType.find("Time:") == 0)
+		{
+			variableValue = variableType.substr(5);
+			varTypeNum = "4";
+		}
+		m_sql.SaveUserVariable(variableName, varTypeNum, variableValue);
+		scriptTrue = true;
+	}
 	else if (lCommand.find("SetSetPoint:") == 0)
 	{
 		std::string SetPointIdx = lCommand.substr(12);
