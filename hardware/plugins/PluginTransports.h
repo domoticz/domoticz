@@ -68,6 +68,7 @@ namespace Plugins {
 		virtual	bool		handleDisconnect();
 		virtual bool		ThreadPoolRequired() { return true; };
 		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
+		~CPluginTransportTCP();
 
 	protected:
 		boost::asio::ip::tcp::resolver	*m_Resolver;

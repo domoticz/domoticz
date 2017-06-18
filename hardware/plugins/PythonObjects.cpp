@@ -1000,7 +1000,7 @@ namespace Plugins {
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
-					Py_XDECREF(self->Address);
+					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(pName);
 				}
 				if (pAddress) {
