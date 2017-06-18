@@ -2150,7 +2150,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
                         {
 				subsystem = aParam[4];
 			}
-			m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
+			m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, std::string(""), atoi(priority.c_str()), sound, subsystem));
 			actionsDone = true;
 			continue;
 		}
@@ -3012,7 +3012,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			subsystem = aParam[5];
 		}
 
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(1, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(0, subject, body, extraData, atoi(priority.c_str()), sound, subsystem));
 		scriptTrue = true;
 	}
 	else if (lCommand == "SendEmail") {
