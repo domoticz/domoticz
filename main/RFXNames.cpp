@@ -673,6 +673,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypeCURRENTENERGY, sTypeELEC4, "CM180i" },
 
+		{ pTypeWEIGHT, sTypeWEIGHT, "Weight" },
 		{ pTypeWEIGHT, sTypeWEIGHT1, "BWR102" },
 		{ pTypeWEIGHT, sTypeWEIGHT2, "GR101" },
 
