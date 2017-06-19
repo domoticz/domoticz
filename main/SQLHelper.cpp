@@ -6588,7 +6588,7 @@ void CSQLHelper::SetUnitsAndScale()
     else if(m_weightunit == WEIGHTUNIT_LB)
     {
         m_weightsign="lb";
-        m_weightscale=2.20462;
+        m_weightscale=2.20462f;
     }
 }
 
