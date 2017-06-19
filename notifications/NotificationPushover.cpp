@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "NotificationPushover.h"
 #include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
 #include "../main/Logger.h"
+#include "../main/Helper.h"
 
 CNotificationPushover::CNotificationPushover() : CNotificationBase(std::string("pushover"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
@@ -25,12 +27,22 @@ bool CNotificationPushover::SendMessageImplementation(
 	const bool bFromNotification)
 {
 	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
+	std::string cText = Text;
+	std::string cSound = Sound;
 
 	bool bRet;
 	std::string sResult;
 	std::stringstream sPostData;
 
-	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << cSubject << "&message=" << Text;
+	std::vector<std::string> splitresults;
+	StringSplit(CURLEncode::URLDecode(Text), "#", splitresults);
+	if (splitresults.size() > 1)
+	{
+		cText = splitresults[0];
+		cSound = splitresults[1];
+	}
+
+	sPostData << "token=" << _apikey << "&user=" << _apiuser << "&priority=" << Priority << "&title=" << cSubject << "&message=" << cText;
 
 	size_t posDevice = ExtraData.find("|Device=");
 	if (posDevice != std::string::npos) {
@@ -41,8 +53,8 @@ bool CNotificationPushover::SendMessageImplementation(
 		}
 	}
 
-	if (Sound != "") {
-		sPostData << "&sound=" << Sound;
+	if (cSound != "") {
+		sPostData << "&sound=" << cSound;
 	}
 
 	if (Priority == 2) {
