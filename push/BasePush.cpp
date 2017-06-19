@@ -792,7 +792,7 @@ std::string CBasePush::getUnit(const int delpos, const int metertypein)
 	}
 	else if (vType == "Weight")
 	{
-		strcpy(szData, "kg");
+		strcpy(szData, m_sql.m_weightsign.c_str());
 	}	
 	else if (vType == "Voltage")
 	{

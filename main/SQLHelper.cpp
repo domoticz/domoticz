@@ -644,6 +644,7 @@ CSQLHelper::CSQLHelper(void)
 	m_ActiveTimerPlan=0;
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
+	m_weightunit=WEIGHTUNIT_KG;
 	SetUnitsAndScale();
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
@@ -2490,6 +2491,15 @@ bool CSQLHelper::OpenDatabase()
 	else
 	{
 		m_tempunit=(_eTempUnit)nValue;
+
+	}
+	if (!GetPreferencesVar("WeightUnit", nValue))
+	{
+		UpdatePreferencesVar("WeightUnit", (int)WEIGHTUNIT_KG);
+	}
+	else
+	{
+		m_weightunit=(_eWeightUnit)nValue;
 
 	}
 	SetUnitsAndScale();
@@ -6564,11 +6574,22 @@ void CSQLHelper::SetUnitsAndScale()
 		m_tempsign="C";
 		m_tempscale=1.0f;
 	}
-	if (m_tempunit==TEMPUNIT_F)
+    else if (m_tempunit==TEMPUNIT_F)
 	{
 		m_tempsign="F";
 		m_tempscale=1.0f; // *1.8 + 32
 	}
+
+    if(m_weightunit == WEIGHTUNIT_KG)
+    {
+        m_weightsign="kg";
+        m_weightscale=1.0f;
+    }
+    else if(m_weightunit == WEIGHTUNIT_LB)
+    {
+        m_weightsign="lb";
+        m_weightscale=2.20462;
+    }
 }
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)

@@ -470,6 +470,9 @@ define(['app'], function (app) {
 					if (typeof data.TempUnit != 'undefined') {
 						$("#temperaturetable #comboTempUnit").val(data.TempUnit);
 					}
+					if (typeof data.WeightUnit != 'undefined') {
+						$("#weighttable #comboWeightUnit").val(data.WeightUnit);
+					}
 					if (typeof data.DegreeDaysBaseTemperature != 'undefined') {
 						$("#temperaturetable #DegreeDaysBaseTemperature").val(data.DegreeDaysBaseTemperature);
 					}
