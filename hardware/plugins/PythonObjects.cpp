@@ -807,7 +807,6 @@ namespace Plugins {
 					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 				}
 				m_sql.SetDeviceOptions(self->ID, mpOptions);
-				Py_DECREF(pOptionsDict);
 			}
 
 			CDevice_refresh(self);
