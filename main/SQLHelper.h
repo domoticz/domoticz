@@ -26,6 +26,12 @@ enum _eTempUnit
 	TEMPUNIT_F,
 };
 
+enum _eWeightUnit
+{
+    WEIGHTUNIT_KG,
+    WEIGHTUNIT_LB,
+};
+
 enum _eTaskItemType
 {
 	TITEM_SWITCHCMD=0,
@@ -351,8 +357,11 @@ public:
 	std::string	m_windsign;
 	float		m_windscale;
 	_eTempUnit	m_tempunit;
+	_eWeightUnit m_weightunit;
 	std::string	m_tempsign;
+	std::string	m_weightsign;
 	float		m_tempscale;
+	float		m_weightscale;
 	bool		m_bAcceptNewHardware;
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
