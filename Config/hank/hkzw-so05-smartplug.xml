@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
     <!--
+      Hank HKZW-SO05
       http://products.z-wavealliance.org/products/1891
       http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1891/HKZW-SO05%20Manual.pdf
     -->
@@ -45,7 +46,7 @@
             Power threshold to be interpereted, when the change value of load power exceeds the setting threshold, the smart plug will send meter report to association device(Group Lifeline)
           </Help>
         </Value>
-        <Value type="byte" genre="config" instance="1" index="152" label="Percentage threshold of power report" units="%" size="1" min="0" max="i255" value="10">
+        <Value type="byte" genre="config" instance="1" index="152" label="Percentage threshold of power report" units="%" size="1" min="0" max="255" value="10">
           <Help>
             Power percentage threshold to be interpreted, when change value of the load power exceeds the setting threshold, the smart plug will send meter report to association device(Group Lifeline).
           </Help>
