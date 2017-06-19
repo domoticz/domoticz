@@ -115,7 +115,7 @@ SDK version 7.01
 	SelectPlus200689103 Black Chime added
 
 SDK version 7.00
-	TEMP7 - TSS330 added and TH9 – TSS320 added
+	TEMP7 - TSS330 added and TH9 â€“ TSS320 added
 	BlindsT8 = Chamberlain CS4330CN added
 	SelectPlus200689101 White Chime added
 	Interface command - start receiver added
@@ -955,6 +955,7 @@ SDK version 4.9
 #define pTypeWEIGHT 0x5D
 #define sTypeWEIGHT1 0x1   //BWR102
 #define sTypeWEIGHT2 0x2   //GR101
+#define sTypeWEIGHT 0x3
 
 //types for gas
 #define pTypeGAS 0x5E
