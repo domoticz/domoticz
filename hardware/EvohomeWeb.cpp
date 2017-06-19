@@ -133,17 +133,15 @@ bool CEvohomeWeb::StartSession()
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
-		if (result.empty()) // adding hardware
-			m_awaysetpoint = 15; // use default 'Away' setpoint value
-		else
+		if (!result.empty()) // adding hardware
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(result[0][0], ";", splitresults);
 			if (splitresults.size()>0)
 				m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
-			if (m_awaysetpoint == 0)
-				m_awaysetpoint = 15; // use default 'Away' setpoint value
 		}
+		if (m_awaysetpoint == 0)
+			m_awaysetpoint = 15; // use default 'Away' setpoint value
 	}
 
 	if (m_showhdtemps)
@@ -1082,8 +1080,13 @@ bool CEvohomeWeb::get_schedule(std::string zoneId)
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-	bool ret = jReader.parse(s_res, get_zone_by_ID(zoneId)->schedule);
-	return true;
+	bool ret = jReader.parse(s_res, hz->schedule);
+	if (ret)
+	{
+		(hz->schedule)["zoneId"] = zoneId;
+		(hz->schedule)["name"] = (*hz->status)["name"].asString();
+	}
+	return ret;
 }
 
 
@@ -1099,12 +1102,12 @@ std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 		return "";
 	return get_next_switchpoint(hz->schedule);
 }
-std::string CEvohomeWeb::get_next_switchpoint(Json::Value schedule)
+std::string CEvohomeWeb::get_next_switchpoint(Json::Value &schedule)
 {
 	std::string current_setpoint;
 	return get_next_switchpoint_ex(schedule, current_setpoint);
 }
-std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::string &current_setpoint)
+std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::string &current_setpoint)
 {
 	if (schedule.isNull())
 		return "";
@@ -1115,19 +1118,29 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 	int year = ltime.tm_year;
 	int month = ltime.tm_mon;
 	int day = ltime.tm_mday;
+	int wday = ltime.tm_wday;
+	char rdata[30];
+	sprintf(rdata, "%04d-%02d-%02dT%02d:%02d:%02dZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+	std::string szdatetime = std::string(rdata);
+	if (szdatetime <= schedule["nextSwitchpoint"].asString()) // our current cached values are still valid
+	{
+		current_setpoint = schedule["currentSetpoint"].asString();
+		return schedule["nextSwitchpoint"].asString();
+	}
+
 	std::string sztime;
 	bool found = false;
-
+	current_setpoint = "";
 	for (uint8_t d = 0; ((d < 7) && !found); d++)
 	{
-		int wday = (ltime.tm_wday + d) % 7;
-		std::string s_wday = (std::string)weekdays[wday];
+		int tryday = (wday + d) % 7;
+		std::string s_tryday = (std::string)weekdays[tryday];
 		Json::Value* j_day;
 		// find day
 		for (size_t i = 0; ((i < schedule["dailySchedules"].size()) && !found); i++)
 		{
 			j_day = &schedule["dailySchedules"][(int)(i)];
-			if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_wday))
+			if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
 				found = true;
 		}
 		if (!found)
@@ -1151,10 +1164,44 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value schedule, std::stri
 				current_setpoint = (*j_day)["switchpoints"][(int)(i)]["temperature"].asString();
 		}
 	}
-	char rdata[30];
-	sprintf(rdata, "%04d-%02d-%02dT%sZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, sztime.c_str());
 
-	return std::string(rdata);
+	if (current_setpoint.empty()) // got a direct match on the schedule, need to go back in time to find the current setpoint
+	{
+		found = false;
+		for (uint8_t d = 1; ((d < 7) && !found); d++)
+		{
+			int tryday = (wday - d + 7) % 7;
+			std::string s_tryday = (std::string)weekdays[tryday];
+			Json::Value* j_day;
+			// find day
+			for (size_t i = 0; ((i < schedule["dailySchedules"].size()) && !found); i++)
+			{
+				j_day = &schedule["dailySchedules"][(int)(i)];
+				if (((*j_day).isMember("dayOfWeek")) && ((*j_day)["dayOfWeek"] == s_tryday))
+					found = true;
+			}
+			if (!found)
+				continue;
+
+			found = false;
+			size_t l = (*j_day)["switchpoints"].size();
+			if (l > 0)
+			{
+				l--;
+				current_setpoint = (*j_day)["switchpoints"][(int)(l)]["temperature"].asString();
+				found = true;
+			}
+		}
+	}
+
+	if (!found)
+		return "";
+
+	sprintf(rdata, "%04d-%02d-%02dT%sZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, sztime.c_str());
+	szdatetime = std::string(rdata);
+	schedule["currentSetpoint"] = current_setpoint;
+	schedule["nextSwitchpoint"] = szdatetime;
+	return szdatetime;
 }
 
 
