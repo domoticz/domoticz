@@ -1085,6 +1085,9 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 
 		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
 		boost::thread EvaluateEvent(boost::bind(&CEventSystem::EvaluateEvent, this, "device", ulDevID, devname, nValue, sValue, nValueWording, 0));
+#ifdef ENABLE_PYTHON
+		EvaluateEventPython("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
+#endif
 	}
 	else {
 		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
@@ -1095,6 +1098,9 @@ void CEventSystem::ProcessMinute()
 {
 	GetCurrentScenesGroups();
 	EvaluateEvent("time");
+#ifdef ENABLE_PYTHON
+	EvaluateEventPython("time", 0, "", 0, "", "", 0);
+#endif
 }
 
 void CEventSystem::ProcessUserVariable(const uint64_t varId)
@@ -1102,6 +1108,9 @@ void CEventSystem::ProcessUserVariable(const uint64_t varId)
 	if (!m_bEnabled)
 		return;
 	EvaluateEvent("uservariable", varId);
+#ifdef ENABLE_PYTHON
+	EvaluateEventPython("uservariable", 0, "", 0, "", "", varId);
+#endif
 }
 
 void CEventSystem::EvaluateEvent(const std::string &reason)
@@ -1175,11 +1184,45 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 	}
 
+	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
+
+	// handle database held scripts
+	try {
+		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+		std::vector<_tEventItem>::iterator it;
+		for (it = m_events.begin(); it != m_events.end(); ++it) {
+			bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+			bool eventActive = (it->EventStatus == 1);
+			if (eventInScope && eventActive) {
+				if (it->Interpreter == "Lua") {
+					if (reason == "device")			EvaluateLua(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
+					if (reason == "time")			EvaluateLua(reason, it->Name, it->Actions);
+					if (reason == "security")		EvaluateLua(reason, it->Name, it->Actions);
+					if (reason == "uservariable")	EvaluateLua(reason, it->Name, it->Actions, varId);
+				}
+			}
+		}
+	}
+	catch (...) {
+		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
+	}
+}
+
 #ifdef ENABLE_PYTHON
+void CEventSystem::EvaluateEventPython(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
+{
+	if (!m_bEnabled)
+		return;
+	GetCurrentUserVariables();
+
+	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+	std::vector<std::string> FileEntries;
+	std::vector<std::string>::const_iterator itt;
+	std::string filename;
+	bool bDeviceFileFound = false;
+
 	try
 	{
-		FileEntries.clear();
-
 		DirectoryListing(FileEntries, python_Dir, false, true);
 
 		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
@@ -1233,35 +1276,23 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	catch (...)
 	{
 	}
-#endif
-
-	EvaluateBlockly(reason, DeviceID, devname, nValue, sValue, nValueWording, varId);
 
 	// handle database held scripts
-	try {
+	try
+	{
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+		for (it = m_events.begin(); it != m_events.end(); ++it)
+		{
+			bool eventInScope = ((it->Interpreter == "Python") && ((it->Type == "all") || (it->Type == reason)));
 			bool eventActive = (it->EventStatus == 1);
-			if (eventInScope && eventActive) {
-				if (it->Interpreter == "Lua") {
-					if (reason == "device")			EvaluateLua(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
-					if (reason == "time")			EvaluateLua(reason, it->Name, it->Actions);
-					if (reason == "security")		EvaluateLua(reason, it->Name, it->Actions);
-					if (reason == "uservariable")	EvaluateLua(reason, it->Name, it->Actions, varId);
-				}
-				if (it->Interpreter == "Python") {
-#ifdef ENABLE_PYTHON
-					if (reason == "device")			EvaluatePython(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
-					if (reason == "time")			EvaluatePython(reason, it->Name, it->Actions);
-					if (reason == "security")		EvaluatePython(reason, it->Name, it->Actions);
-					if (reason == "uservariable")	EvaluatePython(reason, it->Name, it->Actions, varId);
-					//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
-#else
-					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
-#endif
-				}
+			if (eventInScope && eventActive)
+			{
+				if (reason == "device")			EvaluatePython(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
+				if (reason == "time")			EvaluatePython(reason, it->Name, it->Actions);
+				if (reason == "security")		EvaluatePython(reason, it->Name, it->Actions);
+				if (reason == "uservariable")	EvaluatePython(reason, it->Name, it->Actions, varId);
+				//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
 			}
 		}
 	}
@@ -1269,6 +1300,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
 	}
 }
+#endif
 
 lua_State *CEventSystem::CreateBlocklyLuaState()
 {
@@ -2269,9 +2301,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
-
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
     Plugins::PythonEventsProcessPython(reason, filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
         getSunRiseSunSetMinutes("Sunset"));
