@@ -39,7 +39,7 @@
 		</Value>
 		<Value type="byte" index="5" genre="config" label="Dimmer speed" units="x 10 milliseconds" min="0" max="255" value="30">
 			<Help>Time to dim on button presses and Set command (if it has no duration specified).
-			If not 0, dimming will be done smoothly to preserv bulb life.
+			If not 0, dimming will be done smoothly to preserve bulb life.
 			0 : Instantly.
 			1 - 255	: in 10ms units (Default 30).
 			</Help>

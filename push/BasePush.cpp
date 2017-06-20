@@ -577,6 +577,11 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	{
 		sprintf(szData,"Not supported yet");
 	}
+	else if (vType == "Sound Level")
+	{
+		strcpy(szData, rawsendValue.c_str());
+	}
+	
 	else if (vType == "Status")
 	{
 		sprintf(szData, "%d", nValue);
@@ -749,6 +754,10 @@ std::string CBasePush::getUnit(const int delpos, const int metertypein)
 	{
 		strcpy(szData, "");
 	}
+	else if (vType == "Sound Level")
+	{
+		strcpy(szData, "dB");
+	}
 	else if (vType == "Status")
 	{
 		strcpy(szData, "");
@@ -783,7 +792,7 @@ std::string CBasePush::getUnit(const int delpos, const int metertypein)
 	}
 	else if (vType == "Weight")
 	{
-		strcpy(szData, "kg");
+		strcpy(szData, m_sql.m_weightsign.c_str());
 	}	
 	else if (vType == "Voltage")
 	{

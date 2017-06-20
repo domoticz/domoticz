@@ -19,8 +19,8 @@ before_install:
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
-  - git clone https://github.com/OpenZWave/open-zwave.git
-  - ln -s open-zwave open-zwave-read-only
+  - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+  # - ln -s open-zwave open-zwave-read-only
 
 
 # Build matrix definition
@@ -59,7 +59,7 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
-      - (cd open-zwave-read-only; make)
+      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
@@ -70,7 +70,6 @@ matrix:
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
-      - brew install boost-python|| true
       - brew install libusb
       - brew install libusb-compat
       - brew install zlib || true

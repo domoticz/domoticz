@@ -70,14 +70,14 @@ bool Arilux::StopHardware()
 	return true;
 }
 
-#define Limitless_POLL_INTERVAL 60
+#define Arilux_POLL_INTERVAL 60
 
 void Arilux::Do_Work()
 {
 	_log.Log(LOG_STATUS, "Arilux Worker started...");
 
 	
-	int sec_counter = Limitless_POLL_INTERVAL - 5;
+	int sec_counter = Arilux_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -362,15 +362,8 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 
 	returnValue= SendTCPCommand(ipAddress,commandToSend);
 	
-
 	return returnValue;
 }
-
-
-
-
-
-
 
 //Webserver helpers
 namespace http {

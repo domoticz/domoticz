@@ -60,7 +60,7 @@
 	<CommandClass id="128" name="COMMAND_CLASS_BATTERY">
 		<Value type="byte" genre="user" index="0" label="Battery Check" units="%" min="20" max="100" value="">
 			<Help>
-				The users can also enquire the battery status of the unit by sending
+				The users can also inquire the battery status of the unit by sending
 				BATTERY_GET command via Z-Wave Controller. Once the unit receives the
 				command, it will return BATTERY_REPORT command. The unit will send
 				Battery_Level = 255 (0xFF) command to the Z-Wave Controller to inform that

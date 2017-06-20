@@ -108,6 +108,7 @@ private:
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
+        void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root);
@@ -276,7 +277,7 @@ private:
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	void PluginLoadConfig();
 #endif
 	std::string PluginHardwareDesc(int HwdID);

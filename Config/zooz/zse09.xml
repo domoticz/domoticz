@@ -19,7 +19,7 @@
             <Item label="Enabled" value="255"/>
         </Value>
         <Value type="short" genre="config" index="5" label="Light Trigger Level" size="2" min="0" max="1000" value="100" units="lux">
-            <Help>Set light sensor as a secondary trigger for associated devices.  If light level in a room falls beyond the set point and motion is detected, the Mini Sensor will send BASIC_SET command to assocated devices to turn ON.</Help>
+            <Help>Set light sensor as a secondary trigger for associated devices.  If light level in a room falls beyond the set point and motion is detected, the Mini Sensor will send BASIC_SET command to associated devices to turn ON.</Help>
         </Value>
         <Value type="byte" genre="config" index="6" label="Motion Trigger Interval" size="1" min="1" max="8" value="8" units="seconds">
             <Help>Adjust the time when motion is reported again after initial trigger, in seconds.</Help>
@@ -32,7 +32,7 @@
             <Item label="Disabled" value="0"/>
             <Item label="Enabled" value="255"/>
         </Value>
-        <Value type="byte" genre="config" index="9" label="Light Report" size="2" min="0" max="255" value="100" units="lux">
+        <Value type="byte" genre="config" index="9" label="Light Report" size="1" min="0" max="255" value="100" units="lux">
             <Help>Change required to report to the controller, in lux.</Help>
         </Value>
         <Value type="list" genre="config" index="10" label="LED Notification" size="1" min="0" max="1" value="1">

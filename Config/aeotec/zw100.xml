@@ -180,8 +180,8 @@ version 1.07 (4.11.2016)
 			Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
 			After that, the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or egal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
-			After that, the lower limit report would be disabled again until the measurement greater or egal (Lower limit + Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that, the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
 			3. High byte is the recover limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
 			4. Recover limit range: 1.0 to 25.5 C/ F (0x0101 to 0xFF01 or 0x0102 to 0xFF02).
 			E.g. The default recover limit value is 2.0 C/F (0x1401/0x1402), when the measurement is less than (Upper limit - 2), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 2), the lower limit report would be enabled one time.
@@ -192,8 +192,8 @@ version 1.07 (4.11.2016)
 			 Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or egal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
-			After that the lower limit report would be disabled again until the measurement greater or egal(Lower limit + Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
 			3. Recover limit range: 1 to 50% (0x01 to 0x32).
 			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
 			</Help>			
@@ -203,8 +203,8 @@ version 1.07 (4.11.2016)
 			Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or egal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
-			After that the lower limit report would be disabled again until the measurement greater or egal (Lower limit + Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
 			3. Unit = 10*Recover limit (Lux)
 			4. Recover limit range: 10 to 2550Lux (0x01 to 0xFF).
 			E.g. The default recover limit value is 100 Lux, when the measurement is less than (Upper limit - 100), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 100), the lower limit report would be enabled one time.
@@ -215,8 +215,8 @@ version 1.07 (4.11.2016)
 			 Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
 			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
-			2. When the current measurement greater or egal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
-			After that the lower limit report would be disabled again until the measurement greater or egal(Lower limit + Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
 			3. Recover limit range: 1 to 50% (0x01 to 0x32).
 			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
 			</Help>

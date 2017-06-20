@@ -71,6 +71,11 @@
 									<h2><span data-i18n="Location"></span>:</h2>
 									<label id="sunriseset"></label>
 									<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+									 <tr>
+
+                                                                                <td align="right" style="width:60px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
+                                                                                <td><input type="input" id="Title" name="Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                                                        </tr>
 									<tr>
 										<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
 										<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -774,6 +779,18 @@
 									</td>
 								</tr>
 							</table>
+							<h2><span data-i18n="Weight"></span>:</h2>
+							<table class="display" id="weighttable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td>
+										<select id="comboWeightUnit" name="WeightUnit" style="width:120px" class="combobox ui-corner-all">
+											<option value="0">Kilograms</option>
+											<option value="1">Pounds</option>
+										</select>
+									</td>
+								</tr>
+							</table>
 							<br>
 							<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
 							<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
@@ -784,6 +801,14 @@
 								<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
 								<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R1: </label></td>
+								<td><input type="input" id="CostEnergyR1" name="CostEnergyR1" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R2: </label></td>
+								<td><input type="input" id="CostEnergyR2" name="CostEnergyR2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>

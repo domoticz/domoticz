@@ -1,8 +1,8 @@
 /*
 Domoticz Software : http://domoticz.com/
 File : TeleinfoSerial.cpp
-Author : Nicolas HILAIRE
-Version : 2.2
+Author : Nicolas HILAIRE, Blaise Thauvin
+Version : 2.3
 Description : This class decodes the Teleinfo signal from serial/USB devices before processing them
 
 History :
@@ -18,6 +18,7 @@ History :
 			   a shared class to process Teleinfo protocol (Blaise Thauvin)
 - 2017-03-21 : 2.1 Fixed bug sending too many updates
 - 2017-03-26 : 2.2 Fixed bug affecting tree-phases users. Consequently, simplified code
+- 2017-04-01 : 2.3 Added RateLimit, flag to ignore CRC checks, and new CRC computation algorithm available on newer meters
 */
 
 #include "stdafx.h"
@@ -38,17 +39,27 @@ History :
 #define DEBUG_TeleinfoSerial
 #endif
 
-#define NBFRAMES 8				 //number of frames to collect before processing one
-
-CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, unsigned int baud_rate)
+CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const int datatimeout, unsigned int baud_rate, const bool disable_crc, const int ratelimit)
 {
 	m_HwdID = ID;
 	m_szSerialPort = devname;
-	m_iBaudRate = baud_rate;
 	m_iOptParity = boost::asio::serial_port_base::parity(TELEINFO_PARITY);
 	m_iOptCsize = boost::asio::serial_port_base::character_size(TELEINFO_CARACTER_SIZE);
 	m_iOptFlow = boost::asio::serial_port_base::flow_control(TELEINFO_FLOW_CONTROL);
 	m_iOptStop = boost::asio::serial_port_base::stop_bits(TELEINFO_STOP_BITS);
+	m_bDisableCRC = disable_crc;
+	m_iRateLimit = ratelimit;
+	m_iDataTimeout = datatimeout;
+
+	if (baud_rate == 0)
+		m_iBaudRate = 1200;
+	else
+		m_iBaudRate = 9600;
+
+        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
+        // down to Timeout in order to avoir watchdog errors due to this user configuration mistake
+        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
+
 	Init();
 }
 
@@ -72,7 +83,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "Teleinfo: %s uses serial port: %s", Name.c_str(), m_szSerialPort.c_str());
+		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
@@ -98,6 +109,12 @@ bool CTeleinfoSerial::StartHardware()
 	setReadCallback(boost::bind(&CTeleinfoSerial::readCallback, this, _1, _2));
 	m_bIsStarted = true;
 	sOnConnected(this);
+	teleinfo.CRCmode1 = 255;	 // Guess the CRC mode at first run
+
+	if (m_bDisableCRC)
+		_log.Log(LOG_STATUS, "(%s) CRC checks on incoming data are disabled", Name.c_str());
+	else
+		_log.Log(LOG_STATUS, "(%s) CRC checks will be performed on incoming data", Name.c_str());
 
 	return true;
 }
@@ -122,8 +139,10 @@ void CTeleinfoSerial::readCallback(const char *data, size_t len)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	if (!m_bEnableReceive)
-		return;					 //receiving not enabled
-
+	{
+		_log.Log(LOG_ERROR, "(%s) Receiving is not enabled", Name.c_str());
+		return;
+	}
 	ParseData(data, static_cast<int>(len));
 }
 
@@ -145,7 +164,7 @@ void CTeleinfoSerial::MatchLine()
 	// Extract the elements, return if not enough and line is invalid
 	StringSplit(line, " ", splitresults);
 	if (splitresults.size() <3)
-	{ 
+	{
 		_log.Log(LOG_ERROR,"Frame #%s# passed the checksum test but failed analysis", line);
 		return;
 	}
@@ -178,13 +197,15 @@ void CTeleinfoSerial::MatchLine()
 	else if (label == "PPOT")  teleinfo.PPOT = value;
 	else if (label == "MOTDETAT") m_counter++;
 
-	if (m_counter >= NBFRAMES)
+	// at 1200 baud we have roughly one frame per 1,5 second, check more frequently for alerts.
+	if (m_counter >= m_iBaudRate/600)
 	{
 		m_counter = 0;
-		ProcessTeleinfo(teleinfo);
 		#ifdef DEBUG_TeleinfoSerial
-		_log.Log(LOG_NORM,"(%s), Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
+		_log.Log(LOG_NORM,"(%s) Teleinfo frame complete, PAPP: %i, PTEC: %s", Name.c_str(), teleinfo.PAPP, teleinfo.PTEC.c_str());
 		#endif
+		ProcessTeleinfo(teleinfo);
+		mytime(&m_LastHeartbeat);// keep heartbeat happy
 	}
 }
 
@@ -209,8 +230,8 @@ void CTeleinfoSerial::ParseData(const char *pData, int Len)
 			if (m_bufferpos > 0)
 				m_buffer[m_bufferpos] = 0;
 
-			//We check the line only if the checksum is ok
-			if (isCheckSumOk(teleinfo.CRCmode1))
+			//We process the line only if the checksum is ok and user did not request to bypass CRC verification
+			if ((m_bDisableCRC) || isCheckSumOk(teleinfo.CRCmode1))
 				MatchLine();
 
 			m_bufferpos = 0;
@@ -268,27 +289,29 @@ bool CTeleinfoSerial::isCheckSumOk(int &isMode1)
 		mode1 += m_buffer[i];
 	}
 	mode2 = ((mode1 + m_buffer[i]) & 0x3F) + 0x20;
-	mode1 = (mode2 & 0x3F) + 0x20;
+	mode1 = (mode1 & 0x3F) + 0x20;
 
 	if (mode1 == checksum)
-		if (isMode1 == (int)true)// This will evaluate to false when isMode still equals to 255 at second run
-			line_ok = true;
-	else
 	{
-		isMode1 = true;
-		_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+		line_ok = true;
+		if (isMode1 != (int)true)// This will evaluate to false when isMode still equals to 255 at second run
+		{
+			isMode1 = true;
+			_log.Log(LOG_STATUS, "(%s) Teleinfo CRC check mode set to 1", Name.c_str());
+		}
 	}
 	else if (mode2 == checksum)
-	if (isMode1 == false)
-		line_ok = true;
-	else
 	{
-		isMode1 = false;
-		_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+		line_ok = true;
+		if (isMode1 != false)	 // if this is first run, will still be at 255
+		{
+			isMode1 = false;
+			_log.Log(LOG_STATUS, "(%s) TeleinfoCRC check mode set to 2", Name.c_str());
+		}
 	}
 	else						 // Don't send an error on the first run as the line is probably truncated, wait for mode to be initialised
-	if (isMode1 != 255) _log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.",
-				Name.c_str(), m_buffer);
+	if (isMode1 != 255)
+		_log.Log(LOG_ERROR, "(%s) CRC check failed on Teleinfo line '%s' using both modes 1 and 2. Line skipped.", Name.c_str(), m_buffer);
 
 	#ifdef DEBUG_TeleinfoSerial
 	if (line_ok) _log.Log(LOG_NORM, "(%s) CRC check passed on Teleinfo line '%s'. Line processed", Name.c_str(), m_buffer);

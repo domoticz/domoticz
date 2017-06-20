@@ -181,7 +181,8 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, con
       }
    case digital_potentiometer:
    {
-	   unsigned int wiper = level * (255.0 / 15.0);
+	   writeData(device, "chargepump", "1");
+	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
 	   writeData(device, "wiper", boost::to_string(wiper));
 	   break;
    }
@@ -334,7 +335,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
       }
    default:
       {
-         fileName.append("/volt.").append(1,'A'+unit);
+         fileName.append("/volt.").append(1, static_cast<char>('A'+unit));
          break;
       }
    }
@@ -356,11 +357,11 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
    return (float)(atof(readValue.c_str())*1000.0);
 }
 
-unsigned int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
+int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
 {
 	std::string readValue = readRawData(std::string(device.filename + "/wiper"));
 	if (readValue.empty())
-		return 0;
+		return -1;
 	return atoi(readValue.c_str());
 }
 

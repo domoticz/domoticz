@@ -15,6 +15,8 @@ namespace Plugins {
 		bool	m_bAllPluginsStarted;
 		int		m_iPollInterval;
 
+		void*	m_InitialPythonThread;
+
 		static	std::map<int, CDomoticzHardwareBase*>	m_pPlugins;
 		static	std::map<std::string, std::string>		m_PluginXml;
 
@@ -36,7 +38,6 @@ namespace Plugins {
 		void	 DeregisterPlugin(const int HwdID);
 		bool StopPluginSystem();
 		void AllPluginsStarted() { m_bAllPluginsStarted = true; };
-		static void SendNotification(const std::string &, const std::string &, const std::string &, int, const std::string &);
 		static void LoadSettings();
 	};
 };

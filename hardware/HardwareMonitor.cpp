@@ -13,9 +13,14 @@
 
 #ifdef WIN32
 	#include <comdef.h>
-#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
-#ifndef __FreeBSD__
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+#if !defined ( __FreeBSD__) && !defined(__OpenBSD__)
 	#include <sys/sysinfo.h>
+#endif
+#ifdef __OpenBSD__
+	#include <sys/sysctl.h>
+	#include <sys/sched.h>
+	#include <sys/vmmeter.h>
 #endif
 	#include <iostream>
 	#include <fstream>
@@ -33,7 +38,7 @@
 		long long UsedBlocks;
 		long long AvailBlocks;
 	};
- 
+
 //USER_HZ detection, from openssl code
 #ifndef HZ
 # if defined(_SC_CLK_TCK) && (!defined(OPENSSL_SYS_VMS) || __CTRL_VER >= 70000000)
@@ -156,7 +161,7 @@ void CHardwareMonitor::Do_Work()
 			}
 		}
 	}
-	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");			
+	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");
 }
 
 void CHardwareMonitor::SendCurrent(const unsigned long Idx, const float Curr, const std::string &defaultname)
@@ -259,7 +264,7 @@ void CHardwareMonitor::FetchData()
 		RunWMIQuery("Sensor","Voltage");
 		return;
 	}
-#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
 	if (bHasInternalTemperature)
@@ -282,7 +287,7 @@ void CHardwareMonitor::UpdateSystemSensor(const std::string& qType, const int di
 	if (!m_HwdID) {
 #ifdef _DEBUG
 		_log.Log(LOG_NORM,"Hardware Monitor: Id not found!");
-#endif		
+#endif
 		return;
 	}
 	int doffset = 0;
@@ -343,11 +348,11 @@ bool CHardwareMonitor::InitWMI()
 		m_pServicesSystem,                        // Indicates the proxy to set
 		RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
 		RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-		NULL,                        // Server principal name 
-		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
+		NULL,                        // Server principal name
+		RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
 		RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
 		NULL,                        // client identity
-		EOAC_NONE                    // proxy capabilities 
+		EOAC_NONE                    // proxy capabilities
 		);
 */
 	if (!IsOHMRunning())
@@ -379,20 +384,20 @@ bool CHardwareMonitor::IsOHMRunning()
 	bool bOHMRunning = false;
 	IEnumWbemClassObject* pEnumerator = NULL;
 	HRESULT hr;
-	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);  
-	if (SUCCEEDED(hr))  
+	hr = m_pServicesSystem->ExecQuery(L"WQL", L"Select * from win32_Process WHERE Name='OpenHardwareMonitor.exe'" , WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
+	if (SUCCEEDED(hr))
 	{
-		IWbemClassObject *pclsObj=NULL;  
-		ULONG uReturn = 0;  
-		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);  
+		IWbemClassObject *pclsObj=NULL;
+		ULONG uReturn = 0;
+		hr = pEnumerator->Next(WBEM_INFINITE, 1,  &pclsObj, &uReturn);
 		if ((FAILED(hr)) || (0 == uReturn))
 		{
 			pEnumerator->Release();
 			return false;
 		}
-		VARIANT vtProp;  
-		VariantInit(&vtProp);  
-		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);  
+		VARIANT vtProp;
+		VariantInit(&vtProp);
+		hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
 		int procId = static_cast<int>(vtProp.iVal);
 		if (procId) {
 			bOHMRunning = true;
@@ -414,7 +419,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	query.append(" WHERE SensorType = '");
 	query.append(qType);
 	query.append("'");
-	IEnumWbemClassObject* pEnumerator = NULL; 
+	IEnumWbemClassObject* pEnumerator = NULL;
 	hr = m_pServicesOHM->ExecQuery(L"WQL", bstr_t(query.c_str()), WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 	if (!FAILED(hr))
 	{
@@ -471,7 +476,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		pEnumerator->Release();
 	}
 }
-#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	double time_so_far()
 	{
 		struct timeval tp;
@@ -515,7 +520,45 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		float memusedpercentage = (100.0f / float(MemTotal))*MemUsed;
 		return memusedpercentage;
 	}
-
+#ifdef __OpenBSD__
+	float GetMemUsageOpenBSD()
+	{
+		int mibTotalMem[2] = {
+			CTL_HW,
+			HW_PHYSMEM64
+		};
+		int mibPageSize[2] = {
+			CTL_HW,
+			HW_PAGESIZE
+		};
+		int mibMemStats[2] = {
+			CTL_VM,
+			VM_METER
+		};
+		int pageSize;
+		int64_t totalMemBytes, usedMem;
+		size_t len = sizeof(totalMemBytes);
+		float percent;
+		struct vmtotal memStats;
+		if (sysctl(mibTotalMem, 2, &totalMemBytes,
+			   &len, NULL, 0) == -1){
+			return -1;
+		}
+		len = sizeof(pageSize);
+		if (sysctl(mibPageSize, 2, &pageSize,
+			   &len, NULL, 0) == -1){
+			return -1;
+		}
+		len = sizeof(memStats);
+		if (sysctl(mibMemStats, 2, &memStats,
+			   &len, NULL, 0) == -1){
+			return -1;
+		}
+		usedMem = memStats.t_arm * pageSize;//active real memory
+		percent = (100.0f / float(totalMemBytes))*usedMem;
+		return percent;
+	}
+#endif
 	void CHardwareMonitor::FetchUnixData()
 	{
 		char szTmp[300];
@@ -524,6 +567,9 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 #ifndef __FreeBSD__
 		if (memusedpercentage == -1)
 		{
+#ifdef __OpenBSD__
+			memusedpercentage = GetMemUsageOpenBSD();
+#else
 			//old (wrong) way
 			struct sysinfo mySysInfo;
 			int ret = sysinfo(&mySysInfo);
@@ -531,6 +577,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				return;
 			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
 			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
+#endif
 		}
 #endif
 		sprintf(szTmp,"%.2f",memusedpercentage);
@@ -540,6 +587,31 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		char cname[50];
 		if (m_lastquerytime==0)
 		{
+#if defined(__OpenBSD__)
+			//Get number of CPUs
+			// sysctl hw.ncpu
+			int mib[] = {CTL_HW, HW_NCPU};
+			int totcpu = -1;
+			size_t size = sizeof(totcpu);
+			long loads[CPUSTATES];
+			if (sysctl(mib, 2, &totcpu, &size, NULL, 0) <0){
+				_log.Log(LOG_ERROR, "sysctl NCPU failed.");
+				return;
+			}
+			m_lastquerytime = time_so_far();
+			// In the emd there will be single value, so using
+			// average loads doesn't generate that much error.
+			mib[0] = CTL_KERN;
+			mib[1] = KERN_CPTIME;
+			size = sizeof(loads);
+			if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
+				_log.Log(LOG_ERROR, "sysctl CPTIME failed.");
+				return;
+			}
+			//Interrupts aren't measured.
+			m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
+			m_totcpu=totcpu;
+#else
 			//first time
 			m_lastquerytime = time_so_far();
 			int actload1,actload2,actload3;
@@ -552,7 +624,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			if (fIn!=NULL)
 			{
 				bool bFirstLine=true;
-				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL ) 
+				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
 				{
 					int ret=sscanf(szTmp, "%s\t%d\t%d\t%d\n", cname, &actload1, &actload2, &actload3);
 					if ((bFirstLine)&&(ret==4)) {
@@ -570,10 +642,29 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				m_lastquerytime=0;
 			else
 				m_totcpu=totcpu;
+#endif // else __OpenBSD__
 		}
 		else
 		{
 			double acttime = time_so_far();
+#if defined(__OpenBSD__)
+			int mib[] = {CTL_KERN, KERN_CPTIME};
+			long loads[CPUSTATES];
+			size_t size = sizeof(loads);
+			if (sysctl(mib, 2, loads, &size, NULL, 0) < 0){
+				_log.Log(LOG_ERROR, "sysctl CPTIME failed.");
+				return;
+			}else {
+				long long t = (loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS])-m_lastloadcpu;
+				double cpuper=((double(t) / (difftime(acttime,m_lastquerytime) * HZ)) * 100);///double(m_totcpu);
+				if (cpuper>0)
+				{
+					sprintf(szTmp,"%.2f", cpuper);
+					UpdateSystemSensor("Load", 1, "CPU_Usage", szTmp);
+				}
+				m_lastloadcpu = loads[CP_USER] + loads[CP_NICE] + loads[CP_SYS];
+			}
+#else
 			int actload1,actload2,actload3;
 #if defined(__FreeBSD__)
 			FILE *fIn = fopen("/compat/linux/proc/stat", "r");
@@ -596,6 +687,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 					m_lastloadcpu=actload1+actload2+actload3;
 				}
 			}
+#endif //else Openbsd
 			m_lastquerytime=acttime;
 		}
 
@@ -623,7 +715,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 							continue;
 						}
 					}
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
 					if (strstr(dname, "/dev") != NULL)
 #elif defined(__CYGWIN32__)
 					if (strstr(smountpoint, "/cygdrive/") != NULL)
@@ -657,4 +749,3 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		}
 	}
 #endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
-

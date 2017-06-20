@@ -68,7 +68,7 @@ namespace OpenZWave
 		friend class Association;
 		friend class Basic;
 		friend class ManufacturerSpecific;
-		friend class MultiInstanceAssociation;
+		friend class MultiChannelAssociation;
 		friend class NodeNaming;
 		friend class NoOperation;
 		friend class SceneActivation;
@@ -244,7 +244,7 @@ namespace OpenZWave
 		 */
 		//void ReleaseNodes();
 
-		ControllerInterface		m_controllerInterfaceType;					// Specifies the controller's hardware interface
+		ControllerInterface			m_controllerInterfaceType;				// Specifies the controller's hardware interface
 		string					m_controllerPath;							// name or path used to open the controller hardware.
 		Controller*				m_controller;								// Handles communications with the controller hardware.
 		uint32					m_homeId;									// Home ID of the Z-Wave controller.  Not valid until the DriverReady notification has been received.
@@ -473,8 +473,8 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			ControllerCommand_DeleteAllReturnRoutes,		/**< Delete all return routes from a device. */
 			ControllerCommand_SendNodeInformation,			/**< Send a node information frame */
 			ControllerCommand_ReplicationSend,				/**< Send information from primary to secondary */
-			ControllerCommand_CreateButton,					/**< Create an id that tracks handled button presses */
-			ControllerCommand_DeleteButton					/**< Delete id that tracks handled button presses */
+			ControllerCommand_CreateButton,					/**< Create an id that tracks handheld button presses */
+			ControllerCommand_DeleteButton					/**< Delete id that tracks handheld button presses */
 		};
 
 		/**
@@ -491,7 +491,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			ControllerState_Waiting,				/**< Controller is waiting for a user action. */
 			ControllerState_Sleeping,				/**< Controller command is on a sleep queue wait for device. */
 			ControllerState_InProgress,				/**< The controller is communicating with the other device to carry out the command. */
-			ControllerState_Completed,			   	/**< The command has completed successfully. */
+			ControllerState_Completed,			    /**< The command has completed successfully. */
 			ControllerState_Failed,					/**< The command has failed. */
 			ControllerState_NodeOK,					/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK. */
 			ControllerState_NodeFailed				/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed. */
@@ -603,7 +603,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool WriteNextMsg( MsgQueue const _queue );							// Extracts the first message from the queue, and makes it the current one.
 		bool WriteMsg( string const &str);									// Sends the current message to the Z-Wave network
 		void RemoveCurrentMsg();											// Deletes the current message and cleans up the callback etc states
-		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it mext wakes up.
+		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it wakes up next.
 		bool HandleErrorResponse( uint8 const _error, uint8 const _nodeId, char const* _funcStr, bool _sleepCheck = false );									    // Handle data errors and process consistently. If message is moved to wake-up queue, return true.
 		bool IsExpectedReply( uint8 const _nodeId );						// Determine if reply message is the one we are expecting
 		void SendQueryStageComplete( uint8 const _nodeId, Node::QueryStage const _stage );

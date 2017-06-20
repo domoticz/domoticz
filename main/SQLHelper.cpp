@@ -2,7 +2,6 @@
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
 #include "RFXtrx.h"
-#include "Helper.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
 #include "Logger.h"
@@ -32,7 +31,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 113
+#define DB_VERSION 115
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -645,6 +644,7 @@ CSQLHelper::CSQLHelper(void)
 	m_ActiveTimerPlan=0;
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
+	m_weightunit=WEIGHTUNIT_KG;
 	SetUnitsAndScale();
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
@@ -664,6 +664,7 @@ CSQLHelper::~CSQLHelper(void)
 	}
 	if (m_dbase!=NULL)
 	{
+		OptimizeDatabase(m_dbase);
 		sqlite3_close(m_dbase);
 		m_dbase=NULL;
 	}
@@ -2218,6 +2219,47 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
+                if (dbversion < 114)
+                {
+                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
+                        std::stringstream szQuery1, szQuery2;
+						szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
+                        query(szQuery1.str());
+                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
+                        query(szQuery2.str());
+                }
+		if (dbversion < 115)
+		{
+			//Patch for Evohome Web
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Name, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string lowerName="fitbit";
+					for (uint8_t i = 0; i < 6; i++)
+						lowerName[i] = sd[1][i] | 0x20;
+					if (lowerName == "fitbit")
+						safe_query("DELETE FROM Hardware WHERE ID=%s", sd[0].c_str());
+					else
+					{
+						int newParams = (sd[3]=="0") ? 0 : 1;
+						if (sd[4]=="1")
+							newParams += 2;
+						if (sd[5]=="1")
+							newParams += 4;
+						m_sql.safe_query("UPDATE Hardware SET Mode2=%d, Mode3=%s, Mode4=0, Mode5=0 WHERE ID=%s", newParams, sd[6].c_str(), sd[0].c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='' WHERE HardwareID=%s", sd[0].c_str());
+					}
+				}
+			}
+		}
+
 	}
 	else if (bNewInstall)
 	{
@@ -2231,7 +2273,11 @@ bool CSQLHelper::OpenDatabase()
 	//Make sure we have some default preferences
 	int nValue=10;
 	std::string sValue;
-	if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
+	if (!GetPreferencesVar("Title", sValue))
+        {
+                UpdatePreferencesVar("Title", "Domoticz");
+        }
+        if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
 		UpdatePreferencesVar("LightHistoryDays", 30);
 	}
@@ -2331,6 +2377,16 @@ bool CSQLHelper::OpenDatabase()
 		GetPreferencesVar("CostEnergy", nValue);
 		UpdatePreferencesVar("CostEnergyT2", nValue);
 	}
+	if ((!GetPreferencesVar("CostEnergyR1", nValue)) || (nValue == 0))
+	{
+		UpdatePreferencesVar("CostEnergyR1", 800);
+	}
+	if ((!GetPreferencesVar("CostEnergyR2", nValue)) || (nValue == 0))
+	{
+		GetPreferencesVar("CostEnergyR1", nValue);
+		UpdatePreferencesVar("CostEnergyR2", nValue);
+	}
+
 	if ((!GetPreferencesVar("CostGas", nValue)) || (nValue == 0))
 	{
 		UpdatePreferencesVar("CostGas", 6218);
@@ -2435,6 +2491,15 @@ bool CSQLHelper::OpenDatabase()
 	else
 	{
 		m_tempunit=(_eTempUnit)nValue;
+
+	}
+	if (!GetPreferencesVar("WeightUnit", nValue))
+	{
+		UpdatePreferencesVar("WeightUnit", (int)WEIGHTUNIT_KG);
+	}
+	else
+	{
+		m_weightunit=(_eWeightUnit)nValue;
 
 	}
 	SetUnitsAndScale();
@@ -2695,14 +2760,28 @@ void CSQLHelper::Do_Work()
 				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
 				while (itt!=m_background_task_queue.end())
 				{
-					itt->_DelayTime -= static_cast<float>(1./timer_resolution_hz);
-					if (itt->_DelayTime<=(1./timer_resolution_hz/2))
+					if (itt->_DelayTime)
+					{
+						struct timeval tvDiff, DelayTimeEnd;
+						getclock(&DelayTimeEnd);
+						if (timeval_subtract(&tvDiff, &DelayTimeEnd, &itt->_DelayTimeBegin)) {
+							tvDiff.tv_sec = 0;
+							tvDiff.tv_usec = 0;
+						}
+						float diff = ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
+						if ((itt->_DelayTime) <= diff)
+						{
+							_items2do.push_back(*itt);
+							itt=m_background_task_queue.erase(itt);
+						}
+						else
+							++itt;
+					}
+					else
 					{
 						_items2do.push_back(*itt);
 						itt=m_background_task_queue.erase(itt);
 					}
-					else
-						++itt;
 				}
 			}
 		}
@@ -2773,13 +2852,13 @@ void CSQLHelper::Do_Work()
 				//start script
 				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str());
 #ifdef WIN32
-				ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
+				ShellExecute(NULL, "open", itt->_ID.c_str(), itt->_sValue.c_str(), NULL, SW_SHOWNORMAL);
 #else
-				std::string lscript=itt->_ID + " " + itt->_sValue;
-				int ret=system(lscript.c_str());
+				std::string lscript = itt->_ID + " " + itt->_sValue;
+				int ret = system(lscript.c_str());
 				if (ret != 0)
 				{
-					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d",itt->_ID.c_str(), ret);
+					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", itt->_ID.c_str(), ret);
 				}
 #endif
 			}
@@ -3389,7 +3468,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
+			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
 	        //~ use different update queries based on the device type
@@ -3502,8 +3581,15 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
-			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255) ||
+				(switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
+				if (((switchtype == STYPE_BlindsPercentage) ||
+					(switchtype == STYPE_BlindsPercentageInverted)) &&
+					(nValue == light2_sOn))
+				{
+						llevel = 100;
+				}
 				//update level for device
 				safe_query(
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
@@ -5427,7 +5513,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 			//Check for Notification
 			if (devType==pTypeP1Power)
 			{
-				float musage=(total_real[0]+total_real[1])/EnergyDivider;
+				float musage=(total_real[0]+total_real[2])/EnergyDivider;
 				m_notifications.CheckAndHandleNotification(ID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
 			}
 /*
@@ -5746,6 +5832,13 @@ void CSQLHelper::ClearShortLog()
 void CSQLHelper::VacuumDatabase()
 {
 	query("VACUUM");
+}
+
+void CSQLHelper::OptimizeDatabase(sqlite3 *dbase)
+{
+	if (dbase == NULL)
+		return;
+	sqlite3_exec(dbase, "PRAGMA optimize;", NULL, NULL, NULL);
 }
 
 void CSQLHelper::DeleteHardware(const std::string &idx)
@@ -6270,6 +6363,7 @@ bool CSQLHelper::RestoreDatabase(const std::string &dbase)
 		sqlite3_close(dbase_restore);
 		return false;
 	}
+	OptimizeDatabase(dbase_restore);
 	sqlite3_close(dbase_restore);
 	//we have a valid database!
 	std::remove(outputfile.c_str());
@@ -6316,6 +6410,7 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 		return false; //database not open!
 
 	//First cleanup the database
+	OptimizeDatabase(m_dbase);
 	VacuumDatabase();
 
 	boost::lock_guard<boost::mutex> l(m_sqlQueryMutex);
@@ -6479,11 +6574,22 @@ void CSQLHelper::SetUnitsAndScale()
 		m_tempsign="C";
 		m_tempscale=1.0f;
 	}
-	if (m_tempunit==TEMPUNIT_F)
+    else if (m_tempunit==TEMPUNIT_F)
 	{
 		m_tempsign="F";
 		m_tempscale=1.0f; // *1.8 + 32
 	}
+
+    if(m_weightunit == WEIGHTUNIT_KG)
+    {
+        m_weightsign="kg";
+        m_weightscale=1.0f;
+    }
+    else if(m_weightunit == WEIGHTUNIT_LB)
+    {
+        m_weightsign="lb";
+        m_weightscale=2.20462f;
+    }
 }
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)

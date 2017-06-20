@@ -74,21 +74,21 @@
 										White
 								</label>
 							</div>
-							<div id="optionsRGB" style="display:none;">
+							<div id="optionsRGBLimit" style="display:none;">
 								<button id="brightUp" onclick="appLampBrightnessUp()">Brightness Up</button><button id="brightDown" onclick="appLampBrightnessDown()">Brightness Down</button><br />
-								<button id="discoUp" onclick="appLampDiscoUp()">Disco Mode Up</button><button id="discoDown" onclick="appLampDiscoDown()">Disco Mode Down</button><br />
-								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
-								<button id="discoUp" onclick="appLampDiscoMode()">Disco Mode</button><button id="speedUpLong" onclick="appLampSpeedUpLong()">Exclude Lamp</button><br />
 							</div>
-							<div id="optionsRGBWW" style="display:none;">
+							<div id="optionsRGBWLimit" style="display:none;">
 								<button id="Night" onclick="appLampNight()">Night Light</button><button id="White" onclick="appLampWhite()">Set White</button><br />
-								<br />
-								<button id="discoM1" onclick="appLampDiscoModeNum(1)">Disco M1</button><button id="discoM2" onclick="appLampDiscoModeNum(2)">Disco M2</button><button id="discoM3" onclick="appLampDiscoModeNum(3)">Disco M3</button><br />
-								<button id="discoM4" onclick="appLampDiscoModeNum(4)">Disco M4</button><button id="discoM5" onclick="appLampDiscoModeNum(5)">Disco M5</button><button id="discoM6" onclick="appLampDiscoModeNum(6)">Disco M6</button><br />
-								<button id="discoM7" onclick="appLampDiscoModeNum(7)">Disco M7</button><button id="discoM8" onclick="appLampDiscoModeNum(8)">Disco M8</button><button id="discoM9" onclick="appLampDiscoModeNum(9)">Disco M9</button><br />
-								<br />
-								<button id="speedUp" onclick="appLampSpeedUp()">Speed Up</button><button id="speedDown" onclick="appLampSpeedDown()">Speed Down</button><br />
-								<button id="discoMod" onclick="appLampDiscoMode()">Disco Mode</button><br />
+							</div>
+							<div id="optionsRGBWWLimit" style="display:none;">
+								<!--#For later use with slider: chris								
+								<input type="text" id="Temperature" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Temperature"></span><br>
+								-->
+								<button id="kelvin1" onclick="appLampSetKelvin(0)">Kelvin 0%</button><button id="kelvin2" onclick="appLampSetKelvin(25)">Kelvin 25%</button><br />
+								<button id="kelvin3" onclick="appLampSetKelvin(50)">Kelvin 50%</button><button id="kelvin4" onclick="appLampSetKelvin(75)">Kelvin 75%</button><br />
+								<button id="kelvin5" onclick="appLampSetKelvin(100)">Kelvin 100%</button><br />
+								<br />								
+								<button id="Night" onclick="appLampNight()">Night Light</button><button id="White" onclick="appLampWhite()">Set White</button><br />
 							</div>
 						</td>
 					</tr>
@@ -261,6 +261,7 @@
 						<option value="106">Blyss</option>
 						<option value="70">EnOcean</option>
 						<option value="68">GPIO</option>
+						<option value="69">Sysfs GPIO</option>
 						<option value="100">ByronSX</option>
 						<option value="101">Harrison Curtain</option>
 						<option value="102">RFY</option>
@@ -380,6 +381,16 @@
 						<select id="combogpio" style="width:220px" class="combobox ui-corner-all"><option value="-1">?</option></select>
 					</td>
 				</tr>
+			</table>
+		</div>
+		<div id="lightingparams_sysfsgpio">
+			<table class="display" id="lightparams_sysfsgpio" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label>Sysfs GPIO:</label></td>
+					<td>
+						<select id="combosysfsgpio" style="width:220px" class="combobox ui-corner-all"><option value="-1">?</option></select>
+					</td>
+				</tr>				
 			</table>
 		</div>
 		<div id="blindsparams">

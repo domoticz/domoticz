@@ -207,7 +207,7 @@ void CWunderground::GetMeterDetails()
 			if (difftime(tlocal, tobserver) >= 1800)
 			{
 				//When we don't get any valid data in 30 minutes, we also stop using the values
-				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more then 30 minutes)");
+				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
 				return;
 			}
 		}
@@ -438,7 +438,7 @@ void CWunderground::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
-							int at10 = round(std::abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph*100.0f));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);
