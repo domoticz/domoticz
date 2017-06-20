@@ -1,7 +1,7 @@
 return {
 	active = false,
 	on = {
-		'onscript1'
+		devices = {'onscript1'}
 	},
 	execute = function(domoticz, device)
 		return 'script_inactive'
