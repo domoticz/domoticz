@@ -1084,6 +1084,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
 		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+		GetCurrentUserVariables();
 		boost::thread EvaluateEvent(boost::bind(&CEventSystem::EvaluateEvent, this, "device", ulDevID, devname, nValue, sValue, nValueWording, 0));
 #ifdef ENABLE_PYTHON
 		EvaluateEventPython("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
@@ -1097,6 +1098,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 void CEventSystem::ProcessMinute()
 {
 	GetCurrentScenesGroups();
+	GetCurrentUserVariables();
 	EvaluateEvent("time");
 #ifdef ENABLE_PYTHON
 	EvaluateEventPython("time", 0, "", 0, "", "", 0);
@@ -1107,6 +1109,7 @@ void CEventSystem::ProcessUserVariable(const uint64_t varId)
 {
 	if (!m_bEnabled)
 		return;
+	GetCurrentUserVariables();
 	EvaluateEvent("uservariable", varId);
 #ifdef ENABLE_PYTHON
 	EvaluateEventPython("uservariable", 0, "", 0, "", "", varId);
@@ -1127,7 +1130,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 {
 	if (!m_bEnabled)
 		return;
-	GetCurrentUserVariables();
 
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
@@ -1213,7 +1215,6 @@ void CEventSystem::EvaluateEventPython(const std::string &reason, const uint64_t
 {
 	if (!m_bEnabled)
 		return;
-	GetCurrentUserVariables();
 
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	std::vector<std::string> FileEntries;
