@@ -72,6 +72,7 @@ CEvohomeWeb::CEvohomeWeb(const int ID, const std::string &Username, const std::s
 		m_refreshrate = 60;
 
 	m_awaysetpoint = 0; // we'll fetch this from the controller device status later
+	m_wdayoff = 6; // saturday
 }
 
 
@@ -132,13 +133,15 @@ bool CEvohomeWeb::StartSession()
 	if (m_awaysetpoint == 0) // first run - try to get our Away setpoint value from the controller device status
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, m_tcs->systemId.c_str());
+		result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%d", this->m_HwdID);
 		if (!result.empty()) // adding hardware
 		{
 			std::vector<std::string> splitresults;
 			StringSplit(result[0][0], ";", splitresults);
 			if (splitresults.size()>0)
 				m_awaysetpoint = strtod(splitresults[0].c_str(), NULL);
+			if (splitresults.size()>1)
+				m_wdayoff = atoi(splitresults[1].c_str()) % 7;
 		}
 		if (m_awaysetpoint == 0)
 			m_awaysetpoint = 15; // use default 'Away' setpoint value
@@ -268,8 +271,6 @@ bool CEvohomeWeb::GetStatus()
 	// cycle all zones for status
 	for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
 		DecodeZone(&m_tcs->zones[i]);
-//	for (std::map<int, zone>::iterator it = m_tcs->zones.begin(); it != m_tcs->zones.end(); ++it)
-//		DecodeZone(&m_tcs->zones[it->first]);
 
 	// hot water status
 	if (has_dhw(m_tcs))
@@ -314,7 +315,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			if ((zonemode.size() > 9) && (zonemode.substr(9) == "Override")) // don't touch zone if it is in Override mode
 				continue;
 
-			std::string szId, sztemperature, szsetpoint;
+			std::string sztemperature, szsetpoint;
 			std::string szuntil = "";
 			double setpoint = 0;
 
@@ -339,23 +340,22 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 					setpoint -= 3;
 			}
 
-			szId = (*hz->status)["zoneId"].asString();
 			sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
 			if ((m_showhdtemps) && hz->hdtemp.empty())
 				sznewmode = "Offline";
 
-			unsigned long evoID = atol(szId.c_str());
+			unsigned long evoID = atol(hz->zoneId.c_str());
 			std::stringstream ssUpdateStat;
 			if (setpoint < 5) // there was an error - no schedule?
 				ssUpdateStat << sztemperature << ";5;Unknown";
 			else
 			{
 				ssUpdateStat << sztemperature << ";" << setpoint << ";" << sznewmode;
-				if ((m_showschedule) && (!szuntil.empty()))
+				if ((m_showschedule) && !(szuntil.empty()) && (sznewmode != "Custom"))
 					ssUpdateStat << ";" << szuntil;
 			}
 			std::string sdevname;
-			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
 		return true;
 	}
@@ -491,7 +491,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			devname = szmodelType;
 
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name, StrParam1 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')", this->m_HwdID, tcs->systemId.c_str());
+		result = m_sql.safe_query("SELECT HardwareID, DeviceID, Name, StrParam1 FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%s'", this->m_HwdID, tcs->systemId.c_str());
 		if (!result.empty() && ((result[0][2] != devname) || (!result[0][3].empty())))
 		{
 			// also change lastupdate time to allow the web frontend to pick up the change
@@ -499,7 +499,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 			struct tm ltime;
 			localtime_r(&now, &ltime);
 			// also wipe StrParam1 - we do not also want to call the old (python) script when changing system mode
-			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE (HardwareID==%d) AND (DeviceID == '%q')", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d', StrParam1='' WHERE HardwareID=%d AND DeviceID='%s'", devname.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, this->m_HwdID, tcs->systemId.c_str());
 		}
 	}
 }
@@ -534,7 +534,8 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		if (m_awaysetpoint != new_awaysetpoint)
 		{
 			m_awaysetpoint = new_awaysetpoint;
-			m_sql.safe_query("UPDATE DeviceStatus SET sValue='%0.2f' WHERE (HardwareID==%d) AND (DeviceID == '%q')", m_awaysetpoint, this->m_HwdID, m_tcs->systemId.c_str());
+			m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
+			_log.Log(LOG_STATUS, "(%s) change Away setpoint to '%0.2f' because of non matching setpoint (%s)", this->Name.c_str(), m_awaysetpoint, (*hz->status)["name"].asString().c_str());
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
@@ -549,7 +550,37 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		{
 			ssUpdateStat << szsysmode;
 			if (m_showschedule && szuntil.empty())
-				szuntil = local_to_utc(get_next_switchpoint(hz));
+			{
+				if (szsysmode != "Custom") // can't use schedule to find next switchpoint
+					szuntil = local_to_utc(get_next_switchpoint(hz));
+			}
+			if (szsysmode == "DayOff")
+			{
+				if (szuntil.empty()) // make sure our schedule is populated
+					get_next_switchpoint(hz);
+				if (szsetpoint != hz->schedule["currentSetpoint"].asString())
+				{
+					bool found = false;
+					m_wdayoff--;
+					for (uint8_t i = 0; (i < 7) && !found; i++)
+					{
+						hz->schedule["nextSwitchpoint"] = ""; // force a recalculation
+						m_wdayoff++;
+						if (m_wdayoff>6)
+							m_wdayoff -= 7;
+						get_next_switchpoint(hz);
+						found = (szsetpoint == hz->schedule["currentSetpoint"].asString());
+					}
+					if (found)
+					{
+						m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
+
+						_log.Log(LOG_STATUS, "(%s) change Day Off schedule reference to '%s' because of non matching setpoint (%s)", this->Name.c_str(), weekdays[m_wdayoff].c_str(), (*hz->status)["name"].asString().c_str());
+					}
+					if (m_showschedule)
+						szuntil = local_to_utc(get_next_switchpoint(hz));
+				}
+			}
 		}
 		if (!szuntil.empty())
 			ssUpdateStat << ";" << szuntil;
@@ -623,7 +654,11 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 	}
 
 	if (m_showschedule && szuntil.empty())
-		szuntil = local_to_utc(get_next_switchpoint(tcs, atoi(szId.c_str())));
+	{
+		std::string szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+		if (szsysmode != "Custom") // can't use schedule to find next switchpoint
+			szuntil = local_to_utc(get_next_switchpoint(tcs, atoi(szId.c_str())));
+	}
 	if (!szuntil.empty())
 		ssUpdateStat << ";" << szuntil;
 
@@ -1128,6 +1163,11 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 		return schedule["nextSwitchpoint"].asString();
 	}
 
+	// Hack: DayOff needs to reference a specific weekday rather than current
+	std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+	if (szsystemMode == "DayOff")
+		wday = m_wdayoff;
+
 	std::string sztime;
 	bool found = false;
 	current_setpoint = "";
@@ -1165,7 +1205,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 		}
 	}
 
-	if (current_setpoint.empty()) // got a direct match on the schedule, need to go back in time to find the current setpoint
+	if (current_setpoint.empty()) // got a direct match for the next switchpoint, need to go back in time to find the current setpoint
 	{
 		found = false;
 		for (uint8_t d = 1; ((d < 7) && !found); d++)
@@ -1197,7 +1237,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	if (!found)
 		return "";
 
-	sprintf(rdata, "%04d-%02d-%02dT%sZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, sztime.c_str());
+	sprintf(rdata, "%04d-%02d-%02dT%sA", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, sztime.c_str()); // localtime => use CET to indicate that it is not UTC
 	szdatetime = std::string(rdata);
 	schedule["currentSetpoint"] = current_setpoint;
 	schedule["nextSwitchpoint"] = szdatetime;

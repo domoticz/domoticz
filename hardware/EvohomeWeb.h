@@ -98,6 +98,7 @@ private:
 	std::string get_next_switchpoint(Json::Value &schedule);
 	std::string get_next_switchpoint_ex(Json::Value &schedule, std::string &current_setpoint);
 
+
 	bool set_system_mode(std::string systemId, int mode);
 	bool set_temperature(std::string zoneId, std::string temperature, std::string time_until);
 	bool cancel_temperature_override(std::string zoneId);
@@ -140,6 +141,7 @@ private:
 	double m_awaysetpoint;
 	bool m_showhdtemps;
 	uint8_t m_hdprecision;
+	int m_wdayoff;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
