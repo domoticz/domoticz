@@ -7570,6 +7570,11 @@ namespace http {
 			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
 			m_sql.m_tempunit = (_eTempUnit)nUnit;
 
+			nUnit = atoi(request::findValue(&req, "WeightUnit").c_str());
+			m_sql.UpdatePreferencesVar("WeightUnit", nUnit);
+			m_sql.m_weightunit = (_eWeightUnit)nUnit;
+
+
 			m_sql.SetUnitsAndScale();
 
 			std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
@@ -7786,15 +7791,6 @@ namespace http {
 				m_mainworker.m_eventsystem.SetEnabled(!m_sql.m_bDisableEventSystem);
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
-
-			rnOldvalue = 0;
-			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
-			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
-			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
-			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
-
-			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
 
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
 			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
@@ -10521,7 +10517,7 @@ namespace http {
 					}
 					else if (dType == pTypeWEIGHT)
 					{
-						sprintf(szTmp, "%.1f kg", atof(sValue.c_str()));
+						sprintf(szTmp, "%.1f %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
 					}
@@ -12501,6 +12497,10 @@ namespace http {
 				{
 					root["TempUnit"] = nValue;
 				}
+				else if (Key == "WeightUnit")
+				{
+					root["WeightUnit"] = nValue;
+				}
 				else if (Key == "AuthenticationMethod")
 				{
 					root["AuthenticationMethod"] = nValue;
@@ -12536,14 +12536,6 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
-				}
-				else if (Key == "DisableDzVentsSystem")
-				{
-					root["DisableDzVentsSystem"] = nValue;
-				}
-				else if (Key == "DzVentsLogLevel")
-				{
-					root["DzVentsLogLevel"] = nValue;
 				}
 				else if (Key == "LogEventScriptTrigger")
 				{
@@ -13388,7 +13380,7 @@ namespace http {
 								std::vector<std::string> sd = *itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f );
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -15450,9 +15442,9 @@ namespace http {
 								std::vector<std::string> sd = *itt;
 
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								sprintf(szTmp, "%.1f", atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v_min"] = szTmp;
-								sprintf(szTmp, "%.1f", atof(sd[1].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[1].c_str()) / 10.0f);
 								root["result"][ii]["v_max"] = szTmp;
 								ii++;
 							}
@@ -16031,9 +16023,9 @@ namespace http {
 						if (result.size() > 0)
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", atof(result[0][0].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale* atof(result[0][0].c_str()) / 10.0f);
 							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", atof(result[0][1].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0f);
 							root["result"][ii]["v_max"] = szTmp;
 							ii++;
 						}

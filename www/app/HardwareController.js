@@ -5246,6 +5246,58 @@ define(['app'], function (app) {
 			});
 		}
 
+		//credits: http://www.netlobo.com/url_query_string_javascript.html
+		function gup(url, name) {
+			name = name.replace(/[[]/, "\[").replace(/[]]/, "\]");
+			var regexS = "[\?&]" + name + "=([^&#]*)";
+			var regex = new RegExp(regexS);
+			var results = regex.exec(url);
+			if (results == null)
+				return "";
+			else
+				return results[1];
+		}
+
+		function validateToonToken(token) {
+			alert(code);
+		}
+
+		OnAuthenticateToon = function () {
+			var pwidth = 800;
+			var pheight = 600;
+
+			var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+			var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+			var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+			var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+			var left = ((width / 2) - (pwidth / 2)) + dualScreenLeft;
+			var top = ((height / 2) - (pheight / 2)) + dualScreenTop;
+
+			var REDIRECT = 'http://127.0.0.1/domoticiz_toon';
+			var CLIENT_ID = '7gQMPclYzm8haCHAgdvjq1yILLwa';
+			var _url = 'https://api.toonapi.com/authorize?response_type=code&redirect_uri=' + REDIRECT + '&client_id=' + CLIENT_ID;
+			//_url = "http://127.0.0.1:8081/11";
+			var win = window.open(_url, "windowtoonaith", 'scrollbars=yes, width=' + pwidth + ', height=' + pheight + ', left=' + left + ', top=' + top);
+			if (window.focus) {
+				win.focus();
+			}
+			var pollTimer = window.setInterval(function () {
+				if (win.closed !== false) { // !== is required for compatibility with Opera
+					window.clearInterval(pollTimer);
+				}
+				else if (win.document.URL.indexOf(REDIRECT) != -1) {
+					window.clearInterval(pollTimer);
+					console.log(win.document.URL);
+					var url = win.document.URL;
+					var code = gup(url, 'code');
+					win.close();
+					validateToonToken(code);
+				}
+			}, 200);
+		}
+
 		UpdateHardwareParamControls = function () {
 			$("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);

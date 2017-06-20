@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
-
+    <!--
+      Hank HKZW-SCN04 Scene Controller
+      http://products.z-wavealliance.org/products/1968
+      http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1968/HKZW-SCN04%20Manual.pdf
+    -->
     <!-- Configuration -->
     <CommandClass id="112">
         <Value type="list" genre="config" instance="1" index="254" label="Configuration Command" size="1" min="0" max="1" value="0">
