@@ -40,13 +40,16 @@ namespace Plugins {
 
 	void CPluginProtocol::Flush(CPlugin* pPlugin, PyObject* pConnection)
 	{
-		// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-		ReceivedMessage*	RecvMessage = new ReceivedMessage(pPlugin, pConnection, m_sRetainedData);
+		if (m_sRetainedData.size())
 		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(RecvMessage);
+			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
+			ReceivedMessage*	RecvMessage = new ReceivedMessage(pPlugin, pConnection, m_sRetainedData);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(RecvMessage);
+			}
+			m_sRetainedData.clear();
 		}
-		m_sRetainedData.clear();
 	}
 
 	void CPluginProtocolLine::ProcessInbound(const ReadMessage* Message)

@@ -335,7 +335,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
       }
    default:
       {
-         fileName.append("/volt.").append(1,'A'+unit);
+         fileName.append("/volt.").append(1, static_cast<char>('A'+unit));
          break;
       }
    }

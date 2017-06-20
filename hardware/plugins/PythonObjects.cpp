@@ -807,7 +807,6 @@ namespace Plugins {
 					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 				}
 				m_sql.SetDeviceOptions(self->ID, mpOptions);
-				Py_DECREF(pOptionsDict);
 			}
 
 			CDevice_refresh(self);
@@ -1000,7 +999,7 @@ namespace Plugins {
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
-					Py_XDECREF(self->Address);
+					Py_XDECREF(self->Name);
 					self->Name = PyUnicode_FromString(pName);
 				}
 				if (pAddress) {

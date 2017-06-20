@@ -10,6 +10,7 @@ typedef unsigned char byte;
 namespace Plugins {
 
 	class CDirectiveBase;
+	class CEventBase;
 	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
@@ -57,6 +58,7 @@ namespace Plugins {
 		void	ConnectionRead(CPluginMessageBase*);
 		void	ConnectionWrite(CDirectiveBase*);
 		void	ConnectionDisconnect(CDirectiveBase*);
+		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
 		void	Stop();
 

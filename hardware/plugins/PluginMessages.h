@@ -369,5 +369,19 @@ namespace Plugins {
 		std::string		m_Name;
 		virtual void Process() { m_pPlugin->Notifier(m_Name); };
 	};
-}
 
+	// Base event message class
+	class CEventBase : public CPluginMessageBase
+	{
+	public:
+		CEventBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
+		virtual void Process() { throw "Base event class Handle called"; };
+	};
+
+	class DisconnectedEvent : public CEventBase, public CHasConnection
+	{
+	public:
+		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection) {};
+		virtual void Process() { m_pPlugin->DisconnectEvent(this); };
+	};
+}

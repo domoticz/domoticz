@@ -29,7 +29,7 @@ class BasePlugin:
     sessionCookie = ""
     privateKey = b""
     socketOn = "FALSE"
-	httpConn = None
+    httpConn = None
     
     def __init__(self):
         return
