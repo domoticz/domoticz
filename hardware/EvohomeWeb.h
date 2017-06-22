@@ -95,8 +95,9 @@ private:
 	bool get_schedule(std::string zoneId);
 	std::string get_next_switchpoint(temperatureControlSystem* tcs, int zone);
 	std::string get_next_switchpoint(zone* hz);
-	std::string get_next_switchpoint(Json::Value schedule);
-	std::string get_next_switchpoint_ex(Json::Value schedule, std::string &current_setpoint);
+	std::string get_next_switchpoint(Json::Value &schedule);
+	std::string get_next_switchpoint_ex(Json::Value &schedule, std::string &current_setpoint);
+
 
 	bool set_system_mode(std::string systemId, int mode);
 	bool set_temperature(std::string zoneId, std::string temperature, std::string time_until);
@@ -140,6 +141,7 @@ private:
 	double m_awaysetpoint;
 	bool m_showhdtemps;
 	uint8_t m_hdprecision;
+	int m_wdayoff;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
