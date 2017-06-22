@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- 
+    Zooz ZSE33 Smart Chime
+    http://products.z-wavealliance.org/products/2175
+    -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="1" genre="config" label="Siren Volume" units="" min="1" max="3" value="3" size="1">
+            <Help>
+                Siren volume level; low, medium, high (default).
+            </Help>
+            <Item label="Low" value="1" />
+            <Item label="Medium" value="2" />
+            <Item label="High" value="3" />
+        </Value>
+        <Value type="list" index="2" genre="config" label="Siren Alarm Duration" units="" min="0" max="255" size="1" value="1">
+            <Help>
+                Duration of siren alarm.  Default is 30 seconds.
+            </Help>
+            <Item label="Off" value="0" />
+            <Item label="30 seconds" value="1" />
+            <Item label="60 seconds" value="2" />
+            <Item label="5 minutes" value="3" />
+            <Item label="Until battery drains" value="255" />
+        </Value>
+        <Value type="byte" index="3" genre="config" label="Doorbell Chime Sound Duration" units="times" min="0" max="255" value="1">
+            <Help>
+                How many times the doorbell chime should repeat once triggered by a BASIC_SET alarm command from a door sensor. 0 is chime off, 1-254 is the number of cycles, 255 is chime continues until battery drains. 2 cycles is default.
+            </Help>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Doorbell Chime Volume" units="" min="1" max="3" value="3" size="1">
+            <Help>
+                Doorbell chime volume level; low, medium, high (default).
+            </Help>
+            <Item label="Low" value="1" />
+            <Item label="Medium" value="2" />
+            <Item label="High" value="3" />
+        </Value>
+        <Value type="byte" index="5" genre="config" label="Siren Alarm Tone" units="" min="1" max="10" value="10">
+            <Help>
+                Chose one of the 10 different tones for the alarm siren.  10 is default.
+            </Help>
+        </Value>
+        <Value type="byte" index="6" genre="config" label="Doorbell Chime Tone" units="" min="1" max="10" value="4">
+            <Help>
+                Chose one of the 10 different tones for the doorbell chime.  4 is default.
+            </Help>
+        </Value>
+        <Value type="list" index="7" genre="config" label="Siren Alarm or Doorbell Chime Mode" units="" min="1" max="2" value="2" size="1">
+            <Help>
+                Choose between Siren Alarm (configured by Siren Alarm parameters) or Doorbell Chime (configured by Doorbell Chime paramenters).  Doorbell Chime enabled by default.
+            </Help>
+            <Item label="Siren Alarm" value="1" />
+            <Item label="Doorbell Chime" value="2" />
+        </Value>
+        <Value type="list" index="8" genre="config" label="LED Notification for Siren Alarm" units="" min="0" max="1" value="1" size="1">
+            <Help>
+                Enable or disable visual LED alarm for Siren Mode.  The LED will blink when triggered.  Enabled by default.
+            </Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+        <Value type="list" index="9" genre="config" label="LED Notification for Doorbell Chime" units="" min="0" max="1" value="1" size="1">
+            <Help>
+                Enable or disable visual LED for Doorbell Chime mode.  The LED will blink when triggered.  Enabled by default.
+            </Help>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Switch binary report"/>
+            <Group index="3" max_associations="5" label="Notification report"/>
+        </Associations>
+    </CommandClass>
+</Product>

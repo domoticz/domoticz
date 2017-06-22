@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+      Hank HKZW-MS01 Multisensor
+      http://products.z-wavealliance.org/products/2305
+      http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/2305/HKZW-MS01%20MANUL.pdf
+    -->
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="12" label="Motion sensors sensitivity" units="%" size="1" min="0" max="8" value="8">
+            <Help>
+                Level 0 to 8.
+                0 Disabled.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="13" label="Motion detection blind time" units="seconds" size="2" min="3" max="28800" value="30">
+            <Help>Insensitivity</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="14" label="BASIC SET command" size="1" min="0" max="1" value="0">
+            <Help>Enable/Disable BASIC SET command</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Value of the BASIC SET" size="1" min="0" max="1" value="0">
+            <Help>
+                Send BASIC SET VALUE = 255 to nodes associated with group 2 when door/window is opened.
+                Send BASIC SET VALUE = 0 to nodes associated with group 2 when door/window is closed.</Help>
+            <Item label="Basic On" value="0"/>
+            <Item label="Basic Off" value="1"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="32" label="Level of low battery" units="%" size="1" min="10" max="50" value="20">
+            <Help>The low level from 10% to 50%</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="170" label="Reset param 171 to 174" units="" size="1" min="0" max="85" value="0" write_only="true">
+            <Help></Help>
+            <Item label="Normal" value="0"/>
+            <Item label="Do reset" value="85"/>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="171" label="Battery report interval" units="seconds" size="4" min="5" max="2678400" value="1800">
+            <Help>The interval of sending battery report</Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="172" label="Temperature report interval" units="seconds" size="4" min="5" max="2678400" value="1800">
+            <Help>The interval of sending temperature report</Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="173" label="Humidity report interval" units="seconds" size="4" min="5" max="2678400" value="1800">
+            <Help>The interval of sending Humidity report</Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="174" label="Luminance report interval" units="seconds" size="4" min="5" max="2678400" value="1800">
+            <Help>The interval of sending luminance report</Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="181" label="Battery report threshold" units="%" size="1" min="0" max="100" value="10">
+            <Help>The change in battery level resulting in battery report being sent to the main controller.</Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="182" label="Temperature report threshold" units="degree/10" size="1" min="0" max="255" value="20">
+            <Help>
+                0 reports are not sent.
+                1 to 255 the change in temperature level resulting in temperature report being sent to the main controller.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="183" label="Humidity report threshold" units="%" size="1" min="0" max="100" value="5">
+            <Help>
+                0 reports are not sent.
+                1 to 100 the change in humidity level resulting in humidity report being sent to the main controller.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="184" label="Luminance report threshold" units="lux" size="2" min="0" max="65535" value="200">
+            <Help>
+                0 Reports are not sent.
+                1 to 65535 the change in luminance level resulting in luminance report being sent to the main controller.
+            </Help>
+        </Value>
+
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="BASIC SET command"/>
+        </Associations>
+    </CommandClass>
+
+</Product>
