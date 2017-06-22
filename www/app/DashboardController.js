@@ -3800,7 +3800,7 @@ define(['app'], function (app) {
 										statushtml = item.Data;
 									}
 									else if (item.Type == "Weight") {
-										imagehtml += 'scale48.png" height="40" width="40"></td>\n';
+										imagehtml += 'scale48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',\'' + item.Type + '\', \'' + item.SubType + '\');" height="40" width="40"></td>\n';
 										statushtml = item.Data;
 									}
 									else if (item.Type == "Usage") {
