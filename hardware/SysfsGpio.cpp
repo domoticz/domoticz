@@ -104,8 +104,9 @@
 	for "rising" and "falling" edges will follow this
 	setting.
 
-	3-june-2017	HvB Add interrupt support for edge = rising, falling or both.
-
+	History:
+	03-jun-2017	HvB	Add interrupt support for edge = rising, falling or both.
+	24-jun-2017	HvB	Add hardware debounce parameter, range 10..750 milli sec.
 */
 
 #include "stdafx.h"
@@ -157,7 +158,7 @@ vector<gpio_info> CSysfsGpio::m_saved_state;
 int CSysfsGpio::m_sysfs_hwdid;
 int CSysfsGpio::m_sysfs_req_update;
 
-CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices)
+CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices, const int Debounce)
 {
 	m_stoprequested = false;
 	m_bIsStarted = false;
@@ -166,6 +167,7 @@ CSysfsGpio::CSysfsGpio(const int ID, const int AutoConfigureDevices)
 	m_HwdID = ID;
 	m_sysfs_hwdid = ID;
 	m_auto_configure_devices = AutoConfigureDevices;
+	m_debounce_msec = Debounce;
 }
 
 CSysfsGpio::~CSysfsGpio(void)
@@ -393,7 +395,7 @@ void CSysfsGpio::EdgeDetectThread()
 
 		if (retval > 0)
 		{
-			sleep_milliseconds(50); /* debounce */
+			sleep_milliseconds(m_debounce_msec); /* debounce */
 
 			for (int i = 0; i < m_saved_state.size(); i++)
 			{
