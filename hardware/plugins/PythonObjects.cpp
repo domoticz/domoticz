@@ -776,7 +776,8 @@ namespace Plugins {
 			{
 				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
-				return NULL;
+				Py_INCREF(Py_None);
+				return Py_None;
 			}
 
 			if (self->pPlugin->m_bDebug)
