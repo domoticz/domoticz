@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Popp: Z-Wave CO Detector
+    http://products.z-wavealliance.org/products/2086
+     -->
+    <!-- Configuration  -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" instance="1" index="1" label="Value of On-Command" size="1" min="0" max="99" units="ms" value="99">
+            <Help>
+                Value of On-Command
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="2" label="Value of Off-Command" size="1" min="0" max="99" units="ms" value="0">
+            <Help>
+                Value of Off-Command
+            </Help>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="10" label="Lifeline"/>
+            <Group index="2" max_associations="10" label="Switching Command when Alarm"/>
+        </Associations>
+    </CommandClass>
+</Product>
+
