@@ -335,7 +335,7 @@ void CSysfsGpio::Do_Work()
 		}
 	}
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Input poller stopped");
+	_log.Log(LOG_STATUS, "Sysfs GPIO: Worker stopped");
 }
 
 void CSysfsGpio::EdgeDetectThread()
