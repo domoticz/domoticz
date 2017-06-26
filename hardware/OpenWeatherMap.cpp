@@ -189,10 +189,10 @@ void COpenWeatherMap::GetMeterDetails()
 		return;
 	}
 
-	float temp=-999.9f;
-	int humidity=0;
-	int barometric=0;
-	int barometric_forcast=baroForecastNoInfo;
+	float temp =- 999.9f;
+	int humidity = 0;
+	int barometric = 0;
+	int barometric_forecast = baroForecastNoInfo;
 
 	if (!root["main"].empty())
 	{
@@ -210,38 +210,38 @@ void COpenWeatherMap::GetMeterDetails()
 		{
 			barometric = atoi(root["main"]["pressure"].asString().c_str());
 			if (barometric < 1000)
-				barometric_forcast = baroForecastRain;
+				barometric_forecast = baroForecastRain;
 			else if (barometric < 1020)
-				barometric_forcast = baroForecastCloudy;
+				barometric_forecast = baroForecastCloudy;
 			else if (barometric < 1030)
-				barometric_forcast = baroForecastPartlyCloudy;
+				barometric_forecast = baroForecastPartlyCloudy;
 			else
-				barometric_forcast = baroForecastSunny;
+				barometric_forecast = baroForecastSunny;
 
 			if (!root["id"].empty())
 			{
 				int condition = root["id"].asInt();
 				if ((condition == 801) || (condition == 802))
 				{
-					barometric_forcast = baroForecastPartlyCloudy;
+					barometric_forecast = baroForecastPartlyCloudy;
 				}
 				else if (condition == 803)
 				{
-					barometric_forcast = baroForecastCloudy;
+					barometric_forecast = baroForecastCloudy;
 				}
 				else if ((condition == 800))
 				{
-					barometric_forcast = baroForecastSunny;
+					barometric_forecast = baroForecastSunny;
 				}
 				else if ((condition >= 300) && (condition < 700))
 				{
-					barometric_forcast = baroForecastRain;
+					barometric_forecast = baroForecastRain;
 				}
 			}
 		}
 		if ((temp != -999.9f) && (humidity != 0) && (barometric != 0))
 		{
-			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forecast, "THB");
 		}
 		else if ((temp != -999.9f) && (humidity != 0))
 		{
