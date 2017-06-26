@@ -136,7 +136,7 @@ void COpenWeatherMap::GetMeterDetails()
 	if (!m_bHaveGPSCoordinated)
 		sURL << "q=";
 	sURL << m_Location << "&APPID=" << m_APIKey << "&units=metric" << "&lang=" << m_Language;
-	
+
 #ifdef DEBUG_OPENWEATHERMAP
 	_log.Log(LOG_STATUS, "OpenWeatherMap: Get data from %s", sURL);
 #endif
@@ -217,8 +217,28 @@ void COpenWeatherMap::GetMeterDetails()
 				barometric_forcast = baroForecastPartlyCloudy;
 			else
 				barometric_forcast = baroForecastSunny;
-		}
 
+			if (!root["id"].empty())
+			{
+				int condition = root["id"].asInt();
+				if ((condition == 801) || (condition == 802))
+				{
+					barometric_forcast = baroForecastPartlyCloudy;
+				}
+				else if (condition == 803)
+				{
+					barometric_forcast = baroForecastCloudy;
+				}
+				else if ((condition == 800))
+				{
+					barometric_forcast = baroForecastSunny;
+				}
+				else if ((condition >= 300) && (condition < 700))
+				{
+					barometric_forcast = baroForecastRain;
+				}
+			}
+		}
 		if ((temp != -999.9f) && (humidity != 0) && (barometric != 0))
 		{
 			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
