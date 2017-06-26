@@ -1,21 +1,21 @@
 @import url("base.css"); /* Don't remove this line! */
 @import url("classic.css");  /* Don't remove this line! */
-/*@import url("show_version_number.css");  /* shows the version number above the logo */
-/*@import url("dashboard_merge_items_with_same_name.css"); /* combines items with the same name into one item */
-/*@import url("dashboard_show_data_vizualisations.css"); /* Adds 24h data visualisation on some elements */
+@import url("show_version_number.css");  /* shows the version number above the logo */
+@import url("dashboard_merge_items_with_same_name.css"); /* combines items with the same name into one item */
+@import url("dashboard_show_data_vizualisations.css"); /* Adds 24h data visualisation on some elements */
 /*@import url("dashboard_move_sun.css"); /* Moves the sun-up indicator to the footer. */
-/*@import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
+@import url("dashboard_show_last_update.css"); /* Displays the 'last update' time on the dashboard. */
 /*@import url("dashboard_variable_items_per_row.css");  /* place more (or less) items on one row. */
 /*@import url("dashboard_masonry.css"); /* makes different sized items fit together better.*/
 /*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
-/*@import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
-/*@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
+@import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
+@import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
 /*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
-/*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
+@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 /*@import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 /*@import url("navigation_settings_fixed_tabs.css"); /* makes settings-tabs at the top stay on screen. */
 /*@import url("center-popups.css"); /* centers pop-up items in the middle of the screen. */
-/*@import url("extras_and_animations.css"); /* Adds visual extras. */
+@import url("extras_and_animations.css"); /* Adds visual extras. */
 
 
 /* GENERAL SETTINGS

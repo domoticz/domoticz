@@ -35,29 +35,28 @@ if ($("section#"+ section + " #"+theid).is($("#dashcontent h2 + div.divider .spa
 
 
 
-
+/*
 $( document ).ready(function() {
     console.log( "THEME JS body ready" );  
     
-    
     // VARIABLES
     
-    var showversionnumber = 1; /* shows the version number above the logo */
-    //var dashboardmergeitemswithsamename = 1; /* combines items with the same name into one item */
-    //var dashboardshowdatavizualisations = 1; /* Adds 24h data visualisation on some elements */
-    //var dashboardmovesun = 1; /* Moves the sun-up indicator to the footer. */
-    //var dashboardshowlastupdate = 1; /* Displays the 'last update' time on the dashboard. */
-    var dashboardvariableitemsperrow = 0; /* place more (or less) items on one row. */
-    var dashboardmasonry = 0; /* makes different sized items fit together better.*/
-    var dashboardthinneritemsonwidescreens = 0; /* Only for wide screens; item-options move next to the name. */
-    var dashboardhighlights = 1; /* This adds bigger items at the top of each dashboard category. */
-    var dashboardhighlightsseethrough = 1; /* makes all dashboard items semi-transparent. */
-    //var dashboardverticalcolumns = 1; /* Turns dashboard into vertical columns. */
-    var navigationmainsidebar = 1; /* This transforms the main menu to a vertical menu on the left. */
-    //var navigationsettingssidemenu= 1; /* This transforms the settings-tabs into a sidebar on the left. */
-    var navigationsettingsfixedtabs = 0; /* makes settings-tabs at the top stay on screen. */
-    var centerpopups = 0; /* centers pop-up items in the middle of the screen. */
-    var extrasandanimations = 1; /* Adds visual extras. */
+    var showversionnumber = 1; // shows the version number above the logo 
+    //var dashboardmergeitemswithsamename = 1; // combines items with the same name into one item 
+    //var dashboardshowdatavizualisations = 1; // Adds 24h data visualisation on some elements 
+    //var dashboardmovesun = 1; // Moves the sun-up indicator to the footer. 
+    //var dashboardshowlastupdate = 1; // Displays the 'last update' time on the dashboard. 
+    var dashboardvariableitemsperrow = 1; // place more (or less) items on one row. 
+    var dashboardmasonry = 0; // makes different sized items fit together better.
+    var dashboardthinneritemsonwidescreens = 0; // Only for wide screens; item-options move next to the name.
+    var dashboardhighlights = 1; // This adds bigger items at the top of each dashboard category.
+    var dashboardhighlightsseethrough = 1; // makes all dashboard items semi-transparent.
+    //var dashboardverticalcolumns = 1; // Turns dashboard into vertical columns.
+    var navigationmainsidebar = 1; // This transforms the main menu to a vertical menu on the left.
+    //var navigationsettingssidemenu= 1; // This transforms the settings-tabs into a sidebar on the left.
+    var navigationsettingsfixedtabs = 0; // makes settings-tabs at the top stay on screen.
+    var centerpopups = 1; //centers pop-up items in the middle of the screen. 
+    var extrasandanimations = 1; // Adds visual extras.
 
 
 
@@ -271,3 +270,5 @@ $( document ).ready(function() {
     
 
 });
+
+*/
