@@ -125,6 +125,7 @@ private:
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
+	void EvaluateEventPython(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
@@ -189,4 +190,7 @@ private:
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
+	std::string SpaceToUnderscore(std::string sResult);
+	std::string LowerCase(std::string sResult);
+
 };
