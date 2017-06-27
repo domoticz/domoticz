@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Popp: Z-Wave Rain Sensor http://products.z-wavealliance.org/products/2418 -->
+	<!-- Configuration  -->
+	<CommandClass id="112">
+		<Value type="short" genre="config" instance="1" index="1" label="Rain Counter" size="2" min="0" max="32000" units="mm" value="0">
+			<Help>
+				Ths values shows the total count of rain from the moment of inclusion in mm water level. By writing this value this counter can be reset.
+				Default Value: 0
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="2" label="Rain Start Command" size="1" min="0" max="99" units="" value="99">
+			<Help>
+				This BASIC Set Command value is sent out into Association Group 2 when the device detects start of rain.
+				Default Value: 99
+			</Help>
+		</Value>
+    <Value type="byte" genre="config" instance="1" index="3" label="Rain Stop Command" size="1" min="0" max="99" units="" value="0">
+			<Help>
+				This BASIC Set Command value is sent out into Association Group 2 when the device detects stop of rain.
+				Default Value: 0
+			</Help>
+		</Value>
+    <Value type="list" genre="config" instance="1" index="4" label="Meter Multiplier" size="2" units="" value="1">
+			<Help>
+				This multiplier allows to adapt the display to certain controllers not being able to handle very low numbers.
+				Default Value: 1
+			</Help>
+			<Item label="Multiply by 1" value="1" />
+			<Item label="Multiply by 10" value="10" />
+			<Item label="Multiply by 100" value="100" />
+			<Item label="Multiply by 1000" value="1000" />
+
+		</Value>
+    <Value type="byte" genre="config" instance="1" index="5" label="Heavy Rain" size="1" min="0" max="255" units="mm" value="255">
+			<Help>
+				This threshold defines when a heavy rain condition is hit. In most countries this is defined as > 15 mm rain per hour.
+				The default value however is to turn this function off.
+				Default Value: 255
+			</Help>
+		</Value>
+    <Value type="byte" genre="config" instance="1" index="6" label="Heavy Rain Start Command" size="1" min="0" max="99" units="" value="99">
+			<Help>
+				This BASIC Set Command value is sent out into Association Group 3 when the device detects start of heavy rain.
+				Default Value: 99
+			</Help>
+		</Value>
+    <Value type="byte" genre="config" instance="1" index="7" label="Heavy Rain Stop Command" size="1" min="0" max="99" units="" value="0">
+			<Help>
+				This BASIC Set Command value is sent out into Association Group 3 when the device detects stop of heavy rain.
+				Default Value: 0
+			</Help>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->	
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+			<Group index="2" max_associations="5" label="Switching Command when Rain" />
+			<Group index="3" max_associations="5" label="Heavy Rain detected" />
+		</Associations>
+	</CommandClass>
+</Product>

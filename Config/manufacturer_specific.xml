@@ -314,17 +314,6 @@
 		<Product type="4c42" id="3134" name="Smart LED Retrofit Kit ZE27EU" config="domitech/ze27eu.xml"/>
 		<Product type="4c42" id="3135" name="Smart LED Light Bulb ZB22UK" config="domitech/zb22uk.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0260" name="Domux">
-		<Product type="0168" id="0168" name="Door Sensor DX1DS-Z" config="domux/dx1dsz.xml"/>
-		<Product type="8001" id="1000" name="Motion Sensor DX1MS-Z" config="domux/dx1msz.xml"/>
-		<Product type="8002" id="1000" name="Smart Smoke Sensor DX1SA-Z" config="domux/dx1saz.xml"/>
-		<Product type="8003" id="1000" name="Gaz Sensor DX1CG-Z" config="domux/dx1cgz.xml"/>
-		<Product type="8004" id="1000" name="Flood Sensor DX1WL-Z" config="domux/dx1wlz.xml"/>
-		<Product type="8005" id="1000" name="CO Sensor DX1CA-Z" config="domux/dx1caz.xml"/>
-		<Product type="8006" id="1000" name="Smart Metering Plug DX2SK-Z" config="domux/dx2skz.xml"/>
-		<Product type="8007" id="1000" name="Temperature Humidity Sensor DX1HT-Z" config="domux/dx1htz.xml"/>
-		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="domux/dx2skz.xml"/>
-	</Manufacturer>
 	<Manufacturer id="0184" name="Dragon Tech">
 		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
 	</Manufacturer>
@@ -412,6 +401,7 @@
 	<Manufacturer id="0085" name="Fakro">
 		<Product type="0001" id="0001" name="ZWP10 Remote Controller" config="fakro/zwp10.xml"/>
 		<Product type="0002" id="0002" name="ARZ Roof Window Roller Shutter" />
+		<Product type="0002" id="0005" name="ZWS230 Chain actuator 230VAC" config="fakro/zws230.xml" />
 		<Product type="0003" id="0001" name="ZWS12 Chain actuator 12VDC" config="fakro/zws12.xml" />
 		<Product type="0003" id="0002" name="ZWS230 Chain actuator 230VAC" config="fakro/zws230.xml" />
 		<Product type="0016" id="0001" name="ZWRS Roller Shutter FLiRS module" config="fakro/zwrs.xml"/>
@@ -566,6 +556,17 @@
 		<Product type="0200" id="0009" name="HKZW-SCN01 Scene Controller" config="hank/scenecontroller1.xml"/>
 		<Product type="0200" id="000b" name="HKZW-SCN04 Scene Controller" config="hank/scenecontroller4.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0260" name="Heiman">
+		<Product type="0168" id="0168" name="Door Sensor HS1DS-Z" config="heiman/HS1DS-Z.xml"/>
+		<Product type="8001" id="1000" name="Motion Sensor HS1MS-Z" config="heiman/HS1MS-Z.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor HS1CG-Z" config="heiman/HS1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor HS1CA-Z" config="heiman/HS1CA-Z.xml"/>
+		<Product type="8006" id="1000" name="Smart Metering Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
+		<Product type="8007" id="1000" name="Temperature Humidity Sensor HS1HT-Z" config="heiman/HS1HT-Z.xml"/>
+		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0017" name="HiTech Automation">
 	</Manufacturer>
 	<Manufacturer id="005b" name="HAI">
@@ -688,6 +689,7 @@
 		<Product type="3301" id="0001" name="DZ1KD-1BZ Decora 1000W Smart Dimmer" config="leviton/dz6hd.xml"/>
 		<Product type="3401" id="0001" name="DZ15S-1BZ Decora Smart Switch" config="leviton/dz15s.xml"/>
 		<Product type="3501" id="0001" name="DZPD3-2BW Decora 300W Plug-In Smart Dimmer" config="leviton/dzpd3.xml"/>
+		<Product type="3601" id="0001" name="Leviton DZPA1 Plugin Outlet" config="leviton/dz15s.xml"/>
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
 		<Product type="2002" id="0203" name="WAPIRZ-1 Motion Sensor" config="linear/WAPIRZ-1.xml"/>
@@ -821,6 +823,7 @@
 		<Product type="0004" id="000a" name="PH-PSE02.eu Zipato Indoor Siren" config="philio/pse02.xml"/>
 		<Product type="0006" id="001a" name="PH-PAB01.eu Micromodule Energy Meter" config="philio/phpab01.xml"/>
 		<Product type="0009" id="0022" name="PSR04 Smart Color Button" config="philio/psr04.xml"/>
+		<Product type="0001" id="0029" name="PAN16 Smart energy plug in switch" config="philio/pan16.xml"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
 		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
