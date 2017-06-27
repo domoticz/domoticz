@@ -7792,6 +7792,15 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			rnOldvalue = 0;
+			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
+			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
+			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+
+			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
+
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
 			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
@@ -12536,6 +12545,14 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "DisableDzVentsSystem")
+				{
+					root["DisableDzVentsSystem"] = nValue;
+				}
+				else if (Key == "DzVentsLogLevel")
+				{
+					root["DzVentsLogLevel"] = nValue;
 				}
 				else if (Key == "LogEventScriptTrigger")
 				{
