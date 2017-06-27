@@ -217,17 +217,23 @@ void COpenWeatherMap::GetMeterDetails()
 			else
 				barometric_forecast = baroForecastSunny;
 
-			if (!root["weather"][0]["id"].empty())
+			if (!root["weather"].empty())
 			{
-				int condition = root["weather"][0]["id"].asInt();
-				if ((condition == 801) || (condition == 802))
-					barometric_forecast = baroForecastPartlyCloudy;
-				else if (condition == 803)
-					barometric_forecast = baroForecastCloudy;
-				else if ((condition == 800))
-					barometric_forecast = baroForecastSunny;
-				else if ((condition >= 300) && (condition < 700))
-					barometric_forecast = baroForecastRain;
+				if (!root["weather"][0].empty())
+				{
+					if (!root["weather"][0]["id"].empty())
+					{
+						int condition = root["weather"][0]["id"].asInt();
+						if ((condition == 801) || (condition == 802))
+							barometric_forecast = baroForecastPartlyCloudy;
+						else if (condition == 803)
+							barometric_forecast = baroForecastCloudy;
+						else if ((condition == 800))
+							barometric_forecast = baroForecastSunny;
+						else if ((condition >= 300) && (condition < 700))
+							barometric_forecast = baroForecastRain;
+					}
+				}
 			}
 		}
 		if ((temp != -999.9f) && (humidity != 0) && (barometric != 0))
