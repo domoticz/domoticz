@@ -33,14 +33,28 @@ extern "C" {
 #endif
 }
 
+extern std::string szUserDataFolder;
+
+#ifdef WIN32
+	const static std::string lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	const static std::string dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
+#else
+	const static std::string lua_Dir = szUserDataFolder + "scripts/lua/";
+	const static std::string dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
+#endif
 
 #ifdef ENABLE_PYTHON
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+#ifdef WIN32
+	const static std::string python_Dir = szUserDataFolder + "scripts\\python\\";
+#else
+	const static std::string python_Dir = szUserDataFolder + "scripts/python/";
+#endif
 #endif
 
-extern std::string szUserDataFolder;
+
 extern http::server::CWebServerHelper m_webservers;
 
 std::string m_printprefix;
@@ -313,6 +327,18 @@ void CEventSystem::StripQuotes(std::string &sString)
 			sString = sString.substr(0, sString.size() - 1);
 		}
 	}
+}
+
+std::string CEventSystem::SpaceToUnderscore(std::string sResult)
+{
+	std::replace(sResult.begin(), sResult.end(), ' ', '_');
+	return sResult;
+}
+
+std::string CEventSystem::LowerCase(std::string sResult)
+{
+	std::transform(sResult.begin(), sResult.end(), sResult.begin(), ::tolower);
+	return sResult;
 }
 
 struct _tHardwareListIntEV{
@@ -1196,15 +1222,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		return;
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
-	std::string lua_Dir;
-	std::string dzv_Dir;
-#ifdef WIN32
-	lua_Dir = szUserDataFolder + "scripts\\lua\\";
-	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
-#else
-	lua_Dir = szUserDataFolder + "scripts/lua/";
-	dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
-#endif
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
@@ -1223,8 +1240,10 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 			}
 		}
 		m_printprefix = temp_prefix;
+		FileEntries.clear();
 	}
 
+	bool bDeviceFileFound = false;
 	DirectoryListing(FileEntries, lua_Dir, false, true);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
@@ -1235,7 +1254,28 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		{
 			if (reason == "device" && filename.find("_device_") != std::string::npos)
 			{
-				EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+				bDeviceFileFound = false;
+				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+				std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
+				for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
+				{
+					std::string deviceName = SpaceToUnderscore(LowerCase(itt2->second.deviceName));
+					if (filename.find("_device_" + deviceName + ".lua") != std::string::npos)
+					{
+						bDeviceFileFound = true;
+						if (deviceName == SpaceToUnderscore(LowerCase(devname)))
+						{
+							devicestatesMutexLock.unlock();
+							EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+							break;
+						}
+					}
+				}
+				if (!bDeviceFileFound)
+				{
+					devicestatesMutexLock.unlock();
+					EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+				}
 			}
 			else if (reason == "time" && filename.find("_time_") != std::string::npos)
 			{
@@ -1256,12 +1296,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 #ifdef ENABLE_PYTHON
 	try
 	{
-		std::string python_Dir;
-#ifdef WIN32
-		python_Dir = szUserDataFolder + "scripts\\python\\";
-#else
-		python_Dir = szUserDataFolder + "scripts/python/";
-#endif
 		FileEntries.clear();
 		DirectoryListing(FileEntries, python_Dir, false, true);
 		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
