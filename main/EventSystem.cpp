@@ -2556,14 +2556,14 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 
 		// Lux does not have it's own field yet.
-		if (("Lux" == dev_type) && ("Lux" == sub_type))
+		if (strcmp(dev_type, "Lux") == 0 && strcmp(sub_type, "Lux") == 0)
 		{
 			lua_pushstring(lua_state, "lux");
 			lua_pushnumber(lua_state, (lua_Number)atoi(strarray[0].c_str()));
 			lua_rawset(lua_state, -3);
 		}
 
-		if (("General" == dev_type) && ("kWh" == sub_type))
+		if (strcmp(dev_type, "General") == 0 && strcmp(sub_type, "kWh") == 0)
 		{
 			lua_pushstring(lua_state, "whTotal");
 			lua_pushnumber(lua_state, atof(strarray[1].c_str()));
@@ -2587,21 +2587,21 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 					std::string value = tempjson["result"][0][JsonLuaMap[ii].szOriginal].asString();
 					lua_pushstring(lua_state, JsonLuaMap[ii].szNew);
 
-					if (JsonLuaMap[ii].szType == "string")
+					if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
 					{
 						lua_pushstring(lua_state, value.c_str());
 					}
-					else if (JsonLuaMap[ii].szType == "float")
+					else if (strcmp(JsonLuaMap[ii].szType, "float") == 0)
 					{
 						lua_pushnumber(lua_state, atof(value.c_str()));
 					}
-					else if (JsonLuaMap[ii].szType == "integer")
+					else if (strcmp(JsonLuaMap[ii].szType, "integer") == 0)
 					{
 						lua_pushnumber(lua_state, atoi(value.c_str()));
 					}
-					else if (JsonLuaMap[ii].szType == "boolean")
+					else if (strcmp(JsonLuaMap[ii].szType, "boolean") == 0)
 					{
-						if (value.c_str() == "true")
+						if (strcmp(value.c_str(), "true") == 0)
 						{
 							lua_pushboolean(lua_state, true);
 						}
