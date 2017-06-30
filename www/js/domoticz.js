@@ -2895,6 +2895,7 @@ function AddDataToTempChart(data, chart, isday) {
 				valueDecimals: 0
 			}
 		}, false);
+		chart.setTitle({ text: chart.options.title.text.replace('Temperature', 'Humidity') });
 		series = chart.get('humidity');
 		series.setData(datatablehu, false);
 	}
