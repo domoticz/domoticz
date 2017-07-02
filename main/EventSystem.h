@@ -202,4 +202,6 @@ private:
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
+	std::string SpaceToUnderscore(std::string sResult);
+	std::string LowerCase(std::string sResult);
 };
