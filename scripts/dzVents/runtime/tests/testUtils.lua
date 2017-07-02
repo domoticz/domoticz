@@ -1,6 +1,10 @@
 local _ = require 'lodash'
 
-package.path = package.path .. ";../?.lua"
+--package.path = package.path .. ";../?.lua"
+
+local scriptPath = ''
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+
 
 local LOG_INFO = 2
 local LOG_DEBUG = 3
@@ -11,7 +15,13 @@ describe('event helpers', function()
 
 	setup(function()
 		_G.logLevel = 1
-		_G.log = function()	end
+		_G.log = function() end
+		_G.globalvariables = {
+			Security = 'sec',
+			['radix_separator'] = '.',
+			['script_path'] = scriptPath,
+			['domoticz_listening_port'] = '8080'
+		}
 		utils = require('Utils')
 	end)
 
@@ -28,7 +38,7 @@ describe('event helpers', function()
 			end
 
 			utils.log('abc', utils.LOG_ERROR)
-			assert.is_same('abc', printed)
+			assert.is_same('Error: abc', printed)
 		end)
 
 		it('shoud log INFO by default', function()
@@ -42,7 +52,7 @@ describe('event helpers', function()
 
 			utils.log('something')
 
-			assert.is_same('something', printed)
+			assert.is_same('Info:  something', printed)
 		end)
 
 		it('shoud not log above level', function()
@@ -73,25 +83,6 @@ describe('event helpers', function()
 
 	it('should return false if a file does not exist', function()
 		assert.is_false(utils.fileExists('blatestfile'))
-	end)
-
-	it('should return the devices.lua path', function()
-		assert.is_same( '../../devices.lua', utils.getDevicesPath())
-	end)
-
-	it('should fetch the http data', function()
-
-		local cmd
-
-		utils.osExecute = function(c)
-			cmd = c
-		end
-
-		utils.requestDomoticzData('0.0.0.0', '8080')
-
-		local expected = "{ echo 'return ' ; curl 'http://0.0.0.0:8080/json.htm?type=devices&displayhidden=1&filter=all&used=true' -s ; }  | sed 's/],/},/' | sed 's/   \"/   [\"/' | sed 's/         \"/         [\"/' | sed 's/\" :/\"]=/' | sed 's/: \\[/: {/' | sed 's/= \\[/= {/' > ../../devices.lua.tmp 2>/dev/null &"
-
-		assert.is_same(expected, cmd)
 	end)
 
 end)

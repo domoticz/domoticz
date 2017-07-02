@@ -1,4 +1,4 @@
-Version 3.xxxx (January xth 2017)
+Version 3.7988 (June xth 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
@@ -12,6 +12,7 @@ Version 3.xxxx (January xth 2017)
 - Changed: Switch type 'Door Lock' renamed to 'Door Contact'
 - Changed: Temperature Only charts will not display the Humidity axis
 - Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
+- Changed: Updated OpenZWave (and configuration files)
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
 - Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
 - Implemented: Blinds T1 till T13 new supports the Stop button

@@ -243,6 +243,8 @@ bool CGpio::StartHardware()
 	m_stoprequested=false;
 //	_log.Log(LOG_NORM,"GPIO: Starting hardware (debounce: %d ms, period: %d ms, poll interval: %d sec)", m_debounce, m_period, m_pollinterval);
 
+	_log.Log(LOG_STATUS, "GPIO: This hardware is deprecated. Please transfer to the new SysFS hardware type!");
+
 	if (InitPins())
 	{
 		/* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.
