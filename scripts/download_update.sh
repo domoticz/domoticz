@@ -49,3 +49,6 @@ then
         exit 1;
   fi
 fi
+
+#should never be here
+exit 1;
