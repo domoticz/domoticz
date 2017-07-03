@@ -172,75 +172,65 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	// Check if dzVents.lua file exist, if not, disable
+	std::string dzv_Dir,s;
+#ifdef WIN32
+	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+#else
+	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+#endif
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-	std::vector<std::vector<std::string> > result;
 
-	m_bdzVentsExist = false;
-	if (access((dzv_Dir + "dzVents.lua").c_str(), F_OK) != -1)
+	// Remove dzVents DB files from disk
+	std::vector<std::string> FileEntries;
+	std::vector<std::string>::const_iterator itt;
+	std::string filename;
+	DirectoryListing(FileEntries, dzv_Dir, false, true);
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
-		m_bdzVentsExist = true;
-
-		std::string dzv_Dir,s;
-#ifdef WIN32
-		dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
-#else
-		dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
-#endif
-
-		// Remove dzVents DB files from disk
-		std::vector<std::string> FileEntries;
-		std::vector<std::string>::const_iterator itt;
-		std::string filename;
-		DirectoryListing(FileEntries, dzv_Dir, false, true);
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+		filename = dzv_Dir + *itt;
+		if (filename.find("README.md") == std::string::npos)
 		{
-			filename = dzv_Dir + *itt;
-			if (filename.find("README.md") == std::string::npos)
-			{
-				std::remove(filename.c_str());
-			}
+			std::remove(filename.c_str());
 		}
+	}
 
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
-		if (result.size()>0)
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+	if (result.size()>0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			for (itt = result.begin(); itt != result.end(); ++itt)
-			{
-				std::vector<std::string> sd = *itt;
-				_tEventItem eitem;
-				std::stringstream s_str(sd[0]);
-				s_str >> eitem.ID;
-				eitem.Name = sd[1];
-				eitem.Interpreter = sd[2];
-				std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
-				eitem.Type = sd[3];
-				eitem.EventStatus = atoi(sd[4].c_str());
-				eitem.Actions = sd[5];
-				eitem.SequenceNo = 0;
-				m_events.push_back(eitem);
+			std::vector<std::string> sd = *itt;
+			_tEventItem eitem;
+			std::stringstream s_str(sd[0]);
+			s_str >> eitem.ID;
+			eitem.Name = sd[1];
+			eitem.Interpreter = sd[2];
+			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			eitem.Type = sd[3];
+			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.Actions = sd[5];
+			eitem.SequenceNo = 0;
+			m_events.push_back(eitem);
 
-				// Write active dzVents scripts to disk.
-				if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
+			// Write active dzVents scripts to disk.
+			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
+			{
+				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
+				FILE *fOut = fopen(s.c_str(), "wb+");
+				if (fOut)
 				{
-					s = dzv_Dir + eitem.Name.c_str() + ".lua";
-					_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
-					FILE *fOut = fopen(s.c_str(), "wb+");
-					if (fOut)
-					{
-						fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
-						fclose(fOut);
-					}
+					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
+					fclose(fOut);
 				}
+				m_bdzVentsExist = true;
 			}
 		}
 	}
-	else
-		_log.Log(LOG_ERROR, "EventSystem: dzVents has been disabled, file %s doesn't exist...", (dzv_Dir + "dzVents.lua").c_str());
 
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
 	if (result.size()>0)
@@ -266,7 +256,7 @@ void CEventSystem::LoadEvents()
 		}
 	}
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
+	_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
 #endif
 }
 
@@ -1237,11 +1227,33 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	std::vector<std::string>::const_iterator itt;
 	std::string filename;
 
-	if (!m_sql.m_bDisableDzVentsSystem && m_bdzVentsExist)
+	if (!m_sql.m_bDisableDzVentsSystem)
 	{
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
-		EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+		if (m_bdzVentsExist)
+			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+		else
+		{
+			std::string dzv_scripts;
+#ifdef WIN32
+			dzv_scripts = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+#else
+			dzv_scripts = szUserDataFolder + "scripts/dzVents/scripts/";
+#endif
+			DirectoryListing(FileEntries, dzv_scripts, false, true);
+			for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+			{
+				filename = *itt;
+				if (filename.length() > 4 &&
+					filename.compare(filename.length() - 4, 4, ".lua") == 0)
+				{
+					EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+					break;
+				}
+			}
+			FileEntries.clear();
+		}
 		m_printprefix = temp_prefix;
 	}
 
@@ -3396,6 +3408,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 
 	lua_setglobal(lua_state, "globalvariables");
+
 
 	int status = 0;
 	if (LuaString.length() == 0) {

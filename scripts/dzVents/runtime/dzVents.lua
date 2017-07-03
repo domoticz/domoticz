@@ -38,6 +38,6 @@ elseif triggerReason == 'security' then
 else
 	utils.log("Unknown trigger: ", triggerReason, utils.LOG_DEBUG)
 end
-print ("test")
+
 return commandArray
 
