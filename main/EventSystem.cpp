@@ -227,6 +227,7 @@ void CEventSystem::LoadEvents()
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
 				}
+				m_bdzVentsExist = true;
 			}
 		}
 	}
@@ -255,7 +256,7 @@ void CEventSystem::LoadEvents()
 		}
 	}
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
+	_log.Log(LOG_STATUS, "EventSystem: Events (re)loaded");
 #endif
 }
 
@@ -1230,17 +1231,30 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	{
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
-		DirectoryListing(FileEntries, dzv_Dir, false, true);
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+		if (m_bdzVentsExist)
+			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+		else
 		{
-			filename = *itt;
-			if (filename.find("dzVents") != std::string::npos)
+			std::string dzv_scripts;
+#ifdef WIN32
+			dzv_scripts = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+#else
+			dzv_scripts = szUserDataFolder + "scripts/dzVents/scripts/";
+#endif
+			DirectoryListing(FileEntries, dzv_scripts, false, true);
+			for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 			{
-				EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+				filename = *itt;
+				if (filename.length() > 4 &&
+					filename.compare(filename.length() - 4, 4, ".lua") == 0)
+				{
+					EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+					break;
+				}
 			}
+			FileEntries.clear();
 		}
 		m_printprefix = temp_prefix;
-		FileEntries.clear();
 	}
 
 	bool bDeviceFileFound = false;
@@ -3247,7 +3261,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	ExportDeviceStatesToLua(lua_state);
 
 	if (!m_sql.m_bDisableDzVentsSystem)
-		ExportDomoticzDataToLua(lua_state, DeviceID, varId);
+		if (filename == dzv_Dir + "dzVents.lua")
+			ExportDomoticzDataToLua(lua_state, DeviceID, varId);
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
@@ -3343,53 +3358,57 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
-		std::stringstream lua_DirT;
+		if (filename == dzv_Dir + "dzVents.lua")
+		{
+			std::stringstream lua_DirT;
 
 #ifdef WIN32
-		lua_DirT << szUserDataFolder << "scripts\\dzVents\\";
+			lua_DirT << szUserDataFolder << "scripts\\dzVents\\";
 #else
-		lua_DirT << szUserDataFolder << "scripts/dzVents/";
+			lua_DirT << szUserDataFolder << "scripts/dzVents/";
 #endif
 
-		lua_pushstring(lua_state, "script_path");
-		lua_pushstring(lua_state, lua_DirT.str().c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "script_reason");
-		lua_pushstring(lua_state, reason.c_str());
-		lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "script_path");
+			lua_pushstring(lua_state, lua_DirT.str().c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "script_reason");
+			lua_pushstring(lua_state, reason.c_str());
+			lua_rawset(lua_state, -3);
 
-		char szTmp[10];
-		sprintf(szTmp, "%.02f", 1.23f);
-		sprintf(szTmp, "%c", szTmp[1]);
-		lua_pushstring(lua_state, "radix_separator");
-		lua_pushstring(lua_state, szTmp);
-		lua_rawset(lua_state, -3);
-
-		sprintf(szTmp, "%.02f", 1234.56f);
-		lua_pushstring(lua_state, "group_separator");
-		if (szTmp[1] == '2')
-		{
-			lua_pushstring(lua_state, "");
-		}
-		else
-		{
+			char szTmp[10];
+			sprintf(szTmp, "%.02f", 1.23f);
 			sprintf(szTmp, "%c", szTmp[1]);
+			lua_pushstring(lua_state, "radix_separator");
 			lua_pushstring(lua_state, szTmp);
-		}
-		lua_rawset(lua_state, -3);
+			lua_rawset(lua_state, -3);
 
-		int rnvalue = 0;
-		m_sql.GetPreferencesVar("DzVentsLogLevel", rnvalue);
-		lua_pushstring(lua_state, "dzVents_log_level");
-		lua_pushnumber(lua_state, (lua_Number)rnvalue);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "domoticz_listening_port");
-	//	lua_pushstring(lua_state, "8080");
-		lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
-		lua_rawset(lua_state, -3);
+			sprintf(szTmp, "%.02f", 1234.56f);
+			lua_pushstring(lua_state, "group_separator");
+			if (szTmp[1] == '2')
+			{
+				lua_pushstring(lua_state, "");
+			}
+			else
+			{
+				sprintf(szTmp, "%c", szTmp[1]);
+				lua_pushstring(lua_state, szTmp);
+			}
+			lua_rawset(lua_state, -3);
+
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("DzVentsLogLevel", rnvalue);
+			lua_pushstring(lua_state, "dzVents_log_level");
+			lua_pushnumber(lua_state, (lua_Number)rnvalue);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "domoticz_listening_port");
+		//	lua_pushstring(lua_state, "8080");
+			lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+			lua_rawset(lua_state, -3);
+		}
 	}
 
 	lua_setglobal(lua_state, "globalvariables");
+
 
 	int status = 0;
 	if (LuaString.length() == 0) {

@@ -114,6 +114,7 @@ public:
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
+	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
