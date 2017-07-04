@@ -378,9 +378,9 @@ void CSysfsGpio::EdgeDetectThread()
 
 			for (int i = 0; i < m_saved_state.size(); i++)
 			{
-				if (FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds) &&
+				if ((FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds) &&
 					(m_saved_state[i].direction == GPIO_IN) &&
-					(m_saved_state[i].edge != GPIO_EDGE_NONE))
+					(m_saved_state[i].edge != GPIO_EDGE_NONE)))
 				{
 					value = GpioReadFd(m_saved_state[i].edge_fd);
 					GpioSaveState(i, value);
@@ -394,9 +394,8 @@ void CSysfsGpio::EdgeDetectThread()
 			if (!m_polling_enabled)
 			{
 				UpdateDomoticzInputs(false);
+				poll_once = true;
 			}
-
-			poll_once = true;
 		}
 		else
 		{
