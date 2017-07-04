@@ -105,8 +105,9 @@
 	setting.
 
 	History:
-	03-jun-2017	HvB	Add interrupt support for edge = rising, falling or both.
-	24-jun-2017	HvB	Add hardware debounce parameter, range 10..750 milli sec.
+	03-jun-2017	HvB		Add interrupt support for edge = rising, falling or both.
+	24-jun-2017	HvB		Add hardware debounce parameter, range 10..750 milli sec.
+	04-jul-2017	HvB		Poll after an interrupt received to recover missed interrupts 
 */
 
 #include "stdafx.h"
@@ -311,6 +312,12 @@ void CSysfsGpio::EdgeDetectThread()
 	GPIOs are interrupt-capable. If the GPIO you're working with doesn't support interrupts
 	you will need to read it periodically. This is for example the case when the GPIO line is
 	implemented with an I2C peripheral or audio codec.
+
+	After one or more GPIO state change interrupts have been detected a poll is done to make
+	sure the domoticz database reflects the actual states of all GPIO pins in all cases. A
+	missed interrupt can occur when a GPIO pin changes state twice within m_debounce_msec. 
+	Therefore it is a good practice to set m_debounce_msec to a value not higher then needed
+	depending on the input switch behavior.
 	*/
 
 	int retval = 0;
@@ -318,6 +325,7 @@ void CSysfsGpio::EdgeDetectThread()
 	fd_set tmp_fds;
 	timeval tv;
 	int fd;
+	bool poll_once = true;
 
 	FD_ZERO(&m_rfds);
 	m_maxfd = 0;
@@ -346,11 +354,14 @@ void CSysfsGpio::EdgeDetectThread()
 
 	while (!m_stoprequested) /* detect gpio state changes */
 	{
-		tv.tv_sec = 1;
+		tv.tv_sec = 1;	// Set select timeout to 1 second.
 		tv.tv_usec = 0;
 		memcpy(&tmp_fds, &m_rfds, sizeof(tmp_fds));
 		int value = -1;
 
+		//-------------------------------------------------------------------
+		//	Wait for GPIO interrupt.
+		//
 		retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
 
 		if (m_stoprequested)
@@ -360,13 +371,16 @@ void CSysfsGpio::EdgeDetectThread()
 
 		if (retval > 0)
 		{
+			//---------------------------------------------------------------
+			//	GPIO interrupt received.
+			//
 			sleep_milliseconds(m_debounce_msec); /* debounce */
 
 			for (int i = 0; i < m_saved_state.size(); i++)
 			{
-				if ((m_saved_state[i].direction == GPIO_IN) &&
-					(m_saved_state[i].edge != GPIO_EDGE_NONE) &&
-					(FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds)))
+				if (FD_ISSET(m_saved_state[i].edge_fd, &tmp_fds) &&
+					(m_saved_state[i].direction == GPIO_IN) &&
+					(m_saved_state[i].edge != GPIO_EDGE_NONE))
 				{
 					value = GpioReadFd(m_saved_state[i].edge_fd);
 					GpioSaveState(i, value);
@@ -376,8 +390,25 @@ void CSysfsGpio::EdgeDetectThread()
 					_log.Log(LOG_STATUS, "Sysfs GPIO: Pin%d new state: %d", m_saved_state[i].pin_number, value);
 				}
 			}
+
 			if (!m_polling_enabled)
+			{
 				UpdateDomoticzInputs(false);
+			}
+
+			poll_once = true;
+		}
+		else
+		{
+			//---------------------------------------------------------------
+			//	Select timeout, no GPIO interrupt received.
+			//
+			if (poll_once)
+			{
+				PollGpioInputs();
+				UpdateDomoticzInputs(false);
+				poll_once = false;
+			}
 		}
 	}
 
