@@ -58,7 +58,7 @@
 
 #endif
 
-#define POLL_INTERVAL 30
+#define POLL_INTERVAL 60
 
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
