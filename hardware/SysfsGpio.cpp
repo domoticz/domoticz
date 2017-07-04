@@ -325,7 +325,7 @@ void CSysfsGpio::EdgeDetectThread()
 	fd_set tmp_fds;
 	timeval tv;
 	int fd;
-	bool poll_once = true;
+	bool poll_once = false;
 
 	FD_ZERO(&m_rfds);
 	m_maxfd = 0;
