@@ -241,47 +241,8 @@ bool CSysfsGpio::WriteToHardware(const char *pdata, const unsigned char length)
 
 void CSysfsGpio::Do_Work()
 {
-	char path[GPIO_MAX_PATH];
+	bool bUpdateMaster = true;
 	int counter = 0;
-	int input_count = 0;
-	int output_count = 0;
-	m_polling_enabled = false;
-	m_interrupts_enabled = false;
-
-	for (int i = 0; i < m_saved_state.size(); i++)
-	{
-		snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, m_saved_state[i].pin_number);
-		m_saved_state[i].read_value_fd = open(path, O_RDONLY);
-		if ((m_saved_state[i].direction == GPIO_IN) ? input_count++ : output_count++);
-
-		/*	Enable polling if at least one input edge is set to NONE or is INVALID. */
-		if	(!m_polling_enabled && 
-			(m_saved_state[i].direction == GPIO_IN) && 
-			((m_saved_state[i].edge == GPIO_EDGE_NONE) || (m_saved_state[i].edge == GPIO_EDGE_UNKNOWN)))
-		{
-			m_polling_enabled = true;
-		}
-
-		/*	Enable interrupts if at least one input edge is set to RISING FALLING or BOTH. */
-		if	(!m_interrupts_enabled && 
-			(m_saved_state[i].direction == GPIO_IN) && 
-			((m_saved_state[i].edge == GPIO_EDGE_RISING) || 
-			(m_saved_state[i].edge == GPIO_EDGE_FALLING) || 
-			(m_saved_state[i].edge == GPIO_EDGE_BOTH)))
-		{
-			m_interrupts_enabled = true;
-		}
-	}
-
-	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
-
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Worker startup, polling:%s interrupts:%s debounce:%d inputs:%d outputs:%d", 
-		m_polling_enabled ? "yes":"no", m_interrupts_enabled ? "yes":"no", m_debounce_msec, input_count, output_count);
-
-	if (m_interrupts_enabled)
-	{
-		m_edge_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::EdgeDetectThread, this)));
-	}
 
 	while (!m_stoprequested)
 	{
@@ -298,19 +259,23 @@ void CSysfsGpio::Do_Work()
 			if (m_polling_enabled)
 			{
 				PollGpioInputs();
+				UpdateDomoticzInputs(false);
 			}
-			UpdateDomoticzInputs(false);
 		}
 
-		if (counter == UPDATE_MASTER_COUNT)	/* only executes once, and only if we have a master/slave configuration */
+		if (bUpdateMaster)
 		{
-			vector<vector<string> > result;
-			result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
-
-			if (result.size() > 0)
+			if (counter == UPDATE_MASTER_COUNT)	/* only executes once, and only if we have a master/slave configuration */
 			{
-				_log.Log(LOG_STATUS, "Sysfs GPIO: Update master devices");
-				UpdateDomoticzInputs(true);
+				bUpdateMaster = false;
+				vector<vector<string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Users WHERE (RemoteSharing==1) AND (Active==1)");
+
+				if (result.size() > 0)
+				{
+					_log.Log(LOG_STATUS, "Sysfs GPIO: Update master devices");
+					UpdateDomoticzInputs(true);
+				}
 			}
 		}
 
@@ -381,8 +346,8 @@ void CSysfsGpio::EdgeDetectThread()
 
 	while (!m_stoprequested) /* detect gpio state changes */
 	{
-		tv.tv_sec = 0;
-		tv.tv_usec = 500000;
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
 		memcpy(&tmp_fds, &m_rfds, sizeof(tmp_fds));
 		int value = -1;
 
@@ -411,6 +376,8 @@ void CSysfsGpio::EdgeDetectThread()
 					_log.Log(LOG_STATUS, "Sysfs GPIO: Pin%d new state: %d", m_saved_state[i].pin_number, value);
 				}
 			}
+			if (!m_polling_enabled)
+				UpdateDomoticzInputs(false);
 		}
 	}
 
@@ -429,11 +396,17 @@ void CSysfsGpio::EdgeDetectThread()
 void CSysfsGpio::Init()
 {
 	int id = GPIO_DEVICE_ID_BASE + m_HwdID;
-	m_saved_state.clear();
-	memset(&m_Packet, 0, sizeof(tRBUF));
+	int input_count = 0;
+	int output_count = 0;
+	char path[GPIO_MAX_PATH];
+	m_polling_enabled = false;
+	m_interrupts_enabled = false;
 	m_sysfs_req_update = 0;
 
+	m_saved_state.clear();
+
 	/* default ligthing2 packet */
+	memset(&m_Packet, 0, sizeof(tRBUF));
 	m_Packet.LIGHTING2.packetlength = sizeof(m_Packet.LIGHTING2) - 1;
 	m_Packet.LIGHTING2.packettype = pTypeLighting2;
 	m_Packet.LIGHTING2.subtype = sTypeAC;
@@ -454,8 +427,42 @@ void CSysfsGpio::Init()
 		CreateDomoticzDevices();
 	}
 
-	UpdateDomoticzInputs(false);
 	UpdateGpioOutputs();
+
+	for (int i = 0; i < m_saved_state.size(); i++)
+	{
+		snprintf(path, GPIO_MAX_PATH, "%s%d/value", GPIO_PATH, m_saved_state[i].pin_number);
+		m_saved_state[i].read_value_fd = open(path, O_RDONLY);
+		if ((m_saved_state[i].direction == GPIO_IN) ? input_count++ : output_count++);
+
+		/*	Enable polling if at least one input edge is set to NONE or is INVALID. */
+		if	(!m_polling_enabled &&
+			(m_saved_state[i].direction == GPIO_IN) &&
+			((m_saved_state[i].edge == GPIO_EDGE_NONE) || (m_saved_state[i].edge == GPIO_EDGE_UNKNOWN)))
+		{
+			m_polling_enabled = true;
+		}
+
+		/*	Enable interrupts if at least one input edge is set to RISING FALLING or BOTH. */
+		if	(!m_interrupts_enabled &&
+			(m_saved_state[i].direction == GPIO_IN) &&
+			((m_saved_state[i].edge == GPIO_EDGE_RISING) ||
+			(m_saved_state[i].edge == GPIO_EDGE_FALLING) ||
+			(m_saved_state[i].edge == GPIO_EDGE_BOTH)))
+		{
+			m_interrupts_enabled = true;
+		}
+	}
+
+	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
+
+	_log.Log(LOG_STATUS, "Sysfs GPIO: Worker startup, polling:%s interrupts:%s debounce:%d inputs:%d outputs:%d",
+		m_polling_enabled ? "yes":"no", m_interrupts_enabled ? "yes":"no", m_debounce_msec, input_count, output_count);
+
+	if (m_interrupts_enabled)
+	{
+		m_edge_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CSysfsGpio::EdgeDetectThread, this)));
+	}
 }
 
 void CSysfsGpio::FindGpioExports()
@@ -501,7 +508,7 @@ void CSysfsGpio::PollGpioInputs()
 	{
 		for (int i = 0; i < m_saved_state.size(); i++)
 		{
-			if ((m_saved_state[i].direction == GPIO_IN) && 
+			if ((m_saved_state[i].direction == GPIO_IN) &&
 				(m_saved_state[i].read_value_fd != -1) &&
 				((m_saved_state[i].edge == GPIO_EDGE_NONE) || m_saved_state[i].edge == GPIO_EDGE_UNKNOWN))
 			{
