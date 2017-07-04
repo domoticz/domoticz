@@ -10,7 +10,7 @@
 /*@import url("dashboard_thinner_items_on_wide_screens.css"); /* Only for wide screens; item-options move next to the name. */
 @import url("dashboard_highlights.css"); /* This adds bigger items at the top of each dashboard category. */
 @import url("dashboard_highlights_see-through.css"); /* makes all dashboard items semi-transparent. */
-/*@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
+@import url("dashboard_vertical_columns.css"); /* Turns dashboard into vertical columns. */
 @import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
 @import url("navigation_settings_sidemenu.css"); /* This transforms the settings-tabs into a sidebar on the left. */
 /*@import url("navigation_settings_fixed_tabs.css"); /* makes settings-tabs at the top stay on screen. */
