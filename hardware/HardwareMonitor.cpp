@@ -61,7 +61,7 @@
 #define POLL_INTERVAL_CPU	30
 #define POLL_INTERVAL_TEMP	70
 #define POLL_INTERVAL_MEM	80
-#define POLL_INTERVAL_DISK	150
+#define POLL_INTERVAL_DISK	170
 
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
@@ -138,11 +138,6 @@ void CHardwareMonitor::Do_Work()
 
 	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
 
-	bProcessCpu = true;
-	bProcessTemp = true;
-	bProcessMem = true;
-	bProcessDisk = true;
-
 	int msec_counter = 0;
 	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
 	while (!m_stoprequested)
@@ -157,24 +152,51 @@ void CHardwareMonitor::Do_Work()
 				m_LastHeartbeat = mytime(NULL);
 
 			if (sec_counter % POLL_INTERVAL_CPU == 0)
-				bProcessCpu = true;
+			{
+				try
+				{
+					FetchUnixCPU();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching CPU data!...");
+				}
+			}
 
 			if (sec_counter % POLL_INTERVAL_TEMP == 0)
-				bProcessTemp = true;
+			{
+				try
+				{
+					FetchData();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+				}
+			}
 
 			if (sec_counter % POLL_INTERVAL_MEM == 0)
-				bProcessMem = true;
+			{
+				try
+				{
+					FetchUnixMemory();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching memory data!...");
+				}
+			}
 
 			if (sec_counter % POLL_INTERVAL_DISK == 0)
-				bProcessDisk = true;
-
-			try
 			{
-				FetchData();
-			}
-			catch (...)
-			{
-				_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+				try
+				{
+					FetchUnixDisk();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching disk data!...");
+				}
 			}
 		}
 	}
@@ -273,51 +295,23 @@ void CHardwareMonitor::GetInternalCurrent()
 void CHardwareMonitor::FetchData()
 {
 #ifdef WIN32
-	if (bProcessTemp)
-	{
-		bProcessTemp = false;
-		if (IsOHMRunning()) {
-			_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
-			RunWMIQuery("Sensor","Temperature");
-			RunWMIQuery("Sensor","Load");
-			RunWMIQuery("Sensor","Fan");
-			RunWMIQuery("Sensor","Voltage");
-			return;
-		}
+	if (IsOHMRunning()) {
+		_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
+		RunWMIQuery("Sensor","Temperature");
+		RunWMIQuery("Sensor","Load");
+		RunWMIQuery("Sensor","Fan");
+		RunWMIQuery("Sensor","Voltage");
+		return;
 	}
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	if (bHasInternalTemperature)
+		GetInternalTemperature();
 
-	if (bProcessCpu)
-	{
-		bProcessCpu = false;
-		_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
-		FetchUnixCPU();
-	}
+	if (bHasInternalVoltage)
+		GetInternalVoltage();
 
-	if (bProcessDisk)
-	{
-		bProcessDisk = false;
-		FetchUnixDisk();
-	}
-
-	if (bProcessMem)
-	{
-		bProcessMem = false;
-		FetchUnixMemory();
-	}
-
-	if (bProcessTemp)
-	{
-		bProcessTemp = false;
-		if (bHasInternalTemperature)
-			GetInternalTemperature();
-
-		if (bHasInternalVoltage)
-			GetInternalVoltage();
-
-		if (bHasInternalCurrent)
-			GetInternalCurrent();
-	}
+	if (bHasInternalCurrent)
+		GetInternalCurrent();
 #endif
 }
 

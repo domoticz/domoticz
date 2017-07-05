@@ -14,10 +14,6 @@ public:
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:
-	bool bProcessCpu;
-	bool bProcessDisk;
-	bool bProcessMem;
-	bool bProcessTemp;
 	bool StartHardware();
 	bool StopHardware();
 	double m_lastquerytime;
