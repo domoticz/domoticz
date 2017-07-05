@@ -2402,10 +2402,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	struct tm tLastUpdate;
 	localtime_r(&now, &tLastUpdate);
 
-
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
-	//_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
 
 	struct tm ntime;
 	time_t checktime;
@@ -2442,26 +2440,27 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			_hardwareNames[ID] = tlist;
 		}
 	}
+	
+	Json::Value tempjson;
+	m_webservers.GetJSonDevices(tempjson, "true", "", "dzvID", "", "", "", true, false, false, 0, "");
 
-	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
-
+	if (tempjson["result"].size() != m_devicestates.size())
+	{
+		_log.Log(LOG_ERROR, "Json and devicestates size mismatch!");
+	}
+	
 	lua_createtable(lua_state, 0, 0);
 
 	// First export all the devices.
 	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
+	int ii2 = 0;
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
+
 		_tDeviceStatus sitem = iterator->second;
 		dev_type = RFX_Type_Desc(sitem.devType, 1);
 		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 		data_lines = 0;
-
-		Json::Value tempjson;
-		std::stringstream sstr;
-		sstr << sitem.ID;
-		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
-
-		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
 		timed_out = (now - checktime >= SensorTimeOut * 60);
@@ -2587,18 +2586,16 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_rawset(lua_state, -3);
 		}
 
-
 		// Now see if we have additional fields from the JSON data
-		Json::ArrayIndex rsize = tempjson["result"].size();
-		if (rsize > 0)
+		if (atoi(tempjson["result"][ii2]["idx"].asString().c_str()) == sitem.ID)
 		{
 			std::map<std::string, std::string>::const_iterator itt;
 			int ii = 0;
 			while (JsonLuaMap[ii].szOriginal != NULL)
 			{
-				if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
+				if (tempjson["result"][ii2][JsonLuaMap[ii].szOriginal] != Json::Value::null)
 				{
-					std::string value = tempjson["result"][0][JsonLuaMap[ii].szOriginal].asString();
+					std::string value = tempjson["result"][ii2][JsonLuaMap[ii].szOriginal].asString();
 					lua_pushstring(lua_state, JsonLuaMap[ii].szNew);
 
 					if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
@@ -2630,14 +2627,22 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 					}
 					lua_rawset(lua_state, -3);
 				}
-				ii ++ ;
+				ii++;
 			}
 		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Device ID mismatch - index %d, Expected id %d (%s),\t\t\tjson id %s (%s)", ii2, 
+				(int)sitem.ID, (const char*)sitem.deviceName.c_str(), (const char*)(tempjson["result"][ii2]["idx"].asString().c_str()) , (const char*)(tempjson["result"][ii2]["Name"].asString().c_str()));
+		}
+
+		ii2++;
 
 		lua_settable(lua_state, -3); // data table
 		lua_settable(lua_state, -3); // device entry
 		index++;
 	}
+
 	devicestatesMutexLock3.unlock();
 
 	// Now do the scenes and groups.

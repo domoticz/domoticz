@@ -8025,7 +8025,13 @@ namespace http {
 			if (order.empty() || (!isAlpha)) {
 				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
 			} else {
-				sprintf(szOrderBy, "A.[Order],A.%%s ASC");
+				sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+				
+				//Special case for dzVents
+				if (orderBy == "dzvID")
+				{
+					strcpy(szOrderBy, "A.ID ASC");
+				}
 			}
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
@@ -8259,12 +8265,6 @@ namespace http {
 						bAllowDeviceToBeHidden = true;
 					}
 
-					if (order.empty() || (!isAlpha))
-						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
-					else
-					{
-						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
-					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s ", szOrderBy);
 					if (hardwareid != "") {
 						szQuery = (
