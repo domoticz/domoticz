@@ -59,7 +59,7 @@
 #endif
 
 #define POLL_INTERVAL_CPU	30
-#define	POLL_INTERVAL_TEMP	70
+#define POLL_INTERVAL_TEMP	70
 #define POLL_INTERVAL_MEM	80
 #define POLL_INTERVAL_DISK	150
 
@@ -144,7 +144,7 @@ void CHardwareMonitor::Do_Work()
 	bProcessDisk = true;
 
 	int msec_counter = 0;
-	int sec_counter = POLL_INTERVAL_CPU - 3;
+	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
