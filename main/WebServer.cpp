@@ -12106,13 +12106,51 @@ namespace http {
 			}
 			else
 			{
-				if (switchtype == -1)
-					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
+				//Fix 'SubType' when device change
+				switch(switchtype)
+				{
+					case -1:
+					{
+						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), idx.c_str());
-				else
-					m_sql.safe_query(
+						break;
+					}
+					case 6:
+					case 13:
+					case 16:
+					case 2:
+					case 7:
+					case 11:
+					case 19:
+					case 1:
+					case 12:
+					case 17:
+					case 8:
+					case 0:
+					case 10:
+					case 9:
+					case 5:
+					case 15:
+					{
+						m_sql.safe_query(
+						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=73, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+						break;
+					}
+					case 18:
+					{
+						m_sql.safe_query(
+						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=62, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+						break;
+					}
+					default:
+					{
+						m_sql.safe_query(
 						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+					}
+				}
 			}
 
 			if (bHasstrParam1)
