@@ -140,9 +140,9 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (m_bEnableLogThreadIDs)
 	{
 #ifdef WIN32
-		sstr << "[" << ::GetCurrentThreadId() << "] ";
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << ::GetCurrentThreadId() << "] ";
 #else
-		sstr << "[" << pthread_self << "] ";
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << pthread_self() << "] ";
 #endif
 	}
 
