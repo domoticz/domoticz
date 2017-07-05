@@ -151,18 +151,6 @@ void CHardwareMonitor::Do_Work()
 			if (sec_counter % 12 == 0)
 				m_LastHeartbeat = mytime(NULL);
 
-			if (sec_counter % POLL_INTERVAL_CPU == 0)
-			{
-				try
-				{
-					FetchUnixCPU();
-				}
-				catch (...)
-				{
-					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching CPU data!...");
-				}
-			}
-
 			if (sec_counter % POLL_INTERVAL_TEMP == 0)
 			{
 				try
@@ -172,6 +160,19 @@ void CHardwareMonitor::Do_Work()
 				catch (...)
 				{
 					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
+				}
+			}
+
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+			if (sec_counter % POLL_INTERVAL_CPU == 0)
+			{
+				try
+				{
+					FetchUnixCPU();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching CPU data!...");
 				}
 			}
 
@@ -198,6 +199,7 @@ void CHardwareMonitor::Do_Work()
 					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching disk data!...");
 				}
 			}
+#endif
 		}
 	}
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");
