@@ -155,7 +155,9 @@ void CHardwareMonitor::Do_Work()
 			{
 				try
 				{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 					FetchUnixCPU();
+#endif
 				}
 				catch (...)
 				{
@@ -179,7 +181,9 @@ void CHardwareMonitor::Do_Work()
 			{
 				try
 				{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 					FetchUnixMemory();
+#endif
 				}
 				catch (...)
 				{
@@ -191,7 +195,9 @@ void CHardwareMonitor::Do_Work()
 			{
 				try
 				{
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 					FetchUnixDisk();
+#endif
 				}
 				catch (...)
 				{
