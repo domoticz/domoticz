@@ -134,6 +134,7 @@ void CHardwareMonitor::Do_Work()
 {
 	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
 
+	bProcessMemDisk = true;
 	int msec_counter = 0;
 	int sec_counter = POLL_INTERVAL - 3;
 	while (!m_stoprequested)
@@ -144,11 +145,16 @@ void CHardwareMonitor::Do_Work()
 		{
 			msec_counter = 0;
 			sec_counter++;
-			if (sec_counter % 12 == 0) {
+			if (sec_counter % 12 == 0)
+			{
 				m_LastHeartbeat = mytime(NULL);
 			}
+			if (sec_counter % 300 == 0)
+			{
+				bProcessMemDisk = true;
+			}
 
-			if (sec_counter%POLL_INTERVAL == 0)
+			if (sec_counter % POLL_INTERVAL == 0)
 			{
 				try
 				{
@@ -267,16 +273,35 @@ void CHardwareMonitor::FetchData()
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
 	FetchUnixData();
+	int counter = 0;
 	if (bHasInternalTemperature)
 	{
+		for (int i = 0; i <= 10; i++)
+		{
+			if (m_stoprequested)
+				break;
+			sleep_seconds(1);
+		}
 		GetInternalTemperature();
 	}
 	if (bHasInternalVoltage)
 	{
+		for (int i = 0; i <= 10; i++)
+		{
+			if (m_stoprequested)
+				break;
+			sleep_seconds(1);
+		}
 		GetInternalVoltage();
 	}
 	if (bHasInternalCurrent)
 	{
+		for (int i = 0; i <= 10; i++)
+		{
+			if (m_stoprequested)
+				break;
+			sleep_seconds(1);
+		}
 		GetInternalCurrent();
 	}
 #endif
@@ -562,27 +587,35 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	void CHardwareMonitor::FetchUnixData()
 	{
 		char szTmp[300];
-		//Memory
-		float memusedpercentage = GetMemUsageLinux();
-#ifndef __FreeBSD__
-		if (memusedpercentage == -1)
+		if (bProcessMemDisk)
 		{
+			//Memory
+			float memusedpercentage = GetMemUsageLinux();
+#ifndef __FreeBSD__
+			if (memusedpercentage == -1)
+			{
 #ifdef __OpenBSD__
-			memusedpercentage = GetMemUsageOpenBSD();
+				memusedpercentage = GetMemUsageOpenBSD();
 #else
-			//old (wrong) way
-			struct sysinfo mySysInfo;
-			int ret = sysinfo(&mySysInfo);
-			if (ret != 0)
-				return;
-			unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
-			memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
+				//old (wrong) way
+				struct sysinfo mySysInfo;
+				int ret = sysinfo(&mySysInfo);
+				if (ret != 0)
+					return;
+				unsigned long usedram = mySysInfo.totalram - mySysInfo.freeram;
+				memusedpercentage = (100.0f / float(mySysInfo.totalram))*usedram;
 #endif
+			}
+#endif
+			sprintf(szTmp,"%.2f",memusedpercentage);
+			UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
 		}
-#endif
-		sprintf(szTmp,"%.2f",memusedpercentage);
-		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
-
+		for (int i = 0; i <= 10; i++)
+		{
+			if (m_stoprequested)
+				break;
+			sleep_seconds(1);
+		}
 		//CPU
 		char cname[50];
 		if (m_lastquerytime==0)
@@ -691,61 +724,65 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 			m_lastquerytime=acttime;
 		}
 
-		//Disk Usage
-		std::map<std::string, _tDUsageStruct> _disks;
-		std::map<std::string, std::string> _dmounts_;
-		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
-		if (!_rlines.empty())
+		if (bProcessMemDisk)
 		{
-			std::vector<std::string>::const_iterator ittDF;
-			for (ittDF = _rlines.begin(); ittDF != _rlines.end(); ++ittDF)
+			//Disk Usage
+			std::map<std::string, _tDUsageStruct> _disks;
+			std::map<std::string, std::string> _dmounts_;
+			std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
+			if (!_rlines.empty())
 			{
-				char dname[200];
-				char suse[30];
-				char smountpoint[300];
-				long numblock, usedblocks, availblocks;
-				int ret = sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-				if (ret == 6)
+				std::vector<std::string>::const_iterator ittDF;
+				for (ittDF = _rlines.begin(); ittDF != _rlines.end(); ++ittDF)
 				{
-					std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
-					if (it != _dmounts_.end())
+					char dname[200];
+					char suse[30];
+					char smountpoint[300];
+					long numblock, usedblocks, availblocks;
+					int ret = sscanf((*ittDF).c_str(), "%s\t%ld\t%ld\t%ld\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+					if (ret == 6)
 					{
-						if (it->second.length() < strlen(smountpoint))
+						std::map<std::string, std::string>::iterator it = _dmounts_.find(dname);
+						if (it != _dmounts_.end())
 						{
-							continue;
+							if (it->second.length() < strlen(smountpoint))
+							{
+								continue;
+							}
+						}
+	#if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+						if (strstr(dname, "/dev") != NULL)
+	#elif defined(__CYGWIN32__)
+						if (strstr(smountpoint, "/cygdrive/") != NULL)
+	#endif
+						{
+							_tDUsageStruct dusage;
+							dusage.TotalBlocks = numblock;
+							dusage.UsedBlocks = usedblocks;
+							dusage.AvailBlocks = availblocks;
+							dusage.MountPoint = smountpoint;
+							_disks[dname] = dusage;
+							_dmounts_[dname] = smountpoint;
 						}
 					}
-#if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
-					if (strstr(dname, "/dev") != NULL)
-#elif defined(__CYGWIN32__)
-					if (strstr(smountpoint, "/cygdrive/") != NULL)
-#endif
+				}
+				int dindex = 0;
+				std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
+				for (ittDisks = _disks.begin(); ittDisks != _disks.end(); ++ittDisks)
+				{
+					_tDUsageStruct dusage = (*ittDisks).second;
+					if (dusage.TotalBlocks > 0)
 					{
-						_tDUsageStruct dusage;
-						dusage.TotalBlocks = numblock;
-						dusage.UsedBlocks = usedblocks;
-						dusage.AvailBlocks = availblocks;
-						dusage.MountPoint = smountpoint;
-						_disks[dname] = dusage;
-						_dmounts_[dname] = smountpoint;
+						double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
+						//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+						sprintf(szTmp, "%.2f", UsagedPercentage);
+						std::string hddname = "HDD " + dusage.MountPoint;
+						UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
+						dindex++;
 					}
 				}
 			}
-			int dindex = 0;
-			std::map<std::string, _tDUsageStruct>::const_iterator ittDisks;
-			for (ittDisks = _disks.begin(); ittDisks != _disks.end(); ++ittDisks)
-			{
-				_tDUsageStruct dusage = (*ittDisks).second;
-				if (dusage.TotalBlocks > 0)
-				{
-					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
-					//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
-					sprintf(szTmp, "%.2f", UsagedPercentage);
-					std::string hddname = "HDD " + dusage.MountPoint;
-					UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
-					dindex++;
-				}
-			}
+			bProcessMemDisk = false;
 		}
 	}
 #endif //WIN32/#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
