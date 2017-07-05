@@ -14,7 +14,10 @@ public:
 	~CHardwareMonitor(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length) { return false; };
 private:
-	bool bProcessMemDisk;
+	bool bProcessCpu;
+	bool bProcessDisk;
+	bool bProcessMem;
+	bool bProcessTemp;
 	bool StartHardware();
 	bool StopHardware();
 	double m_lastquerytime;
@@ -37,7 +40,9 @@ private:
 	IWbemServices *m_pServicesOHM;
 	IWbemServices *m_pServicesSystem;
 #elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	void FetchUnixData();
+	void FetchUnixCPU();
+	void FetchUnixMemory();
+	void FetchUnixDisk();
 	long long m_lastloadcpu;
 	int m_totcpu;
 #endif
