@@ -402,13 +402,17 @@ void CEventSystem::GetCurrentStates()
 			if (!m_sql.m_bDisableDzVentsSystem)
 			{
 				Json::Value tempjson;
-				m_webservers.GetJSonDevices(tempjson, "", "", "", sitem.deviceID, "", "", true, false, false, 0, "");
+				m_webservers.GetJSonDevices(tempjson, "", "", "", s_str.str(), "", "", true, false, false, 0, "");
 
 				Json::ArrayIndex rsize = tempjson["result"].size();
 				if (rsize > 0)
 				{
 					std::map<std::string, std::string>::const_iterator itt;
 					int ii = 0;
+					std::string l_JsonNameString;
+					std::string l_JsonValueString;
+					l_JsonNameString.reserve(25);
+					l_JsonValueString.reserve(50);
 					while (JsonLuaMap[ii].szOriginal != NULL)
 					{
 						if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
@@ -417,25 +421,25 @@ void CEventSystem::GetCurrentStates()
 
 							if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
 							{
-								sitem.JsonMapString.insert(std::pair<std::string, std::string>(JsonLuaMap[ii].szNew, value));
+								sitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign(value)));
 							}
 							else if (strcmp(JsonLuaMap[ii].szType, "float") == 0)
 							{
-								sitem.JsonMapFloat.insert(std::pair<std::string, float>(JsonLuaMap[ii].szNew, atof(value.c_str())));
+								sitem.JsonMapFloat.insert(std::pair<std::string, float>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atof(value.c_str())));
 							}
 							else if (strcmp(JsonLuaMap[ii].szType, "integer") == 0)
 							{
-								sitem.JsonMapInt.insert(std::pair<std::string, int>(JsonLuaMap[ii].szNew, atoi(value.c_str())));
+								sitem.JsonMapInt.insert(std::pair<std::string, int>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atoi(value.c_str())));
 							}
 							else if (strcmp(JsonLuaMap[ii].szType, "boolean") == 0)
 							{
 								if (strcmp(value.c_str(), "true") == 0)
 								{
-									sitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, true));
+									sitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), true));
 								}
 								else
 								{
-									sitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, false));
+									sitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 								}
 							}
 						}
@@ -446,6 +450,7 @@ void CEventSystem::GetCurrentStates()
 			m_devicestates[sitem.ID] = sitem;
 		}
 	}
+	_log.Log(LOG_STATUS, "EventSystem: done reset all device statuses...");
 }
 
 void CEventSystem::GetCurrentUserVariables()
@@ -1201,13 +1206,18 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 			Json::Value tempjson;
 			std::stringstream sstr;
 			sstr << ulDevID;
-			m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
+			m_webservers.GetJSonDevices(tempjson, "true", "", "", sstr.str(), "", "", true, false, false, 0, "");
 
 			Json::ArrayIndex rsize = tempjson["result"].size();
 			if (rsize > 0)
 			{
 				std::map<std::string, std::string>::const_iterator itt;
 				int ii = 0;
+				std::string l_JsonNameString;
+				std::string l_JsonValueString;
+				l_JsonNameString.reserve(25);
+				l_JsonValueString.reserve(50);
+
 				while (JsonLuaMap[ii].szOriginal != NULL)
 				{
 					if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
@@ -1216,25 +1226,25 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 
 						if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
 						{
-							replaceitem.JsonMapString.insert(std::pair<std::string, std::string>(JsonLuaMap[ii].szNew, value));
+							replaceitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign(value)));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "float") == 0)
 						{
-							replaceitem.JsonMapFloat.insert(std::pair<std::string, float>(JsonLuaMap[ii].szNew, atof(value.c_str())));
+							replaceitem.JsonMapFloat.insert(std::pair<std::string, float>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atof(value.c_str())));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "integer") == 0)
 						{
-							replaceitem.JsonMapInt.insert(std::pair<std::string, int>(JsonLuaMap[ii].szNew, atoi(value.c_str())));
+							replaceitem.JsonMapInt.insert(std::pair<std::string, int>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atoi(value.c_str())));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "boolean") == 0)
 						{
 							if (strcmp(value.c_str(), "true") == 0)
 							{
-								replaceitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, true));
+								replaceitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), true));
 							}
 							else
 							{
-								replaceitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, false));
+								replaceitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 							}
 						}
 					}
@@ -1264,13 +1274,18 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 			Json::Value tempjson;
 			std::stringstream sstr;
 			sstr << ulDevID;
-			m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
+			m_webservers.GetJSonDevices(tempjson, "true", "", "", sstr.str(), "", "", true, false, false, 0, "");
 
 			Json::ArrayIndex rsize = tempjson["result"].size();
 			if (rsize > 0)
 			{
 				std::map<std::string, std::string>::const_iterator itt;
 				int ii = 0;
+				std::string l_JsonNameString;
+				std::string l_JsonValueString;
+				l_JsonNameString.reserve(25);
+				l_JsonValueString.reserve(50);
+
 				while (JsonLuaMap[ii].szOriginal != NULL)
 				{
 					if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
@@ -1279,25 +1294,25 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 
 						if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
 						{
-							newitem.JsonMapString.insert(std::pair<std::string, std::string>(JsonLuaMap[ii].szNew, value));
+							newitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign(value)));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "float") == 0)
 						{
-							newitem.JsonMapFloat.insert(std::pair<std::string, float>(JsonLuaMap[ii].szNew, atof(value.c_str())));
+							newitem.JsonMapFloat.insert(std::pair<std::string, float>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atof(value.c_str())));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "integer") == 0)
 						{
-							newitem.JsonMapInt.insert(std::pair<std::string, int>(JsonLuaMap[ii].szNew, atoi(value.c_str())));
+							newitem.JsonMapInt.insert(std::pair<std::string, int>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), atoi(value.c_str())));
 						}
 						else if (strcmp(JsonLuaMap[ii].szType, "boolean") == 0)
 						{
 							if (strcmp(value.c_str(), "true") == 0)
 							{
-								newitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, true));
+								newitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), true));
 							}
 							else
 							{
-								newitem.JsonMapBool.insert(std::pair<std::string, bool>(JsonLuaMap[ii].szNew, false));
+								newitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 							}
 						}
 					}
@@ -2728,10 +2743,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (sitem.JsonMapString.size() > 0)
 		{
 			typedef std::map<std::string, std::string>::const_iterator it_type;
-			for (it_type itt2 = sitem.JsonMapString.begin(); itt2 != sitem.JsonMapString.end(); ++itt2)
+			for (it_type itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
-				lua_pushstring(lua_state, itt2->first.c_str());
-				lua_pushstring(lua_state, itt2->second.c_str());
+				lua_pushstring(lua_state, itt->first.c_str());
+				lua_pushstring(lua_state, itt->second.c_str());
 				lua_rawset(lua_state, -3);
 			}
 		}
@@ -2739,20 +2754,20 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (sitem.JsonMapFloat.size() > 0)
 		{
 			typedef std::map<std::string, float>::const_iterator it_type;
-			for (it_type itt2 = sitem.JsonMapFloat.begin(); itt2 != sitem.JsonMapFloat.end(); ++itt2)
+			for (it_type itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
 			{
-				lua_pushstring(lua_state, itt2->first.c_str());
-				lua_pushnumber(lua_state, itt2->second);
+				lua_pushstring(lua_state, itt->first.c_str());
+				lua_pushnumber(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
 		}
 		if (sitem.JsonMapInt.size() > 0)
 		{
 			typedef std::map<std::string, int>::const_iterator it_type;
-			for (it_type itt2 = sitem.JsonMapInt.begin(); itt2 != sitem.JsonMapInt.end(); ++itt2)
+			for (it_type itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
 			{
-				lua_pushstring(lua_state, itt2->first.c_str());
-				lua_pushnumber(lua_state, itt2->second);
+				lua_pushstring(lua_state, itt->first.c_str());
+				lua_pushnumber(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
 		}
@@ -2760,10 +2775,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (sitem.JsonMapBool.size() > 0)
 		{
 			typedef std::map<std::string, bool>::const_iterator it_type;
-			for (it_type itt2 = sitem.JsonMapBool.begin(); itt2 != sitem.JsonMapBool.end(); ++itt2)
+			for (it_type itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
 			{
-				lua_pushstring(lua_state, itt2->first.c_str());
-				lua_pushboolean(lua_state, itt2->second);
+				lua_pushstring(lua_state, itt->first.c_str());
+				lua_pushboolean(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
 		}
