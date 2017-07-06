@@ -12107,48 +12107,54 @@ namespace http {
 			else
 			{
 				//Fix 'SubType' when device change
-				switch(switchtype)
+				if (switchtype == -1)
 				{
-					case -1:
-					{
-						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), idx.c_str());
-						break;
-					}
-					case 6:
-					case 13:
-					case 16:
-					case 2:
-					case 7:
-					case 11:
-					case 19:
-					case 1:
-					case 12:
-					case 17:
-					case 8:
-					case 0:
-					case 10:
-					case 9:
-					case 5:
-					case 15:
+				}
+				else
+				{
+					_eSwitchType switchsubtype = (_eSwitchType)switchtype;
+					switch (switchsubtype)
 					{
-						m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=73, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
-						break;
-					}
-					case 18:
-					{
-						m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=62, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
-						break;
-					}
-					default:
-					{
-						m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+						case STYPE_OnOff:					//0
+						case STYPE_Doorbell:				//1
+						case STYPE_Contact:					//2
+						case STYPE_Blinds:					//3
+						case STYPE_X10Siren:				//4
+						case STYPE_SMOKEDETECTOR:			//5
+						case STYPE_BlindsInverted:			//6
+						case STYPE_Dimmer:					//7
+						case STYPE_Motion:					//8
+						case STYPE_PushOn:					//9
+						case STYPE_PushOff:					//10
+						case STYPE_DoorContact:				//11
+						case STYPE_Dusk:					//12
+						case STYPE_BlindsPercentage:		//13
+						case STYPE_VenetianBlindsUS:		//14
+						case STYPE_VenetianBlindsEU:		//15
+						case STYPE_BlindsPercentageInverted://16
+						case STYPE_Media:					//17
+						case STYPE_DoorLock:				//19
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=73, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+							break;
+						}
+						case STYPE_Selector:	//18
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=62, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+							break;
+						}
+						default:
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+						}
 					}
 				}
 			}
