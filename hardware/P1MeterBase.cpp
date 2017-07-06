@@ -319,33 +319,41 @@ bool P1MeterBase::MatchLine()
 				break;
 			case P1TYPE_POWERUSAGE1:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
-				m_power.powerusage1 = temp_usage;
+				if (!m_power.powerusage1 || m_p1version >= 4)
+					m_power.powerusage1 = temp_usage;
+				else if (temp_usage - m_power.powerusage1 < 10000)
+					m_power.powerusage1 = temp_usage;
 				break;
 			case P1TYPE_POWERUSAGE2:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
-				m_power.powerusage2=temp_usage;
+				if (!m_power.powerusage2 || m_p1version >= 4)
+					m_power.powerusage2 = temp_usage;
+				else if (temp_usage - m_power.powerusage2 < 10000)
+					m_power.powerusage2 = temp_usage;
 				break;
 			case P1TYPE_POWERDELIV1:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
-				m_power.powerdeliv1=temp_usage;
+				if (!m_power.powerdeliv1 || m_p1version >= 4)
+					m_power.powerdeliv1 = temp_usage;
+				else if (temp_usage - m_power.powerdeliv1 < 10000)
+					m_power.powerdeliv1 = temp_usage;
 				break;
 			case P1TYPE_POWERDELIV2:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
-				m_power.powerdeliv2=temp_usage;
+				if (!m_power.powerdeliv2 || m_p1version >= 4)
+					m_power.powerdeliv2 = temp_usage;
+				else if (temp_usage - m_power.powerdeliv2 < 10000)
+					m_power.powerdeliv2 = temp_usage;
 				break;
 			case P1TYPE_USAGECURRENT:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt
 				if (temp_usage < 17250)
-				{
 					m_power.usagecurrent = temp_usage;
-				}
 				break;
 			case P1TYPE_DELIVCURRENT:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);	//Watt;
 				if (temp_usage < 17250)
-				{
 					m_power.delivcurrent = temp_usage;
-				}
 				break;
 			case P1TYPE_VOLTAGEL1:
 				temp_volt = strtof(value,&validate);
@@ -368,7 +376,10 @@ bool P1MeterBase::MatchLine()
 			case P1TYPE_GASUSAGE:
 			case P1TYPE_GASUSAGEDSMR4:
 				temp_usage = (unsigned long)(strtod(value,&validate)*1000.0f);
-				m_gas.gasusage = temp_usage;
+				if (!m_gas.gasusage || m_p1version >= 4)
+					m_gas.gasusage = temp_usage;
+				else if (temp_usage - m_gas.gasusage < 20000)
+					m_gas.gasusage = temp_usage;
 				break;
 			}
 
