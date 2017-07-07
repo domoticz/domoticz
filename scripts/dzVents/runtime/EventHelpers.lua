@@ -110,7 +110,6 @@ local function EventHelpers(domoticz, mainMethod)
 					data[var] = storageContext[var]
 				end
 			end
-
 			local ok, err = pcall(persistence.store, dataFilePath, data)
 
 			-- make sure there is no cache for this 'data' module

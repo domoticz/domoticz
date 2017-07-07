@@ -85,7 +85,7 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "ForecastStr",		"forecastString",			"string" },
 	{ "HardwareName",		"hardwareName",				"string" },
 	{ "HardwareType",		"hardwareType",				"string" },
-	{ "HardwareTypeVal",	"hardwareTypeVal",			"integer" },
+	{ "HardwareTypeVal",	"hardwareTypeValue",		"integer" },
 	{ "Humidity",			"humidity",					"integer" },
 	{ "HumidityStatus",		"humidityStatus",			"string" },
 	{ "LevelActions",		"levelActions",				"string" },

@@ -62,10 +62,10 @@ return {
 			device['changed'] = data.changed
 			device['description'] = data.description
 			device['deviceType'] = data.deviceType
-			device['hardwareName'] = data.hardwareName
-			device['hardwareType'] = data.hardwareType
-			device['hardwareId'] = data.hardwareID
-			device['hardwareTypeValue'] = data.hardwareTypeValue
+			device['hardwareName'] = data.data.hardwareName
+			device['hardwareType'] = data.data.hardwareType
+			device['hardwareId'] = data.data.hardwareID
+			device['hardwareTypeValue'] = data.data.hardwareTypeValue
 			device['switchType'] = data.switchType
 			device['switchTypeValue'] = data.switchTypeValue
 			device['timedOut'] = data.timedOut
@@ -92,7 +92,9 @@ return {
 
 
 		for attribute, value in pairs(data.data) do
-			device[attribute] = value
+			if (device[attribute] == nil) then
+				device[attribute] = value
+			end
 		end
 
 		return device
