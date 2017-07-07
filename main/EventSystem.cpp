@@ -83,6 +83,9 @@ static const _tJsonLuaMap JsonLuaMap[] =
 	{ "DirectionStr",		"directionString",			"string" },
 	{ "Forecast",			"forecast", 				"integer" },
 	{ "ForecastStr",		"forecastString",			"string" },
+	{ "HardwareName",		"hardwareName",				"string" },
+	{ "HardwareType",		"hardwareType",				"string" },
+	{ "HardwareTypeVal",	"hardwareTypeVal",			"integer" },
 	{ "Humidity",			"humidity",					"integer" },
 	{ "HumidityStatus",		"humidityStatus",			"string" },
 	{ "LevelActions",		"levelActions",				"string" },
@@ -1284,7 +1287,7 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 			Json::Value tempjson;
 			std::stringstream sstr;
 			sstr << ulDevID;
-			m_webservers.GetJSonDevices(tempjson, "true", "", "", sstr.str(), "", "", true, false, false, 0, "");
+			m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
 
 			Json::ArrayIndex rsize = tempjson["result"].size();
 			if (rsize > 0)
@@ -2572,50 +2575,12 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	localtime_r(&now, &tm1);
 	struct tm tLastUpdate;
 	localtime_r(&now, &tLastUpdate);
-
-
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
-	//_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
 
 	struct tm ntime;
 	time_t checktime;
-
-	//Get All Hardware ID's/Names, need them later
-	std::vector<std::vector<std::string> > result;
-
-	std::map<int, _tHardwareListInt> _hardwareNames;
-	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
-	if (result.size() > 0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii = 0;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			_tHardwareListInt tlist;
-			int ID = atoi(sd[0].c_str());
-			tlist.Name = sd[1];
-			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
-			tlist.HardwareTypeVal = atoi(sd[3].c_str());
-
-			if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
-			{
-				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
-			}
-			else tlist.HardwareType = "";
-
-			// TODO remove comments
-			//			else
-			//			{
-			//				tlist.HardwareType = m_webservers.PluginHardwareDesc(ID);
-			//			}
-			_hardwareNames[ID] = tlist;
-		}
-	}
-
-	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
-
+	
 	lua_createtable(lua_state, 0, 0);
 
 	// First export all the devices.
@@ -2702,18 +2667,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "deviceID");
 		lua_pushstring(lua_state, sitem.deviceID.c_str());
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareID");
-		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareName");
-		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].Name.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareTypeValue");
-		lua_pushnumber(lua_state, (lua_Number)_hardwareNames[sitem.hardwareID].HardwareTypeVal);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareType");
-		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].HardwareType.c_str());
-		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "description");
 		lua_pushstring(lua_state, sitem.description.c_str());
 		lua_rawset(lua_state, -3);
@@ -2733,6 +2686,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushstring(lua_state, "_nValue");
 		lua_pushnumber(lua_state, (lua_Number)sitem.nValue);
+		lua_rawset(lua_state, -3);
+
+		lua_pushstring(lua_state, "hardwareID");
+		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
 		lua_rawset(lua_state, -3);
 
 		// Lux does not have it's own field yet.
@@ -2775,6 +2732,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 				lua_rawset(lua_state, -3);
 			}
 		}
+		
 		if (sitem.JsonMapInt.size() > 0)
 		{
 			typedef std::map<std::string, int>::const_iterator it_type;
