@@ -1133,28 +1133,23 @@ namespace Plugins {
 		}
 		else
 		{
-			Py_buffer	PyBuffer;
-			char*		szMessage = NULL;
-			char*		szVerb = NULL;
-			char*		szURL = NULL;
-			PyObject*	pHeaders = NULL;
+			PyObject*	pData = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s*|ssOi", kwlist, &PyBuffer, &szVerb, &szURL, &pHeaders, &iDelay))
+			static char *kwlist[] = { "Message", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", self->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->Name.c_str());
 				LogPythonException(self->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				//	Add start command to message queue
-				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
+				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
 			}
-			Py_XDECREF(PyBuffer.obj);
 		}
 
 		Py_INCREF(Py_None);

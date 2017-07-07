@@ -627,6 +627,8 @@ namespace Plugins {
 			PluginMessageQueue.push(Message);
 		}
 
+		_log.Log(LOG_STATUS, "(%s) Started.", Name.c_str());
+
 		return true;
 	}
 
@@ -634,6 +636,8 @@ namespace Plugins {
 	{
 		try
 		{
+			_log.Log(LOG_STATUS, "(%s) Stop directive received.", Name.c_str());
+
 			m_stoprequested = true;
 			if (m_bIsStarted)
 			{
@@ -671,6 +675,8 @@ namespace Plugins {
 				sleep_milliseconds(100);
 			}
 
+			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
+
 			if (m_thread)
 			{
 				m_thread->join();
@@ -691,6 +697,7 @@ namespace Plugins {
 
 	void CPlugin::Do_Work()
 	{
+		_log.Log(LOG_STATUS, "(%s) Entering work loop.", Name.c_str());
 		m_LastHeartbeat = mytime(NULL);
 		int scounter = m_iPollInterval * 2;
 		while (!m_stoprequested)
@@ -729,7 +736,7 @@ namespace Plugins {
 			sleep_milliseconds(500);
 		}
 
-		_log.Log(LOG_STATUS, "(%s) Exiting work loop...", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", Name.c_str());
 	}
 
 	void CPlugin::Restart()
@@ -1128,11 +1135,6 @@ namespace Plugins {
 				WriteDebugBuffer(vWriteData, false);
 			}
 			pConnection->pTransport->handleWrite(vWriteData);
-			if (pMessage->m_Object)
-			{
-				PyObject*	pHeaders = (PyObject*)pMessage->m_Object;
-				Py_XDECREF(pHeaders);
-			}
 		}
 	}
 
