@@ -25,7 +25,15 @@ local function Domoticz(settings)
 		now = os.date('*t')
 		sNow = now.year .. '-' .. now.month .. '-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec
 	end
+
 	local nowTime = Time(sNow)
+
+	-- check if the user set a lat/lng
+	-- if not, then daytime, nighttime is incorrect
+	if (_G.timeofday['SunriseInMinutes'] == 0 and _G.timeofday['SunsetInMinutes'] == 0) then
+		utils.log('No information about sunrise and sunset available. Please set lat/lng information in settings.', utils.LOG_ERROR)
+	end
+
 	nowTime['isDayTime'] = timeofday['Daytime']
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
@@ -216,6 +224,10 @@ local function Domoticz(settings)
 		end
 	end
 
+	function self.toCelsius(f)
+		return ((f-32) / 1.8)
+	end
+
 	-- doesn't seem to work well for some weird reasone
 	function self.logDevice(device)
 		dumpTable(device, '> ')
@@ -337,7 +349,7 @@ local function Domoticz(settings)
 				end
 			end
 		end
-	
+
 		collection['reduce'] = function(func, accumulator)
 			for i, item in pairs(_collection) do
 
