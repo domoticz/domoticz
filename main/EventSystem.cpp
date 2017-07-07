@@ -350,7 +350,7 @@ struct _tHardwareListIntEV{
 	bool Enabled;
 };
 
-void CEventSystem::UpdateJsonCache(_tDeviceStatus replaceitem, const uint64_t ulDevID)
+void CEventSystem::UpdateJsonCache(_tDeviceStatus &replaceitem, const uint64_t ulDevID)
 {
 	Json::Value tempjson;
 	std::stringstream sstr;
