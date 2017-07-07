@@ -102,10 +102,6 @@ local function DeviceAdapters(dummyLogger)
 		}
 	end
 
-	self['logDummyCall'] = function(device, name)
-
-	end
-
 	function self.getDummyMethod(device, name)
 		if (dummyLogger ~= nil) then
 			dummyLogger(device, name)
