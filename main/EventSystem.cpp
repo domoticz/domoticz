@@ -441,6 +441,10 @@ void CEventSystem::GetCurrentStates()
 									sitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 								}
 							}
+							else
+							{
+								sitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign("unknown_type")));
+							}
 						}
 						ii++;
 					}
@@ -1249,6 +1253,10 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 								replaceitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 							}
 						}
+						else
+						{
+							replaceitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign("unknown_type")));
+						}
 					}
 					ii++;
 				}
@@ -1316,6 +1324,10 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 							{
 								newitem.JsonMapBool.insert(std::pair<std::string, bool>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), false));
 							}
+						}
+						else
+						{
+							newitem.JsonMapString.insert(std::pair<std::string, std::string>(l_JsonNameString.assign(JsonLuaMap[ii].szNew), l_JsonValueString.assign("unknown_type")));
 						}
 					}
 					ii++;
