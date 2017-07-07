@@ -573,11 +573,12 @@ namespace Plugins {
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Date");
 			if (!pHead)
 			{
+				char szDate[100];
 				time_t rawtime;
 				struct tm *info;
 				time(&rawtime);
 				info = gmtime(&rawtime);
-				sHttp += "Date: " + dynamic_cast<std::ostringstream &>((std::ostringstream() << std::put_time(info, "%a, %d %b %Y %H:%M:%S"))).str() + " GMT\r\n";
+				if (0 < strftime(szDate, sizeof(szDate), "Date: %a, %d %b %Y %H:%M:%S GMT\r\n", info))	sHttp += szDate;
 			}
 
 			// Add Server header if it is not supplied
