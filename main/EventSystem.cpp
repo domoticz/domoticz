@@ -407,7 +407,6 @@ void CEventSystem::GetCurrentStates()
 				Json::ArrayIndex rsize = tempjson["result"].size();
 				if (rsize > 0)
 				{
-					std::map<std::string, std::string>::const_iterator itt;
 					int ii = 0;
 					std::string l_JsonNameString;
 					std::string l_JsonValueString;
@@ -1206,17 +1205,20 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 			Json::Value tempjson;
 			std::stringstream sstr;
 			sstr << ulDevID;
-			m_webservers.GetJSonDevices(tempjson, "true", "", "", sstr.str(), "", "", true, false, false, 0, "");
+			m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
 
 			Json::ArrayIndex rsize = tempjson["result"].size();
 			if (rsize > 0)
 			{
-				std::map<std::string, std::string>::const_iterator itt;
 				int ii = 0;
 				std::string l_JsonNameString;
 				std::string l_JsonValueString;
 				l_JsonNameString.reserve(25);
 				l_JsonValueString.reserve(50);
+				replaceitem.JsonMapString.clear();
+				replaceitem.JsonMapFloat.clear();
+				replaceitem.JsonMapInt.clear();
+				replaceitem.JsonMapBool.clear();
 
 				while (JsonLuaMap[ii].szOriginal != NULL)
 				{
