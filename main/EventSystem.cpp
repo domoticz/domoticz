@@ -2489,7 +2489,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	struct tm ntime;
 	time_t checktime;
-	
+
 	lua_createtable(lua_state, 0, 0);
 
 	// First export all the devices.
@@ -2641,7 +2641,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 				lua_rawset(lua_state, -3);
 			}
 		}
-		
+
 		if (sitem.JsonMapInt.size() > 0)
 		{
 			typedef std::map<std::string, int>::const_iterator it_type;
@@ -2677,6 +2677,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	{
 		_tScenesGroups sgitem = iterator->second;
 
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.size() == 0)
 		{
