@@ -487,7 +487,7 @@ void CSysfsGpio::Init()
 
 	UpdateDomoticzInputs(false); /* Make sure database inputs are in sync with actual hardware */
 
-	_log.Log(LOG_STATUS, "Sysfs GPIO: Startup - polling:%s interrupts:%s debounce:%d inputs:%d outputs:%d",
+	_log.Log(LOG_STATUS, "Sysfs GPIO: Startup - polling:%s interrupts:%s debounce:%dmsec inputs:%d outputs:%d",
 		m_polling_enabled ? "yes":"no", 
 		m_interrupts_enabled ? "yes":"no", 
 		m_debounce_msec, 
