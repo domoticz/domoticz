@@ -7792,6 +7792,15 @@ namespace http {
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
+			rnOldvalue = 0;
+			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
+			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
+			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+
+			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
+
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
 			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
 			m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger);
@@ -12097,13 +12106,57 @@ namespace http {
 			}
 			else
 			{
+				//Fix 'SubType' when device change
 				if (switchtype == -1)
+				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), idx.c_str());
+				}
 				else
-					m_sql.safe_query(
-						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
-						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+				{
+					_eSwitchType switchsubtype = (_eSwitchType)switchtype;
+					switch (switchsubtype)
+					{
+						case STYPE_OnOff:					//0
+						case STYPE_Doorbell:				//1
+						case STYPE_Contact:					//2
+						case STYPE_Blinds:					//3
+						case STYPE_X10Siren:				//4
+						case STYPE_SMOKEDETECTOR:			//5
+						case STYPE_BlindsInverted:			//6
+						case STYPE_Dimmer:					//7
+						case STYPE_Motion:					//8
+						case STYPE_PushOn:					//9
+						case STYPE_PushOff:					//10
+						case STYPE_DoorContact:				//11
+						case STYPE_Dusk:					//12
+						case STYPE_BlindsPercentage:		//13
+						case STYPE_VenetianBlindsUS:		//14
+						case STYPE_VenetianBlindsEU:		//15
+						case STYPE_BlindsPercentageInverted://16
+						case STYPE_Media:					//17
+						case STYPE_DoorLock:				//19
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=73, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+							break;
+						}
+						case STYPE_Selector:	//18
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=62, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+							break;
+						}
+						default:
+						{
+							m_sql.safe_query(
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+						}
+					}
+				}
 			}
 
 			if (bHasstrParam1)
@@ -12536,6 +12589,14 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "DisableDzVentsSystem")
+				{
+					root["DisableDzVentsSystem"] = nValue;
+				}
+				else if (Key == "DzVentsLogLevel")
+				{
+					root["DzVentsLogLevel"] = nValue;
 				}
 				else if (Key == "LogEventScriptTrigger")
 				{

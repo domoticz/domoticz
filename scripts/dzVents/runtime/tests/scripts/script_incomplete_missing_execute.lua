@@ -1,6 +1,6 @@
 return {
 	active = true,
 	on = {
-		'onscript1'
+		devices = {'onscript1'}
 	}
 }

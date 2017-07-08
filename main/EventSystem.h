@@ -57,6 +57,12 @@ public:
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		uint8_t switchtype;
+		std::string description;
+		std::string deviceID;
+		int batteryLevel;
+		int signalLevel;
+		int unit;
+		int hardwareID;
 	};
 
 	struct _tUserVariable
@@ -77,6 +83,14 @@ public:
 		std::string lastUpdate;
 	};
 
+	struct _tHardwareListInt {
+		std::string Name;
+		int HardwareTypeVal;
+		std::string HardwareType;
+		bool Enabled;
+	} tHardwareList;
+
+
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -92,14 +106,15 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
-
-	void exportDeviceStatesToLua(lua_State *lua_state);
+	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
+	void ExportDeviceStatesToLua(lua_State *lua_state);
 
     bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
+	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
@@ -109,7 +124,6 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	int m_SecStatus;
-
 
 	//our thread
 	void Do_Work();
@@ -189,4 +203,6 @@ private:
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
+	std::string SpaceToUnderscore(std::string sResult);
+	std::string LowerCase(std::string sResult);
 };
