@@ -444,9 +444,9 @@ void CEventSystem::UpdateJsonCache(_tDeviceStatus &replaceitem, const uint64_t u
 						std::map<uint8_t, float>::const_iterator it;
 						it = replaceitem.JsonMapFloat.find(index);
 						if (it != replaceitem.JsonMapFloat.end())
-							replaceitem.JsonMapFloat[index] = atof(value.c_str());
+							replaceitem.JsonMapFloat[index] = (float)atof(value.c_str());
 						else
-							replaceitem.JsonMapFloat.insert(std::pair<uint8_t, float>(index, atof(value.c_str())));
+							replaceitem.JsonMapFloat.insert(std::pair<uint8_t, float>(index, (float)atof(value.c_str())));
 					}
 						break;
 
