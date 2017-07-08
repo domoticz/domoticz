@@ -12114,8 +12114,7 @@ namespace http {
 				}
 				else
 				{
-					_eSwitchType switchsubtype = (_eSwitchType)switchtype;
-					switch (switchsubtype)
+					switch (switchtype)
 					{
 						case STYPE_OnOff:					//0
 						case STYPE_Doorbell:				//1
@@ -12138,14 +12137,14 @@ namespace http {
 						case STYPE_DoorLock:				//19
 						{
 							m_sql.safe_query(
-							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=73, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
 							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
 							break;
 						}
 						case STYPE_Selector:	//18
 						{
 							m_sql.safe_query(
-							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SubType=62, SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+							"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
 							used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
 							break;
 						}
