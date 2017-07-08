@@ -63,10 +63,10 @@ public:
 		int signalLevel;
 		int unit;
 		int hardwareID;
-		std::map<std::string, int> JsonMapInt;
-		std::map<std::string, float> JsonMapFloat;
-		std::map<std::string, bool> JsonMapBool;
-		std::map<std::string, std::string> JsonMapString;
+		std::map<uint8_t, int> JsonMapInt;
+		std::map<uint8_t, float> JsonMapFloat;
+		std::map<uint8_t, bool> JsonMapBool;
+		std::map<uint8_t, std::string> JsonMapString;
 	};
 
 	struct _tUserVariable
