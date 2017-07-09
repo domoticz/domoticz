@@ -224,8 +224,8 @@ local function Domoticz(settings)
 		end
 	end
 
-	function self.toCelsius(f, absolute)
-		if (absolute) then
+	function self.toCelsius(f, relative)
+		if (relative) then
 			return f*(1/1.8)
 		end
 		return ((f-32) / 1.8)
