@@ -12106,8 +12106,17 @@ namespace http {
 			}
 			else
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
-					used, name.c_str(), description.c_str(), idx.c_str());
+				if (switchtype == -1)
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
+						used, name.c_str(), description.c_str(), idx.c_str());
+				}
+				else
+				{
+					m_sql.safe_query(
+						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
+						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+				}
 			}
 
 			if (bHasstrParam1)
