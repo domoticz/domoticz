@@ -685,6 +685,7 @@ describe('Domoticz', function()
 
 	it('should convert to Celsius', function()
 		assert.is_same(35, domoticz.toCelsius(95))
+		assert.is_same(10, domoticz.toCelsius(18, true))
 	end)
 
 	it('should log', function()
