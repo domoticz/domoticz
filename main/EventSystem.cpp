@@ -2506,8 +2506,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_devicestatesMutex);
-	int additional_lines = 0;
-	int data_lines = 0;
 	int index = 1;
 	bool timed_out = false;
 	const char* dev_type;
@@ -2532,7 +2530,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
-		data_lines = 0;
+		dev_type = RFX_Type_Desc(sitem.devType, 1);
+		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
@@ -2541,7 +2540,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, additional_lines + 11);
+		lua_createtable(lua_state, 1, 11);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
