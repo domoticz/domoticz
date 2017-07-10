@@ -59,55 +59,67 @@ extern http::server::CWebServerHelper m_webservers;
 
 std::string m_printprefix;
 
-struct _tJsonLuaMap {
+typedef enum
+{
+	JsonTypeString = 0,	// 0
+	JsonTypeFloat,		// 1
+	JsonTypeInt,		// 2
+	JsonTypeBoolean,	// 3
+	JsonUnknown			// 4
+} JsonType;
+
+struct _tJsonMap
+{
 	const char* szOriginal;
 	const char* szNew;
-	const char* szType;
+	JsonType szType;
 };
-
 
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in  CWebServer::GetJSonDevices, they should
 // be added to this table.
-static const _tJsonLuaMap JsonLuaMap[] =
+static const _tJsonMap JsonMap[] =
 {
-	{ "Barometer",			"barometer",				"float" },
-	{ "Chill",				"chill", 					"float" },
-	{ "Counter",			"counter", 					"string" },
-	{ "CounterDeliv",		"counterDelivered", 		"float" },
-	{ "CounterDelivToday",	"counterDeliveredToday",	"string"},
-	{ "CounterToday",		"counterToday", 			"string" },
-	{ "Current",			"current", 					"float" },
-	{ "DewPoint",			"dewPoint", 				"float" },
-	{ "Direction",			"direction",				"float" },
-	{ "DirectionStr",		"directionString",			"string" },
-	{ "Forecast",			"forecast", 				"integer" },
-	{ "ForecastStr",		"forecastString",			"string" },
-	{ "Humidity",			"humidity",					"integer" },
-	{ "HumidityStatus",		"humidityStatus",			"string" },
-	{ "LevelActions",		"levelActions",				"string" },
-	{ "LevelNames",			"levelNames",				"string" },
-	{ "LevelOffHidden",		"levelOffHidden",			"boolean" },
-	{ "MaxDimLevel",		"maxDimLevel",				"integer" },
-	{ "Moisture",			"moisture",					"string" },
-	{ "Pressure",			"pressure",					"float"  },
-	{ "Quality",			"quality",					"string"  },
-	{ "Radiation",			"radiation",				"float"  },
-	{ "Rain",				"rain",						"float"  },
-	{ "RainRate",			"rainRate",					"float"  },
-	{ "SensorType",			"sensorType",				"integer"  },
-	{ "SensorUnit",			"sensorUnit",				"string"  },
-	{ "SetPoint",			"setPoint",					"float"  },
-	{ "Speed",				"speed",					"float"  },
-	{ "Temp",				"temperature",				"float"  },
-	{ "TypeImg",			"icon",						"string"  },
-	{ "Usage",				"usage",					"string"  },
-	{ "UsageDeliv",			"usageDelivered",			"string"  },
-	{ "ValueQuantity",		"valueQuantity",			"string"  },
-	{ "ValueUnits",			"valueUnits",				"string"  },
-	{ "Visibility",			"visibility",				"float"  },
-	{ "Voltage",			"voltage",					"float"  },
-	{ NULL,					NULL,						"string"  }
+	{ "Barometer",			"barometer",				JsonTypeFloat },
+	{ "Chill",				"chill", 					JsonTypeFloat },
+	{ "Counter",			"counter", 					JsonTypeString },
+	{ "CounterDeliv",		"counterDelivered", 		JsonTypeFloat },
+	{ "CounterDelivToday",	"counterDeliveredToday",	JsonTypeString },
+	{ "CounterToday",		"counterToday", 			JsonTypeString },
+	{ "Current",			"current", 					JsonTypeFloat },
+	{ "DewPoint",			"dewPoint", 				JsonTypeFloat },
+	{ "Direction",			"direction",				JsonTypeFloat },
+	{ "DirectionStr",		"directionString",			JsonTypeString },
+	{ "Forecast",			"forecast", 				JsonTypeInt },
+	{ "ForecastStr",		"forecastString",			JsonTypeString },
+	{ "HardwareName",		"hardwareName",				JsonTypeString },
+	{ "HardwareType",		"hardwareType",				JsonTypeString },
+	{ "HardwareTypeVal",	"hardwareTypeValue",		JsonTypeInt },
+	{ "Humidity",			"humidity",					JsonTypeInt },
+	{ "HumidityStatus",		"humidityStatus",			JsonTypeString },
+	{ "LevelActions",		"levelActions",				JsonTypeString },
+	{ "LevelNames",			"levelNames",				JsonTypeString },
+	{ "LevelOffHidden",		"levelOffHidden",			JsonTypeBoolean },
+	{ "MaxDimLevel",		"maxDimLevel",				JsonTypeInt },
+	{ "Moisture",			"moisture",					JsonTypeString },
+	{ "Pressure",			"pressure",					JsonTypeFloat  },
+	{ "Quality",			"quality",					JsonTypeString  },
+	{ "Radiation",			"radiation",				JsonTypeFloat  },
+	{ "Rain",				"rain",						JsonTypeFloat  },
+	{ "RainRate",			"rainRate",					JsonTypeFloat  },
+	{ "SensorType",			"sensorType",				JsonTypeInt  },
+	{ "SensorUnit",			"sensorUnit",				JsonTypeString  },
+	{ "SetPoint",			"setPoint",					JsonTypeFloat  },
+	{ "Speed",				"speed",					JsonTypeFloat  },
+	{ "Temp",				"temperature",				JsonTypeFloat  },
+	{ "TypeImg",			"icon",						JsonTypeString  },
+	{ "Usage",				"usage",					JsonTypeString  },
+	{ "UsageDeliv",			"usageDelivered",			JsonTypeString  },
+	{ "ValueQuantity",		"valueQuantity",			JsonTypeString  },
+	{ "ValueUnits",			"valueUnits",				JsonTypeString  },
+	{ "Visibility",			"visibility",				JsonTypeFloat  },
+	{ "Voltage",			"voltage",					JsonTypeFloat  },
+	{ NULL,					NULL,						JsonTypeString  }
 };
 
 
@@ -227,9 +239,13 @@ void CEventSystem::LoadEvents()
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
 				}
-				m_bdzVentsExist = true;
 			}
 		}
+		m_bdzVentsExist = true;
+	}
+	else
+	{
+		m_bdzVentsExist = false;
 	}
 
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
@@ -347,6 +363,96 @@ struct _tHardwareListIntEV{
 	bool Enabled;
 };
 
+void CEventSystem::UpdateJsonCache(_tDeviceStatus &replaceitem, const uint64_t ulDevID)
+{
+	Json::Value tempjson;
+	std::stringstream sstr;
+	sstr << ulDevID;
+
+	m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
+	Json::ArrayIndex rsize = tempjson["result"].size();
+	if (rsize > 0)
+	{
+		uint8_t index = 0;
+		std::string l_JsonValueString;
+		l_JsonValueString.reserve(50);
+
+		while (JsonMap[index].szOriginal != NULL)
+		{
+			if (tempjson["result"][0][JsonMap[index].szOriginal] != Json::Value::null)
+			{
+				std::string value = tempjson["result"][0][JsonMap[index].szOriginal].asString();
+
+				switch (JsonMap[index].szType)
+				{
+					case JsonTypeString:
+					{
+						std::map<uint8_t, std::string>::const_iterator it;
+						it = replaceitem.JsonMapString.find(index);
+						if (it != replaceitem.JsonMapString.end())
+							replaceitem.JsonMapString[index] = l_JsonValueString.assign(value);
+						else
+							replaceitem.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign(value)));
+					}
+						break;
+
+					case JsonTypeFloat:
+					{
+						std::map<uint8_t, float>::const_iterator it;
+						it = replaceitem.JsonMapFloat.find(index);
+						if (it != replaceitem.JsonMapFloat.end())
+							replaceitem.JsonMapFloat[index] = (float)atof(value.c_str());
+						else
+							replaceitem.JsonMapFloat.insert(std::pair<uint8_t, float>(index, (float)atof(value.c_str())));
+					}
+						break;
+
+					case JsonTypeInt:
+					{
+						std::map<uint8_t, int>::const_iterator it;
+						it = replaceitem.JsonMapInt.find(index);
+						if (it != replaceitem.JsonMapInt.end())
+							replaceitem.JsonMapInt[index] = atoi(value.c_str());
+						else
+							replaceitem.JsonMapInt.insert(std::pair<uint8_t, int>(index, atoi(value.c_str())));
+					}
+						break;
+
+					case JsonTypeBoolean:
+					{
+						std::map<uint8_t, bool>::const_iterator it;
+						it = replaceitem.JsonMapBool.find(index);
+						if (it != replaceitem.JsonMapBool.end())
+						{
+							if (strcmp(value.c_str(), "true") == 0)
+								replaceitem.JsonMapBool[index] = true;
+							else
+								replaceitem.JsonMapBool.insert(std::pair<uint8_t, bool>(index, false));
+						}
+						else
+						{
+							if (strcmp(value.c_str(), "true") == 0)
+								replaceitem.JsonMapBool[index] = true;
+							else
+								replaceitem.JsonMapBool.insert(std::pair<uint8_t, bool>(index, false));
+						}
+					}
+						break;
+
+					default:
+						std::map<uint8_t, std::string>::const_iterator it;
+						it = replaceitem.JsonMapString.find(index);
+						if (it != replaceitem.JsonMapString.end())
+							replaceitem.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
+						else
+							replaceitem.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign("unknown_type")));
+				}
+			}
+			index++;
+		}
+	}
+}
+
 void CEventSystem::GetCurrentStates()
 {
 	std::vector<std::vector<std::string> > result;
@@ -362,7 +468,8 @@ void CEventSystem::GetCurrentStates()
 	if (result.size()>0)
 	{
 		// Allocate all memory before filling
-		m_devicestates.get_allocator().allocate(result.size());
+		//m_devicestates.get_allocator().allocate(result.size());
+		std::map<uint64_t, _tDeviceStatus> m_devicestates_temp;
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
@@ -398,9 +505,16 @@ void CEventSystem::GetCurrentStates()
 			sitem.unit = atoi(sd[14].c_str());
 			sitem.deviceID = l_deviceID.assign(sd[15]);
 			sitem.hardwareID = atoi(sd[0].c_str());
-			m_devicestates[sitem.ID] = sitem;
+
+			if (!m_sql.m_bDisableDzVentsSystem)
+			{
+				UpdateJsonCache(sitem, sitem.ID);
+			}
+			m_devicestates_temp[sitem.ID] = sitem;
 		}
+		m_devicestates = m_devicestates_temp;
 	}
+	_log.Log(LOG_STATUS, "EventSystem: done reset all device statuses...");
 }
 
 void CEventSystem::GetCurrentUserVariables()
@@ -1140,7 +1254,9 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-	if (itt != m_devicestates.end()) {
+
+	if (itt != m_devicestates.end())
+	{
 		//_log.Log(LOG_STATUS,"EventSystem: update device %" PRIu64 "",ulDevID);
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
@@ -1149,8 +1265,15 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		replaceitem.nValueWording = l_nValueWording;
 		replaceitem.lastUpdate = l_lastUpdate;
 		replaceitem.lastLevel = lastLevel;
+
+		if (!m_sql.m_bDisableDzVentsSystem)
+		{
+			UpdateJsonCache(replaceitem, ulDevID);
+		}
 		itt->second = replaceitem;
-	} else {
+	}
+	else
+	{
 		//_log.Log(LOG_STATUS,"EventSystem: insert device %" PRIu64 "",ulDevID);
 		_tDeviceStatus newitem;
 		newitem.devType = devType;
@@ -1163,6 +1286,11 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
+
+		if (!m_sql.m_bDisableDzVentsSystem)
+		{
+			UpdateJsonCache(newitem, ulDevID);
+		}
 		m_devicestates[newitem.ID] = newitem;
 	}
 	return nValueWording;
@@ -2395,55 +2523,18 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	bool timed_out = false;
 	const char* dev_type;
 	const char* sub_type;
+	std::vector<std::vector<std::string> > result;
 
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
 	struct tm tLastUpdate;
 	localtime_r(&now, &tLastUpdate);
-
-
 	int SensorTimeOut = 60;
 	m_sql.GetPreferencesVar("SensorTimeout", SensorTimeOut);
-	//_log.Log(LOG_STATUS, "Sensor Timeout is %d minutes.", SensorTimeOut);
 
 	struct tm ntime;
 	time_t checktime;
-
-	//Get All Hardware ID's/Names, need them later
-	std::vector<std::vector<std::string> > result;
-
-	std::map<int, _tHardwareListInt> _hardwareNames;
-	result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
-	if (result.size() > 0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		int ii = 0;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			_tHardwareListInt tlist;
-			int ID = atoi(sd[0].c_str());
-			tlist.Name = sd[1];
-			tlist.Enabled = (atoi(sd[2].c_str()) != 0);
-			tlist.HardwareTypeVal = atoi(sd[3].c_str());
-
-			if (tlist.HardwareTypeVal != HTYPE_PythonPlugin)
-			{
-				tlist.HardwareType = Hardware_Type_Desc(tlist.HardwareTypeVal);
-			}
-			else tlist.HardwareType = "";
-
-			// TODO remove comments
-			//			else
-			//			{
-			//				tlist.HardwareType = m_webservers.PluginHardwareDesc(ID);
-			//			}
-			_hardwareNames[ID] = tlist;
-		}
-	}
-
-	//_log.Log(LOG_STATUS, "%d devices in table.", m_devicestates.size());
 
 	lua_createtable(lua_state, 0, 0);
 
@@ -2455,11 +2546,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		dev_type = RFX_Type_Desc(sitem.devType, 1);
 		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 		data_lines = 0;
-
-		Json::Value tempjson;
-		std::stringstream sstr;
-		sstr << sitem.ID;
-		m_webservers.GetJSonDevices(tempjson, "", "", "Name", sstr.str(), "", "", true, false, false, 0, "");
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
@@ -2536,18 +2622,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "deviceID");
 		lua_pushstring(lua_state, sitem.deviceID.c_str());
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareID");
-		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareName");
-		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].Name.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareTypeValue");
-		lua_pushnumber(lua_state, (lua_Number)_hardwareNames[sitem.hardwareID].HardwareTypeVal);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "hardwareType");
-		lua_pushstring(lua_state, _hardwareNames[sitem.hardwareID].HardwareType.c_str());
-		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "description");
 		lua_pushstring(lua_state, sitem.description.c_str());
 		lua_rawset(lua_state, -3);
@@ -2569,6 +2643,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushnumber(lua_state, (lua_Number)sitem.nValue);
 		lua_rawset(lua_state, -3);
 
+		lua_pushstring(lua_state, "hardwareID");
+		lua_pushnumber(lua_state, (lua_Number)sitem.hardwareID);
+		lua_rawset(lua_state, -3);
+
 		// Lux does not have it's own field yet.
 		if (strcmp(dev_type, "Lux") == 0 && strcmp(sub_type, "Lux") == 0)
 		{
@@ -2587,50 +2665,48 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_rawset(lua_state, -3);
 		}
 
-
 		// Now see if we have additional fields from the JSON data
-		Json::ArrayIndex rsize = tempjson["result"].size();
-		if (rsize > 0)
+		if (sitem.JsonMapString.size() > 0)
 		{
-			std::map<std::string, std::string>::const_iterator itt;
-			int ii = 0;
-			while (JsonLuaMap[ii].szOriginal != NULL)
+			typedef std::map<uint8_t, std::string>::const_iterator it_type;
+			for (it_type itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
-				if (tempjson["result"][0][JsonLuaMap[ii].szOriginal] != Json::Value::null)
-				{
-					std::string value = tempjson["result"][0][JsonLuaMap[ii].szOriginal].asString();
-					lua_pushstring(lua_state, JsonLuaMap[ii].szNew);
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
+				lua_pushstring(lua_state, itt->second.c_str());
+				lua_rawset(lua_state, -3);
+			}
+		}
 
-					if (strcmp(JsonLuaMap[ii].szType, "string") == 0)
-					{
-						lua_pushstring(lua_state, value.c_str());
-					}
-					else if (strcmp(JsonLuaMap[ii].szType, "float") == 0)
-					{
-						lua_pushnumber(lua_state, atof(value.c_str()));
-					}
-					else if (strcmp(JsonLuaMap[ii].szType, "integer") == 0)
-					{
-						lua_pushnumber(lua_state, atoi(value.c_str()));
-					}
-					else if (strcmp(JsonLuaMap[ii].szType, "boolean") == 0)
-					{
-						if (strcmp(value.c_str(), "true") == 0)
-						{
-							lua_pushboolean(lua_state, true);
-						}
-						else
-						{
-							lua_pushboolean(lua_state, false);
-						}
-					}
-					else
-					{
-						lua_pushstring(lua_state, "unknown_type");
-					}
-					lua_rawset(lua_state, -3);
-				}
-				ii ++ ;
+		if (sitem.JsonMapFloat.size() > 0)
+		{
+			typedef std::map<uint8_t, float>::const_iterator it_type;
+			for (it_type itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
+			{
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
+				lua_pushnumber(lua_state, itt->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (sitem.JsonMapInt.size() > 0)
+		{
+			typedef std::map<uint8_t, int>::const_iterator it_type;
+			for (it_type itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
+			{
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
+				lua_pushnumber(lua_state, itt->second);
+				lua_rawset(lua_state, -3);
+			}
+		}
+
+		if (sitem.JsonMapBool.size() > 0)
+		{
+			typedef std::map<uint8_t, bool>::const_iterator it_type;
+			for (it_type itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
+			{
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
+				lua_pushboolean(lua_state, itt->second);
+				lua_rawset(lua_state, -3);
 			}
 		}
 
@@ -2647,6 +2723,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	{
 		_tScenesGroups sgitem = iterator->second;
 
+		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.size() == 0)
 		{

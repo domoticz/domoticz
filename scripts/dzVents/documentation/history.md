@@ -1,5 +1,8 @@
+[2.0.1] Domoticz integration
+ - Added support for switching Lighting Limitless/Applamp (Hue etc) devices.
+ - Added toCelsius() helper method to domoticz object as the various update temperature methods all need celsius.
 
- [2.0.0] Domoticz integration
+[2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
  - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to loop over these collection **you can no longer use the standard Lua for..pairs or for..ipairs construct**. You have to use the iterators like forEach, filter and reduce: `domoticz.devices().forEach(function() .. end)` (see [Iterators](#Iterators)). This was a necessary change to make dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
@@ -127,4 +130,3 @@
 [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
- 

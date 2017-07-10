@@ -63,6 +63,10 @@ public:
 		int signalLevel;
 		int unit;
 		int hardwareID;
+		std::map<uint8_t, int> JsonMapInt;
+		std::map<uint8_t, float> JsonMapFloat;
+		std::map<uint8_t, bool> JsonMapBool;
+		std::map<uint8_t, std::string> JsonMapString;
 	};
 
 	struct _tUserVariable
@@ -159,6 +163,7 @@ private:
 
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
+	void UpdateJsonCache(_tDeviceStatus &replaceitem, const uint64_t ulDevID);
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
