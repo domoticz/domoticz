@@ -738,7 +738,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		char szTmp[300];
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
-		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
+		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs");
 		if (!_rlines.empty())
 		{
 			std::vector<std::string>::const_iterator ittDF;
