@@ -172,6 +172,8 @@
     .navbar .nav li a{
         left:6px;
         padding-right:6px;
+        white-space: normal;
+        line-height: 1em;
     }
     
     #appnavbar > li > a{padding-left:10px;padding-right:10px;}
