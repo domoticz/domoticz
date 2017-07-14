@@ -43,7 +43,11 @@ define(['app'], function (app) {
 					});
 
 				}, 3250);
-				setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
+				// Create new  timer if it does not already exist
+				if (typeof $scope.datavizTimer === 'undefined' || $scope.datavizTimer === null) {
+					console.log("Creating new Dataviz timer"); // <-- just for debugging
+					$scope.datavizTimer = setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
+				}
 			}
 		}
 
