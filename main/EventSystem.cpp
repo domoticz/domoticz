@@ -150,6 +150,8 @@ void CEventSystem::StartEventSystem()
 
 	LoadEvents();
 	GetCurrentStates();
+	GetCurrentScenesGroups();
+	GetCurrentUserVariables();
 #ifdef ENABLE_PYTHON
     Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
@@ -1226,8 +1228,52 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 		return;
 
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
-	GetCurrentUserVariables();
 	EvaluateEvent("security");
+}
+
+void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
+{
+	if (!m_bEnabled)
+		return;
+
+	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+
+	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+	if (itt != m_scenesgroups.end())
+	{
+		_tScenesGroups replaceitem = itt->second;
+		if (nValue == 0)
+			replaceitem.scenesgroupValue = "Off";
+		else if (nValue == 1)
+			replaceitem.scenesgroupValue = "On";
+		else
+			replaceitem.scenesgroupValue = "Mixed";
+		replaceitem.lastUpdate = lastUpdate;
+		itt->second = replaceitem;
+	}
+}
+
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate)
+{
+	if (!m_bEnabled)
+		return;
+
+	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+
+	std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
+	if (itt != m_uservariables.end())
+	{
+		_tUserVariable replaceitem = itt->second;
+		if (!varName.empty())
+			replaceitem.variableName = varName;
+		if (!varValue.empty())
+			replaceitem.variableValue = varValue;
+		if (varType != 0)
+			replaceitem.variableType = varType;
+
+		replaceitem.lastUpdate = lastUpdate;
+		itt->second = replaceitem;
+	}
 }
 
 std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
@@ -1301,7 +1347,6 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
 		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
-		GetCurrentUserVariables();
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
 	}
 	else {
@@ -1311,8 +1356,6 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 
 void CEventSystem::ProcessMinute()
 {
-	GetCurrentUserVariables();
-	GetCurrentScenesGroups();
 	EvaluateEvent("time");
 }
 
@@ -1320,7 +1363,6 @@ void CEventSystem::ProcessUserVariable(const uint64_t varId)
 {
 	if (!m_bEnabled)
 		return;
-	GetCurrentUserVariables();
 	EvaluateEvent("uservariable", varId);
 }
 
@@ -1338,6 +1380,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 {
 	if (!m_bEnabled)
 		return;
+
 	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 
 	std::vector<std::string> FileEntries;
@@ -2704,6 +2747,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	// Now do the scenes and groups.
 	const char *description = "";
+	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+
 	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
 	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
 	{
@@ -2759,6 +2804,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_settable(lua_state, -3); // end entry
 		index++;
 	}
+	scenesgroupsMutexLock.unlock();
 
 	char *vtype;
 
@@ -3353,27 +3399,6 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	}
 	lua_setglobal(lua_state, "uservariables");
 
-	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
-	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator) {
-		_tScenesGroups sgitem = iterator->second;
-		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
-		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices_scenesgroups");
-
-	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
-	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
-	{
-		_tScenesGroups sgitem = iterator->second;
-		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
-		lua_rawset(lua_state, -3);
-	}
-	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
-
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
 	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
@@ -3400,6 +3425,29 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			}
 		}
 	}
+
+	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
+	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
+	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator) {
+		_tScenesGroups sgitem = iterator->second;
+		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
+		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_scenesgroups");
+
+	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
+	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
+	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
+	{
+		_tScenesGroups sgitem = iterator->second;
+		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
+		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
+		lua_rawset(lua_state, -3);
+	}
+	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
+	scenesgroupsMutexLock.unlock();
 
 	int secstatus = 0;
 	std::string secstatusw = "";

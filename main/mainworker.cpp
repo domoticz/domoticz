@@ -12384,6 +12384,13 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
+	if (!m_sql.m_bDisableEventSystem)
+	{
+		std::stringstream ssLastUpdate;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << (ltime.tm_mon + 1) << "-" << ltime.tm_mday << " " << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
+		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
+	}
+
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
 		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %" PRIu64 ") ORDER BY [Order] ASC", idx);
@@ -12489,7 +12496,6 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			sleep_milliseconds(50);
 		}
 	}
-
 	return true;
 }
 
