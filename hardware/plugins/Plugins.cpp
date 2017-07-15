@@ -1236,6 +1236,8 @@ namespace Plugins {
 		{
 			// Stop Python
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
+			if (m_ImageDict) Py_XDECREF(m_ImageDict);
+			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 			Py_XDECREF(m_PyModule);
 		}
@@ -1249,6 +1251,8 @@ namespace Plugins {
 		}
 		m_PyModule = NULL;
 		m_DeviceDict = NULL;
+		m_ImageDict = NULL;
+		m_SettingsDict = NULL;
 		m_PyInterpreter = NULL;
 		m_bIsStarted = false;
 	}

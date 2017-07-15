@@ -297,6 +297,9 @@ void MainWorker::StopDomoticzHardware()
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
+#endif
 		(*itt)->Stop();
 		delete (*itt);
 	}
@@ -400,10 +403,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos=FindDomoticzHardware(HwdId);
 	if (dpos==-1)
 		return;
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 #ifdef ENABLE_PYTHON
 	m_pluginsystem.DeregisterPlugin(HwdId);
 #endif
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
