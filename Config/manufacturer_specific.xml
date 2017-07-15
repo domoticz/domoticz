@@ -314,6 +314,17 @@
 		<Product type="4c42" id="3134" name="Smart LED Retrofit Kit ZE27EU" config="domitech/ze27eu.xml"/>
 		<Product type="4c42" id="3135" name="Smart LED Light Bulb ZB22UK" config="domitech/zb22uk.xml"/>
 	</Manufacturer>
+	<Manufacturer id="021c" name="Domux">
+		<Product type="0168" id="0168" name="Door Sensor DX1DS-Z" config="domux/DX1DS-Z.xml"/>
+		<Product type="8001" id="1000" name="Motion Sensor DX1MS-Z" config="domux/DX1MS-Z.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor DX1SA-Z" config="domux/DX1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor DX1CG-Z" config="domux/DX1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor DX1WL-Z" config="domux/DX1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor DX1CA-Z" config="domux/DX1CA-Z.xml"/>
+		<Product type="8006" id="1000" name="Smart Metering Plug DX2SK-Z" config="domux/DX2SK-Z.xml"/>
+		<Product type="8007" id="1000" name="Temperature Humidity Sensor DX1HT-Z" config="domux/DX1HT-Z.xml"/>
+		<Product type="8008" id="1000" name="Smart Plug DX2SK-Z" config="domux/DX2SK-Z.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0184" name="Dragon Tech">
 		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
 	</Manufacturer>
@@ -1139,9 +1150,14 @@
 	</Manufacturer>
 	<Manufacturer id="0131" name="Zipato">
 		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
+		<Product type="0002" id="0003" name="Bulb 2" config="zipato/RGBBulb2.xml"/>
 		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
 		<Product type="2001" id="0106" name="VS-ZD2102 Door/Window Sensor" config="zipato/vszd2102.xml" />
 		<Product type="2002" id="0205" name="ZP3102-EU Multisensor Duo" config="zipato/zp3102.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor HS1CG-Z" config="heiman/HS1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor HS1CA-Z" config="heiman/HS1CA-Z.xml"/>
 	</Manufacturer>
 	<Manufacturer id="027a" name="Zooz">
 		<Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />

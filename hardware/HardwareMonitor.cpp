@@ -58,7 +58,10 @@
 
 #endif
 
-#define POLL_INTERVAL 30
+#define POLL_INTERVAL_CPU	30
+#define POLL_INTERVAL_TEMP	70
+#define POLL_INTERVAL_MEM	80
+#define POLL_INTERVAL_DISK	170
 
 extern bool bHasInternalTemperature;
 extern std::string szInternalTemperatureCommand;
@@ -132,10 +135,11 @@ bool CHardwareMonitor::StopHardware()
 
 void CHardwareMonitor::Do_Work()
 {
+
 	_log.Log(LOG_STATUS, "Hardware Monitor: Started");
 
 	int msec_counter = 0;
-	int sec_counter = POLL_INTERVAL - 3;
+	int64_t sec_counter = POLL_INTERVAL_CPU - 5;
 	while (!m_stoprequested)
 	{
 		sleep_milliseconds(500);
@@ -144,11 +148,10 @@ void CHardwareMonitor::Do_Work()
 		{
 			msec_counter = 0;
 			sec_counter++;
-			if (sec_counter % 12 == 0) {
+			if (sec_counter % 12 == 0)
 				m_LastHeartbeat = mytime(NULL);
-			}
 
-			if (sec_counter%POLL_INTERVAL == 0)
+			if (sec_counter % POLL_INTERVAL_TEMP == 0)
 			{
 				try
 				{
@@ -159,6 +162,44 @@ void CHardwareMonitor::Do_Work()
 					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching motherboard sensors!...");
 				}
 			}
+
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+			if (sec_counter % POLL_INTERVAL_CPU == 0)
+			{
+				try
+				{
+					FetchUnixCPU();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching CPU data!...");
+				}
+			}
+
+			if (sec_counter % POLL_INTERVAL_MEM == 0)
+			{
+				try
+				{
+					FetchUnixMemory();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching memory data!...");
+				}
+			}
+
+			if (sec_counter % POLL_INTERVAL_DISK == 0)
+			{
+				try
+				{
+					FetchUnixDisk();
+				}
+				catch (...)
+				{
+					_log.Log(LOG_STATUS, "Hardware Monitor: Error occurred while Fetching disk data!...");
+				}
+			}
+#endif
 		}
 	}
 	_log.Log(LOG_STATUS,"Hardware Monitor: Stopped...");
@@ -265,20 +306,14 @@ void CHardwareMonitor::FetchData()
 		return;
 	}
 #elif defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	_log.Log(LOG_NORM,"Hardware Monitor: Fetching data (System sensors)");
-	FetchUnixData();
 	if (bHasInternalTemperature)
-	{
 		GetInternalTemperature();
-	}
+
 	if (bHasInternalVoltage)
-	{
 		GetInternalVoltage();
-	}
+
 	if (bHasInternalCurrent)
-	{
 		GetInternalCurrent();
-	}
 #endif
 }
 
@@ -559,10 +594,11 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		return percent;
 	}
 #endif
-	void CHardwareMonitor::FetchUnixData()
+
+	void CHardwareMonitor::FetchUnixMemory()
 	{
-		char szTmp[300];
 		//Memory
+		char szTmp[300];
 		float memusedpercentage = GetMemUsageLinux();
 #ifndef __FreeBSD__
 		if (memusedpercentage == -1)
@@ -582,8 +618,12 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 #endif
 		sprintf(szTmp,"%.2f",memusedpercentage);
 		UpdateSystemSensor("Load", 0, "Memory Usage", szTmp);
+	}
 
+	void CHardwareMonitor::FetchUnixCPU()
+	{
 		//CPU
+		char szTmp[300];
 		char cname[50];
 		if (m_lastquerytime==0)
 		{
@@ -690,11 +730,15 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 #endif //else Openbsd
 			m_lastquerytime=acttime;
 		}
+	}
 
+	void CHardwareMonitor::FetchUnixDisk()
+	{
 		//Disk Usage
+		char szTmp[300];
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
-		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df");
+		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs");
 		if (!_rlines.empty())
 		{
 			std::vector<std::string>::const_iterator ittDF;
