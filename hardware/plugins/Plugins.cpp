@@ -581,9 +581,9 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
-		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		if (m_Transports.size())
 		{
+			boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 			{
 				CPluginTransport*	pPluginTransport = *itt;

@@ -876,7 +876,7 @@ namespace Plugins {
 	{
 		if (self->pPlugin && self->pPlugin->m_bDebug)
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object to %s:%s.", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Address);
