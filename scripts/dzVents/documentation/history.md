@@ -17,6 +17,7 @@
  - Added dzVents version information in the Domoticz settings page for easy checking what dzVents version is being used in your Domoticz built. Eventhough it is integrated with Domoticz, it is handy for dzVents to have it's own heartbeat.
  - avg(), avgSince(), sum() and sumSince() now return 0 instead of nil for empty history sets. Makes more sense.
  - Fixed boiler example to fallback to the current temperature when there is no history data yet when it calculates the average temperature.
+ - Use different api command for setting setPoints in the Thermostat setpoint device adapter.
 
 [2.0.0] Domoticz integration
 
