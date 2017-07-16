@@ -7,7 +7,7 @@
 #include "../main/Logger.h"
 #include "../hardware/DomoticzTCP.h"
 #include "../main/mainworker.h"
-
+#include "../main/localtime_r.h"
 #include <boost/asio.hpp>
 #include <algorithm>
 #include <boost/bind.hpp>
@@ -33,6 +33,7 @@ void CTCPServerInt::start()
 	// asynchronous operation outstanding: the asynchronous accept call waiting
 	// for new incoming connections.
 	io_service_.run();
+	m_incoming_domoticz_history.clear();
 }
 
 void CTCPServerInt::stop()
@@ -40,6 +41,7 @@ void CTCPServerInt::stop()
 	// Post a call to the stop function so that server::stop() is safe to call
 	// from any thread.
 	io_service_.post(boost::bind(&CTCPServerInt::handle_stop, this));
+	m_incoming_domoticz_history.clear();
 }
 
 void CTCPServerInt::handle_stop()
@@ -49,6 +51,43 @@ void CTCPServerInt::handle_stop()
 	// will exit.
 	acceptor_.close();
 	stopAllClients();
+}
+
+bool CTCPServerInt::logFirstTime(const std::string &ip_string)
+{
+	//
+	//	Log same IP-address first time and then once per day
+	//
+	time_t now = mytime(NULL);
+	bool log_this = true;
+
+	for(int i = 0; i < m_incoming_domoticz_history.size(); i++)
+	{
+		log_info li = m_incoming_domoticz_history[i];
+		double elapsed_seconds = now - li.time;
+
+		if (ip_string.compare(li.string) == 0)
+		{
+			if (elapsed_seconds < SECONDS_PER_DAY)
+			{
+				log_this = false;	
+			}
+			else
+			{
+				m_incoming_domoticz_history.erase(m_incoming_domoticz_history.begin()+i);
+			}
+		}
+	}
+
+	if (log_this)
+	{
+		log_info li;
+		li.time = now;
+		li.string = ip_string;
+		m_incoming_domoticz_history.push_back(li);
+	}
+
+	return log_this;
 }
 
 void CTCPServerInt::handleAccept(const boost::system::error_code& error)
@@ -63,7 +102,15 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		}
 
 		new_connection_->m_endpoint=s;
-		_log.Log(LOG_STATUS,"Incoming Domoticz connection from: %s", s.c_str());
+		
+		if (logFirstTime(s))
+		{
+			_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_TRACE, "Incoming Domoticz connection from: %s", s.c_str());
+		}
 
 		connections_.insert(new_connection_);
 		new_connection_->start();
