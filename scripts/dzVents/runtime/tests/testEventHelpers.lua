@@ -471,6 +471,7 @@ describe('event helpers', function()
 			local bindings = helpers.getEventBindings('security')
 
 			local modulesFound = _.pluck(bindings, {'name'})
+			modulesFound = values(modulesFound)
 
 			local scriptSecurity = _.find(bindings, function(mod)
 				return mod.name == 'script_security'

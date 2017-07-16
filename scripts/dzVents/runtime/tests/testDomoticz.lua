@@ -230,7 +230,7 @@ describe('Domoticz', function()
 		end)
 	end)
 
-	describe('Interacting with the collections', function() --todo
+	describe('Interacting with the collections', function()
 
 		it('should give you a device when you need one', function()
 

@@ -141,7 +141,6 @@ describe('device', function()
 			return commandArray[#commandArray], command, value
 		end,
 		openURL = function(url)
-			_.print('url') --                    TODO - >> REMOVE << -
 			return table.insert(commandArray, url)
 		end
 	}
@@ -319,6 +318,24 @@ describe('device', function()
 			})
 
 			assert.is_same(12345, device.WhActual)
+			device.updateEnergy(1000)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|1000" } }, commandArray)
+		end)
+
+		it('should detect a visibility device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'General',
+				['subType'] = 'Visibility',
+				['additionalDataData'] = {
+					['visibility'] = 33
+				}
+			})
+
+			assert.is_same(33, device.visibility)
+			device.updateVisibility(22)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|22" } }, commandArray)
 		end)
 
 		it('should detect a p1 smart meter device', function()
@@ -381,7 +398,7 @@ describe('device', function()
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=setsetpoint&idx=1&setpoint=14', res)
 
 		end)
 
@@ -409,6 +426,42 @@ describe('device', function()
 
 			device.updateRain(10, 20)
 			assert.is_same({ { ["UpdateDevice"] = "1|0|10;20" } }, commandArray)
+		end)
+
+		it('should detect a 2-phase ampere device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'General',
+				['subType'] = 'Current',
+				['additionalDataData'] = {
+					["current"] = 123,
+				}
+			})
+
+			assert.is_same(123, device.current)
+			device.updateCurrent(10)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|10" } }, commandArray)
+		end)
+
+		it('should detect a 3-phase ampere device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Current',
+				['subType'] = 'CM113, Electrisave',
+				['rawData'] = {
+					[1] = 123,
+					[2] = 456,
+					[3] = 789,
+				}
+			})
+
+			assert.is_same(123, device.current1)
+			assert.is_same(456, device.current2)
+			assert.is_same(789, device.current3)
+			device.updateCurrent(10, 20, 30)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|10;20;30" } }, commandArray)
 		end)
 
 		it('should detect an air quality device', function()
@@ -511,14 +564,19 @@ describe('device', function()
 					"updateRadiation",
 					"updateRain",
 					"updateSetPoint",
+					"updateSoilMoisture",
+					"updateSoundLevel",
 					"updateTempHum",
 					"updateTempHumBaro",
 					"updateTemperature",
 					"updateText",
 					"updateUV",
+					"updateVisibility",
 					"updateVoltage",
+					"updateWaterflow",
+					"updateWeight",
+					"updateWetness",
 					"updateWind" }, values(dummies))
-
 			end)
 
 		end)
@@ -741,9 +799,11 @@ describe('device', function()
 		it('should detect an alert device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['subType'] = 'Alert'
+				['subType'] = 'Alert',
+				['additionalDataData'] = { ['_nValue'] = 4 }
 			})
 
+			assert.is_same(4, device.color)
 			device.updateAlertSensor(0, 'Oh dear!')
 			assert.is_same({ { ["UpdateDevice"] = "1|0|Oh dear!" } }, commandArray)
 		end)
@@ -780,6 +840,80 @@ describe('device', function()
 			device.updateRadiation(12)
 			assert.is_same({ { ["UpdateDevice"] = "1|0|12" } }, commandArray)
 		end)
+
+		it('should detect a leaf wetness device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Leaf Wetness',
+				['additionalDataData'] = { ['_nValue'] = 4 }
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same(4, device.wetness)
+			device.updateWetness(12)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=12', res)
+		end)
+
+		it('should detect a scale weight device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['type'] = 'Weight',
+				['rawData'] = { [1] = "44" }
+			})
+
+			assert.is_same(44, device.weight)
+			device.updateWeight(12)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|12" } }, commandArray)
+		end)
+
+		it('should detect a sound level device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Sound Level',
+				['state'] = '120'
+			})
+
+			assert.is_same(120, device.level)
+			device.updateSoundLevel(33)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|33" } }, commandArray)
+		end)
+
+		it('should detect a waterflow device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Waterflow',
+				['rawData'] = { [1] = "44" }
+			})
+
+			assert.is_same(44, device.flow)
+			device.updateWaterflow(33)
+			assert.is_same({ { ["UpdateDevice"] = "1|0|33" } }, commandArray)
+		end)
+
+
+		it('should detect a soil moisture device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Soil Moisture',
+				['additionalDataData'] = { ['_nValue'] = 34 }
+			})
+
+			local res;
+
+			domoticz.openURL = function(url)
+				res = url;
+			end
+
+			assert.is_same(34, device.moisture)
+			device.updateSoilMoisture(12)
+			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=12', res)
+		end)
+
 
 		describe('Switch', function()
 
@@ -854,16 +988,18 @@ describe('device', function()
 					local switch = getDevice(domoticz, {
 						['type'] = 'Light/Switch',
 						['name'] = 's1',
-						['state'] = 'On',
+						['state'] = 'bb',
+						['rawData'] = { [1] = "10" },
 						['additionalRootData'] = { ['switchType'] = 'Selector'},
 						['additionalDataData'] = {
-							levelName = "aa|bb|cc"
+							levelNames = "Off|bb|cc"
 						}
 				})
-
-				assert.is_same({'aa', 'bb', 'cc'},  _.values(switch.levelNames))
+				assert.is_same(10, switch.level)
+				assert.is_same({'Off', 'bb', 'cc'},  _.values(switch.levelNames))
 
 			end)
+
 		end)
 
 		it('should detect a scene', function()

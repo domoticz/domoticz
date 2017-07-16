@@ -4,7 +4,7 @@ return {
 
 	baseType = 'device',
 
-	name = 'Hue light device adapter',
+	name = 'RGB(W) device adapter',
 
 	matches = function (device, adapterManager)
 		local res = (device.deviceType == 'Lighting 2' or device.deviceType == 'Lighting Limitless/Applamp')
@@ -33,6 +33,11 @@ return {
 				end
 			end
 			return nil
+		end
+
+		if (device.level == nil and data.data._nValue ~= nil) then
+			-- rgb devices get their level in _nValue
+			device.level = data.data._nValue
 		end
 
 		function device.switchOn()

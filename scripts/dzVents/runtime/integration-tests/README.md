@@ -1,27 +1,27 @@
-In order to run the tests from the command line you have to
+In order to run the integration tests from the command line you have to
 
 * Install lua 5.2
-* Install luarocks (see below)
+* Install luarocks (for 5.2 !! Google on how to make this work! or see below)
 * Install busted: `luarocks install busted`
-* Install luacov: `luarocks install luacov`
 * Install lodash: `luarocks install lodash`
+* Install luasocket: `luarocks install luasocket`
+
+Make sure you have Domoticz running with an empty database from the commandline so you can see the log files.
+
+DO NOT RUN THIS SCRIPT ON YOUR PRODUCTION DATABASE AS IT WILL DELETE EVERYTHING IN YOUR DATABASE!!!!!
 
 Then go to the test folder and run the tests:
 
 ```
-cd runtime/tests
+cd runtime/integration-tests
 busted *
 ```
 
-or if you want coverage info
+When all tests pass you should see this in the logs:
 
 ```
-cd runtime/tests
-busted --coverage *
-luacov
+dzVents: Info:  Results stage 2: SUCCEEDED
 ```
-
-Then open `luacov.report.out`
 
 
 ## luarocks 5.2 on da Pi
