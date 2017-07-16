@@ -266,7 +266,7 @@ describe('Domoticz', function()
 			local found = collection.find(function(device)
 				return device.name == 'device8'
 			end)
-		
+
 			assert.is_same(8, found.id)
 
 			found = collection.find(function(device)
@@ -274,7 +274,7 @@ describe('Domoticz', function()
 			end)
 
 			assert.is_nil(found)
-		
+
 			local filtered = collection.filter(function(device)
 				return device.id < 4
 			end)
@@ -293,9 +293,9 @@ describe('Domoticz', function()
 			found = filtered.find(function(d)
 				return d.name == 'device3'
 			end)
-		
+
 			assert.is_same(3, found.id)
-		
+
 			local reduced = collection.reduce(function(acc, device)
 				acc = acc + device.id
 
@@ -683,76 +683,10 @@ describe('Domoticz', function()
 		end)
 	end)
 
---	it('should have created iterators', function()
---		assert.is_function(domoticz.devices.forEach)
---		assert.is_function(domoticz.devices.filter)
---		assert.is_function(domoticz.devices.reduce)
---		assert.is_function(domoticz.devices.filter(function()
---		end).forEach)
---		assert.is_function(domoticz.devices.filter(function()
---		end).reduce)
---
---		assert.is_function(domoticz.changedDevices.forEach)
---		assert.is_function(domoticz.changedDevices.filter)
---		assert.is_function(domoticz.changedDevices.reduce)
---		assert.is_function(domoticz.changedDevices.filter(function()
---		end).forEach)
---		assert.is_function(domoticz.changedDevices.filter(function()
---		end).reduce)
---
---		assert.is_function(domoticz.variables.forEach)
---		assert.is_function(domoticz.variables.filter)
---		assert.is_function(domoticz.variables.reduce)
---		assert.is_function(domoticz.variables.filter(function()
---		end).forEach)
---		assert.is_function(domoticz.variables.filter(function()
---		end).reduce)
---	end)
-
---	it('should have a working filter and foreach', function()
---		local devices = {}
---		domoticz.devices.filter(function(d)
---			return (d.id == 1 or d.id == 3)
---		end).forEach(function(d)
---			table.insert(devices, d.id)
---		end)
---
---		table.sort(devices)
---		assert.is_same({ 1, 3 }, devices)
---	end)
---
---	it('should have a working reducer', function()
---
---		local result = domoticz.devices.reduce(function(acc, item)
---			return acc + 1
---		end, 1)
---
---		assert.is_same(9, result)
---	end)
---
---	it('should have a filter that return {} when nothing matches', function()
---		local res = domoticz.devices.filter(function(d)
---			return false
---		end)
---		assert.is_same({ 'filter', 'forEach', 'reduce' }, _.keys(res))
---	end)
---
---	it('should have created variables', function()
---		assert.is_same(1, domoticz.variables['x'].nValue)
---		assert.is_same(2.3, domoticz.variables['y'].nValue)
---	end)
---
---	it('should have created scenes', function()
---		assert.is_same({ 1, 2, 'Scene1', 'Scene2', 'filter', 'forEach', 'reduce' }, _.keys(domoticz.scenes))
---		assert.is_same({ 'Scene1', 'Scene2', 'Scene1', 'Scene2' }, _.pluck(domoticz.scenes, { 'name' }))
---		assert.is_same({ 'Off', 'Off', 'Off', 'Off' }, _.pluck(domoticz.scenes, { 'state' }))
---	end)
---
---	it('should have created groups', function()
---		assert.is_same({ 3, 4, 'Group1', 'Group2', 'filter', 'forEach', 'reduce' }, _.keys(domoticz.groups))
---		assert.is_same({ 'Group1', 'Group2', 'Group1', 'Group2' }, _.pluck(domoticz.groups, { 'name' }))
---		assert.is_same({ 'On', 'Mixed', 'On', 'Mixed' }, _.pluck(domoticz.groups, { 'state' }))
---	end)
+	it('should convert to Celsius', function()
+		assert.is_same(35, domoticz.toCelsius(95))
+		assert.is_same(10, domoticz.toCelsius(18, true))
+	end)
 
 	it('should log', function()
 		local utils = domoticz._getUtilsInstance()

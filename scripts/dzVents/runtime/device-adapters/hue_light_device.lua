@@ -7,7 +7,7 @@ return {
 	name = 'Hue light device adapter',
 
 	matches = function (device, adapterManager)
-		local res = (device.deviceType == 'Lighting 2')
+		local res = (device.deviceType == 'Lighting 2' or device.deviceType == 'Lighting Limitless/Applamp')
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'switchOn')
 			adapterManager.addDummyMethod(device, 'switchOff')
