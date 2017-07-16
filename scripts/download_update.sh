@@ -41,10 +41,14 @@ fi
 if [ -f update.tgz.sha256sum ];
 then
   #Check archive against checksum!
-  valid=$(LC_ALL=C sha256sum -c update.tgz.sha256sum | grep update.tgz | cut -d':' -f2 | tr -d ' ')
-  if [ $valid != "OK" ]
+  #~ echo "LC_ALL=C cat update.tgz.sha256sum | awk '{print \$1\"  update.tgz\"}' | sha256sum -c -|  cut -d':' -f2 | tr -d ' '"
+  valid=$(LC_ALL=C cat update.tgz.sha256sum | awk '{print $1"  update.tgz"}' | sha256sum -c -|  cut -d':' -f2 | tr -d ' ')
+  if [ -z $valid ] || [ "$valid" != "OK" ]
   then
         echo "Archive checksum mismatch !";
         exit 1;
   fi
 fi
+
+#should never be here
+exit 1;
