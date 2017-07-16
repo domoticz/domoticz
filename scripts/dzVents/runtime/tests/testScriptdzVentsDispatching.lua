@@ -116,10 +116,6 @@ describe('Event dispatching', function()
 		package.loaded['dzVents'] = nil
 	end)
 
-	teardown(function()
-
-	end)
-
 	it('should dispatch device events', function()
 		_G.commandArray = {}
 		_G.globalvariables['script_reason'] = 'device'
@@ -151,7 +147,7 @@ describe('Event dispatching', function()
 		_G.globalvariables['script_reason'] = 'uservariable'
 		local main = require('dzVents')
 		assert.is_same({
-			{ ['OpenURL'] = 'http://127.0.0.1:8080/json.htm?type=command&param=updateuservariable&vname=myVar1&vtype=integer&vvalue=10' }
+			{ ['OpenURL'] = 'http://127.0.0.1:8080/json.htm?type=command&param=updateuservariable&vname=myVar1&vtype=0&vvalue=10&idx=1' }
 		}, main)
 	end)
 

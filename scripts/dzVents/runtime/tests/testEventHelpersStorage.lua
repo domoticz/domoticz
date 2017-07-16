@@ -659,7 +659,7 @@ describe('event helper storage', function()
 			assert.is_same(6, hs.avg(3,7))
 
 			hs = HS()
-			assert.is_same(nil, hs.avg(1,10))
+			assert.is_same(0, hs.avg(1,10))
 		end)
 
 		it('should return average over a time period', function()
@@ -668,7 +668,7 @@ describe('event helper storage', function()
 			assert.is_same(9, avg) -- 10,9,8
 
 			hs = HS()
-			assert.is_same(nil, hs.avgSince('0:10:1'))
+			assert.is_same(0, hs.avgSince('0:10:1'))
 		end)
 
 		it('should return the minimum value of a range', function()
@@ -768,6 +768,12 @@ describe('event helper storage', function()
 			assert.is_same(34,sum) -- 10,9,8,7
 		end)
 
+		it('should return 0 as the sum over an empty set', function()
+			local hs = HS()
+			local sum = hs.sum()
+			assert.is_same(0, sum)
+		end)
+
 		it('should return the sum over a period', function()
 			data[5].data = 20
 			local hs = HS(data)
@@ -775,7 +781,7 @@ describe('event helper storage', function()
 			assert.is_same(54,sum)
 
 			hs = HS()
-			assert.is_nil(hs.sumSince('0:0:1'))
+			assert.is_same(0, hs.sumSince('0:0:1'))
 		end)
 
 		it('should smooth an item with its neighbours', function()

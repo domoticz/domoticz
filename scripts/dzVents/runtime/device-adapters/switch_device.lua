@@ -23,7 +23,12 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		-- from data: levelnName, levelOffHidden, levelActions, maxDimLevel
+		-- from data: levelName, levelOffHidden, levelActions, maxDimLevel
+
+		if (data.lastLevel ~= nil) then
+			-- dimmers that are switched off have a last level
+			device.lastLevel = data.lastLevel
+		end
 
 		function device.toggleSwitch()
 			local current, inv
@@ -68,7 +73,10 @@ return {
 		end
 
 		if (device.switchType == 'Selector') then
-			device.levelNames = device.levelName and string.split(device.levelName, '|') or {}
+			device.levelNames = device.levelNames and string.split(device.levelNames, '|') or {}
+			device.level = tonumber(device.rawData[1])
+			device.levelName = device.state
+
 		end
 
 	end
