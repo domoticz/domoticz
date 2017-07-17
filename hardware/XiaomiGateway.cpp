@@ -848,7 +848,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Xiaomi Motion Sensor";
 					}
-					else if (model == "switch") {
+					else if ((model == "switch") || (model == "sensor_switch.aq2")) {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
