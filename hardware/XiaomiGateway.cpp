@@ -852,7 +852,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
-					else if (model == "magnet") {
+					else if ((model == "magnet") || (model == "sensor_magnet.aq2")) {
 						type = STYPE_Contact;
 						name = "Xiaomi Door Sensor";
 					}
