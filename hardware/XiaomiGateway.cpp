@@ -289,6 +289,21 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 	SendHumiditySensor(sID, battery, Humidity, Name.c_str());
 }
 
+void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery)
+{
+	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
+	if (nodeid.length() < 14) {
+		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
+		return;
+	}
+	std::string str = nodeid.substr(6, 8);
+	unsigned int sID;
+	std::stringstream ss;
+	ss << std::hex << str.c_str();
+	ss >> sID;
+	SendPressureSensor(sID, 1, battery, Pressure, Name.c_str());
+}
+
 void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std::string & Name, const bool bIsOn, const int brightness, const int hue)
 {
 	if (nodeid.length() < 12) {
@@ -852,6 +867,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "sensor_ht") {
 						name = "Xiaomi Temperature/Humidity";
 					}
+					else if (model == "weather.v1") {
+						name = "Xiaomi Aqara Weather";
+					}
 					else if (model == "cube") {
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
@@ -1015,7 +1033,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, state, type, 0, cmd, xctrl, true, "", "", battery);
 						}
 					}
-					else if (name == "Xiaomi Temperature/Humidity") {
+					else if ((name == "Xiaomi Temperature/Humidity") || (name == "Xiaomi Aqara Weather")) {
 						std::string temperature = root2["temperature"].asString();
 						std::string humidity = root2["humidity"].asString();
 
@@ -1028,6 +1046,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							int hum = atoi(humidity.c_str());
 							hum = hum / 100;
 							m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
+						}
+						if (name == "Xiaomi Aqara Weather") {
+							std::string pressure = root2["pressure"].asString();
+							int pres = atoi(pressure.c_str());
+							m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
 						}
 					}
 					else if (name == "Xiaomi RGB Gateway") {
