@@ -63,7 +63,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 		}
 
 		new_connection_->m_endpoint=s;
-		_log.Log(LOG_STATUS,"Incoming Domoticz connection from: %s", s.c_str());
+		_log.Log(LOG_TRACE,"Incoming Domoticz connection from: %s", s.c_str());
 
 		connections_.insert(new_connection_);
 		new_connection_->start();
