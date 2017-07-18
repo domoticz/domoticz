@@ -17,6 +17,7 @@ return {
 		-- from data: rainRate, rain
 
 		device['updateRain'] = function (rate, counter)
+			-- note that the updates are not directly visible in the gui (and data)
 			device.update(0, tostring(rate) .. ';' .. tostring(counter))
 		end
 

@@ -4,3 +4,5 @@ scripts/*.lua
 data/*.lua
 generated_scripts/*.lua
 !/runtime/tests/data/README.md
+/runtime/tests/data/__data_global_data.lua
+/runtime/tests/data/__data_script1.lua

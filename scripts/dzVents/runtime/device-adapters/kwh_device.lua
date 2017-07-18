@@ -13,6 +13,9 @@ return {
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
+
+		-- from data: whAtual, whTotal
+
 		local formatted = device.counterToday or ''
 		local info = adapterManager.parseFormatted(formatted, domoticz['radixSeparator'])
 
@@ -20,6 +23,13 @@ return {
 		-- so we have to multiply it with 1000 to get it in W
 
 		device['WhToday'] = info['value'] * 1000
+
+		-- fix casing
+		device['whTotal'] = nil
+		device['WhTotal'] = data.data.whTotal
+		device['whActual'] = nil
+		device['WhActual'] = data.data.whActual
+
 		device['counterToday'] = info['value']
 
 		formatted = device.usage or ''

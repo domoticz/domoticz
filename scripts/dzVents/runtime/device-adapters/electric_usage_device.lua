@@ -11,7 +11,11 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['WhActual'] = device.rawData[1]  or 0
+		device['WhActual'] = tonumber(device.rawData[1]  or 0)
+
+		function device.updateEnergy(energy)
+			device.update(0, energy)
+		end
 
 	end
 

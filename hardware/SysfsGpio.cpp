@@ -762,6 +762,10 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 					m_Packet.LIGHTING2.unitcode = (char)m_saved_state[i].pin_number;
 					m_Packet.LIGHTING2.seqnbr++;
 					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
+
+					_log.Log(LOG_STATUS, "Sysfs GPIO: State change gpio%d:%s",
+						m_saved_state[i].pin_number,
+						state ? "on" : "off");
 				}
 			}
 		}

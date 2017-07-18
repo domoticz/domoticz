@@ -1,6 +1,6 @@
 **For people working with dzVents prior to version 2.0: Please read the [change log](#Change_log) below as there are a couple of (easy-to-fix) breaking changes. Or check [Migrating from version 1.x.x](#Migrating_from_version_1.x.x)**
 
-# About dzVents 2.0.0
+# About dzVents 2.1.0
 dzVents (|diː ziː vɛnts| short for Domoticz Easy Events) brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticzs in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
 
 Let's start with an example. Let's say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks like in dzVents:
@@ -68,7 +68,7 @@ Just to give you an idea! Everything in your Domoticz system is now logically av
 
 # Using dzVents with Domoticz
 In Domoticz go to **Setup > Settings > Other**  and in the section EventSystem make sure the checkbox 'dzVents disabled' is not checked.
-Also make sure that in the Security section in the settings you allow `127.0.0.1` to not need a password. dzVents uses that port to send certain commands to Domoticz.
+Also make sure that in the Security section in the settings you allow `127.0.0.1` to not need a password. dzVents uses that port to send certain commands to Domoticz. Finally make sure you have set your current location in **Setup > Settings > System > Location** otherwise there is no way to determine nighttime/daytime state.
 
 There are two ways of creating dzVents event script in Domoticz:
 
@@ -254,18 +254,24 @@ So this object structure contains all the information logically arranged where y
 One tip:
 **Make sure that all your devices have unique names!! dzVents doesn't check for duplicates!!**
 
-## Domoticz object API
+## dzVents API
 The domoticz object holds all information about your Domoticz system. It has a couple of global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups** and when applicable, a collection of **changedDevices** and **changedVariables**. All these collections each have three iterator functions: `forEach(function)`, `filter(function)` and `reduce(function)` to make searching for devices easier. See [iterators](#Iterators) below.
 
-### Domoticz attributes:
+### Domoticz object API:
 
  - **changedDevices(id/name)**: *Function*. A function returning the device by id (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.changedDevices()) do .. end`.
  - **changedVariables(id/name)**: *Function*. A function returning the user variable by id or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.changedVariables()) do .. end`.
  - **devices(id/name)**: *Function*. A function returning a device  by id or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
+ - **email(subject, message, mailTo)**: *Function*. Send email.
  - **groups(id/name)**: *Function*: A function returning a group by name or id. Each group has the same interface as a device. To iterate over all groups do: `domoticz.groups().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.groups()) do .. end`.
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Creating shared helper functions](#Creating_shared_helper_functions).
+ - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
+ - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
+ - **openURL(url)**: *Function*. Have Domoticz 'call' a URL.
  - **scenes(id/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`.
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
+ - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
+ - **sms(message)**: *Function*. Sends an sms if it is configured in Domoticz.
  - **time**: Current system time:
 	 - **day**: *Number*
 	 - **getISO**: *Function*. Returns the ISO 8601 formatted date.
@@ -283,18 +289,8 @@ The domoticz object holds all information about your Domoticz system. It has a c
 	 - **sunriseInMinutes**
 	 - **wday**: *Number*. Day of the week ( 0 == sunday)
 	 - **year**: *Number*
+ - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
  - **variables(id/name)**: *Function*. A function returning a variable by it's name or id. See  [Variable object API](#Variable_object_API) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Iterators](#Iterators). Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`.
-
-### Domoticz methods
-
- - **email(subject, message, mailTo)**: Send email.
- - **log(message, [level])**: Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
- - **notify(subject, message, priority, sound, extra, subsystem)**: Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
- - **openURL(url)**: Have Domoticz 'call' a URL.
- - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
- - **setScene(scene, value)**: E.g. `domoticz.setScene('My scene', 'On')`. Supports timing options. See below.
- - **sms(message)**: Sends an sms if it is configured in Domoticz.
- - **switchGroup(group, value)**: E.g. `domoticz.switchGroup('My group', 'Off')`. Supports timing options. See below.
 
 ### Iterators
 The domoticz object has a couple of collections (tables): devices, scenes, groups, variables, changedDevices and changedVariables. In order to make iterating over these collections easier, dzVents has three iterator methods so you don't need to use the `pair()` or `ipairs()` function anymore (less code to write):
@@ -312,7 +308,7 @@ find():
 		return device.name == 'myDevice'
 	end)
 	domoticz.log('Id: ' .. myDevice.id)
-	
+
 forEach():
 
     domoticz.devices().forEach(function(device)
@@ -370,7 +366,7 @@ dzVents already recognizes most of the devices and creates the proper attributes
 
 Most of the time when your device is not recognized you can always use the `rawData` attribute as that will almost always hold all the data that is available in Domoticz.
 
-### Device attributes for all devices
+### Device attributes and methods for all devices
  - **batteryLevel**: *Number* If applicable for that device then it will be from 0-100.
  -  **bState**: *Boolean*. Is true for some common states like 'On' or 'Open' or 'Motion'.
  - **changed**: *Boolean*. True if the device was changed
@@ -410,7 +406,7 @@ Most of the time when your device is not recognized you can always use the `rawD
  - **timedOut**: *Boolean*. Is true when the device couldn't be reached.
  - **update(< params >)**: *Function*. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: `device.update(0,12)`. This will eventually result in a commandArray entry `['UpdateDevice']='<idx>|0|12'`
 
-### Device attributes for specific devices
+### Device attributes and methods for specific devices
 Note that if you do not find your specific device type here you can always inspect what is in the `rawData` attribute. Please lets us know that it is missing so we can write an adapter for it (or you can write your own and submit it). You can dump all attributes for your device by calling `myDevice.dump()`. That will show you all the attributes and their values in the Domoticz. log.
 
 #### Air quality
@@ -419,7 +415,16 @@ Note that if you do not find your specific device type here you can always inspe
   - **updateAirQuality(ppm)**: Pass the CO2 concentration.
 
 #### Alert sensor
+ - **color**: *Number*. Color of the alert. See domoticz color constants for possible values.
  - **updateAlertSensor(level, text)**: *Function*. Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREEN, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED
+
+#### Ampère, 1-phase
+ - **current**: *Number*. Ampère.
+ - **updateCurrent(current)**: *Function*. Current in Ampère.
+
+#### Ampère, 3-phase
+ - **current1**, **current2**, **current3** : *Number*. Ampère.
+ - **updateCurrent(current1, current2, current3)**: *Function*. Currents in Ampère.
 
 #### Barometer sensor
  - **barometer**. *Number*. Barometric pressure.
@@ -445,6 +450,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 #### Electric usage
  - **WActual**: *Number*. Current Watt usage.
+ - **updateEnergy(energy)**: *Function*. In Watt.
 
 #### Evohome
  - **setPoint**: *Number*.
@@ -480,6 +486,12 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateElectricity(power, energy)**: *Function*.
  - **usage**: *Number*.
  - **WhToday**: *Number*. Total Wh usage of the day. Note the unit is Wh and not kWh!
+ - **WhTotal**: *Number*. Total Wh usage.
+ - **WhActual**: *Number*. Actual reading.
+
+#### Leaf wetness
+ - **wetness**: *Number*. Wetness value
+ - **updateWetness(wetness)**: *Function*.
 
 #### Lux sensor
  - **lux**: *Number*. Lux level for light sensors.
@@ -519,6 +531,10 @@ Note that if you do not find your specific device type here you can always inspe
  - **rainRate**: *Number*
  - **updateRain(rate, counter)**: *Function*.
 
+#### Scale weight
+ - **weight**: *Number*
+ - **udateWeight()**: *Function*.
+
 #### Scene
  - **switchOn()**: *Function*. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
 
@@ -528,14 +544,23 @@ Note that if you do not find your specific device type here you can always inspe
  - **disarm()**: Disarms a security device.
 
 #### Solar radiation
- - **radiation**. *Number*
+ - **radiation**. *Number*. In Watt/m2.
  - **updateRadiation(radiation)**: *Function*.
+
+#### Soil moisture
+ - **moisture**. *Number*. In centibars (cB).
+ - **updateSoilMoisture(moisture)**: *Function*.
+
+#### Sound level
+ - **level**. *Number*. In dB.
+ - **updateSoundLevel(level)**: *Function*.
 
 #### Switch (dimmer, selector etc.)
 There are many switch-like devices. Not all methods are applicable for all switch-like devices. You can always use the generic `setState(newState)` method.
 
  - **close()**: *Function*. Set device to Close if it supports it. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
  - **dimTo(percentage)**: *Function*. Switch a dimming device on and/or dim to the specified level. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **lastLevel**: Number. The level of a dimmer just before it was switched off.
  - **level**: *Number*. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
  - **levelActions**: *String*. |-separated list of url actions for selector switches.
  - **levelName**: *Table*. Table holding the level names for selector switch devices.
@@ -549,7 +574,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 #### Temperature sensor
  - **temperature**: *Number*
- - **updateTemperature(temperature)**: *Function*.
+ - **updateTemperature(temperature)**: *Function*. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
 #### Temperature, Humidity, Barometer sensor
  - **barometer**: *Number*
@@ -559,14 +584,14 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **humidity**: *Number*
  - **humidityStatus**: *String*
  - **temperature**: *Number*
- - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN
+ - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
 #### Temperature, Humidity
  - **dewPoint**: *Number*
  - **humidity**: *Number*
  - **humidityStatus**: *String*
  - **temperature**: *Number*
- - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET.
+ - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
 #### Text
  - **text**: *String*
@@ -577,12 +602,20 @@ There are many switch-like devices. Not all methods are applicable for all switc
 - **updateSetPoint(setPoint)**:*Function*.
 
 #### UV sensor
- - **uv**: *Number*.
- - **updateUV(uv)**: *Function*.
+ - **uv**: *Number*. UV index.
+ - **updateUV(uv)**: *Function*. UV index.
+
+#### Visibility
+ - **visibility**: *Number*. In km.
+ - **updateVisibility(distance)**:Function*. In km.
 
 #### Voltage
  - **voltage**: *Number*.
  - **updateVoltage(voltage)**:Function*.
+
+#### Waterflow
+ - **flow**: *Number*. In L/m.
+ - **updateWaterflow(flow)**:Function*. In L/m.
 
 #### Wind
  - **chill**: *Number*.
@@ -591,7 +624,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **gust**: *Number*.
  - **temperature**: *Number*
  - **speed**: *Number*.
- - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*.
+ - **updateWind(bearing, direction, speed, gust, temperature, chill)**: *Function*. Bearing in degrees, direction in N, S, NNW etc, speed in m/s, gust in m/s, temperature and chill in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
 #### Zone heating
  - **setPoint**: *Number*.
@@ -1030,14 +1063,14 @@ Of course, if you don't intend to use any of these statistical functions you can
 
 ###### Functions
 
- - **avg( [fromIdx], [toIdx], [default] )**: Calculates the average of all item values within the range `fromIdx` to `toIdx`. You can specify a `default` value for when there is no data in the set.
- - **avgSince( [timeAgo](#Time_specification_.28timeAgo.29), default )**: Calculates the average of all data points since `timeAgo`. Returns `default` if there is no data. E.g.: `local avg = myVar.avgSince('00:30:00')` returns the average over the past 30 minutes.
+ - **avg( [fromIdx], [toIdx], [default] )**: Calculates the average of all item values within the range `fromIdx` to `toIdx`. You can specify a `default` value for when there is no data in the set otherwise it returns 0.
+ - **avgSince( [timeAgo](#Time_specification_.28timeAgo.29), default )**: Calculates the average of all data points since `timeAgo`. Returns `default` if there is no data otherwise 0. E.g.: `local avg = myVar.avgSince('00:30:00')` returns the average over the past 30 minutes.
  - **min( [fromIdx], [toIdx] )**: Returns the lowest value in the range defined by fromIdx and toIdx.
  - **minSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **min** but now within the `timeAgo` interval.
  - **max( [fromIdx], [toIdx] )**: Returns the highest value in the range defined by fromIdx and toIdx.
  - **maxSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **max** but now within the `timeAgo` interval.
- - **sum( [fromIdx], [toIdx] )**: Returns the summation of all values in the range defined by fromIdx and toIdx.
- - **sumSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **sum** but now within the `timeAgo` interval.
+ - **sum( [fromIdx], [toIdx] )**: Returns the summation of all values in the range defined by fromIdx and toIdx. It will return 0 when there is no data.
+ - **sumSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **sum** but now within the `timeAgo` interval.  It will return 0 when there is no data in the interval.
  - **delta( fromIdx, toIdx, [smoothRange], [default] )**: Returns the delta (difference) between items specified by `fromIdx` and `toIdx`. You have to provide a valid range (no `nil` values). [Supports data smoothing](#About_data_smoothing) when providing a `smoothRange` value. Returns `default` if there is not enough data.
  - **deltaSince( [timeAgo](#Time_specification_.28timeAgo.29),  [smoothRange], [default] )**: Same as **delta** but now within the `timeAgo` interval.
  - **localMin( [smoothRange], default )**: Returns the first minimum value (and the item holding the minimal value) in the past. [Supports data smoothing](#About_data_smoothing) when providing a `smoothRange` value. So if you have this range of values in the data set (from new to old): `10 8 7 5 3 4 5 6`.  Then it will return `3` because older values *and* newer values are higher: a local minimum. You can use this if you want to know at what time a temperature started to rise after have been dropping. E.g.:
@@ -1239,8 +1272,28 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+[2.1.0]
+ - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
+ - Added support for Ampère 1 and 3-phase devices
+ - Added support for leaf wetness devices
+ - Added support for scale weight devices
+ - Added support for soil moisture devices
+ - Added support for sound level devices
+ - Added support for visibility devices
+ - Added support for waterflow devices
+ - Added missing color attribute to alert sensor devices
+ - Added updateEnergy() to electric usage devices
+ - Fixed casing for WhTotal, WhActual methods on kWh devices (Watt's in a name?)
+ - Added toCelsius() helper method to domoticz object as the various update temperature methods all need celsius.
+ - Added lastLevel for dimmers so you can see the level of the dimmer just before it was switched off (and while is it still on).
+ - Added integration tests for full round-trip Domoticz > dzVents > Domoticz > dzVents tests (100 tests). Total tests (unit+integration) now counts 395!
+ - Fixed setting uservariables. It still uses json calls to update the variable in Domoticz otherwise you won't get uservariable event scripts triggered in dzVents.
+ - Added dzVents version information in the Domoticz settings page for easy checking what dzVents version is being used in your Domoticz built. Eventhough it is integrated with Domoticz, it is handy for dzVents to have it's own heartbeat.
+ - avg(), avgSince(), sum() and sumSince() now return 0 instead of nil for empty history sets. Makes more sense.
+ - Fixed boiler example to fallback to the current temperature when there is no history data yet when it calculates the average temperature.
+ - Use different api command for setting setPoints in the Thermostat setpoint device adapter.
 
- [2.0.0] Domoticz integration
+[2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
  - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to loop over these collection **you can no longer use the standard Lua for..pairs or for..ipairs construct**. You have to use the iterators like forEach, filter and reduce: `domoticz.devices().forEach(function() .. end)` (see [Iterators](#Iterators)). This was a necessary change to make dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
