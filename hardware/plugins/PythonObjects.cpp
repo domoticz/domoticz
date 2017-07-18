@@ -786,6 +786,9 @@ namespace Plugins {
 			}
 			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
 
+			// Notify MQTT and various push mechanisms
+			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+
 			// Image change
 			if (iImage != self->Image)
 			{
