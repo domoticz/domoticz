@@ -1,4 +1,12 @@
+[2.1.1]
+
+ - Fixed typo in the doc WActual > WhActual.
+ - Updated switch adapter to match more switch-like devices.
+ - Added Z-Wave Thermostat mode device adapter.
+ - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
+
 [2.1.0]
+
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
  - Added support for leaf wetness devices
@@ -147,3 +155,4 @@
 [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
+

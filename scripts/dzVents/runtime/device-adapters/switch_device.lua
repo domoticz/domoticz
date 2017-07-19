@@ -7,7 +7,28 @@ return {
 	name = 'Switch device adapter',
 
 	matches = function (device, adapterManager)
-		local res = (device.deviceType == 'Light/Switch')
+		local res = (
+			device.deviceType == 'Light/Switch' or
+			device.deviceType == 'Lighting 1' or
+			device.deviceType == 'Lighting 2' or
+			device.deviceType == 'Lighting 3' or
+			device.deviceType == 'Lighting 4' or
+			device.deviceType == 'Lighting 5' or
+			device.deviceType == 'Lighting 6' or
+			device.deviceType == 'Lighting Limitless/Applamp' or
+			device.deviceType == 'Fan' or
+			device.deviceType == 'Curtain' or
+			device.deviceType == 'Blinds' or
+			device.deviceType == 'RFY' or
+			device.deviceType == 'Chime' or
+			device.deviceType == 'Thermostat 2' or
+			device.deviceType == 'Thermostat 3' or
+			device.deviceType == 'Thermostat 4' or
+			device.deviceType == 'Remote & IR' or
+			device.deviceType == 'Home Confort' or -- typo should be there
+			(device.deviceType == 'Radiator 1' and device.deviceSubType == 'Smartwares Mode') or
+			(device.deviceType == 'Value' and device.deviceSubType == 'Rego 6XX')
+		)
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'switchOn')
 			adapterManager.addDummyMethod(device, 'switchOff')
@@ -29,6 +50,12 @@ return {
 			-- dimmers that are switched off have a last level
 			device.lastLevel = data.lastLevel
 		end
+
+		if (device.level == nil and data.data._nValue ~= nil) then
+			-- rgb devices get their level in _nValue
+			device.level = data.data._nValue
+		end
+
 
 		function device.toggleSwitch()
 			local current, inv

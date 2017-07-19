@@ -1,6 +1,6 @@
 **For people working with dzVents prior to version 2.0: Please read the [change log](#Change_log) below as there are a couple of (easy-to-fix) breaking changes. Or check [Migrating from version 1.x.x](#Migrating_from_version_1.x.x)**
 
-# About dzVents 2.1.0
+# About dzVents 2.1.1
 dzVents (|diː ziː vɛnts| short for Domoticz Easy Events) brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticzs in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
 
 Let's start with an example. Let's say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks like in dzVents:
@@ -449,7 +449,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateDistance(distance)**: *Function*.
 
 #### Electric usage
- - **WActual**: *Number*. Current Watt usage.
+ - **WhActual**: *Number*. Current Watt usage.
  - **updateEnergy(energy)**: *Function*. In Watt.
 
 #### Evohome
@@ -629,6 +629,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
 #### Zone heating
  - **setPoint**: *Number*.
  - **heatingMode**: *String*.
+
+#### Z-Wave Thermostat mode
+ - **mode**: *Number*. Current mode number.
+ - **modeString**: *String*. Mode name.
+ - **modes**: *Table*. Lists all available modes.
+ - **updateMode(modeString)**: *Function*. Set new mode.
 
 ### Switch timing options (delay, duration)
 To specify a duration or a delay for the various switch command you can do this:
@@ -1272,7 +1278,16 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+
+[2.1.1]
+
+ - Fixed typo in the doc WActual > WhActual.
+ - Updated switch adapter to match more switch-like devices.
+ - Added Z-Wave Thermostat mode device adapter.
+ - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
+
 [2.1.0]
+
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
  - Added support for leaf wetness devices
