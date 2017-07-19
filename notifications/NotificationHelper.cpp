@@ -262,7 +262,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			if (m_sql.m_tempunit == TEMPUNIT_F)
 			{
 				//Convert to Celsius
-				svalue = (svalue / 1.8f) - 32.0f;
+				svalue = static_cast<float>(ConvertToCelsius(svalue));
 			}
 			if ((ntype == signtemp) && (bHaveTemp))
 			{

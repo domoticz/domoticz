@@ -12082,8 +12082,8 @@ namespace http {
 				double tempcelcius = atof(setPoint.c_str());
 				if (m_sql.m_tempunit == TEMPUNIT_F)
 				{
-					//Convert back to celcius
-					tempcelcius = (tempcelcius - 32) / 1.8;
+					//Convert back to Celsius
+					tempcelcius = ConvertToCelsius(tempcelcius);
 				}
 				sprintf(szTmp, "%.2f", tempcelcius);
 				if (dType == pTypeEvohomeZone || dType == pTypeEvohomeWater)//sql update now done in setsetpoint for evohome devices

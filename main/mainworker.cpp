@@ -12019,7 +12019,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			if (tSign == 'F')
 			{
 				//Convert to Celsius
-				tempDest = (tempDest - 32.0f) / 1.8f;
+				tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 			}
 
 			_tThermostat tmeter;
