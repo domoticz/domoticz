@@ -78,6 +78,7 @@ struct _tJsonMap
 static const _tJsonMap JsonMap[] =
 {
 	{ "Barometer",			"barometer",				tFloat		},
+	{ "CameraIndx",			"cameraIdx", 				tString		},
 	{ "Chill",				"chill", 					tFloat		},
 	{ "Counter",			"counter", 					tString		},
 	{ "CounterDeliv",		"counterDelivered", 		tFloat		},
@@ -94,12 +95,17 @@ static const _tJsonMap JsonMap[] =
 	{ "HardwareTypeVal",	"hardwareTypeValue",		tInteger	},
 	{ "Humidity",			"humidity",					tInteger	},
 	{ "HumidityStatus",		"humidityStatus",			tString		},
+	{ "InternalState",		"internalState",			tString		}, // door contact
 	{ "LevelActions",		"levelActions",				tString		},
+	{ "LevelInt",			"levelVal",					tInteger	},
 	{ "LevelNames",			"levelNames",				tString		},
 	{ "LevelOffHidden",		"levelOffHidden",			tBoolean	},
 	{ "MaxDimLevel",		"maxDimLevel",				tInteger	},
+	{ "Mode",				"mode",						tInteger	}, // zwave thermostat
+	{ "Modes",				"modes",					tString		},
 	{ "Moisture",			"moisture",					tString		},
 	{ "Pressure",			"pressure",					tFloat		},
+	{ "Protected",			"protected",				tBoolean	},
 	{ "Quality",			"quality",					tString		},
 	{ "Radiation",			"radiation",				tFloat		},
 	{ "Rain",				"rain",						tFloat		},
@@ -110,7 +116,9 @@ static const _tJsonMap JsonMap[] =
 	{ "Speed",				"speed",					tFloat		},
 	{ "Temp",				"temperature",				tFloat		},
 	{ "TypeImg",			"icon",						tString		},
+	{ "Until",				"until",					tString		}, // evohome zone/water
 	{ "Usage",				"usage",					tString		},
+	{ "UsedByCamera",		"usedByCamera",				tBoolean	},
 	{ "UsageDeliv",			"usageDelivered",			tString		},
 	{ "ValueQuantity",		"valueQuantity",			tString		},
 	{ "ValueUnits",			"valueUnits",				tString		},
