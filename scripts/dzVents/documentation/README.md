@@ -449,7 +449,7 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateDistance(distance)**: *Function*.
 
 #### Electric usage
- - **WActual**: *Number*. Current Watt usage.
+ - **WhActual**: *Number*. Current Watt usage.
  - **updateEnergy(energy)**: *Function*. In Watt.
 
 #### Evohome
@@ -1272,7 +1272,9 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+
 [2.1.0]
+
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
  - Added support for leaf wetness devices

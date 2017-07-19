@@ -1,4 +1,9 @@
+[2.1.1]
+
+ - Fixed typo in the doc WActual > WhActual.
+
 [2.1.0]
+
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
  - Added support for leaf wetness devices
