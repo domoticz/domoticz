@@ -12992,7 +12992,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		else if (devType == pTypeTEMP)
 		{
 			if (dID != 0)
+			{
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
+			}
 		}
 		else if (devType == pTypeTEMP_HUM)
 		{
@@ -13002,7 +13004,11 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 3)
 				{
-					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, (float)atof(strarray[0].c_str()), atoi(strarray[1].c_str()), true, true);
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, Temp, Hum, true, true);
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					m_notifications.CheckAndHandleDewPointNotification(dID, dName, Temp, dewpoint);
 				}
 			}
 		}
@@ -13014,7 +13020,11 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 5)
 				{
-					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, (float)atof(strarray[0].c_str()), atoi(strarray[1].c_str()), true, true);
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, Temp, Hum, true, true);
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					m_notifications.CheckAndHandleDewPointNotification(dID, dName, Temp, dewpoint);
 					m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
 				}
 			}
