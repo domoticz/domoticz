@@ -110,14 +110,14 @@
 	<CommandClass id="133">
 		<Associations num_groups="9">
 			<Group index="1" max_associations="1"  label="Lifeline"/>
-			<Group index="2" max_associations="16" label="basic on/off (Output Q)" />
+			<Group index="2" max_associations="16" label="basic on/off (Output Q)" auto="true"/>
 			<Group index="3" max_associations="16" label="Input I2 basic report" />
 			<Group index="4" max_associations="16" label="Input I2 notification report" />
 			<Group index="5" max_associations="16" label="Input I2 binary sensor report" />
 			<Group index="6" max_associations="16" label="Input I3 basic report" />
 			<Group index="7" max_associations="16" label="Input I3 notification report" />
 			<Group index="8" max_associations="16" label="Input I3 binary sensor report" />
-			<Group index="9" max_associations="16" label="Multilevel sensor report" />
+			<Group index="9" max_associations="16" label="Multilevel sensor report" auto="true"/>
 		</Associations>
 	</CommandClass>
 
