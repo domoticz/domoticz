@@ -33,7 +33,6 @@ void CTCPServerInt::start()
 	// asynchronous operation outstanding: the asynchronous accept call waiting
 	// for new incoming connections.
 	io_service_.run();
-	m_incoming_domoticz_history.clear();
 }
 
 void CTCPServerInt::stop()
