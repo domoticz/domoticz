@@ -155,3 +155,4 @@
 [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
+
