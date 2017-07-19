@@ -13006,6 +13006,19 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				}
 			}
 		}
+		else if (devType == pTypeTEMP_HUM_BARO)
+		{
+			if (dID != 0)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 5)
+				{
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, (float)atof(strarray[0].c_str()), atoi(strarray[1].c_str()), true, true);
+					m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+				}
+			}
+		}
 /*
 		else if (devType == pTypeGeneralSwitch)
 		{
