@@ -12994,6 +12994,18 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			if (dID != 0)
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
 		}
+		else if (devType == pTypeTEMP_HUM)
+		{
+			if (dID != 0)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 3)
+				{
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, (float)atof(strarray[0].c_str()), atoi(strarray[1].c_str()), true, true);
+				}
+			}
+		}
 /*
 		else if (devType == pTypeGeneralSwitch)
 		{

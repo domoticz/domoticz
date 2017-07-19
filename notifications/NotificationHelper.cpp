@@ -259,14 +259,15 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			bool bCustomMessage = false;
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
-			if (m_sql.m_tempunit == TEMPUNIT_F)
-			{
-				//Convert to Celsius
-				svalue = static_cast<float>(ConvertToCelsius(svalue));
-			}
 			if ((ntype == signtemp) && (bHaveTemp))
 			{
 				//temperature
+				if (m_sql.m_tempunit == TEMPUNIT_F)
+				{
+					//Convert to Celsius
+					svalue = static_cast<float>(ConvertToCelsius(svalue));
+				}
+
 				if (temp > 30.0) szExtraData += "Image=temp-gt-30|";
 				else if (temp > 25.0) szExtraData += "Image=temp-25-30|";
 				else if (temp > 20.0) szExtraData += "Image=temp-20-25|";
