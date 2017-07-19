@@ -630,6 +630,12 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **setPoint**: *Number*.
  - **heatingMode**: *String*.
 
+#### Z-Wave Thermostat mode
+ - **mode**: *Number*. Current mode number.
+ - **modeString**: *String*. Mode name.
+ - **modes**: *Table*. Lists all available modes.
+ - **updateMode(modeString)**: *Function*. Set new mode.
+
 ### Switch timing options (delay, duration)
 To specify a duration or a delay for the various switch command you can do this:
 

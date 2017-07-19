@@ -1,6 +1,9 @@
 [2.1.1]
 
  - Fixed typo in the doc WActual > WhActual.
+ - Updated switch adapter to match more switch-like devices.
+ - Added Z-Wave Thermostat mode device adapter.
+ - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
 
 [2.1.0]
 

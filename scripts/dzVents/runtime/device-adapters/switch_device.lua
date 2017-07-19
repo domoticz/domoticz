@@ -51,6 +51,12 @@ return {
 			device.lastLevel = data.lastLevel
 		end
 
+		if (device.level == nil and data.data._nValue ~= nil) then
+			-- rgb devices get their level in _nValue
+			device.level = data.data._nValue
+		end
+
+
 		function device.toggleSwitch()
 			local current, inv
 			if (device.state ~= nil) then
