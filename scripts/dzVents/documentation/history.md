@@ -4,6 +4,7 @@
  - Updated switch adapter to match more switch-like devices.
  - Added Z-Wave Thermostat mode device adapter.
  - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
+ - Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
 
 [2.1.0]
 

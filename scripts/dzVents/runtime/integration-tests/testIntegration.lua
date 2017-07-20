@@ -386,6 +386,8 @@ describe('Integration test', function ()
 	teardown(function()
 		os.remove('../../generated_scripts/stage1.lua')
 		os.remove('../../scripts/stage2.lua')
+		os.remove('../../scripts/global_data.lua')
+		os.remove('../../data/__data_global_data.lua')
 	end)
 
 	before_each(function()
@@ -646,6 +648,12 @@ describe('Integration test', function ()
 
 		end)
 
+		it('Should move globaldata script in place', function()
+
+			File.remove('../../scripts/global_data.lua')
+			File.copy('./global_data.lua', '../../scripts/global_data.lua')
+		end)
+
 		it('Should create the stage1 trigger switch', function()
 			local ok
 			ok, stage1TriggerIdx = createVirtualDevice(dummyIdx, 'stage1Trigger', VIRTUAL_DEVICES.SWITCH[1])
@@ -677,7 +685,7 @@ describe('Integration test', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(4)
+			socket.sleep(6) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local ok, textDevice = getDevice(endResultsIdx)
 

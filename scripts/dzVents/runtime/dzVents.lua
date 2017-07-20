@@ -23,6 +23,9 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG) then
 	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 end
 
+local persistence = require('persistence')
+persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+
 commandArray = {}
 
 utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)

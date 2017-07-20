@@ -285,6 +285,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
  	 - **rawDate**: *String*. Returns the date part of the raw data.
  	 - **rawTime**: *String*. Returns the time part of the raw data.
 	 - **sec**: *Number*
+	 - **secondsSinceMidnight**: *Number*
 	 - **sunsetInMinutes**
 	 - **sunriseInMinutes**
 	 - **wday**: *Number*. Day of the week ( 0 == sunday)
@@ -394,6 +395,7 @@ Most of the time when your device is not recognized you can always use the `rawD
  	 - **rawTime**: *String*. Returns the time part of the raw data.
 	 - **sec**: *Number*
 	 - **secondsAgo**: *Number*. Number of seconds since the last update.
+	 - **secondsSinceMidnight**: *Number*
 	 - **year**: *Number*
  - **name**: *String*. Name of the device.
  - **nValue**: *Number*. Numerical representation of the state.
@@ -680,6 +682,8 @@ User variables created in Domoticz have these attributes and methods:
 	 - **rawDate**: *String*. Returns the date part of the raw data.
  	 - **rawTime**: *String*. Returns the time part of the raw data.
 	 - **sec**: *Number*
+	 - **secondsSinceMidnight**: *Number*
+	 - **secondsAgo**: *Number*
 	 - **year**: *Number*
  - **name**: *String*. Name of the variable
  - **time**: *Date*. If type is domoticz.TIME. See lastUpdate for the sub-attributes.
@@ -737,6 +741,7 @@ When `isUTC` is true then the given date is treated as a UTC time.
  - **rawDate**: *String*. Returns the date part of the raw data.
  - **rawTime**: *String*. Returns the time part of the raw data.
  - **sec**: *Number*
+ - **secondsSinceMidnight**: *Number*
  - **secondsAgo**: *Number*. Number of seconds since the last update.
  - **utcSystemTime**: *Table*. Current system time (Lua table) in UTC format.
  - **utcTime**: *Table*. Time (Lua table) of the object in UTC format.
@@ -955,6 +960,7 @@ The time attribute by itself is a table with many properties that help you inspe
  - **rawTime**: *String*. Returns the time part of the raw data.
  - **sec**: *Number*
  - **secondsAgo**: *Number*. Number of seconds since the last update.
+ - **secondsSinceMidnight**: *Number*
  - **year**: *Number*
  - **utcSystemTime**: *Table*. UTC system time:
 	 - **day**: *Number*

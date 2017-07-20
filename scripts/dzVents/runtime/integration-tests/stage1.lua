@@ -998,6 +998,12 @@ local testVariableTime = function(name)
 	return res
 end
 
+local storeLastUpdates = function()
+
+	dz.globalData.stage1Time = dz.time.raw
+
+end
+
 return {
 	active = true,
 	on = {
@@ -1057,6 +1063,9 @@ return {
 		res = res and testVariableDate('varDate')
 		res = res and testVariableTime('varTime')
 
+
+		storeLastUpdates()
+
 		log('Finishing stage 1')
 		if (not res) then
 			log('Results stage 1: FAILED!!!!', dz.LOG_ERROR)
@@ -1064,6 +1073,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(2)
+		dz.devices('stage2Trigger').switchOn().afterSec(4)
 	end
 }

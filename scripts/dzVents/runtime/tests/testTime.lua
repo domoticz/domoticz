@@ -78,6 +78,11 @@ describe('Time', function()
 			assert.is_same(3, t.hoursAgo)
 		end)
 
+		it('should have secondsSinceMidnight', function()
+			local t = Time('2017-01-01 11:45:12')
+			assert.is_same(42312, t.secondsSinceMidnight)
+		end)
+
 		it('should have a raw time', function()
 			assert.is_same(utcRaw, utcT.raw)
 		end)

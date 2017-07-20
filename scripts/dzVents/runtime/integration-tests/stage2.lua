@@ -484,13 +484,47 @@ local testAmpere3 = function(name)
 	return res
 end
 
+local testLastUpdates = function(stage2Trigger)
+
+	local Time = require('Time')
+
+	local stage1Time = Time(dz.globalData.stage1Time)
+	local stage1SecsAgo = stage1Time.secondsAgo
+
+	local results = true
+
+	-- check if stage2Trigger.lastUpdate is older than the current time
+	local now = dz.time.secondsSinceMidnight
+	results = results and (stage2Trigger.lastUpdate.secondsSinceMidnight < now)
+
+	expectEql(true, results, 'stage2Trigger.lastUpdate should be in the past')
+
+	if (results) then
+		results = dz.devices().reduce(function(acc, device)
+
+			if (device.name ~= 'endResult' and device.name ~= 'stage1Trigger' and device.name ~= 'stage2Trigger') then
+				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
+
+				-- test if lastUpdate for the device is close to state1Time
+				acc = acc and (delta <= 1)
+				expectEql(true, acc, device.name .. ' lastUpdate is not in the past')
+			end
+
+			return acc
+
+		end, results)
+	end
+
+	return results
+end
+
 
 return {
 	active = true,
 	on = {
 		devices = { 'stage2Trigger' }
 	},
-	execute = function(domoticz, trigger)
+	execute = function(domoticz, stage2Trigger)
 
 		local res = true
 		dz = domoticz
@@ -543,6 +577,8 @@ return {
 		res = res and testAmpere1('vdAmpere1')
 		res = res and testAmpere3('vdAmpere3')
 		res = res and testDimmer('vdSwitchDimmer')
+
+		res = res and testLastUpdates(stage2Trigger)
 
 		if (not res) then
 			log('Results stage 2: FAILED!!!!', dz.LOG_ERROR)

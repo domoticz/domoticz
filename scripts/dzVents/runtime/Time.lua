@@ -67,6 +67,7 @@ local function Time(sDate, isUTC)
 		self['minutesAgo'] = minDiff
 		self['secondsAgo'] = secDiff
 		self['hoursAgo'] = hourDiff
+		self['secondsSinceMidnight'] = self.hour * 3600 + self.min * 60 + self.sec
 		self['utils'] = utils
 	end
 
