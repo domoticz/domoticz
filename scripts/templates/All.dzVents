@@ -3,12 +3,10 @@
 return {
 
 	-- 'active' controls if this entire script is considered or not
-	-- pick one of these three modes:
-	active = true,
-	active = false, -- set to true to make it execute
+	active = true, -- set to false to disable this script
 
 	-- trigger
-	-- can be a combination
+	-- can be a combination:
 	on = {
 		devices = {
 			-- scripts is executed if the device that was updated matches with one of these triggers
@@ -32,10 +30,10 @@ return {
 
 		The domoticz object holds all information about your Domoticz system. E.g.:
 
-		local myDevice = domoticz.devices['myDevice']
-		local myVariable = domoticz.variables['myUserVariable']
-		local myGroup = domoticz.groups['myGroup']
-		local myScene = domoticz.sceneds['myScene']
+		local myDevice = domoticz.devices('myDevice')
+		local myVariable = domoticz.variables('myUserVariable')
+		local myGroup = domoticz.groups('myGroup')
+		local myScene = domoticz.sceneds('myScene')
 
 		The device object is the device that was triggered due to the device in the 'on' section above.
 		]] --

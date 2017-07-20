@@ -292,7 +292,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		local subset, length = self.subset(from, to)
 
 		if (length == 0) then
-			return default
+			return default or 0
 		else
 			return _avg(subset)
 		end
@@ -301,7 +301,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	function self.avgSince(timeAgo, default)
 		local subset, length = self.subsetSince(timeAgo)
 		if (length == 0) then
-			return default
+			return default or 0
 		else
 			return _avg(subset)
 		end
@@ -386,7 +386,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	function self.sum(from, to)
 		local subset, length = self.subset(from, to)
 		if (length==0) then
-			return nil
+			return 0
 		else
 			return _sum(subset)
 		end
@@ -395,7 +395,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	function self.sumSince(timeAgo)
 		local subset, length = self.subsetSince(timeAgo)
 		if (length==0) then
-			return nil
+			return 0
 		else
 			return _sum(subset)
 		end

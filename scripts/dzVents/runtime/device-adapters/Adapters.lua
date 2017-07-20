@@ -3,6 +3,8 @@ local genericAdapter = require('generic_device')
 local deviceAdapters = {
 	'airquality_device',
 	'alert_device',
+	'ampere_1_phase_device',
+	'ampere_3_phase_device',
 	'barometer_device',
 	'counter_device',
 	'custom_sensor_device',
@@ -11,18 +13,22 @@ local deviceAdapters = {
 	'evohome_device',
 	'gas_device',
 	'group_device',
-	'hue_light_device',
 	'humidity_device',
 	'kwh_device',
+	'leafwetness_device',
 	'lux_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',
 	'percentage_device',
 	'pressure_device',
 	'rain_device',
+	'rgbw_device',
+	'scaleweight_device',
 	'scene_device',
 	'security_device',
 	'solar_radiation_device',
+	'soilmoisture_device',
+	'soundlevel_device',
 	'switch_device',
 	'thermostat_setpoint_device',
 	'temperature_device',
@@ -30,7 +36,9 @@ local deviceAdapters = {
 	'temperature_humidity_barometer_device',
 	'text_device',
 	'uv_device',
+	'visibility_device',
 	'voltage_device',
+	'waterflow_device',
 	'wind_device',
 	'zone_heating_device',
 	'kodi_device'
@@ -102,10 +110,6 @@ local function DeviceAdapters(dummyLogger)
 		}
 	end
 
-	self['logDummyCall'] = function(device, name)
-
-	end
-
 	function self.getDummyMethod(device, name)
 		if (dummyLogger ~= nil) then
 			dummyLogger(device, name)
@@ -128,6 +132,11 @@ local function DeviceAdapters(dummyLogger)
 		if (device[name] == nil) then
 			device[name] = self.getDummyMethod(device, name)
 		end
+	end
+
+	function self.round(num, numDecimalPlaces)
+		local mult = 10 ^ (numDecimalPlaces or 0)
+		return math.floor(num * mult + 0.5) / mult
 	end
 
 	self.states = {

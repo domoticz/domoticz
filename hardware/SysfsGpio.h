@@ -44,7 +44,7 @@ private:
 	void Do_Work();
 	void EdgeDetectThread();
 	void Init();
-	void PollGpioInputs();
+	void PollGpioInputs(bool PollOnce);
 	void CreateDomoticzDevices();
 	void UpdateDomoticzInputs(bool forceUpdate);
 	void UpdateDomoticzDatabase();

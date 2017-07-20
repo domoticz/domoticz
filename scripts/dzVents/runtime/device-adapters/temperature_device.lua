@@ -19,8 +19,6 @@ return {
 		function device.updateTemperature(temperature)
 			device.update(0, temperature)
 		end
-
 	end
-
 
 }
