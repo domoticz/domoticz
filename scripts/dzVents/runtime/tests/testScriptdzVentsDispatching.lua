@@ -37,20 +37,19 @@ describe('Event dispatching', function()
 				["lastLevel"] = 61,
 				["switchTypeValue"] = 0,
 				["id"] = 1,
-				["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)",
 				["subType"] = "Switch",
 				["timedOut"] = "false",
 				["signalLevel"] = 255,
 				["data"] = {
 					["_state"] = "On",
+					["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)",
+					["hardwareName"] = "dummy",
+					["hardwareID"] = "2",
 					["icon"] = "lightbulb",
 					["maxDimLevel"] = "100",
 				},
 				["batteryLevel"] = 255,
 				["description"] = "",
-				["hardwareName"] = "dummy",
-				["hardwareTypeID"] = 15,
-				["hardwareID"] = "2",
 				["rawData"] = {
 					[1] = "0",
 				},
@@ -76,20 +75,19 @@ describe('Event dispatching', function()
 				["lastLevel"] = 61,
 				["switchTypeValue"] = 0,
 				["id"] = 2,
-				["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)",
 				["subType"] = "Switch",
 				["timedOut"] = "false",
 				["signalLevel"] = 255,
 				["data"] = {
 					["_state"] = "On",
+					["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)",
+					["hardwareName"] = "dummy",
+					["hardwareID"] = "2",
 					["icon"] = "lightbulb",
 					["maxDimLevel"] = "100",
 				},
 				["batteryLevel"] = 255,
 				["description"] = "",
-				["hardwareName"] = "dummy",
-				["hardwareTypeID"] = 15,
-				["hardwareID"] = "2",
 				["rawData"] = {
 					[1] = "0",
 				},
@@ -116,10 +114,6 @@ describe('Event dispatching', function()
 	after_each(function()
 		_G.domoticzData = {}
 		package.loaded['dzVents'] = nil
-	end)
-
-	teardown(function()
-
 	end)
 
 	it('should dispatch device events', function()
@@ -153,7 +147,7 @@ describe('Event dispatching', function()
 		_G.globalvariables['script_reason'] = 'uservariable'
 		local main = require('dzVents')
 		assert.is_same({
-			{ ['OpenURL'] = 'http://127.0.0.1:8080/json.htm?type=command&param=updateuservariable&vname=myVar1&vtype=integer&vvalue=10' }
+			{ ['OpenURL'] = 'http://127.0.0.1:8080/json.htm?type=command&param=updateuservariable&vname=myVar1&vtype=0&vvalue=10&idx=1' }
 		}, main)
 	end)
 

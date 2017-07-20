@@ -1,6 +1,14 @@
 local Time = require('Time')
-
+local utils = require('Utils')
 --local function Variable(domoticz, name, value)
+
+local typeLookup = {
+	['integer'] = 0,
+	['float'] = 1,
+	['string'] = 2,
+	['date'] = 3,
+	['time'] = 4
+}
 
 local function Variable(domoticz, data)
 
@@ -39,10 +47,21 @@ local function Variable(domoticz, data)
 
 	-- send an update to domoticz
 	function self.set(value)
---		domoticz.sendCommand('Variable:' .. data.name, tostring(value))
+		-- domoticz.sendCommand('Variable:' .. data.name, tostring(value))
+		-- using url call otherwise no follow-up event is triggered for this variable
+
+		if (data.variableType == 'string') then
+			value = utils.urlEncode(value)
+		end
 
 		local url = domoticz.settings['Domoticz url'] ..
-				'/json.htm?type=command&param=updateuservariable&vname=' .. data.name ..'&vtype=' .. data.variableType .. '&vvalue=' .. tostring(value)
+				'/json.htm?type=command&param=updateuservariable&vname='
+				.. data.name
+				..'&vtype='
+				.. typeLookup[data.variableType]
+				.. '&vvalue='
+				.. tostring(value)
+				.. '&idx=' .. data.id
 
 		domoticz.openURL(url)
 	end

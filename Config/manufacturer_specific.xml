@@ -495,6 +495,7 @@
 		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
 		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
 		<Product type="0d01" id="1000" name="FGGC001 Swipe" config="fibaro/fggc001.xml" />
+		<Product type="0d01" id="2000" name="FGGC001 Swipe" config="fibaro/fggc001.xml"/>
 		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="0f01" id="2000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="1001" id="1000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
@@ -536,7 +537,9 @@
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
+		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
 		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
 		<Product type="4952" id="3036" name="14291 In-Wall Smart Switch" config="ge/14291-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
@@ -704,6 +707,7 @@
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
 		<Product type="2002" id="0203" name="WAPIRZ-1 Motion Sensor" config="linear/WAPIRZ-1.xml"/>
+		<Product type="2009" id="0903" name="WA105DBZ-1 Main Operated Siren" config="linear/WA105DBZ-1.xml"/>
 		<Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
 		<Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
 		<Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>

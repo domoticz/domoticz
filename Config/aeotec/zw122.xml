@@ -21,14 +21,14 @@ http://products.z-wavealliance.org/products/2437
 				Available rang is 8 to 127 seconds.
 			</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="9" label="Current power mode" min="0" max="255" size="2" value="0" read_only="true">
+		<Value type="list" genre="config" instance="1" index="9" label="Current power mode" min="0" max="258" size="2" value="0" read_only="true">
 			<Help>Report the current power mode and the product state for battery power mode</Help>
 			<Item label="USB power, sleeping mode after re-power on" value="0"/>
-			<Item label="USB power, keep awake for 10 minutes after re-power on" value="256"/>
-			<Item label="USB power, always awake state" value="512"/>
-			<Item label="Battery power, sleeping mode after re-power on" value="1"/>
+			<Item label="USB power, keep awake for 10 minutes after re-power on" value="1"/>
+			<Item label="USB power, always awake state" value="2"/>
+			<Item label="Battery power, sleeping mode after re-power on" value="256"/>
 			<Item label="Battery power, keep awake for 10 minutes after re-power on" value="257"/>
-			<Item label="Battery power, always awake state" value="513"/>
+			<Item label="Battery power, always awake state" value="258"/>
 		</Value>
 		<Value type="int" genre="config" instance="1" index="10" label="Alarm time for the Buzzer" min="655360" max="2147483647" value="1968650" size="4">
 			<Help>
@@ -46,16 +46,16 @@ http://products.z-wavealliance.org/products/2437
 			<Item label="Disabled" value="0"/>
 			<Item label="Enabled" value="1"/>
 		</Value>
-		<Value type="int" genre="config" instance="1" index="49" label="Upper limit value" size="4" min="0" max="2147483647" value="26214400">
+		<Value type="int" genre="config" instance="1" index="49" label="Upper limit value" size="4" min="65536" max="2147483647" value="26214400">
 			<Help>
 				Set the upper limit value (overheat).
 				0 Celsius unit
 				1 Fahrenheit unit
 				65536 to 2147483647 Temperature value.
-				Default: 0x01800000 => 40.0C
+				Default: 0x01900000 => 40.0C
 			</Help>
 		</Value>
-		<Value type="int" genre="config" instance="1" index="50" label="Lower limit value" size="4" min="0" max="2147483647" value="0">
+		<Value type="int" genre="config" instance="1" index="50" label="Lower limit value" size="4" min="65536" max="2147483647" value="0">
 			<Help>
 				Set the lower limit value (under heat).
 				0 Celsius unit

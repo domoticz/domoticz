@@ -456,7 +456,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 
 double ConvertToCelsius(const double Fahrenheit)
 {
-	return (Fahrenheit-32.0)/1.8;
+	return (Fahrenheit-32.0) * 0.5556;
 }
 
 double ConvertToFahrenheit(const double Celsius)

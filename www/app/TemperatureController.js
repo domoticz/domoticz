@@ -142,7 +142,7 @@ define(['app'], function (app) {
 			}
 			var id = "";
 			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=Name&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
