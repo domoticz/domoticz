@@ -52,6 +52,7 @@ local testDimmer = function(name)
 		["id"] = 39,
 		["state"] = "On",
 		["lastLevel"] = 33;
+		["level"] = 75;
 	})
 	return res
 end
@@ -405,7 +406,7 @@ local testGroup = function(name)
 	res = res and checkAttributes(group, {
 		["id"] = 2,
 		["name"] = name,
-		['state'] = 'Off',
+		['state'] = 'On',
 		['baseType'] = 'group'
 	})
 
@@ -568,7 +569,7 @@ return {
 		res = res and testWaterflow("vdWaterflow")
 		res = res and testWind('vdWind')
 		res = res and testWind('vdWindTempChill')
---		res = res and testGroup('gpGroup')
+		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
 		res = res and testVariableFloat('varFloat')
 		res = res and testVariableString('varString')

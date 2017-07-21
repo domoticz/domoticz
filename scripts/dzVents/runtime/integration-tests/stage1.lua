@@ -924,11 +924,11 @@ local testGroup = function(name)
 	res = res and checkAttributes(group, {
 		["id"] = 2,
 		["name"] = name,
-		['state'] = 'On',
+		['state'] = 'Off',
 		['baseType'] = 'group'
 	})
 
-	group.switchOff()
+	group.switchOn()
 	return res
 end
 
@@ -1081,8 +1081,8 @@ return {
 		res = res and testWaterflow("vdWaterflow")
 		res = res and testWind('vdWind', 37, "WTGR800")
 		res = res and testWind('vdWindTempChill', 38, "TFA")
---		res = res and testScene('scScene')
---		res = res and testGroup('gpGroup')
+		res = res and testScene('scScene')
+		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
 		res = res and testVariableFloat('varFloat')
 		res = res and testVariableString('varString')
