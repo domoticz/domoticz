@@ -1004,6 +1004,38 @@ local storeLastUpdates = function()
 
 end
 
+local testLastUpdates = function()
+
+	local Time = require('Time')
+
+	local results = true
+
+	local now = dz.time.secondsSinceMidnight
+
+--	print('Now ' .. tostring(now))
+
+	results = dz.devices().reduce(function(acc, device)
+
+		if (device.name ~= 'endResult' and device.name ~= 'stage1Trigger' and device.name ~= 'stage2Trigger') then
+
+--			print('devlup ' .. tostring(device.lastUpdate.secondsSinceMidnight))
+
+			local delta = now - device.lastUpdate.secondsSinceMidnight
+
+--			print('delta ' .. tostring(delta))
+
+			-- test if lastUpdate for the device is close to domoticz time
+			acc = acc and (delta <= 1)
+			expectEql(true, acc, device.name .. ' lastUpdate is not correctly set')
+		end
+
+		return acc
+	end, results)
+
+	return results
+end
+
+
 return {
 	active = true,
 	on = {
@@ -1063,6 +1095,7 @@ return {
 		res = res and testVariableDate('varDate')
 		res = res and testVariableTime('varTime')
 
+		res = res and testLastUpdates()
 
 		storeLastUpdates()
 
