@@ -91,7 +91,7 @@ private:
 
 	CTCPClient_ptr new_connection_;
 
-	bool logFirstTime(const std::string &ip_string);
+	bool IsUserHereFirstTime(const std::string &ip_string);
 	std::vector<log_info> m_incoming_domoticz_history;
 };
 

@@ -52,7 +52,7 @@ void CTCPServerInt::handle_stop()
 	stopAllClients();
 }
 
-bool CTCPServerInt::logFirstTime(const std::string &ip_string)
+bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 {
 	//
 	//	Log same IP-address first time and then once per day
@@ -102,7 +102,7 @@ void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 
 		new_connection_->m_endpoint=s;
 		
-		if (logFirstTime(s))
+		if (IsUserHereFirstTime(s))
 		{
 			_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
 		}
