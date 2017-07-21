@@ -5,6 +5,7 @@
  - Added Z-Wave Thermostat mode device adapter.
  - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
  - Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
+ - Added 4 new time-rules: xx minutes before/after sunset/sunrise.
 
 [2.1.0]
 
