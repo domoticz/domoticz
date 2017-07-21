@@ -478,7 +478,7 @@ double ConvertTemperature(const double tValue, const unsigned char tSign)
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int *returncode)
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode)
 {
 	std::vector<std::string> ret;
 
@@ -502,9 +502,9 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 			}
 			/* close */
 #ifdef WIN32
-			*returncode = _pclose(fp);
+			returncode = _pclose(fp);
 #else
-			*returncode = pclose(fp);
+			returncode = pclose(fp);
 #endif
 		}
 	}
