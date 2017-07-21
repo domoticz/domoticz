@@ -51,7 +51,7 @@ local testDimmer = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 39,
 		["state"] = "On",
-		["lastLevel"] = 75;
+		["lastLevel"] = 33;
 	})
 	return res
 end

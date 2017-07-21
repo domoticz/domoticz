@@ -51,9 +51,12 @@ return {
 			device.lastLevel = data.lastLevel
 		end
 
-		if (device.level == nil and data.data._nValue ~= nil) then
-			-- rgb devices get their level in _nValue
-			device.level = data.data._nValue
+		if (device.level == nil) then
+			if (device.rawData[1] ~= nil) then
+				device.level = tonumber(device.rawData[1]) -- for rgb(w)
+			else
+				device.level = data.data.levelVal
+			end
 		end
 
 

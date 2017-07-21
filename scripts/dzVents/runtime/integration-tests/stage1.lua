@@ -73,13 +73,15 @@ end
 
 local testDimmer = function(name)
 	local dev = dz.devices(name)
+
 	local res = true
 	res = res and checkAttributes(dev, {
 		["id"] = 39,
 		["name"] = name,
 		["maxDimLevel"] = 100,
-		["lastLevel"] = 0,
-		["state"] = "Off",
+		['level'] = 33,
+		["lastLevel"] = 33,
+		["state"] = "On",
 		["deviceSubType"] = "Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
 		["hardwareName"] = "dummy";
