@@ -1,4 +1,4 @@
-[2.1.1]
+[2.2.0]
 
  - Fixed typo in the doc WActual > WhActual.
  - Updated switch adapter to match more switch-like devices.
@@ -6,6 +6,7 @@
  - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
  - Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
  - Added 4 new time-rules: xx minutes before/after sunset/sunrise.
+ - Added example script to fake user presence.
 
 [2.1.0]
 
