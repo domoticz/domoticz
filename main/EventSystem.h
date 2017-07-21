@@ -159,7 +159,7 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);
-	void UpdateLastUpdate(int ulDevID, const std::string &lastUpdate, const uint8_t lastLevel);
+	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);

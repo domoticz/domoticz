@@ -1239,7 +1239,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
-void CEventSystem::UpdateLastUpdate(int ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
+void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
 {
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
