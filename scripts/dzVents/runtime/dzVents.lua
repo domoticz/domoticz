@@ -22,9 +22,9 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG) then
 	local persistence = require('persistence')
 	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 end
-
-local persistence = require('persistence')
-persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+--
+--local persistence = require('persistence')
+--persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
 
 commandArray = {}
 
