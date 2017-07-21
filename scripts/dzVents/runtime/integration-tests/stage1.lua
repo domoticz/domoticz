@@ -1098,6 +1098,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(4)
+--		dz.devices('stage2Trigger').switchOn().afterSec(4)
 	end
 }

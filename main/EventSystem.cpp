@@ -1238,7 +1238,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
-void CEventSystem::UpdateLastUpdate(int ulDevID, const std::string &lastUpdate)
+void CEventSystem::UpdateLastUpdate(int ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
 {
 	if (!m_bEnabled)
 		return;
@@ -1252,6 +1252,7 @@ void CEventSystem::UpdateLastUpdate(int ulDevID, const std::string &lastUpdate)
 
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.lastUpdate = l_lastUpdate;
+		replaceitem.lastLevel = lastLevel;
 		itt->second = replaceitem;
 	}
 }
@@ -1280,7 +1281,8 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		replaceitem.nValueWording = l_nValueWording;
 		if (!lastUpdate.empty())
 			replaceitem.lastUpdate = l_lastUpdate;
-		replaceitem.lastLevel = lastLevel;
+		if (lastLevel != 255)
+			replaceitem.lastLevel = lastLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1327,10 +1329,10 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
-		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", atoi(sd[3].c_str()), options);
+		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
 		GetCurrentUserVariables();
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
-		UpdateLastUpdate(ulDevID, sd[2]);
+		UpdateLastUpdate(ulDevID, sd[2], atoi(sd[3].c_str()));
 	}
 	else {
 		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
