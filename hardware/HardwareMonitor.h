@@ -41,6 +41,7 @@ private:
 	void FetchUnixDisk();
 	long long m_lastloadcpu;
 	int m_totcpu;
+	std::string m_dfcommand;
 #endif
 };
 

@@ -115,6 +115,14 @@ bool CHardwareMonitor::StartHardware()
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHardwareMonitor::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
+#if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+	// Busybox df doesn't support -x parameter
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs 2> /dev/null", &returncode);
+	returncode == 0 ?
+		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
+		m_dfcommand = "df";
+#endif
 	return true;
 }
 
@@ -227,7 +235,8 @@ void CHardwareMonitor::SendFanSensor(const int Idx, const int FanSpeed, const st
 
 void CHardwareMonitor::GetInternalTemperature()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand);
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalTemperatureCommand, &returncode);
 	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
@@ -252,7 +261,8 @@ void CHardwareMonitor::GetInternalTemperature()
 
 void CHardwareMonitor::GetInternalVoltage()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand);
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalVoltageCommand, &returncode);
 	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
@@ -274,7 +284,8 @@ void CHardwareMonitor::GetInternalVoltage()
 
 void CHardwareMonitor::GetInternalCurrent()
 {
-	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand);
+	int returncode = 0;
+	std::vector<std::string> ret = ExecuteCommandAndReturn(szInternalCurrentCommand, &returncode);
 	if (ret.empty())
 		return;
 	std::string tmpline = ret[0];
@@ -738,7 +749,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 		char szTmp[300];
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
-		std::vector<std::string> _rlines=ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs");
+		int returncode = 0;
+		std::vector<std::string> _rlines=ExecuteCommandAndReturn(m_dfcommand, &returncode);
 		if (!_rlines.empty())
 		{
 			std::vector<std::string>::const_iterator ittDF;

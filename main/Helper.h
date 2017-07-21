@@ -30,7 +30,7 @@ double ConvertToCelsius(const double Fahrenheit);
 double ConvertToFahrenheit(const double Celsius);
 double ConvertTemperature(const double tValue, const unsigned char tSign);
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int *returncode);
 
 void DateAsciiTotmTime (std::string &sLastUpdate , struct tm &LastUpdateTime  );
 void AsciiTime (struct tm &ltime , char * pLastUpdate );
