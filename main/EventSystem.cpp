@@ -1238,6 +1238,24 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
+void CEventSystem::UpdateLastUpdate(int ulDevID, const std::string &lastUpdate)
+{
+	if (!m_bEnabled)
+		return;
+
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+	if (itt != m_devicestates.end())
+	{
+		std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
+
+		_tDeviceStatus replaceitem = itt->second;
+		replaceitem.lastUpdate = l_lastUpdate;
+		itt->second = replaceitem;
+	}
+}
+
 std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options)
 {
 	std::string nValueWording = nValueToWording(devType, subType, switchType, nValue, sValue, options);
@@ -1260,7 +1278,8 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		replaceitem.nValue = nValue;
 		replaceitem.sValue = l_sValue;
 		replaceitem.nValueWording = l_nValueWording;
-		replaceitem.lastUpdate = l_lastUpdate;
+		if (!lastUpdate.empty())
+			replaceitem.lastUpdate = l_lastUpdate;
 		replaceitem.lastLevel = lastLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
@@ -1308,9 +1327,10 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
-		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", atoi(sd[3].c_str()), options);
 		GetCurrentUserVariables();
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
+		UpdateLastUpdate(ulDevID, sd[2]);
 	}
 	else {
 		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
