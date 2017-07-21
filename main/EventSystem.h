@@ -109,9 +109,11 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
+	void GetCurrentUserVariables();
+	void UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
+	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
 	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
-
     bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
@@ -132,7 +134,6 @@ private:
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	void GetCurrentUserVariables();
 	void GetCurrentScenesGroups();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
