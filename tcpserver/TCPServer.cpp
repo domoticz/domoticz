@@ -65,15 +65,15 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 		log_info li = m_incoming_domoticz_history[i];
 		double elapsed_seconds = now - li.time;
 
-		if (ip_string.compare(li.string) == 0)
+		if (elapsed_seconds > SECONDS_PER_DAY)
 		{
-			if (elapsed_seconds < SECONDS_PER_DAY)
+			m_incoming_domoticz_history.erase(m_incoming_domoticz_history.begin()+i);
+		}
+		else
+		{
+			if (ip_string.compare(li.string) == 0)
 			{
-				log_this = false;	
-			}
-			else
-			{
-				m_incoming_domoticz_history.erase(m_incoming_domoticz_history.begin()+i);
+				log_this = false;
 			}
 		}
 	}
