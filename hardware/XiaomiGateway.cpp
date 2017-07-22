@@ -467,7 +467,11 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 			if (result.size() > 0) {
 				std::string Idx = result[0][0];
 				if (Name == "Xiaomi Wireless Switch") {
-					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Long Click|Long Click Release|Double Click", false));
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click|Long Click|Long Click Release", false));
+				}
+				else if (Name == "Xiaomi Square Wireless Switch") {
+					// click/double click
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
 				else if (Name == "Xiaomi Cube") {
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
@@ -848,9 +852,13 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Xiaomi Motion Sensor";
 					}
-					else if ((model == "switch") || (model == "sensor_switch.aq2")) {
+					else if (model == "switch")  {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
+					}
+					else if (model == "sensor_switch.aq2") {
+						type = STYPE_Selector;
+						name = "Xiaomi Square Wireless Switch";
 					}
 					else if ((model == "magnet") || (model == "sensor_magnet.aq2")) {
 						type = STYPE_Contact;
@@ -948,15 +956,15 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "long_click_press") || (status == "flip180") || (aqara_wireless2 == "click")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click")) {
 							level = 20;
 							on = true;
 						}
-						else if ((status == "long_click_release") || (status == "move") || (aqara_wireless3 == "both_click")) {
+						else if ((status == "long_click_press") || (status == "move") || (aqara_wireless3 == "both_click")) {
 							level = 30;
 							on = true;
 						}
-						else if ((status == "tap_twice") || (status == "double_click")) {
+						else if ((status == "tap_twice") || (status == "long_click_release")) {
 							level = 40;
 							on = true;
 						}
