@@ -6,7 +6,7 @@
 #   Mode3 ("Sources") needs to have '|' delimited names of sources that the Denon knows about.  The Selector can be changed afterwards to any  text and the plugin will still map to the actual Denon name.
 #
 """
-<plugin key="Denon4306" version="2.5.4" name="Denon AVR 4306 Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
+<plugin key="Denon4306" version="2.6.2" name="Denon/Marantz Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
     <description>
 Denon (& Marantz) AVR Plugin.<br/><br/>
 &quot;Sources&quot; need to have '|' delimited names of sources that the Denon knows about from the technical manual.<br/>
@@ -42,7 +42,8 @@ import base64
 import datetime
 
 class BasePlugin:
-    telnetConn = None
+    TelnetConn = None
+
     nextConnect = 3
     oustandingPings = 0
 
@@ -105,23 +106,23 @@ class BasePlugin:
         for item in Parameters["Mode3"].split('|'):
             self.selectorMap[dictValue] = item
             dictValue = dictValue + 10
-        self.telnetConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
-        self.telnetConn.Connect()
+        self.TelnetConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
+        self.TelnetConn.Connect()
         return
 
     def onConnect(self, Connection, Status, Description):
-        if (Status == 0):
-            self.isConnected = True
-            Domoticz.Log("Connected successfully to: "+Parameters["Address"]+":"+Parameters["Port"])
-            self.telnetConn.Send('PW?\r')
-            self.telnetConn.Send('ZM?\r', Delay=1)
-            self.telnetConn.Send('Z2?\r', Delay=2)
-            self.telnetConn.Send('Z3?\r', Delay=3)
-        else:
-            self.powerOn = False
-            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
-            Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
-            self.SyncDevices()
+        if (Connection == self.TelnetConn):
+            if (Status == 0):
+                Domoticz.Log("Connected successfully to: "+Connection.Address+":"+Connection.Port)
+                self.TelnetConn.Send('PW?\r')
+                self.TelnetConn.Send('ZM?\r', Delay=1)
+                self.TelnetConn.Send('Z2?\r', Delay=2)
+                self.TelnetConn.Send('Z3?\r', Delay=3)
+            else:
+                self.powerOn = False
+                Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
+                Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
+                self.SyncDevices()
         return
 
     def onMessage(self, Connection, Data, Status, Extra):
@@ -134,7 +135,6 @@ class BasePlugin:
         detail = strData[2:]
         if (action in self.pollingDict): self.lastMessage = action
 
-        
         if (action == "PW"):        # Power Status
             if (detail == "STANDBY"):
                 self.powerOn = False
@@ -232,95 +232,95 @@ class BasePlugin:
 
         if (Unit == 1):     # Main power switch
             if (action == "On"):
-                self.telnetConn.Send(Message='PWON\r')
+                self.TelnetConn.Send(Message='PWON\r')
             elif (action == "Off"):
-                self.telnetConn.Send(Message='PWSTANDBY\r', Delay=delay)
+                self.TelnetConn.Send(Message='PWSTANDBY\r', Delay=delay)
 
         # Main Zone devices
         elif (Unit == 2):     # Main selector
             if (action == "On"):
-                self.telnetConn.Send(Message='ZMON\r')
+                self.TelnetConn.Send(Message='ZMON\r')
             elif (action == "Set"):
-                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
-                self.telnetConn.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
+                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+                self.TelnetConn.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='ZMOFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='ZMOFF\r', Delay=delay)
         elif (Unit == 3):     # Main Volume control
-            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
             if (action == "On"):
-                self.telnetConn.Send(Message='MUOFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.telnetConn.Send(Message='MV'+str(Level)+'\r', Delay=delay)
+                self.TelnetConn.Send(Message='MV'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='MUON\r', Delay=delay)
+                self.TelnetConn.Send(Message='MUON\r', Delay=delay)
 
         # Zone 2 devices
         elif (Unit == 4):   # Zone 2 selector
             if (action == "On"):
-                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
-                self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
+                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+                self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
                 if (self.zone2On == False):
-                    self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
+                    self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
                     delay += 1
-                self.telnetConn.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                self.telnetConn.Send(Message='Z2?\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2?\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='Z2OFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2OFF\r', Delay=delay)
         elif (Unit == 5):   # Zone 2 Volume control
-            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
             if (self.zone2On == False):
-                self.telnetConn.Send(Message='Z2ON\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                self.telnetConn.Send(Message='Z2MUOFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.telnetConn.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='Z2MUON\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z2MUON\r', Delay=delay)
 
         # Zone 3 devices
         elif (Unit == 6):   # Zone 3 selector
             if (action == "On"):
-                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
-                self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
+                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+                self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
                 if (self.zone3On == False):
-                    self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
+                    self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
                     delay += 1
-                self.telnetConn.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                self.telnetConn.Send(Message='Z3?\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3?\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='Z3OFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3OFF\r', Delay=delay)
         elif (Unit == 7):   # Zone 3 Volume control
-            if (self.powerOn == False): self.telnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
             if (self.zone3On == False):
-                self.telnetConn.Send(Message='Z3ON\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                self.telnetConn.Send(Message='Z3MUOFF\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.telnetConn.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.telnetConn.Send(Message='Z3MUON\r', Delay=delay)
+                self.TelnetConn.Send(Message='Z3MUON\r', Delay=delay)
 
         return
 
     def onDisconnect(self, Connection):
-        Domoticz.Log("Denon device has disconnected: "+Connection.Address+":"+Connection.Port)
+        Domoticz.Error("Disconnected from: "+Connection.Address+":"+Connection.Port)
         return
 
     def onHeartbeat(self):
-        if (self.telnetConn.Connected() == True):
+        if (self.TelnetConn.Connected() == True):
             if (self.oustandingPings > 5):
-                self.telnetConn.Disconnect()
+                self.TelnetConn.Disconnect()
                 self.nextConnect = 0
             else:
-                self.telnetConn.Send(self.pollingDict[self.lastMessage])
+                self.TelnetConn.Send(self.pollingDict[self.lastMessage])
                 Domoticz.Debug("onHeartbeat: self.lastMessage "+self.lastMessage+", Sending '"+self.pollingDict[self.lastMessage][0:2]+"'.")
                 self.oustandingPings = self.oustandingPings + 1
         else:
@@ -329,7 +329,7 @@ class BasePlugin:
             self.nextConnect = self.nextConnect - 1
             if (self.nextConnect <= 0):
                 self.nextConnect = 3
-                self.telnetConn.Connect()
+                self.TelnetConn.Connect()
                 
         self.lastHeartbeat = datetime.datetime.now()
         return
@@ -405,3 +405,9 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
+def stringToBase64(s):
+    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
+
+def base64ToString(b):
+    return base64.b64decode(b).decode('utf-8')
