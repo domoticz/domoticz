@@ -1523,6 +1523,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 				}
 				if (it->Interpreter == "Python") {
 #ifdef ENABLE_PYTHON
+					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 					if (reason == "device")			EvaluatePython(reason, it->Name, it->Actions, DeviceID, devname, nValue, sValue, nValueWording, 0);
 					if (reason == "time")			EvaluatePython(reason, it->Name, it->Actions);
 					if (reason == "security")		EvaluatePython(reason, it->Name, it->Actions);
