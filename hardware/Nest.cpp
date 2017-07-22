@@ -678,9 +678,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	unsigned char tSign = m_sql.m_tempsign[0];
 	if (tSign == 'F')
 	{
-		//Maybe this should be done in the main app, so all other devices will also do this
-		//Convert to Celsius
-		tempDest = (tempDest - 32.0f) / 1.8f;
+		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
 	Json::Value root;

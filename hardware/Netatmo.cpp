@@ -732,8 +732,8 @@ void CNetatmo::SetSetpoint(const int idx, const float temp)
 
 	if (tSign == 'F')
 	{
-		//convert back to Celcius
-		tempDest = (tempDest - 32.0f) / 1.8f;
+		//convert back to Celsius
+		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
 	time_t now = mytime(NULL);
