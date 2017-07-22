@@ -149,7 +149,7 @@ master occurs once, 30 seconds after startup.
 #define GPIO_EDGE_BOTH		3
 #define GPIO_EDGE_UNKNOWN	-1
 #define GPIO_PIN_MIN		0
-#define GPIO_PIN_MAX		31
+#define GPIO_PIN_MAX		1023
 #define GPIO_MAX_VALUE_SIZE	16
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
