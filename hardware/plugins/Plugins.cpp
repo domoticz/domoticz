@@ -1117,25 +1117,60 @@ namespace Plugins {
 	{
 		WriteDirective*	pMessage = (WriteDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
-		if (!pConnection->pTransport || !pConnection->pTransport->IsConnected())
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		if (pConnection->pTransport)
 		{
-			_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
-			return;
+			if (sTransport == "UDP/IP")
+			{
+				_log.Log(LOG_ERROR, "(%s) Connectionless Transport is listening, write directive ignored.", Name.c_str());
+				return;
+			}
+
+			if (!pConnection->pTransport->IsConnected())
+			{
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				return;
+			}
 		}
-		else
+
+		if (!pConnection->pTransport)
 		{
-			if (!pConnection->pProtocol)
+			// UDP is connectionless so create a temporary transport and write to it
+			if (sTransport == "UDP/IP")
 			{
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-				pConnection->pProtocol = new CPluginProtocol();
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			}
-			std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
-			if (m_bDebug)
+			else
 			{
-				WriteDebugBuffer(vWriteData, false);
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				return;
 			}
-			pConnection->pTransport->handleWrite(vWriteData);
 		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
+			pConnection->pProtocol = new CPluginProtocol();
+		}
+
+		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
+		if (m_bDebug)
+		{
+			WriteDebugBuffer(vWriteData, false);
+		}
+
+		pConnection->pTransport->handleWrite(vWriteData);
+
+		// UDP is connectionless so remove the transport after write
+		if (pConnection->pTransport && (sTransport == "UDP/IP"))
+		{
+			delete pConnection->pTransport;
+			pConnection->pTransport = NULL;
+		}
+
 	}
 
 	void CPlugin::ConnectionDisconnect(CDirectiveBase * pMess)

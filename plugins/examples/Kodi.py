@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2016 - 2017
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.7.1" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.8.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>
@@ -411,11 +411,14 @@ class BasePlugin:
     def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
         Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
         if Parameters["Mode3"] == "True":
-            import socket
             import xmbcclient3
             packet = xmbcclient3.PacketNOTIFICATION(title=str(Name),  message=str(Text), icon_type=xmbcclient3.ICON_PNG, icon_file=str(ImageFile))
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            packet.send(sock, (Parameters["Address"], 9777))
+            udpBcastConn = Domoticz.Connection(Name="UDP Broadcast Connection", Transport="UDP/IP", Protocol="None", Address=Parameters["Address"], Port=str(9777))
+            for a in range ( 0, packet.num_packets() ):
+                try:
+                    udpBcastConn.Send(packet.get_udp_message(a+1))
+                except:
+                    return
 
     def onHeartbeat(self):
         if (self.KodiConn.Connected()):

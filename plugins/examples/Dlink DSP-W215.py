@@ -3,7 +3,7 @@
 # Author: Dnpwwo, 2017
 #
 """
-<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.1.0" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
+<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.2.0" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="80"/>
@@ -71,14 +71,14 @@ class BasePlugin:
                         'User-Agent':'Domoticz/1.0', \
                         'SOAPAction' : '"http://purenetworks.com/HNAP1/Login"', \
                         'Content-Length' : "%d"%(len(data)) }
-            self.httpConn.Send(data, 'POST', '/HNAP1/', headers)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
             self.pluginState = "GetAuth"
         else:
             self.pluginState = "Not Ready"
             Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
             Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
 
-    def onMessage(self, Connection, Data, Status, Extra):
+    def onMessage(self, Connection, Data):
         strData = Data.decode("utf-8", "ignore")
         if (Status == 200):
             Domoticz.Debug("Good Response received for '"+self.pluginState+"'.")
@@ -110,7 +110,7 @@ class BasePlugin:
                             'Content-Length' : "%d"%(len(data)), \
                             'Cookie' : 'uid=' + self.sessionCookie
                             }
-                self.httpConn.Send(data, 'POST', '/HNAP1/', headers)
+                self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
                 self.pluginState = "Login"
             elif (self.pluginState == "Login"):
                 loginresult = extractTagValue('LoginResult', strData)
@@ -186,9 +186,9 @@ class BasePlugin:
                   }
         # The device resets the connection every 2 minutes, if its not READY assume that is happening and delay the send by 2 seconds  to allow reconnection
         if (self.pluginState == "Ready"):
-            self.httpConn.Send(data, 'POST', '/HNAP1/', headers)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
         else:
-            self.httpConn.Send(data, 'POST', '/HNAP1/', headers, 2)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data}, 2)
 
     def GetSocketSettings(self):
         timestamp = str(int(time.time()))
@@ -212,7 +212,7 @@ class BasePlugin:
                    'Content-Length' : "%d"%(len(data)),
                    'Cookie' : 'uid=' + self.sessionCookie
                   }
-        self.httpConn.Send(data, 'POST', '/HNAP1/', headers)
+        self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
 
     def genericPOST(self, commandName):
         timestamp = str(int(time.time()))
@@ -234,7 +234,7 @@ class BasePlugin:
                    'Content-Length' : "%d"%(len(data)),
                    'Cookie' : 'uid=' + self.sessionCookie
                   }
-        self.httpConn.Send(data, 'POST', '/HNAP1/', headers)
+        self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
         return
             
 global _plugin
@@ -252,9 +252,9 @@ def onConnect(Connection, Status, Description):
     global _plugin
     _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Connection, Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Connection, Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
@@ -289,3 +289,14 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
+def DumpHTTPResponseToLog(httpDict):
+    if isinstance(httpDict, dict):
+        Domoticz.Debug("HTTP Details ("+str(len(httpDict))+"):")
+        for x in httpDict:
+            if isinstance(httpDict[x], dict):
+                Domoticz.Debug("--->'"+x+" ("+str(len(httpDict[x]))+"):")
+                for y in httpDict[x]:
+                    Domoticz.Debug("------->'" + y + "':'" + str(httpDict[x][y]) + "'")
+            else:
+                Domoticz.Debug("--->'" + x + "':'" + str(httpDict[x]) + "'")

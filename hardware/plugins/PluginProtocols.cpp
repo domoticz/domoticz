@@ -42,7 +42,17 @@ namespace Plugins {
 		// Handle Bytes objects
 		if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_BYTES_SUBCLASS)) != 0)
 		{
-			return retVal;
+			std::string	sData = PyBytes_AsString(WriteMessage->m_Object);
+			retVal.reserve((size_t)sData.length());
+			retVal.assign((const byte*)sData.c_str(), (const byte*)sData.c_str() + sData.length());
+		}
+		// Handle ByteArray objects
+		else if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_name == std::string("bytearray")))
+		{
+			size_t	len = PyByteArray_Size(WriteMessage->m_Object);
+			char*	data = PyByteArray_AsString(WriteMessage->m_Object);
+			retVal.reserve(len);
+			retVal.assign((const byte*)data, (const byte*)data + len);
 		}
 		// Handle String objects
 		else if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_UNICODE_SUBCLASS)) != 0)
