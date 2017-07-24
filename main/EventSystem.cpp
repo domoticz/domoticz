@@ -1544,10 +1544,6 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 lua_State *CEventSystem::CreateBlocklyLuaState()
 {
 	lua_State *lua_state = luaL_newstate();
-	if (lua_state == NULL)
-		return NULL;
-
-	lua_state = luaL_newstate();
 
 	// load Lua libraries
 	static const luaL_Reg lualibs[] =
