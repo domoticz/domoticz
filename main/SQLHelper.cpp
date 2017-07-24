@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
+#include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
@@ -7161,7 +7162,8 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << (ltime.tm_mon + 1) << "-" << ltime.tm_mday << " " << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, ssLastUpdate.str());
 	}
 	if (eventtrigger) {
@@ -7188,7 +7190,8 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 	if (!m_bDisableEventSystem)
 	{
 		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << (ltime.tm_mon + 1) << "-" << ltime.tm_mday << " " << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
 		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, ssLastUpdate.str());
 	}
 	if (eventtrigger)
