@@ -921,6 +921,7 @@ end
 local testGroup = function(name)
 	local group = dz.groups(name)
 	local res = true
+
 	res = res and checkAttributes(group, {
 		["id"] = 2,
 		["name"] = name,

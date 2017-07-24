@@ -311,6 +311,13 @@ function dimTo(idx, cmd, level)
 	return ok
 end
 
+function switchGroup(idx, cmd)
+	--http://localhost:8080/json.htm?type=command&param=switchscene&idx=2&switchcmd=On&passcode=
+	local url = "type=command&param=switchscene&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
+	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
+	return ok
+end
+
 function initSettings()
 	local response = {}
 	local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.298665&Longitude=5.629619&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=d41d8cd98f00b204e9800998ecf8427e&SecOnDelay=30&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&WindUnit=0&TempUnit=0&DegreeDaysBaseTemperature=18.0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&LogEventScriptTrigger=on&DzVentsLogLevel=3"
@@ -607,6 +614,8 @@ describe('Integration test', function ()
 
 		it('should create a group', function()
 			local ok, idx = createGroup('gpGroup')
+			assert.is_true(ok)
+			ok = switchGroup(idx, 'Off')
 			assert.is_true(ok)
 		end)
 
