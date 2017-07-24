@@ -149,7 +149,7 @@ master occurs once, 30 seconds after startup.
 #define GPIO_EDGE_BOTH		3
 #define GPIO_EDGE_UNKNOWN	-1
 #define GPIO_PIN_MIN		0
-#define GPIO_PIN_MAX		31
+#define GPIO_PIN_MAX		1023
 #define GPIO_MAX_VALUE_SIZE	16
 #define GPIO_MAX_PATH		64
 #define GPIO_PATH			"/sys/class/gpio/gpio"
@@ -700,6 +700,7 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 		if ((m_saved_state[i].direction == GPIO_IN) && (m_saved_state[i].value != -1))
 		{
 			bool	updateDatabase = false;
+			bool	log_db_change = false;
 			int		state = GPIO_LOW;
 
 			if (m_saved_state[i].active_low)
@@ -738,6 +739,10 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 
 						if ((db_state != state) || (forceUpdate)) /* check if db update is required */
 						{
+							if (db_state != state)
+							{
+								log_db_change = true;
+							}
 							updateDatabase = true;
 						}
 
@@ -763,9 +768,12 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 					m_Packet.LIGHTING2.seqnbr++;
 					sDecodeRXMessage(this, (const unsigned char *)&m_Packet.LIGHTING2, "Input", 255);
 
-					_log.Log(LOG_STATUS, "Sysfs GPIO: State change gpio%d:%s",
-						m_saved_state[i].pin_number,
-						state ? "on" : "off");
+					if (log_db_change)
+					{
+						_log.Log(LOG_STATUS, "Sysfs GPIO: gpio%d new state = %s",
+							m_saved_state[i].pin_number,
+							state ? "on" : "off");
+					}
 				}
 			}
 		}
