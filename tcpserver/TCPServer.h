@@ -20,7 +20,7 @@ struct _tRemoteShareUser
 
 #define RemoteMessage_id_Low 0xE2
 #define RemoteMessage_id_High 0x2E
-
+#define SECONDS_PER_DAY 60*60*24
 
 struct _tRemoteMessage
 {
@@ -28,6 +28,12 @@ struct _tRemoteMessage
 	uint8_t ID_High;
 	int		Original_Hardware_ID;
 	//data
+};
+
+struct log_info
+{
+	time_t		time;
+	std::string string;
 };
 
 class CTCPServerIntBase
@@ -84,6 +90,9 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	CTCPClient_ptr new_connection_;
+
+	bool IsUserHereFirstTime(const std::string &ip_string);
+	std::vector<log_info> m_incoming_domoticz_history;
 };
 
 #ifndef NOCLOUD
