@@ -1,6 +1,6 @@
 '''For people working with dzVents prior to version 2.0: Please read the [[#Change_log|change log]] below as there are a couple of (easy-to-fix) breaking changes. Or check [[#Migrating_from_version_1.x.x|Migrating from version 1.x.x]]'''
 
-= About dzVents 2.1.1 =
+= About dzVents 2.2.0 =
 
 dzVents (|diː ziː vɛnts| short for Domoticz Easy Events) brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticzs in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
 
@@ -163,7 +163,7 @@ The on-section holds all the events/triggers that are monitored by dzVents. If a
 *** <code>['myDevice']  = { 'at 15:*', 'at 22:** on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed and it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
 * '''timer = { ... }''': a list of time triggers like <code>every minute</code> or <code>at 17:*</code>. See [[#timer_trigger_options|below]].
 * '''variables = { ... }''': a list of user variable-names as defined in Domoticz ( Setup &gt; More options &gt; User variables). If any of the variables listed here changes, the script is executed.
-* '''security = { domoticz.SECURITY_ARMEDAWAY, domoticz.SECURITY_ARMEDHOME, domoticz.SECURITY_DISARMED}''': a list of one or more security states. If the security state in Domoticz changes and it matches with any of the states listed here, the script will be executed.
+* '''security = { domoticz.SECURITY_ARMEDAWAY, domoticz.SECURITY_ARMEDHOME, domoticz.SECURITY_DISARMED}''': a list of ''one or more'' security states. If the security state in Domoticz changes and it matches with any of the states listed here, the script will be executed. See <code>/path/to/domoticz/scripts/dzVents/examples/templates/security.lua</code> for an example. See [[#Security_Panel|Security Panel]] for information about how to create a security panel device.
 
 === execute = function(domoticz, device/variable, triggerInfo) ... end ===
 
@@ -196,28 +196,32 @@ There are several options for time triggers. It is important to know that Domoti
 
 <pre>on = {
     timer = {
-        'every minute',        -- causes the script to be called every minute
-        'every other minute',  -- minutes: xx:00, xx:02, xx:04, ..., xx:58
-        'every &lt;xx&gt; minutes',  -- starting from xx:00 triggers every xx minutes
-                               -- (0 &gt; xx &lt; 60)
-        'every hour',          -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
-        'every other hour',    -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
-        'every &lt;xx&gt; hours',    -- starting from 00:00, triggers every xx
-                               -- hours (0 &gt; xx &lt; 24)
-        'at 13:45',            -- specific time
-        'at *:45',             -- every 45th minute in the hour
-        'at 15:*',             -- every minute between 15:00 and 16:00
-        'at 12:45-21:15',      -- between 12:45 and 21:15. You cannot use '*'!
-        'at 19:30-08:20',      -- between 19:30 and 8:20 then next day
-        'at 13:45 on mon,tue', -- at 13:45 only on Monday en Tuesday (english)
-        'every hour on sat',   -- you guessed it correctly
-        'at sunset',           -- uses sunset/sunrise info from Domoticz
+        'every minute',              -- causes the script to be called every minute
+        'every other minute',        -- minutes: xx:00, xx:02, xx:04, ..., xx:58
+        'every &lt;xx&gt; minutes',        -- starting from xx:00 triggers every xx minutes
+                                     -- (0 &gt; xx &lt; 60)
+        'every hour',                -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
+        'every other hour',          -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
+        'every &lt;xx&gt; hours',          -- starting from 00:00, triggers every xx
+                                     -- hours (0 &gt; xx &lt; 24)
+        'at 13:45',                  -- specific time
+        'at *:45',                   -- every 45th minute in the hour
+        'at 15:*',                   -- every minute between 15:00 and 16:00
+        'at 12:45-21:15',            -- between 12:45 and 21:15. You cannot use '*'!
+        'at 19:30-08:20',            -- between 19:30 and 8:20 then next day
+        'at 13:45 on mon,tue',       -- at 13:45 only on Monday en Tuesday (english)
+        'every hour on sat',         -- you guessed it correctly
+        'at sunset',                 -- uses sunset/sunrise info from Domoticz
         'at sunrise',
         'at sunset on sat,sun',
-        'at nighttime',         -- between sunset and sunrise
-        'at daytime',           -- between sunrise and sunset
-        'at daytime on mon,tue', -- between sunrise and sunset
-                                   only on monday and tuesday
+        'xx minutes before sunset',
+        'xx minutes after sunset',
+        'xx minutes before sunrise',
+        'xx minutes after sunrise'  -- guess ;-)
+        'at nighttime',             -- between sunset and sunrise
+        'at daytime',               -- between sunrise and sunset
+        'at daytime on mon,tue',    -- between sunrise and sunset
+                                       only on monday and tuesday
 
         -- or if you want to go really wild:
         'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
@@ -256,16 +260,16 @@ The domoticz object holds all information about your Domoticz system. It has a c
 
 === Domoticz object API: ===
 
-* '''changedDevices(id/name)''': ''Function''. A function returning the device by id (or name). To iterate over all changed devices do: <code>domoticz.changedDevices().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.changedDevices()) do .. end</code>.
-* '''changedVariables(id/name)''': ''Function''. A function returning the user variable by id or name. To iterate over all changed variables do: <code>domoticz.changedVariables().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.changedVariables()) do .. end</code>.
-* '''devices(id/name)''': ''Function''. A function returning a device by id or name: <code>domoticz.devices(123)</code> or <code>domoticz.devices('My switch')</code>. See [[#Device_object_API|Device object API]] below. To iterate over all devices do: <code>domoticz.devices().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.devices()) do .. end</code>.
+* '''changedDevices(idx/name)''': ''Function''. A function returning the device by idx (or name). To iterate over all changed devices do: <code>domoticz.changedDevices().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.changedDevices()) do .. end</code>.
+* '''changedVariables(idx/name)''': ''Function''. A function returning the user variable by idx or name. To iterate over all changed variables do: <code>domoticz.changedVariables().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.changedVariables()) do .. end</code>.
+* '''devices(idx/name)''': ''Function''. A function returning a device by idx or name: <code>domoticz.devices(123)</code> or <code>domoticz.devices('My switch')</code>. See [[#Device_object_API|Device object API]] below. To iterate over all devices do: <code>domoticz.devices().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.devices()) do .. end</code>.
 * '''email(subject, message, mailTo)''': ''Function''. Send email.
-* '''groups(id/name)''': ''Function'': A function returning a group by name or id. Each group has the same interface as a device. To iterate over all groups do: <code>domoticz.groups().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.groups()) do .. end</code>.
+* '''groups(idx/name)''': ''Function'': A function returning a group by name or idx. Each group has the same interface as a device. To iterate over all groups do: <code>domoticz.groups().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.groups()) do .. end</code>.
 * '''helpers''': ''Table''. Collection of shared helper functions available to all your dzVents scripts. See [[#Creating_shared_helper_functions|Creating shared helper functions]].
 * '''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.
 * '''notify(subject, message, priority, sound, extra, subsystem)''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. For sound see the SOUND constants below. <code>subsystem</code> can be a table containing one or more notification subsystems. See <code>domoticz.NSS_xxx</code> types.
 * '''openURL(url)''': ''Function''. Have Domoticz 'call' a URL.
-* '''scenes(id/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>.
+* '''scenes(idx/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>.
 * '''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.
 * '''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
@@ -282,12 +286,13 @@ The domoticz object holds all information about your Domoticz system. It has a c
 ** '''rawDate''': ''String''. Returns the date part of the raw data.
 ** '''rawTime''': ''String''. Returns the time part of the raw data.
 ** '''sec''': ''Number''
+** '''secondsSinceMidnight''': ''Number''
 ** '''sunsetInMinutes'''
 ** '''sunriseInMinutes'''
 ** '''wday''': ''Number''. Day of the week ( 0 == sunday)
 ** '''year''': ''Number''
 * '''toCelsius(f, relative)''': ''Function''. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So <code>toCelsius(5, true)</code> returns 5F*(1/1.8) = 2.78C.
-* '''variables(id/name)''': ''Function''. A function returning a variable by it's name or id. See [[#Variable_object_API|Variable object API]] for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>.
+* '''variables(idx/name)''': ''Function''. A function returning a variable by it's name or idx. See [[#Variable_object_API|Variable object API]] for the attributes. To iterate over all variables do: <code>domoticz.variables().forEach(..)</code>. See [[#Iterators|Iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.variables()) do .. end</code>.
 
 === Iterators ===
 
@@ -352,7 +357,7 @@ end, 0) -- 0 is the initial value for the accumulator</pre>
 
 == Device object API ==
 
-Each device in Domoticz can be found in the <code>domoticz.devices()</code> collection as listed above. The device object has a set of fixed attributes like ''name'' and ''id''. Many devices though have different attributes and methods depending on there (hardware)type, subtype and other device specific identifiers. So it is possible that you will get an error if you call a method on a device that doesn't support it. If that is the case please check the device properties (can also be done in your script code!).
+Each device in Domoticz can be found in the <code>domoticz.devices()</code> collection as listed above. The device object has a set of fixed attributes like ''name'' and ''idx''. Many devices though have different attributes and methods depending on there (hardware)type, subtype and other device specific identifiers. So it is possible that you will get an error if you call a method on a device that doesn't support it. If that is the case please check the device properties (can also be done in your script code!).
 
 dzVents already recognizes most of the devices and creates the proper attributes and methods. It is always possible that your device-type has attributes that are not recognized. If that's the case please create a ticket in Domoticz issue-tracker on GitHub and an adapter for that device will be added.
 
@@ -364,6 +369,7 @@ Most of the time when your device is not recognized you can always use the <code
 * '''bState''': ''Boolean''. Is true for some common states like 'On' or 'Open' or 'Motion'.
 * '''changed''': ''Boolean''. True if the device was changed
 * '''description''': ''String''. Description of the device.
+* '''deviceId''': ''String''. Another identifier of devices in Domoticz. dzVents uses the id(x) attribute. See device list in Domoticz' settings table.
 * '''deviceSubType''': ''String''. See Domoticz devices table in Domoticz GUI.
 * '''deviceType''': ''String''. See Domoticz devices table in Domoticz GUI.
 * '''dump()''': ''Function''. Dump all attributes to the Domoticz log. This ignores the log level setting.
@@ -372,8 +378,9 @@ Most of the time when your device is not recognized you can always use the <code
 * '''hardwareType''': ''String''. See Domoticz devices table in Domoticz GUI.
 * '''hardwareTypeValue''': ''Number''. See Domoticz devices table in Domoticz GUI.
 * '''icon''': ''String''. Name of the icon in Domoticz GUI.
-* '''id''': ''Number''. Id of the device
-* '''lastUpdate''':
+* '''id''': ''Number''. Index of the device. You can find the index in the device list (idx column) in Domoticz settings. It's not truly an index but is unique enough for dzVents to be treated as an id.
+* '''idx''': ''Number''. Same as id: index of the devie
+* '''lastUpdate''': ''Time'': Time when the device was updated.
 ** '''day''': ''Number''
 ** '''getISO''': ''Function''. Returns the ISO 8601 formatted date.
 ** '''hour''': ''Number''
@@ -387,6 +394,7 @@ Most of the time when your device is not recognized you can always use the <code
 ** '''rawTime''': ''String''. Returns the time part of the raw data.
 ** '''sec''': ''Number''
 ** '''secondsAgo''': ''Number''. Number of seconds since the last update.
+** '''secondsSinceMidnight''': ''Number''
 ** '''year''': ''Number''
 * '''name''': ''String''. Name of the device.
 * '''nValue''': ''Number''. Numerical representation of the state.
@@ -397,6 +405,7 @@ Most of the time when your device is not recognized you can always use the <code
 * '''switchType''': ''String''. See Domoticz devices table in Domoticz GUI.
 * '''switchTypeValue''': ''Number''. See Domoticz devices table in Domoticz GUI.
 * '''timedOut''': ''Boolean''. Is true when the device couldn't be reached.
+* '''unit''': ''Number''. Device unit. See device list in Domoticz' settings for the unit.
 * '''update(&lt; params &gt;)''': ''Function''. Generic update method. Accepts any number of parameters that will be sent back to Domoticz. There is no need to pass the device.id here. It will be passed for you. Example to update a temperature: <code>device.update(0,12)</code>. This will eventually result in a commandArray entry <code>['UpdateDevice']='&lt;idx&gt;|0|12'</code>
 
 === Device attributes and methods for specific devices ===
@@ -530,11 +539,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 ==== Philips Hue Light ====
 
-* '''level''': ''Number''. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
-* '''maxDimLevel''': ''Number''.
-* '''switchOff()''': ''Function''. Switch device off it is supports it. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]].
-* '''switchOn()''': ''Function''. Switch device on if it supports it. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]]. (#Switch_timing_options_.28delay.2C_duration.29).
-* '''toggleSwitch()''': ''Function''. Toggles the state of the switch (if it is toggle-able) like On/Off, Open/Close etc.
+See switch below.
 
 ==== Pressure ====
 
@@ -556,11 +561,9 @@ Note that if you do not find your specific device type here you can always inspe
 
 * '''switchOn()''': ''Function''. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]].
 
-==== Security ====
+==== Security Panel ====
 
-* '''armAway()''': Sets a security device to Armed Away.
-* '''armHome()''': Sets a security device to Armed Home.
-* '''disarm()''': Disarms a security device.
+You can create a security device by first setting a security panel password in Domoticz settings. Then activate the security panel ('''Setup &gt; More Options &gt; Security Panel''' and set it to '''Disarm''' (using your password)). Then go to the device list in ('''Setup &gt; Devices''') where it should show the security panel device under 'Not used'. There you can add the device and give it a name. - '''armAway()''': Sets a security device to Armed Away. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]]. - '''armHome()''': Sets a security device to Armed Home. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]]. - '''disarm()''': Disarms a security device. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]]. - '''state''': ''String'': Same values as domoticz.security value.
 
 ==== Solar radiation ====
 
@@ -583,7 +586,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 
 * '''close()''': ''Function''. Set device to Close if it supports it. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]].
 * '''dimTo(percentage)''': ''Function''. Switch a dimming device on and/or dim to the specified level. Supports timing options. See [[#Switch_timing_options_.28delay.2C_duration.29|below]].
-* '''lastLevel''': Number. The level of a dimmer just before it was switched off.
+* '''lastLevel''': Number. The level of a dimmer just before it was switched off. '''Note: lastLevel only shows you the previous level if you have a trigger for the device itself. So for instance you have a on-trigger for 'myDimmer' and the dimmer is set from 20% to 30%, in your script <code>myDimmer.level == 30</code> and <code>myDimmer.lastLevel == 20</code>. '''
 * '''level''': ''Number''. For dimmers and other 'Set Level..%' devices this holds the level like selector switches.
 * '''levelActions''': ''String''. |-separated list of url actions for selector switches.
 * '''levelName''': ''Table''. Table holding the level names for selector switch devices.
@@ -716,6 +719,8 @@ User variables created in Domoticz have these attributes and methods:
 ** '''rawDate''': ''String''. Returns the date part of the raw data.
 ** '''rawTime''': ''String''. Returns the time part of the raw data.
 ** '''sec''': ''Number''
+** '''secondsSinceMidnight''': ''Number''
+** '''secondsAgo''': ''Number''
 ** '''year''': ''Number''
 * '''name''': ''String''. Name of the variable
 * '''time''': ''Date''. If type is domoticz.TIME. See lastUpdate for the sub-attributes.
@@ -768,6 +773,7 @@ When <code>isUTC</code> is true then the given date is treated as a UTC time.
 * '''rawDate''': ''String''. Returns the date part of the raw data.
 * '''rawTime''': ''String''. Returns the time part of the raw data.
 * '''sec''': ''Number''
+* '''secondsSinceMidnight''': ''Number''
 * '''secondsAgo''': ''Number''. Number of seconds since the last update.
 * '''utcSystemTime''': ''Table''. Current system time (Lua table) in UTC format.
 * '''utcTime''': ''Table''. Time (Lua table) of the object in UTC format.
@@ -969,6 +975,7 @@ The time attribute by itself is a table with many properties that help you inspe
 * '''rawTime''': ''String''. Returns the time part of the raw data.
 * '''sec''': ''Number''
 * '''secondsAgo''': ''Number''. Number of seconds since the last update.
+* '''secondsSinceMidnight''': ''Number''
 * '''year''': ''Number''
 * '''utcSystemTime''': ''Table''. UTC system time:
 ** '''day''': ''Number''
@@ -1363,6 +1370,22 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
+
+[2.2.0]
+
+* Fixed typo in the doc WActual &gt; WhActual.
+* Updated switch adapter to match more switch-like devices.
+* Added Z-Wave Thermostat mode device adapter.
+* Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
+* Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
+* Added 4 new time-rules: xx minutes before/after sunset/sunrise.
+* Added example script to fake user presence.
+* Fixed support for uservariables with spaces in their names.
+* Show a warning when an item's name isn't unique in the collection.
+* Show a warning if the scene or group isn't available right after creating it. Needs a Domoticz restart.
+* Added timing options for security methods armAway, armHome and disarm.
+* Added idx, deviceId and unit to device objects. Don't confuse deviceId with device.id(x) which is actually the index of the device.
+* Added instructions on how to create a security panel device in Domoticz. This device now has a state that has the same value as domoticz.security.
 
 [2.1.1]
 
