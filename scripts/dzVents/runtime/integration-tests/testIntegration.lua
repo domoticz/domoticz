@@ -12,6 +12,7 @@ local jsonParser = require('JSON')
 local BASE_URL = 'http://localhost:8080'
 local API_URL = BASE_URL .. '/json.htm?'
 local DUMMY_HW = 15
+local SECPANEL_INDEX = 42
 local SWITCH_TYPES = {
 	BLINDS = 3,
 	BLINDS_INVERTED= 6,
@@ -306,7 +307,6 @@ end
 function dimTo(idx, cmd, level)
 	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
 	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
-print(4444, url)
 	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
 	return ok
 end
@@ -328,7 +328,7 @@ end
 
 function initSettings()
 	local response = {}
-	local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.298665&Longitude=5.629619&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=d41d8cd98f00b204e9800998ecf8427e&SecOnDelay=30&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&WindUnit=0&TempUnit=0&DegreeDaysBaseTemperature=18.0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&LogEventScriptTrigger=on&DzVentsLogLevel=3"
+	local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.298665&Longitude=5.629619&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=1&SecOnDelay=0&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&WindUnit=0&TempUnit=0&DegreeDaysBaseTemperature=18.0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&LogEventScriptTrigger=on&DzVentsLogLevel=3"
 	local url = BASE_URL .. '/storesettings.webem'
 	local result, respcode, respheaders, respstatus = http.request {
 		method = "POST",
@@ -355,6 +355,20 @@ function initSettings()
 
 	return ok, result, respcode, respheaders, respstatus
 
+end
+
+function setDisarmed()
+	-- http://localhost:8080/json.htm?type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b
+	local url = "type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b"
+	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
+	return ok
+end
+
+function addSecurityPanel()
+	--http://localhost:8080/json.htm?type=setused&idx=42&name=secPanel&used=true&maindeviceidx=
+	local url = "type=setused&idx=" .. tostring(SECPANEL_INDEX) .. "&name=secPanel&used=true&maindeviceidx="
+	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
+	return ok
 end
 
 function createScript(name, code)
@@ -408,6 +422,9 @@ describe('Integration test', function ()
 	teardown(function()
 		os.remove('../../generated_scripts/stage1.lua')
 		os.remove('../../scripts/stage2.lua')
+		os.remove('../../scripts/vdSwitchDimmer.lua')
+		os.remove('../../scripts/secArmedAway.lua')
+		os.remove('../../scripts/varString.lua')
 		os.remove('../../scripts/global_data.lua')
 		os.remove('../../data/__data_global_data.lua')
 	end)
@@ -421,6 +438,9 @@ describe('Integration test', function ()
 	local dummyIdx
 	local stage1TriggerIdx
 	local endResultsIdx
+	local switchDimmerResultsIdx
+	local varStringResultsIdx
+	local secArmedAwayIdx
 
 --	it('a', function() end)
 
@@ -678,6 +698,17 @@ describe('Integration test', function ()
 		end)
 	end)
 
+	describe('Preparing security panel', function ()
+		it('Should create a security panel', function()
+			local ok = setDisarmed()
+			assert.is_true(ok)
+
+			ok = addSecurityPanel()
+			assert.is_true(ok)
+
+		end)
+
+	end)
 
 	describe('Preparing scripts and triggers', function()
 
@@ -689,10 +720,24 @@ describe('Integration test', function ()
 		end)
 
 		it('Should move stage2 script in place', function()
-
 			File.remove('../../scripts/stage2.lua')
 			File.copy('./stage2.lua', '../../scripts/stage2.lua')
 
+		end)
+
+		it('Should move vdSwitchDimmer script in place', function()
+			File.remove('../../scripts/vdSwitchDimmer.lua')
+			File.copy('./vdSwitchDimmer.lua', '../../scripts/vdSwitchDimmer.lua')
+		end)
+
+		it('Should move varString script in place', function()
+			File.remove('../../scripts/varString.lua')
+			File.copy('./varString.lua', '../../scripts/varString.lua')
+		end)
+
+		it('Should move secArmedAway script in place', function()
+			File.remove('../../scripts/secArmedAway.lua')
+			File.copy('./secArmedAway.lua', '../../scripts/secArmedAway.lua')
 		end)
 
 		it('Should move globaldata script in place', function()
@@ -709,6 +754,21 @@ describe('Integration test', function ()
 
 		it('Should create the stage2 trigger switch', function()
 			local ok, idx = createVirtualDevice(dummyIdx, 'stage2Trigger', VIRTUAL_DEVICES.SWITCH[1])
+			assert.is_true(ok)
+		end)
+
+		it('Should create results for vdSwitchDimmer script ', function()
+			ok, switchDimmerResultsIdx = createVirtualDevice(dummyIdx, 'switchDimmerResults', VIRTUAL_DEVICES.TEXT[1])
+			assert.is_true(ok)
+		end)
+
+		it('Should create results for varString script ', function()
+			ok, varStringResultsIdx = createVirtualDevice(dummyIdx, 'varStringResults', VIRTUAL_DEVICES.TEXT[1])
+			assert.is_true(ok)
+		end)
+
+		it('Should create results for secArmedAway script ', function()
+			ok, secArmedAwayIdx = createVirtualDevice(dummyIdx, 'secArmedAwayResults', VIRTUAL_DEVICES.TEXT[1])
 			assert.is_true(ok)
 		end)
 
@@ -734,9 +794,15 @@ describe('Integration test', function ()
 
 			socket.sleep(6) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
-			local ok, textDevice = getDevice(endResultsIdx)
+			local ok, endResultsDevice = getDevice(endResultsIdx)
+			ok, switchDimmerResultsDevice = getDevice(switchDimmerResultsIdx)
+			ok, varStringResultsDevice = getDevice(varStringResultsIdx)
+			ok, secArmedAwayDevice = getDevice(secArmedAwayIdx)
 
-			assert.is_same('SUCCEEDED', textDevice['Data'])
+			assert.is_same('SUCCEEDED', endResultsDevice['Data'])
+			assert.is_same('SUCCEEDED', switchDimmerResultsDevice['Data'])
+			assert.is_same('SUCCEEDED', varStringResultsDevice['Data'])
+			assert.is_same('SUCCEEDED', secArmedAwayDevice['Data'])
 
 		end)
 

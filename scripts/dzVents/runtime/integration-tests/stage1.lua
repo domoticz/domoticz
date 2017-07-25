@@ -86,7 +86,7 @@ local testDimmer = function(name)
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		['level'] = 33,
-		["lastLevel"] = 33,
+		["lastLevel"] = 33, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["state"] = "On",
 		["deviceSubType"] = "Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -101,8 +101,6 @@ local testDimmer = function(name)
 		["deviceType"] = "Light/Switch";
 		["description"] = "desc vdSwitchDimmer"
 	})
-
-	print(1111, otherdevices_lastlevel['vdSwitchDimmer'])
 
 	dev.dimTo(75).afterSec(1)
 	tstMsg('Test dimmer', res)
@@ -1082,6 +1080,12 @@ local testLastUpdates = function()
 	return results
 end
 
+local testSecurity = function()
+	local res = true
+	res = res and expectEql(dz.security, dz.SECURITY_DISARMED)
+	dz.devices('secPanel').armAway()
+	return res
+end
 
 return {
 	active = true,
@@ -1134,15 +1138,15 @@ return {
 		res = res and testWaterflow("vdWaterflow")
 		res = res and testWind('vdWind', 37, "WTGR800")
 		res = res and testWind('vdWindTempChill', 38, "TFA")
---		res = res and testScene('scScene')
---		res = res and testGroup('gpGroup')
+		res = res and testScene('scScene')
+		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
 		res = res and testVariableFloat('varFloat')
 		res = res and testVariableString('varString')
 		res = res and testVariableDate('varDate')
 		res = res and testVariableTime('varTime')
-
 		res = res and testLastUpdates()
+		res = res and testSecurity()
 
 		storeLastUpdates()
 

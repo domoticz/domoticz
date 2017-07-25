@@ -65,6 +65,8 @@ return {
 			device['hardwareName'] = data.data.hardwareName
 			device['hardwareType'] = data.data.hardwareType
 			device['hardwareId'] = data.data.hardwareID
+			device['deviceId'] = data.deviceID
+			device['unit'] = data.data.unit
 			device['hardwareTypeValue'] = data.data.hardwareTypeValue
 			device['switchType'] = data.switchType
 			device['switchTypeValue'] = data.switchTypeValue

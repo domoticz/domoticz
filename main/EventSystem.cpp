@@ -116,6 +116,7 @@ static const _tJsonMap JsonMap[] =
 	{ "Speed",				"speed",					tFloat		},
 	{ "Temp",				"temperature",				tFloat		},
 	{ "TypeImg",			"icon",						tString		},
+	{ "Unit",				"unit",						tInteger	},
 	{ "Until",				"until",					tString		}, // evohome zone/water
 	{ "Usage",				"usage",					tString		},
 	{ "UsedByCamera",		"usedByCamera",				tBoolean	},

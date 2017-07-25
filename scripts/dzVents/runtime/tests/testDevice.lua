@@ -66,6 +66,7 @@ local function getDevice_(
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
 		["signalLevel"] = signalLevel and signalLevel or 55,
 		["deviceType"] = type and type or "someSubType",
+		["deviceID"] = "123abc",
 		["subType"] = subType and subType or "someDeviceType",
 		["timedOut"] = true,
 		["switchType"] = "Contact",
@@ -77,9 +78,9 @@ local function getDevice_(
 			["hardwareType"] = hardwareType,
 			["hardwareTypeValue"] = hardwaryTypeValue,
 			["hardwareID"] = 1,
-			['_nValue'] = 123
+			['_nValue'] = 123,
+			['unit'] = 1
 		},
-		["deviceID"] = "",
 		["rawData"] = rawData,
 		["baseType"] = baseType ~= nil and baseType or "device",
 		["changed"] = changed,
@@ -214,6 +215,8 @@ describe('device', function()
 			assert.is_same(2016, device.lastUpdate.year)
 			assert.is_same({'1', '2', '3'}, device.rawData)
 			assert.is_same(123, device.nValue)
+			assert.is_same('123abc', device.deviceId)
+			assert.is_same(1, device.idx)
 
 			assert.is_not_nil(device.setState)
 			assert.is_same('bla', device.state)

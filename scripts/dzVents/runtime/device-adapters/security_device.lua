@@ -20,6 +20,8 @@ return {
 
 		-- from data: maxDimLevel???
 
+		device.state = domoticz.security -- normalize to domoticz.security states
+
 		function device.disarm()
 			return TimedCommand(domoticz, device.name, 'Disarm')
 		end

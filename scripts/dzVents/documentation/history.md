@@ -11,6 +11,8 @@
  - Show a warning when an item's name isn't unique in the collection.
  - Show a warning if the scene or group isn't available right after creating it. Needs a Domoticz restart.
  - Added timing options for security methods armAway, armHome and disarm.
+ - Added idx, deviceId and unit to device objects. Don't confuse deviceId with device.id(x) which is actually the index of the device.
+ - Added instructions on how to create a security panel device in Domoticz. This device now has a state that has the same value as domoticz.security.
 
 [2.1.0]
 
