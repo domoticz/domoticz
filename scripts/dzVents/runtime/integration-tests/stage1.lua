@@ -951,7 +951,7 @@ local testScene = function(name)
 	res = res and checkAttributes(scene, {
 		["id"] = 1,
 		["name"] = name,
-		['state'] = 'On',
+		['state'] = 'Off',
 		['baseType'] = 'scene'
 	})
 
