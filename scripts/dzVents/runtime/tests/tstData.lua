@@ -303,9 +303,17 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = '19:34' }
 		},
-
-		--- scenes and groups
 		[14] = {
+			["id"] = 6,
+			["name"] = "var with spaces",
+			["changed"] = true,
+			["variableType"] = 'string',
+			["baseType"] = "uservariable";
+			["lastUpdate"] = "2017-04-18 20:16:23";
+			data = { ["value"] = 'some value' }
+		},
+		--- scenes and groups
+		[15] = {
 			["id"] = 1;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 1',
@@ -315,7 +323,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:19";
 		},
-		[15] = {
+		[16] = {
 			["id"] = 3;
 			["baseType"] = "group";
 			["description"] = 'Descr group 1',
@@ -325,7 +333,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:26";
 		},
-		[16] = {
+		[17] = {
 			["id"] = 2;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 2',
@@ -335,7 +343,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-19 20:31:50";
 		},
-		[17] = {
+		[18] = {
 			["id"] = 4;
 			["baseType"] = "group";
 			["description"] = 'Descr group 2',

@@ -7,6 +7,7 @@
  - Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
  - Added 4 new time-rules: xx minutes before/after sunset/sunrise.
  - Added example script to fake user presence.
+ - Fixed support for uservariables with spaces in their names.
 
 [2.1.0]
 

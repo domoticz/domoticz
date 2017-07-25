@@ -15,6 +15,7 @@ local yVar = 10
 local zVar = 11
 local aVar = 12
 local bVar = 13
+local spacedVar = 14
 
 describe('variables', function()
 	local Variable
@@ -65,7 +66,6 @@ describe('variables', function()
 		local var = Variable(domoticz, testData.domoticzData[yVar])
 		assert.is_same('number', type(var.nValue))
 	end)
-
 
 	it('should set a new float value', function()
 		local var = Variable(domoticz, testData.domoticzData[yVar])
@@ -129,4 +129,10 @@ describe('variables', function()
 		assert.is_same(34, var.time.min)
 	end)
 
+	it('should urlencode properly', function()
+		local var = Variable(domoticz, testData.domoticzData[spacedVar])
+		var.set('dzVents with spaces')
+		assert.is_same(1, _.size(commandArray))
+		assert.is_same({ ['OpenURL'] = 'url/json.htm?type=command&param=updateuservariable&vname=var+with+spaces&vtype=2&vvalue=dzVents+with+spaces&idx=6' }, commandArray[1])
+	end)
 end)
