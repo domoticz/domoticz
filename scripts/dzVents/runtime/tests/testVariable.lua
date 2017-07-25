@@ -10,12 +10,12 @@ local LOG_INFO = 2
 local LOG_DEBUG = 3
 local LOG_ERROR = 1
 
-local xVar = 9
-local yVar = 10
-local zVar = 11
-local aVar = 12
-local bVar = 13
-local spacedVar = 14
+local xVar = 11
+local yVar = 12
+local zVar = 13
+local aVar = 14
+local bVar = 15
+local spacedVar = 16
 
 describe('variables', function()
 	local Variable

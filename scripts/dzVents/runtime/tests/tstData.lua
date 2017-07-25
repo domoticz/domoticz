@@ -255,8 +255,67 @@ local testData = {
 			["changedAttribute"] = nil --tbd
 		},
 
-		--- vars
 		[9] = {
+			["id"] = 9,
+			["name"] = "device9", -- double name
+			["description"] = "";
+			["batteryLevel"] = 10,
+			["signalLevel"] = 10,
+			["subType"] = "Text";
+			["deviceType"] = "General",
+			["timedOut"] = true,
+			["switchType"] = "",
+			["switchTypeValue"] = 0,
+			["lastUpdate"] = "2017-04-18 20:15:23";
+			["data"] = {
+				["hardwareName"] = "",
+				["hardwareType"] = "",
+				["hardwareTypeValue"] = 0;
+				["hardwareID"] = 0,
+				["_state"] = 16.5,
+				text = 'Blah'
+			};
+			["deviceID"] = "",
+			["rawData"] = {
+				[1] = "16.5"
+			},
+			["baseType"] = "device";
+			["changed"] = true;
+			["changedAttribute"] = nil --tbd
+		},
+
+		[10] = {
+			["id"] = 10,
+			["name"] = "device9", -- double name
+			["description"] = "";
+			["batteryLevel"] = 10,
+			["signalLevel"] = 10,
+			["subType"] = "Text";
+			["deviceType"] = "General",
+			["timedOut"] = true,
+			["switchType"] = "",
+			["switchTypeValue"] = 0,
+			["lastUpdate"] = "2017-04-18 20:15:23";
+			["data"] = {
+				["hardwareName"] = "",
+				["hardwareType"] = "",
+				["hardwareTypeValue"] = 0;
+				["hardwareID"] = 0,
+				["_state"] = 16.5,
+				text = 'Blah'
+			};
+			["deviceID"] = "",
+			["rawData"] = {
+				[1] = "16.5"
+			},
+			["baseType"] = "device";
+			["changed"] = true;
+			["changedAttribute"] = nil --tbd
+		},
+
+
+		--- vars
+		[11] = {
 			["id"] = 1,
 			["name"] = "x",
 			["changed"] = true,
@@ -267,7 +326,7 @@ local testData = {
 				["value"] = 1
 			}
 		},
-		[10] = {
+		[12] = {
 			["id"] = 2,
 			["name"] = "y",
 			["changed"] = false,
@@ -276,7 +335,7 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = 2.3 }
 		},
-		[11] = {
+		[13] = {
 			["id"] = 3,
 			["name"] = "z",
 			["changed"] = true,
@@ -285,7 +344,7 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = 'some value'}
 		},
-		[12] = {
+		[14] = {
 			["id"] = 4,
 			["name"] = "a",
 			["changed"] = true,
@@ -294,7 +353,7 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = '3/12/2017' }
 		},
-		[13] = {
+		[15] = {
 			["id"] = 5,
 			["name"] = "b",
 			["changed"] = true,
@@ -303,7 +362,7 @@ local testData = {
 			["lastUpdate"] = "2017-04-18 20:16:23";
 			data = { ["value"] = '19:34' }
 		},
-		[14] = {
+		[16] = {
 			["id"] = 6,
 			["name"] = "var with spaces",
 			["changed"] = true,
@@ -313,7 +372,7 @@ local testData = {
 			data = { ["value"] = 'some value' }
 		},
 		--- scenes and groups
-		[15] = {
+		[17] = {
 			["id"] = 1;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 1',
@@ -323,7 +382,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:19";
 		},
-		[16] = {
+		[18] = {
 			["id"] = 3;
 			["baseType"] = "group";
 			["description"] = 'Descr group 1',
@@ -333,7 +392,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-18 15:31:26";
 		},
-		[17] = {
+		[19] = {
 			["id"] = 2;
 			["baseType"] = "scene";
 			["description"] = 'Descr scene 2',
@@ -343,7 +402,7 @@ local testData = {
 			},
 			["lastUpdate"] = "2017-04-19 20:31:50";
 		},
-		[18] = {
+		[20] = {
 			["id"] = 4;
 			["baseType"] = "group";
 			["description"] = 'Descr group 2',
