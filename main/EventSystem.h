@@ -109,6 +109,7 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
+	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	void UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
 	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
@@ -134,7 +135,6 @@ private:
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	void GetCurrentScenesGroups();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
 	void EvaluateEvent(const std::string &reason, const uint64_t varId);
