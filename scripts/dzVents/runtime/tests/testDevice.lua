@@ -492,21 +492,21 @@ describe('device', function()
 				['subType'] = 'Security Panel'
 			})
 
-			device.disarm()
+			device.disarm().afterSec(2)
 
-			assert.is_same({ { ['myDevice'] = 'Disarm' } }, commandArray)
-
-			commandArray = {}
-
-			device.armAway()
-
-			assert.is_same({ { ['myDevice'] = 'Arm Away' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Disarm AFTER 2' } }, commandArray)
 
 			commandArray = {}
 
-			device.armHome()
+			device.armAway().afterSec(3)
 
-			assert.is_same({ { ['myDevice'] = 'Arm Home' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Arm Away AFTER 3' } }, commandArray)
+
+			commandArray = {}
+
+			device.armHome().afterSec(4)
+
+			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4' } }, commandArray)
 
 		end)
 

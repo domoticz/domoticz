@@ -1,3 +1,5 @@
+local TimedCommand = require('TimedCommand')
+
 return {
 
 	baseType = 'device',
@@ -19,15 +21,15 @@ return {
 		-- from data: maxDimLevel???
 
 		function device.disarm()
-			domoticz.sendCommand(device.name, 'Disarm')
+			return TimedCommand(domoticz, device.name, 'Disarm')
 		end
 
 		function device.armAway()
-			domoticz.sendCommand(device.name, 'Arm Away')
+			return TimedCommand(domoticz, device.name, 'Arm Away')
 		end
 
 		function device.armHome()
-			domoticz.sendCommand(device.name, 'Arm Home')
+			return TimedCommand(domoticz, device.name, 'Arm Home')
 		end
 
 	end

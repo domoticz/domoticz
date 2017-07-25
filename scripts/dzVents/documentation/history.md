@@ -10,6 +10,7 @@
  - Fixed support for uservariables with spaces in their names.
  - Show a warning when an item's name isn't unique in the collection.
  - Show a warning if the scene or group isn't available right after creating it. Needs a Domoticz restart.
+ - Added timing options for security methods armAway, armHome and disarm.
 
 [2.1.0]
 

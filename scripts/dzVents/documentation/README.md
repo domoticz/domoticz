@@ -545,9 +545,9 @@ Note that if you do not find your specific device type here you can always inspe
  - **switchOn()**: *Function*. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
 
 #### Security
- - **armAway()**: Sets a security device to Armed Away.
- - **armHome()**: Sets a security device to Armed Home.
- - **disarm()**: Disarms a security device.
+ - **armAway()**: Sets a security device to Armed Away. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **armHome()**: Sets a security device to Armed Home. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
+ - **disarm()**: Disarms a security device. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
 
 #### Solar radiation
  - **radiation**. *Number*. In Watt/m2.
