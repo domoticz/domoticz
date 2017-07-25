@@ -57,9 +57,10 @@ local testDimmer = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 39,
 		["state"] = "On",
-		["lastLevel"] = 33;
+		["lastLevel"] = 75;
 		["level"] = 75;
 	})
+	print(2222, otherdevices_lastlevel['vdSwitchDimmer'])
 	tstMsg('Test dimmer', res)
 	return res
 end
@@ -600,7 +601,7 @@ return {
 		res = res and testWaterflow("vdWaterflow")
 		res = res and testWind('vdWind')
 		res = res and testWind('vdWindTempChill')
-		res = res and testGroup('gpGroup')
+--		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
 		res = res and testVariableFloat('varFloat')
 		res = res and testVariableString('varString')

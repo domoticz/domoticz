@@ -306,6 +306,7 @@ end
 function dimTo(idx, cmd, level)
 	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
 	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+print(4444, url)
 	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
 	return ok
 end
@@ -607,7 +608,7 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 			ok = updateSwitch(idx, 'vdSwitchDimmer', 'desc%20vdSwitchDimmer', SWITCH_TYPES.DIMMER)
 			assert.is_true(ok)
-			ok = dimTo(idx, 'On', 33)
+			ok = dimTo(idx, 'Set%20Level', 34) -- will end up like 33% for some weird reason
 			assert.is_true(ok)
 		end)
 	end)
@@ -644,10 +645,6 @@ describe('Integration test', function ()
 
 			ok = addSceneDevice(groupIdx, switchIdx)
 			assert.is_true(ok)
-
---			ok = switchGroup(groupIdx, 'Off')
---			assert.is_true(ok)
-
 
 		end)
 

@@ -101,6 +101,9 @@ local testDimmer = function(name)
 		["deviceType"] = "Light/Switch";
 		["description"] = "desc vdSwitchDimmer"
 	})
+
+	print(1111, otherdevices_lastlevel['vdSwitchDimmer'])
+
 	dev.dimTo(75).afterSec(1)
 	tstMsg('Test dimmer', res)
 	return res
@@ -1131,8 +1134,8 @@ return {
 		res = res and testWaterflow("vdWaterflow")
 		res = res and testWind('vdWind', 37, "WTGR800")
 		res = res and testWind('vdWindTempChill', 38, "TFA")
-		res = res and testScene('scScene')
-		res = res and testGroup('gpGroup')
+--		res = res and testScene('scScene')
+--		res = res and testGroup('gpGroup')
 		res = res and testVariableInt('varInteger')
 		res = res and testVariableFloat('varFloat')
 		res = res and testVariableString('varString')
