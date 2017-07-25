@@ -128,7 +128,6 @@ function createScene(name)
 
 	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
 	local idx = json.idx
-_.print(json)
 	return ok, idx, json, result, respcode, respheaders, respstatus
 end
 

@@ -5,6 +5,10 @@ local err = function(msg)
 	log(msg, dz.LOG_ERROR)
 end
 
+local tstMsg = function(msg, res)
+	print('Stage: 1, ' .. msg .. ': ' .. tostring(res and 'OK' or 'FAILED'))
+end
+
 local expectEql = function (attr, test, marker)
 	if (attr ~= test) then
 		local msg = tostring(attr) .. '~=' .. tostring(test)
@@ -45,6 +49,7 @@ local testAirQuality = function(name)
 		["deviceType"] = "Air Quality";
 	})
 	dev.updateAirQuality(1234)
+	tstMsg('Test air quality device', res)
 	return res
 end
 
@@ -68,6 +73,7 @@ local testSwitch = function(name)
 		["description"] = 'desc vdSwitch'
 	})
 	dev.switchOn().afterSec(1)
+	tstMsg('Test switch device', res)
 	return res
 end
 
@@ -96,6 +102,7 @@ local testDimmer = function(name)
 		["description"] = "desc vdSwitchDimmer"
 	})
 	dev.dimTo(75).afterSec(1)
+	tstMsg('Test dimmer', res)
 	return res
 end
 
@@ -118,6 +125,7 @@ local testAlert = function(name)
 		["deviceType"] = "General";
 	})
 	dev.updateAlertSensor(dz.ALERTLEVEL_RED, 'Hey I am red')
+	tstMsg('Test alert sensor device', res)
 	return res
 end
 
@@ -142,7 +150,7 @@ local testAmpere3 = function(name)
 	})
 
 	dev.updateCurrent(123, 456, 789)
-
+	tstMsg('Test ampere 3 device', res)
 	return res
 end
 
@@ -168,6 +176,7 @@ local testAmpere1 = function(name)
 	})
 
 	dev.updateCurrent(123)
+	tstMsg('Test ampere 1 device', res)
 
 	return res
 end
@@ -191,6 +200,7 @@ local testBarometer = function(name)
 		["deviceType"] = "General";
 	})
 	dev.updateBarometer(1234, dz.BARO_THUNDERSTORM)
+	tstMsg('Test barometer device', res)
 	return res
 end
 
@@ -215,6 +225,7 @@ local testCounter = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateCounter(1234)
+	tstMsg('Test counter device', res)
 	return res
 end
 
@@ -239,6 +250,7 @@ local testCounterIncremental = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateCounter(1234)
+	tstMsg('Test counter incremental device', res)
 	return res
 end
 
@@ -262,6 +274,7 @@ local testCustomSensor = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateCustomSensor(1234)
+	tstMsg('Test custom sensor device', res)
 	return res
 end
 
@@ -284,6 +297,7 @@ local testDistance = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateDistance(42.44)
+	tstMsg('Test distance device', res)
 	return res
 end
 
@@ -308,6 +322,7 @@ local testElectricInstanceCounter = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateElectricity(10, 20)
+	tstMsg('Test electric instance counter device', res)
 	return res
 end
 
@@ -330,6 +345,7 @@ local testGas = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateGas(6000) -- this won't have a direct effect
+	tstMsg('Test gas device', res)
 	return res
 end
 
@@ -352,6 +368,7 @@ local testHumidity = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateHumidity(88, dz.HUM_WET)
+	tstMsg('Test humidity device', res)
 	return res
 end
 
@@ -373,6 +390,7 @@ local testLeafWetness = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateWetness(55)
+	tstMsg('Test leaf wetness device', res)
 	return res
 end
 
@@ -394,6 +412,7 @@ local testLux = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateLux(355)
+	tstMsg('Test lux device', res)
 	return res
 end
 
@@ -423,6 +442,7 @@ local testP1SmartMeter = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateP1(10, 20, 100, 200, 666, 777)
+	tstMsg('Test p1 smart meter device', res)
 	return res
 end
 
@@ -444,6 +464,7 @@ local testPercentage = function(name)
 		["timedOut"] = false;
 	})
 	dev.updatePercentage(99.99)
+	tstMsg('Test percentage device', res)
 	return res
 end
 
@@ -465,6 +486,7 @@ local testPressureBar = function(name)
 		["timedOut"] = false;
 	})
 	dev.updatePressure(88)
+	tstMsg('Test pressure device', res)
 	return res
 end
 
@@ -487,6 +509,7 @@ local testRain = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateRain(3000, 6660)
+	tstMsg('Test rain device', res)
 	return res
 end
 
@@ -509,6 +532,7 @@ local testRGB = function(name)
 		["timedOut"] = false;
 	})
 	dev.dimTo(15)
+	tstMsg('Test rgb device', res)
 	return res
 end
 
@@ -531,6 +555,7 @@ local testRGBW = function(name)
 		["timedOut"] = false;
 	})
 	dev.dimTo(15)
+	tstMsg('Test rgbw device', res)
 	return res
 end
 
@@ -552,6 +577,7 @@ local testScaleWeight = function(name)
 		["timedOut"] = false;
 	})
 	dev.updateWeight(33.5)
+	tstMsg('Test scale weight device', res)
 	return res
 end
 
@@ -581,6 +607,7 @@ local testSelectorSwitch = function(name)
 	res = res and expectEql('Level3', dev.levelNames[4])
 
 	dev.switchSelector(30) -- level3
+	tstMsg('Test selector switch device', res)
 	return res
 end
 
@@ -603,6 +630,7 @@ local testSoilMoisture = function(name)
 	})
 
 	dev.updateSoilMoisture(34)
+	tstMsg('Test soil moisture device', res)
 	return res
 end
 
@@ -625,6 +653,7 @@ local testSolarRadiation = function(name)
 	})
 
 	dev.updateRadiation(34)
+	tstMsg('Test solar radiation device', res)
 	return res
 end
 
@@ -647,6 +676,7 @@ local testSoundLevel = function(name)
 	})
 
 	dev.updateSoundLevel(120)
+	tstMsg('Test sound level device', res)
 	return res
 end
 
@@ -669,6 +699,7 @@ local testTemperature = function(name)
 	})
 
 	dev.updateTemperature(120)
+	tstMsg('Test temperature device', res)
 	return res
 end
 
@@ -693,6 +724,7 @@ local testTempHum = function(name)
 	})
 
 	dev.updateTempHum(34, 88, dz.HUM_WET)
+	tstMsg('Test temperature+humidity device', res)
 	return res
 end
 
@@ -720,6 +752,7 @@ local testTempHumBaro = function(name)
 	})
 
 	dev.updateTempHumBaro(34, 88, dz.HUM_WET, 1033, dz.BARO_PARTLYCLOUDY)
+	tstMsg('Test temperature+humidity+barometer device', res)
 	return res
 end
 
@@ -742,6 +775,7 @@ local testText = function(name)
 	})
 
 	dev.updateText("Oh my Darwin, what a lot of tests!")
+	tstMsg('Test text device', res)
 	return res
 end
 
@@ -764,6 +798,7 @@ local testThermostatSetpoint = function(name)
 	})
 
 	dev.updateSetPoint(22)
+	tstMsg('Test thermostat device', res)
 	return res
 end
 
@@ -786,6 +821,7 @@ local testUsageElectric = function(name)
 	})
 
 	dev.updateEnergy(1922)
+	tstMsg('Test usage electric device', res)
 	return res
 end
 
@@ -808,6 +844,7 @@ local testUV = function(name)
 	})
 
 	dev.updateUV(12.33)
+	tstMsg('Test uv device', res)
 	return res
 end
 
@@ -830,6 +867,7 @@ local testVisibility = function(name)
 	})
 
 	dev.updateVisibility(1)
+	tstMsg('Test visibility device', res)
 	return res
 end
 
@@ -852,6 +890,7 @@ local testVoltage = function(name)
 	})
 
 	dev.updateVoltage(220)
+	tstMsg('Test voltage device', res)
 	return res
 end
 
@@ -874,6 +913,7 @@ local testWaterflow = function(name)
 	})
 
 	dev.updateWaterflow(15)
+	tstMsg('Test waterflow device', res)
 	return res
 end
 
@@ -901,6 +941,7 @@ local testWind = function(name, id, subType)
 	})
 
 	dev.updateWind(120, 'SW', 55, 66, 77, 88)
+	tstMsg('Test wind device', res)
 	return res
 end
 
@@ -915,6 +956,7 @@ local testScene = function(name)
 	})
 
 	scene.switchOn()
+	tstMsg('Test scene', res)
 	return res
 end
 
@@ -930,6 +972,7 @@ local testGroup = function(name)
 	})
 
 	group.switchOn()
+	tstMsg('Test group', res)
 	return res
 end
 
@@ -943,6 +986,7 @@ local testVariableInt = function(name)
 	})
 
 	var.set(43)
+	tstMsg('Test variable: int', res)
 	return res
 end
 
@@ -956,6 +1000,7 @@ local testVariableFloat = function(name)
 	})
 
 	var.set(43)
+	tstMsg('Test variable: float', res)
 	return res
 end
 
@@ -969,6 +1014,7 @@ local testVariableString = function(name)
 	})
 
 	var.set('Zork is a dork')
+	tstMsg('Test variable: string', res)
 	return res
 end
 
@@ -984,6 +1030,7 @@ local testVariableDate = function(name)
 	res = res and expectEql(var.date.day, 31)
 	res = res and expectEql(var.date.year, 2017)
 	var.set('20/11/2016');
+	tstMsg('Test variable: date', res)
 	return res
 end
 
@@ -998,6 +1045,7 @@ local testVariableTime = function(name)
 	res = res and expectEql(var.time.hour, 23)
 	res = res and expectEql(var.time.min, 59)
 	var.set('09:54');
+	tstMsg('Test variable: time', res)
 	return res
 end
 
@@ -1027,6 +1075,7 @@ local testLastUpdates = function()
 		return acc
 	end, results)
 
+	tstMsg('Test lastUpdates', results)
 	return results
 end
 
