@@ -36,25 +36,12 @@ extern "C" {
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
-std::string m_printprefix;
-
-#ifdef WIN32
-	const static std::string lua_Dir = szUserDataFolder + "scripts\\lua\\";
-	const static std::string dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
-#else
-	const static std::string lua_Dir = szUserDataFolder + "scripts/lua/";
-	const static std::string dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
-#endif
+static std::string m_printprefix;
 
 #ifdef ENABLE_PYTHON
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
-#ifdef WIN32
-	const static std::string python_Dir = szUserDataFolder + "scripts\\python\\";
-#else
-	const static std::string python_Dir = szUserDataFolder + "scripts/python/";
-#endif
 #endif
 
 typedef enum
@@ -286,6 +273,21 @@ void CEventSystem::LoadEvents()
 
 void CEventSystem::Do_Work()
 {
+#ifdef WIN32
+	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	m_dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
+#else
+	m_lua_Dir = szUserDataFolder + "scripts/lua/";
+	m_dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
+#endif
+
+#ifdef ENABLE_PYTHON
+#ifdef WIN32
+	m_python_Dir = szUserDataFolder + "scripts\\python\\";
+#else
+	m_python_Dir = szUserDataFolder + "scripts/python/";
+#endif
+#endif
 	m_stoprequested = false;
 	time_t lasttime = mytime(NULL);
 	//bool bFirstTime = true;
@@ -1419,7 +1421,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
 		if (m_bdzVentsExist)
-			EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+			EvaluateLua(reason, m_dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
 		else
 		{
 			std::string dzv_scripts;
@@ -1435,7 +1437,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 				if (filename.length() > 4 &&
 					filename.compare(filename.length() - 4, 4, ".lua") == 0)
 				{
-					EvaluateLua(reason, dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
+					EvaluateLua(reason, m_dzv_Dir + "dzVents.lua", "", DeviceID, devname, nValue, sValue, nValueWording, varId);
 					break;
 				}
 			}
@@ -1445,7 +1447,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	}
 
 	bool bDeviceFileFound = false;
-	DirectoryListing(FileEntries, lua_Dir, false, true);
+	DirectoryListing(FileEntries, m_lua_Dir, false, true);
 	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
 		filename = *itt;
@@ -1467,7 +1469,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 						if (deviceName == SpaceToUnderscore(LowerCase(devname)))
 						{
 							devicestatesMutexLock.unlock();
-							EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+							EvaluateLua(reason, m_lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 							break;
 						}
 					}
@@ -1475,20 +1477,20 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 				if (!bDeviceFileFound)
 				{
 					devicestatesMutexLock.unlock();
-					EvaluateLua(reason, lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+					EvaluateLua(reason, m_lua_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 				}
 			}
 			else if (reason == "time" && filename.find("_time_") != std::string::npos)
 			{
-				EvaluateLua(reason, lua_Dir + filename, "");
+				EvaluateLua(reason, m_lua_Dir + filename, "");
 			}
 			else if (reason == "security" && filename.find("_security_") != std::string::npos)
 			{
-				EvaluateLua(reason, lua_Dir + filename, "");
+				EvaluateLua(reason, m_lua_Dir + filename, "");
 			}
 			else if (reason == "uservariable" && filename.find("_variable_") != std::string::npos)
 			{
-				EvaluateLua(reason, lua_Dir + filename, "", varId);
+				EvaluateLua(reason, m_lua_Dir + filename, "", varId);
 			}
 		}
 		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
@@ -1500,7 +1502,7 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 	try
 	{
 		FileEntries.clear();
-		DirectoryListing(FileEntries, python_Dir, false, true);
+		DirectoryListing(FileEntries, m_python_Dir, false, true);
 		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 		{
 			filename = *itt;
@@ -1510,19 +1512,19 @@ void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t Devic
 			{
 				if (reason == "device" && filename.find("_device_") != std::string::npos)
 				{
-					EvaluatePython(reason, python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
+					EvaluatePython(reason, m_python_Dir + filename, "", DeviceID, devname, nValue, sValue, nValueWording, 0);
 				}
 				else if (reason == "time" && filename.find("_time_") != std::string::npos)
 				{
-					EvaluatePython(reason, python_Dir + filename, "");
+					EvaluatePython(reason, m_python_Dir + filename, "");
 				}
 				else if (reason == "security" && filename.find("_security_") != std::string::npos)
 				{
-					EvaluatePython(reason, python_Dir + filename, "");
+					EvaluatePython(reason, m_python_Dir + filename, "");
 				}
 				else if (reason == "uservariable" && filename.find("_variable_") != std::string::npos)
 				{
-					EvaluatePython(reason, python_Dir + filename, "", varId);
+					EvaluatePython(reason, m_python_Dir + filename, "", varId);
 				}
 			}
 			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
@@ -3401,7 +3403,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	ExportDeviceStatesToLua(lua_state);
 
 	if (!m_sql.m_bDisableDzVentsSystem)
-		if (filename == dzv_Dir + "dzVents.lua")
+		if (filename == m_dzv_Dir + "dzVents.lua")
 			ExportDomoticzDataToLua(lua_state, DeviceID, varId);
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -3502,14 +3504,15 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
-		if (filename == dzv_Dir + "dzVents.lua")
+		if (filename == m_dzv_Dir + "dzVents.lua")
 		{
 			std::stringstream lua_DirT;
 
+			lua_DirT << szUserDataFolder <<
 #ifdef WIN32
-			lua_DirT << szUserDataFolder << "scripts\\dzVents\\";
+			"scripts\\dzVents\\";
 #else
-			lua_DirT << szUserDataFolder << "scripts/dzVents/";
+			"scripts/dzVents/";
 #endif
 
 			lua_pushstring(lua_state, "script_path");
