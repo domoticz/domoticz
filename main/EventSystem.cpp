@@ -1547,8 +1547,6 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	if (lua_state == NULL)
 		return NULL;
 
-	lua_state = luaL_newstate();
-
 	// load Lua libraries
 	static const luaL_Reg lualibs[] =
 	{
