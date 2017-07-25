@@ -128,7 +128,7 @@ function createScene(name)
 
 	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
 	local idx = json.idx
-
+_.print(json)
 	return ok, idx, json, result, respcode, respheaders, respstatus
 end
 
@@ -315,6 +315,14 @@ function switchGroup(idx, cmd)
 	--http://localhost:8080/json.htm?type=command&param=switchscene&idx=2&switchcmd=On&passcode=
 	local url = "type=command&param=switchscene&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
 	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
+	return ok
+end
+
+function addSceneDevice(sceneIdx, devIdx)
+	-- http://localhost:8080/json.htm?type=command&param=addscenedevice&idx=2&isscene=false&devidx=1&command=On&level=100&hue=0&ondelay=&offdelay=
+	local url = "type=command&param=addscenedevice&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
+	local ok, json, result, respcode, respheaders, respstatus = doAPICall(url)
+
 	return ok
 end
 
@@ -608,15 +616,40 @@ describe('Integration test', function ()
 	describe('Groups and scenes', function()
 
 		it('should create a scene', function()
-			local ok, idx = createScene('scScene')
+			-- first create switch to be put in the scene
+			local ok
+			local switchIdx
+			local sceneIdx  = 1 -- api doesn't return the idx so we assume this is 1
+			ok, switchIdx = createVirtualDevice(dummyIdx, 'sceneSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = createScene('scScene')
+			assert.is_true(ok)
+
+
+			ok = addSceneDevice(sceneIdx, switchIdx)
 			assert.is_true(ok)
 		end)
 
 		it('should create a group', function()
-			local ok, idx = createGroup('gpGroup')
+			local ok
+			local switchIdx
+			local groupIdx = 2
+
+			-- first create switch to be put in the group
+			ok, switchIdx = createVirtualDevice(dummyIdx, 'groupSwitch1', 6)
 			assert.is_true(ok)
-			ok = switchGroup(idx, 'Off')
+
+			ok = createGroup('gpGroup')
 			assert.is_true(ok)
+
+			ok = addSceneDevice(groupIdx, switchIdx)
+			assert.is_true(ok)
+
+--			ok = switchGroup(groupIdx, 'Off')
+--			assert.is_true(ok)
+
+
 		end)
 
 	end)
