@@ -8,6 +8,8 @@
  - Added 4 new time-rules: xx minutes before/after sunset/sunrise.
  - Added example script to fake user presence.
  - Fixed support for uservariables with spaces in their names.
+ - Show a warning when an item's name isn't unique in the collection.
+ - Show a warning if the scene or group isn't available right after creating it. Needs a Domoticz restart.
 
 [2.1.0]
 

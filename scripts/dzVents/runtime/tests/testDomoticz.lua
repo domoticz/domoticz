@@ -250,6 +250,29 @@ describe('Domoticz', function()
 			assert.is_nil(domoticz.devices('bla'))
 		end)
 
+		it('should return the first device when the name is not unique and log an error', function()
+			local utils = domoticz._getUtilsInstance()
+			local _log = utils.log
+			local logged = false
+			local msg
+			local level
+
+			utils.log = function(_msg, _level)
+				if (_level == 1) then
+					msg = _msg
+					level = _level
+					logged = true
+				end
+			end
+
+			assert.is_same(9, domoticz.devices('device9').id)
+			assert.is_true(logged)
+			assert.is_same('Multiple items found for device9 (device). Please make sure your names are unique or use ids instead.', msg)
+			assert.is_same(1, level)
+			utils.log = _log
+
+		end)
+
 		it('should return iterators when called with no id', function()
 
 			local collection = domoticz.devices()
@@ -260,7 +283,7 @@ describe('Domoticz', function()
 			collection.forEach(function(device)
 				table.insert(res, device.name)
 			end)
-			assert.is_same({ "device1", "device3", "device7", "device8", "device4", "device2", "device5", "device6" }, res)
+			assert.is_same({ "device1", "device3", "device7", "device8", "device4", "device9", "device9", "device2", "device5", "device6" }, res)
 
 
 			local found = collection.find(function(device)
@@ -303,7 +326,7 @@ describe('Domoticz', function()
 
 			end, 0)
 
-			assert.is_same(36, reduced)
+			assert.is_same(55, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, device)
 				acc = acc + device.id
@@ -403,7 +426,7 @@ describe('Domoticz', function()
 			collection.forEach(function(group)
 				table.insert(res, group.name)
 			end)
-			assert.is_same({ "Group1", "Group2" }, res)
+			assert.is_same({ "Group1", "Group2" }, values(res))
 
 
 			local filtered = collection.filter(function(group)
@@ -438,7 +461,6 @@ describe('Domoticz', function()
 			assert.is_same(3, reduced2)
 		end)
 
-
 		it('should give you a variable when you need one', function()
 
 			assert.is_same('x', domoticz.variables('x').name)
@@ -466,7 +488,7 @@ describe('Domoticz', function()
 			collection.forEach(function(variable)
 				table.insert(res, variable.name)
 			end)
-			assert.is_same({ "x", "y", "z", "a", "b" }, res)
+			assert.is_same({ "a", "b", "var with spaces", "x", "y", "z"}, values(res))
 
 
 			local filtered = collection.filter(function(variable)
@@ -490,7 +512,7 @@ describe('Domoticz', function()
 				return acc
 			end, 0)
 
-			assert.is_same(15, reduced)
+			assert.is_same(21, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, device)
 				acc = acc + device.id
@@ -528,7 +550,7 @@ describe('Domoticz', function()
 			collection.forEach(function(device)
 				table.insert(res, device.name)
 			end)
-			assert.is_same({ "device1", "device2", "device5", "device6", "device7", "device8" }, values(res))
+			assert.is_same({ "device1", "device2", "device5", "device6", "device7", "device8", "device9", "device9" }, values(res))
 
 
 			local filtered = collection.filter(function(device)
@@ -552,7 +574,7 @@ describe('Domoticz', function()
 				return acc
 			end, 0)
 
-			assert.is_same(29, reduced)
+			assert.is_same(48, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, device)
 				acc = acc + device.id
@@ -590,7 +612,7 @@ describe('Domoticz', function()
 			collection.forEach(function(var)
 				table.insert(res, var.name)
 			end)
-			assert.is_same({ "a", "b", "x", "z",  }, values(res))
+			assert.is_same({ "a", "b", "var with spaces", "x", "z",  }, values(res))
 
 
 			local filtered = collection.filter(function(var)
@@ -614,7 +636,7 @@ describe('Domoticz', function()
 				return acc
 			end, 0)
 
-			assert.is_same(13, reduced)
+			assert.is_same(19, reduced)
 
 			local reduced2 = filtered.reduce(function(acc, var)
 				acc = acc + var.id
@@ -700,5 +722,5 @@ describe('Domoticz', function()
 		assert.is_true(logged)
 	end)
 
---
+
 end)
