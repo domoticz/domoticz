@@ -50,8 +50,8 @@ bool CNotificationGCM::SendMessageImplementation(
 		sstr << "\"" << sd[0] << "\"";
 		ii++;
 	}
-	sstr << "], \"data\" : { \"subject\": \""<< Subject << "\", \"body\": \""<< Text << "\", \"extradata\": \""<< ExtraData << "\", \"priority\": \""<< boost::lexical_cast<std::string>(Priority) << "\", ";
-	sstr << "\"deviceid\": \""<< boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";
+	sstr << "], \"notification\" : { \"subject\": \""<< Subject << "\", \"body\": \""<< Text << "\", \"extradata\": \""<< ExtraData << "\", \"priority\": \""<< boost::lexical_cast<std::string>(Priority) << "\", ";
+	sstr << "\"deviceid\": \""<< boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\", \"content_available\": true } }";
 	std::string szPostdata = sstr.str();
 
 	std::vector<std::string> ExtraHeaders;
