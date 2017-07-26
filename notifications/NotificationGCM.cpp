@@ -32,7 +32,7 @@ bool CNotificationGCM::SendMessageImplementation(
 
 	//Get All Devices
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SenderID, Active FROM MobileDevices");// WHERE(Active == true)");
+	result = m_sql.safe_query("SELECT SenderID FROM MobileDevices WHERE (Active == 1)");
 	if (result.empty())
 		return true;
 
@@ -45,14 +45,10 @@ bool CNotificationGCM::SendMessageImplementation(
 	for (itt = result.begin(); itt != result.end(); ++itt)
 	{
 		std::vector<std::string> sd = *itt;
-		//bool Active = (sd[1] == "true");
-		//if (Active)
-		{
-			if (ii != 0)
-				sstr << ", ";
-			sstr << "\"" << sd[0] << "\"";
-			ii++;
-		}
+		if (ii != 0)
+			sstr << ", ";
+		sstr << "\"" << sd[0] << "\"";
+		ii++;
 	}
 	sstr << "], \"data\" : { \"subject\": \""<< Subject << "\", \"body\": \""<< Text << "\", \"extradata\": \""<< ExtraData << "\", \"priority\": \""<< boost::lexical_cast<std::string>(Priority) << "\", ";
 	sstr << "\"deviceid\": \""<< boost::lexical_cast<std::string>(Idx) << "\", \"message\": \"" << Subject << "\" } }";

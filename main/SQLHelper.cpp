@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 115
+#define DB_VERSION 116
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -627,6 +627,7 @@ const char *sqlCreateMobileDevices =
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT false, "
 "[Name] VARCHAR(100) DEFAULT '',"
+"[DeviceType] VARCHAR(100) DEFAULT '',"
 "[SenderID] TEXT NOT NULL,"
 "[UUID] TEXT NOT NULL, "
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
@@ -2221,15 +2222,15 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-                if (dbversion < 114)
-                {
-                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
-                        std::stringstream szQuery1, szQuery2;
-						szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
-                        query(szQuery1.str());
-                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
-                        query(szQuery2.str());
-                }
+		if (dbversion < 114)
+		{
+			//Set default values for new parameters in EcoDevices and Teleinfo EDF
+			std::stringstream szQuery1, szQuery2;
+			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES;
+			query(szQuery1.str());
+			szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter;
+			query(szQuery2.str());
+		}
 		if (dbversion < 115)
 		{
 			//Patch for Evohome Web
@@ -2261,13 +2262,21 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-
+		if (dbversion < 116)
+		{
+			//Patch for GCM/FCM
+			safe_query("UPDATE MobileDevices SET Active=1");
+			if (!DoesColumnExistsInTable("DeviceType", "MobileDevices"))
+			{
+				query("ALTER TABLE MobileDevices ADD COLUMN [DeviceType] VARCHAR(100) DEFAULT ('')");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
-		// Add hardawre for internal use
+		// Add hardware for internal use
 		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);

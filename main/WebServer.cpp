@@ -538,13 +538,12 @@ namespace http {
 			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
 
 			RegisterCommandCode("addmobiledevice", boost::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("updatemobiledevice", boost::bind(&CWebServer::Cmd_UpdateMobileDevice, this, _1, _2, _3));
 			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
 
 			RegisterCommandCode("addyeelight", boost::bind(&CWebServer::Cmd_AddYeeLight, this, _1, _2, _3));
 
-
 			RegisterCommandCode("addArilux", boost::bind(&CWebServer::Cmd_AddArilux, this, _1, _2, _3));
-
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
@@ -558,6 +557,7 @@ namespace http {
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
+			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
 			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1, _2, _3));
 			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1, _2, _3));
@@ -11214,6 +11214,43 @@ namespace http {
 			}
 		}
 
+		void CWebServer::RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			bool bHaveUser = (session.username != "");
+			int urights = 3;
+			if (bHaveUser)
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+					urights = static_cast<int>(m_users[iUser].userrights);
+			}
+			if (urights < 2)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "Mobiles";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name ASC");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+					root["result"][ii]["Name"] = sd[2];
+					root["result"][ii]["UUID"] = sd[3];
+					root["result"][ii]["LastUpdate"] = sd[4];
+					root["result"][ii]["DeviceType"] = sd[5];
+					ii++;
+				}
+			}
+		}
+
 		void CWebServer::Cmd_SetSetpoint(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			bool bHaveUser = (session.username != "");
@@ -11759,7 +11796,7 @@ namespace http {
 			if (result.empty())
 			{
 				//New
-				m_sql.safe_query("INSERT INTO MobileDevices (UUID,SenderID) VALUES ('%q','%q')", suuid.c_str(), ssenderid.c_str());
+				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID) VALUES (1,'%q','%q')", suuid.c_str(), ssenderid.c_str());
 			}
 			else
 			{
@@ -11773,6 +11810,34 @@ namespace http {
 					suuid.c_str()
 				);
 			}
+		}
+
+		void CWebServer::Cmd_UpdateMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			std::string enabled = request::findValue(&req, "enabled");
+			std::string name = request::findValue(&req, "name");
+
+			if (
+				(sidx.empty()) ||
+				(enabled.empty()) ||
+				(name.empty())
+				)
+				return;
+			uint64_t idx = 0;
+			std::stringstream s_str(sidx);
+			s_str >> idx;
+
+			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")",
+				name.c_str(), (enabled == "true") ? 1 : 0, idx);
+
+			root["status"] = "OK";
+			root["title"] = "UpdateMobile";
 		}
 
 		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
