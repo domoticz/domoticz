@@ -10714,6 +10714,8 @@ namespace http {
 				name.c_str(),
 				atoi(stype.c_str())
 			);
+			if (!m_sql.m_bDisableEventSystem)
+				m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 		}
 
 		void CWebServer::RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root)

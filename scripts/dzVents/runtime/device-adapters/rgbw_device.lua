@@ -7,14 +7,15 @@ return {
 	name = 'RGB(W) device adapter',
 
 	matches = function (device, adapterManager)
-		local res = (device.deviceType == 'Lighting 2' or device.deviceType == 'Lighting Limitless/Applamp')
-		if (not res) then
-			adapterManager.addDummyMethod(device, 'switchOn')
-			adapterManager.addDummyMethod(device, 'switchOff')
-			adapterManager.addDummyMethod(device, 'dimTo')
-			adapterManager.addDummyMethod(device, 'toggleSwitch')
-		end
-		return res
+		return false -- this should all be handled by the switch adapter..
+--		local res = (device.deviceType == 'Lighting 2' or device.deviceType == 'Lighting Limitless/Applamp')
+--		if (not res) then
+--			adapterManager.addDummyMethod(device, 'switchOn')
+--			adapterManager.addDummyMethod(device, 'switchOff')
+--			adapterManager.addDummyMethod(device, 'dimTo')
+--			adapterManager.addDummyMethod(device, 'toggleSwitch')
+--		end
+--		return res
 	end,
 
 	process = function (device, data, domoticz, utils, adapterManager)
