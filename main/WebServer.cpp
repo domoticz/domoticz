@@ -11783,6 +11783,8 @@ namespace http {
 		{
 			std::string suuid = request::findValue(&req, "uuid");
 			std::string ssenderid = request::findValue(&req, "senderid");
+			std::string sname = request::findValue(&req, "name");
+			std::string sdevtype = request::findValue(&req, "devicetype");
 			if (
 				(suuid.empty()) ||
 				(ssenderid.empty())
@@ -11792,11 +11794,11 @@ namespace http {
 			root["title"] = "AddMobileDevice";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			result = m_sql.safe_query("SELECT ID, Name, DeviceType FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
 			if (result.empty())
 			{
 				//New
-				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID) VALUES (1,'%q','%q')", suuid.c_str(), ssenderid.c_str());
+				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID,Name,DeviceType) VALUES (1,'%q','%q','%q','%q')", suuid.c_str(), ssenderid.c_str(), sname.c_str(), sdevtype.c_str());
 			}
 			else
 			{
@@ -11809,6 +11811,16 @@ namespace http {
 					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 					suuid.c_str()
 				);
+
+				std::string dname = result[0][1];
+				std::string ddevtype = result[0][2];
+				if (dname.empty() || ddevtype.empty())
+				{
+					m_sql.safe_query("UPDATE MobileDevices SET Name='%q', DeviceType='%q' WHERE (UUID == '%q')",
+						sname.c_str(), sdevtype.c_str(),
+						suuid.c_str()
+					);
+				}
 			}
 		}
 

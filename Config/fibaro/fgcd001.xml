@@ -17,7 +17,7 @@
 			<Item label="Exceeding temperature threshold notification enabled" value="2" />
 			<Item label="All notifications enabled" value="3" />
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="3" label="LED diode indications" min="0" max="4" value="0" size="1">
+		<Value type="byte" genre="config" instance="1" index="3" label="LED diode indications" min="0" max="7" value="0" size="1">
 			<Help>
 				This parameter allows to set the actions which result in LED diode indications.
 				0=All actions disabled.
@@ -28,7 +28,7 @@
 				NOTE: Parameter 3 values may be combined, e.g. 1+2+4=7 means that all actions will be active.
 			</Help>
 		</Value>
-		<Value type="byte" genre="config" instance="1" index="4" label="Acoustic signals" min="0" max="4" value="0" size="1">
+		<Value type="byte" genre="config" instance="1" index="4" label="Acoustic signals" min="0" max="7" value="0" size="1">
 			<Help>
 				This parameter allows to set the actions which result in acoustic signals.
 				0=All actions disabled.
