@@ -67,6 +67,7 @@ local function Time(sDate, isUTC)
 		self['minutesAgo'] = minDiff
 		self['secondsAgo'] = secDiff
 		self['hoursAgo'] = hourDiff
+		self['secondsSinceMidnight'] = self.hour * 3600 + self.min * 60 + self.sec
 		self['utils'] = utils
 	end
 
@@ -128,6 +129,36 @@ local function Time(sDate, isUTC)
 		return nil -- no 'at sunrise' was specified in rule
 	end
 
+	function self.ruleIsBeforeSunrise(rule)
+		-- xx minutes before sunrise
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before sunrise'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == _G.timeofday['SunriseInMinutes'] - minutes)
+		end
+
+		return nil -- no xx minutes before sunrise found
+	end
+
+	function self.ruleIsAfterSunrise(rule)
+		-- xx minutes after sunrise
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after sunrise'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == _G.timeofday['SunriseInMinutes'] + minutes)
+		end
+
+		return nil -- no xx minutes after sunrise found
+	end
+
 	function self.ruleIsAtSunset(rule)
 		if (string.find(rule, 'at sunset')) then
 			local minutesnow = self.min + self.hour * 60
@@ -135,6 +166,36 @@ local function Time(sDate, isUTC)
 		end
 
 		return nil -- no 'at sunset' was specified in the rule
+	end
+
+	function self.ruleIsBeforeSunset(rule)
+		-- xx minutes before sunset
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes before sunset'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == _G.timeofday['SunsetInMinutes'] - minutes)
+		end
+
+		return nil -- no xx minutes before sunset found
+	end
+
+	function self.ruleIsAfterSunset(rule)
+		-- xx minutes after sunset
+
+		local minutes = tonumber(string.match(rule, '(%d+) minutes after sunset'))
+
+		if (minutes ~= nil) then
+
+			local minutesnow = self.min + self.hour * 60
+
+			return (minutesnow == _G.timeofday['SunsetInMinutes'] + minutes)
+		end
+
+		return nil -- no xx minutes before sunset found
 	end
 
 	function self.ruleIsAtNight(rule)
@@ -281,6 +342,34 @@ local function Time(sDate, isUTC)
 		if (res == false) then
 			-- on <days> was specified but 'now' is not
 			-- on any of the specified days
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsBeforeSunset(rule)
+		if (res == false) then
+			-- rule has xx minutes before sunset and now is not at that time
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsAfterSunset(rule)
+		if (res == false) then
+			-- rule has xx minutes after sunset and now is not at that time
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsBeforeSunrise(rule)
+		if (res == false) then
+			-- rule has xx minutes before sunrise and now is not at that time
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsAfterSunrise(rule)
+		if (res == false) then
+			-- rule has xx minutes after sunrise and now is not at that time
 			return false
 		end
 		updateTotal(res)

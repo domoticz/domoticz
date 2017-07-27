@@ -66,6 +66,7 @@ local function getDevice_(
 		["batteryLevel"] = batteryLevel and batteryLevel or 50,
 		["signalLevel"] = signalLevel and signalLevel or 55,
 		["deviceType"] = type and type or "someSubType",
+		["deviceID"] = "123abc",
 		["subType"] = subType and subType or "someDeviceType",
 		["timedOut"] = true,
 		["switchType"] = "Contact",
@@ -77,9 +78,9 @@ local function getDevice_(
 			["hardwareType"] = hardwareType,
 			["hardwareTypeValue"] = hardwaryTypeValue,
 			["hardwareID"] = 1,
-			['_nValue'] = 123
+			['_nValue'] = 123,
+			['unit'] = 1
 		},
-		["deviceID"] = "",
 		["rawData"] = rawData,
 		["baseType"] = baseType ~= nil and baseType or "device",
 		["changed"] = changed,
@@ -214,6 +215,8 @@ describe('device', function()
 			assert.is_same(2016, device.lastUpdate.year)
 			assert.is_same({'1', '2', '3'}, device.rawData)
 			assert.is_same(123, device.nValue)
+			assert.is_same('123abc', device.deviceId)
+			assert.is_same(1, device.idx)
 
 			assert.is_not_nil(device.setState)
 			assert.is_same('bla', device.state)
@@ -492,21 +495,21 @@ describe('device', function()
 				['subType'] = 'Security Panel'
 			})
 
-			device.disarm()
+			device.disarm().afterSec(2)
 
-			assert.is_same({ { ['myDevice'] = 'Disarm' } }, commandArray)
-
-			commandArray = {}
-
-			device.armAway()
-
-			assert.is_same({ { ['myDevice'] = 'Arm Away' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Disarm AFTER 2' } }, commandArray)
 
 			commandArray = {}
 
-			device.armHome()
+			device.armAway().afterSec(3)
 
-			assert.is_same({ { ['myDevice'] = 'Arm Home' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Arm Away AFTER 3' } }, commandArray)
+
+			commandArray = {}
+
+			device.armHome().afterSec(4)
+
+			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4' } }, commandArray)
 
 		end)
 
@@ -558,6 +561,7 @@ describe('device', function()
 					"updateGas",
 					"updateHumidity",
 					"updateLux",
+					"updateMode",
 					"updateP1",
 					"updatePercentage",
 					"updatePressure",
@@ -624,6 +628,33 @@ describe('device', function()
 			device.updateSetPoint(14)
 
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+		end)
+
+		it('should detect a Z-Wave Thermostat mode device', function()
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['subType'] = 'Thermostat Mode',
+				['additionalDataData'] = {
+					["modes"] = "0;Off;1;Heat;2;Heat Econ;",
+					["mode"] = 2;
+				}
+			})
+
+			assert.is_same({'Off', 'Heat', 'Heat Econ'}, device.modes)
+			assert.is_same(2, device.mode)
+			assert.is_same('Heat Econ', device.modeString)
+
+
+			device.updateMode('Heat')
+			assert.is_same({ { ["UpdateDevice"] = "1|1|1" } }, commandArray)
+			commandArray = {}
+			device.updateMode('Off')
+			assert.is_same({ { ["UpdateDevice"] = "1|0|0" } }, commandArray)
+			commandArray = {}
+			device.updateMode('Heat Econ')
+			assert.is_same({ { ["UpdateDevice"] = "1|2|2" } }, commandArray)
+
 		end)
 
 		it('should detect a wind device', function()
