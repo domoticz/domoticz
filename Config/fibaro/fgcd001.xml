@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!--
+	FIBARO CO Sensor FGCD-001
+	http://products.z-wavealliance.org/products/2336
+	-->
+
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="2" label="Z-Wave notifications" min="0" max="3" value="0" size="1">
+			<Help>
+				This parameter allows to set the actions which result in sending notifications to the Z-Wave network controller.
+			</Help>
+			<Item label="All notifications disabled" value="0" />
+			<Item label="Enclosure opening notification enabled" value="1" />
+			<Item label="Exceeding temperature threshold notification enabled" value="2" />
+			<Item label="All notifications enabled" value="3" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="LED diode indications" min="0" max="7" value="0" size="1">
+			<Help>
+				This parameter allows to set the actions which result in LED diode indications.
+				0=All actions disabled.
+				1=Tampering (opened casing).
+				2=Exceeding the temperature.
+				4=Lack of Z-Wave range.
+				This parameter does not apply to the most important actions, such as CO Alarm, Malfunction Alarm and Low Battery Alarm.
+				NOTE: Parameter 3 values may be combined, e.g. 1+2+4=7 means that all actions will be active.
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="4" label="Acoustic signals" min="0" max="7" value="0" size="1">
+			<Help>
+				This parameter allows to set the actions which result in acoustic signals.
+				0=All actions disabled.
+				1=Tampering (opened casing).
+				2=Exceeding the temperature.
+				4=Lack of Z-Wave range.
+				This parameter does not apply to the most important actions, such as CO Alarm, Malfunction Alarm and Low Battery Alarm.
+				NOTE: Parameter 4 values may be combined, e.g. 1+2+4=7 means that all actions will be active.
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Associations in Z-Wave network security mode" min="0" max="63" value="63">
+			<Help>
+				Parameter defines how commands are sent in specified association groups: as secure or non-secure. 
+				Parameter is active only in Z-Wave network security mode. 
+				It does not apply to 1st Lifeline association group.
+				Available settings:
+				0 - all groups sent as non-secure
+				1 - 2nd group sent as secure.
+				2 - 3rd group sent as secure.
+				4 - 4th group sent as secure.
+				8 - 5th group sent as secure.
+				16 - 6th group sent as secure.
+				32 - 7th group sent as secure.
+				Default setting: 63.
+				NOTE Parameter 7 values may be combined, e.g. 1+2=3 means that 2nd and 3rd group are sent as secure.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="10" label="Commands sent to 2nd association group (CO Alarm)" min="1" max="3" value="3" size="1">
+			<Help>This parameter defines which frames will be sent in the 2-nd Association Group (CO ALARM).</Help>
+			<Item label="BASIC ON" value="1" />
+			<Item label="BASIC OFF" value="2" />
+			<Item label="BASIC ON and OFF" value="3" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="11" label="Value of BASIC ON command sent to 2nd association group" min="0" max="255" value="255">
+			<Help>This parameter defines the value of BASIC ON command sent to devices in 2nd association group after the CO Alarm activation.</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="12" label="Value of BASIC OFF command sent to 2nd association group" min="0" max="255" value="0">
+			<Help>This parameter defines the value of BASIC OFF command sent to devices in 2nd association group after the CO Alarm cancellation.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="13" label=" Commands sent to 4th association group (CO Level)" min="1" max="3" value="3" size="1">
+			<Help>
+				This parameter defines commands sent to devices associated in 4th association group (CO Level). 
+				Values of specified commands may be set in parameters 16 and 19.
+			</Help>
+			<Item label="BASIC ON" value="1" />
+			<Item label="BASIC OFF" value="2" />
+			<Item label="BASIC ON and OFF" value="3" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="14" label="CO level required for sending BASIC ON command to 4th association group" units="ppm" min="20" max="400" value="40">
+			<Help>
+				This parameter defines the minimum level of CO concentration whichexceeding will result in starting the timer set in parameter 15. 
+				Available settings: 20 - 400  CO concentration level in ppm
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="15" label="Time required for sending BASIC ON command to 4th association group" min="0" max="2880" value="0">
+			<Help>
+				This parameter defines the time during which the level of CO concentration should remain above the value set in parameter 14 to send the BASIC ON command to 4th association group.
+				Available settings: 0 - immediate sending of BASIC ON command 1-2880 (30s - 24h, in 30s steps)
+				Default setting: 0
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="16" label="Value of BASIC ON command sent to 4th association group" min="0" max="255" value="255">
+			<Help>
+				This parameter defines the value of BASIC ON command sent to devices in 4th association group after exceeding the CO level set in parameter 14 through the time set in parameter 15.
+				Available settings: 0-99 or 255.
+				Default setting: 255 (turn on)
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="17" label="CO Level required for sending BASIC OFF command to 4th association group" units="ppm" min="10" max="400" value="25" >
+			<Help>
+				This parameter defines the level of CO concentration below which falling will result in sending the BASIC OFF command to 4th association group.
+				Available settings: 10-400 - CO concentration level in ppm.
+				Default setting: 25 (25 ppm)
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="18" label="Time required for sending BASIC OFF command to 4th association group" min="0" max="2880" value="0">
+			<Help>
+				This parameter defines the time during which the level of CO concentration should remain below the value set in parameter 17 to send the BASIC OFF command to 4th association group.
+				Available settings: 0 - immediate sending of BASIC OFF command 1-2880 (30s - 24h, in 30s steps)
+				Default setting: 0
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="19" label="Value of BASIC OFF command sent to 4th association group" min="0" max="255" value="0">
+			<Help>
+				This parameter defines the value of BASIC OFF command sent to devices in 4th association group after falling below the CO level set in parameter 17.
+				Available settings: 0-99 or 255
+				Default setting: 0 (turn off)
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="20" label="Temperature report interval" value="0" min="0" max="1440" >
+			<Help>
+				Time interval (in seconds) between consecutive reports of temperature (done by built-in temperature sensor). 
+				Short time interval means more frequent communication, which results in shortened battery life.
+				Available settings: 0 - no periodical reports 10-1440 (5min - 12h, in 30s steps)
+				Default setting: 0
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="21" label="Temperature report hysteresis" value="2" min="1" max="20" >
+			<Help>
+				This parameter defines a minimum change in temperature resulting in a report being sent to the main Z-Wave controller.
+				Available settings: 1-20 (0.5C - 10C, each 0.5C)
+				Default setting: 2 (1C) P</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="22" label="Threshold of exceeding the temperature" units="Celsius" value="55" min="1" max="85" size="1">
+			<Help>
+				This parameter defines the temperature level, which exceeding will result in sending actions set in parameters 2, 3 and 4.
+				Available settings: 1-85 (1C - 85C, each 1C)
+				Default setting: 55 (55C)
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="23" label="CO meter activation"  value="1" min="0" max="1" size="1">
+			<Help>This parameter activates reporting the value of CO concentration level to the main Z-Wave controller.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="25" label=" CO level reporting hysteresis" units="ppm" value="2" min="2" max="6" size="1">
+			<Help>
+				This parameter defines a minimum change in CO concentration level which results in sending a new value to the main Z-Wave controller.
+			</Help>
+			<Item label="10" value="2" />
+			<Item label="15" value="3" />
+			<Item label="20" value="4" />
+			<Item label="25" value="5" />
+			<Item label="30" value="6" />
+		</Value>
+		<Value type="short" genre="config" instance="1" index="26" label="Threshold of CO meter activation" units="ppm" value="30" min="10" max="255">
+			<Help>
+				This parameter defines the CO concentration level, which exceeding will result in sending a new value to the main Z-Wave controller, according to parameter 25 settings. 
+				Adjusting the value allows to get the accurate data in case of danger and helps to save the battery in normal conditions.
+				Available settings: 10-255 (ppm)
+				Default setting: 30 (30 ppm)
+			</Help>
+		</Value>
+	</CommandClass>
+
+	 <!-- Basic set as report -->
+	 <CommandClass id="32" setasreport="true"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="7">
+			<Group index="1" max_associations="1" label="Lifeline" />
+			<Group index="2" max_associations="5" label="CO Alarm" />
+			<Group index="3" max_associations="5" label="CO Alarm" />
+			<Group index="4" max_associations="5" label="CO Level" />
+			<Group index="5" max_associations="5" label="Tamper Alarm" />
+			<Group index="6" max_associations="5" label="CO Alarm" />
+			<Group index="7" max_associations="5" label="Tamper Alarm BC" />
+		</Associations>
+	</CommandClass>
+</Product>

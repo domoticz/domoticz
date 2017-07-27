@@ -130,6 +130,7 @@
     <None Include="..\www\app\LoginController.js" />
     <None Include="..\www\app\LogoutController.js" />
     <None Include="..\www\app\main.js" />
+    <None Include="..\www\app\MobileNotificationsController.js" />
     <None Include="..\www\app\NotificationController.js" />
     <None Include="..\www\app\OfflineController.js" />
     <None Include="..\www\app\RestoreDatabaseController.js" />
