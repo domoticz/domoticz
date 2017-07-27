@@ -28,7 +28,8 @@ local function Device(domoticz, data, dummyLogger)
 
 
 	self['name'] = data.name
-	self['id'] = data.id
+	self['id'] = data.id -- actually, this is the idx
+	self['idx'] = data.id -- for completeness
 	self['_data'] = data
 	self['baseType'] = data.baseType
 

@@ -54,9 +54,11 @@ local function Variable(domoticz, data)
 			value = utils.urlEncode(value)
 		end
 
+		local name = utils.urlEncode(data.name)
+
 		local url = domoticz.settings['Domoticz url'] ..
 				'/json.htm?type=command&param=updateuservariable&vname='
-				.. data.name
+				.. name
 				..'&vtype='
 				.. typeLookup[data.variableType]
 				.. '&vvalue='
