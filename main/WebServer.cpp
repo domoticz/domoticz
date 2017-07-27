@@ -11798,7 +11798,7 @@ namespace http {
 			if (result.empty())
 			{
 				//New
-				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID,Name,DeviceType) VALUES (1,'%q','%q','%q','%q')", suuid.c_str(), ssenderid.c_str(), sname.c_str(), sdevicetype.c_str());
+				m_sql.safe_query("INSERT INTO MobileDevices (Active, UUID, SenderID, Name, DeviceType) VALUES (1,'%q','%q','%q','%q')", suuid.c_str(), ssenderid.c_str(), sname.c_str(), sdevicetype.c_str());
 			}
 			else
 			{
