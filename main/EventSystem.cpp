@@ -65,6 +65,7 @@ struct _tJsonMap
 static const _tJsonMap JsonMap[] =
 {
 	{ "Barometer",			"barometer",				tFloat		},
+	{ "CameraIndx",			"cameraIdx", 				tString		},
 	{ "Chill",				"chill", 					tFloat		},
 	{ "Counter",			"counter", 					tString		},
 	{ "CounterDeliv",		"counterDelivered", 		tFloat		},
@@ -81,12 +82,17 @@ static const _tJsonMap JsonMap[] =
 	{ "HardwareTypeVal",	"hardwareTypeValue",		tInteger	},
 	{ "Humidity",			"humidity",					tInteger	},
 	{ "HumidityStatus",		"humidityStatus",			tString		},
+	{ "InternalState",		"internalState",			tString		}, // door contact
 	{ "LevelActions",		"levelActions",				tString		},
+	{ "LevelInt",			"levelVal",					tInteger	},
 	{ "LevelNames",			"levelNames",				tString		},
 	{ "LevelOffHidden",		"levelOffHidden",			tBoolean	},
 	{ "MaxDimLevel",		"maxDimLevel",				tInteger	},
+	{ "Mode",				"mode",						tInteger	}, // zwave thermostat
+	{ "Modes",				"modes",					tString		},
 	{ "Moisture",			"moisture",					tString		},
 	{ "Pressure",			"pressure",					tFloat		},
+	{ "Protected",			"protected",				tBoolean	},
 	{ "Quality",			"quality",					tString		},
 	{ "Radiation",			"radiation",				tFloat		},
 	{ "Rain",				"rain",						tFloat		},
@@ -97,7 +103,10 @@ static const _tJsonMap JsonMap[] =
 	{ "Speed",				"speed",					tFloat		},
 	{ "Temp",				"temperature",				tFloat		},
 	{ "TypeImg",			"icon",						tString		},
+	{ "Unit",				"unit",						tInteger	},
+	{ "Until",				"until",					tString		}, // evohome zone/water
 	{ "Usage",				"usage",					tString		},
+	{ "UsedByCamera",		"usedByCamera",				tBoolean	},
 	{ "UsageDeliv",			"usageDelivered",			tString		},
 	{ "ValueQuantity",		"valueQuantity",			tString		},
 	{ "ValueUnits",			"valueUnits",				tString		},
@@ -1233,11 +1242,26 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	EvaluateEvent("security");
 }
 
+void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
+{
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+	if (itt != m_devicestates.end())
+	{
+		std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
+
+		_tDeviceStatus replaceitem = itt->second;
+		replaceitem.lastUpdate = l_lastUpdate;
+		replaceitem.lastLevel = lastLevel;
+		itt->second = replaceitem;
+	}
+}
+
 void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
-
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
@@ -1300,8 +1324,10 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 		replaceitem.nValue = nValue;
 		replaceitem.sValue = l_sValue;
 		replaceitem.nValueWording = l_nValueWording;
-		replaceitem.lastUpdate = l_lastUpdate;
-		replaceitem.lastLevel = lastLevel;
+		if (!lastUpdate.empty())
+			replaceitem.lastUpdate = l_lastUpdate;
+		if (lastLevel != 255)
+			replaceitem.lastLevel = lastLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1343,15 +1369,18 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
 		devname.c_str());
-	if (result.size()>0) {
+	if (result.size() > 0)
+	{
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 
-		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, sd[2], atoi(sd[3].c_str()), options);
+		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
 		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
+		UpdateLastUpdate(ulDevID, sd[2], atoi(sd[3].c_str()));
 	}
-	else {
+	else
+	{
 		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
 	}
 }
