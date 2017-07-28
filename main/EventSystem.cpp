@@ -153,15 +153,25 @@ void CEventSystem::StartEventSystem()
 #endif
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
+	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
 }
 
 void CEventSystem::StopEventSystem()
 {
+
+	if (m_eventqueuethread)
+	{
+		m_stoprequested = true;
+		UnlockEventQueueThread();
+		m_eventqueuethread->join();
+	}
+
 	if (m_thread)
 	{
 		m_stoprequested = true;
 		m_thread->join();
 	}
+
 #ifdef ENABLE_PYTHON
     Plugins::PythonEventsStop();
 #endif
@@ -1239,7 +1249,9 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 		return;
 
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
-	EvaluateEvent("security");
+	_tEventQueue item;
+	item.reason = "security";
+	m_eventqueue.push(item);
 }
 
 void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
@@ -1359,6 +1371,36 @@ std::string CEventSystem::UpdateSingleState(const uint64_t ulDevID, const std::s
 	return nValueWording;
 }
 
+void CEventSystem::UnlockEventQueueThread()
+{
+	// Push dummy message to unlock queue
+	_tEventQueue item;
+	item.DeviceID = -1;
+	item.trigger = NULL;
+	m_eventqueue.push(item);
+}
+
+void CEventSystem::EventQueueThread()
+{
+	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
+
+	while (!m_stoprequested)
+	{
+		_tEventQueue item;
+		bool hasPopped = m_eventqueue.timed_wait_and_pop<boost::posix_time::milliseconds>(item, boost::posix_time::milliseconds(5000));
+
+		if (!hasPopped)
+			continue;
+
+		if (m_stoprequested)
+			break;
+
+		EvaluateEvent(item.reason, item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, item.varId);
+		if (item.DeviceID)
+			UpdateLastUpdate(item.DeviceID, item.lastUpdate, item.lastLevel);
+	}
+}
+
 
 void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId)
 {
@@ -1374,10 +1416,18 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
-
-		std::string nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
-		EvaluateEvent("device", ulDevID, devname, nValue, sValue, nValueWording, 0);
-		UpdateLastUpdate(ulDevID, sd[2], atoi(sd[3].c_str()));
+		_tEventQueue item;
+		item.reason = "device";
+		item.DeviceID = ulDevID;
+		item.devname = devname;
+		item.nValue = nValue;
+		item.sValue = sValue;
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
+		item.varId = 0;
+		item.lastUpdate = sd[2];
+		item.lastLevel = atoi(sd[3].c_str());
+		item.trigger = NULL;
+		m_eventqueue.push(item);
 	}
 	else
 	{
@@ -1387,24 +1437,19 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 
 void CEventSystem::ProcessMinute()
 {
-	EvaluateEvent("time");
+	_tEventQueue item;
+	item.reason = "time";
+	m_eventqueue.push(item);
 }
 
 void CEventSystem::ProcessUserVariable(const uint64_t varId)
 {
 	if (!m_bEnabled)
 		return;
-	EvaluateEvent("uservariable", varId);
-}
-
-void CEventSystem::EvaluateEvent(const std::string &reason)
-{
-	EvaluateEvent(reason, 0, "", 0, "", "", 0);
-}
-
-void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t varId)
-{
-	EvaluateEvent(reason, 0, "", 0, "", "", varId);
+	_tEventQueue item;
+	item.reason = "uservariable";
+	item.varId = varId;
+	m_eventqueue.push(item);
 }
 
 void CEventSystem::EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
