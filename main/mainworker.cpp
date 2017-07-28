@@ -12019,7 +12019,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			if (tSign == 'F')
 			{
 				//Convert to Celsius
-				tempDest = (tempDest - 32.0f) / 1.8f;
+				tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 			}
 
 			_tThermostat tmeter;
@@ -12384,6 +12384,14 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
+	if (!m_sql.m_bDisableEventSystem)
+	{
+		std::stringstream ssLastUpdate;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
+		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
+	}
+
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
 		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %" PRIu64 ") ORDER BY [Order] ASC", idx);
@@ -12489,7 +12497,6 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			sleep_milliseconds(50);
 		}
 	}
-
 	return true;
 }
 
@@ -12992,7 +12999,42 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		else if (devType == pTypeTEMP)
 		{
 			if (dID != 0)
+			{
 				m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_TEMPERATURE, (float)atof(sValue.c_str()));
+			}
+		}
+		else if (devType == pTypeTEMP_HUM)
+		{
+			if (dID != 0)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 3)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, Temp, Hum, true, true);
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					m_notifications.CheckAndHandleDewPointNotification(dID, dName, Temp, dewpoint);
+				}
+			}
+		}
+		else if (devType == pTypeTEMP_HUM_BARO)
+		{
+			if (dID != 0)
+			{
+				std::vector<std::string> strarray;
+				StringSplit(sValue, ";", strarray);
+				if (strarray.size() == 5)
+				{
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					m_notifications.CheckAndHandleTempHumidityNotification(dID, dName, Temp, Hum, true, true);
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					m_notifications.CheckAndHandleDewPointNotification(dID, dName, Temp, dewpoint);
+					m_notifications.CheckAndHandleNotification(dID, dName, devType, subType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+				}
+			}
 		}
 /*
 		else if (devType == pTypeGeneralSwitch)

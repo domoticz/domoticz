@@ -1325,6 +1325,9 @@
     <None Include="..\www\views\floorplans.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\app\MobileNotificationsController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

@@ -1,4 +1,22 @@
+[2.2.0]
+
+ - Fixed typo in the doc WActual > WhActual.
+ - Updated switch adapter to match more switch-like devices.
+ - Added Z-Wave Thermostat mode device adapter.
+ - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
+ - Added secondsSinceMidnight to time attributes (e.g. lastUpdate.secondsSinceMidnight)
+ - Added 4 new time-rules: xx minutes before/after sunset/sunrise.
+ - Added example script to fake user presence.
+ - Fixed support for uservariables with spaces in their names.
+ - Show a warning when an item's name isn't unique in the collection.
+ - Added timing options for security methods armAway, armHome and disarm like device.armAway().afterSec(10).
+ - Added idx, deviceId and unit to device objects. Don't confuse deviceId with device.id(x) which is actually the index of the device.
+ - Added instructions on how to create a security panel device in Domoticz. This device now has a state that has the same value as domoticz.security.
+ - Fixed bug in check battery levels example.
+ - Fixed some irregularities with dimmer levels.
+
 [2.1.0]
+
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
  - Added support for leaf wetness devices
@@ -147,3 +165,4 @@
 [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
+
