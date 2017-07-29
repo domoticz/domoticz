@@ -59,7 +59,7 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 	//
 	time_t now = mytime(NULL);
 
-	std::vector<_tTCPLogInfo>::const_iterator itt = m_incoming_domoticz_history.begin();
+	std::vector<_tTCPLogInfo>::iterator itt = m_incoming_domoticz_history.begin();
 	while (itt!= m_incoming_domoticz_history.end())
 	{
 		if (difftime(now,itt->time) > SECONDS_PER_DAY)
