@@ -1041,7 +1041,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (name == "Xiaomi Aqara Weather") {
 							std::string pressure = root2["pressure"].asString();
 							int pres = atoi(pressure.c_str());
-							pres = pres / 100;
+							pres = pres / 10000;
 							m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
 						}
 					}

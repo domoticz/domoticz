@@ -31,7 +31,7 @@ private:
 	bool m_OutputMessage;
 	bool m_ListenPort9898;
 	std::string GetGatewayKey();
-	unsigned int XiaomiGateway::GetShortID(const std::string & nodeid);
+	unsigned int GetShortID(const std::string & nodeid);
 	std::string m_GatewayRgbHex;
 	int m_GatewayBrightnessInt;
 	std::string m_GatewayPrefix;
