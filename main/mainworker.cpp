@@ -12390,7 +12390,8 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 	if (!m_sql.m_bDisableEventSystem)
 	{
 		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << (ltime.tm_mon + 1) << "-" << ltime.tm_mday << " " << ltime.tm_hour << ":" << ltime.tm_min << ":" << ltime.tm_sec;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
 		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
 	}
 

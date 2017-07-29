@@ -255,6 +255,7 @@ private:
 	void Cmd_PanasonicClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
@@ -293,6 +294,7 @@ private:
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
