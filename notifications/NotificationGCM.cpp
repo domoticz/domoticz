@@ -9,7 +9,7 @@
 #define GAPI_POST_URL "https://gcm-http.googleapis.com/gcm/send"
 #define GAPI "AIzaSyBnRMroiDaXCKbwPeOmoxkNiQfjWkGMre8"
 
-CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
+CNotificationGCM::CNotificationGCM() : CNotificationBase(std::string("gcm"), OPTIONS_NONE)
 {
 	SetupConfig(std::string("GCMEnabled"), &m_IsEnabled);
 }

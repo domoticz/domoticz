@@ -58,69 +58,68 @@ bool CTCPServerInt::IsUserHereFirstTime(const std::string &ip_string)
 	//	Log same IP-address first time and then once per day
 	//
 	time_t now = mytime(NULL);
-	bool log_this = true;
 
-	for(int i = 0; i < m_incoming_domoticz_history.size(); i++)
+	std::vector<_tTCPLogInfo>::iterator itt = m_incoming_domoticz_history.begin();
+	while (itt!= m_incoming_domoticz_history.end())
 	{
-		log_info li = m_incoming_domoticz_history[i];
-		double elapsed_seconds = now - li.time;
-
-		if (elapsed_seconds > SECONDS_PER_DAY)
+		if (difftime(now,itt->time) > SECONDS_PER_DAY)
 		{
-			m_incoming_domoticz_history.erase(m_incoming_domoticz_history.begin()+i);
+			itt = m_incoming_domoticz_history.erase(itt);
 		}
 		else
 		{
-			if (ip_string.compare(li.string) == 0)
+			if (ip_string.compare(itt->string) == 0)
 			{
-				log_this = false;
+				//already logged this
+				return false;
 			}
+			++itt;
 		}
 	}
+	if (m_incoming_domoticz_history.size() > 100)
+		return false; //just to be safe
 
-	if (log_this)
-	{
-		log_info li;
-		li.time = now;
-		li.string = ip_string;
-		m_incoming_domoticz_history.push_back(li);
-	}
-
-	return log_this;
+	_tTCPLogInfo li;
+	li.time = now;
+	li.string = ip_string;
+	m_incoming_domoticz_history.push_back(li);
+	return true;
 }
 
 void CTCPServerInt::handleAccept(const boost::system::error_code& error)
 {
-	if(!error) // 1.
-	{
-		boost::lock_guard<boost::mutex> l(connectionMutex);
-		std::string s = new_connection_->socket()->remote_endpoint().address().to_string();
+	if (error)
+		return;
+	boost::lock_guard<boost::mutex> l(connectionMutex);
+	std::string s = new_connection_->socket()->remote_endpoint().address().to_string();
 
-		if (s.substr(0, 7) == "::ffff:") {
-			s = s.substr(7);
-		}
+	if (s.substr(0, 7) == "::ffff:") {
+		s = s.substr(7);
+	}
 
-		new_connection_->m_endpoint=s;
+	new_connection_->m_endpoint=s;
 		
-		if (IsUserHereFirstTime(s))
-		{
-			_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
-		}
-		else
+	if (IsUserHereFirstTime(s))
+	{
+		_log.Log(LOG_STATUS, "Incoming Domoticz connection from: %s", s.c_str());
+	}
+	else
+	{
+		if (_log.isTraceEnabled())
 		{
 			_log.Log(LOG_TRACE, "Incoming Domoticz connection from: %s", s.c_str());
 		}
-
-		connections_.insert(new_connection_);
-		new_connection_->start();
-
-		new_connection_.reset(new CTCPClient(io_service_, this));
-
-		acceptor_.async_accept(
-			*(new_connection_->socket()),
-			boost::bind(&CTCPServerInt::handleAccept, this,
-			boost::asio::placeholders::error));
 	}
+
+	connections_.insert(new_connection_);
+	new_connection_->start();
+
+	new_connection_.reset(new CTCPClient(io_service_, this));
+
+	acceptor_.async_accept(
+		*(new_connection_->socket()),
+		boost::bind(&CTCPServerInt::handleAccept, this,
+		boost::asio::placeholders::error));
 }
 
 _tRemoteShareUser* CTCPServerIntBase::FindUser(const std::string &username)
