@@ -30,12 +30,6 @@ struct _tRemoteMessage
 	//data
 };
 
-struct log_info
-{
-	time_t		time;
-	std::string string;
-};
-
 class CTCPServerIntBase
 {
 public:
@@ -53,6 +47,11 @@ public:
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
 	unsigned int GetUserDevicesCount(const std::string &username);
 protected:
+	struct _tTCPLogInfo
+	{
+		time_t		time;
+		std::string string;
+	};
 
 	_tRemoteShareUser* FindUser(const std::string &username);
 
@@ -92,7 +91,7 @@ private:
 	CTCPClient_ptr new_connection_;
 
 	bool IsUserHereFirstTime(const std::string &ip_string);
-	std::vector<log_info> m_incoming_domoticz_history;
+	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
 
 #ifndef NOCLOUD

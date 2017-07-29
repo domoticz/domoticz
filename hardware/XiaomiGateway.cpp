@@ -301,7 +301,7 @@ void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::s
 	std::stringstream ss;
 	ss << std::hex << str.c_str();
 	ss >> sID;
-	SendPressureSensor(sID, 1, battery, Pressure, Name.c_str());
+	SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
 }
 
 void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std::string & Name, const bool bIsOn, const int brightness, const int hue)
