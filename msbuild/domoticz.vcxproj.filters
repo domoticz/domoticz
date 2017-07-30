@@ -1328,6 +1328,9 @@
     <None Include="..\www\app\MobileNotificationsController.js">
       <Filter>www\app</Filter>
     </None>
+    <None Include="..\www\views\mobile_notifications.html">
+      <Filter>www\views</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
