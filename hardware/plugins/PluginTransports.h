@@ -22,7 +22,7 @@ namespace Plugins {
 		PyObject*		m_pConnection;
 
 	public:
-		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnecting(false), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0)
+		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnecting(false), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0), m_tLastSeen(0)
 		{
 			Py_INCREF(m_pConnection);
 		};

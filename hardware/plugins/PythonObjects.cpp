@@ -1206,16 +1206,16 @@ namespace Plugins {
 
 	PyObject * CConnection_timestamp(CConnection * self)
 	{
-		if (self->pTransport && false)
+		if (self->pTransport)
 		{
 			time_t	tLastSeen = self->pTransport->LastSeen();
 			struct tm ltime;
 			localtime_r(&tLastSeen, &ltime);
 			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
+//			PyType_Ready(pLastSeen->ob_type);
 			if (PyDateTime_CheckExact(pLastSeen))
 				return pLastSeen;
 		}
-		_log.Log(LOG_ERROR, "%s, LastSeen request from '%s' ignored. Not implemented yet.", __func__, self->pPlugin->Name.c_str());
 
 		Py_INCREF(Py_None);
 		return Py_None;
