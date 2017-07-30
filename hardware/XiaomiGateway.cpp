@@ -985,9 +985,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else {
 								if (level > -1) { //this should stop false updates when empty 'data' is received
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false, "", "", battery);
-									if (model == "Aqara Motion Sensor") {
-										m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Aqara Lux", atoi(lux.c_str()));
-									}
+								}
+								if (lux != "") {
+									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
 								}
 								if (voltage != "") {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
