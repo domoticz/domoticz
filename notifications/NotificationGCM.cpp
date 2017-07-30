@@ -29,10 +29,17 @@ bool CNotificationGCM::SendMessageImplementation(
 	const bool bFromNotification)
 {
 	//send message to GCM
+	//ExtraData should be empty, is only filled currently when hitting the test button from the mobile devices setup page in the web gui
 
 	//Get All Devices
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SenderID, DeviceType FROM MobileDevices WHERE (Active == 1)");
+
+	std::string szQuery("SELECT SenderID, DeviceType FROM MobileDevices");
+	if ((ExtraData.empty()) || (ExtraData.find("midx_") == std::string::npos))
+		szQuery += " WHERE (Active == 1)";
+	else
+		szQuery += " WHERE (ID == " + ExtraData.substr(5) + ")";
+	result = m_sql.safe_query(szQuery.c_str());
 	if (result.empty())
 		return true;
 

@@ -56,7 +56,7 @@ define(['app'], function (app) {
 		SendMobileTestMessage = function(idx)
 		{
 		    var subsystem = "gcm";
-		    var extraparams = "";
+		    var extraparams = "extradata=midx_"+idx;
 		    $.ajax({
 		        url: "json.htm?type=command&param=testnotification&subsystem=" + subsystem + "&" + extraparams,
 		        async: false,
