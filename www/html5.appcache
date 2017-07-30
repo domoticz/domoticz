@@ -1,10 +1,6 @@
 CACHE MANIFEST
 
-<<<<<<< HEAD
-# ref 1394
-=======
 # ref 1405
->>>>>>> master
 
 CACHE:
 # CSS
@@ -506,7 +502,6 @@ js/angular-scrollglue.js
 js/angular-tree-control.js
 js/angular.min.js
 js/angularAMD.min.js
-js/angular-websocket.js
 js/blockly_compressed.js
 js/blocks_compressed.js
 js/bootbox.min.js

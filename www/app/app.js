@@ -259,10 +259,38 @@ define([
 						}
 					});
 					this.initialised = true;
-				}, 0);
+				},
+				Close: function () {
+					if (!this.initialised) {
+						return;
+					}
+					this.websocket.$close();
+					this.initialised = false;
+				},
+				Send: function (data) {
+					this.Init();
+					this.websocket.$$send(data);
+					//this.websocket.$emit('message', data);
+				},
+				SendLoginInfo: function (sessionid) {
+					this.Send(new Blob["2", sessionid]);
+				},
+				/* mimic ajax call */
+				SendAsync: function (settings) {
+					this.Init();
+					var defer_object = new $.Deferred();
+					defer_object.done(function (fn, json) {
+						fn.call(this, json);
+					});
+					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
+					var requestid = this.websocket.callbackqueue.length - 1;
+					var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
+					var content = JSON.stringify(requestobj);
+					this.Send(requestobj);
+					return defer_object.promise();
+				}
 			}
-		};
-	});
+		}]);
 	app.config(function ($routeProvider, $locationProvider) {
 		$routeProvider.
 			when('/Dashboard', angularAMD.route({
@@ -454,39 +482,8 @@ define([
 			when('/Custom/:custompage', angularAMD.route({
 				templateUrl: function (params) {
 					return 'templates/' + params.custompage + '.html';
->>>>>>> master
-				},
-				Close: function () {
-					if (!this.initialised) {
-						return;
-					}
-					this.websocket.$close();
-					this.initialised = false;
-				},
-				Send: function (data) {
-					this.Init();
-					this.websocket.$$send(data);
-					//this.websocket.$emit('message', data);
-				},
-				SendLoginInfo: function (sessionid) {
-					this.Send(new Blob["2", sessionid]);
-				},
-				/* mimic ajax call */
-				SendAsync: function (settings) {
-					this.Init();
-					var defer_object = new $.Deferred();
-					defer_object.done(function (fn, json) {
-						fn.call(this, json);
-					});
-					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
-					var requestid = this.websocket.callbackqueue.length - 1;
-					var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
-					var content = JSON.stringify(requestobj);
-					this.Send(requestobj);
-					return defer_object.promise();
-				}
-			}
-		}]);
+			}}));
+		});
 
 		app.directive('sbLoad', ['$parse', function ($parse) {
 			return {
