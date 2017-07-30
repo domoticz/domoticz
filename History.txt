@@ -1,4 +1,4 @@
-Version 3.7988 (July xth 2017)
+Version 3.8153 (July 30h 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP
