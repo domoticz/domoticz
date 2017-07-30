@@ -194,7 +194,7 @@ void Meteostick::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
+void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
 {
 	//Calculate Pressure
 	float altitude = 188.0f;	//Should be custom defined for each user
@@ -372,7 +372,7 @@ void Meteostick::ParseLine()
 			float temp = static_cast<float>(atof(results[1].c_str()));
 			float baro = static_cast<float>(atof(results[2].c_str()));
 
-			SendTempBaroSensor(0, temp, baro, "Meteostick Temp+Baro");
+			SendTempBaroSensorInt(0, temp, baro, "Meteostick Temp+Baro");
 		}
 		break;
 	case 'W':
