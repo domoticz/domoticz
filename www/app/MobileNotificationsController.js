@@ -53,6 +53,32 @@ define(['app'], function (app) {
 			});
 		}
 
+		SendMobileTestMessage = function(idx)
+		{
+		    var subsystem = "gcm";
+		    var extraparams = "extradata=midx_"+idx;
+		    $.ajax({
+		        url: "json.htm?type=command&param=testnotification&subsystem=" + subsystem + "&" + extraparams,
+		        async: false,
+		        dataType: 'json',
+		        success: function (data) {
+		            if (data.status != "OK") {
+		                HideNotify();
+	                    ShowNotify($.t('Problem Sending Notification'), 3000, true);
+		                return;
+		            }
+		            else {
+		                HideNotify();
+		                ShowNotify($.t('Notification sent!<br>Should arrive at your device soon...'), 3000);
+		            }
+		        },
+		        error: function () {
+		            HideNotify();
+		            ShowNotify($.t('Problem Sending Notification'), 3000, true);
+		        }
+		    });
+		}
+
 		RefreshMobileTable = function () {
 			$('#modal').show();
 
@@ -75,6 +101,8 @@ define(['app'], function (app) {
 							if (item.Enabled == "true") {
 								enabledstr = $.t("Yes");
 							}
+							var lUpdateItem = item.LastUpdate;
+							lUpdateItem += '&nbsp;<img src="images/add.png" title="' + $.t('Test') + '" onclick="SendMobileTestMessage(' + item.idx + ');">';
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Enabled": item.Enabled,
@@ -84,7 +112,7 @@ define(['app'], function (app) {
 								"1": item.Name,
 								"2": item.UUID,
 								"3": item.DeviceType,
-								"4": item.LastUpdate
+								"4": lUpdateItem
 							});
 						});
 					}

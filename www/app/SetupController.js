@@ -177,7 +177,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms")) {
+						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "gcm")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else if (subsystem == "email") {
