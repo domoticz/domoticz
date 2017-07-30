@@ -205,25 +205,7 @@ void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp
 	float dExponent = 0.03416f / dTempGradient;
 	float dPressure = Baro / pow(dBasis,dExponent);
 
-	_tTempBaro tsensor;
-	tsensor.id1 = Idx;
-	tsensor.temp = Temp;
-	tsensor.baro = dPressure;
-	tsensor.altitude = float(altitude);
-
-	//this is probably not good, need to take the rising/falling of the pressure into account?
-	//any help would be welcome!
-
-	tsensor.forecast = baroForecastNoInfo;
-	if (tsensor.baro < 1000)
-		tsensor.forecast = baroForecastRain;
-	else if (tsensor.baro < 1020)
-		tsensor.forecast = baroForecastCloudy;
-	else if (tsensor.baro < 1030)
-		tsensor.forecast = baroForecastPartlyCloudy;
-	else
-		tsensor.forecast = baroForecastSunny;
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), 255);
+	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
 
 void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname)

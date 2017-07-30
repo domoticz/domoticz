@@ -16,8 +16,9 @@ Version 3.7988 (July xth 2017)
 - Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
 - Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
 - Implemented: Blinds T1 till T13 new supports the Stop button
-- Implemented: Devices, Log icon for Blinds
 - Implemented: Blockly/Lua Set SetPoint option
+- Implemented: Devices, Log icon for Blinds
+- Implemented: Dummy Hardware, Temp+Baro
 - Implemented: Estonian Language support (big thanks to Kuido)
 - Implemented: EvohomeWeb support (Thanks to Gordon3!)
 - Implemented: General/Text sensor now able to be shared
