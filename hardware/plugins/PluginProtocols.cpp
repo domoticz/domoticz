@@ -18,6 +18,8 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 
+#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+
 namespace Plugins {
 
 	extern 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
@@ -35,7 +37,34 @@ namespace Plugins {
 
 	std::vector<byte> CPluginProtocol::ProcessOutbound(const WriteDirective* WriteMessage)
 	{
-		return WriteMessage->m_Buffer;
+		std::vector<byte>	retVal;
+
+		// Handle Bytes objects
+		if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_BYTES_SUBCLASS)) != 0)
+		{
+			std::string	sData = PyBytes_AsString(WriteMessage->m_Object);
+			retVal.reserve((size_t)sData.length());
+			retVal.assign((const byte*)sData.c_str(), (const byte*)sData.c_str() + sData.length());
+		}
+		// Handle ByteArray objects
+		else if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_name == std::string("bytearray")))
+		{
+			size_t	len = PyByteArray_Size(WriteMessage->m_Object);
+			char*	data = PyByteArray_AsString(WriteMessage->m_Object);
+			retVal.reserve(len);
+			retVal.assign((const byte*)data, (const byte*)data + len);
+		}
+		// Handle String objects
+		else if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_UNICODE_SUBCLASS)) != 0)
+		{
+			std::string	sData = PyUnicode_AsUTF8(WriteMessage->m_Object);
+			retVal.reserve((size_t)sData.length());
+			retVal.assign((const byte*)sData.c_str(), (const byte*)sData.c_str() + sData.length());
+		}
+		else
+			_log.Log(LOG_ERROR, "(%s) Send request Python object parameter was not of type Unicode or Byte, ignored.", __func__);
+
+		return retVal;
 	}
 
 	void CPluginProtocol::Flush(CPlugin* pPlugin, PyObject* pConnection)
@@ -243,11 +272,13 @@ namespace Plugins {
 		// HTML is non binary so use strings
 		std::string		sData(m_sRetainedData.begin(), m_sRetainedData.end());
 
-		m_Status = 0;
 		m_ContentLength = 0;
 		m_Chunked = false;
 		m_RemainingChunk = 0;
 
+		//
+		//	Process server responses
+		//
 		if (sData.substr(0, 4) == "HTTP")
 		{
 			// HTTP/1.0 404 Not Found
@@ -276,8 +307,7 @@ namespace Plugins {
 			// Process response header (HTTP/1.1 200 OK)
 			std::string		sFirstLine = sData.substr(0, sData.find_first_of('\r'));
 			sFirstLine = sFirstLine.substr(sFirstLine.find_first_of(' ') + 1);
-			sFirstLine = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
-			m_Status = atoi(sFirstLine.c_str());
+			m_Status = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
 
 			ExtractHeaders(&sData);
 
@@ -290,25 +320,45 @@ namespace Plugins {
 			sData = sData.substr(sData.find_first_of('\n') + 1);		// skip over 2nd new line char
 
 			// Process the message body
-			if (m_Status)
+			if (m_Status.length())
 			{
 				if (!m_Chunked)
 				{
 					// If full message then return it
 					if (m_ContentLength == sData.length())
 					{
-						std::vector<byte>	vData(sData.c_str(), sData.c_str() + sData.length());
-						ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vData, m_Status, (PyObject*)m_Headers);
+						PyObject*	pDataDict = PyDict_New();
+						PyObject*	pObj = Py_BuildValue("s", m_Status.c_str());
+						if (PyDict_SetItemString(pDataDict, "Status", pObj) == -1)
+							_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Status", m_Status.c_str());
+						Py_DECREF(pObj);
+
+						if (m_Headers)
+						{
+							if (PyDict_SetItemString(pDataDict, "Headers", (PyObject*)m_Headers) == -1)
+								_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
+							Py_DECREF((PyObject*)m_Headers);
+							m_Headers = NULL;
+						}
+
+						if (sData.length())
+						{
+							pObj = Py_BuildValue("y#", sData.c_str(), sData.length());
+							if (PyDict_SetItemString(pDataDict, "Data", pObj) == -1)
+								_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Data", sData.c_str());
+							Py_DECREF(pObj);
+						}
+
+						ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, pDataDict);
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
 						m_sRetainedData.clear();
-						m_Headers = NULL;
 					}
 				}
 				else
 				{
 					// Process available chunks
-					std::vector<byte>	vHTML;
+					std::string		sPayload;
 					while (sData.length() && (sData != "\r\n"))
 					{
 						if (!m_RemainingChunk)	// Not processing a chunk so we should be at the start of one
@@ -322,11 +372,32 @@ namespace Plugins {
 							sData = sData.substr(sData.find_first_of('\n') + 1);
 							if (!m_RemainingChunk)	// last chunk is zero length
 							{
-								ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, vHTML, m_Status, (PyObject*)m_Headers);
+								PyObject*	pDataDict = PyDict_New();
+								PyObject*	pObj = Py_BuildValue("s", m_Status.c_str());
+								if (PyDict_SetItemString(pDataDict, "Status", pObj) == -1)
+									_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Status", m_Status.c_str());
+								Py_DECREF(pObj);
+
+								if (m_Headers)
+								{
+									if (PyDict_SetItemString(pDataDict, "Headers", (PyObject*)m_Headers) == -1)
+										_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
+									Py_DECREF((PyObject*)m_Headers);
+									m_Headers = NULL;
+								}
+
+								if (sPayload.length())
+								{
+									pObj = Py_BuildValue("y#", sPayload.c_str(), sPayload.length());
+									if (PyDict_SetItemString(pDataDict, "Data", pObj) == -1)
+										_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "Data", sPayload.c_str());
+									Py_DECREF(pObj);
+								}
+
+								ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, pDataDict);
 								boost::lock_guard<boost::mutex> l(PluginMutex);
 								PluginMessageQueue.push(RecvMessage);
 								m_sRetainedData.clear();
-								m_Headers = NULL;
 								break;
 							}
 						}
@@ -336,13 +407,17 @@ namespace Plugins {
 							break;
 						}
 
-						vHTML.insert(vHTML.end(), sData.c_str(), sData.c_str() + m_RemainingChunk);
+						sPayload += sData.substr(0, m_RemainingChunk);
 						sData = sData.substr(m_RemainingChunk);
 						m_RemainingChunk = 0;
 					}
 				}
 			}
 		}
+
+		//
+		//	Process client requests
+		//
 		else
 		{
 			// GET / HTTP / 1.1\r\n
@@ -371,6 +446,14 @@ namespace Plugins {
 						_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "HTTP", "URL", sURL.c_str());
 					Py_DECREF(pObj);
 
+					if (m_Headers)
+					{
+						if (PyDict_SetItemString(DataDict, "Headers", (PyObject*)m_Headers) == -1)
+							_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "HTTP", "Headers");
+						Py_DECREF((PyObject*)m_Headers);
+						m_Headers = NULL;
+					}
+
 					if (sPayload.length())
 					{
 						pObj = Py_BuildValue("y#", sPayload.c_str(), sPayload.length());
@@ -379,11 +462,10 @@ namespace Plugins {
 						Py_DECREF(pObj);
 					}
 
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, DataDict, m_Status, (PyObject*)m_Headers);
+					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, DataDict);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
 					m_sRetainedData.clear();
-					m_Headers = NULL;
 				}
 			}
 		}
@@ -392,78 +474,177 @@ namespace Plugins {
 	std::vector<byte>	CPluginProtocolHTTP::ProcessOutbound(const WriteDirective* WriteMessage)
 	{
 		std::vector<byte>	retVal;
-		std::string	sHttpRequest = "GET ";
-		// Create first line of the request.
-		// GET /path/file.html HTTP/1.1
-		// Connection: "keep-alive"
-		// Accept: "text/html"
-		//
+		std::string	sHttp;
 
-		// POST /path/test.cgi HTTP/1.1
-		// From: info@domoticz.com
-		// User-Agent: Domoticz/1.0
-		// Content-Type : application/x-www-form-urlencoded
-		// Content-Length : 32
-		//
-		// param1=value&param2=other+value
-
-		if (WriteMessage->m_Operation.length())
+		// Sanity check input
+		if (!WriteMessage->m_Object || !PyDict_Check(WriteMessage->m_Object))
 		{
-			sHttpRequest = WriteMessage->m_Operation + " ";
+			_log.Log(LOG_ERROR, "(%s) HTTP Send parameter was not a dictionary, ignored. See Python Plugin wiki page for help.", __func__);
+			return retVal;
 		}
 
-		if (WriteMessage->m_URL.length())
+		// Extract potential values.  Failures return NULL, success returns borrowed reference
+		PyObject *pStatus = PyDict_GetItemString(WriteMessage->m_Object, "Status");
+		PyObject *pVerb = PyDict_GetItemString(WriteMessage->m_Object, "Verb");
+		PyObject *pURL = PyDict_GetItemString(WriteMessage->m_Object, "URL");
+		PyObject *pData = PyDict_GetItemString(WriteMessage->m_Object, "Data");
+		PyObject *pHeaders = PyDict_GetItemString(WriteMessage->m_Object, "Headers");
+
+		//
+		//	Assume Request if 'Verb' specified
+		//
+		if (pVerb)
 		{
-			sHttpRequest += WriteMessage->m_URL + " ";
+			// GET /path/file.html HTTP/1.1
+			// Connection: "keep-alive"
+			// Accept: "text/html"
+			//
+
+			// POST /path/test.cgi HTTP/1.1
+			// From: info@domoticz.com
+			// User-Agent: Domoticz/1.0
+			// Content-Type : application/x-www-form-urlencoded
+			// Content-Length : 32
+			//
+			// param1=value&param2=other+value
+
+			if (!PyUnicode_Check(pVerb))
+			{
+				_log.Log(LOG_ERROR, "(%s) HTTP 'Verb' dictionary entry not a string, ignored. See Python Plugin wiki page for help.", __func__);
+				return retVal;
+			}
+			sHttp = PyUnicode_AsUTF8(pVerb);
+			sHttp += " ";
+
+			std::string	sHttpURL = "/";
+			if (pURL && PyUnicode_Check(pURL))
+			{
+				sHttpURL = PyUnicode_AsUTF8(pURL);
+			}
+			sHttp += sHttpURL;
+			sHttp += " HTTP/1.1\r\n";
+
+			// If username &/or password specified then add a basic auth header
+			std::string auth;
+			if (m_Username.length() > 0 || m_Password.length() > 0)
+			{
+				if (m_Username.length() > 0)
+				{
+					auth += m_Username;
+				}
+				auth += ":";
+				if (m_Password.length() > 0)
+				{
+					auth += m_Password;
+				}
+				std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
+				sHttp += "Authorization:Basic " + encodedAuth + "\r\n";
+			}
+
+			// Add Server header if it is not supplied
+			PyObject *pHead = NULL;
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "User-Agent");
+			if (!pHead)
+			{
+				sHttp += "User-Agent: Domoticz/1.0\r\n";
+			}
+		}
+		//
+		//	Assume Response if 'Status' specified
+		//
+		else if (pStatus)
+		{
+			//	HTTP/1.1 200 OK
+			//	Date: Mon, 27 Jul 2009 12:28:53 GMT
+			//	Server: Apache/2.2.14 (Win32)
+			//	Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT
+			//	Content-Length: 88
+			//	Content-Type: text/html
+			//	Connection: Closed
+			//
+			//	<html>
+			//	<body>
+			//	<h1>Hello, World!</h1>
+			//	</body>
+			//	</html>
+
+			if (!PyUnicode_Check(pStatus))
+			{
+				_log.Log(LOG_ERROR, "(%s) HTTP 'Status' dictionary entry was not found or not a string, ignored. See Python Plugin wiki page for help.", __func__);
+				return retVal;
+			}
+
+			sHttp = "HTTP/1.1 ";
+			sHttp += PyUnicode_AsUTF8(pStatus);
+			sHttp += "\r\n";
+
+			// Add Date header if it is not supplied
+			PyObject *pHead = NULL;
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Date");
+			if (!pHead)
+			{
+				char szDate[100];
+				time_t rawtime;
+				struct tm *info;
+				time(&rawtime);
+				info = gmtime(&rawtime);
+				if (0 < strftime(szDate, sizeof(szDate), "Date: %a, %d %b %Y %H:%M:%S GMT\r\n", info))	sHttp += szDate;
+			}
+
+			// Add Server header if it is not supplied
+			pHead = NULL;
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Server");
+			if (!pHead)
+			{
+				sHttp += "Server: Domoticz/1.0\r\n";
+			}
 		}
 		else
 		{
-			sHttpRequest = "/ ";
-		}
-		sHttpRequest += "HTTP/1.1\r\n";
-
-		// If username &/or password specified then add a basic auth header
-		std::string auth;
-		if (m_Username.length() > 0 || m_Password.length() > 0)
-		{
-			if (m_Username.length() > 0)
-			{
-				auth += m_Username;
-			}
-			auth += ":";
-			if (m_Password.length() > 0)
-			{
-				auth += m_Password;
-			}
-			std::string encodedAuth = base64_encode((const unsigned char *)auth.c_str(), auth.length());
-			sHttpRequest += "Authorization:Basic " + encodedAuth + "\r\n";
+			_log.Log(LOG_ERROR, "(%s) HTTP unable to determine send type. 'Status' or 'Verb' dictionary entries not found, ignored. See Python Plugin wiki page for help.", __func__);
+			return retVal;
 		}
 
 		// Did we get headers to send?
-		if (WriteMessage->m_Object)
+		if (pHeaders)
 		{
-			if ((((PyObject*)WriteMessage->m_Object)->ob_type->tp_flags & (Py_TPFLAGS_DICT_SUBCLASS)) != 0)
+			if (PyDict_Check(pHeaders))
 			{
-				PyObject*	pHeaders = (PyObject*)WriteMessage->m_Object;
 				PyObject *key, *value;
 				Py_ssize_t pos = 0;
 				while (PyDict_Next(pHeaders, &pos, &key, &value))
 				{
 					std::string	sKey = PyUnicode_AsUTF8(key);
 					std::string	sValue = PyUnicode_AsUTF8(value);
-					sHttpRequest += sKey + ": " + sValue + "\r\n";
+					sHttp += sKey + ": " + sValue + "\r\n";
 				}
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) HTTP Request header parameter was not a dictionary, ignored.", __func__);
+				_log.Log(LOG_ERROR, "(%s) HTTP Response 'Headers' parameter was not a dictionary, ignored.", __func__);
 			}
 		}
 
-		std::string StringBuffer(WriteMessage->m_Buffer.begin(), WriteMessage->m_Buffer.end());
-		sHttpRequest += "\r\n" + StringBuffer;
+		// Add Content-Length header if it is required but not supplied
+		PyObject *pLength = NULL;
+		if (pHeaders)
+			pLength = PyDict_GetItemString(pHeaders, "Content-Length");
+		if (!pLength && pData && PyUnicode_Check(pData))
+		{
+			Py_ssize_t iLength = PyUnicode_GetLength(pData);
+			sHttp += "Content-Length: " + SSTR(iLength) + "\r\n";
+		}
 
-		retVal.assign(sHttpRequest.c_str(), sHttpRequest.c_str() + sHttpRequest.length());
+		sHttp += "\r\n";
+
+		// Append data if supplied (for POST)
+		if (pData && PyUnicode_Check(pData))
+		{
+			sHttp += PyUnicode_AsUTF8(pData);
+		}
+
+		retVal.assign(sHttp.c_str(), sHttp.c_str() + sHttp.length());
+
 		return retVal;
 	}
 }

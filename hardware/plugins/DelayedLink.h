@@ -59,6 +59,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromString, const char*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, PyUnicode_AsWideCharString, PyObject* COMMA Py_ssize_t*);
 		DECLARE_PYTHON_SYMBOL(const char*, PyUnicode_AsUTF8, PyObject*);
+		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromKindAndData, int COMMA const void* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
@@ -102,13 +103,16 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void*, PyCapsule_Import, const char *name COMMA int);
 		DECLARE_PYTHON_SYMBOL(void*, PyType_GenericAlloc, const PyTypeObject * COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_DecodeUTF8, const char * COMMA Py_ssize_t COMMA const char *);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyUnicode_GetLength, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyType_IsSubtype, PyTypeObject* COMMA PyTypeObject*);
+		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyByteArray_Size, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 #endif
-		Py_ssize_t	_Py_RefTotal;
-		PyObject	_Py_NoneStruct;
+		Py_ssize_t		_Py_RefTotal;
+		PyObject		_Py_NoneStruct;
 
 		SharedLibraryProxy() {
 			shared_lib_ = 0;
@@ -155,6 +159,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsWideCharString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_AsUTF8);
+					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromKindAndData);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
@@ -201,6 +206,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyCapsule_Import);
 					RESOLVE_PYTHON_SYMBOL(PyType_GenericAlloc);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_DecodeUTF8);
+					RESOLVE_PYTHON_SYMBOL(PyUnicode_GetLength);
+					RESOLVE_PYTHON_SYMBOL(PyType_IsSubtype);
+					RESOLVE_PYTHON_SYMBOL(PyByteArray_Size);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -311,6 +319,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyUnicode_FromFormat	pythonLib->PyUnicode_FromFormat
 #define PyUnicode_AsWideCharString	pythonLib->PyUnicode_AsWideCharString
 #define PyUnicode_AsUTF8		pythonLib->PyUnicode_AsUTF8
+#define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyUnicode_FromKindAndData  pythonLib->PyUnicode_FromKindAndData
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
@@ -360,4 +369,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyCapsule_Import		pythonLib->PyCapsule_Import
 #define PyType_GenericAlloc		pythonLib->PyType_GenericAlloc
 #define PyUnicode_DecodeUTF8	pythonLib->PyUnicode_DecodeUTF8
+#define PyUnicode_GetLength		pythonLib->PyUnicode_GetLength
+#define PyType_IsSubtype		pythonLib->PyType_IsSubtype
+#define PyByteArray_Size		pythonLib->PyByteArray_Size
 }

@@ -33,6 +33,7 @@ CLogger::CLogger(void)
 	FilterString = "";
 	m_bInSequenceMode = false;
 	m_bEnableLogTimestamps = true;
+	m_bEnableLogThreadIDs = false;
 	m_verbose_level = VBL_ALL;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
@@ -136,6 +137,14 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 		sstr << szDate << " ";
 	}
 
+	if (m_bEnableLogThreadIDs)
+	{
+#ifdef WIN32
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << ::GetCurrentThreadId() << "] ";
+#else
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << pthread_self() << "] ";
+#endif
+	}
 
 	if ((level != LOG_ERROR))
 	{
@@ -244,6 +253,16 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 bool CLogger::IsLogTimestampsEnabled()
 {
 	return (m_bEnableLogTimestamps && !g_bUseSyslog);
+}
+
+void CLogger::EnableLogThreadIDs(const bool bEnableThreadIDs)
+{
+	m_bEnableLogThreadIDs = bEnableThreadIDs;
+}
+
+bool CLogger::IsLogThreadIDsEnabled()
+{
+	return m_bEnableLogThreadIDs && !g_bUseSyslog;
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
