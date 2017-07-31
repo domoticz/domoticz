@@ -115,7 +115,11 @@ case "$1" in
         PID=$(pidof_domoticz) || true
         if [ "${PID}" ]; then
                 kill -HUP $PID
+                log_end_msg 0
+                exit 0
         fi
+        log_end_msg 3
+        exit 3
         ;;
   restart)
         log_daemon_msg "Restarting $DESC" "$NAME"
