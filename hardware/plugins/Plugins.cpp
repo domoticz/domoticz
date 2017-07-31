@@ -15,7 +15,11 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
+#ifdef WITH_EXTERNAL_TINYXPATH
+#	include <tinyxml.h>
+#else
+#	include "../tinyxpath/tinyxml.h"
+#endif
 #include "../main/localtime_r.h"
 
 #include "../../notifications/NotificationHelper.h"

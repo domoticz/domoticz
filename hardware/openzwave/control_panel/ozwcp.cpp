@@ -45,7 +45,11 @@
 #include "Group.h"
 #include "Notification.h"
 
-#include "../../tinyxpath/tinyxml.h"
+#ifdef WITH_EXTERNAL_TINYXPATH
+#	include <tinyxml.h>
+#else
+#	include "../tinyxpath/tinyxml.h"
+#endif
 
 #include <sys/stat.h>
 #include <fstream>

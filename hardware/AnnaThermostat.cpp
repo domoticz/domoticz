@@ -8,7 +8,11 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
+#ifdef WITH_EXTERNAL_TINYXPATH
+#	include <tinyxml.h>
+#else
+#	include "../tinyxpath/tinyxml.h"
+#endif
 
 #define round(a) ( int ) ( a + .5 )
 

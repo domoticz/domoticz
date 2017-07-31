@@ -449,22 +449,6 @@ webserver/proxyclient.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
-tinyxpath/action_store.cpp
-tinyxpath/htmlutil.cpp
-tinyxpath/lex_util.cpp
-tinyxpath/node_set.cpp
-tinyxpath/tinystr.cpp
-tinyxpath/tinyxml.cpp
-tinyxpath/tinyxmlerror.cpp
-tinyxpath/tinyxmlparser.cpp
-tinyxpath/tokenlist.cpp
-tinyxpath/xml_util.cpp
-tinyxpath/xpath_expression.cpp
-tinyxpath/xpath_processor.cpp
-tinyxpath/xpath_stream.cpp
-tinyxpath/xpath_stack.cpp
-tinyxpath/xpath_static.cpp
-tinyxpath/xpath_syntax.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
@@ -535,6 +519,43 @@ IF(LIBUSB_FOUND)
 else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
+
+pkg_check_modules(TinyXML QUIET tinyxml)
+IF(TinyXML_FOUND)
+  MESSAGE(STATUS "TinyXML found at: ${TinyXML_LIBRARIES}")
+  IF(EXISTS "/usr/include/tinyxpath/xpath_processor.h")
+    MESSAGE(STATUS "TinyXPath found")
+    target_link_libraries(domoticz ${TinyXML_LIBRARIES})
+    target_link_libraries(domoticz tinyxpath)
+    include_directories(/usr/include/tinyxpath)
+    add_definitions(-DWITH_EXTERNAL_TINYXPATH)
+  else()
+    MESSAGE(STATUS "==== TinyXPath not found, using built-in sources")
+  ENDIF()
+else()
+  MESSAGE(STATUS "==== TinyXML not found, needed for tinyxpath, using built-in sources instead.")
+  target_sources(
+  domoticz
+  PUBLIC
+  tinyxpath/action_store.cpp
+  tinyxpath/htmlutil.cpp
+  tinyxpath/lex_util.cpp
+  tinyxpath/node_set.cpp
+  tinyxpath/tinystr.cpp
+  tinyxpath/tinyxml.cpp
+  tinyxpath/tinyxmlerror.cpp
+  tinyxpath/tinyxmlparser.cpp
+  tinyxpath/tokenlist.cpp
+  tinyxpath/xml_util.cpp
+  tinyxpath/xpath_expression.cpp
+  tinyxpath/xpath_processor.cpp
+  tinyxpath/xpath_stream.cpp
+  tinyxpath/xpath_stack.cpp
+  tinyxpath/xpath_static.cpp
+  tinyxpath/xpath_syntax.cpp
+  )
+ENDIF(TinyXML_FOUND)
+
 
 #
 # Find MD5/RMD160/SHA library

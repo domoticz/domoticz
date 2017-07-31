@@ -16,7 +16,12 @@ extern "C" {
 #endif
 }
 
-#include "../tinyxpath/xpath_processor.h"
+#ifdef WITH_EXTERNAL_TINYXPATH
+#	include <tinyxml.h>
+#	include <xpath_processor.h>
+#else
+#	include "../tinyxpath/xpath_processor.h"
+#endif
 #include "../json/json.h"
 #include "SQLHelper.h"
 #include "mainworker.h"
@@ -44,7 +49,11 @@ int CLuaCommon::l_domoticz_applyXPath(lua_State* lua_state)
 				return 0;
 			}
 			TinyXPath::xpath_processor processor(root, xpath.c_str());
+#ifdef WITH_EXTERNAL_TINYXPATH
+			TIXML_STRING xresult = processor.S_compute_xpath();
+#else
 			TiXmlString xresult = processor.S_compute_xpath();
+#endif
 			lua_pushstring(lua_state, xresult.c_str());
 			return 1;
 		}

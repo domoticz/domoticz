@@ -17,7 +17,11 @@
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "../json/json.h"
-#include "../tinyxpath/tinyxml.h"
+#ifdef WITH_EXTERNAL_TINYXPATH
+#	include <tinyxml.h>
+#else
+#	include "../tinyxpath/tinyxml.h"
+#endif
 #include "../main/localtime_r.h"
 #ifdef WIN32
 #	include <direct.h>
