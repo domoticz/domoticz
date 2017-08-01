@@ -369,6 +369,10 @@ namespace http {
 			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1, _2, _3));
 			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1, _2, _3));
 
+			RegisterCommandCode("addcamera", boost::bind(&CWebServer::Cmd_AddCamera, this, _1, _2, _3));
+			RegisterCommandCode("updatecamera", boost::bind(&CWebServer::Cmd_UpdateCamera, this, _1, _2, _3));
+			RegisterCommandCode("deletecamera", boost::bind(&CWebServer::Cmd_DeleteCamera, this, _1, _2, _3));
+
 			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1, _2, _3));
 			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1, _2, _3));
@@ -5982,116 +5986,6 @@ namespace http {
 				root["title"] = "ClearNotification";
 
 				m_notifications.RemoveDeviceNotifications(idx);
-			}
-			else if (cparam == "addcamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string name = request::findValue(&req, "name");
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string address = request::findValue(&req, "address");
-				std::string sport = request::findValue(&req, "port");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string timageurl = request::findValue(&req, "imageurl");
-				if (
-					(name == "") ||
-					(address == "") ||
-					(timageurl == "")
-					)
-					return;
-
-				std::string imageurl;
-				if (request_handler::url_decode(timageurl, imageurl))
-				{
-					imageurl = base64_decode(imageurl);
-
-					int port = atoi(sport.c_str());
-					root["status"] = "OK";
-					root["title"] = "AddCamera";
-					m_sql.safe_query(
-						"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL) VALUES ('%q',%d,'%q',%d,'%q','%q','%q')",
-						name.c_str(),
-						(senabled == "true") ? 1 : 0,
-						address.c_str(),
-						port,
-						base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-						base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
-						imageurl.c_str()
-					);
-					m_mainworker.m_cameras.ReloadCameras();
-				}
-			}
-			else if (cparam == "updatecamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx == "")
-					return;
-				std::string name = request::findValue(&req, "name");
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string address = request::findValue(&req, "address");
-				std::string sport = request::findValue(&req, "port");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string timageurl = request::findValue(&req, "imageurl");
-				if (
-					(name == "") ||
-					(senabled == "") ||
-					(address == "") ||
-					(timageurl == "")
-					)
-					return;
-
-				std::string imageurl;
-				if (request_handler::url_decode(timageurl, imageurl))
-				{
-					imageurl = base64_decode(imageurl);
-
-					int port = atoi(sport.c_str());
-
-					root["status"] = "OK";
-					root["title"] = "UpdateCamera";
-
-					m_sql.safe_query(
-						"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q' WHERE (ID == '%q')",
-						name.c_str(),
-						(senabled == "true") ? 1 : 0,
-						address.c_str(),
-						port,
-						base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-						base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
-						imageurl.c_str(),
-						idx.c_str()
-					);
-					m_mainworker.m_cameras.ReloadCameras();
-				}
-			}
-			else if (cparam == "deletecamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx == "")
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteCamera";
-
-				m_sql.DeleteCamera(idx);
-				m_mainworker.m_cameras.ReloadCameras();
 			}
 			else if (cparam == "adduser")
 			{

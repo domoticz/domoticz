@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 116
+#define DB_VERSION 117
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -296,6 +296,7 @@ const char *sqlCreateCameras =
 "[Enabled] INTEGER DEFAULT 1, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
+"[Protocol] INTEGER DEFAULT 0, "
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
 "[ImageURL] VARCHAR(200) DEFAULT (''));";
@@ -2269,6 +2270,14 @@ bool CSQLHelper::OpenDatabase()
 			if (!DoesColumnExistsInTable("DeviceType", "MobileDevices"))
 			{
 				query("ALTER TABLE MobileDevices ADD COLUMN [DeviceType] VARCHAR(100) DEFAULT ('')");
+			}
+		}
+		if (dbversion < 117)
+		{
+			//Add Protocol for Camera (HTTP/HTTPS/...)
+			if (!DoesColumnExistsInTable("Protocol", "Cameras"))
+			{
+				query("ALTER TABLE Cameras ADD COLUMN [Protocol] INTEGER DEFAULT 0");
 			}
 		}
 	}

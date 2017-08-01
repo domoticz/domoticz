@@ -1,5 +1,6 @@
 Version 3.xxx (August xxth 2017)
 - Implemented: Pusher now supports Distance type
+- Implemented: Camera, can now handle HTTPS url's
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
