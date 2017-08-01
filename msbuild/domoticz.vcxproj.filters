@@ -1331,6 +1331,18 @@
     <None Include="..\www\views\mobile_notifications.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\views\dpgooglepubsub.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpinflux.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\DPGooglePubSubController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPInfluxController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">

@@ -117,7 +117,9 @@
     <None Include="..\www\app\DashboardController.js" />
     <None Include="..\www\app\DevicesController.js" />
     <None Include="..\www\app\DPFibaroController.js" />
+    <None Include="..\www\app\DPGooglePubSubController.js" />
     <None Include="..\www\app\DPHttpController.js" />
+    <None Include="..\www\app\DPInfluxController.js" />
     <None Include="..\www\app\EventsController.js" />
     <None Include="..\www\app\FloorplanController.js" />
     <None Include="..\www\app\FloorplanEditController.js" />
@@ -363,7 +365,9 @@
     <None Include="..\www\views\dashboard.html" />
     <None Include="..\www\views\devices.html" />
     <None Include="..\www\views\dpfibaro.html" />
+    <None Include="..\www\views\dpgooglepubsub.html" />
     <None Include="..\www\views\dphttp.html" />
+    <None Include="..\www\views\dpinflux.html" />
     <None Include="..\www\views\events.html" />
     <None Include="..\www\views\floorplanedit.html" />
     <None Include="..\www\views\floorplans.html" />
