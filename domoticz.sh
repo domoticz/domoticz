@@ -115,6 +115,9 @@ case "$1" in
         PID=$(pidof_domoticz) || true
         if [ "${PID}" ]; then
                 kill -HUP $PID
+                log_end_msg 0
+        else
+                log_end_msg 1
         fi
         ;;
   restart)
