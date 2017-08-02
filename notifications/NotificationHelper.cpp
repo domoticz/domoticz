@@ -1001,7 +1001,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					if (bSendNotification && !bStartTime && (!bRecoveryMessage || itt2->SendAlways))
 					{
 						if (SystemUptime() < SensorTimeOut * 60 && (!bRecoveryMessage || itt2->SendAlways))
-							return;
+							continue;
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
 						if (result.size() == 0)
@@ -1026,7 +1026,7 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 						CustomRecoveryMessage(itt2->ID, clearstr, true);
 					}
 					else
-						return;
+						continue;
 
 					if (bCustomMessage && !bRecoveryMessage)
 						msg = ParseCustomMessage(custommsg, itt2->DeviceName, "");
