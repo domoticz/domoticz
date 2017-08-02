@@ -618,6 +618,8 @@
     <ClInclude Include="..\main\WindCalculation.h" />
     <ClInclude Include="..\smtpclient\SMTPClient.h" />
     <ClInclude Include="..\sqlite\sqlite3.h" />
+    <ClInclude Include="..\tinyxpath\tinyxml.h" />
+    <ClInclude Include="..\tinyxpath\xpath_processor.h" />
     <ClInclude Include="..\main\stdafx.h" />
     <ClInclude Include="..\main\SunRiseSet.h" />
     <ClInclude Include="..\main\targetver.h" />

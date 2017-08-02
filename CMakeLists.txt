@@ -520,20 +520,9 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
-pkg_check_modules(TinyXML QUIET tinyxml)
-IF(TinyXML_FOUND)
-  MESSAGE(STATUS "TinyXML found at: ${TinyXML_LIBRARIES}")
-  IF(EXISTS "/usr/include/tinyxpath/xpath_processor.h")
-    MESSAGE(STATUS "TinyXPath found")
-    target_link_libraries(domoticz ${TinyXML_LIBRARIES})
-    target_link_libraries(domoticz tinyxpath)
-    include_directories(/usr/include/tinyxpath)
-    add_definitions(-DWITH_EXTERNAL_TINYXPATH)
-  else()
-    MESSAGE(STATUS "==== TinyXPath not found, using built-in sources")
-  ENDIF()
-else()
-  MESSAGE(STATUS "==== TinyXML not found, needed for tinyxpath, using built-in sources instead.")
+option(USE_BUILTIN_TINYXPATH "Use builtin tinyxpath library" YES)
+IF(USE_BUILTIN_TINYXPATH)
+  include_directories(tinyxpath)
   target_sources(
   domoticz
   PUBLIC
@@ -554,8 +543,23 @@ else()
   tinyxpath/xpath_static.cpp
   tinyxpath/xpath_syntax.cpp
   )
-ENDIF(TinyXML_FOUND)
-
+else()
+  pkg_check_modules(TinyXML QUIET tinyxml)
+  IF(TinyXML_FOUND)
+    MESSAGE(STATUS "TinyXML found at: ${TinyXML_LIBRARIES}")
+    IF(EXISTS "/usr/include/tinyxpath/xpath_processor.h")
+      MESSAGE(STATUS "TinyXPath found")
+      target_link_libraries(domoticz ${TinyXML_LIBRARIES})
+      target_link_libraries(domoticz tinyxpath)
+      include_directories(/usr/include/tinyxpath)
+      add_definitions(-DWITH_EXTERNAL_TINYXPATH)
+    else()
+      MESSAGE(FATAL_ERROR "TinyXPath not found but USE_BUILTIN_TINYXPATH=NO")
+    ENDIF()
+  else()
+    MESSAGE(FATAL_ERROR "TinyXML not found but USE_BUILTIN_TINYXPATH=NO")
+  ENDIF(TinyXML_FOUND)
+ENDIF(USE_BUILTIN_TINYXPATH)
 
 #
 # Find MD5/RMD160/SHA library

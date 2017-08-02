@@ -1,3 +1,6 @@
+#include <tinyxml.h>
+#include <xpath_processor.h>
+
 #include "stdafx.h"
 #include "Helper.h"
 #include "Logger.h"
@@ -16,12 +19,6 @@ extern "C" {
 #endif
 }
 
-#ifdef WITH_EXTERNAL_TINYXPATH
-#	include <tinyxml.h>
-#	include <xpath_processor.h>
-#else
-#	include "../tinyxpath/xpath_processor.h"
-#endif
 #include "../json/json.h"
 #include "SQLHelper.h"
 #include "mainworker.h"
