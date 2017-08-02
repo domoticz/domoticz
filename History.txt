@@ -2,6 +2,7 @@ Version 3.xxx (August xxth 2017)
 - Implemented: Pusher now supports Distance type
 - Implemented: Camera, can now handle HTTPS url's
 - Floorplan: Fixed door contact type
+- Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
