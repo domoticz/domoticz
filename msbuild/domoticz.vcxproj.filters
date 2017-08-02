@@ -474,6 +474,9 @@
     <Filter Include="Devices\Teleinfo\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IFTTT">
+      <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2050,6 +2053,9 @@
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\IFTTT.h">
+      <Filter>IFTTT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2732,6 +2738,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\IFTTT.cpp">
+      <Filter>IFTTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
