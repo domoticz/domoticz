@@ -1,3 +1,5 @@
+#include <tinyxml.h>
+
 #include "stdafx.h"
 #include "RAVEn.h"
 #include "../main/Helper.h"
@@ -6,11 +8,6 @@
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#ifdef WITH_EXTERNAL_TINYXPATH
-#	include <tinyxml.h>
-#else
-#	include "../tinyxpath/tinyxml.h"
-#endif
 
 //Rainforest RAVEn USB ZigBee Smart Meter Adapter
 //https://rainforestautomation.com/rfa-z106-raven/
