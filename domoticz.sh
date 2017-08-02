@@ -117,7 +117,7 @@ case "$1" in
                 kill -HUP $PID
                 log_end_msg 0
         else
-                log_end_msg 3
+                log_end_msg 1
         fi
         ;;
   restart)
