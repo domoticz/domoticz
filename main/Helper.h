@@ -64,4 +64,5 @@ int getclock(struct timeval *tv);
 int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y);
 
 bool IsArgumentSecure(const std::string &arg);
+uint32_t SystemUptime();
 
