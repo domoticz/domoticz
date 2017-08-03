@@ -911,10 +911,10 @@ bool IsArgumentSecure(const std::string &arg)
 	return true;
 }
 
-uint32_t SystemUptime()
+uint64_t SystemUptime()
 {
 #if defined(WIN32)
-	return GetTickCount() / 1000u;
+	return GetTickCount64() / 1000u;
 #elif defined(__linux__) || defined(__linux) || defined(linux)
 	struct sysinfo info;
 	if (sysinfo(&info) != 0)
