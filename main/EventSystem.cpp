@@ -3818,7 +3818,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		m_sql.AddTaskItem(_tTaskItem::SendSMS(1, luaString));
 		scriptTrue = true;
 	}
-	else if (lCommand == "TriggerIFTTT" != std::string::npos)
+	else if (lCommand == "TriggerIFTTT")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::vector<std::string> aParam;

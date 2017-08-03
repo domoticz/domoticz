@@ -1621,7 +1621,6 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 		//Update
 		m_sql.safe_query("UPDATE MySensorsVars SET [Value]='%q' WHERE (ROWID = '%q')", svalue.c_str(), result[0][0].c_str());
 	}
-
 }
 
 bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue)
