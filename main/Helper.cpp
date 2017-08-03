@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Helper.h"
 #ifdef WIN32
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
 #include "dirent_windows.h"
 #include <direct.h>
 #else
