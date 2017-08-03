@@ -14,6 +14,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../webserver/Base64.h"
 #include <boost/algorithm/string/join.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <boost/crc.hpp>
 #include <algorithm>
@@ -2370,7 +2371,25 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
 		std::stringstream sTmp;
-		sTmp << "(" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+		sTmp << "Received message from (" << pHardware->Name << "/" << pHardware->m_HwdID << ") (" << DeviceName << "/" << DeviceRowIdx  << ") " << sdevicetype;
+		if (pHardware->HwdType == HTYPE_RazberryZWave || pHardware->HwdType == HTYPE_OpenZWave)
+		{
+			// Add ZWave nodeId to logged string
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (ID==%d)", DeviceRowIdx); // Get DeviceID
+			if (!result.empty())
+			{
+				// Build nodeId from the DeviceID
+				unsigned int ID;
+				std::stringstream s_strid;
+				s_strid << std::hex << result[0][0].c_str();
+				s_strid >> ID;
+				unsigned char ID2 = (ID >> 16) & 0xFF;
+				unsigned char ID3 = (ID >> 8) & 0xFF;
+				int nodeId = ((int)ID2 << 16) | (int)ID3;
+				sTmp << " (NodeID=" << nodeId << ")";
+			}
+		}
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();
