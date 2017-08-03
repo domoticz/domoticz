@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Helper.h"
 #ifdef WIN32
+#define _WIN32_WINNT _WIN32_WINNT_VISTA
 #include "dirent_windows.h"
 #include <direct.h>
 #else
@@ -914,7 +915,7 @@ bool IsArgumentSecure(const std::string &arg)
 uint32_t SystemUptime()
 {
 #if defined(WIN32)
-	return GetTickCount() / 1000u;
+	return static_cast<uint32_t>(GetTickCount64() / 1000u);
 #elif defined(__linux__) || defined(__linux) || defined(linux)
 	struct sysinfo info;
 	if (sysinfo(&info) != 0)
