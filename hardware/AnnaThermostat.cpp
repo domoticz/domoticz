@@ -1,5 +1,3 @@
-#include <tinyxml.h>
-
 #include "stdafx.h"
 #include "AnnaThermostat.h"
 #include "../main/Helper.h"
@@ -10,6 +8,8 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
+
+#include <tinyxml.h>
 
 #define round(a) ( int ) ( a + .5 )
 

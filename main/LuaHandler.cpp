@@ -1,6 +1,3 @@
-#include <tinyxml.h>
-#include <xpath_processor.h>
-
 #include "stdafx.h"
 #include "Helper.h"
 #include "Logger.h"
@@ -18,6 +15,8 @@ extern "C" {
 #include "../lua/src/lauxlib.h"
 #endif
 }
+
+#include <xpath_processor.h>
 
 #include "../json/json.h"
 #include "SQLHelper.h"
