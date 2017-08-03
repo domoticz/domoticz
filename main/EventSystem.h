@@ -126,7 +126,7 @@ private:
 		int nValue;
 		std::string sValue;
 		std::string nValueWording;
-		int varId;
+		uint64_t varId;
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		queue_element_trigger* trigger;
