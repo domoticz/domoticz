@@ -4380,7 +4380,7 @@ namespace http {
 					{
 						//Blyss
 						dtype = pTypeLighting6;
-						subtype = lighttype - 60;
+						subtype = sTypeBlyss;
 						std::string sgroupcode = request::findValue(&req, "groupcode");
 						sunitcode = request::findValue(&req, "unitcode");
 						std::string id = request::findValue(&req, "id");
@@ -4859,7 +4859,7 @@ namespace http {
 				{
 					//Blyss
 					dtype = pTypeLighting6;
-					subtype = lighttype - 60;
+					subtype = sTypeBlyss;
 					std::string sgroupcode = request::findValue(&req, "groupcode");
 					sunitcode = request::findValue(&req, "unitcode");
 					std::string id = request::findValue(&req, "id");
