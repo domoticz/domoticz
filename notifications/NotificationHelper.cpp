@@ -991,8 +991,8 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					std::string szExtraData;
 					std::string custommsg;
 					uint64_t Idx = itt->first;
-					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
-					int diff = (int)round(difftime(btime, itt2->LastUpdate));
+					uint32_t SensorTimeOut = static_cast<uint32_t>(atoi(splitresults[2].c_str()));  // minutes
+					uint32_t diff = static_cast<uint32_t>(round(difftime(btime, itt2->LastUpdate)));
 					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut * 60);
 					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut * 60), (diff < SensorTimeOut * 60));
 					bool bCustomMessage = false;
