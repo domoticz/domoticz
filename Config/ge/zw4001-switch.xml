@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- http://www.ezzwave.com/advanced-operation/ -->
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="3" genre="config" label="LED Light" min="0" max="2" value="0" size="1">
+			<Help>Sets when the LED on the switch is lit.</Help>
+			<Item label="LED on when light off (default)" value="0" />
+			<Item label="LED on when light on" value="1" />
+			<Item label="LED always off" value="2" />
+		</Value>
+		<Value type="list" index="4" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+</Product>
