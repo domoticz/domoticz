@@ -1335,6 +1335,9 @@ define(['app'], function (app) {
 								}
 							}
 						}); //security devices
+/*
+						//Gizmocuz: Don't know how did this ? But this should be under utility devices!
+						//Please do so
 
 						//evohome devices
 						$.each(data.result, function (i, item) {
@@ -1384,7 +1387,7 @@ define(['app'], function (app) {
 								}
 							}
 						}); //evohome devices
-
+*/
 						//Utility Sensors
 						$.each(data.result, function (i, item) {
 							if (
@@ -3274,7 +3277,9 @@ define(['app'], function (app) {
 							htmlcontent += '</section>';
 						}
 
-
+						//Gizmocuz: Don't know how did this ? But this should be under utility devices!
+						//Please do so
+/*
 						//evohome devices
 						jj = 0;
 						bHaveAddedDivider = false;
@@ -3370,7 +3375,7 @@ define(['app'], function (app) {
 						if (jj > 0) {
 							htmlcontent += '</section>';
 						}
-
+*/
 						//Utility Sensors
 						jj = 0;
 						bHaveAddedDivider = false;
