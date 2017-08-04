@@ -352,25 +352,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 
 void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const std::string &messagetype, const bool isctlr2, const bool is2ndchannel, const std::string &load_power, const std::string &power_consumed, const int battery)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2 or f0b4299ae4b8 for the gateway
-	std::string str = "";
-	if (nodeid.length() < 12) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
-	}
-	if (nodeid.length() < 14) {
-		//gateway
-		str = nodeid.substr(4, 8);
-	}
-	else {
-		//device
-		str = nodeid.substr(6, 8);
-	}
-
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
+	unsigned int sID = GetShortID(nodeid);
 
 	char szTmp[300];
 	if (sID == 1)
@@ -420,7 +402,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit == '%d')", m_HwdID, ID.c_str(), xcmd.type, xcmd.unitcode);
 	if (result.size() < 1)
 	{
-		_log.Log(LOG_STATUS, "XiaomiGateway: New Switch Device Found (%s)", str.c_str());
+		_log.Log(LOG_STATUS, "XiaomiGateway: New %s Found (%s)", Name.c_str(), nodeid.c_str());
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
@@ -516,12 +498,6 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		char szTmp[300];
-		if (sID == 1)
-			sprintf(szTmp, "%d", 1);
-		else
-			sprintf(szTmp, "%08X", (unsigned int)sID);
-		std::string ID = szTmp;
 		SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
 	}
 }
@@ -531,11 +507,6 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	if (VoltageLevel < 3600) {
 		unsigned int sID = GetShortID(nodeid);
 		if (sID > 0) {
-			char szTmp[300];
-			if (sID == 1)
-				sprintf(szTmp, "%d", 1);
-			else
-				sprintf(szTmp, "%08X", (unsigned int)sID);
 			int percent = ((VoltageLevel - 2200) / 10);
 			float voltage = (float)VoltageLevel / 1000;
 			SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
@@ -548,11 +519,6 @@ void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::strin
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		char szTmp[300];
-		if (sID == 1)
-			sprintf(szTmp, "%d", 1);
-		else
-			sprintf(szTmp, "%08X", (unsigned int)sID);
 		float lux = (float)Illumination;
 		SendLuxSensor(sID, sID, 100, lux, Name);
 	}
@@ -598,7 +564,6 @@ bool XiaomiGateway::StartHardware()
 		}
 		m_ListenPort9898 = true;
 		if (lowestId != m_HwdID) {
-			//_log.Log(LOG_STATUS, "XiaomiGateway: %d != %d", lowestId, m_HwdID);
 			m_ListenPort9898 = false;
 		}
 		else {
