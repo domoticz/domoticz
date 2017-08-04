@@ -543,6 +543,7 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	}
 }
 
+
 void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
 {
 	unsigned int sID = GetShortID(nodeid);
