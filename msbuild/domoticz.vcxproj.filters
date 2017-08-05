@@ -1450,9 +1450,6 @@
     <ClInclude Include="..\main\SunRiseSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -625,7 +625,6 @@
     <ClInclude Include="..\sqlite\sqlite3.h" />
     <ClInclude Include="..\main\stdafx.h" />
     <ClInclude Include="..\main\SunRiseSet.h" />
-    <ClInclude Include="..\main\targetver.h" />
     <ClInclude Include="..\tcpserver\TCPClient.h" />
     <ClInclude Include="..\tcpserver\TCPServer.h" />
     <ClInclude Include="..\httpclient\UrlEncode.h" />
