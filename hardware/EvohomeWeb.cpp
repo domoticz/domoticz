@@ -293,7 +293,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			for (std::vector<zone>::size_type i = 0; i < m_tcs->zones.size(); ++i)
 			{
 				zone* hz = &m_tcs->zones[i];
-				if (*hz->status != NULL)
+				if (hz->status != NULL)
 				{
 					std::string szId, sztemperature;
 					szId = (*hz->status)["zoneId"].asString();
@@ -1130,7 +1130,7 @@ bool CEvohomeWeb::get_schedule(std::string zoneId)
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-	if (*hz->status == NULL)
+	if (hz->status == NULL)
 		return false;
 	bool ret = jReader.parse(s_res, hz->schedule);
 	if (ret)
