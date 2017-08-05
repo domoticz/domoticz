@@ -377,6 +377,7 @@
     <None Include="..\www\views\log.html" />
     <None Include="..\www\views\login.html" />
     <None Include="..\www\views\logout.html" />
+    <None Include="..\www\views\mobile_notifications.html" />
     <None Include="..\www\views\notification.html" />
     <None Include="..\www\views\offline.html" />
     <None Include="..\www\views\restoredatabase.html" />

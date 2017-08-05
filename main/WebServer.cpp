@@ -4055,8 +4055,10 @@ namespace http {
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
 
+				std::string extraData = request::findValue(&req, "extradata");
+
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, std::string(""), 1, std::string(""), false)) {
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, extraData, 1, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */

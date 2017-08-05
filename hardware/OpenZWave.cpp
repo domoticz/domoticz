@@ -1551,7 +1551,7 @@ void COpenZWave::AddValue(const OpenZWave::ValueID &vID, const NodeInfo *pNodeIn
 					if (IsNodeRGBW(HomeID, NodeID))
 					{
 						_device.label = "Fibaro RGBW";
-						_device.devType = ZDTYPE_SWITCH_FGRGBWM441;
+						_device.devType = ZDTYPE_SWITCH_RGBW;
 						_device.instanceID = 100;
 						InsertDevice(_device);
 					}
