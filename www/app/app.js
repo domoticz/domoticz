@@ -706,6 +706,29 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				});
 			}
 		};
+		$rootScope.GetItemBackgroundStatus = function (item) {
+			// generate protected/timeout/lowbattery status
+			var backgroundClass = "statusNormal";
+			if (item.HaveTimeout == true) {
+				backgroundClass = "statusTimeout";
+			}
+			else {
+				var BatteryLevel = parseInt(item.BatteryLevel);
+				if (BatteryLevel != 255) {
+					if (BatteryLevel <= 10) {
+						backgroundClass = "statusLowBattery";
+					}
+					else if (item.Protected == true) {
+						backgroundClass = "statusProtected";
+					}
+				}
+				else if (item.Protected == true) {
+					backgroundClass = "statusProtected";
+				}
+			}
+			return backgroundClass;
+		}
+
 	});
 
 	// Bootstrap Angular when DOM is ready

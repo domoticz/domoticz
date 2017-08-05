@@ -60,29 +60,6 @@ define(['app'], function (app) {
 			return strstatus;
 		}
 
-		GetBackgroundStatus = function (item) {
-			// generate protected/timeout/lowbattery status
-			var backgroundClass = "statusNormal";
-			if (item.HaveTimeout == true) {
-				backgroundClass = "statusTimeout";
-			}
-			else {
-				var BatteryLevel = parseInt(item.BatteryLevel);
-				if (BatteryLevel != 255) {
-					if (BatteryLevel <= 10) {
-						backgroundClass = "statusLowBattery";
-					}
-					else if (item.Protected == true) {
-						backgroundClass = "statusProtected";
-					}
-				}
-				else if (item.Protected == true) {
-					backgroundClass = "statusProtected";
-				}
-			}
-			return backgroundClass;
-		}
-
 		GetLightStatusText = function (item) {
 			if (item.SubType == "Evohome")
 				return EvoDisplayTextMode(item.Status);
@@ -173,7 +150,7 @@ define(['app'], function (app) {
 									}
 									else {
 										if (item.Type.indexOf('Group') == 0) {
-											var backgroundClass = GetBackgroundStatus(item);
+											var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 											$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 											$(id + " #bstatus").addClass(backgroundClass);
 
@@ -889,7 +866,7 @@ define(['app'], function (app) {
 												}
 											}
 										}
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 										$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 										$(id + " #bstatus").addClass(backgroundClass);
 
@@ -1067,7 +1044,7 @@ define(['app'], function (app) {
 											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
 
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 										$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 										$(id + " #bstatus").addClass(backgroundClass);
 
@@ -1241,7 +1218,7 @@ define(['app'], function (app) {
 										if ($(id + " #lastupdate > span").html() != item.LastUpdate) {
 											$(id + " #lastupdate > span").html(item.LastUpdate);
 										}
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 										$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 										$(id + " #bstatus").addClass(backgroundClass);
 
@@ -1340,7 +1317,7 @@ define(['app'], function (app) {
 											}
 										}
 
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 										$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 										$(id + " #bstatus").addClass(backgroundClass);
 
@@ -1669,7 +1646,7 @@ define(['app'], function (app) {
 											}
 										}
 
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 										$(id + " #bstatus").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
 										$(id + " #bstatus").addClass(backgroundClass);
 
@@ -1844,7 +1821,7 @@ define(['app'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="scene_' + item.idx + '">\n';
 									}
-									var backgroundClass = GetBackgroundStatus(item);
+									var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
 									if (item.Type.indexOf('Scene') == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -1955,7 +1932,7 @@ define(['app'], function (app) {
 									htmlcontent += '<div class="row divider">\n';
 									bHaveAddedDivider = true;
 								}
-								var backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 								var status = "";
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -2759,7 +2736,7 @@ define(['app'], function (app) {
 								}
 								var xhtm = "";
 
-								var backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = '<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
@@ -2913,7 +2890,7 @@ define(['app'], function (app) {
 									bHaveAddedDivider = true;
 								}
 								// generate protected/timeout/lowbattery status
-								var backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = item.Name;
@@ -3162,7 +3139,7 @@ define(['app'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="security_' + item.idx + '">\n';
 									}
-									var backgroundClass = GetBackgroundStatus(item);
+									var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 									xhtm += '\t  <div id="bstatus" class="item ' + backgroundClass + '">\n';
 									if ($scope.config.DashboardType == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
@@ -3316,7 +3293,7 @@ define(['app'], function (app) {
 										else if ($scope.config.DashboardType == 1) {
 											xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										}
-										var backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 
 										xhtm +=
 											'\t    <tr class="' + backgroundClass + '">\n' +
@@ -3836,7 +3813,7 @@ define(['app'], function (app) {
 									statushtml = '<span class="value1">' + statushtml + '</span>';
 
 									// generate protected/timeout/lowbattery status
-									var backgroundClass = GetBackgroundStatus(item);
+									var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 									/* checking the generated html for even more classes, then fill in the HTML */
 									var count = (statushtml.match(/<span/g) || []).length;//$(statushtml).find("span").length;
 									// if ($(escape(statushtml)).text().length != $(escape(bigtexthtml)).text().length){
