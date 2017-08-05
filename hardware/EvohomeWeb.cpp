@@ -465,7 +465,7 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	if (*tcs->status == NULL)
+	if (tcs->status == NULL)
 		return;
 	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
 	std::string szsystemMode, szmodelType;
@@ -622,7 +622,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
-	if (*tcs->status == NULL)
+	if (tcs->status == NULL)
 		return;
 	// Hot Water is essentially just another zone
 	if ((!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
@@ -1163,7 +1163,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 {
 	if (schedule.isNull())
 		return "";
-	if (*m_tcs->status == NULL)
+	if (m_tcs->status == NULL)
 		return "";
 
 	struct tm ltime;
@@ -1344,7 +1344,7 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 
 bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 {
-	if (*tcs->status == NULL)
+	if (tcs->status == NULL)
 		return false;
 	return (*tcs->status).isMember("dhw");
 }
