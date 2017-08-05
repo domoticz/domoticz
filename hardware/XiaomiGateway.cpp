@@ -259,49 +259,26 @@ bool XiaomiGateway::SendMessageToGateway(const std::string &controlmessage) {
 
 void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature, const int battery)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
-	if (nodeid.length() < 14) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		SendTempSensor(sID, battery, Temperature, Name.c_str());
 	}
-	std::string str = nodeid.substr(6, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-
-	SendTempSensor(sID, battery, Temperature, Name.c_str());
 }
 
 void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity, const int battery)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
-	if (nodeid.length() < 14) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		SendHumiditySensor(sID, battery, Humidity, Name.c_str());
 	}
-	std::string str = nodeid.substr(6, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-
-	SendHumiditySensor(sID, battery, Humidity, Name.c_str());
 }
 
 void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
-	if (nodeid.length() < 14) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
 	}
-	std::string str = nodeid.substr(6, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-	SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
 }
 
 void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std::string & Name, const bool bIsOn, const int brightness, const int hue)
@@ -375,25 +352,7 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 
 void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int level, const std::string &messagetype, const bool isctlr2, const bool is2ndchannel, const std::string &load_power, const std::string &power_consumed, const int battery)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2 or f0b4299ae4b8 for the gateway
-	std::string str = "";
-	if (nodeid.length() < 12) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
-	}
-	if (nodeid.length() < 14) {
-		//gateway
-		str = nodeid.substr(4, 8);
-	}
-	else {
-		//device
-		str = nodeid.substr(6, 8);
-	}
-
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
+	unsigned int sID = GetShortID(nodeid);
 
 	char szTmp[300];
 	if (sID == 1)
@@ -443,7 +402,7 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	result = m_sql.safe_query("SELECT nValue, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit == '%d')", m_HwdID, ID.c_str(), xcmd.type, xcmd.unitcode);
 	if (result.size() < 1)
 	{
-		_log.Log(LOG_STATUS, "XiaomiGateway: New Switch Device Found (%s)", str.c_str());
+		_log.Log(LOG_STATUS, "XiaomiGateway: New %s Found (%s)", Name.c_str(), nodeid.c_str());
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&xcmd, NULL, battery);
 		if (customimage == 0) {
 			if (switchtype == STYPE_OnOff) {
@@ -537,71 +496,32 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 
 void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::string & Name, const std::string &degrees)
 {
-	// Make sure the ID supplied fits with what is expected ie 158d0000fd32c2
-	if (nodeid.length() < 14) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
 	}
-	std::string str = nodeid.substr(6, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-
-	char szTmp[300];
-	if (sID == 1)
-		sprintf(szTmp, "%d", 1);
-	else
-		sprintf(szTmp, "%08X", (unsigned int)sID);
-	std::string ID = szTmp;
-
-	SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
-
 }
 
 void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::string & Name, const int VoltageLevel)
 {
 	if (VoltageLevel < 3600) {
-		if (nodeid.length() < 14) {
-			_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-			return;
+		unsigned int sID = GetShortID(nodeid);
+		if (sID > 0) {
+			int percent = ((VoltageLevel - 2200) / 10);
+			float voltage = (float)VoltageLevel / 1000;
+			SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
 		}
-		std::string str = nodeid.substr(6, 8);
-		unsigned int sID;
-		std::stringstream ss;
-		ss << std::hex << str.c_str();
-		ss >> sID;
-
-		char szTmp[300];
-		if (sID == 1)
-			sprintf(szTmp, "%d", 1);
-		else
-			sprintf(szTmp, "%08X", (unsigned int)sID);
-		int percent = ((VoltageLevel - 2200) / 10);
-		float voltage = (float)VoltageLevel / 1000;
-		SendVoltageSensor(sID, sID, percent, voltage, "Xiaomi Voltage");
 	}
 }
 
+
 void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
 {
-	if (nodeid.length() < 12) {
-		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
-		return;
+	unsigned int sID = GetShortID(nodeid);
+	if (sID > 0) {
+		float lux = (float)Illumination;
+		SendLuxSensor(sID, sID, 100, lux, Name);
 	}
-	std::string str = nodeid.substr(4, 8);
-	unsigned int sID;
-	std::stringstream ss;
-	ss << std::hex << str.c_str();
-	ss >> sID;
-
-	char szTmp[300];
-	if (sID == 1)
-		sprintf(szTmp, "%d", 1);
-	else
-		sprintf(szTmp, "%08X", (unsigned int)sID);
-	float lux = (float)Illumination;
-	SendLuxSensor(sID, sID, 100, lux, "Xiaomi Gateway Lux");
 }
 
 void XiaomiGateway::UpdateToken(const std::string & value)
@@ -644,7 +564,6 @@ bool XiaomiGateway::StartHardware()
 		}
 		m_ListenPort9898 = true;
 		if (lowestId != m_HwdID) {
-			//_log.Log(LOG_STATUS, "XiaomiGateway: %d != %d", lowestId, m_HwdID);
 			m_ListenPort9898 = false;
 		}
 		else {
@@ -761,6 +680,27 @@ std::string XiaomiGateway::GetGatewayKey()
 #endif
 }
 
+unsigned int XiaomiGateway::GetShortID(const std::string & nodeid)
+{
+	if (nodeid.length() < 12) {
+		_log.Log(LOG_ERROR, "XiaomiGateway: Node ID %s is too short", nodeid.c_str());
+		return - 1;
+	}
+	std::string str;
+	if (nodeid.length() < 14) {
+		//gateway
+		str = nodeid.substr(4, 8);
+	}
+	else {
+		//device
+		str = nodeid.substr(6, 8);
+	}
+	unsigned int sID;
+	std::stringstream ss;
+	ss << std::hex << str.c_str();
+	ss >> sID;
+	return sID;
+}
 
 XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
@@ -852,7 +792,11 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Motion;
 						name = "Xiaomi Motion Sensor";
 					}
-					else if (model == "switch")  {
+					if (model == "sensor_motion.aq2") {
+						type = STYPE_Motion;
+						name = "Aqara Motion Sensor";
+					}
+					else if (model == "switch") {
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
@@ -928,6 +872,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						//Smoke or Gas Detector
 						std::string density = root2["density"].asString();
 						std::string alarm = root2["alarm"].asString();
+						//Aqara motion sensor
+						std::string lux = root2["lux"].asString();
 						bool on = false;
 						int level = -1;
 						if (model == "switch") {
@@ -1005,6 +951,9 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							else {
 								if (level > -1) { //this should stop false updates when empty 'data' is received
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, level, cmd, false, false, "", "", battery);
+								}
+								if (lux != "") {
+									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
 								}
 								if (voltage != "") {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
