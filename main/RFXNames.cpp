@@ -889,6 +889,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_PLAYING, "Playing" },
 		{ MSTAT_DISCONNECTED, "Disconnected" },
+		{ MSTAT_SLEEPING, "Sleeping" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};
