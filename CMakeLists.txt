@@ -466,6 +466,7 @@ tinyxpath/xpath_stream.cpp
 tinyxpath/xpath_stack.cpp
 tinyxpath/xpath_static.cpp
 tinyxpath/xpath_syntax.cpp
+pugixml/pugixml.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
