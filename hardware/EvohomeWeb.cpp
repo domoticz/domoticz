@@ -487,7 +487,7 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 
 	if (GetControllerName().empty() || m_updatedev)
 	{
-		if (*tcs->installationInfo == NULL)
+		if (tcs->installationInfo == NULL)
 			return;
 		szmodelType = (*tcs->installationInfo)["modelType"].asString();
 		SetControllerName(szmodelType);
