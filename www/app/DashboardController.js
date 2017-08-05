@@ -885,14 +885,9 @@ define(['app'], function (app) {
 												}
 											}
 										}
-
-										$(id + " #name").addClass('statusNormal');
-										if (item.HaveTimeout == true) {
-											$(id + " #name").removeClass('statusNormal').addClass('statusTimeout');
-										}
-										else if (item.Protected == true) {
-											$(id + " #name").removeClass('statusNormal').addClass('statusProtected');
-										}
+										//var backgroundClass = "statusTimeout";//GetBackgroundStatus(item);
+										//$(id + " #name").removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+										//$(id + " #name").addClass(backgroundClass);
 
 										if ($(id + " #img").html() != img) {
 											$(id + " #img").html(img);
@@ -1852,17 +1847,17 @@ define(['app'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm = '\t<div class="span3 movable" id="scene_' + item.idx + '">\n';
 									}
-									xhtm += '\t  <div class="item">\n';
+									var backgroundClass = GetBackgroundStatus(item);
+									xhtm += '\t  <div class="item ' + backgroundClass + '">\n';
 									if (item.Type.indexOf('Scene') == 0) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
 									else {
 										xhtm += '\t    <table id="itemtablesmalldoubleicon" class="itemtablesmalldoubleicon" border="0" cellpadding="0" cellspacing="0">\n';
 									}
-									backgroundClass = GetBackgroundStatus(item);
 									xhtm +=
-										'\t    <tr class="' + backgroundClass + '">\n' +
-										'\t      <td id="name" class="name ' + backgroundClass + '">' + item.Name + '</td>\n' +
+										'\t    <t>\n' +
+										'\t      <td id="name" class="name">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>';
 									var bigtext = TranslateStatusShort(item.Status);
 									if (item.UsedByCamera == true) {
@@ -1963,7 +1958,7 @@ define(['app'], function (app) {
 									htmlcontent += '<div class="row divider">\n';
 									bHaveAddedDivider = true;
 								}
-								backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = GetBackgroundStatus(item);
 								var status = "";
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
@@ -2767,7 +2762,7 @@ define(['app'], function (app) {
 								}
 								var xhtm = "";
 
-								backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = GetBackgroundStatus(item);
 
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = '<img src="images/next.png" onclick="ShowTempLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="16" width="16">' + " " + item.Name;
@@ -2921,7 +2916,7 @@ define(['app'], function (app) {
 									bHaveAddedDivider = true;
 								}
 								// generate protected/timeout/lowbattery status
-								backgroundClass = GetBackgroundStatus(item);
+								var backgroundClass = GetBackgroundStatus(item);
 								var xhtm = "";
 								if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 									var vname = item.Name;
@@ -3177,7 +3172,7 @@ define(['app'], function (app) {
 									else if ($scope.config.DashboardType == 1) {
 										xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 									}
-									backgroundClass = GetBackgroundStatus(item);
+									var backgroundClass = GetBackgroundStatus(item);
 									xhtm += '\t    <tr class="' + backgroundClass + '">\n' +
 										'\t      <td id="name" class="name ' + backgroundClass + '">' + item.Name + '</td>\n' +
 										'\t      <td id="bigtext" class="bigtext"><span>' + TranslateStatusShort(item.Status) + '</span></td>\n';
@@ -3324,7 +3319,7 @@ define(['app'], function (app) {
 										else if ($scope.config.DashboardType == 1) {
 											xhtm += '\t    <table id="itemtablesmall" class="itemtablesmall" border="0" cellpadding="0" cellspacing="0">\n';
 										}
-										backgroundClass = GetBackgroundStatus(item);
+										var backgroundClass = GetBackgroundStatus(item);
 
 										xhtm +=
 											'\t    <tr class="' + backgroundClass + '">\n' +
@@ -3844,7 +3839,7 @@ define(['app'], function (app) {
 									statushtml = '<span class="value1">' + statushtml + '</span>';
 
 									// generate protected/timeout/lowbattery status
-									backgroundClass = GetBackgroundStatus(item);
+									var backgroundClass = GetBackgroundStatus(item);
 									/* checking the generated html for even more classes, then fill in the HTML */
 									var count = (statushtml.match(/<span/g) || []).length;//$(statushtml).find("span").length;
 									// if ($(escape(statushtml)).text().length != $(escape(bigtexthtml)).text().length){
