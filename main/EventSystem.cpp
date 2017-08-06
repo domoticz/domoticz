@@ -4691,8 +4691,8 @@ namespace http {
 							std::string actions = array[index].get("actions", "").asString();
 
 							if (
-								(actions.find("SendNotification") != std::string::npos) || 
-								(actions.find("SendEmail") != std::string::npos) || 
+								(actions.find("SendNotification") != std::string::npos) ||
+								(actions.find("SendEmail") != std::string::npos) ||
 								(actions.find("SendSMS") != std::string::npos) ||
 								(actions.find("TriggerIFTTT") != std::string::npos)
 								)

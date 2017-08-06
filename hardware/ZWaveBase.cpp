@@ -136,7 +136,7 @@ void ZWaveBase::InsertDevice(_tZWaveDevice device)
 	device.string_id=GenerateDeviceStringID(&device);
 
 	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
-	
+
 	device.lastreceived=mytime(NULL);
 #ifdef _DEBUG
 	if (bNewDevice)
@@ -338,12 +338,12 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	ID3=(unsigned char)pDevice->nodeID&0xFF;
 	ID4=pDevice->instanceID;
 
-	char szID[10];
-	sprintf(szID,"%X%02X%02X%02X", ID1, ID2, ID3, ID4);
-
 	unsigned long lID = (ID1 << 24) + (ID2 << 16) + (ID3 << 8) + ID4;
+	char szID[10];
+	sprintf(szID, "%08x", (unsigned int)lID);
 
 	int BatLevel = 255;
+
 	if ((pDevice->hasBattery) && (pDevice->batValue != 0))
 	{
 		BatLevel = pDevice->batValue;
@@ -351,6 +351,14 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 
 	if ((pDevice->devType==ZDTYPE_SWITCH_NORMAL)||(pDevice->devType==ZDTYPE_SWITCH_DIMMER)||(pDevice->devType== ZDTYPE_CENTRAL_SCENE))
 	{
+		bool bInvertLevel = false;
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE (DeviceID == '%q') AND (Type == %d) AND (SubType == %d) AND (SwitchType == %d)",
+			szID, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_BlindsPercentageInverted);
+		if (result.size() == 1)
+			bInvertLevel = true;
+
 		//Send as pTypeGeneralSwitch, sSwitchGeneralSwitch
 		_tGeneralSwitch gswitch;
 		gswitch.subtype = sSwitchGeneralSwitch;
@@ -367,17 +375,24 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 
 		// Now check the values
 		if (level == 0)
+		{
 			gswitch.cmnd = gswitch_sOff;
+			if (bInvertLevel)
+				level = 100;
+		}
 		else if (level > 99)
 		{
 			if (pDevice->devType==ZDTYPE_SWITCH_DIMMER)
 			{
-				level = 100;
+				(!bInvertLevel) ? level = 100 : level = 0;
 			}
 			gswitch.cmnd = gswitch_sOn;
 		}
 		else
 		{
+			if (bInvertLevel)
+				level = 100 - level; // invert reported level for BlindsPercentageInverted
+
 			gswitch.cmnd = gswitch_sSetLevel;
 		}
 
@@ -849,7 +864,6 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 	if ((packettype==pTypeGeneralSwitch)&&(subtype== sSwitchGeneralSwitch))
 	{
 		//light command
-
 		const _tGeneralSwitch *pSwitch= reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
 		unsigned char ID1 = (unsigned char)((pSwitch->id & 0xFF000000) >> 24);
@@ -905,7 +919,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			{
 				if ((cmnd== gswitch_sOff)||(cmnd== gswitch_sGroupOff))
 					svalue=0;
-				else 
+				else
 					svalue=255;
 				return SwitchLight(nodeID,instanceID,pDevice->commandClassID,svalue);
 			}
