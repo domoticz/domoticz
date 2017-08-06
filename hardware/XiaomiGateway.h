@@ -38,7 +38,6 @@ private:
 	std::string m_GatewayIp;
 	std::string m_LocalIp;
 	std::string m_GatewayPassword;
-	std::string m_token;
 	std::string m_GatewayMusicId;
 	std::string m_GatewayVolume;
 	boost::mutex m_mutex;

@@ -657,7 +657,6 @@ std::string XiaomiGateway::GetGatewayKey()
 	}
 #ifdef _DEBUG
 	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Token - %s", m_token.c_str());
 	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
 #endif
 	return gatewaykey;
