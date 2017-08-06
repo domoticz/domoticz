@@ -19,7 +19,7 @@ public:
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity, const int battery);
 	void InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery);
 	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
-	void UpdateToken(const std::string &value);
+
 
 private:
 	bool StartHardware();
@@ -34,7 +34,7 @@ private:
 	unsigned int GetShortID(const std::string & nodeid);
 	std::string m_GatewayRgbHex;
 	int m_GatewayBrightnessInt;
-	std::string m_GatewayPrefix;
+	std::string m_GatewaySID;
 	std::string m_GatewayIp;
 	std::string m_LocalIp;
 	std::string m_GatewayPassword;
