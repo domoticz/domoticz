@@ -9544,26 +9544,28 @@ namespace http {
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
+						double meteroffset = AddjValue;
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", dvalue / EnergyDivider);
+							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", dvalue / GasDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", dvalue / WaterDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -15744,7 +15746,18 @@ namespace http {
 						else
 						{
 							//Add last counter value
-							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							if (sValue.find('.') != std::string::npos)
+							{
+								sprintf(szTmp, "%.3f", AddjValue + atof(sValue.c_str()));
+							}
+							else
+							{
+								unsigned long long ullCounter;
+								std::stringstream s_str1(sValue);
+								s_str1 >> ullCounter;
+
+								sprintf(szTmp, "%llu", static_cast<unsigned long long>(AddjValue) + ullCounter);
+							}
 							root["counter"] = szTmp;
 						}
 						//Actual Year
