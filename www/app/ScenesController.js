@@ -1426,6 +1426,11 @@ define(['app'], function (app) {
 						id = "#scenecontent #" + item.idx;
 						var obj = $(id);
 						if (typeof obj != 'undefined') {
+							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+							$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+							$(id).addClass(backgroundClass);
+
+
 							if ($(id + " #name > span").html() != item.Name) {
 								$(id + " #name > span").html(item.Name);
 							}
@@ -1559,27 +1564,10 @@ define(['app'], function (app) {
 								bHaveAddedDevider = true;
 							}
 
-
-							var backgroundClass = "statusNormal";
-							if (item.Protected == true) {
-								backgroundClass = "statusProtected";
-							}
-							else if (item.HaveTimeout == true) {
-								backgroundClass = "statusTimeout";
-							}
-							else {
-								var BatteryLevel = parseInt(item.BatteryLevel);
-								if (BatteryLevel != 255) {
-									if (BatteryLevel <= 10) {
-										backgroundClass = "statusLowBattery";
-									}
-								}
-							}
-
+							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 							var bAddTimer = true;
 							var xhtm =
-								'\t<div class="span4" id="' + item.idx + '">\n' +
-								'\t  <div class="item ' + backgroundClass + '">\n';
+								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n';
 							if (item.Type == "Scene") {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 							}
@@ -1647,7 +1635,6 @@ define(['app'], function (app) {
 								'</td>\n' +
 								'\t    </tr>\n' +
 								'\t    </table>\n' +
-								'\t  </div>\n' +
 								'\t</div>\n';
 							htmlcontent += xhtm;
 							j += 1;

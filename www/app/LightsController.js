@@ -2479,18 +2479,9 @@ define(['app'], function (app) {
 									}
 								}
 
-								var nbackcolor = "#D4E1EE";
-								if (item.HaveTimeout == true) {
-									nbackcolor = "#DF2D3A";
-								}
-								else if (item.Protected == true) {
-									nbackcolor = "#A4B1EE";
-								}
-
-								var obackcolor = rgb2hex($(id + " #name").css("background-color"));
-								if (obackcolor != nbackcolor) {
-									$(id + " #name").css("background-color", nbackcolor);
-								}
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+								$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+								$(id).addClass(backgroundClass);
 
 								if ($(id + " #img").html() != img) {
 									$(id + " #img").html(img);
@@ -2655,9 +2646,12 @@ define(['app'], function (app) {
 							}
 							var bAddTimer = true;
 							var bIsDimmer = false;
+
+							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+
 							var status = "";
 							var xhtm =
-								'\t<div class="span4" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n';
 							if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 								if (
@@ -2687,17 +2681,9 @@ define(['app'], function (app) {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 
-							var nbackcolor = "#D4E1EE";
-							if (item.HaveTimeout == true) {
-								nbackcolor = "#DF2D3A";
-							}
-							else if (item.Protected == true) {
-								nbackcolor = "#A4B1EE";
-							}
-
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
+								'\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
