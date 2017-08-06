@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <boost/tuple/tuple.hpp>
 
 class XiaomiGatewayTokenManager {
 public:
@@ -14,5 +15,5 @@ public:
 	std::string GetSID(const std::string &sid);
 
 private:
-	std::vector<std::tuple<std::string, std::string, std::string>> m_GatewayTokens;
+	std::vector<boost::tuple<std::string, std::string, std::string>> m_GatewayTokens;
 };
