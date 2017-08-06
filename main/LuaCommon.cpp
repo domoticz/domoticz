@@ -16,6 +16,8 @@ extern "C" {
 #endif
 }
 
+#include "../pugixml/pugixml.hpp"
+
 #include "../tinyxpath/xpath_processor.h"
 #include "../json/json.h"
 #include "SQLHelper.h"
@@ -34,18 +36,24 @@ int CLuaCommon::l_domoticz_applyXPath(lua_State* lua_state)
 			std::string buffer = lua_tostring(lua_state, 1);
 			std::string xpath = lua_tostring(lua_state, 2);
 
-			TiXmlDocument doc;
-			doc.Parse(buffer.c_str(), 0, TIXML_ENCODING_UTF8);
-
-			TiXmlElement* root = doc.RootElement();
-			if (!root)
+			pugi::xml_document doc;
+			pugi::xml_parse_result res = doc.load_buffer(buffer.c_str(), buffer.length(), 0, pugi::encoding_utf8);
+			if (!res)
 			{
 				_log.Log(LOG_ERROR, "CLuaHandler (applyXPath from LUA) : Invalid data received!");
 				return 0;
 			}
-			TinyXPath::xpath_processor processor(root, xpath.c_str());
-			TiXmlString xresult = processor.S_compute_xpath();
-			lua_pushstring(lua_state, xresult.c_str());
+
+			try
+			{
+				pugi::xpath_node xresult = doc.select_node(xpath.c_str());
+				if (xresult)
+					lua_pushstring(lua_state, xresult.node().text().as_string());
+			}
+			catch (const pugi::xpath_exception& e)
+			{
+				_log.Log(LOG_ERROR, "CLuaHandler (applyXPath from LUA) : xpath error \'%s\'", e.what());
+			}
 			return 1;
 		}
 		else
