@@ -14,6 +14,16 @@ public:
 	std::string GetToken(const std::string &ip);
 	std::string GetSID(const std::string &sid);
 
+	// delete copy and move constructors and assign operators
+	XiaomiGatewayTokenManager(XiaomiGatewayTokenManager const&) = delete;             // Copy construct
+	XiaomiGatewayTokenManager(XiaomiGatewayTokenManager&&) = delete;                  // Move construct
+	XiaomiGatewayTokenManager& operator=(XiaomiGatewayTokenManager const&) = delete;  // Copy assign
+	XiaomiGatewayTokenManager& operator=(XiaomiGatewayTokenManager &&) = delete;      // Move assign
+
+protected:
+	XiaomiGatewayTokenManager() {}
+	~XiaomiGatewayTokenManager() {}
+
 private:
 	boost::mutex m_mutex;
 	std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
