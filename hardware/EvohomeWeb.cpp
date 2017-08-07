@@ -520,7 +520,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::stringstream ssUpdateStat;
 
 	szId = (*hz->installationInfo)["zoneId"].asString();
-	if (*hz->status == NULL)
+	if (hz->status == NULL)
 	{
 		sztemperature = "-";
 		szsetpoint = "-";
@@ -542,7 +542,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 	unsigned long evoID = atol(szId.c_str());
 	std::string szsysmode;
-	if (*m_tcs->status == NULL)
+	if (m_tcs->status == NULL)
 		szsysmode = "Unknown";
 	else
 		szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
@@ -770,8 +770,8 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
 	ltime.tm_min = atoi(local_time.substr(14, 2).c_str());
 	ltime.tm_sec = atoi(local_time.substr(17, 2).c_str()) + m_tzoffset;
 	mktime(&ltime);
-	if (lastDST == -1)
-		lastDST = ltime.tm_isdst;
+	if (m_lastDST == -1)
+		m_lastDST = ltime.tm_isdst;
 	else if ((m_lastDST != ltime.tm_isdst) && (m_lastDST != -1)) // DST changed - must recalculate timezone offset
 	{
 		ltime.tm_hour -= (ltime.tm_isdst - m_lastDST);
@@ -1191,7 +1191,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	}
 
 	// Hack: DayOff needs to reference a specific weekday rather than current
-	if (*m_tcs->status != NULL)
+	if (m_tcs->status != NULL)
 	{
 		std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 		if (szsystemMode == "DayOff")
