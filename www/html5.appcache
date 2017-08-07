@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1416
+# ref 1417
 
 CACHE:
 # CSS
@@ -484,7 +484,6 @@ app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
 app/TemperatureCustomLogController.js
-app/TemperatureNotificationsController.js
 app/TimerplanController.js
 app/UpdateController.js
 app/UsersController.js
