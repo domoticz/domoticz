@@ -310,6 +310,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 		{
 			zone* hz = &m_tcs->zones[i];
 			std::string zonemode = "";
+			if (hz->status == NULL) // don't touch invalid zone - it should already show as 'Offline'
+				continue;
 			if (hz->status->isMember("heatSetpointStatus"))
 				zonemode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
 			if ((zonemode.size() > 9) && (zonemode.substr(9) == "Override")) // don't touch zone if it is in Override mode
@@ -463,7 +465,10 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
 
-	szsystemMode = (*tcs->status)["systemModeStatus"]["mode"].asString();
+	if (tcs->status == NULL)
+		szsystemMode = "Unknown";
+	else
+		szsystemMode = (*tcs->status)["systemModeStatus"]["mode"].asString();
 	while (sysmode < 7 && strcmp(szsystemMode.c_str(), m_szWebAPIMode[sysmode]) != 0)
 		sysmode++;
 
@@ -515,19 +520,32 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::stringstream ssUpdateStat;
 
 	szId = (*hz->installationInfo)["zoneId"].asString();
-	sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
-	szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
-	if ((m_showhdtemps) && hz->hdtemp.empty())
-		szmode = "Offline";
-	else 
+	if (*hz->status == NULL)
 	{
-		szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
-		if (szmode == "TemporaryOverride")
-			szuntil = (*hz->status)["heatSetpointStatus"]["until"].asString();
+		sztemperature = "-";
+		szsetpoint = "-";
+		szmode = "Offline";
+	}
+	else
+	{
+		sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
+		szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
+		if ((m_showhdtemps) && hz->hdtemp.empty())
+			szmode = "Offline";
+		else 
+		{
+			szmode = (*hz->status)["heatSetpointStatus"]["setpointMode"].asString();
+			if (szmode == "TemporaryOverride")
+				szuntil = (*hz->status)["heatSetpointStatus"]["until"].asString();
+		}
 	}
 
 	unsigned long evoID = atol(szId.c_str());
-	std::string szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+	std::string szsysmode;
+	if (*m_tcs->status == NULL)
+		szsysmode = "Unknown";
+	else
+		szsysmode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
 	if ((szsysmode == "Away") && (szmode == "FollowSchedule"))
 	{
 		double new_awaysetpoint = strtod(szsetpoint.c_str(), NULL);
@@ -610,7 +628,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
 	// Hot Water is essentially just another zone
-	if ((!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
+	if ((tcs->status == NULL) || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
 		return;
 
 	std::string szId, szmode;
@@ -1166,9 +1184,12 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
 	}
 
 	// Hack: DayOff needs to reference a specific weekday rather than current
-	std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
-	if (szsystemMode == "DayOff")
-		wday = m_wdayoff;
+	if (*m_tcs->status != NULL)
+	{
+		std::string szsystemMode = (*m_tcs->status)["systemModeStatus"]["mode"].asString();
+		if (szsystemMode == "DayOff")
+			wday = m_wdayoff;
+	}
 
 	std::string sztime;
 	bool found = false;
