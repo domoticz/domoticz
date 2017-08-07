@@ -941,12 +941,9 @@ define(['app'], function (app) {
 
 								if (typeof item.Counter != 'undefined') {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
-										status = item.Counter;
 										bigtext = item.CounterToday;
 									}
-									else {
-										status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
-									}
+									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 								}
 								else if (item.Type == "Current") {
 									status = item.Data;
