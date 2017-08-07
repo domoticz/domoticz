@@ -18,8 +18,8 @@ private:
 	boost::mutex m_mutex;
 	std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
 
-	XiaomiGatewayTokenManager() {}
-	void operator = (XiaomiGatewayTokenManager const&);
+	XiaomiGatewayTokenManager() { ; }
+	~XiaomiGatewayTokenManager() { ; }
 
 //public:
 	//S(S const&) = delete;
