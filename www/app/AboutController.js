@@ -2,7 +2,7 @@ define(['app'], function (app) {
 	app.controller('AboutController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
 
 		$scope.strupptime = "-";
-
+		
 		$scope.RefreshUptime = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -102,6 +102,7 @@ define(['app'], function (app) {
 			img.src = 'images/nebula.jpg';
 		};
 
+		$("#aboutcontent").i18n();
 		$scope.init();
 
 		$scope.$on('$destroy', function () {
