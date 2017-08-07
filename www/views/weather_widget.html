@@ -1,48 +1,50 @@
-<section>
-    <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
-        <tr>
-            <td id="name" ng-style="ctrl.nbackcolor()" ng-bind="ctrl.item.Name"></td>
-            <td id="bigtext" class="ng-cloak">
-                <!-- NB : weird comments to avoid unwanted spaces due to new line -->
-                <span ng-show="ctrl.displayBarometer()">{{ctrl.item.Barometer}} hPa</span>
-                <span ng-show="ctrl.displayRain()">{{ctrl.item.Rain}} mm</span>
-                <span ng-show="ctrl.displayData()">{{ctrl.item.Data}}</span>
-                <span ng-show="ctrl.displayUVI()">{{ctrl.item.UVI}} UVI</span>
-                <span ng-show="ctrl.displayDirection()">{{ctrl.item.DirectionStr}}</span><!--
-                --><span ng-show="ctrl.displaySpeed()"> / {{ctrl.item.Speed}} {{ctrl.windsign}}</span><!--
-                --><span ng-show="!ctrl.displaySpeed() && ctrl.displayGust()"> / {{ctrl.item.Gust}} {{ctrl.windsign}}</span>
-            </td>
-            <td id="img"><img ng-src="images/{{ctrl.image()}}" height="48" width="48"></td>
-            <td id="status" class="ng-cloak">
-                <span ng-show="ctrl.displayBarometer()">{{ctrl.item.Barometer}} hPa</span><!--
-                --><span ng-show="ctrl.displayForecast()">, </span><span ng-show="ctrl.displayForecast()" data-i18n="Prediction">Prediction</span><span ng-show="ctrl.displayForecast()">: {{ctrl.Forecast()}}</span><!--
-                --><span ng-show="ctrl.displayAltitude()">, Altitude: {{ctrl.item.Altitude}} meter</span>
-                <span ng-show="ctrl.displayRain()">{{ctrl.item.Rain}} mm</span><!--
-                --><span ng-show="ctrl.displayRainRate()">, Rate: {{ctrl.item.RainRate}} mm/h</span>
-                <span ng-show="ctrl.displayData()">{{ctrl.item.Data}}</span>
-                <span ng-show="ctrl.displayUVI()">{{ctrl.item.UVI}} UVI</span><!--
-                --><span ng-show="ctrl.displayTemp()">, </span><span ng-show="ctrl.displayTemp()" data-i18n="Temp">Temp</span><span ng-show="ctrl.displayTemp()">: {{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}</span>
-                <span ng-show="ctrl.displayDirection()">{{ctrl.item.Direction}} {{ctrl.item.DirectionStr}}</span><!--
-                --><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()">, </span><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()" data-i18n="Speed">Speed</span><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()">: {{ctrl.item.Speed}} {{ctrl.windsign}}</span><!--
-                --><span ng-show="ctrl.displayDirection() && ctrl.displayGust()">, </span><span ng-show="ctrl.displayDirection() && ctrl.displayGust()" data-i18n="Gust">Gust</span><span ng-show="ctrl.displayDirection() && ctrl.displayGust()">: {{ctrl.item.Gust}} {{ctrl.windsign}}</span><!--
-                --><br ng-show="ctrl.displayDirection()"><!--
-                --><span ng-show="ctrl.displayTempChill()" data-i18n="Temp">Temp</span><span ng-show="ctrl.displayTempChill()">: {{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}, </span><!--
-                --><span ng-show="ctrl.displayChill()" data-i18n="Chill">Chill</span><span ng-show="ctrl.displayChill()">: {{ctrl.item.Chill}}&#176; {{ctrl.tempsign}}</span>
-            </td>
-            <td id="lastupdate" ng-bind="ctrl.item.LastUpdate"></td>
-            <td>
-                <img ng-show="ctrl.item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
-                <img ng-show="ctrl.item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
-                &nbsp;&nbsp;
-                <a class="btnsmall" ng-click="ctrl.ShowLog()" data-i18n="Log">Log</a>
+<div class="item" ng-class="ctrl.nbackstyle()">
+	<section>
+		<table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td id="name" ng-bind="ctrl.item.Name"></td>
+				<td id="bigtext" class="ng-cloak">
+					<!-- NB : weird comments to avoid unwanted spaces due to new line -->
+					<span ng-show="ctrl.displayBarometer()">{{ctrl.item.Barometer}} hPa</span>
+					<span ng-show="ctrl.displayRain()">{{ctrl.item.Rain}} mm</span>
+					<span ng-show="ctrl.displayData()">{{ctrl.item.Data}}</span>
+					<span ng-show="ctrl.displayUVI()">{{ctrl.item.UVI}} UVI</span>
+					<span ng-show="ctrl.displayDirection()">{{ctrl.item.DirectionStr}}</span><!--
+					--><span ng-show="ctrl.displaySpeed()"> / {{ctrl.item.Speed}} {{ctrl.windsign}}</span><!--
+					--><span ng-show="!ctrl.displaySpeed() && ctrl.displayGust()"> / {{ctrl.item.Gust}} {{ctrl.windsign}}</span>
+				</td>
+				<td id="img"><img ng-src="images/{{ctrl.image()}}" height="48" width="48"></td>
+				<td id="status" class="ng-cloak">
+					<span ng-show="ctrl.displayBarometer()">{{ctrl.item.Barometer}} hPa</span><!--
+					--><span ng-show="ctrl.displayForecast()">, </span><span ng-show="ctrl.displayForecast()" data-i18n="Prediction">Prediction</span><span ng-show="ctrl.displayForecast()">: {{ctrl.Forecast()}}</span><!--
+					--><span ng-show="ctrl.displayAltitude()">, Altitude: {{ctrl.item.Altitude}} meter</span>
+					<span ng-show="ctrl.displayRain()">{{ctrl.item.Rain}} mm</span><!--
+					--><span ng-show="ctrl.displayRainRate()">, Rate: {{ctrl.item.RainRate}} mm/h</span>
+					<span ng-show="ctrl.displayData()">{{ctrl.item.Data}}</span>
+					<span ng-show="ctrl.displayUVI()">{{ctrl.item.UVI}} UVI</span><!--
+					--><span ng-show="ctrl.displayTemp()">, </span><span ng-show="ctrl.displayTemp()" data-i18n="Temp">Temp</span><span ng-show="ctrl.displayTemp()">: {{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}</span>
+					<span ng-show="ctrl.displayDirection()">{{ctrl.item.Direction}} {{ctrl.item.DirectionStr}}</span><!--
+					--><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()">, </span><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()" data-i18n="Speed">Speed</span><span ng-show="ctrl.displayDirection() && ctrl.displaySpeed()">: {{ctrl.item.Speed}} {{ctrl.windsign}}</span><!--
+					--><span ng-show="ctrl.displayDirection() && ctrl.displayGust()">, </span><span ng-show="ctrl.displayDirection() && ctrl.displayGust()" data-i18n="Gust">Gust</span><span ng-show="ctrl.displayDirection() && ctrl.displayGust()">: {{ctrl.item.Gust}} {{ctrl.windsign}}</span><!--
+					--><br ng-show="ctrl.displayDirection()"><!--
+					--><span ng-show="ctrl.displayTempChill()" data-i18n="Temp">Temp</span><span ng-show="ctrl.displayTempChill()">: {{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}, </span><!--
+					--><span ng-show="ctrl.displayChill()" data-i18n="Chill">Chill</span><span ng-show="ctrl.displayChill()">: {{ctrl.item.Chill}}&#176; {{ctrl.tempsign}}</span>
+				</td>
+				<td id="lastupdate" ng-bind="ctrl.item.LastUpdate"></td>
+				<td>
+					<img ng-show="ctrl.item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
+					<img ng-show="ctrl.item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+					&nbsp;&nbsp;
+					<a class="btnsmall" ng-click="ctrl.ShowLog()" data-i18n="Log">Log</a>
 
-                <span has-permission="Admin">
-                    <a class="btnsmall" ng-click="ctrl.EditDevice()" data-i18n="Edit">Edit</a>
-                    <a ng-click="ctrl.ShowNotifications()" ng-class="{'btnsmall-sel':ctrl.item.Notifications=='true', btnsmall:ctrl.item.Notifications!='true'}" data-i18n="Notifications">Notifications</a>
+					<span has-permission="Admin">
+						<a class="btnsmall" ng-click="ctrl.EditDevice()" data-i18n="Edit">Edit</a>
+						<a ng-click="ctrl.ShowNotifications()" ng-class="{'btnsmall-sel':ctrl.item.Notifications=='true', btnsmall:ctrl.item.Notifications!='true'}" data-i18n="Notifications">Notifications</a>
 
-                    <a ng-show="ctrl.displayForecastAdmin()" class="btnsmall" ng-click="ctrl.ShowForecast()" data-i18n="Forecast">Forecast</a>
-                </span>
-            </td>
-        </tr>
-    </table>
-</section>
+						<a ng-show="ctrl.displayForecastAdmin()" class="btnsmall" ng-click="ctrl.ShowForecast()" data-i18n="Forecast">Forecast</a>
+					</span>
+				</td>
+			</tr>
+		</table>
+	</section>
+</div>

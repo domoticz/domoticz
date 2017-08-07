@@ -77,6 +77,7 @@ enum _eMediaStatus
 	MSTAT_PHOTO,
 	MSTAT_PLAYING,
 	MSTAT_DISCONNECTED,
+	MSTAT_SLEEPING,
 	MSTAT_UNKNOWN
 };
 
@@ -219,7 +220,8 @@ enum _eNotificationTypes
 	NTYPE_STOPPED,
 	NTYPE_PLAYING,
 	NTYPE_VALUE,
-	NTYPE_LASTUPDATE
+	NTYPE_LASTUPDATE,
+	NTYPE_SLEEPING
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);

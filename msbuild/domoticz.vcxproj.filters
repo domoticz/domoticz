@@ -474,6 +474,9 @@
     <Filter Include="Devices\Teleinfo\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IFTTT">
+      <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1331,6 +1334,18 @@
     <None Include="..\www\views\mobile_notifications.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\views\dpgooglepubsub.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpinflux.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\DPGooglePubSubController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPInfluxController.js">
+      <Filter>www\app</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1433,9 +1448,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\SunRiseSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
@@ -2037,6 +2049,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\IFTTT.h">
+      <Filter>IFTTT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2720,6 +2735,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\IFTTT.cpp">
+      <Filter>IFTTT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

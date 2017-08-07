@@ -151,7 +151,7 @@ void CNetatmo::Do_Work()
 				if (m_bPollThermostat)
 				{
 					//Thermostat data is updated every hour
-					if ((sec_counter % 3600 == 0) || (bFirstTimeTH))
+					if ((sec_counter % 600 == 0) || (bFirstTimeTH))
 					{
 						bFirstTimeTH = false;
 						GetThermostatDetails();
