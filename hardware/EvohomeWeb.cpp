@@ -639,7 +639,10 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 	ssUpdateStat << (*tcs->status)["dhw"]["temperatureStatus"]["temperature"].asString() << ";";
 	ssUpdateStat << (*tcs->status)["dhw"]["stateStatus"]["state"].asString() << ";";
 	szmode = (*tcs->status)["dhw"]["stateStatus"]["mode"].asString();
-	ssUpdateStat << szmode;
+	if (szmode == "FollowSchedule")
+		ssUpdateStat << "Auto";
+	else
+		ssUpdateStat << szmode;
 	if (szmode == "TemporaryOverride")
 		szuntil = (*tcs->status)["dhw"]["stateStatus"]["until"].asString();
 
