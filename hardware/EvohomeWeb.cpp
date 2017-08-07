@@ -676,7 +676,10 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		zone* hz = &tcs->dhw[0];
 		std::string szsysmode = (*tcs->status)["systemModeStatus"]["mode"].asString();
 		if (szsysmode != "Custom") // can't use schedule to find next switchpoint
-			szuntil = local_to_utc(get_next_switchpoint(hz));
+		{
+			if (!(hz->schedule.isNull()) || get_dhw_schedule(hz->zoneId))
+				szuntil = local_to_utc(get_next_switchpoint(hz));
+		}
 	}
 	if (!szuntil.empty())
 		ssUpdateStat << ";" << szuntil;
