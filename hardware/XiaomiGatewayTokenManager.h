@@ -2,10 +2,10 @@
 
 #include "DomoticzHardware.h"
 #include <memory>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
+#include <boost/thread/mutex.hpp>
 
 class XiaomiGatewayTokenManager {
 public:
@@ -15,5 +15,6 @@ public:
 	std::string GetSID(const std::string &sid);
 
 private:
-	std::vector<boost::tuple<std::string, std::string, std::string>> m_GatewayTokens;
+	boost::mutex m_mutex;
+	std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
 };

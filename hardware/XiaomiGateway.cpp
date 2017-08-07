@@ -378,13 +378,17 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 	int customimage = 0;
 	if (Name == "Xiaomi Gateway Alarm Ringtone") {
 		xcmd.unitcode = 3;
-	} else if (Name == "Xiaomi Gateway Alarm Clock") {
+	}
+	else if (Name == "Xiaomi Gateway Alarm Clock") {
 		xcmd.unitcode = 4;
-	} else if (Name == "Xiaomi Gateway Doorbell") {
+	}
+	else if (Name == "Xiaomi Gateway Doorbell") {
 		xcmd.unitcode = 5;
-	} else if (Name == "Xiaomi Gateway MP3") {
+	}
+	else if (Name == "Xiaomi Gateway MP3") {
 		xcmd.unitcode = 6;
-	} else if (Name == "Xiaomi Gateway Volume") {
+	}
+	else if (Name == "Xiaomi Gateway Volume") {
 		xcmd.unitcode = 7;
 	}
 	if (xcmd.unitcode > 1) {
@@ -548,14 +552,37 @@ bool XiaomiGateway::StartHardware()
 	m_bIsStarted = true;
 
 	m_GatewayMusicId = "10000";
-	m_GatewayVolume = "20";	
+	m_GatewayVolume = "20";
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d AND ID=%d", HTYPE_XiaomiGateway, m_HwdID);
+	//result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d AND ID=%d", HTYPE_XiaomiGateway, m_HwdID);
+	result = m_sql.safe_query("SELECT Password, Address, ID FROM Hardware WHERE Type=%d", HTYPE_XiaomiGateway);
 	if (result.size() > 0) {
-		m_GatewayPassword = result[0][0].c_str();
-		m_GatewayIp = result[0][1].c_str();
+
+		int lowestId = 9999;
+		int Id = 0;
+		for (size_t i = 0; i < result.size(); i++) {
+			Id = atoi(result[i][2].c_str());
+			//_log.Log(LOG_STATUS, "XiaomiGateway: checking hardware id %d", Id);
+			if (Id < lowestId) {
+				lowestId = Id;
+			}
+			if (Id == m_HwdID) {
+				m_GatewayPassword = result[i][0].c_str();
+				m_GatewayIp = result[i][1].c_str();
+			}
+		}
 		m_ListenPort9898 = true;
+		if (lowestId != m_HwdID) {
+			m_ListenPort9898 = false;
+		}
+		else {
+			_log.Log(LOG_STATUS, "XiaomiGateway: will listen on 9898 for hardware id %d", m_HwdID);
+		}
+
+		//m_GatewayPassword = result[0][0].c_str();
+		//m_GatewayIp = result[0][1].c_str();
+		//m_ListenPort9898 = true;
 		m_GatewayRgbHex = "FFFFFF";
 		m_GatewayBrightnessInt = 100;
 		//m_GatewayPrefix = "f0b4";
@@ -567,6 +594,9 @@ bool XiaomiGateway::StartHardware()
 		}
 		_log.Log(LOG_STATUS, "XiaomiGateway: Delaying worker startup...");
 		sleep_seconds(5);
+
+		XiaomiGatewayTokenManager::GetInstance();
+
 		//Start worker thread
 		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&XiaomiGateway::Do_Work, this)));
 	}
@@ -998,39 +1028,36 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						}
 					}
 					else if (name == "Xiaomi RGB Gateway") {
-
-						if (sid == m_XiaomiGateway->m_GatewaySID) {
-							std::string rgb = root2["rgb"].asString();
-							std::string illumination = root2["illumination"].asString();
-							if (rgb != "") {
-								std::stringstream ss;
-								ss << std::hex << atoi(rgb.c_str());
-								std::string hexstring(ss.str());
-								if (hexstring.length() == 7) {
-									hexstring.insert(0, "0");
-								}
-								std::string bright_hex = hexstring.substr(0, 2);
-								std::stringstream ss2;
-								ss2 << std::hex << bright_hex.c_str();
-								int brightness = strtoul(bright_hex.c_str(), NULL, 16);
-								bool on = false;
-								if (rgb != "0") {
-									on = true;
-								}
-								m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + m_XiaomiGateway->m_GatewayIp + ")", on, brightness, 0);
-								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()));
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway MP3", false, STYPE_OnOff, 0, cmd, false, false, "", "", 255);
-								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Volume", false, STYPE_Dimmer, 0, cmd, false, false, "", "", 255);
+						std::string rgb = root2["rgb"].asString();
+						std::string illumination = root2["illumination"].asString();
+						if (rgb != "") {
+							std::stringstream ss;
+							ss << std::hex << atoi(rgb.c_str());
+							std::string hexstring(ss.str());
+							if (hexstring.length() == 7) {
+								hexstring.insert(0, "0");
 							}
+							std::string bright_hex = hexstring.substr(0, 2);
+							std::stringstream ss2;
+							ss2 << std::hex << bright_hex.c_str();
+							int brightness = strtoul(bright_hex.c_str(), NULL, 16);
+							bool on = false;
+							if (rgb != "0") {
+								on = true;
+							}
+							m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + m_gatewayip + ")", on, brightness, 0);
+							m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()));
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway MP3", false, STYPE_OnOff, 0, cmd, false, false, "", "", 255);
+							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Volume", false, STYPE_Dimmer, 0, cmd, false, false, "", "", 255);
 						}
 						else {
 							//check for token
 							std::string token = root["token"].asString();
 							std::string ip = root2["ip"].asString();
-							
+
 							if ((token != "") && (ip != "")) {
 								XiaomiGatewayTokenManager::GetInstance().UpdateTokenSID(ip, token, sid);
 							}
@@ -1062,7 +1089,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 				if (model == "gateway") {
 					std::string ip = root["ip"].asString();
 					// Only add in the gateway that matches the IP address set for this hardware
-					if (ip == m_XiaomiGateway->m_GatewayIp) {
+					if (ip == m_gatewayip) {
 						_log.Log(LOG_STATUS, "XiaomiGateway: RGB Gateway Detected");
 						m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), "Xiaomi RGB Gateway (" + ip + ")", false, 0, 100);
 						m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 0, cmd, false, false, "", "", 255);
