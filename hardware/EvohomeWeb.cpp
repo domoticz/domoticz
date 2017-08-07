@@ -984,7 +984,7 @@ bool CEvohomeWeb::full_installation()
 		return false;
 	}
 
-	// evohome v1 API does not correctly format the json output
+	// evohome API does not correctly format the json output
 	std::stringstream ss_jdata;
 	ss_jdata << "{\"locations\": " << s_res << "}";
 	Json::Reader jReader;
@@ -995,6 +995,13 @@ bool CEvohomeWeb::full_installation()
 		return false; // invalid return
 
 	size_t l = m_j_fi["locations"].size();
+	if (l == 0)
+		return false; // invalid return
+	if (m_j_fi["locations"][0].isMember("message"))
+	{
+		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: ", this->Name.c_str(), m_j_fi["locations"][0]["message"].asString());
+		return false;
+	}
 	for (size_t i = 0; i < l; ++i)
 	{
 		m_locations[i].installationInfo = &m_j_fi["locations"][(int)(i)];
