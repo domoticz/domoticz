@@ -294,7 +294,7 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			{
 				zone* hz = &m_tcs->zones[i];
 				std::string szId, sztemperature;
-				szId = (*hz->status)["zoneId"].asString();
+				szId = (*hz->installationInfo)["zoneId"].asString();
 				sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
 				unsigned long evoID = atol(szId.c_str());
 				std::stringstream ssUpdateStat;
@@ -514,7 +514,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 	std::string szuntil= "";
 	std::stringstream ssUpdateStat;
 
-	szId = (*hz->status)["zoneId"].asString();
+	szId = (*hz->installationInfo)["zoneId"].asString();
 	sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
 	szsetpoint = (*hz->status)["heatSetpointStatus"]["targetTemperature"].asString();
 	if ((m_showhdtemps) && hz->hdtemp.empty())
@@ -535,7 +535,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		{
 			m_awaysetpoint = new_awaysetpoint;
 			m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
-			_log.Log(LOG_STATUS, "(%s) change Away setpoint to '%0.2f' because of non matching setpoint (%s)", this->Name.c_str(), m_awaysetpoint, (*hz->status)["name"].asString().c_str());
+			_log.Log(LOG_STATUS, "(%s) change Away setpoint to '%0.2f' because of non matching setpoint (%s)", this->Name.c_str(), m_awaysetpoint, (*hz->installationInfo)["name"].asString().c_str());
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
@@ -575,7 +575,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 					{
 						m_sql.safe_query("UPDATE Hardware SET Extra='%0.2f;%d' WHERE ID=%d", m_awaysetpoint, m_wdayoff, this->m_HwdID);
 
-						_log.Log(LOG_STATUS, "(%s) change Day Off schedule reference to '%s' because of non matching setpoint (%s)", this->Name.c_str(), weekdays[m_wdayoff].c_str(), (*hz->status)["name"].asString().c_str());
+						_log.Log(LOG_STATUS, "(%s) change Day Off schedule reference to '%s' because of non matching setpoint (%s)", this->Name.c_str(), weekdays[m_wdayoff].c_str(), (*hz->installationInfo)["name"].asString().c_str());
 					}
 					if (m_showschedule)
 						szuntil = local_to_utc(get_next_switchpoint(hz));
@@ -594,7 +594,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		std::stringstream ssnewname;
 		if (m_showlocation)
 			ssnewname << m_szlocationName << ": ";
-		ssnewname << (*hz->status)["name"].asString();
+		ssnewname << (*hz->installationInfo)["name"].asString();
 
 		if (sdevname != ssnewname.str())
 		{
@@ -752,7 +752,9 @@ std::string CEvohomeWeb::local_to_utc(std::string local_time)
 	ltime.tm_min = atoi(local_time.substr(14, 2).c_str());
 	ltime.tm_sec = atoi(local_time.substr(17, 2).c_str()) + m_tzoffset;
 	mktime(&ltime);
-	if ((m_lastDST != ltime.tm_isdst) && (m_lastDST != -1)) // DST changed - must recalculate timezone offset
+	if (lastDST == -1)
+		lastDST = ltime.tm_isdst;
+	else if ((m_lastDST != ltime.tm_isdst) && (m_lastDST != -1)) // DST changed - must recalculate timezone offset
 	{
 		ltime.tm_hour -= (ltime.tm_isdst - m_lastDST);
 		m_lastDST = ltime.tm_isdst;
@@ -1119,7 +1121,7 @@ bool CEvohomeWeb::get_schedule(std::string zoneId)
 	if (ret)
 	{
 		(hz->schedule)["zoneId"] = zoneId;
-		(hz->schedule)["name"] = (*hz->status)["name"].asString();
+		(hz->schedule)["name"] = (*hz->installationInfo)["name"].asString();
 	}
 	return ret;
 }
@@ -1325,7 +1327,7 @@ bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
 
 bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 {
-	return (*tcs->status).isMember("dhw");
+	return (*tcs->installationInfo).isMember("dhw");
 }
 
 
