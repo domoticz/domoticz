@@ -3525,9 +3525,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
-	        //~ use different update queries based on the device type
-	        if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
-        	{
+		//~ use different update queries based on the device type
+		if ((devType == pTypeGeneral) && (subType == sTypeCounterIncremental))
+		{
 			result = safe_query(
 				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 				"WHERE (ID = %" PRIu64 ")",
@@ -3535,9 +3535,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				nValue,sValue,
 				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				ulID);
-	        }
+		}
 		else
 		{
+			int nValue2 = nValue;
+			std::string sValue2 = sValue;
+
 			if (
 				(stype == STYPE_DoorContact) ||
 				(stype == STYPE_DoorLock) ||
@@ -3553,12 +3556,34 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					(sValue == old_sValue)
 					);
 			}
+			else if (stype == STYPE_BlindsPercentageInverted)
+			{
+				int level = 0;
+				std::stringstream ssLevel(sValue);
+				ssLevel >> level;
+
+				if (nValue == gswitch_sOn)
+					level = 0;
+				else if (nValue == gswitch_sOff)
+					level = 100;
+				else
+				{
+					if (level == 100)
+						nValue2 = gswitch_sOff;
+					else
+						level = 100 - level; // received an inverted level, inverting back to original
+				}
+				ssLevel.str(std::string());
+				ssLevel.clear();
+				ssLevel << level;
+				ssLevel >> sValue2;
+			}
 
 			result = safe_query(
 				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue=%d, sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 				"WHERE (ID = %" PRIu64 ")",
 				signallevel, batterylevel,
-				nValue, sValue,
+				nValue2, sValue2.c_str(),
 				ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				ulID);
 		}
@@ -3638,15 +3663,18 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) ||
 				((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)))
 			{
-				if ((switchtype == STYPE_BlindsPercentage) &&
-					(nValue == light2_sOn))
+				if ((switchtype == STYPE_BlindsPercentage) && (nValue == gswitch_sOn))
 				{
 					llevel = 100;
 				}
-				else if ((switchtype == STYPE_BlindsPercentageInverted) &&
-						(nValue == light2_sOn))
+				else if (switchtype == STYPE_BlindsPercentageInverted)
 				{
-					llevel = 0;
+					if (nValue == gswitch_sOn)
+						llevel = 0;
+					else if (nValue == gswitch_sOff)
+						llevel = 100;
+					else if (llevel != 100)
+						llevel = 100 - llevel; // received an inverted level, inverting back to original
 				}
 
 				//update level for device

@@ -11690,9 +11690,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			if (!IsTesting)
 			{
-				if ((switchtype == STYPE_BlindsPercentageInverted) && (level != 0) && (level != 100))
-					gswitch.level = 100 - level; // invert level back
-
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch, NULL, -1);
 			}
