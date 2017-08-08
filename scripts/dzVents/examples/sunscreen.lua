@@ -44,7 +44,7 @@ return {
             return
         end
         
-        -- Check temerature sensor
+        -- Check temperature sensor
         if (temperature.temperature <= minTemperature) then
             if (sunscreen.state == 'Open') then
                 domoticz.log('Sunscreen#Sunscreen up --> It is too cold')
