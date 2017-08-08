@@ -20,6 +20,7 @@
 #include "unzip.h"
 #include <boost/lexical_cast.hpp>
 #include "../notifications/NotificationHelper.h"
+#include "IFTTT.h"
 
 #ifndef WIN32
 	#include <sys/stat.h>
@@ -32,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 116
+#define DB_VERSION 117
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -296,6 +297,7 @@ const char *sqlCreateCameras =
 "[Enabled] INTEGER DEFAULT 1, "
 "[Address] VARCHAR(200), "
 "[Port] INTEGER, "
+"[Protocol] INTEGER DEFAULT 0, "
 "[Username] VARCHAR(100) DEFAULT (''), "
 "[Password] VARCHAR(100) DEFAULT (''), "
 "[ImageURL] VARCHAR(200) DEFAULT (''));";
@@ -2271,6 +2273,14 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE MobileDevices ADD COLUMN [DeviceType] VARCHAR(100) DEFAULT ('')");
 			}
 		}
+		if (dbversion < 117)
+		{
+			//Add Protocol for Camera (HTTP/HTTPS/...)
+			if (!DoesColumnExistsInTable("Protocol", "Cameras"))
+			{
+				query("ALTER TABLE Cameras ADD COLUMN [Protocol] INTEGER DEFAULT 0");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2718,6 +2728,11 @@ bool CSQLHelper::OpenDatabase()
 	}
 	_log.ForwardErrorsToNotificationSystem(nValue != 0);
 
+	if (!GetPreferencesVar("IFTTTEnabled", nValue))
+	{
+		UpdatePreferencesVar("IFTTTEnabled", 0);
+	}
+
 	//Start background thread
 	if (!StartThread())
 		return false;
@@ -2758,16 +2773,16 @@ void CSQLHelper::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(static_cast<const long>(1000.0f/timer_resolution_hz));
+		sleep_milliseconds(static_cast<const long>(1000.0f / timer_resolution_hz));
 
 		if (m_bAcceptHardwareTimerActive)
 		{
-			m_iAcceptHardwareTimerCounter -= static_cast<float>(1./timer_resolution_hz);
-			if (m_iAcceptHardwareTimerCounter <= (1.0f/timer_resolution_hz/2))
+			m_iAcceptHardwareTimerCounter -= static_cast<float>(1. / timer_resolution_hz);
+			if (m_iAcceptHardwareTimerCounter <= (1.0f / timer_resolution_hz / 2))
 			{
 				m_bAcceptHardwareTimerActive = false;
 				m_bAcceptNewHardware = m_bPreviousAcceptNewHardware;
-				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware==true)?1:0);
+				UpdatePreferencesVar("AcceptNewHardware", (m_bAcceptNewHardware == true) ? 1 : 0);
 				if (!m_bAcceptNewHardware)
 				{
 					_log.Log(LOG_STATUS, "Receiving of new sensors disabled!...");
@@ -2777,12 +2792,12 @@ void CSQLHelper::Do_Work()
 
 		{ // additional scope for lock (accessing size should be within lock too)
 			boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-			if (m_background_task_queue.size()>0)
+			if (m_background_task_queue.size() > 0)
 			{
 				_items2do.clear();
 
-				std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
-				while (itt!=m_background_task_queue.end())
+				std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
+				while (itt != m_background_task_queue.end())
 				{
 					if (itt->_DelayTime)
 					{
@@ -2796,7 +2811,7 @@ void CSQLHelper::Do_Work()
 						if ((itt->_DelayTime) <= diff)
 						{
 							_items2do.push_back(*itt);
-							itt=m_background_task_queue.erase(itt);
+							itt = m_background_task_queue.erase(itt);
 						}
 						else
 							++itt;
@@ -2804,7 +2819,7 @@ void CSQLHelper::Do_Work()
 					else
 					{
 						_items2do.push_back(*itt);
-						itt=m_background_task_queue.erase(itt);
+						itt = m_background_task_queue.erase(itt);
 					}
 				}
 			}
@@ -2814,17 +2829,17 @@ void CSQLHelper::Do_Work()
 			continue;
 		}
 
-		std::vector<_tTaskItem>::iterator itt=_items2do.begin();
-		while (itt!=_items2do.end())
+		std::vector<_tTaskItem>::iterator itt = _items2do.begin();
+		while (itt != _items2do.end())
 		{
 			if (_log.isTraceEnabled())
-						_log.Log(LOG_TRACE,"SQLH: Do Task ItemType:%d Cmd:%s Value:%s ",itt->_ItemType ,itt->_command.c_str() ,itt->_sValue.c_str() );
+				_log.Log(LOG_TRACE, "SQLH: Do Task ItemType:%d Cmd:%s Value:%s ", itt->_ItemType, itt->_command.c_str(), itt->_sValue.c_str());
 
 			if (itt->_ItemType == TITEM_SWITCHCMD)
 			{
-				if (itt->_switchtype==STYPE_Motion)
+				if (itt->_switchtype == STYPE_Motion)
 				{
-					std::string devname="";
+					std::string devname = "";
 					switch (itt->_devType)
 					{
 					case pTypeLighting1:
@@ -2845,27 +2860,27 @@ void CSQLHelper::Do_Work()
 							break;
 						default:
 							//just update internally
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 							break;
 						}
 						break;
 					case pTypeLighting4:
 						//only update internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 						break;
 					}
 				}
 				else
 				{
-					if (itt->_devType==pTypeLighting4)
+					if (itt->_devType == pTypeLighting4)
 					{
 						//only update internally
-						std::string devname="";
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(),devname,true);
+						std::string devname = "";
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 					}
 					else
 						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
@@ -2888,58 +2903,58 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_EMAIL_CAMERA_SNAPSHOT)
 			{
-				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID,itt->_sValue);
+				m_mainworker.m_cameras.EmailCameraSnapshot(itt->_ID, itt->_sValue);
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
 				std::string sResult;
-				bool ret=HTTPClient::GET(itt->_sValue,sResult);
+				bool ret = HTTPClient::GET(itt->_sValue, sResult);
 				if (!ret)
 				{
-					_log.Log(LOG_ERROR,"Error opening url: %s",itt->_sValue.c_str());
+					_log.Log(LOG_ERROR, "Error opening url: %s", itt->_sValue.c_str());
 				}
 			}
-			else if ((itt->_ItemType == TITEM_SEND_EMAIL)||(itt->_ItemType == TITEM_SEND_EMAIL_TO))
+			else if ((itt->_ItemType == TITEM_SEND_EMAIL) || (itt->_ItemType == TITEM_SEND_EMAIL_TO))
 			{
 				int nValue;
 				std::string sValue;
-				if (GetPreferencesVar("EmailServer",nValue,sValue))
+				if (GetPreferencesVar("EmailServer", nValue, sValue))
 				{
-					if (sValue!="")
+					if (sValue != "")
 					{
 						std::string EmailFrom;
 						std::string EmailTo;
-						std::string EmailServer=sValue;
-						int EmailPort=25;
+						std::string EmailServer = sValue;
+						int EmailPort = 25;
 						std::string EmailUsername;
 						std::string EmailPassword;
-						GetPreferencesVar("EmailFrom",nValue,EmailFrom);
+						GetPreferencesVar("EmailFrom", nValue, EmailFrom);
 						if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
 						{
-							GetPreferencesVar("EmailTo",nValue,EmailTo);
+							GetPreferencesVar("EmailTo", nValue, EmailTo);
 						}
 						else
 						{
-							EmailTo=itt->_command;
+							EmailTo = itt->_command;
 						}
-						GetPreferencesVar("EmailUsername",nValue,EmailUsername);
-						GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+						GetPreferencesVar("EmailUsername", nValue, EmailUsername);
+						GetPreferencesVar("EmailPassword", nValue, EmailPassword);
 
 						GetPreferencesVar("EmailPort", EmailPort);
 
 						SMTPClient sclient;
 						sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
 						sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-						sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
-						sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
+						sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
+						sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
 						sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
 						sclient.SetHTMLBody(itt->_sValue);
-						bool bRet=sclient.SendEmail();
+						bool bRet = sclient.SendEmail();
 
 						if (bRet)
-							_log.Log(LOG_STATUS,"Notification sent (Email)");
+							_log.Log(LOG_STATUS, "Notification sent (Email)");
 						else
-							_log.Log(LOG_ERROR,"Notification failed (Email)");
+							_log.Log(LOG_ERROR, "Notification failed (Email)");
 
 					}
 				}
@@ -2948,15 +2963,15 @@ void CSQLHelper::Do_Work()
 			{
 				m_notifications.SendMessage(0, std::string(""), "clickatell", itt->_ID, itt->_ID, std::string(""), 1, std::string(""), false);
 			}
-            else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
-            {
+			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
+			{
 				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
-            }
+			}
 
-            else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
-            {
+			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
+			{
 				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str());
-            }
+			}
 			else if (itt->_ItemType == TITEM_SET_VARIABLE)
 			{
 				std::vector<std::vector<std::string> > result;
@@ -2968,7 +2983,7 @@ void CSQLHelper::Do_Work()
 					s_str.clear();
 					s_str.str("");
 					s_str << itt->_idx;
-					std::string updateResult = UpdateUserVariable(s_str.str(), sd[0], sd[1], itt->_sValue, (itt->_nValue==0)?false:true);
+					std::string updateResult = UpdateUserVariable(s_str.str(), sd[0], sd[1], itt->_sValue, (itt->_nValue == 0) ? false : true);
 					if (updateResult != "OK") {
 						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
 					}
@@ -3001,7 +3016,22 @@ void CSQLHelper::Do_Work()
 					}
 					m_notifications.SendMessageEx(0, std::string(""), subsystem, splitresults[0], splitresults[1], splitresults[2], static_cast<int>(itt->_idx), splitresults[3], true);
 				}
-
+			}
+			else if (itt->_ItemType == TITEM_SEND_IFTTT_TRIGGER)
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(itt->_command, "!#", splitresults);
+				if (!splitresults.empty())
+				{
+					std::string sValue1, sValue2, sValue3;
+					if (splitresults.size() > 0)
+						sValue1 = splitresults[0];
+					if (splitresults.size() > 1)
+						sValue2 = splitresults[1];
+					if (splitresults.size() > 2)
+						sValue3 = splitresults[2];
+					IFTTT::Send_IFTTT_Trigger(itt->_ID, sValue1, sValue2, sValue3);
+				}
 			}
 
 			++itt;

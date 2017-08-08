@@ -991,15 +991,17 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					std::string szExtraData;
 					std::string custommsg;
 					uint64_t Idx = itt->first;
-					int SensorTimeOut = atoi(splitresults[2].c_str());  // minutes
-					int diff = (int)round(difftime(btime, itt2->LastUpdate));
-					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut*60);
-					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut*60), (diff < SensorTimeOut*60));
+					uint32_t SensorTimeOut = static_cast<uint32_t>(atoi(splitresults[2].c_str()));  // minutes
+					uint32_t diff = static_cast<uint32_t>(round(difftime(btime, itt2->LastUpdate)));
+					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut * 60);
+					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut * 60), (diff < SensorTimeOut * 60));
 					bool bCustomMessage = false;
 					bCustomMessage = CustomRecoveryMessage(itt2->ID, custommsg, false);
 
 					if (bSendNotification && !bStartTime && (!bRecoveryMessage || itt2->SendAlways))
 					{
+						if (SystemUptime() < SensorTimeOut * 60 && (!bRecoveryMessage || itt2->SendAlways))
+							continue;
 						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
 						if (result.size() == 0)
@@ -1019,25 +1021,20 @@ void CNotificationHelper::CheckAndHandleLastUpdateNotification()
 					}
 					else if (!bSendNotification && bRecoveryMessage)
 					{
-						bSendNotification = true;
 						msg = recoverymsg;
 						std::string clearstr = "!";
 						CustomRecoveryMessage(itt2->ID, clearstr, true);
 					}
 					else
+						continue;
+
+					if (bCustomMessage && !bRecoveryMessage)
+						msg = ParseCustomMessage(custommsg, itt2->DeviceName, "");
+					SendMessageEx(Idx, itt2->DeviceName, itt2->ActiveSystems, msg, msg, szExtraData, itt2->Priority, std::string(""), true);
+					if (!bRecoveryMessage)
 					{
-						bSendNotification = false;
-					}
-					if (bSendNotification)
-					{
-						if (bCustomMessage && !bRecoveryMessage)
-							msg = ParseCustomMessage(custommsg, itt2->DeviceName, "");
-						SendMessageEx(Idx, itt2->DeviceName, itt2->ActiveSystems, msg, msg, szExtraData, itt2->Priority, std::string(""), true);
-						if (!bRecoveryMessage)
-						{
-							TouchNotification(itt2->ID);
-							CustomRecoveryMessage(itt2->ID, msg, true);
-						}
+						TouchNotification(itt2->ID);
+						CustomRecoveryMessage(itt2->ID, msg, true);
 					}
 				}
 			}

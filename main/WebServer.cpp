@@ -369,6 +369,10 @@ namespace http {
 			RegisterCommandCode("updatehardware", boost::bind(&CWebServer::Cmd_UpdateHardware, this, _1, _2, _3));
 			RegisterCommandCode("deletehardware", boost::bind(&CWebServer::Cmd_DeleteHardware, this, _1, _2, _3));
 
+			RegisterCommandCode("addcamera", boost::bind(&CWebServer::Cmd_AddCamera, this, _1, _2, _3));
+			RegisterCommandCode("updatecamera", boost::bind(&CWebServer::Cmd_UpdateCamera, this, _1, _2, _3));
+			RegisterCommandCode("deletecamera", boost::bind(&CWebServer::Cmd_DeleteCamera, this, _1, _2, _3));
+
 			RegisterCommandCode("wolgetnodes", boost::bind(&CWebServer::Cmd_WOLGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("woladdnode", boost::bind(&CWebServer::Cmd_WOLAddNode, this, _1, _2, _3));
 			RegisterCommandCode("wolupdatenode", boost::bind(&CWebServer::Cmd_WOLUpdateNode, this, _1, _2, _3));
@@ -4376,7 +4380,7 @@ namespace http {
 					{
 						//Blyss
 						dtype = pTypeLighting6;
-						subtype = lighttype - 60;
+						subtype = sTypeBlyss;
 						std::string sgroupcode = request::findValue(&req, "groupcode");
 						sunitcode = request::findValue(&req, "unitcode");
 						std::string id = request::findValue(&req, "id");
@@ -4855,7 +4859,7 @@ namespace http {
 				{
 					//Blyss
 					dtype = pTypeLighting6;
-					subtype = lighttype - 60;
+					subtype = sTypeBlyss;
 					std::string sgroupcode = request::findValue(&req, "groupcode");
 					sunitcode = request::findValue(&req, "unitcode");
 					std::string id = request::findValue(&req, "id");
@@ -5982,116 +5986,6 @@ namespace http {
 				root["title"] = "ClearNotification";
 
 				m_notifications.RemoveDeviceNotifications(idx);
-			}
-			else if (cparam == "addcamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string name = request::findValue(&req, "name");
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string address = request::findValue(&req, "address");
-				std::string sport = request::findValue(&req, "port");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string timageurl = request::findValue(&req, "imageurl");
-				if (
-					(name == "") ||
-					(address == "") ||
-					(timageurl == "")
-					)
-					return;
-
-				std::string imageurl;
-				if (request_handler::url_decode(timageurl, imageurl))
-				{
-					imageurl = base64_decode(imageurl);
-
-					int port = atoi(sport.c_str());
-					root["status"] = "OK";
-					root["title"] = "AddCamera";
-					m_sql.safe_query(
-						"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL) VALUES ('%q',%d,'%q',%d,'%q','%q','%q')",
-						name.c_str(),
-						(senabled == "true") ? 1 : 0,
-						address.c_str(),
-						port,
-						base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-						base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
-						imageurl.c_str()
-					);
-					m_mainworker.m_cameras.ReloadCameras();
-				}
-			}
-			else if (cparam == "updatecamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx == "")
-					return;
-				std::string name = request::findValue(&req, "name");
-				std::string senabled = request::findValue(&req, "enabled");
-				std::string address = request::findValue(&req, "address");
-				std::string sport = request::findValue(&req, "port");
-				std::string username = request::findValue(&req, "username");
-				std::string password = request::findValue(&req, "password");
-				std::string timageurl = request::findValue(&req, "imageurl");
-				if (
-					(name == "") ||
-					(senabled == "") ||
-					(address == "") ||
-					(timageurl == "")
-					)
-					return;
-
-				std::string imageurl;
-				if (request_handler::url_decode(timageurl, imageurl))
-				{
-					imageurl = base64_decode(imageurl);
-
-					int port = atoi(sport.c_str());
-
-					root["status"] = "OK";
-					root["title"] = "UpdateCamera";
-
-					m_sql.safe_query(
-						"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q' WHERE (ID == '%q')",
-						name.c_str(),
-						(senabled == "true") ? 1 : 0,
-						address.c_str(),
-						port,
-						base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
-						base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
-						imageurl.c_str(),
-						idx.c_str()
-					);
-					m_mainworker.m_cameras.ReloadCameras();
-				}
-			}
-			else if (cparam == "deletecamera")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string idx = request::findValue(&req, "idx");
-				if (idx == "")
-					return;
-				root["status"] = "OK";
-				root["title"] = "DeleteCamera";
-
-				m_sql.DeleteCamera(idx);
-				m_mainworker.m_cameras.ReloadCameras();
 			}
 			else if (cparam == "adduser")
 			{
@@ -7904,6 +7798,12 @@ namespace http {
 
 			m_sql.UpdatePreferencesVar("OneWireSwitchPollPeriod", atoi(request::findValue(&req, "OneWireSwitchPollPeriod").c_str()));
 
+			std::string IFTTTEnabled = request::findValue(&req, "IFTTTEnabled");
+			int iIFTTTEnabled = (IFTTTEnabled == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("IFTTTEnabled", iIFTTTEnabled);
+			std::string szKey = request::findValue(&req, "IFTTTAPI");
+			m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode((unsigned char const*)szKey.c_str(), szKey.size()));
+
 			m_notifications.LoadConfig();
 #ifdef ENABLE_PYTHON
 			//Signal plugins to update Settings dictionary
@@ -9644,26 +9544,28 @@ namespace http {
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
+						double meteroffset = AddjValue;
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", dvalue / EnergyDivider);
+							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", dvalue / GasDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", dvalue / WaterDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -11789,6 +11691,7 @@ namespace http {
 			std::string ssenderid = request::findValue(&req, "senderid");
 			std::string sname = request::findValue(&req, "name");
 			std::string sdevtype = request::findValue(&req, "devicetype");
+			std::string sactive = request::findValue(&req, "active");
 			if (
 				(suuid.empty()) ||
 				(ssenderid.empty())
@@ -11797,12 +11700,21 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "AddMobileDevice";
 
+			if (sactive.empty())
+				sactive = "1";
+			int iActive = (sactive == "1") ? 1 : 0;
+
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name, DeviceType FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
 			if (result.empty())
 			{
 				//New
-				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID,Name,DeviceType) VALUES (1,'%q','%q','%q','%q')", suuid.c_str(), ssenderid.c_str(), sname.c_str(), sdevtype.c_str());
+				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID,Name,DeviceType) VALUES (%d,'%q','%q','%q','%q')",
+					iActive,
+					suuid.c_str(),
+					ssenderid.c_str(),
+					sname.c_str(),
+					sdevtype.c_str());
 			}
 			else
 			{
@@ -11810,7 +11722,8 @@ namespace http {
 				time_t now = mytime(NULL);
 				struct tm ltime;
 				localtime_r(&now, &ltime);
-				m_sql.safe_query("UPDATE MobileDevices SET SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
+				m_sql.safe_query("UPDATE MobileDevices SET Active=%d, SenderID='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (UUID == '%q')",
+					iActive,
 					ssenderid.c_str(),
 					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 					suuid.c_str()
@@ -12738,6 +12651,12 @@ namespace http {
 				}
 				else if (Key == "DeltaTemperatureLog") {
 					root[Key] = sValue;
+				}
+				else if (Key == "IFTTTEnabled") {
+					root["IFTTTEnabled"] = nValue;
+				}
+				else if (Key == "IFTTTAPI") {
+					root["IFTTTAPI"] = sValue;
 				}
 			}
 		}
@@ -15827,7 +15746,18 @@ namespace http {
 						else
 						{
 							//Add last counter value
-							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							if (sValue.find('.') != std::string::npos)
+							{
+								sprintf(szTmp, "%.3f", AddjValue + atof(sValue.c_str()));
+							}
+							else
+							{
+								unsigned long long ullCounter;
+								std::stringstream s_str1(sValue);
+								s_str1 >> ullCounter;
+
+								sprintf(szTmp, "%llu", static_cast<unsigned long long>(AddjValue) + ullCounter);
+							}
 							root["counter"] = szTmp;
 						}
 						//Actual Year

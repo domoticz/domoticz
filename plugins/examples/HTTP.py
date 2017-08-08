@@ -15,6 +15,7 @@
             <options>
                 <option label="True" value="Debug"/>
                 <option label="False" value="Normal"  default="true" />
+                <option label="Logging" value="File"/>
             </options>
         </param>
     </params>
@@ -37,41 +38,44 @@ class BasePlugin:
         self.httpConn.Connect()
 
     def onStop(self):
-        Domoticz.Log("Plugin is stopping.")
+        Domoticz.Log("onStop - Plugin is stopping.")
 
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Debug("Google connected successfully.")
-            data = ''
-            headers = { 'Content-Type': 'text/xml; charset=utf-8', \
-                        'Connection': 'keep-alive', \
-                        'Accept': 'Content-Type: text/html; charset=UTF-8', \
-                        'Host': Parameters["Address"]+":"+Parameters["Port"], \
-                        'User-Agent':'Domoticz/1.0', \
-                        'Content-Length' : "%d"%(len(data)) }
-            Connection.Send(data, 'GET', '/', headers)
+            sendData = { 'Verb' : 'GET',
+                         'URL'  : '/',
+                         'Headers' : { 'Content-Type': 'text/xml; charset=utf-8', \
+                                       'Connection': 'keep-alive', \
+                                       'Accept': 'Content-Type: text/html; charset=UTF-8', \
+                                       'Host': Parameters["Address"]+":"+Parameters["Port"], \
+                                       'User-Agent':'Domoticz/1.0' }
+                       }
+            Connection.Send(sendData)
         else:
             Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
 
-    def onMessage(self, Connection, Data, Status, Extra):
-        strData = Data.decode("utf-8", "ignore")
-        Domoticz.Log("onMessage: Status="+str(Status))
-        Domoticz.Log("Headers:")
-        for x in Extra:
-            Domoticz.Log("    '" + x + "':'" + str(Extra[x]))
+    def onMessage(self, Connection, Data):
+        DumpHTTPResponseToLog(Data)
+        
+        strData = Data["Data"].decode("utf-8", "ignore")
+        Status = int(Data["Status"])
+        LogMessage(strData)
 
         if (Status == 200):
             Domoticz.Log("Good Response received from Google.")
             self.httpConn.Disconnect()
         elif (Status == 302):
             Domoticz.Log("Google returned a Page Moved Error.")
-            headers = { 'Content-Type': 'text/xml; charset=utf-8', \
-                        'Connection': 'keep-alive', \
-                        'Accept': 'Content-Type: text/html; charset=UTF-8', \
-                        'Host': Parameters["Address"]+":"+Parameters["Port"], \
-                        'User-Agent':'Domoticz/1.0', \
-                        'Content-Length' : "0" }
-            Connection.Send("", "GET", Extra["Location"], headers)
+            sendData = { 'Verb' : 'GET',
+                         'URL'  : Data["Headers"]["Location"],
+                         'Headers' : { 'Content-Type': 'text/xml; charset=utf-8', \
+                                       'Connection': 'keep-alive', \
+                                       'Accept': 'Content-Type: text/html; charset=UTF-8', \
+                                       'Host': Parameters["Address"]+":"+Parameters["Port"], \
+                                       'User-Agent':'Domoticz/1.0' },
+                        }
+            Connection.Send(sendData)
         elif (Status == 400):
             Domoticz.Error("Google returned a Bad Request Error.")
         elif (Status == 500):
@@ -111,9 +115,9 @@ def onConnect(Connection, Status, Description):
     global _plugin
     _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Connection, Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Connection, Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
@@ -132,6 +136,13 @@ def onHeartbeat():
     _plugin.onHeartbeat()
 
 # Generic helper functions
+def LogMessage(Message):
+    if Parameters["Mode6"] == "File":
+        f = open(Parameters["HomeFolder"]+"http.html","w")
+        f.write(Message)
+        f.close()
+        Domoticz.Log("File written")
+
 def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
@@ -145,3 +156,14 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
+def DumpHTTPResponseToLog(httpDict):
+    if isinstance(httpDict, dict):
+        Domoticz.Log("HTTP Details ("+str(len(httpDict))+"):")
+        for x in httpDict:
+            if isinstance(httpDict[x], dict):
+                Domoticz.Log("--->'"+x+" ("+str(len(httpDict[x]))+"):")
+                for y in httpDict[x]:
+                    Domoticz.Log("------->'" + y + "':'" + str(httpDict[x][y]) + "'")
+            else:
+                Domoticz.Log("--->'" + x + "':'" + str(httpDict[x]) + "'")

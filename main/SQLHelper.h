@@ -46,6 +46,7 @@ enum _eTaskItemType
 	TITEM_SEND_SMS,
 	TITEM_SEND_NOTIFICATION,
 	TITEM_SET_SETPOINT,
+	TITEM_SEND_IFTTT_TRIGGER,
 };
 
 struct _tTaskItem
@@ -145,6 +146,17 @@ struct _tTaskItem
 		tItem._ItemType = TITEM_SEND_SMS;
 		tItem._DelayTime = DelayTime;
 		tItem._ID = Subject;
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
+	}
+	static _tTaskItem SendIFTTTTrigger(const float DelayTime, const std::string &EventID, const std::string &Value1, const std::string &Value2, const std::string &Value3)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_SEND_IFTTT_TRIGGER;
+		tItem._DelayTime = DelayTime;
+		tItem._ID = EventID;
+		tItem._command = Value1 + "!#" + Value2 + "!#" + Value3;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;

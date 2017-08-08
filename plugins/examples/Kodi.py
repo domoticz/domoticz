@@ -1,13 +1,19 @@
 #           Kodi Plugin
 #
-#           Author:     Dnpwwo, 2016
+#           Author:     Dnpwwo, 2016 - 2017
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.3.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.8.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>
-        <param field="Mode1" label="MAC Address" width="150px" required="false"/>
+        <param field="Mode1" label="Icon" width="100px">
+            <options>
+                <option label="Blue" value="Kodi" default="true" />
+                <option label="Black" value="KodiBlack"/>
+                <option label="Round" value="KodiRound"/>
+            </options>
+        </param>
         <param field="Mode2" label="Shutdown Command" width="100px">
             <options>
                 <option label="Hibernate" value="Hibernate"/>
@@ -22,6 +28,7 @@
                 <option label="False" value="False"  default="true" />
             </options>
         </param>
+        <param field="Mode4" label="Notifier Name" width="100px" default="KodiNotify"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -32,8 +39,8 @@
 </plugin>
 """
 import Domoticz
+import sys
 import json
-import pprint
 
 class BasePlugin:
     KodiConn = None
@@ -55,42 +62,54 @@ class BasePlugin:
     def onStart(self):
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
+            DumpConfigToLog()
+        
+        if ('Kodi'  not in Images): Domoticz.Image('Kodi Icons.zip').Create()
+        if ('KodiBlack' not in Images): Domoticz.Image('KodiBlack Icons.zip').Create()
+        if ('KodiRound' not in Images): Domoticz.Image('KodiRound Icons.zip').Create()
+
         if (len(Devices) == 0):
             Domoticz.Device(Name="Status",  Unit=1, Type=17,  Switchtype=17).Create()
-            Options = {"LevelActions": "||||",
+            Options = {"LevelActions": "||||", 
                        "LevelNames": "Off|Video|Music|TV Shows|Live TV",
                        "LevelOffHidden": "false",
                        "SelectorStyle": "1"}
             Domoticz.Device(Name="Source",  Unit=2, TypeName="Selector Switch", Switchtype=18, Image=12, Options=Options).Create()
-            Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, \
-                            Switchtype=7,  Image=8).Create()
-            Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7,  Image=12).Create()
+            Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+            Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7, Image=12).Create()
             Domoticz.Log("Devices created.")
-        else:
-            if (1 in Devices): self.playerState = Devices[1].nValue
-            if (2 in Devices): self.mediaLevel = Devices[2].nValue
-        DumpConfigToLog()
-        self.KodiConn = Domoticz.Connection(Name="Kodi", Transport="TCP/IP", Protocol="JSON", Address=Parameters["Address"], Port=Parameters["Port"])
+        if (1 in Devices):
+            UpdateImage(1)
+            self.playerState = Devices[1].nValue
+        if (2 in Devices):
+            UpdateImage(2)
+            self.mediaLevel = Devices[2].nValue
+        if (4 in Devices):
+            UpdateImage(4)
+            self.mediaLevel = Devices[2].nValue
+        self.KodiConn = Domoticz.Connection(Name="KodiConn", Transport="TCP/IP", Protocol="JSON", Address=Parameters["Address"], Port=Parameters["Port"])
         self.KodiConn.Connect()
+        if (Parameters["Mode3"] == "True"):
+            Domoticz.Notifier(Parameters["Mode4"])
         Domoticz.Heartbeat(10)
         return True
 
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
-            Domoticz.Log("Connected successfully to: "+Parameters["Address"]+":"+Parameters["Port"])
+            Domoticz.Log("Connected successfully to: "+Connection.Address+":"+Connection.Port)
             self.playerState = 1
             self.KodiConn.Send('{"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007}')
             self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.GetProperties","id":1011,"params":{"properties":["volume","muted"]}}')
             self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1001}')
         else:
-            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
-            Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
+            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port)
+            Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port+" with error: "+Description)
             # Turn devices off in Domoticz
             for Key in Devices:
                 UpdateDevice(Key, 0, Devices[Key].sValue)
         return True
 
-    def onMessage(self, Connection, Data, Status, Extra):
+    def onMessage(self, Connection, Data):
         strData = Data.decode("utf-8", "ignore")
         Response = json.loads(strData)
         if ('error' in Response):
@@ -389,14 +408,22 @@ class BasePlugin:
 
         return True
 
-    def onNotification(self, Data):
-        Domoticz.Log("Notification: " + str(Data))
-        return
+    def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
+        Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
+        if Parameters["Mode3"] == "True":
+            import xmbcclient3
+            packet = xmbcclient3.PacketNOTIFICATION(title=str(Name),  message=str(Text), icon_type=xmbcclient3.ICON_PNG, icon_file=str(ImageFile))
+            udpBcastConn = Domoticz.Connection(Name="UDP Broadcast Connection", Transport="UDP/IP", Protocol="None", Address=Parameters["Address"], Port=str(9777))
+            for a in range ( 0, packet.num_packets() ):
+                try:
+                    udpBcastConn.Send(packet.get_udp_message(a+1))
+                except:
+                    return
 
     def onHeartbeat(self):
-        if (self.KodiConn.Connected() == True):
+        if (self.KodiConn.Connected()):
             if (self.oustandingPings > 6):
-                Domoticz.Disconnect()
+                self.KodiConn.Disconnect()
                 self.nextConnect = 0
             else:
                 if (self.playerID == -1):
@@ -410,7 +437,7 @@ class BasePlugin:
             self.nextConnect = self.nextConnect - 1
             if (self.nextConnect <= 0):
                 self.nextConnect = 3
-                Domoticz.Connect()
+                self.KodiConn.Connect()
         return True
 
     def onDisconnect(self, Connection):
@@ -501,9 +528,9 @@ def onConnect(Connection, Status, Description):
     global _plugin
     _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Connection, Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Connection, Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
@@ -526,6 +553,12 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug( "'" + x + "':'" + str(Parameters[x]) + "'")
+    Domoticz.Debug("Settings count: " + str(len(Settings)))
+    for x in Settings:
+        Domoticz.Debug( "'" + x + "':'" + str(Settings[x]) + "'")
+    Domoticz.Debug("Image count: " + str(len(Images)))
+    for x in Images:
+        Domoticz.Debug( "'" + x + "':'" + str(Images[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
@@ -534,9 +567,9 @@ def DumpConfigToLog():
         Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
-        Domoticz.Debug("Device Options:   " + pprint.pformat(Devices[x].Options))
+        Domoticz.Debug("Device Image:     " + str(Devices[x].Image))
     return
-  
+ 
 def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
@@ -545,3 +578,10 @@ def UpdateDevice(Unit, nValue, sValue):
             Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 
+# Synchronise images to match parameter in hardware page
+def UpdateImage(Unit):
+    if (Unit in Devices) and (Parameters["Mode1"] in Images):
+        Domoticz.Debug("Device Image update: '" + Parameters["Mode1"] + "', Currently "+str(Devices[Unit].Image)+", should be "+str( Images[Parameters["Mode1"]].ID))
+        if (Devices[Unit].Image != Images[Parameters["Mode1"]].ID):
+            Devices[Unit].Update(nValue=Devices[Unit].nValue, sValue=str(Devices[Unit].sValue), Image=Images[Parameters["Mode1"]].ID)
+    return

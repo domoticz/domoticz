@@ -581,9 +581,9 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
-		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		if (m_Transports.size())
 		{
+			boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 			{
 				CPluginTransport*	pPluginTransport = *itt;
@@ -627,6 +627,8 @@ namespace Plugins {
 			PluginMessageQueue.push(Message);
 		}
 
+		_log.Log(LOG_STATUS, "(%s) Started.", Name.c_str());
+
 		return true;
 	}
 
@@ -634,6 +636,8 @@ namespace Plugins {
 	{
 		try
 		{
+			_log.Log(LOG_STATUS, "(%s) Stop directive received.", Name.c_str());
+
 			m_stoprequested = true;
 			if (m_bIsStarted)
 			{
@@ -671,6 +675,8 @@ namespace Plugins {
 				sleep_milliseconds(100);
 			}
 
+			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
+
 			if (m_thread)
 			{
 				m_thread->join();
@@ -691,6 +697,7 @@ namespace Plugins {
 
 	void CPlugin::Do_Work()
 	{
+		_log.Log(LOG_STATUS, "(%s) Entering work loop.", Name.c_str());
 		m_LastHeartbeat = mytime(NULL);
 		int scounter = m_iPollInterval * 2;
 		while (!m_stoprequested)
@@ -729,7 +736,7 @@ namespace Plugins {
 			sleep_milliseconds(500);
 		}
 
-		_log.Log(LOG_STATUS, "(%s) Exiting work loop...", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", Name.c_str());
 	}
 
 	void CPlugin::Restart()
@@ -1110,30 +1117,60 @@ namespace Plugins {
 	{
 		WriteDirective*	pMessage = (WriteDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
-		if (!pConnection->pTransport || !pConnection->pTransport->IsConnected())
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		if (pConnection->pTransport)
 		{
-			_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
-			return;
-		}
-		else
-		{
-			if (!pConnection->pProtocol)
+			if (sTransport == "UDP/IP")
 			{
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-				pConnection->pProtocol = new CPluginProtocol();
+				_log.Log(LOG_ERROR, "(%s) Connectionless Transport is listening, write directive ignored.", Name.c_str());
+				return;
 			}
-			std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
-			if (m_bDebug)
+
+			if (!pConnection->pTransport->IsConnected())
 			{
-				WriteDebugBuffer(vWriteData, false);
-			}
-			pConnection->pTransport->handleWrite(vWriteData);
-			if (pMessage->m_Object)
-			{
-				PyObject*	pHeaders = (PyObject*)pMessage->m_Object;
-				Py_XDECREF(pHeaders);
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				return;
 			}
 		}
+
+		if (!pConnection->pTransport)
+		{
+			// UDP is connectionless so create a temporary transport and write to it
+			if (sTransport == "UDP/IP")
+			{
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				return;
+			}
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
+			pConnection->pProtocol = new CPluginProtocol();
+		}
+
+		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
+		if (m_bDebug)
+		{
+			WriteDebugBuffer(vWriteData, false);
+		}
+
+		pConnection->pTransport->handleWrite(vWriteData);
+
+		// UDP is connectionless so remove the transport after write
+		if (pConnection->pTransport && (sTransport == "UDP/IP"))
+		{
+			delete pConnection->pTransport;
+			pConnection->pTransport = NULL;
+		}
+
 	}
 
 	void CPlugin::ConnectionDisconnect(CDirectiveBase * pMess)
@@ -1234,6 +1271,8 @@ namespace Plugins {
 		{
 			// Stop Python
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
+			if (m_ImageDict) Py_XDECREF(m_ImageDict);
+			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 			Py_XDECREF(m_PyModule);
 		}
@@ -1247,6 +1286,8 @@ namespace Plugins {
 		}
 		m_PyModule = NULL;
 		m_DeviceDict = NULL;
+		m_ImageDict = NULL;
+		m_SettingsDict = NULL;
 		m_PyInterpreter = NULL;
 		m_bIsStarted = false;
 	}

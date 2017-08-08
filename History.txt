@@ -1,4 +1,14 @@
-Version 3.8153 (July 30h 2017)
+Version 3.xxx (August xxth 2017)
+- Implemented: Pusher now supports Distance type
+- Implemented: Camera, can now handle HTTPS url's
+- Floorplan: Fixed door contact type
+- Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
+- Implemented: "Send Triggers to IFTTT" from lua using commandArray['TriggerIFTTT']='EventName#Value1#Value2#Value3'
+- Changed: MySensors, now treating V_LIGHT_LEVEL as Perecentage (V_LEVEL with type=S_LIGHT_LEVEL = Lux)
+- Fixed: Blyss (manual adding to system)
+- Implemented: Adjustment Value for Counter/Incremental sensors
+
+Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
 - Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
 - Fixed: JSon float/nan value, solved by upgrading JSonCPP

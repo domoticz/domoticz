@@ -183,6 +183,7 @@
 		<Product type="0002" id="0000" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0002" id="0209" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="0600" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
+		<Product type="8002" id="1000" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0002" id="0800" name="Yale Touchscreen Deadbolt (YRD120)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0003" id="0409" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
 		<Product type="0003" id="0800" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
@@ -555,6 +556,7 @@
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
 		<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
 		<Product type="5052" id="3033" name="14282 Plug-In Two-Outlet Smart Switch" config="ge/14282-plugin-switch.xml"/>
+		<Product type="6363" id="3533" name="ZW4001 In-Wall Decora Style On/Off Relay Switch" config="ge/zw4001-switch.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0014" name="GoControl">
 		<Product type="5442" id="5436" name="GC-TBZ48L Battery Powered Z-Wave Plus Thermostat" config="gocontrol/GC-TBZ48L.xml" />
@@ -645,6 +647,11 @@
 		<Product type="0002" id="0001" name="SmoothRemote Controller"/>
 		<Product type="0001" id="0002" name="RAone SmartPower Wall Appliance Module"/>
 		<Product type="0001" id="0001" name="RAone SmartDimmer Wall Dimmer Module"/>
+	</Manufacturer>
+	<Manufacturer id="0312" name="Inovelli">
+		<Product type="b211" id="241c" name="NZW36 Smart Plug-In Module (1 Channel)" config="inovelli/simple_module.xml"/>
+		<Product type="b221" id="251c" name="NZW37 Smart Plug-In Module (2 Channel)" config="inovelli/simple_module.xml"/>
+		<Product type="b212" id="271c" name="NZW39 Smart Plug (Dimmer)" config="inovelli/simple_module.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0006" name="Intel">
 	</Manufacturer>

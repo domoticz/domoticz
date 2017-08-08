@@ -13,7 +13,6 @@
 #pragma once
 
 #include "EvohomeBase.h"
-#include <map>
 #include "../json/json.h"
 
 
@@ -21,43 +20,45 @@ class CEvohomeWeb : public CEvohomeBase
 {
 	struct zone
 	{
+		Json::Value *installationInfo;
+		Json::Value *status;
 		std::string locationId;
 		std::string gatewayId;
 		std::string systemId;
 		std::string zoneId;
-		Json::Value *installationInfo;
-		Json::Value *status;
-		Json::Value schedule;
 		std::string hdtemp;
+		Json::Value schedule;
 	};
 
 	struct temperatureControlSystem
 	{
+		std::vector<zone> zones;
+		std::vector<zone> dhw;
+		Json::Value *installationInfo;
+		Json::Value *status;
 		std::string locationId;
 		std::string gatewayId;
 		std::string systemId;
-		Json::Value *installationInfo;
-		Json::Value *status;
-		std::map<int, zone> zones;
 	};
 
 	struct gateway
 	{
-		std::string locationId;
-		std::string gatewayId;
+		std::vector<temperatureControlSystem> temperatureControlSystems;
 		Json::Value *installationInfo;
 		Json::Value *status;
-		std::map<int, temperatureControlSystem> temperatureControlSystems;
+		std::string locationId;
+		std::string gatewayId;
 	};
 
 
 	struct location
 	{
-		std::string locationId;
+		std::vector<gateway> gateways;
 		Json::Value *installationInfo;
 		Json::Value *status;
-		std::map<int, gateway> gateways;
+		std::string locationId;
 	};
+
 public:
 	CEvohomeWeb(const int ID, const std::string &Username, const std::string &Password, const unsigned int refreshrate, const int UseFlags, const unsigned int installation);
 	~CEvohomeWeb(void);
@@ -83,6 +84,8 @@ private:
 	void get_gateways(int location);
 	void get_temperatureControlSystems(int location, int gateway);
 	void get_zones(int location, int gateway, int temperatureControlSystem);
+	void get_dhw(int location, int gateway, int temperatureControlSystem);
+
 
 	bool full_installation();
 	bool get_status(int location);
@@ -92,7 +95,9 @@ private:
 
 	bool has_dhw(temperatureControlSystem *tcs);
 
-	bool get_schedule(std::string zoneId);
+	bool get_dhw_schedule(std::string dhwId);
+	bool get_zone_schedule(std::string zoneId);
+	bool get_zone_schedule(std::string zoneId, std::string zoneType);
 	std::string get_next_switchpoint(temperatureControlSystem* tcs, int zone);
 	std::string get_next_switchpoint(zone* hz);
 	std::string get_next_switchpoint(Json::Value &schedule);
@@ -152,7 +157,7 @@ private:
 	Json::Value m_j_stat;
 
 	std::string m_evouid;
-	std::map<int, location> m_locations;
+	std::vector<location> m_locations;
 
 	temperatureControlSystem* m_tcs;
 
