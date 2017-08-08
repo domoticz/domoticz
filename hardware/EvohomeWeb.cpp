@@ -317,13 +317,13 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			if ((zonemode.size() > 9) && (zonemode.substr(9) == "Override")) // don't touch zone if it is in Override mode
 				continue;
 
-				std::string sztemperature, szsetpoint;
-				std::string szuntil = "";
-				double setpoint = 0;
+			std::string sztemperature, szsetpoint;
+			std::string szuntil = "";
+			double setpoint = 0;
 
-				/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
-				*  for the next update to get the correct values. But we can make educated guesses
-				*/
+			/*  there is no strict definition for modes Away, DayOff and Custom so we'll have to wait
+			 *  for the next update to get the correct values. But we can make educated guesses
+			 */
 
 			// Away unconditionally sets all zones to a preset temperature, even if Normal mode is lower
 			if (sznewmode == "Away")
@@ -332,35 +332,32 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			{
 				if ((!hz->schedule.isNull()) || get_zone_schedule(hz->zoneId))
 				{
-					if ((!hz->schedule.isNull()) || get_schedule(hz->zoneId))
-					{
-						szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
-						setpoint = strtod(szsetpoint.c_str(), NULL);
-					}
-
-					// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
-					// if the resulting setpoint is below the Away setpoint
-					if ((sznewmode == "AutoWithEco") && (setpoint >= (m_awaysetpoint + 3)))
-						setpoint -= 3;
+					szuntil = local_to_utc(get_next_switchpoint_ex(hz->schedule, szsetpoint));
+					setpoint = strtod(szsetpoint.c_str(), NULL);
 				}
 
-				sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
-				if ((m_showhdtemps) && hz->hdtemp.empty())
-					sznewmode = "Offline";
-
-				unsigned long evoID = atol(hz->zoneId.c_str());
-				std::stringstream ssUpdateStat;
-				if (setpoint < 5) // there was an error - no schedule?
-					ssUpdateStat << sztemperature << ";5;Unknown";
-				else
-				{
-					ssUpdateStat << sztemperature << ";" << setpoint << ";" << sznewmode;
-					if ((m_showschedule) && !(szuntil.empty()) && (sznewmode != "Custom"))
-						ssUpdateStat << ";" << szuntil;
-				}
-				std::string sdevname;
-				uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
+				// Eco lowers the setpoint of all zones by 3 degrees, but resets a zone mode to Normal setting
+				// if the resulting setpoint is below the Away setpoint
+				if ((sznewmode == "AutoWithEco") && (setpoint >= (m_awaysetpoint + 3)))
+					setpoint -= 3;
 			}
+
+			sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
+			if ((m_showhdtemps) && hz->hdtemp.empty())
+				sznewmode = "Offline";
+
+			unsigned long evoID = atol(hz->zoneId.c_str());
+			std::stringstream ssUpdateStat;
+			if (setpoint < 5) // there was an error - no schedule?
+				ssUpdateStat << sztemperature << ";5;Unknown";
+			else
+			{
+				ssUpdateStat << sztemperature << ";" << setpoint << ";" << sznewmode;
+				if ((m_showschedule) && !(szuntil.empty()) && (sznewmode != "Custom"))
+					ssUpdateStat << ";" << szuntil;
+			}
+			std::string sdevname;
+			uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, hz->zoneId.c_str(), GetUnit_by_ID(evoID), pTypeEvohomeZone, sTypeEvohomeZone, 10, 255, 0, ssUpdateStat.str().c_str(), sdevname);
 		}
 		return true;
 	}
@@ -464,8 +461,6 @@ bool CEvohomeWeb::SetDHWState(const char *pdata)
 
 void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 {
-	if (tcs->status == NULL)
-		return;
 	unsigned long ID = (unsigned long)(strtod(tcs->systemId.c_str(), NULL));
 	std::string szsystemMode, szmodelType;
 	uint8_t sysmode = 0;
@@ -489,8 +484,6 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 
 	if (GetControllerName().empty() || m_updatedev)
 	{
-		if (tcs->installationInfo == NULL)
-			return;
 		szmodelType = (*tcs->installationInfo)["modelType"].asString();
 		SetControllerName(szmodelType);
 		if (szmodelType.empty())
@@ -519,9 +512,6 @@ void CEvohomeWeb::DecodeControllerMode(temperatureControlSystem* tcs)
 
 void CEvohomeWeb::DecodeZone(zone* hz)
 {
-	if (hz->status == NULL)
-		return;
-
 	// no sense in using REVOBUF EVOHOME2 to send this to mainworker as this requires breaking up our data
 	// only for mainworker to reassemble it.
 
@@ -637,8 +627,6 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 
 void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 {
-	if (tcs->status == NULL)
-		return;
 	// Hot Water is essentially just another zone
 	if ((tcs->status == NULL) || (!tcs->status->isMember("dhw") || !(*tcs->status)["dhw"].isMember("temperatureStatus") || !(*tcs->status)["dhw"].isMember("stateStatus")))
 		return;
@@ -1201,8 +1189,6 @@ bool CEvohomeWeb::get_zone_schedule(std::string zoneId, std::string zoneType)
 	zone* hz = get_zone_by_ID(zoneId);
 	if (hz == NULL)
 		return false;
-	if (hz->status == NULL)
-		return false;
 	bool ret = jReader.parse(s_res, hz->schedule);
 	if (ret)
 	{
@@ -1233,8 +1219,6 @@ std::string CEvohomeWeb::get_next_switchpoint(Json::Value &schedule)
 std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::string &current_setpoint)
 {
 	if (schedule.isNull())
-		return "";
-	if (m_tcs->status == NULL)
 		return "";
 
 	struct tm ltime;
