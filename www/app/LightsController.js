@@ -3063,8 +3063,11 @@ define(['app'], function (app) {
 									xhtm += ' data-disabled="true"';
 								xhtm += '></div>';
 							}
-							else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
+							else if (item.SwitchType == "Blinds Percentage") {
 								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+							}
+							else if (item.SwitchType == "Blinds Percentage Inverted") {
+								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds_inv" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 							}
 							else if (item.SwitchType == "Selector") {
 								xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
@@ -3240,13 +3243,21 @@ define(['app'], function (app) {
 						var bigtext;
 						if (fPercentage == 0) {
 							img = '<img src="images/' + imgname + 'ff.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights,' + isProtected + ');" class="lcursor" height="48" width="48">';
-							bigtext = "Off";
+							if (dtype == "blinds") {
+								bigtext = "Open";
+							}
+							else if (dtype == "blinds_inv") {
+								bigtext = "Closed";
+							}
+							else {
+								bigtext = "Off";
+							}
 						}
 						else {
 							img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights,' + isProtected + ');" class="lcursor" height="48" width="48">';
 							bigtext = fPercentage + " %";
 						}
-						if (dtype != "blinds") {
+						if ((dtype != "blinds") && (dtype != "blinds_inv")) {
 							if ($(id + " #img").html() != img) {
 								$(id + " #img").html(img);
 							}
