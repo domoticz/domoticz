@@ -12,10 +12,17 @@ XiaomiGatewayTokenManager& XiaomiGatewayTokenManager::GetInstance()
 {
 	bool found = false;
 	boost::mutex::scoped_lock lock(m_mutex);
-	for (boost::tuple<std::string, std::string, std::string> &tup : m_GatewayTokens) {
+	/*for (boost::tuple<std::string, std::string, std::string> &tup : m_GatewayTokens) {
 		if (boost::get<0>(tup) == ip) {
 			boost::get<1>(tup) = token;
 			boost::get<2>(tup) = sid;
+			found = true;
+		}
+	}*/
+	for (unsigned i = 0; i < m_GatewayTokens.size(); i++) {
+		if (boost::get<0>(m_GatewayTokens[i]) == ip) {
+			boost::get<1>(m_GatewayTokens[i]) = token;
+			boost::get<2>(m_GatewayTokens[i]) = sid;
 			found = true;
 		}
 	}
