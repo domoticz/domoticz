@@ -1,3 +1,4 @@
+-- Define all the sensors which needs to be considered for the sunscreen to close
 local sensors = {
     temperature = {
         active = true,
@@ -36,9 +37,18 @@ local sensors = {
     }
 }
 
+-- Define the name of your sunscreen device
 local sunscreenDevice = 'Sunscreen'
+
+-- Enable dry run mode to test the sunscreen script without actually activating the sunscreen
 local dryRun = true
--- local manualOverrideSwitch = 'Disable auto sunscreen'
+
+-- Define the name of a virtual switch which you can use to disable the sunscreen automation script
+-- Set to false to disable this feature
+local manualOverrideSwitch = false
+
+-- Minutes to wait after a sunscreen close before opening it again.
+local timeBetweenOpens = 10
 
 return {
     active = true,
@@ -51,7 +61,8 @@ return {
     },
     execute = function(domoticz)
 
-        if (manualOverrideSwitch ~= nil and domoticz.devices(manualOverrideSwitch).state == 'On') then
+        if (manualOverrideSwitchx and domoticz.devices(manualOverrideSwitch).state == 'On') then
+            domoticz.log('Automatic sunscreen script is manually disabled', domoticz.LOG_DEBUG)
             return
         end
 
@@ -94,7 +105,7 @@ return {
         -- All tresholds OK, sunscreen may be lowered
         if (sunscreen.state == 'Closed') then
             domoticz.log('Sun is shining, all thresholds OK, lowering sunscreen')
-            if (not dryRun) then
+            if (not dryRun and sunscreen.lastUpdate.minutesAgo > timeBetweenOpens) then
                 sunscreen.switchOn()
             end
         end
