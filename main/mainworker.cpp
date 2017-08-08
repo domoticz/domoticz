@@ -11665,10 +11665,26 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 					}
 				}
 			}
-			else if (((switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted)) &&
-					(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
-						gswitch.cmnd = gswitch_sOn;
+			else if ((switchtype == STYPE_BlindsPercentage) &&
+					(gswitch.cmnd == gswitch_sSetLevel) &&
+					(level == 100))
+			{
+				gswitch.cmnd = gswitch_sOn;
+			}
+			else if (switchtype == STYPE_BlindsPercentageInverted)
+			{
+				if (gswitch.cmnd == gswitch_sOn)
+					level = 0;
+				else if (gswitch.cmnd == gswitch_sOff)
+					level = 100;
+				else
+				{
+					if (level == 100)
+						gswitch.cmnd = gswitch_sOff;
+					else
+						level = 100 - level; // invert level for sending to hardware
+				}
+			}
 
 			gswitch.level = (unsigned char)level;
 			gswitch.rssi = 12;
@@ -11677,7 +11693,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
 					return false;
 			}
-			if (!IsTesting) {
+			if (!IsTesting)
+			{
 				//send to internal for now (later we use the ACK)
 				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch, NULL, -1);
 			}
