@@ -1026,7 +1026,7 @@ bool CEvohomeWeb::full_installation()
 		return false; // invalid return
 	if (m_j_fi["locations"][0].isMember("message"))
 	{
-		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: ", this->Name.c_str(), m_j_fi["locations"][0]["message"].asString());
+		_log.Log(LOG_ERROR, "(%s) retrieve installation returned message: %s", this->Name.c_str(), m_j_fi["locations"][0]["message"].asString().c_str());
 		return false;
 	}
 	for (size_t i = 0; i < l; ++i)
