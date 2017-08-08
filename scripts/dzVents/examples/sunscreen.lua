@@ -5,11 +5,11 @@ return {
     },
     execute = function(domoticz)
         -- Define your devices
-        local sunscreen = domoticz.devices('Zonwering')
-        local temperature = domoticz.devices('Wunderground - Temperatuur')
-        local wind = domoticz.devices('Wunderground - Wind')
-        local rain = domoticz.devices('Neerslag')
-        local uv = domoticz.devices('Wunderground - UV')
+        local sunscreen = domoticz.devices('Sunscreen')
+        local temperature = domoticz.devices('Temperature')
+        local wind = domoticz.devices('Wind')
+        local rain = domoticz.devices('Rain')
+        local uv = domoticz.devices('UV')
         
         -- Tresholds
         local minTemperature = 15
