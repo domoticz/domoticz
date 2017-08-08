@@ -7,6 +7,7 @@ Version 3.xxx (August xxth 2017)
 - Changed: MySensors, now treating V_LIGHT_LEVEL as Perecentage (V_LEVEL with type=S_LIGHT_LEVEL = Lux)
 - Fixed: Blyss (manual adding to system)
 - Implemented: Adjustment Value for Counter/Incremental sensors
+- Implemented: 'Styles' folder can have its own images folder to overwrite stock images
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
