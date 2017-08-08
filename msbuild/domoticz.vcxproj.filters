@@ -2053,6 +2053,9 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2738,6 +2741,9 @@
     </ClCompile>
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
+      <Filter>Devices\Denkovi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

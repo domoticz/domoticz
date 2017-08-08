@@ -307,6 +307,7 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenIPIn.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
