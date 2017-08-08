@@ -295,7 +295,15 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				zone* hz = &m_tcs->zones[i];
 				std::string szId, sztemperature;
 				szId = (*hz->installationInfo)["zoneId"].asString();
-				sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
+				if ((m_showhdtemps) && !hz->hdtemp.empty())
+					sztemperature = hz->hdtemp
+				else if (hz->status != NULL);
+					sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+				else
+				{
+					sztemperature = "-";
+					sznewmode = "Offline";
+				}
 				unsigned long evoID = atol(szId.c_str());
 				std::stringstream ssUpdateStat;
 				ssUpdateStat << sztemperature << ";5;" << sznewmode;
@@ -342,9 +350,15 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 					setpoint -= 3;
 			}
 
-			sztemperature = ((m_showhdtemps) && !hz->hdtemp.empty()) ? hz->hdtemp : (*hz->status)["temperatureStatus"]["temperature"].asString();
-			if ((m_showhdtemps) && hz->hdtemp.empty())
+			if ((m_showhdtemps) && !hz->hdtemp.empty())
+				sztemperature = hz->hdtemp
+			else if (hz->status != NULL);
+				sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
+			else
+			{
+				sztemperature = "-";
 				sznewmode = "Offline";
+			}
 
 			unsigned long evoID = atol(hz->zoneId.c_str());
 			std::stringstream ssUpdateStat;
