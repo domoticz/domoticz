@@ -866,7 +866,9 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_LIGHT_LEVEL:
 		if (pChild->GetValue(vType, floatValue))
 		{
-			SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
+			//Light level in percentage
+			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Light Level");
+			//SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Light Level");
 		}
 		break;
 	case V_LEVEL: //stored as Int AND Float
@@ -1619,7 +1621,6 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 		//Update
 		m_sql.safe_query("UPDATE MySensorsVars SET [Value]='%q' WHERE (ROWID = '%q')", svalue.c_str(), result[0][0].c_str());
 	}
-
 }
 
 bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue)
@@ -1978,12 +1979,6 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_LIGHT_LEVEL:
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
-			/*
-			//convert percentage to 1000 scale
-			pSensor->floatValue = (1000.0f / 100.0f)*pSensor->floatValue;
-			if (pSensor->floatValue > 1000.0f)
-				pSensor->floatValue = 1000.0f;
-			*/
 			bHaveValue = true;
 			break;
 		case V_FORECAST:

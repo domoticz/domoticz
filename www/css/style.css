@@ -1,28 +1,30 @@
 @font-face {
-  font-family: 'Satisfy';
-  font-style: normal;
-  font-weight: 400;
-  src: url('fonts/Satisfy.eot');
-  src: local('Satisfy'), url('fonts/Satisfy.eot') format('truetype');
+	font-family: 'Satisfy';
+	font-style: normal;
+	font-weight: 400;
+	src: url('fonts/Satisfy.eot');
+	src: local('Satisfy'), url('fonts/Satisfy.eot') format('truetype');
 }
+
 @font-face {
-  font-family: 'Oswald';
-  font-style: normal;
-  src: url('fonts/Oswald-Light.eot');
-  src: local('Oswald Light'), local('Oswald-Light'), url('fonts/Oswald-Light.ttf') format('truetype');
+	font-family: 'Oswald';
+	font-style: normal;
+	src: url('fonts/Oswald-Light.eot');
+	src: local('Oswald Light'), local('Oswald-Light'), url('fonts/Oswald-Light.ttf') format('truetype');
 }
+
 @font-face {
-  font-family: 'Oswald';
-  font-style: normal;
-  src: url('fonts/Oswald-Regular.eot');
-  src: local('Oswald Regular'), local('Oswald-Regular'), url('fonts/Oswald-Regular.ttf') format('truetype');
+	font-family: 'Oswald';
+	font-style: normal;
+	src: url('fonts/Oswald-Regular.eot');
+	src: local('Oswald Regular'), local('Oswald-Regular'), url('fonts/Oswald-Regular.ttf') format('truetype');
 }
 /*********************************************************************************/
 /* Global                                                                        */
 /*********************************************************************************/
 * {
-margin:0;
-padding:0;
+	margin: 0;
+	padding: 0;
 }
 
 body {
@@ -35,9 +37,11 @@ body {
 .bootbox-body {
 	color: #000;
 }
+
 .bootbox-form {
 	color: #000;
 }
+
 .bootbox-input {
 	color: #000;
 }
@@ -49,9 +53,10 @@ body {
 a, a:hover, a:focus {
 	outline: 0 none;
 }
-a img {
-	border:none;
-}
+
+	a img {
+		border: none;
+	}
 
 h2 {
 	margin: 0em;
@@ -84,17 +89,19 @@ strong {
 }
 
 #wrap {
-min-height:100%;
-margin:0 auto;
+	min-height: 100%;
+	margin: 0 auto;
 }
-#wrap:before { /* Opera and IE8 "redraw" bug fix */
-content:"";
-float:left;
-height:100%;
-margin-top:-999em;
-}
+
+	#wrap:before { /* Opera and IE8 "redraw" bug fix */
+		content: "";
+		float: left;
+		height: 100%;
+		margin-top: -999em;
+	}
+
 * html #wrap { /* IE6 workaround */
-height:100%;
+	height: 100%;
 }
 
 /* Copyright */
@@ -104,44 +111,43 @@ height:100%;
 	text-align: center;
 }
 
-#copyright p {
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 1.125em;
-	color: #6A6A6A;
+	#copyright p {
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 1.125em;
+		color: #6A6A6A;
+	}
+
+	#copyright a {
+		color: #43A4D3;
+	}
+
+		#copyright a:hover {
+			text-decoration: none;
+		}
+
+#disimg {
+	opacity: 0.3;
+	filter: alpha(opacity=30); /* For IE8 and earlier */
 }
 
-#copyright a {
-	color: #43A4D3;
+#notification {
+	z-index: 1005;
+	background-color: #204060;
+	border-width: 2px 2px 2px 2px;
+	border-color: #5FA0FF;
+	border-style: solid;
+	border-radius: 10px;
 }
 
-#copyright a:hover {
-	text-decoration: none;
-}
-
-#disimg
-{
-  opacity:0.3;
-  filter:alpha(opacity=30); /* For IE8 and earlier */
-}
-
-#notification{
-    z-index:1005;
-    background-color:#204060;
-    border-width: 2px 2px 2px 2px;
-    border-color: #5FA0FF;
-    border-style: solid;
-    border-radius: 10px;
-}
-
-#notification p{
-    font-size:18px;
-    color:white;
-    margin: 11px;
-    text-align:center;
-    text-decoration: none;
-    text-transform: none;
-    font-weight:bold;
-}
+	#notification p {
+		font-size: 18px;
+		color: white;
+		margin: 11px;
+		text-align: center;
+		text-decoration: none;
+		text-transform: none;
+		font-weight: bold;
+	}
 
 /* Button Style */
 
@@ -363,7 +369,7 @@ height:100%;
 }
 
 /* Hover state*/
-.btnsmall:hover{
+.btnsmall:hover {
 	color: #FFFF00;
 }
 
@@ -375,26 +381,26 @@ ul.style1 {
 	list-style: none;
 }
 
-ul.style1 li {
-	padding: 0.94em 0em;
-	border-top: 1px solid #E6E6E6;
-}
+	ul.style1 li {
+		padding: 0.94em 0em;
+		border-top: 1px solid #E6E6E6;
+	}
 
-ul.style1 a {
-	display: block;
-	padding: 0em 0em 0em 1.87em;
-	background: url(images/img10.png) no-repeat left top;
-	text-decoration: none;
-	color: #525252;
-}
+	ul.style1 a {
+		display: block;
+		padding: 0em 0em 0em 1.87em;
+		background: url(images/img10.png) no-repeat left top;
+		text-decoration: none;
+		color: #525252;
+	}
 
-ul.style1 a:hover {
-	text-decoration: underline;
-}
+		ul.style1 a:hover {
+			text-decoration: underline;
+		}
 
-ul.style1 .first {
-	border-top: 0;
-}
+	ul.style1 .first {
+		border-top: 0;
+	}
 
 /** LIST STYLE 2 */
 
@@ -404,46 +410,46 @@ ul.style2 {
 	list-style: none;
 }
 
-ul.style2 li {
-	padding: 1.25em 0em 2.5em 0em;
-	border-top: 1px solid #E6E6E6;
-}
+	ul.style2 li {
+		padding: 1.25em 0em 2.5em 0em;
+		border-top: 1px solid #E6E6E6;
+	}
 
-ul.style2 a {
-	text-decoration: none;
-	color: #525252;
-}
+	ul.style2 a {
+		text-decoration: none;
+		color: #525252;
+	}
 
-ul.style2 a:hover {
-	text-decoration: underline;
-}
+		ul.style2 a:hover {
+			text-decoration: underline;
+		}
 
-ul.style2 .date {
-	display: inline-block;
-	margin: 0em 0em 1.56em 0em;
-	padding: 0.35em 0.63em;
-	background: url(images/img06.png) repeat;
-	border-radius: 5px;
-	letter-spacing: 0.06em;
-	line-height: none;
-	text-transform: none;
-	font-family: 'Oswald', sans-serif;
-	font-weight: 200;
-	color: #FFFFFF;
-}
+	ul.style2 .date {
+		display: inline-block;
+		margin: 0em 0em 1.56em 0em;
+		padding: 0.35em 0.63em;
+		background: url(images/img06.png) repeat;
+		border-radius: 5px;
+		letter-spacing: 0.06em;
+		line-height: none;
+		text-transform: none;
+		font-family: 'Oswald', sans-serif;
+		font-weight: 200;
+		color: #FFFFFF;
+	}
 
-ul.style2 .date a {
-	color: #FFFFFF;
-}
+		ul.style2 .date a {
+			color: #FFFFFF;
+		}
 
-ul.style2 img {
-	float: left;
-	margin-right: 1.5em;
-}
+	ul.style2 img {
+		float: left;
+		margin-right: 1.5em;
+	}
 
-ul.style2 .first {
-	border-top: 0;
-}
+	ul.style2 .first {
+		border-top: 0;
+	}
 
 /** LIST STYLE 3 */
 
@@ -453,38 +459,38 @@ ul.style3 {
 	list-style: none;
 }
 
-ul.style3 li {
-	padding: 1.25em 0em 1.56em 0em;
-}
+	ul.style3 li {
+		padding: 1.25em 0em 1.56em 0em;
+	}
 
-ul.style3 a {
-	display: block;
-	text-decoration: none;
-	color: #C18062;
-}
+	ul.style3 a {
+		display: block;
+		text-decoration: none;
+		color: #C18062;
+	}
 
-ul.style3 a:hover {
-	text-decoration: underline;
-}
+		ul.style3 a:hover {
+			text-decoration: underline;
+		}
 
-ul.style3 .date {
-}
+	ul.style3 .date {
+	}
 
-ul.style3 .date b {
-}
+		ul.style3 .date b {
+		}
 
-ul.style3 .date a {
-	color: #FFFFFF;
-}
+		ul.style3 .date a {
+			color: #FFFFFF;
+		}
 
-ul.style3 .date a:hover {
-	text-decoration: none;
-}
+			ul.style3 .date a:hover {
+				text-decoration: none;
+			}
 
-ul.style3 .first {
-	padding-top: 0em;
-	background: none;
-}
+	ul.style3 .first {
+		padding-top: 0em;
+		background: none;
+	}
 
 /** LIST STYLE 4 */
 
@@ -494,26 +500,26 @@ ul.style4 {
 	list-style: none;
 }
 
-ul.style4 li {
-	padding: 0.94em 0em 0.94em 0em;
-	border-top: 1px solid #742F0E;
-}
+	ul.style4 li {
+		padding: 0.94em 0em 0.94em 0em;
+		border-top: 1px solid #742F0E;
+	}
 
-ul.style4 a {
-	display: block;
-	padding: 0em 0em 0em 1.87em;
-	background: url(images/img10.png) no-repeat left top;
-	text-decoration: none;
-	color: #C18062;
-}
+	ul.style4 a {
+		display: block;
+		padding: 0em 0em 0em 1.87em;
+		background: url(images/img10.png) no-repeat left top;
+		text-decoration: none;
+		color: #C18062;
+	}
 
-ul.style4 a:hover {
-	text-decoration: underline;
-}
+		ul.style4 a:hover {
+			text-decoration: underline;
+		}
 
-ul.style4 li {
-	border-top: 0;
-}
+	ul.style4 li {
+		border-top: 0;
+	}
 
 /** LIST STYLE 5 */
 
@@ -524,14 +530,14 @@ ul.style5 {
 	list-style: none;
 }
 
-ul.style5 li {
-	float: left;
-	padding: 0.25em 0.25em;
-	line-height: 0;
-}
+	ul.style5 li {
+		float: left;
+		padding: 0.25em 0.25em;
+		line-height: 0;
+	}
 
-ul.style5 a {
-}
+	ul.style5 a {
+	}
 
 
 
@@ -544,41 +550,41 @@ ul.style6 {
 }
 
 
-ul.style6 h3 {
-	margin: 0em;
-	padding: 0em 0em 0.63em 0em;
-	font-family: Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	font-size: 1em;
-	color: #A0A09F;
-}
+	ul.style6 h3 {
+		margin: 0em;
+		padding: 0em 0em 0.63em 0em;
+		font-family: Arial, Helvetica, sans-serif;
+		font-weight: bold;
+		font-size: 1em;
+		color: #A0A09F;
+	}
 
-ul.style6 p {
-	font-style: italic;
-	font-size: 0.87em;
-}
+	ul.style6 p {
+		font-style: italic;
+		font-size: 0.87em;
+	}
 
-ul.style6 li {
-	padding: 1.25em 0em 1.25em 0em;
-	border-top: 1px solid #303030;
-	line-height: 170%;
-}
+	ul.style6 li {
+		padding: 1.25em 0em 1.25em 0em;
+		border-top: 1px solid #303030;
+		line-height: 170%;
+	}
 
-ul.style6 a {
-	display: block;
-	padding: 0em;
-	text-decoration: none;
-	color: #737373;
-}
+	ul.style6 a {
+		display: block;
+		padding: 0em;
+		text-decoration: none;
+		color: #737373;
+	}
 
-ul.style6 a:hover {
-	text-decoration: underline;
-}
+		ul.style6 a:hover {
+			text-decoration: underline;
+		}
 
-ul.style6 .first {
-	padding-top: 0em;
-	border-top: 0;
-}
+	ul.style6 .first {
+		padding-top: 0em;
+		border-top: 0;
+	}
 
 
 
@@ -605,1102 +611,1069 @@ body table#itemtabledoubleicon,
 body table#itemtabletrippleicon,
 body table#itemtablesmalldoubleicon,
 body table#itemtablesmalltrippleicon,
-body table#mobileitem
-{
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-body table#itemtable,
-body table#itemtable tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtable tbody tr{
-	display: block;
-
-	width: 98%;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-
-body table#itemtable thead{
-	display: none;
-}
-
-body table#itemtable tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtable tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtable tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtable tr td:first-child + td + td{
-	border-color: #2B5074;
-	border-style: none;
-	border-width: 1px;
-
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtable tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtable tr td:first-child + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-/* Fifth column */
-body table#itemtable tr td:first-child + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtable tr td:first-child + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Sixth column */
-body table#itemtable tr td:first-child + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtable tr td:first-child + td + td + td + td + td:before{
-	content: "Type: ";
-	font-style: italic;
-}
-
-/* Seventh column (bottom text)*/
-body table#itemtable tr td:first-child + td + td + td + td + td + td{
-	font-size: 90%;
-	clear: both;
-	padding: 0 5% 0 5%;
-	line-height: 130%;
-}
-
-/* Hover state*/
-body table#itemtable tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtable tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-body table#itemtablenotype,
-body table#itemtablenotype tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtablenotype tbody tr{
-	display: block;
-
-	width: 98%;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-
-body table#itemtablenotype thead{
-	display: none;
-}
-
-body table#itemtablenotype tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtablenotype tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtablenotype tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtablenotype tr td:first-child + td + td{
-	border-color: #2B5074;
-	border-style: none;
-	border-width: 1px;
-
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtablenotype tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtablenotype tr td:first-child + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-/* Fifth column */
-body table#itemtablenotype tr td:first-child + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtablenotype tr td:first-child + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Sixth column (bottom text)*/
-body table#itemtablenotype tr td:first-child + td + td + td + td + td {
-	font-size: 90%;
-	clear: both;
-	padding: 0 5% 0 5%;
-	line-height: 130%;
-}
-
-/* Hover state*/
-body table#itemtablenotype tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtablenotype tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Itemtable no status: line */
-body table#itemtablenostatus,
-body table#itemtablenostatus tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtablenostatus tbody tr{
-	display: block;
-
-	width: 98%;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-
-body table#itemtablenostatus thead{
-	display: none;
-}
-
-body table#itemtablenostatus tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtablenostatus tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtablenostatus tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtablenostatus tr td:first-child + td + td{
-	border-color: #2B5074;
-	border-style: none;
-	border-width: 1px;
-
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtablenostatus tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtablenostatus tr td:first-child + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-body table#itemtablenostatus tr td:first-child + td + td + td:before{
-	font-style: italic;
-	font-size: 90%;
-}
-
-/* Fifth column */
-body table#itemtablenostatus tr td:first-child + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtablenostatus tr td:first-child + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Sixth column */
-body table#itemtablenostatus tr td:first-child + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtablenostatus tr td:first-child + td + td + td + td + td:before{
-	content: "Type: ";
-	font-style: italic;
-}
-
-/* Seventh column (bottom text)*/
-body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
-	font-size: 90%;
-	clear: both;
-	padding: 0 5% 0 5%;
-	line-height: 130%;
-}
-
-/* Hover state*/
-body table#itemtablenostatus tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtablenostatus tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Item Table Small */
-body table#itemtablesmall,
-body table#itemtablesmall tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtablesmall tbody tr{
-	display: block;
-
-	width: 98%;
-	height: 66px;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-body table#itemtablesmall thead{
-	display: none;
-}
-
-body table#itemtablesmall tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtablesmall tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtablesmall tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtablesmall tr td:first-child + td + td{
-	border-color: #2B5074;
-	border-style: none;
-	border-width: 1px;
-
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtablesmall tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtablesmall tr td:first-child + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-	line-height:86%;
-}
-
-body table#itemtablesmall tr td:first-child + td + td + td:before{
-	content: "";
-	font-style: italic;
-	font-size: 90%;
-}
-
-/* Fifth column */
-body table#itemtablesmall tr td:first-child + td + td + td + td{
-	margin-top: 2px;
-	font-size: 80%;
-	line-height:86%;
-}
-body table#itemtablesmall tr td:first-child + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Hover state*/
-body table#itemtablesmall tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtablesmall tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Item Table Double Icon */
-body table#itemtabledoubleicon,
-body table#itemtabledoubleicon tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtabledoubleicon tbody tr{
-	display: block;
-
-	width: 98%;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-	border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-
-body table#itemtabledoubleicon thead{
-	display: none;
-}
-
-body table#itemtabledoubleicon tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtabledoubleicon tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-	border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtabledoubleicon tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtabledoubleicon tr td:first-child + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 5px 10px 0;
-}
-
-body table#itemtabledoubleicon tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtabledoubleicon tr td:first-child + td + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtabledoubleicon tr td:first-child + td + td + td img{
-	display: block;
-}
-
-/* Fifth column */
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-/* Sixth column */
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Seventh column */
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td:before{
-	content: "Type: ";
-	font-style: italic;
-}
-
-/* Eighth column (bottom text)*/
-body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td{
-	font-size: 90%;
-	margin-top: 16px;
-	clear: both;
-	padding: 0 5% 0 5%;
-	line-height: 130%;
-}
-
-/* Hover state*/
-body table#itemtabledoubleicon tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtabledoubleicon tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Item Table Tripple Icon */
-body table#itemtabletrippleicon,
-body table#itemtabletrippleicon tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtabletrippleicon tbody tr{
-	display: block;
-
-	width: 98%;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-	border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-
-body table#itemtabletrippleicon thead{
-	display: none;
-}
-
-body table#itemtabletrippleicon tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtabletrippleicon tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-	border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtabletrippleicon tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtabletrippleicon tr td:first-child + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 4px 10px 0;
-}
-
-body table#itemtabletrippleicon tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtabletrippleicon tr td:first-child + td + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 4px 10px 0;
-}
-
-body table#itemtabletrippleicon tr td:first-child + td + td + td img{
-	display: block;
-}
-
-/* Fifth column */
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 5px 10px 0;
-}
-
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td img{
-	display: block;
-}
-
-/* Sixt column */
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-}
-
-/* Seventh column */
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td +td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Eighth column */
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td{
-	font-size: 80%;
-}
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td:before{
-	content: "Type: ";
-	font-style: italic;
-}
-
-/* Nineth column (bottom text)*/
-body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td{
-	font-size: 90%;
-	clear: both;
-	padding: 0 5% 0 5%;
-	line-height: 130%;
-}
-
-/* Hover state*/
-body table#itemtabletrippleicon tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtabletrippleicon tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Item Table Small Double Icon */
-body table#itemtablesmalldoubleicon,
-body table#itemtablesmalldoubleicon tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtablesmalldoubleicon tbody tr{
-	display: block;
-
-	width: 98%;
-	height: 66px;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-body table#itemtablesmalldoubleicon thead{
-	display: none;
-}
-
-body table#itemtablesmalldoubleicon tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtablesmalldoubleicon tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtablesmalldoubleicon tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtablesmalldoubleicon tr td:first-child + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 5px 10px 0;
-}
-
-body table#itemtablesmalldoubleicon tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtablesmalldoubleicon tr td:first-child + td + td +td{
-	border-style: none;
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtablesmalldoubleicon tr td:first-child + td + td +td img{
-	display: block;
-}
-
-/* Fifth column */
-body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-	line-height:86%;
-}
-
-body table#itemtablesmalldoubleicon tr td:first-child + td + td + td +td:before{
-	content: "";
-	font-style: italic;
-	font-size: 90%;
-}
-
-/* Sixth column */
-body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td +td{
-	margin-top: 2px;
-	font-size: 80%;
-	line-height:86%;
-}
-body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td +td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Hover state*/
-body table#itemtablesmalldoubleicon tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtablesmalldoubleicon tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
-
-/* Item Table Small Tripple Icon */
-body table#itemtablesmalltrippleicon,
-body table#itemtablesmalltrippleicon tbody{
-	display: block;
-	width: 100%;
-}
-body table#itemtablesmalltrippleicon tbody tr{
-	display: block;
-
-	width: 98%;
-	height: 66px;
-	padding: 5px 5px 5px 5px;
-	margin: 2px 100% 5px 0;
-
-	border-style: none;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #F1F5FA;
-
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-body table#itemtablesmalltrippleicon thead{
-	display: none;
-}
-
-body table#itemtablesmalltrippleicon tr > *{
-	display: block;
-	padding: 0;
-	margin: 0;
-}
-
-/* I am using the :first-child as a way to style each column by itself*/
-/* First column */
-body table#itemtablesmalltrippleicon tr td:first-child{
-	height: 1.2em;
-	padding: 0 .5em 0 .5em;
-	margin-bottom: 5px;
-
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 130%;
-	white-space: nowrap;
-
-	border-width: 1px 1px 1px 1px;
-	border-color: #2B5074;
-	border-style: solid;
-  border-radius: 5px;
-
-	color: #0D161F;
-	background-color: #D4E1EE;
-}
-
-/* Second column */
-body table#itemtablesmalltrippleicon tr td:first-child + td{
-	float: right;
-	margin: -27px 3px 0px 0px;
-	font-size: 140%;
-	font-weight: bold;
-	white-space: nowrap;
-	color: #000000;
-}
-
-/* Third column */
-body table#itemtablesmalltrippleicon tr td:first-child + td + td{
-	border-style: none;
-	float: left;
-	margin: 0 5px 10px 0;
-}
-
-body table#itemtablesmalltrippleicon tr td:first-child + td + td img{
-	display: block;
-}
-
-/* Fourth column */
-body table#itemtablesmalltrippleicon tr td:first-child + td + td +td{
-	border-style: none;
-	float: left;
-	margin: 0 5px 5px 0;
-}
-
-body table#itemtablesmalltrippleicon tr td:first-child + td + td +td img{
-	display: block;
-}
-
-/* Fifth column */
-body table#itemtablesmalltrippleicon tr td:first-child + td + td +td + td{
-	border-style: none;
-	float: left;
-	margin: 0 10px 10px 0;
-}
-
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td img{
-	display: block;
-}
-
-/* Sixth column */
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td{
-	font-size: 90%;
-	font-weight: bold;
-	line-height:86%;
-}
-
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td:before{
-	content: "";
-	font-style: italic;
-	font-size: 90%;
-}
-
-/* Seventh column */
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td{
-	margin-top: 2px;
-	font-size: 80%;
-	line-height:86%;
-}
-body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td:before{
-	content: "Last Seen: ";
-	font-style: italic;
-}
-
-/* Hover state*/
-body table#itemtablesmalltrippleicon tbody tr:hover{
-	border-color: #2B2C74;
-	background-color: #F2F1FA;
-}
-body table#itemtablesmalltrippleicon tr:hover td:first-child{
-	border-color: #2B2C74;
-	color: #0D0D1F;
-	background-color: #D4D5EE;
-}
+body table#mobileitem {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+	body table#itemtable,
+	body table#itemtable tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtable tbody tr {
+			display: block;
+			width: 98%;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+
+		body table#itemtable thead {
+			display: none;
+		}
+
+		body table#itemtable tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtable tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtable tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtable tr td:first-child + td + td {
+					border-color: #2B5074;
+					border-style: none;
+					border-width: 1px;
+					float: left;
+					margin: 0 10px 10px 0;
+				}
+
+					body table#itemtable tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtable tr td:first-child + td + td + td {
+						font-size: 90%;
+						font-weight: bold;
+					}
+
+						/* Fifth column */
+						body table#itemtable tr td:first-child + td + td + td + td {
+							font-size: 80%;
+						}
+
+							body table#itemtable tr td:first-child + td + td + td + td:before {
+								content: "Last Seen: ";
+								font-style: italic;
+							}
+
+							/* Sixth column */
+							body table#itemtable tr td:first-child + td + td + td + td + td {
+								font-size: 80%;
+							}
+
+								body table#itemtable tr td:first-child + td + td + td + td + td:before {
+									content: "Type: ";
+									font-style: italic;
+								}
+
+								/* Seventh column (bottom text)*/
+								body table#itemtable tr td:first-child + td + td + td + td + td + td {
+									font-size: 90%;
+									clear: both;
+									padding: 0 5% 0 5%;
+									line-height: 130%;
+								}
+
+		/* Hover state*/
+		body table#itemtable tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtable tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	body table#itemtablenotype,
+	body table#itemtablenotype tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtablenotype tbody tr {
+			display: block;
+			width: 98%;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+
+		body table#itemtablenotype thead {
+			display: none;
+		}
+
+		body table#itemtablenotype tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtablenotype tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtablenotype tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtablenotype tr td:first-child + td + td {
+					border-color: #2B5074;
+					border-style: none;
+					border-width: 1px;
+					float: left;
+					margin: 0 10px 10px 0;
+				}
+
+					body table#itemtablenotype tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtablenotype tr td:first-child + td + td + td {
+						font-size: 90%;
+						font-weight: bold;
+					}
+
+						/* Fifth column */
+						body table#itemtablenotype tr td:first-child + td + td + td + td {
+							font-size: 80%;
+						}
+
+							body table#itemtablenotype tr td:first-child + td + td + td + td:before {
+								content: "Last Seen: ";
+								font-style: italic;
+							}
+
+							/* Sixth column (bottom text)*/
+							body table#itemtablenotype tr td:first-child + td + td + td + td + td {
+								font-size: 90%;
+								clear: both;
+								padding: 0 5% 0 5%;
+								line-height: 130%;
+							}
+
+		/* Hover state*/
+		body table#itemtablenotype tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtablenotype tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Itemtable no status: line */
+	body table#itemtablenostatus,
+	body table#itemtablenostatus tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtablenostatus tbody tr {
+			display: block;
+			width: 98%;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+
+		body table#itemtablenostatus thead {
+			display: none;
+		}
+
+		body table#itemtablenostatus tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtablenostatus tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtablenostatus tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtablenostatus tr td:first-child + td + td {
+					border-color: #2B5074;
+					border-style: none;
+					border-width: 1px;
+					float: left;
+					margin: 0 10px 10px 0;
+				}
+
+					body table#itemtablenostatus tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtablenostatus tr td:first-child + td + td + td {
+						font-size: 90%;
+						font-weight: bold;
+					}
+
+						body table#itemtablenostatus tr td:first-child + td + td + td:before {
+							font-style: italic;
+							font-size: 90%;
+						}
+
+						/* Fifth column */
+						body table#itemtablenostatus tr td:first-child + td + td + td + td {
+							font-size: 80%;
+						}
+
+							body table#itemtablenostatus tr td:first-child + td + td + td + td:before {
+								content: "Last Seen: ";
+								font-style: italic;
+							}
+
+							/* Sixth column */
+							body table#itemtablenostatus tr td:first-child + td + td + td + td + td {
+								font-size: 80%;
+							}
+
+								body table#itemtablenostatus tr td:first-child + td + td + td + td + td:before {
+									content: "Type: ";
+									font-style: italic;
+								}
+
+								/* Seventh column (bottom text)*/
+								body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
+									font-size: 90%;
+									clear: both;
+									padding: 0 5% 0 5%;
+									line-height: 130%;
+								}
+
+		/* Hover state*/
+		body table#itemtablenostatus tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtablenostatus tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Item Table Small */
+	body table#itemtablesmall,
+	body table#itemtablesmall tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtablesmall tbody tr {
+			display: block;
+			width: 98%;
+			height: 66px;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		body table#itemtablesmall thead {
+			display: none;
+		}
+
+		body table#itemtablesmall tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtablesmall tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtablesmall tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtablesmall tr td:first-child + td + td {
+					border-color: #2B5074;
+					border-style: none;
+					border-width: 1px;
+					float: left;
+					margin: 0 10px 10px 0;
+				}
+
+					body table#itemtablesmall tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtablesmall tr td:first-child + td + td + td {
+						font-size: 90%;
+						font-weight: bold;
+						line-height: 86%;
+					}
+
+						body table#itemtablesmall tr td:first-child + td + td + td:before {
+							content: "";
+							font-style: italic;
+							font-size: 90%;
+						}
+
+						/* Fifth column */
+						body table#itemtablesmall tr td:first-child + td + td + td + td {
+							margin-top: 2px;
+							font-size: 80%;
+							line-height: 86%;
+						}
+
+							body table#itemtablesmall tr td:first-child + td + td + td + td:before {
+								content: "Last Seen: ";
+								font-style: italic;
+							}
+
+		/* Hover state*/
+		body table#itemtablesmall tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtablesmall tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Item Table Double Icon */
+	body table#itemtabledoubleicon,
+	body table#itemtabledoubleicon tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtabledoubleicon tbody tr {
+			display: block;
+			width: 98%;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+
+		body table#itemtabledoubleicon thead {
+			display: none;
+		}
+
+		body table#itemtabledoubleicon tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtabledoubleicon tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtabledoubleicon tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtabledoubleicon tr td:first-child + td + td {
+					border-style: none;
+					float: left;
+					margin: 0 5px 10px 0;
+				}
+
+					body table#itemtabledoubleicon tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtabledoubleicon tr td:first-child + td + td + td {
+						border-style: none;
+						float: left;
+						margin: 0 10px 10px 0;
+					}
+
+						body table#itemtabledoubleicon tr td:first-child + td + td + td img {
+							display: block;
+						}
+
+						/* Fifth column */
+						body table#itemtabledoubleicon tr td:first-child + td + td + td + td {
+							font-size: 90%;
+							font-weight: bold;
+						}
+
+							/* Sixth column */
+							body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td {
+								font-size: 80%;
+							}
+
+								body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td:before {
+									content: "Last Seen: ";
+									font-style: italic;
+								}
+
+								/* Seventh column */
+								body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td {
+									font-size: 80%;
+								}
+
+									body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td:before {
+										content: "Type: ";
+										font-style: italic;
+									}
+
+									/* Eighth column (bottom text)*/
+									body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td {
+										font-size: 90%;
+										margin-top: 16px;
+										clear: both;
+										padding: 0 5% 0 5%;
+										line-height: 130%;
+									}
+
+		/* Hover state*/
+		body table#itemtabledoubleicon tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtabledoubleicon tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Item Table Tripple Icon */
+	body table#itemtabletrippleicon,
+	body table#itemtabletrippleicon tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtabletrippleicon tbody tr {
+			display: block;
+			width: 98%;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+
+		body table#itemtabletrippleicon thead {
+			display: none;
+		}
+
+		body table#itemtabletrippleicon tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtabletrippleicon tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtabletrippleicon tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtabletrippleicon tr td:first-child + td + td {
+					border-style: none;
+					float: left;
+					margin: 0 4px 10px 0;
+				}
+
+					body table#itemtabletrippleicon tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtabletrippleicon tr td:first-child + td + td + td {
+						border-style: none;
+						float: left;
+						margin: 0 4px 10px 0;
+					}
+
+						body table#itemtabletrippleicon tr td:first-child + td + td + td img {
+							display: block;
+						}
+
+						/* Fifth column */
+						body table#itemtabletrippleicon tr td:first-child + td + td + td + td {
+							border-style: none;
+							float: left;
+							margin: 0 5px 10px 0;
+						}
+
+							body table#itemtabletrippleicon tr td:first-child + td + td + td + td img {
+								display: block;
+							}
+
+							/* Sixt column */
+							body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td {
+								font-size: 90%;
+								font-weight: bold;
+							}
+
+								/* Seventh column */
+								body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td {
+									font-size: 80%;
+								}
+
+									body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td:before {
+										content: "Last Seen: ";
+										font-style: italic;
+									}
+
+									/* Eighth column */
+									body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td {
+										font-size: 80%;
+									}
+
+										body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td:before {
+											content: "Type: ";
+											font-style: italic;
+										}
+
+										/* Nineth column (bottom text)*/
+										body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td {
+											font-size: 90%;
+											clear: both;
+											padding: 0 5% 0 5%;
+											line-height: 130%;
+										}
+
+		/* Hover state*/
+		body table#itemtabletrippleicon tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtabletrippleicon tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Item Table Small Double Icon */
+	body table#itemtablesmalldoubleicon,
+	body table#itemtablesmalldoubleicon tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtablesmalldoubleicon tbody tr {
+			display: block;
+			width: 98%;
+			height: 66px;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		body table#itemtablesmalldoubleicon thead {
+			display: none;
+		}
+
+		body table#itemtablesmalldoubleicon tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtablesmalldoubleicon tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtablesmalldoubleicon tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtablesmalldoubleicon tr td:first-child + td + td {
+					border-style: none;
+					float: left;
+					margin: 0 5px 10px 0;
+				}
+
+					body table#itemtablesmalldoubleicon tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtablesmalldoubleicon tr td:first-child + td + td + td {
+						border-style: none;
+						float: left;
+						margin: 0 10px 10px 0;
+					}
+
+						body table#itemtablesmalldoubleicon tr td:first-child + td + td + td img {
+							display: block;
+						}
+
+						/* Fifth column */
+						body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td {
+							font-size: 90%;
+							font-weight: bold;
+							line-height: 86%;
+						}
+
+							body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before {
+								content: "";
+								font-style: italic;
+								font-size: 90%;
+							}
+
+							/* Sixth column */
+							body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td {
+								margin-top: 2px;
+								font-size: 80%;
+								line-height: 86%;
+							}
+
+								body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before {
+									content: "Last Seen: ";
+									font-style: italic;
+								}
+
+		/* Hover state*/
+		body table#itemtablesmalldoubleicon tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtablesmalldoubleicon tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
+
+	/* Item Table Small Tripple Icon */
+	body table#itemtablesmalltrippleicon,
+	body table#itemtablesmalltrippleicon tbody {
+		display: block;
+		width: 100%;
+	}
+
+		body table#itemtablesmalltrippleicon tbody tr {
+			display: block;
+			width: 98%;
+			height: 66px;
+			padding: 5px 5px 5px 5px;
+			margin: 2px 100% 5px 0;
+			border-style: none;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #F1F5FA;
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		body table#itemtablesmalltrippleicon thead {
+			display: none;
+		}
+
+		body table#itemtablesmalltrippleicon tr > * {
+			display: block;
+			padding: 0;
+			margin: 0;
+		}
+
+		/* I am using the :first-child as a way to style each column by itself*/
+		/* First column */
+		body table#itemtablesmalltrippleicon tr td:first-child {
+			height: 1.2em;
+			padding: 0 .5em 0 .5em;
+			margin-bottom: 5px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-size: 130%;
+			white-space: nowrap;
+			border-width: 1px 1px 1px 1px;
+			border-color: #2B5074;
+			border-style: solid;
+			border-radius: 5px;
+			color: #0D161F;
+			background-color: #D4E1EE;
+		}
+
+			/* Second column */
+			body table#itemtablesmalltrippleicon tr td:first-child + td {
+				float: right;
+				margin: -27px 3px 0px 0px;
+				font-size: 140%;
+				font-weight: bold;
+				white-space: nowrap;
+				color: #000000;
+			}
+
+				/* Third column */
+				body table#itemtablesmalltrippleicon tr td:first-child + td + td {
+					border-style: none;
+					float: left;
+					margin: 0 5px 10px 0;
+				}
+
+					body table#itemtablesmalltrippleicon tr td:first-child + td + td img {
+						display: block;
+					}
+
+					/* Fourth column */
+					body table#itemtablesmalltrippleicon tr td:first-child + td + td + td {
+						border-style: none;
+						float: left;
+						margin: 0 5px 5px 0;
+					}
+
+						body table#itemtablesmalltrippleicon tr td:first-child + td + td + td img {
+							display: block;
+						}
+
+						/* Fifth column */
+						body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td {
+							border-style: none;
+							float: left;
+							margin: 0 10px 10px 0;
+						}
+
+							body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td img {
+								display: block;
+							}
+
+							/* Sixth column */
+							body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td {
+								font-size: 90%;
+								font-weight: bold;
+								line-height: 86%;
+							}
+
+								body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td:before {
+									content: "";
+									font-style: italic;
+									font-size: 90%;
+								}
+
+								/* Seventh column */
+								body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td {
+									margin-top: 2px;
+									font-size: 80%;
+									line-height: 86%;
+								}
+
+									body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td:before {
+										content: "Last Seen: ";
+										font-style: italic;
+									}
+
+		/* Hover state*/
+		body table#itemtablesmalltrippleicon tbody tr:hover {
+			border-color: #2B2C74;
+			background-color: #F2F1FA;
+		}
+
+		body table#itemtablesmalltrippleicon tr:hover td:first-child {
+			border-color: #2B2C74;
+			color: #0D0D1F;
+			background-color: #D4D5EE;
+		}
 
 /* Mobile Dashboard items */
 table.mobileitem {
-    *border-collapse: collapse; /* IE7 and lower */
-    border-spacing: 0;
-		border-style: none;
-		background-color: #FFFFFF;
-    width: 100%;
+	*border-collapse: collapse; /* IE7 and lower */
+	border-spacing: 0;
+	border-style: none;
+	background-color: #FFFFFF;
+	width: 100%;
 }
 
 .mobileitem {
-    border: solid #ccc 1px;
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border-radius: 6px;
-    -webkit-box-shadow: 0 1px 1px #ccc;
-    -moz-box-shadow: 0 1px 1px #ccc;
-    box-shadow: 0 1px 1px #ccc;
-		color: #000;
+	border: solid #ccc 1px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: 0 1px 1px #ccc;
+	-moz-box-shadow: 0 1px 1px #ccc;
+	box-shadow: 0 1px 1px #ccc;
+	color: #000;
 }
 
-.mobileitem tr:hover {
-    background: #fbf8e9;
-    -o-transition: all 0.1s ease-in-out;
-    -webkit-transition: all 0.1s ease-in-out;
-    -moz-transition: all 0.1s ease-in-out;
-    -ms-transition: all 0.1s ease-in-out;
-    transition: all 0.1s ease-in-out;
-}
+	.mobileitem tr:hover {
+		background: #fbf8e9;
+		-o-transition: all 0.1s ease-in-out;
+		-webkit-transition: all 0.1s ease-in-out;
+		-moz-transition: all 0.1s ease-in-out;
+		-ms-transition: all 0.1s ease-in-out;
+		transition: all 0.1s ease-in-out;
+	}
 
-.mobileitem td, .mobileitem th {
-    border-left: 0px solid #ccc;
-    border-top: 1px solid #ccc;
-    padding: 6px;
-    text-align: left;
-}
+	.mobileitem td, .mobileitem th {
+		border-left: 0px solid #ccc;
+		border-top: 1px solid #ccc;
+		padding: 6px;
+		text-align: left;
+	}
 
-.mobileitem th {
-    background-color: #dce9f9;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
-    background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
-    background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
-    background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
-    background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
-    background-image: linear-gradient(top, #ebf3fc, #dce9f9);
-    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
-    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;
-    border-top: none;
+	.mobileitem th {
+		background-color: #dce9f9;
+		background-image: -webkit-gradient(linear, left top, left bottom, from(#ebf3fc), to(#dce9f9));
+		background-image: -webkit-linear-gradient(top, #ebf3fc, #dce9f9);
+		background-image: -moz-linear-gradient(top, #ebf3fc, #dce9f9);
+		background-image: -ms-linear-gradient(top, #ebf3fc, #dce9f9);
+		background-image: -o-linear-gradient(top, #ebf3fc, #dce9f9);
+		background-image: linear-gradient(top, #ebf3fc, #dce9f9);
+		-webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+		-moz-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+		border-top: none;
 		text-shadow: 0 1px 0 rgba(255,255,255,.5);
 		font-weight: bold;
-}
+	}
 
-.mobileitem td:first-child, .mobileitem th:first-child {
-    border-left: none;
-}
+		.mobileitem td:first-child, .mobileitem th:first-child {
+			border-left: none;
+		}
 
-.mobileitem td:last-child {
-  font-weight: bold;
-  text-align: right;
-}
+	.mobileitem td:last-child {
+		font-weight: bold;
+		text-align: right;
+	}
 
-.mobileitem .btn-mini {
-	font-family: Arial,Helvetica,sans-serif;
-	font-size: 10pt;
-  font-weight: bold;
-}
+	.mobileitem .btn-mini {
+		font-family: Arial,Helvetica,sans-serif;
+		font-size: 10pt;
+		font-weight: bold;
+	}
 
-.mobileitem th:first-child {
-    -moz-border-radius: 6px 0 0 0;
-    -webkit-border-radius: 6px 0 0 0;
-    border-radius: 6px 0 0 0;
-}
+	.mobileitem th:first-child {
+		-moz-border-radius: 6px 0 0 0;
+		-webkit-border-radius: 6px 0 0 0;
+		border-radius: 6px 0 0 0;
+	}
 
-.mobileitem th:last-child {
-    -moz-border-radius: 0 6px 0 0;
-    -webkit-border-radius: 0 6px 0 0;
-    border-radius: 0 6px 0 0;
-}
+	.mobileitem th:last-child {
+		-moz-border-radius: 0 6px 0 0;
+		-webkit-border-radius: 0 6px 0 0;
+		border-radius: 0 6px 0 0;
+	}
 
-.mobileitem th:only-child{
-    -moz-border-radius: 6px 6px 0 0;
-    -webkit-border-radius: 6px 6px 0 0;
-    border-radius: 6px 6px 0 0;
-}
+	.mobileitem th:only-child {
+		-moz-border-radius: 6px 6px 0 0;
+		-webkit-border-radius: 6px 6px 0 0;
+		border-radius: 6px 6px 0 0;
+	}
 
-.mobileitem tr:last-child td:first-child {
-    -moz-border-radius: 0 0 0 6px;
-    -webkit-border-radius: 0 0 0 6px;
-    border-radius: 0 0 0 6px;
-}
+	.mobileitem tr:last-child td:first-child {
+		-moz-border-radius: 0 0 0 6px;
+		-webkit-border-radius: 0 0 0 6px;
+		border-radius: 0 0 0 6px;
+	}
 
-.mobileitem tr:last-child td:last-child {
-    -moz-border-radius: 0 0 6px 0;
-    -webkit-border-radius: 0 0 6px 0;
-    border-radius: 0 0 6px 0;
-}
+	.mobileitem tr:last-child td:last-child {
+		-moz-border-radius: 0 0 6px 0;
+		-webkit-border-radius: 0 0 6px 0;
+		border-radius: 0 0 6px 0;
+	}
 
-.mobileitem tr:last-child td[colspan="2"] {
-	-moz-border-radius: 0 0 6px 6px;
-	-webkit-border-radius: 0 0 6px 6px;
-	border-radius: 0 0 6px 6px;
-}
+	.mobileitem tr:last-child td[colspan="2"] {
+		-moz-border-radius: 0 0 6px 6px;
+		-webkit-border-radius: 0 0 6px 6px;
+		border-radius: 0 0 6px 6px;
+	}
 
 .borderbot {
 	padding-bottom: 6px;
@@ -1709,7 +1682,7 @@ table.mobileitem {
 }
 
 .dimslider {
-	z-index:1;
+	z-index: 1;
 	border-width: 1px;
 	border-style: solid;
 	border-color: #333 #333 #777 #333;
@@ -1720,52 +1693,54 @@ table.mobileitem {
 	height: 13px;
 	background-color: #8e8d8d;
 	background: url('images/bg-track.png') repeat top left;
-    box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5),
-    				  0 1px 0 0px rgba(250, 250, 250, .5);
+	box-shadow: inset 0 1px 5px 0px rgba(0, 0, 0, .5), 0 1px 0 0px rgba(250, 250, 250, .5);
 }
 
-.dimslider .ui-slider-handle {
-	position: absolute;
-	z-index: 2;
-	width: 25px;
-	height: 25px;
-	cursor: pointer;
-	background: url('images/handle.png') no-repeat 50% 50%;
-	font-weight: bold;
-	color: #1C94C4;
-	border-style: none;
-	outline: none;
-	top: -7px;
-	margin-left: -12px;
-}
+	.dimslider .ui-slider-handle {
+		position: absolute;
+		z-index: 2;
+		width: 25px;
+		height: 25px;
+		cursor: pointer;
+		background: url('images/handle.png') no-repeat 50% 50%;
+		font-weight: bold;
+		color: #1C94C4;
+		border-style: none;
+		outline: none;
+		top: -7px;
+		margin-left: -12px;
+	}
 
-.dimslider .ui-slider-range {
-	background: #ffffff; /* Old browsers */
-	background: -moz-linear-gradient(top,  #11AAFD 0%, #0199E0 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#11AAFD), color-stop(100%,#0199E0)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* IE10+ */
-	background: linear-gradient(top,  #11AAFD 0%,#0199E0 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#11AAFD', endColorstr='#0199E0',GradientType=0 ); /* IE6-9 */
-	position: absolute;
-	border: 0;
-	top: 0;
-	height: 100%;
-	border-radius: 25px;
-}
+	.dimslider .ui-slider-range {
+		background: #ffffff; /* Old browsers */
+		background: -moz-linear-gradient(top, #11AAFD 0%, #0199E0 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#11AAFD), color-stop(100%,#0199E0)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #11AAFD 0%,#0199E0 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top, #11AAFD 0%,#0199E0 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top, #11AAFD 0%,#0199E0 100%); /* IE10+ */
+		background: linear-gradient(top, #11AAFD 0%,#0199E0 100%); /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#11AAFD', endColorstr='#0199E0',GradientType=0 ); /* IE6-9 */
+		position: absolute;
+		border: 0;
+		top: 0;
+		height: 100%;
+		border-radius: 25px;
+	}
 
-html,body{
+html, body {
 	height: 99%;
 }
+
 #holder {
-		min-height: 100%;
-		position:relative;
+	min-height: 100%;
+	position: relative;
 }
+
 .bannercontent {
-		padding-top: 60px;
-		padding-bottom: 22px;
+	padding-top: 60px;
+	padding-bottom: 22px;
 }
+
 #copyright {
 	position: absolute;
 	bottom: 0;
@@ -1779,40 +1754,44 @@ html,body{
 		padding-top: 0px;
 	}
 }
-.brand
-{
+
+.brand {
 	height: 20px;
 	width: 100px;
 }
-.brand h1 {
-	float: left;
-	margin-left: 32px;
-	margin-top: -48px;
-	text-decoration: none;
-	text-transform: none;
-	font-family: 'Oswald', sans-serif;
-	font-size: 1.5em;
-	font-weight: 200;
-	color: #1C1C1C;
-}
-.brand h2 {
-	float: left;
-	margin-left: 142px;
-	margin-top: -24px;
-	text-decoration: none;
-	text-transform: none;
-	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 0.6em;
-	font-style: italic;
-	color: #444;
-}
 
-.brand img {
-	width: 40px;
-	height: 40px;
-	margin-left: -10px;
-	margin-top: -8px;
-}}
+	.brand h1 {
+		float: left;
+		margin-left: 32px;
+		margin-top: -48px;
+		text-decoration: none;
+		text-transform: none;
+		font-family: 'Oswald', sans-serif;
+		font-size: 1.5em;
+		font-weight: 200;
+		color: #1C1C1C;
+	}
+
+	.brand h2 {
+		float: left;
+		margin-left: 142px;
+		margin-top: -24px;
+		text-decoration: none;
+		text-transform: none;
+		font-family: Georgia, "Times New Roman", Times, serif;
+		font-size: 0.6em;
+		font-style: italic;
+		color: #444;
+	}
+
+	.brand img {
+		width: 40px;
+		height: 40px;
+		margin-left: -10px;
+		margin-top: -8px;
+	}
+
+}
 
 .dropdown-menu .divider {
 	*width: 100%;
@@ -1823,82 +1802,116 @@ html,body{
 	background-color: #353535;
 	border-bottom: 1px solid #666666;
 }
+
 .navbar .divider-vertical {
 	height: 40px;
 	margin: 0 2px;
 	border-right: none;
 	border-left: none;
 }
+
 .navbar .nav {
 	float: right;
 }
 
-.navbar .nav .dropdown-menu {
-	border:1px solid #616261; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 4px 4px 4px 4px; background-color: #7d7e7d;
-	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
-	background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
-}
+	.navbar .nav .dropdown-menu {
+		border: 1px solid #616261;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+		border-radius: 3px;
+		font-family: arial, helvetica, sans-serif;
+		padding: 4px 4px 4px 4px;
+		background-color: #7d7e7d;
+		background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
+		background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: linear-gradient(top, #7d7e7d, #0e0e0e);
+		filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
+	}
 
-.navbar .nav li a {
-	text-decoration: none;
-	text-transform: none;
-	font-family: 'Abel', sans-serif;
-	color: #FC2C2C;
-	border:1px solid #616261; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; font-weight:bold; text-align: center; color: #FFFFFF; background-color: #7d7e7d;
-	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
-	background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
-	background-image: linear-gradient(top, #7d7e7d, #0e0e0e);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
-}
+	.navbar .nav li a {
+		text-decoration: none;
+		text-transform: none;
+		font-family: 'Abel', sans-serif;
+		color: #FC2C2C;
+		border: 1px solid #616261;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+		border-radius: 3px;
+		font-family: arial, helvetica, sans-serif;
+		padding: 10px 10px 10px 10px;
+		font-weight: bold;
+		text-align: center;
+		color: #FFFFFF;
+		background-color: #7d7e7d;
+		background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #7d7e7d), color-stop(100%, #0e0e0e));
+		background-image: -webkit-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -moz-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -ms-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: -o-linear-gradient(top, #7d7e7d, #0e0e0e);
+		background-image: linear-gradient(top, #7d7e7d, #0e0e0e);
+		filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#7d7e7d, endColorstr=#0e0e0e);
+	}
 
 .nav li a img {
 	vertical-align: text-bottom;
 }
 
 @media (min-width: 768px) and (max-width: 1200px) {
-  .navbar .nav li a {
-    padding: 10px 5px 10px 5px !important;
-  }
+	.navbar .nav li a {
+		padding: 10px 5px 10px 5px !important;
+	}
 }
 
 .navbar .nav li a:hover {
-	 border:1px solid #4a4b4a; background-color: #646464;
-	 background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#646464), color-stop(100%, #282828));
-	 background-image: -webkit-linear-gradient(top, #646464, #282828);
-	 background-image: -moz-linear-gradient(top, #646464, #282828);
-	 background-image: -ms-linear-gradient(top, #646464, #282828);
-	 background-image: -o-linear-gradient(top, #646464, #282828);
-	 background-image: linear-gradient(top, #646464, #282828);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#646464, endColorstr=#282828);
+	border: 1px solid #4a4b4a;
+	background-color: #646464;
+	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#646464), color-stop(100%, #282828));
+	background-image: -webkit-linear-gradient(top, #646464, #282828);
+	background-image: -moz-linear-gradient(top, #646464, #282828);
+	background-image: -ms-linear-gradient(top, #646464, #282828);
+	background-image: -o-linear-gradient(top, #646464, #282828);
+	background-image: linear-gradient(top, #646464, #282828);
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#646464, endColorstr=#282828);
 }
+
 .navbar .nav .current_page_item > a, .navbar .nav .current_page_item > a:hover {
 	color: #FFFFFF;
 }
 
 .navbar .nav .current_page_item > a {
-	border:1px solid #25729a; -webkit-border-radius: 3px; -moz-border-radius: 3px;border-radius: 3px;font-family:arial, helvetica, sans-serif; padding: 10px 10px 10px 10px; font-weight:bold; text-align: center; color: #FFFFFF; background-color: #3093c7;
+	border: 1px solid #25729a;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	font-family: arial, helvetica, sans-serif;
+	padding: 10px 10px 10px 10px;
+	font-weight: bold;
+	text-align: center;
+	color: #FFFFFF;
+	background-color: #3093c7;
 	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #3093c7), color-stop(100%, #1c5a85));
 	background-image: -webkit-linear-gradient(top, #3093c7, #1c5a85);
 	background-image: -moz-linear-gradient(top, #3093c7, #1c5a85);
 	background-image: -ms-linear-gradient(top, #3093c7, #1c5a85);
 	background-image: -o-linear-gradient(top, #3093c7, #1c5a85);
-	background-image: linear-gradient(top, #3093c7, #1c5a85);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#3093c7, endColorstr=#1c5a85);
+	background-image: linear-gradient(top, #3093c7, #1c5a85);
+	filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#3093c7, endColorstr=#1c5a85);
 }
 
-.navbar .nav .current_page_item > a:hover {
-	border:1px solid #1c5675; background-color: #26759e;
-	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#26759e), color-stop(100%, #133d5b));
-	background-image: -webkit-linear-gradient(top, #26759e, #133d5b);
-	background-image: -moz-linear-gradient(top, #26759e, #133d5b);
-	background-image: -ms-linear-gradient(top, #26759e, #133d5b);
-	background-image: -o-linear-gradient(top, #26759e, #133d5b);
-	background-image: linear-gradient(top, #26759e, #133d5b);filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#26759e, endColorstr=#133d5b);
-}
+	.navbar .nav .current_page_item > a:hover {
+		border: 1px solid #1c5675;
+		background-color: #26759e;
+		background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#26759e), color-stop(100%, #133d5b));
+		background-image: -webkit-linear-gradient(top, #26759e, #133d5b);
+		background-image: -moz-linear-gradient(top, #26759e, #133d5b);
+		background-image: -ms-linear-gradient(top, #26759e, #133d5b);
+		background-image: -o-linear-gradient(top, #26759e, #133d5b);
+		background-image: linear-gradient(top, #26759e, #133d5b);
+		filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr=#26759e, endColorstr=#133d5b);
+	}
 
 .navbar-inverse .navbar-inner {
 	background-color: #EEE; /* background color will be black for all browsers */
@@ -1921,89 +1934,89 @@ div.log {
 }
 
 .lognorm {
-	color:#000000;
+	color: #000000;
 }
 
 .logerror {
-	color:#860016;
+	color: #860016;
 	font-weight: 600;
 }
 
 .logstatus {
-	color:#067676;
+	color: #067676;
 	font-size: 11px;
 	font-weight: 600;
 }
 
 .obtext {
 	position: absolute;
-	right:14px;
+	right: 14px;
 	top: 11px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 1.8em;
-  font-weight:bold;
+	font-weight: bold;
 	color: #000000;
 }
 
 .obtext2 {
 	position: absolute;
-	right:14px;
+	right: 14px;
 	top: 11px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 1.6em;
-  font-weight:bold;
+	font-weight: bold;
 	color: #444444;
 }
 
- .progress-label {
+.progress-label {
 	float: left;
 	margin-left: 50%;
 	margin-top: -4px;
 	font-size: 1.3em;
-  font-weight:bold;
-  text-shadow: 1px 1px #000;
+	font-weight: bold;
+	text-shadow: 1px 1px #000;
 	color: #fff;
 }
 
 .sb-link {
 	font-size: 1.2em;
-	font-weight:bold;
+	font-weight: bold;
 	color: #000000;
 	cursor: pointer;
 }
-.sb-link a, .sb-link a:link, .sb-link a:active, .sb-link a:visited
-{
-	text-decoration: none;
-	color: #000;
-}
-.sb-link a:hover
-{
-	color: #000FF0;
-}
+
+	.sb-link a, .sb-link a:link, .sb-link a:active, .sb-link a:visited {
+		text-decoration: none;
+		color: #000;
+	}
+
+		.sb-link a:hover {
+			color: #000FF0;
+		}
 
 .sb-fixed {
 	padding: 2px;
 }
 
 @media (min-width: 768px) {
-  .sb-fixed{
-    position: fixed;
-  }
+	.sb-fixed {
+		position: fixed;
+	}
 }
 
 .page-header-small {
-  padding-bottom: 4px;
-  margin: 20px 0 6px;
-  border-bottom: 1px solid #eeeeee;
+	padding-bottom: 4px;
+	margin: 20px 0 6px;
+	border-bottom: 1px solid #eeeeee;
 }
 
 a:link {
-	color:#FFF;
+	color: #FFF;
 }
 
 .norm-link, .norm-link a, .norm-link a:link, .norm-link a:active, .norm-link a:visited, .norm-link href {
 	color: #43A4D3;
-	font-weight:bold;
+	font-weight: bold;
 	cursor: pointer;
 	text-decoration: none;
 }
@@ -2018,24 +2031,22 @@ a:link {
 	height: 500px;
 }
 
-.marginright
-{
-	padding-right:5px;
+.marginright {
+	padding-right: 5px;
 }
 
-.transimg
-{
-	opacity:0.5;
-	filter:alpha(opacity=50); /* For IE8 and earlier */
+.transimg {
+	opacity: 0.5;
+	filter: alpha(opacity=50); /* For IE8 and earlier */
 }
-.transimg:hover
-{
-	opacity:1.0;
-	filter:alpha(opacity=100); /* For IE8 and earlier */
-}
+
+	.transimg:hover {
+		opacity: 1.0;
+		filter: alpha(opacity=100); /* For IE8 and earlier */
+	}
 
 .myrighttable td {
-    text-align: right;
+	text-align: right;
 }
 
 
@@ -2052,80 +2063,73 @@ a:link {
 	outline: none;
 }
 
-.accordion li {
-	list-style: none;
-}
+	.accordion li {
+		list-style: none;
+	}
 
-/* Layout & Style */
+		/* Layout & Style */
 
-.accordion li > a {
-	display: block;
-	position: relative;
-	min-width: 150px;
-	padding: 0 10px 0 10px;
-	height: 32px;
+		.accordion li > a {
+			display: block;
+			position: relative;
+			min-width: 150px;
+			padding: 0 10px 0 10px;
+			height: 32px;
+			color: #eee;
+			font: bold 13px/32px Arial, sans-serif;
+			text-decoration: none;
+			text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+			background: #6c6e74;
+			background: -moz-linear-gradient(top, #6c6e74 0%, #4b4d51 100%);
+			background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#6c6e74), color-stop(100%,#4b4d51));
+			background: -webkit-linear-gradient(top, #6c6e74 0%,#4b4d51 100%);
+			background: -o-linear-gradient(top, #6c6e74 0%,#4b4d51 100%);
+			background: -ms-linear-gradient(top, #6c6e74 0%,#4b4d51 100%);
+			background: linear-gradient(top, #6c6e74 0%,#4b4d51 100%);
+			-webkit-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+			-moz-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+			box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
+		}
 
-	color: #eee;
-	font: bold 13px/32px Arial, sans-serif;
-	text-decoration: none;
-	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+	.accordion > li:hover > a,
+	.accordion > li:target > a,
+	.accordion > li > a.active {
+		color: #3e5706;
+		text-shadow: 1px 1px 1px rgba(255,255,255, .2);
+		/*background: url(../img/active.png) repeat-x;*/
+		background: #a5cd4e;
+		background: -moz-linear-gradient(top, #a5cd4e 0%, #6b8f1a 100%);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#a5cd4e), color-stop(100%,#6b8f1a));
+		background: -webkit-linear-gradient(top, #a5cd4e 0%,#6b8f1a 100%);
+		background: -o-linear-gradient(top, #a5cd4e 0%,#6b8f1a 100%);
+		background: -ms-linear-gradient(top, #a5cd4e 0%,#6b8f1a 100%);
+		background: linear-gradient(top, #a5cd4e 0%,#6b8f1a 100%);
+	}
 
-	background: #6c6e74;
-	background: -moz-linear-gradient(top,  #6c6e74 0%, #4b4d51 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#6c6e74), color-stop(100%,#4b4d51));
-	background: -webkit-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
-	background: -o-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
-	background: -ms-linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
-	background: linear-gradient(top,  #6c6e74 0%,#4b4d51 100%);
+	.accordion li > a span {
+		display: block;
+		position: absolute;
+		top: 7px;
+		right: 0;
+		padding: 0 10px;
+		margin-right: 10px;
+		font: normal bold 12px/18px Arial, sans-serif;
+		background: #404247;
+		-webkit-border-radius: 15px;
+		-moz-border-radius: 15px;
+		border-radius: 15px;
+		-webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+		-moz-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+		box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
+	}
 
-	-webkit-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
-	-moz-box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
-	box-shadow: inset 0px 1px 0px 0px rgba(255,255,255, .1), 0px 1px 0px 0px rgba(0,0,0, .1);
-}
-
-.accordion > li:hover > a,
-.accordion > li:target > a,
-.accordion > li > a.active {
-	color: #3e5706;
-	text-shadow: 1px 1px 1px rgba(255,255,255, .2);
-
-	/*background: url(../img/active.png) repeat-x;*/
-	background: #a5cd4e;
-	background: -moz-linear-gradient(top,  #a5cd4e 0%, #6b8f1a 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#a5cd4e), color-stop(100%,#6b8f1a));
-	background: -webkit-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
-	background: -o-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
-	background: -ms-linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
-	background: linear-gradient(top,  #a5cd4e 0%,#6b8f1a 100%);
-}
-
-.accordion li > a span {
-	display: block;
-	position: absolute;
-	top: 7px;
-	right: 0;
-	padding: 0 10px;
-	margin-right: 10px;
-
-	font: normal bold 12px/18px Arial, sans-serif;
-	background: #404247;
-
-	-webkit-border-radius: 15px;
-	-moz-border-radius: 15px;
-	border-radius: 15px;
-
-	-webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
-	-moz-box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
-	box-shadow: inset 1px 1px 1px rgba(0,0,0, .2), 1px 1px 1px rgba(255,255,255, .1);
-}
-
-.accordion > li:hover > a span,
-.accordion > li:target > a span,
-.accordion > li > a.active span {
-	color: #eee;
-	text-shadow: 0px 1px 0px rgba(0,0,0, .35);
-	background: #3e5706;
-}
+	.accordion > li:hover > a span,
+	.accordion > li:target > a span,
+	.accordion > li > a.active span {
+		color: #eee;
+		text-shadow: 0px 1px 0px rgba(0,0,0, .35);
+		background: #3e5706;
+	}
 
 /* Sub Menu */
 
@@ -2135,16 +2139,19 @@ a:link {
 	border-bottom: 1px solid #393939;
 }
 
-.sub-menu li:hover a { background: #25253f; }
+.sub-menu li:hover a {
+	background: #25253f;
+}
 
-.sub-menu li:last-child a { border: none; }
+.sub-menu li:last-child a {
+	border: none;
+}
 
 .sub-menu li > a span {
 	color: #eee;
 	text-shadow: 1px 1px 0px rgba(255,255,255, .2);
 	background: transparent;
 	border: 1px solid #898989;
-
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 	box-shadow: none;
@@ -2161,32 +2168,33 @@ a:link {
 }
 
 .ex-color-box {
-    float: left;
-    width: 14px;
-    height: 14px;
-    margin: 1px;
-    border: 1px solid white;
+	float: left;
+	width: 14px;
+	height: 14px;
+	margin: 1px;
+	border: 1px solid white;
 }
+
 .cIFrame {
- position:fixed;
- left:0;
- margin:0;
- padding:0;
- display:block;
- width:100%;
- height:80%;
- border:none;
+	position: fixed;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	display: block;
+	width: 100%;
+	height: 80%;
+	border: none;
 }
 
 .cIFrameLarge {
- position:fixed;
- left:0;
- margin:0;
- padding:0;
- display:block;
- width:100%;
- height:calc(100% - 120px);
- border:none;
+	position: fixed;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	display: block;
+	width: 100%;
+	height: calc(100% - 120px);
+	border: none;
 }
 
 
@@ -2197,21 +2205,22 @@ a:link {
 table.dataTable thead th, table.dataTable thead td {
 	padding: 2px 2px;
 }
+
 table.dataTable img.vflip {
-  -webkit-transform: rotate(180deg);
-      -ms-transform: rotate(180deg);
-          transform: rotate(180deg);
+	-webkit-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	transform: rotate(180deg);
 }
 
 .messagepop {
-	border:1px solid #999999;
-	cursor:default;
-	display:none;
+	border: 1px solid #999999;
+	cursor: default;
+	display: none;
 	margin-top: 15px;
-	position:absolute;
-	text-align:left;
-	width:150px;
-	z-index:50;
+	position: absolute;
+	text-align: left;
+	width: 150px;
+	z-index: 50;
 	padding: 25px 25px 20px;
 }
 
@@ -2223,6 +2232,7 @@ table.dataTable img.vflip {
 	outline: 0;
 	left: 50px;
 }
+
 .ui-body-b {
 	border-width: 1px;
 	border-style: solid;
@@ -2231,26 +2241,30 @@ table.dataTable img.vflip {
 	color: #fff;
 	text-shadow: 0 1px 0 #111;
 }
+
 .ui-overlay-shadow {
 	-webkit-box-shadow: 0 0 12px rgba(0,0,0,.6);
 	-moz-box-shadow: 0 0 12px rgba(0,0,0,.6);
 	box-shadow: 0 0 12px rgba(0,0,0,.6);
 }
+
 .ui-btn-corner-all, .ui-corner-all {
 	-webkit-background-clip: padding;
 	background-clip: padding-box;
 }
+
 .ui-corner-all {
 	-webkit-border-radius: .3125em;
 	border-radius: .3125em;
 }
 
-.ui-listview>li {
+.ui-listview > li {
 	display: block;
 	position: relative;
 	overflow: visible;
 }
-.ui-listview, .ui-listview>li {
+
+.ui-listview, .ui-listview > li {
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -2262,12 +2276,13 @@ table.dataTable img.vflip {
 	box-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
 
-.ui-listview>li.ui-first-child, .ui-listview>li.ui-first-child>a.ui-btn {
+.ui-listview > li.ui-first-child, .ui-listview > li.ui-first-child > a.ui-btn {
 	-webkit-border-top-right-radius: inherit;
 	border-top-right-radius: inherit;
 	-webkit-border-top-left-radius: inherit;
 	border-top-left-radius: inherit;
 }
+
 .ui-bar-b, .ui-page-theme-b .ui-bar-inherit, html .ui-bar-b .ui-bar-inherit, html .ui-body-b .ui-bar-inherit, html body .ui-group-theme-b .ui-bar-inherit {
 	background-color: #1d1d1d;
 	border-color: #1b1b1b;
@@ -2275,22 +2290,26 @@ table.dataTable img.vflip {
 	text-shadow: 0 1px 0 #111;
 	font-weight: 700;
 }
-.ui-listview>.ui-li-divider {
+
+.ui-listview > .ui-li-divider {
 	padding: .5em 1.143em;
 	font-size: 14px;
 	font-weight: 700;
 	cursor: default;
 	outline: 0;
 }
-.ui-listview-inset>.ui-li-static, .ui-listview-inset>.ui-li-divider, .ui-listview-inset>li>a.ui-btn {
+
+.ui-listview-inset > .ui-li-static, .ui-listview-inset > .ui-li-divider, .ui-listview-inset > li > a.ui-btn {
 	border-right-width: 1px;
 	border-left-width: 1px;
 }
-.ui-listview>.ui-li-static, .ui-listview>.ui-li-divider, .ui-listview>li>a.ui-btn {
+
+.ui-listview > .ui-li-static, .ui-listview > .ui-li-divider, .ui-listview > li > a.ui-btn {
 	border-width: 1px 0 0;
 	border-style: solid;
 }
-.ui-listview>.ui-li-static, .ui-listview>.ui-li-divider, .ui-listview>li>a.ui-btn {
+
+.ui-listview > .ui-li-static, .ui-listview > .ui-li-divider, .ui-listview > li > a.ui-btn {
 	margin: 0;
 	display: block;
 	position: relative;
@@ -2299,6 +2318,7 @@ table.dataTable img.vflip {
 	overflow: hidden;
 	white-space: nowrap;
 }
+
 .ui-bar-a, .ui-page-theme-a .ui-bar-inherit, html .ui-bar-a .ui-bar-inherit, html .ui-body-a .ui-bar-inherit, html body .ui-group-theme-a .ui-bar-inherit {
 	background-color: #e9e9e9;
 	border-color: #ddd;
@@ -2307,27 +2327,31 @@ table.dataTable img.vflip {
 	font-weight: 700;
 }
 
-.ui-page-theme-b .ui-btn, html .ui-bar-b .ui-btn, html .ui-body-b .ui-btn, html body .ui-group-theme-b .ui-btn, html head+body .ui-btn.ui-btn-b, .ui-page-theme-b .ui-btn:visited, html .ui-bar-b .ui-btn:visited, html .ui-body-b .ui-btn:visited, html body .ui-group-theme-b .ui-btn:visited, html head+body .ui-btn.ui-btn-b:visited {
+.ui-page-theme-b .ui-btn, html .ui-bar-b .ui-btn, html .ui-body-b .ui-btn, html body .ui-group-theme-b .ui-btn, html head + body .ui-btn.ui-btn-b, .ui-page-theme-b .ui-btn:visited, html .ui-bar-b .ui-btn:visited, html .ui-body-b .ui-btn:visited, html body .ui-group-theme-b .ui-btn:visited, html head + body .ui-btn.ui-btn-b:visited {
 	background-color: #333;
 	border-color: #1f1f1f;
 	color: #fff;
 	text-shadow: 0 1px 0 #111;
 }
-.ui-page-theme-a .ui-btn, html .ui-bar-a .ui-btn, html .ui-body-a .ui-btn, html body .ui-group-theme-a .ui-btn, html head+body .ui-btn.ui-btn-a, .ui-page-theme-a .ui-btn:visited, html .ui-bar-a .ui-btn:visited, html .ui-body-a .ui-btn:visited, html body .ui-group-theme-a .ui-btn:visited, html head+body .ui-btn.ui-btn-a:visited {
+
+.ui-page-theme-a .ui-btn, html .ui-bar-a .ui-btn, html .ui-body-a .ui-btn, html body .ui-group-theme-a .ui-btn, html head + body .ui-btn.ui-btn-a, .ui-page-theme-a .ui-btn:visited, html .ui-bar-a .ui-btn:visited, html .ui-body-a .ui-btn:visited, html body .ui-group-theme-a .ui-btn:visited, html head + body .ui-btn.ui-btn-a:visited {
 	background-color: #f6f6f6;
 	border-color: #ddd;
 	color: #333;
 	text-shadow: 0 1px 0 #f3f3f3;
 }
-.ui-listview-inset>.ui-li-static, .ui-listview-inset>.ui-li-divider, .ui-listview-inset>li>a.ui-btn {
+
+.ui-listview-inset > .ui-li-static, .ui-listview-inset > .ui-li-divider, .ui-listview-inset > li > a.ui-btn {
 	border-right-width: 1px;
 	border-left-width: 1px;
 }
-.ui-listview>.ui-li-static, .ui-listview>.ui-li-divider, .ui-listview>li>a.ui-btn {
+
+.ui-listview > .ui-li-static, .ui-listview > .ui-li-divider, .ui-listview > li > a.ui-btn {
 	border-width: 1px 0 0;
 	border-style: solid;
 }
-.ui-listview>.ui-li-static, .ui-listview>.ui-li-divider, .ui-listview>li>a.ui-btn {
+
+.ui-listview > .ui-li-static, .ui-listview > .ui-li-divider, .ui-listview > li > a.ui-btn {
 	margin: 0;
 	display: block;
 	position: relative;
@@ -2344,7 +2368,7 @@ table.dataTable img.vflip {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-	text-decoration: none!important;
+	text-decoration: none !important;
 	border-right-width: 1px;
 	border-left-width: 1px;
 	border-width: 1px 0 0;
@@ -2373,11 +2397,22 @@ table.dataTable img.vflip {
 	background-position: center center;
 	background-repeat: no-repeat;
 	left: .5625em;
-	background-size:   cover;
+	background-size: cover;
 }
 
-.ui-close {position:absolute; top:4px; right:4px; width:30px; height:30px; cursor:pointer; background:url(images/close.png) no-repeat}
-.ui-close:hover {background-position:0 -30px}
+.ui-close {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
+	background: url(images/close.png) no-repeat
+}
+
+	.ui-close:hover {
+		background-position: 0 -30px
+	}
 
 .ui-icon-Auto:after {
 }
@@ -2420,45 +2455,45 @@ table.dataTable img.vflip {
 	height: 48px;
 }
 
-.evoimg img, .evoimgnorm img{
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-	width: 75%;
-	/*vertical center*/
-	position: relative;
-	top: 50%;
-	-webkit-transform: translateY(-50%);
-	-ms-transform: translateY(-50%);
-	transform: translateY(-50%);
-}
+	.evoimg img, .evoimgnorm img {
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+		width: 75%;
+		/*vertical center*/
+		position: relative;
+		top: 50%;
+		-webkit-transform: translateY(-50%);
+		-ms-transform: translateY(-50%);
+		transform: translateY(-50%);
+	}
 
-.evoimg.evomini, .evoimgnorm.evomini{
-	width: 40px;
-	height: 40px;
-}
+	.evoimg.evomini, .evoimgnorm.evomini {
+		width: 40px;
+		height: 40px;
+	}
 
-.evoimg.evomobile, .evoimgnorm.evomobile{
-	width: 30px;
-	height: 30px;
-}
+	.evoimg.evomobile, .evoimgnorm.evomobile {
+		width: 30px;
+		height: 30px;
+	}
 
-table.mobileitem .evoimg.evomobile, table.mobileitem .evoimgnorm.evomobile{
-	float:right;
+table.mobileitem .evoimg.evomobile, table.mobileitem .evoimgnorm.evomobile {
+	float: right;
 }
 
 span.evomobile {
-	float:right;
-	position:relative;
+	float: right;
+	position: relative;
 	right: 200px;
 }
 
-span.evomobile .ui-popup {
-	left: 0px;
-}
+	span.evomobile .ui-popup {
+		left: 0px;
+	}
 
 .ui-btn:hover {
-	background-color: rgba(255,255,255,.3)!important;
+	background-color: rgba(255,255,255,.3) !important;
 }
 
 .warning-text {
@@ -2470,104 +2505,110 @@ span.evomobile .ui-popup {
 	margin: 0 0 0 0;
 }
 
-.sub-tabs > li > a {
-	color: #555555;
-	cursor: default;
-	background-color: #ffffff;
-	border: 1px solid #ddd;
-	border-bottom-color: transparent;
-}
+	.sub-tabs > li > a {
+		color: #555555;
+		cursor: default;
+		background-color: #ffffff;
+		border: 1px solid #ddd;
+		border-bottom-color: transparent;
+	}
 
-.sub-tabs > .active > a {
-	color: #555555;
-	cursor: default;
-	background-color: #ccc;
-	border: 1px solid #ddd;
-	border-bottom-color: transparent;
-}
+	.sub-tabs > .active > a {
+		color: #555555;
+		cursor: default;
+		background-color: #ccc;
+		border: 1px solid #ddd;
+		border-bottom-color: transparent;
+	}
 
 .sub-tabs-apply {
-	color: #fff!important;
-	border: 1px solid #ff0000!important;
+	color: #fff !important;
+	border: 1px solid #ff0000 !important;
 }
 
 .iconcell {
-    border:1px solid black;
-    margin:0px;
+	border: 1px solid black;
+	margin: 0px;
 }
+
 .iconlist {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    background-color: #FFF;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	background-color: #FFF;
 	min-width: 294px;
-    overflow: scroll;
-    overflow-x: hidden;
-    display: -webkit-flex; /* Safari */
-    -webkit-flex-wrap: wrap; /* Safari 6.1+ */
-    display: flex;
-    flex-wrap: wrap;
+	overflow: scroll;
+	overflow-x: hidden;
+	display: -webkit-flex; /* Safari */
+	-webkit-flex-wrap: wrap; /* Safari 6.1+ */
+	display: flex;
+	flex-wrap: wrap;
 }
 
-.iconlist .iconlistitem {
-    padding: 0px;
-    width: 290px;
-    overflow: auto;
-    margin:2px 0px 0px 0px;
-    height: 52px;
-}
-.iconlist .iconlistitem:hover {
-    background: #eee;
-    cursor: pointer;
-}
+	.iconlist .iconlistitem {
+		padding: 0px;
+		width: 290px;
+		overflow: auto;
+		margin: 2px 0px 0px 0px;
+		height: 52px;
+	}
 
-.iconlist .iconlistitemselected {
-    background: #ddd;
-    cursor: pointer;
-}
+		.iconlist .iconlistitem:hover {
+			background: #eee;
+			cursor: pointer;
+		}
 
-.iconlist .iconlistitem h3 {
-    font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
-    color: #000;
-    height: 52px;
-    white-space: nowrap;
-    overflow: hidden;
-    margin-left: 52px;
-    margin-top: -5px;
-}
-.iconlist .iconlistitem img {
-	margin-top: 1px;
-	width: 48px;
-	height: 48px;
-    float: left;
-}
-.iconlist .iconlistitem p {
-    font: 200 12px/1.5 Georgia, Times New Roman, serif;
-    font-style: italic;
-    color: #444;
-    margin-left: 52px;
-    margin-top: -24px;
-    white-space: nowrap;
-    overflow: hidden;
-}
+	.iconlist .iconlistitemselected {
+		background: #ddd;
+		cursor: pointer;
+	}
+
+	.iconlist .iconlistitem h3 {
+		font: bold 20px/1.5 Helvetica, Verdana, sans-serif;
+		color: #000;
+		height: 52px;
+		white-space: nowrap;
+		overflow: hidden;
+		margin-left: 52px;
+		margin-top: -5px;
+	}
+
+	.iconlist .iconlistitem img {
+		margin-top: 1px;
+		width: 48px;
+		height: 48px;
+		float: left;
+	}
+
+	.iconlist .iconlistitem p {
+		font: 200 12px/1.5 Georgia, Times New Roman, serif;
+		font-style: italic;
+		color: #444;
+		margin-left: 52px;
+		margin-top: -24px;
+		white-space: nowrap;
+		overflow: hidden;
+	}
 
 .inputbox {
-    background-color: #FFF;
-    border-color: #B4BAC0;
-    color: #333;
+	background-color: #FFF;
+	border-color: #B4BAC0;
+	color: #333;
 }
+
 .autowidth {
-    width: auto !important;
+	width: auto !important;
 }
+
 .inputbox {
-    background-color: #FFF;
-    border: 1px solid #C0C0C0;
-    color: #333;
-    padding: 2px;
-    cursor: text;
+	background-color: #FFF;
+	border: 1px solid #C0C0C0;
+	color: #333;
+	padding: 2px;
+	cursor: text;
 }
 
 #timesun {
@@ -2582,9 +2623,9 @@ span.evomobile .ui-popup {
 	font-weight: bold;
 }
 
-tspan{
-    text-decoration:none;
-    text-shadow:none !important;
+tspan {
+	text-decoration: none;
+	text-shadow: none !important;
 }
 
 .version-tooltip + .tooltip > .tooltip-inner {
@@ -2592,156 +2633,194 @@ tspan{
 }
 
 .sk-fading-circle {
-  position: relative;
+	position: relative;
 }
 
-.sk-fading-circle .sk-circle {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
+	.sk-fading-circle .sk-circle {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
 
-.sk-fading-circle .sk-circle:before {
-  content: '';
-  display: block;
-  margin: 0 auto;
-  width: 15%;
-  height: 15%;
-  background-color: #35e;
-  border-radius: 100%;
-  -webkit-animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
-          animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
-}
-.sk-fading-circle .sk-circle2 {
-  -webkit-transform: rotate(30deg);
-      -ms-transform: rotate(30deg);
-          transform: rotate(30deg);
-}
-.sk-fading-circle .sk-circle3 {
-  -webkit-transform: rotate(60deg);
-      -ms-transform: rotate(60deg);
-          transform: rotate(60deg);
-}
-.sk-fading-circle .sk-circle4 {
-  -webkit-transform: rotate(90deg);
-      -ms-transform: rotate(90deg);
-          transform: rotate(90deg);
-}
-.sk-fading-circle .sk-circle5 {
-  -webkit-transform: rotate(120deg);
-      -ms-transform: rotate(120deg);
-          transform: rotate(120deg);
-}
-.sk-fading-circle .sk-circle6 {
-  -webkit-transform: rotate(150deg);
-      -ms-transform: rotate(150deg);
-          transform: rotate(150deg);
-}
-.sk-fading-circle .sk-circle7 {
-  -webkit-transform: rotate(180deg);
-      -ms-transform: rotate(180deg);
-          transform: rotate(180deg);
-}
-.sk-fading-circle .sk-circle8 {
-  -webkit-transform: rotate(210deg);
-      -ms-transform: rotate(210deg);
-          transform: rotate(210deg);
-}
-.sk-fading-circle .sk-circle9 {
-  -webkit-transform: rotate(240deg);
-      -ms-transform: rotate(240deg);
-          transform: rotate(240deg);
-}
-.sk-fading-circle .sk-circle10 {
-  -webkit-transform: rotate(270deg);
-      -ms-transform: rotate(270deg);
-          transform: rotate(270deg);
-}
-.sk-fading-circle .sk-circle11 {
-  -webkit-transform: rotate(300deg);
-      -ms-transform: rotate(300deg);
-          transform: rotate(300deg);
-}
-.sk-fading-circle .sk-circle12 {
-  -webkit-transform: rotate(330deg);
-      -ms-transform: rotate(330deg);
-          transform: rotate(330deg);
-}
-.sk-fading-circle .sk-circle2:before {
-  -webkit-animation-delay: -1.1s;
-          animation-delay: -1.1s;
-}
-.sk-fading-circle .sk-circle3:before {
-  -webkit-animation-delay: -1s;
-          animation-delay: -1s;
-}
-.sk-fading-circle .sk-circle4:before {
-  -webkit-animation-delay: -0.9s;
-          animation-delay: -0.9s;
-}
-.sk-fading-circle .sk-circle5:before {
-  -webkit-animation-delay: -0.8s;
-          animation-delay: -0.8s;
-}
-.sk-fading-circle .sk-circle6:before {
-  -webkit-animation-delay: -0.7s;
-          animation-delay: -0.7s;
-}
-.sk-fading-circle .sk-circle7:before {
-  -webkit-animation-delay: -0.6s;
-          animation-delay: -0.6s;
-}
-.sk-fading-circle .sk-circle8:before {
-  -webkit-animation-delay: -0.5s;
-          animation-delay: -0.5s;
-}
-.sk-fading-circle .sk-circle9:before {
-  -webkit-animation-delay: -0.4s;
-          animation-delay: -0.4s;
-}
-.sk-fading-circle .sk-circle10:before {
-  -webkit-animation-delay: -0.3s;
-          animation-delay: -0.3s;
-}
-.sk-fading-circle .sk-circle11:before {
-  -webkit-animation-delay: -0.2s;
-          animation-delay: -0.2s;
-}
-.sk-fading-circle .sk-circle12:before {
-  -webkit-animation-delay: -0.1s;
-          animation-delay: -0.1s;
-}
+		.sk-fading-circle .sk-circle:before {
+			content: '';
+			display: block;
+			margin: 0 auto;
+			width: 15%;
+			height: 15%;
+			background-color: #35e;
+			border-radius: 100%;
+			-webkit-animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+			animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+		}
+
+	.sk-fading-circle .sk-circle2 {
+		-webkit-transform: rotate(30deg);
+		-ms-transform: rotate(30deg);
+		transform: rotate(30deg);
+	}
+
+	.sk-fading-circle .sk-circle3 {
+		-webkit-transform: rotate(60deg);
+		-ms-transform: rotate(60deg);
+		transform: rotate(60deg);
+	}
+
+	.sk-fading-circle .sk-circle4 {
+		-webkit-transform: rotate(90deg);
+		-ms-transform: rotate(90deg);
+		transform: rotate(90deg);
+	}
+
+	.sk-fading-circle .sk-circle5 {
+		-webkit-transform: rotate(120deg);
+		-ms-transform: rotate(120deg);
+		transform: rotate(120deg);
+	}
+
+	.sk-fading-circle .sk-circle6 {
+		-webkit-transform: rotate(150deg);
+		-ms-transform: rotate(150deg);
+		transform: rotate(150deg);
+	}
+
+	.sk-fading-circle .sk-circle7 {
+		-webkit-transform: rotate(180deg);
+		-ms-transform: rotate(180deg);
+		transform: rotate(180deg);
+	}
+
+	.sk-fading-circle .sk-circle8 {
+		-webkit-transform: rotate(210deg);
+		-ms-transform: rotate(210deg);
+		transform: rotate(210deg);
+	}
+
+	.sk-fading-circle .sk-circle9 {
+		-webkit-transform: rotate(240deg);
+		-ms-transform: rotate(240deg);
+		transform: rotate(240deg);
+	}
+
+	.sk-fading-circle .sk-circle10 {
+		-webkit-transform: rotate(270deg);
+		-ms-transform: rotate(270deg);
+		transform: rotate(270deg);
+	}
+
+	.sk-fading-circle .sk-circle11 {
+		-webkit-transform: rotate(300deg);
+		-ms-transform: rotate(300deg);
+		transform: rotate(300deg);
+	}
+
+	.sk-fading-circle .sk-circle12 {
+		-webkit-transform: rotate(330deg);
+		-ms-transform: rotate(330deg);
+		transform: rotate(330deg);
+	}
+
+	.sk-fading-circle .sk-circle2:before {
+		-webkit-animation-delay: -1.1s;
+		animation-delay: -1.1s;
+	}
+
+	.sk-fading-circle .sk-circle3:before {
+		-webkit-animation-delay: -1s;
+		animation-delay: -1s;
+	}
+
+	.sk-fading-circle .sk-circle4:before {
+		-webkit-animation-delay: -0.9s;
+		animation-delay: -0.9s;
+	}
+
+	.sk-fading-circle .sk-circle5:before {
+		-webkit-animation-delay: -0.8s;
+		animation-delay: -0.8s;
+	}
+
+	.sk-fading-circle .sk-circle6:before {
+		-webkit-animation-delay: -0.7s;
+		animation-delay: -0.7s;
+	}
+
+	.sk-fading-circle .sk-circle7:before {
+		-webkit-animation-delay: -0.6s;
+		animation-delay: -0.6s;
+	}
+
+	.sk-fading-circle .sk-circle8:before {
+		-webkit-animation-delay: -0.5s;
+		animation-delay: -0.5s;
+	}
+
+	.sk-fading-circle .sk-circle9:before {
+		-webkit-animation-delay: -0.4s;
+		animation-delay: -0.4s;
+	}
+
+	.sk-fading-circle .sk-circle10:before {
+		-webkit-animation-delay: -0.3s;
+		animation-delay: -0.3s;
+	}
+
+	.sk-fading-circle .sk-circle11:before {
+		-webkit-animation-delay: -0.2s;
+		animation-delay: -0.2s;
+	}
+
+	.sk-fading-circle .sk-circle12:before {
+		-webkit-animation-delay: -0.1s;
+		animation-delay: -0.1s;
+	}
 
 @-webkit-keyframes sk-circleFadeDelay {
-  0%, 39%, 100% { opacity: 0; }
-  40% { opacity: 1; }
+	0%, 39%, 100% {
+		opacity: 0;
+	}
+
+	40% {
+		opacity: 1;
+	}
 }
 
 @keyframes sk-circleFadeDelay {
-  0%, 39%, 100% { opacity: 0; }
-  40% { opacity: 1; }
+	0%, 39%, 100% {
+		opacity: 0;
+	}
+
+	40% {
+		opacity: 1;
+	}
 }
 
 .selectorlevels {
 	font-size: 1em;
 }
+
 #dashcontent .selectorlevels {
 	font-size: 0.9em;
 }
+
 .selector-switch-options.style {
 	margin-top: 5px;
 }
-.selector-switch-options.style input[type=radio] {
-	margin: 10px 5px 10px 0px;
-}
-.selector-switch-options.style label {
-	vertical-align: middle;
-}
+
+	.selector-switch-options.style input[type=radio] {
+		margin: 10px 5px 10px 0px;
+	}
+
+	.selector-switch-options.style label {
+		vertical-align: middle;
+	}
+
 .selector-switch-options.levels input[type=text] {
 	margin: 10px 5px;
 }
+
 .selectorlevels .ui-state-default, .selectorlevels .ui-widget-content .ui-state-default, .selectorlevels .ui-widget-header .ui-state-default {
 	border: 1px solid #cccccc;
 	border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2752,6 +2831,7 @@ tspan{
 	color: #333333;
 	text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
 }
+
 .selectorlevels .ui-state-active, .selectorlevels .ui-widget-content .ui-state-active, .selectorlevels .ui-widget-header .ui-state-active {
 	border: 1px solid #ffaf0f;
 	border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2762,6 +2842,7 @@ tspan{
 	color: #ffffff;
 	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
+
 .selectorlevels .ui-state-hover, .selectorlevels .ui-widget-content .ui-state-hover, .selectorlevels .ui-widget-header .ui-state-hover, .selectorlevels .ui-state-focus, .selectorlevels .ui-widget-content .ui-state-focus, .selectorlevels .ui-widget-header .ui-state-focus {
 	border: 1px solid #ffaf0f;
 	border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2772,13 +2853,28 @@ tspan{
 	color: #ffffff;
 	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
+
 .selectorlevels .ui-button-text-only .ui-button-text {
 	padding: .3em 0.7em;
 }
+
 .selectorlevels .ui-selectmenu-button.ui-widget {
 	font-size: 1.1em;
 }
+
 .ui-selectmenu-menu .selectorlevels-menu {
 	font-size: 0.9em;
 }
 
+div.item.statusNormal td#name{
+    background-color: #D4E1EE;
+}
+div.item.statusProtected td#name{
+    background-color: #A4B1EE;
+}
+div.item.statusTimeout td#name{
+    background-color:#DF2D3A;
+}
+div.item.statusLowBattery td#name{
+    background-color:#DDDF2D;
+}

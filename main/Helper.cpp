@@ -22,6 +22,17 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 
+// Includes for SystemUptime()
+#if defined(__linux__) || defined(__linux) || defined(linux)
+#include <sys/sysinfo.h>
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#include <time.h>
+#include <errno.h>
+#include <sys/sysctl.h>
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+#include <time.h>
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -898,4 +909,30 @@ bool IsArgumentSecure(const std::string &arg)
 		ii++;
 	}
 	return true;
+}
+
+uint32_t SystemUptime()
+{
+#if defined(WIN32)
+	return static_cast<uint32_t>(GetTickCount64() / 1000u);
+#elif defined(__linux__) || defined(__linux) || defined(linux)
+	struct sysinfo info;
+	if (sysinfo(&info) != 0)
+		return -1;
+	return info.uptime;
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	struct timeval boottime;
+	std::size_t len = sizeof(boottime);
+	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
+	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0)
+		return -1;
+	return time(NULL) - boottime.tv_sec;
+#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)) && defined(CLOCK_UPTIME)
+	struct timespec ts;
+	if (clock_gettime(CLOCK_UPTIME, &ts) != 0)
+		return -1;
+	return ts.tv_sec;
+#else
+	return 0;
+#endif
 }

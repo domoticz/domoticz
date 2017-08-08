@@ -53,5 +53,5 @@ deploy:
   folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
-    APPVEYOR_REPO_BRANCH: master  
+    APPVEYOR_REPO_BRANCH: development
 

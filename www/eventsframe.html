@@ -467,6 +467,21 @@
 	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
 	        	setArray.push(setString);		      	
 		    }
+		    else if ($(this).attr('type') == 'trigger_ifttt') {
+				var idBlock = $(this).children("field[name='EventID']")[0];
+				var value1Block = $(this).children("field[name='TextValue1']")[0];
+				var value2Block = $(this).children("field[name='TextValue2']")[0];
+				var value3Block = $(this).children("field[name='TextValue3']")[0];
+				
+				var sID = $(idBlock).text();
+				var sValue1 = $(value1Block).text().replace(/\,/g, ' ');
+				var sValue2 = $(value2Block).text().replace(/\,/g, ' ');
+				var sValue3 = $(value3Block).text().replace(/\,/g, ' ');
+		    	// message separator here cannot be # like in scripts, changed to $..
+		    	// also removed commas as we need to separate commandArray later.
+	        	var setString = 'commandArray["TriggerIFTTT"]="'+sID+'$'+sValue1+'$'+sValue2+'$'+sValue3+'"';
+	        	setArray.push(setString);		      	
+		    }
 		    else if ($(this).attr('type') == 'start_script') {
 				var pathBlock = $(this).children("field[name='TextPath']")[0];
 				var sPath = $(pathBlock).text().replace(/\,/g, ' ');
@@ -1000,6 +1015,7 @@
    			<block type="send_notification"></block>
    			<block type="send_email"></block>
    			<block type="send_sms"></block>
+   			<block type="trigger_ifttt"></block>
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>

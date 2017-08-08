@@ -56,7 +56,7 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
 }
 
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate, int isdst) {
-	if (szSQLdate.length() != 19) {
+	if (szSQLdate.length() < 19) {
 		return false;
 	}
 

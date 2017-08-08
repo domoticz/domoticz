@@ -97,5 +97,5 @@ deploy:
   provider: script
   script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
-    branch: master
+    branch: development
     repo: domoticz/domoticz

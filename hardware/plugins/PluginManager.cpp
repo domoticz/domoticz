@@ -246,8 +246,10 @@ namespace Plugins {
 
 		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
 
+		// Create initial IO Service thread
 		ios.reset();
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+
 		while (!m_stoprequested)
 		{
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it

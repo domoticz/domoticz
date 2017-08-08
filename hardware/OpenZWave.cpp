@@ -1208,8 +1208,10 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403))
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) || //223
+				((pDevice->Product_id == 0x3000) && (pDevice->Product_type == 0x0203)) || //223
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403)) || //213
+				((pDevice->Product_id == 0x2000) && (pDevice->Product_type == 0x0403))    //213
 				)
 			{
 				//Special case for the Fibaro FGS213/223

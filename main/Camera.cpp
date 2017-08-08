@@ -34,7 +34,7 @@ void CCameraHandler::ReloadCameras()
 	std::vector<std::vector<std::string> > result;
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	result=m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
+	result=m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
 	if (result.size()>0)
 	{
 		_log.Log(LOG_STATUS,"Camera: settings (re)loaded");
@@ -51,6 +51,7 @@ void CCameraHandler::ReloadCameras()
 			citem.Username	= base64_decode(sd[4]);
 			citem.Password	= base64_decode(sd[5]);
 			citem.ImageURL	= sd[6];
+			citem.Protocol = (eCameraProtocol)atoi(sd[7].c_str());
 			m_cameradevices.push_back(citem);
 			_AddedCameras.push_back(sd[0]);
 		}
@@ -140,14 +141,16 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 	bool bHaveUPinURL = (pCamera->ImageURL.find("#USERNAME") != std::string::npos) || (pCamera->ImageURL.find("#PASSWORD") != std::string::npos);
 
+	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
+
 	if ((!bHaveUPinURL)&&((pCamera->Username != "") || (pCamera->Password != "")))
-		s_str << "http://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
+		s_str << szURLPreFix << "://" << pCamera->Username << ":" << pCamera->Password << "@" << pCamera->Address << ":" << pCamera->Port;
 	else
-		s_str << "http://" << pCamera->Address << ":" << pCamera->Port;
+		s_str << szURLPreFix << "://" << pCamera->Address << ":" << pCamera->Port;
 	return s_str.str();
 }
 
-cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
+CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 {
 	uint64_t ulID;
 	std::stringstream s_str( CamID );
@@ -155,7 +158,7 @@ cameraDevice* CCameraHandler::GetCamera(const std::string &CamID)
 	return GetCamera(ulID);
 }
 
-cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
+CCameraHandler::cameraDevice* CCameraHandler::GetCamera(const uint64_t CamID)
 {
 	std::vector<cameraDevice>::iterator itt;
 	for (itt=m_cameradevices.begin(); itt!=m_cameradevices.end(); ++itt)
@@ -388,10 +391,10 @@ namespace http {
 
 			std::vector<std::vector<std::string> > result;
 			if (rused == "true") {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras WHERE (Enabled=='1') ORDER BY ID ASC");
 			}
 			else {
-				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL FROM Cameras ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol FROM Cameras ORDER BY ID ASC");
 			}
 			if (result.size() > 0)
 			{
@@ -409,6 +412,7 @@ namespace http {
 					root["result"][ii]["Username"] = base64_decode(sd[5]);
 					root["result"][ii]["Password"] = base64_decode(sd[6]);
 					root["result"][ii]["ImageURL"] = sd[7];
+					root["result"][ii]["Protocol"] = atoi(sd[8].c_str());
 					ii++;
 				}
 			}
@@ -447,6 +451,123 @@ namespace http {
 			}
 			reply::set_content(&rep, camimage.begin(), camimage.end());
 			reply::add_header_attachment(&rep, "snapshot.jpg");
+		}
+
+		void CWebServer::Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string name = request::findValue(&req, "name");
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = request::findValue(&req, "username");
+			std::string password = request::findValue(&req, "password");
+			std::string timageurl = request::findValue(&req, "imageurl");
+			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
+			if (
+				(name == "") ||
+				(address == "") ||
+				(timageurl == "")
+				)
+				return;
+
+			std::string imageurl;
+			if (request_handler::url_decode(timageurl, imageurl))
+			{
+				imageurl = base64_decode(imageurl);
+
+				int port = atoi(sport.c_str());
+				root["status"] = "OK";
+				root["title"] = "AddCamera";
+				m_sql.safe_query(
+					"INSERT INTO Cameras (Name, Enabled, Address, Port, Username, Password, ImageURL, Protocol) VALUES ('%q',%d,'%q',%d,'%q','%q','%q',%d)",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					address.c_str(),
+					port,
+					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					imageurl.c_str(),
+					cprotocol
+				);
+				m_mainworker.m_cameras.ReloadCameras();
+			}
+		}
+
+		void CWebServer::Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			std::string name = request::findValue(&req, "name");
+			std::string senabled = request::findValue(&req, "enabled");
+			std::string address = request::findValue(&req, "address");
+			std::string sport = request::findValue(&req, "port");
+			std::string username = request::findValue(&req, "username");
+			std::string password = request::findValue(&req, "password");
+			std::string timageurl = request::findValue(&req, "imageurl");
+			int cprotocol = atoi(request::findValue(&req, "protocol").c_str());
+			if (
+				(name == "") ||
+				(senabled == "") ||
+				(address == "") ||
+				(timageurl == "")
+				)
+				return;
+
+			std::string imageurl;
+			if (request_handler::url_decode(timageurl, imageurl))
+			{
+				imageurl = base64_decode(imageurl);
+
+				int port = atoi(sport.c_str());
+
+				root["status"] = "OK";
+				root["title"] = "UpdateCamera";
+
+				m_sql.safe_query(
+					"UPDATE Cameras SET Name='%q', Enabled=%d, Address='%q', Port=%d, Username='%q', Password='%q', ImageURL='%q', Protocol=%d WHERE (ID == '%q')",
+					name.c_str(),
+					(senabled == "true") ? 1 : 0,
+					address.c_str(),
+					port,
+					base64_encode((const unsigned char*)username.c_str(), username.size()).c_str(),
+					base64_encode((const unsigned char*)password.c_str(), password.size()).c_str(),
+					imageurl.c_str(),
+					cprotocol,
+					idx.c_str()
+				);
+				m_mainworker.m_cameras.ReloadCameras();
+			}
+		}
+
+		void CWebServer::Cmd_DeleteCamera(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights < 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "")
+				return;
+			root["status"] = "OK";
+			root["title"] = "DeleteCamera";
+
+			m_sql.DeleteCamera(idx);
+			m_mainworker.m_cameras.ReloadCameras();
 		}
 	}
 }
