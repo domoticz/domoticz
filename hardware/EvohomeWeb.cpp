@@ -296,8 +296,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 				std::string szId, sztemperature;
 				szId = (*hz->installationInfo)["zoneId"].asString();
 				if ((m_showhdtemps) && !hz->hdtemp.empty())
-					sztemperature = hz->hdtemp
-				else if (hz->status != NULL);
+					sztemperature = hz->hdtemp;
+				else if (hz->status != NULL)
 					sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 				else
 				{
@@ -351,8 +351,8 @@ bool CEvohomeWeb::SetSystemMode(uint8_t sysmode)
 			}
 
 			if ((m_showhdtemps) && !hz->hdtemp.empty())
-				sztemperature = hz->hdtemp
-			else if (hz->status != NULL);
+				sztemperature = hz->hdtemp;
+			else if (hz->status != NULL)
 				sztemperature = (*hz->status)["temperatureStatus"]["temperature"].asString();
 			else
 			{
