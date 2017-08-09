@@ -44,7 +44,6 @@ local sunscreenDevice = 'Sunscreen'
 local dryRun = true
 
 -- Define the name of a virtual switch which you can use to disable the sunscreen automation script
--- Set to false to disable this feature
 local manualOverrideSwitch = false
 
 -- Minutes to wait after a sunscreen close before opening it again.
@@ -60,40 +59,55 @@ return {
         marker = 'Sunscreen'
     },
     execute = function(domoticz)
-
-        if (manualOverrideSwitchx and domoticz.devices(manualOverrideSwitch).state == 'On') then
-            domoticz.log('Automatic sunscreen script is manually disabled', domoticz.LOG_DEBUG)
-            return
+        
+        local function switchOn(sunscreen, message)
+            if (sunscreen.state == 'Closed') then
+                if (not dryRun) then
+                    sunscreen.switchOn()
+                    domoticz.notify('Sunscreen', message)
+                end
+                domoticz.log(message, domoticz.LOG_INFO)
+            end
         end
-
-        local sunscreen = domoticz.devices(sunscreenDevice)
-
-        -- Sunscreen must always be up during nighttime
-        if (domoticz.time.isNightTime) then
+    
+        local function switchOff(sunscreen, message)
             if (sunscreen.state == 'Open') then
                 if (not dryRun) then
                     sunscreen.switchOff()
+                    domoticz.notify('Sunscreen', message)
                 end
-                domoticz.log('Closing sunscreen, It is night', domoticz.LOG_INFO)
+                domoticz.log(message, domoticz.LOG_INFO)
             end
+        end
+        
+        if (manualOverrideSwitch and domoticz.devices(manualOverrideSwitch).state == 'On') then
+            domoticz.log('Automatic sunscreen script is manually disabled', domoticz.LOG_DEBUG)
             return
         end
-
+        
+        local sunscreen = domoticz.devices(sunscreenDevice)
+        
+        -- Sunscreen must always be up during nighttime
+        if (domoticz.time.isNightTime) then
+            switchOff(sunscreen, 'Closing sunscreen, It is night')
+            return
+        end
+        
         -- Check all sensor tresholds and if any exeeded close sunscreen
         for sensorType, sensor in pairs(sensors) do
 
             if (sensor['active'] == true) then
-
+                
                 local device = domoticz.devices(sensor['device'])
                 local closeRule = sensor['closeRule']
-
+                
                 domoticz.log('Checking sensor: ' .. sensorType, domoticz.LOG_DEBUG)
-
-                if (closeRule(device) and sunscreen.state == 'Open') then
-                    if (not dryRun) then
-                        sunscreen.switchOff()
-                    end
-                    domoticz.log(sensorType .. ' treshold exceeded, closing sunscreen', domoticz.LOG_INFO)
+                
+                if (closeRule(device)) then
+                    
+                    switchOff(sunscreen, sensorType .. ' treshold exceeded, Sunscreen up')
+                    
+                    domoticz.log(sensorType .. ' treshold exceeded', domoticz.LOG_DEBUG)
                     -- Return early when we exeed any tresholds
                     return
                 end
@@ -101,13 +115,10 @@ return {
                 domoticz.log('Sensor not active skipping: ' .. sensorType, domoticz.LOG_DEBUG)
             end
         end
-
+        
         -- All tresholds OK, sunscreen may be lowered
-        if (sunscreen.state == 'Closed') then
-            domoticz.log('Sun is shining, all thresholds OK, lowering sunscreen')
-            if (not dryRun and sunscreen.lastUpdate.minutesAgo > timeBetweenOpens) then
-                sunscreen.switchOn()
-            end
+        if (sunscreen.lastUpdate.minutesAgo > timeBetweenOpens) then
+            switchOn(sunscreen, 'Sun is shining, all thresholds OK, lowering sunscreen')
         end
     end
 }
