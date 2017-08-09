@@ -21,6 +21,13 @@ local sensors = {
             return device.rainRate > 0
         end
     },
+    rainExpected = {
+        active = false,
+        device = 'Rain expected', -- This needs to be a virtual sensor of type 'percentage'
+        closeRule = function(device)
+            return device.percentage > 15
+        end
+    },
     uv = {
         active = true,
         device = 'UV',
