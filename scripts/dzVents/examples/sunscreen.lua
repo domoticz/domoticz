@@ -18,7 +18,7 @@ local sensors = {
         active = true,
         device = 'Rain',
         closeRule = function(device)
-            return device.rain > 0
+            return device.rainRate > 0
         end
     },
     uv = {
@@ -41,9 +41,10 @@ local sensors = {
 local sunscreenDevice = 'Sunscreen'
 
 -- Enable dry run mode to test the sunscreen script without actually activating the sunscreen
-local dryRun = true
+local dryRun = false
 
 -- Define the name of a virtual switch which you can use to disable the sunscreen automation script
+-- Set to false to disable this feature
 local manualOverrideSwitch = false
 
 -- Minutes to wait after a sunscreen close before opening it again.
