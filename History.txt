@@ -1,6 +1,7 @@
 Version 3.xxx (August xxth 2017)
 - Implemented: Adjustment Value for Counter/Incremental sensors
 - Implemented: Camera, can now handle HTTPS url's
+- Implemented: Counter sensors now have a working week chart
 - Implemented: Denkovi Smartden IP In (32) with LAN Interface
 - Implemented: Pusher now supports Distance type
 - Implemented: "Send Triggers to IFTTT" from lua using commandArray['TriggerIFTTT']='EventName#Value1#Value2#Value3'
