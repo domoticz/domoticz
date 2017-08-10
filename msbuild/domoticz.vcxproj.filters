@@ -1621,6 +1621,9 @@
     <ClInclude Include="..\hardware\EvohomeSerial.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeTCP.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
@@ -2296,6 +2299,9 @@
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeTCP.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeWeb.cpp">

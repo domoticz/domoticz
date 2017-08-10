@@ -114,7 +114,6 @@ bool CEvohomeRadio::StartHardware()
 			_log.Log(LOG_ERROR, "EvoHome: Could not open debug file!");
 		}
 	}
-	m_retrycntr = EVOHOME_RETRY_DELAY; //will force reconnect first thing
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,DeviceID,nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==0) AND (Type==%d)", m_HwdID, (int)pTypeEvohome);
@@ -163,7 +162,10 @@ bool CEvohomeRadio::StartHardware()
 	}
 
 	//Start worker thread
+	m_bDoRestart=false;
+	m_retrycntr = EVOHOME_RETRY_DELAY; //will force reconnect first thing
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEvohomeRadio::Do_Work, this)));
+	m_bIsStarted=true;
 
 	return (m_thread!=NULL);
 }
@@ -1567,6 +1569,88 @@ void CEvohomeRadio::Send()
 	}
 }
 
+void CEvohomeRadio::OnConnect()
+{
+    if(GetControllerID()!=0)//can't proceed without it
+        RequestCurrentState();
+}
+
+void CEvohomeRadio::Idle_Work()
+{
+    Send();//FIXME afaik if there is a collision then we should increase the back off period exponentially if it happens again
+    if(nStartup<300)//if we haven't got zone names in 300s we auto init them (zone creation blocked until we have something)...
+    {
+        nStartup++;
+        if(nStartup==300)
+        {
+            if (startup)
+            {
+                InitControllerName();
+                InitZoneNames();
+                RequestZoneNames();
+
+                if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
+                {
+                    uint8_t MultiControllerCount = 0;
+                    for (uint8_t i = 0; i < 5; i++)
+                        if (MultiControllerID[i] != 0)
+                            MultiControllerCount++;
+                    if (MultiControllerCount > 1) // If multiple controllers detected then stop and user required to set controller ID on hardware settings page
+                    {
+                        _log.Log(LOG_ERROR, "evohome serial: multiple controllers detected!  Please set controller ID in hardware settings.");
+                        StopHardware();
+                    }
+                    else if (MultiControllerCount == 1) // If only 1 controller detected then proceed, otherwise continue searching for controller
+                    {
+                        Log(true, LOG_STATUS, "evohome serial: Multi-controller check passed. Controller ID: 0x%x", MultiControllerID[0]);
+                        SetControllerID(MultiControllerID[0]);
+                        startup = false;
+                    }
+                    RequestCurrentState(); //and also get startup info as this should only happen during initial setup
+                }
+                else
+                    startup = false;
+            }
+            else//Request each individual zone temperature every 300s as the controller omits multi-room zones
+            {
+                uint8_t nZoneCount = GetZoneCount();
+                for (uint8_t i = 0; i < nZoneCount; i++)
+                    RequestZoneTemp(i);
+                RequestDHWTemp();  // Request DHW temp from controller as workaround for being unable to identify DeviceID
+            }
+            if (AllSensors == false) // Check whether individual zone sensors has been activated
+            {
+                std::vector<std::vector<std::string> > result;
+
+                result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (Unit >= 13) AND (Unit <= 24)", m_HwdID, (int)pTypeEvohomeZone);
+                if (!result.empty())
+                    AllSensors = true;
+                // Check if the dummy sensor exists and delete
+                result = m_sql.safe_query("SELECT HardwareID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == 'FFFFFF') AND (Type==%d) AND (Unit == 13)", m_HwdID, (int)pTypeEvohomeZone);
+                if (!result.empty())
+                    m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='FFFFFF' AND (Type==%d) AND (Unit == 13))", m_HwdID, (int)pTypeEvohomeZone);
+            }
+            if (nStarts < 20)
+                nStarts++;
+            else if (nStarts == 20) // After 1h all devices should have been detected so re-request zone names and trigger device naming
+            {
+                RequestZoneNames();
+                nStarts++;
+            }
+            nStartup = 0;
+        }
+    }
+    boost::lock_guard<boost::mutex> l(m_mtxRelayCheck);
+    if(!m_RelayCheck.empty() && GetGatewayID()!=0)
+    {
+        CheckRelayHeatDemand();
+        if((boost::get_system_time()-stLastRelayCheck)>boost::posix_time::seconds(604)) //not sure if it makes a difference but avg time is about 604-605 seconds but not clear how reference point derived - seems steady once started
+        {
+            SendRelayKeepAlive();
+            stLastRelayCheck=boost::get_system_time();
+        }
+    }
+}
 
 //Webserver helpers
 namespace http {

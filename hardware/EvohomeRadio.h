@@ -25,7 +25,6 @@ public:
 	~CEvohomeRadio(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 
-
 	typedef boost::function< bool(CEvohomeMsg &msg) > fnc_evohome_decode;
 
 	enum evoCommands{
@@ -63,11 +62,14 @@ protected:
 
 	virtual void Do_Work() = 0;
 	virtual void Do_Send(std::string str) = 0;
+	virtual void OnConnect();
+	virtual void Idle_Work();
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	int m_retrycntr;
 	int m_nBufPtr;
+	bool m_bDoRestart;
 
 	struct _tRelayCheck
 	{
@@ -83,6 +85,11 @@ protected:
 	bool AllSensors;
 	boost::mutex m_mtxRelayCheck;
 	tmap_relay_check m_RelayCheck;
+
+	bool startup;
+	boost::system_time stLastRelayCheck;
+	int nStartup;
+	int nStarts;
 
 	void RequestCurrentState();
 	void RequestZoneState();
