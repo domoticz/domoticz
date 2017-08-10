@@ -59,6 +59,7 @@ public:
 		eNodeState						eState;
 
 		bool							HaveUserCodes;
+		bool							IsPlus;
 
 		time_t							m_LastSeen;
 

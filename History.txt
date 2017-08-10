@@ -3,9 +3,11 @@ Version 3.xxx (August xxth 2017)
 - Implemented: Camera, can now handle HTTPS url's
 - Implemented: Counter sensors now have a working week chart
 - Implemented: Denkovi Smartden IP In (32) with LAN Interface
+- Implemented: Email, option to disable email
 - Implemented: Pusher now supports Distance type
 - Implemented: "Send Triggers to IFTTT" from lua using commandArray['TriggerIFTTT']='EventName#Value1#Value2#Value3'
 - Implemented: 'Styles' folder can have its own images folder to overwrite stock images
+- Implemented: ZWave, now displays if a node is a ZWave+ node
 - Changed: MySensors, now treating V_LIGHT_LEVEL as Perecentage (V_LEVEL with type=S_LIGHT_LEVEL = Lux)
 - Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
 - Fixed: Blyss (manual adding to system)

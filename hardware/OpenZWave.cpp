@@ -532,6 +532,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		nodeInfo.m_nodeId = _nodeID;
 		nodeInfo.m_polled = false;
 		nodeInfo.HaveUserCodes = false;
+		nodeInfo.IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
 		nodeInfo.Application_version = 0;
 		nodeInfo.szType = m_pManager->GetNodeType(_homeID, _nodeID);
 		nodeInfo.iVersion = m_pManager->GetNodeVersion(_homeID, _nodeID);
@@ -4495,6 +4496,8 @@ namespace http {
 						root["result"][ii]["Product_name"] = pNode->Product_name;
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
+						root["result"][ii]["IsPlus"] = pNode->IsPlus;
+						
 						char szDate[80];
 						struct tm loctime;
 						localtime_r(&pNode->m_LastSeen, &loctime);
