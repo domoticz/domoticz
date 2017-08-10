@@ -306,70 +306,77 @@ std::string WrapBase64(const std::string &szSource, const size_t lsize=72)
 bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::string &subject)
 {
 	int nValue;
+	if (!m_sql.GetPreferencesVar("EmailEnabled", nValue))
+	{
+		return false;//no email setup
+	}
+	if (!nValue)
+		return false; //disabled
+
 	std::string sValue;
-	if (!m_sql.GetPreferencesVar("EmailServer",nValue,sValue))
+	if (!m_sql.GetPreferencesVar("EmailServer", sValue))
 	{
 		return false;//no email setup
 	}
-	if (sValue=="")
+	if (sValue == "")
 	{
 		return false;//no email setup
 	}
-	if (CamIdx=="")
+	if (CamIdx == "")
 		return false;
 
-   std::vector<std::string> splitresults;
-   StringSplit(CamIdx, ";", splitresults);
+	std::vector<std::string> splitresults;
+	StringSplit(CamIdx, ";", splitresults);
 
 	std::string EmailFrom;
 	std::string EmailTo;
-	std::string EmailServer=sValue;
-	int EmailPort=25;
+	std::string EmailServer = sValue;
+	int EmailPort = 25;
 	std::string EmailUsername;
 	std::string EmailPassword;
-	int EmailAsAttachment=0;
-	m_sql.GetPreferencesVar("EmailFrom",nValue,EmailFrom);
-	m_sql.GetPreferencesVar("EmailTo",nValue,EmailTo);
-	m_sql.GetPreferencesVar("EmailUsername",nValue,EmailUsername);
-	m_sql.GetPreferencesVar("EmailPassword",nValue,EmailPassword);
+	int EmailAsAttachment = 0;
+	m_sql.GetPreferencesVar("EmailFrom", EmailFrom);
+	m_sql.GetPreferencesVar("EmailTo", EmailTo);
+	m_sql.GetPreferencesVar("EmailUsername", EmailUsername);
+	m_sql.GetPreferencesVar("EmailPassword", EmailPassword);
 	m_sql.GetPreferencesVar("EmailPort", EmailPort);
 	m_sql.GetPreferencesVar("EmailAsAttachment", EmailAsAttachment);
-   std::string htmlMsg=
-      "<html>\r\n"
-      "<body>\r\n";
+	std::string htmlMsg =
+		"<html>\r\n"
+		"<body>\r\n";
 
-   SMTPClient sclient;
-   sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-   sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-   sclient.SetCredentials(base64_decode(EmailUsername),base64_decode(EmailPassword));
-   sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()),EmailPort);
-   sclient.SetSubject(CURLEncode::URLDecode(subject));
+	SMTPClient sclient;
+	sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+	sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+	sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
+	sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+	sclient.SetSubject(CURLEncode::URLDecode(subject));
 
-   for (std::vector<std::string>::iterator camIt = splitresults.begin() ; camIt != splitresults.end(); ++camIt) {
+	for (std::vector<std::string>::iterator camIt = splitresults.begin(); camIt != splitresults.end(); ++camIt) {
 
-      std::vector<unsigned char> camimage;
+		std::vector<unsigned char> camimage;
 
-      if (!TakeSnapshot(*camIt, camimage))
-         return false;
+		if (!TakeSnapshot(*camIt, camimage))
+			return false;
 
-      std::vector<char> filedata;
-	   filedata.insert(filedata.begin(),camimage.begin(),camimage.end());
-   	std::string imgstring;
-   	imgstring.insert(imgstring.end(),filedata.begin(),filedata.end());
-   	imgstring=base64_encode((const unsigned char*)imgstring.c_str(),filedata.size());
-   	imgstring = WrapBase64(imgstring);
+		std::vector<char> filedata;
+		filedata.insert(filedata.begin(), camimage.begin(), camimage.end());
+		std::string imgstring;
+		imgstring.insert(imgstring.end(), filedata.begin(), filedata.end());
+		imgstring = base64_encode((const unsigned char*)imgstring.c_str(), filedata.size());
+		imgstring = WrapBase64(imgstring);
 
-   	htmlMsg+=
-   		"<img src=\"data:image/jpeg;base64,";
-	   htmlMsg+=
-		   imgstring +
-   		"\">\r\n";
-      if (EmailAsAttachment != 0)
-         sclient.AddAttachment(imgstring,"snapshot"+*camIt+".jpg");
-   }
+		htmlMsg +=
+			"<img src=\"data:image/jpeg;base64,";
+		htmlMsg +=
+			imgstring +
+			"\">\r\n";
+		if (EmailAsAttachment != 0)
+			sclient.AddAttachment(imgstring, "snapshot" + *camIt + ".jpg");
+	}
 	if (EmailAsAttachment == 0)
 		sclient.SetHTMLBody(htmlMsg);
-	bool bRet=sclient.SendEmail();
+	bool bRet = sclient.SendEmail();
 	return bRet;
 }
 
