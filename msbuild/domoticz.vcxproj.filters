@@ -1615,6 +1615,9 @@
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeRadio.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeSerial.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
@@ -2287,6 +2290,9 @@
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeBase.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeRadio.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeSerial.cpp">
