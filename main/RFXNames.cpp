@@ -191,6 +191,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_EVOHOME_WEB, "Evohome via Web API" },
+		{ HTYPE_EVOHOME_TCP, "Evohome via LAN (remote HGI/S80)" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
@@ -1935,7 +1936,7 @@ void GetLightStatus(
 		}
 		break;
 	}
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s", 
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 

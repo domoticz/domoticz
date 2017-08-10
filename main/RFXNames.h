@@ -186,6 +186,7 @@ enum _eHardwareTypes {
 	HTYPE_SysfsGpio,			//102
 	HTYPE_Rtl433,                           //103
 	HTYPE_OnkyoAVTCP,			//104
+	HTYPE_EVOHOME_TCP,			//105
 	HTYPE_END
 };
 

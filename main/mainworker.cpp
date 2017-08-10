@@ -68,6 +68,7 @@
 #include "../hardware/EvohomeBase.h"
 #include "../hardware/EvohomeScript.h"
 #include "../hardware/EvohomeSerial.h"
+#include "../hardware/EvohomeTCP.h"
 #include "../hardware/EvohomeWeb.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
@@ -689,6 +690,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EVOHOME_SERIAL:
 		pHardware = new CEvohomeSerial(ID,SerialPort,Mode1,Filename);
+		break;
+	case HTYPE_EVOHOME_TCP:
+		pHardware = new CEvohomeTCP(ID, Address, Port, Filename);
 		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
@@ -6268,7 +6272,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeEvohome;
 	unsigned char subType=pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	if (HwdType==HTYPE_EVOHOME_SERIAL)
+	if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
 		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
 	else //GB3: web based evohome uses decimal device ID's
 		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
@@ -6332,7 +6336,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		if (HwdType==HTYPE_EVOHOME_SERIAL)
+		if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
 			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		else //GB3: web based evohome uses decimal device ID's
 			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
@@ -11725,7 +11729,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else  //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
@@ -11829,7 +11833,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
@@ -11841,7 +11845,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	unsigned char dSubType=atoi(sd[4].c_str());
 	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
-	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 	{
 		REVOBUF tsen;
 		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
@@ -11918,6 +11922,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_EVOHOME_TCP) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
@@ -11974,7 +11979,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNefitEasy *pGateway = reinterpret_cast<CNefitEasy*>(pHardware);
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
+		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
 		}

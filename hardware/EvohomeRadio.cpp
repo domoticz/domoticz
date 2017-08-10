@@ -1669,7 +1669,7 @@ namespace http {
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HwdID);
 			if (pHardware == NULL)
 				return;
-			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL)
+			if (pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_TCP)
 				return;
 			CEvohomeRadio *pEvoHW = reinterpret_cast<CEvohomeRadio*>(pHardware);
 
