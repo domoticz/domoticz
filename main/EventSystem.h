@@ -118,6 +118,13 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
+	typedef enum
+	{
+		Date = 0,	// 0
+		DateTime,	// 1
+		DateTimeMs	// 2
+	} _eTimeFormat;
+
 	struct _tEventQueue
 	{
 		std::string reason;
@@ -147,6 +154,7 @@ private:
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_dzv_Dir;
+	std::string m_szStartTime;
 
 	//our thread
 	void Do_Work();
@@ -229,4 +237,5 @@ private:
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
+	std::string TimeToString(time_t ltime, _eTimeFormat format);
 };

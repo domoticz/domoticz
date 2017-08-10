@@ -33,6 +33,7 @@ extern "C" {
 #endif
 }
 
+extern time_t m_StartTime;
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
@@ -154,6 +155,7 @@ void CEventSystem::StartEventSystem()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
+	m_szStartTime = TimeToString(m_StartTime, DateTime);
 }
 
 void CEventSystem::StopEventSystem()
@@ -376,6 +378,41 @@ std::string CEventSystem::LowerCase(std::string sResult)
 {
 	std::transform(sResult.begin(), sResult.end(), sResult.begin(), ::tolower);
 	return sResult;
+}
+
+std::string CEventSystem::TimeToString(time_t ltime, _eTimeFormat format)
+{
+	// ltime == 0 -> current time
+	struct tm timeinfo;
+	struct timeval tv;
+	std::stringstream sstr;
+	if (!ltime)
+	{
+		gettimeofday(&tv, NULL);
+#ifdef WIN32
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
+#else
+		localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+	}
+	else
+		localtime_r(&ltime, &timeinfo);
+
+	sstr << (timeinfo.tm_year + 1900) << "-"
+	<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
+	<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+
+	if (format > Date)
+	{
+		sstr << std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
+	}
+	if (format > DateTime && !ltime)
+		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+
+	return sstr.str();
 }
 
 void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
@@ -619,8 +656,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windgustValuesByID.clear();
 	m_zwaveAlarmValuesByID.clear();
 
-	std::stringstream szQuery;
-
 	float EnergyDivider = 1000.0f;
 	float GasDivider = 100.0f;
 	float WaterDivider = 100.0f;
@@ -677,9 +712,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isWindSpeed = false;
 		bool isWindGust = false;
 		bool isZWaveAlarm = false;
-
-		szQuery.clear();
-		szQuery.str("");
 
 		switch (sitem.devType)
 		{
@@ -922,25 +954,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
 					//get value of today
-					time_t now = mytime(NULL);
-					struct tm tm1;
-					localtime_r(&now, &tm1);
-
-					struct tm ltime;
-					ltime.tm_isdst = tm1.tm_isdst;
-					ltime.tm_hour = 0;
-					ltime.tm_min = 0;
-					ltime.tm_sec = 0;
-					ltime.tm_year = tm1.tm_year;
-					ltime.tm_mon = tm1.tm_mon;
-					ltime.tm_mday = tm1.tm_mday;
-
-					char szDate[40];
-					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+					std::string szDate = TimeToString(0, Date);
 
 					std::vector<std::vector<std::string> > result2;
 					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 					if (result2.size() > 0)
 					{
 						std::vector<std::string> sd2 = result2[0];
@@ -990,37 +1008,20 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				//get lowest value of today
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[100];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
+				std::string szDate = TimeToString(0, Date);
 				std::vector<std::vector<std::string> > result2;
 
-				szQuery.clear();
-				szQuery.str("");
 				if (sitem.subType != sTypeRAINWU)
 				{
 					result2 = m_sql.safe_query(
 						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
 						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 				}
 				if (result2.size()>0)
 				{
@@ -1046,27 +1047,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeP1Gas:
 			{
-				//get lowest value of today
 				float GasDivider = 1000.0f;
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[40];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+				//get lowest value of today
+				std::string szDate = TimeToString(0, Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-					sitem.ID, szDate);
+					sitem.ID, szDate.c_str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -1088,25 +1075,11 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
 				//get value of today
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[40];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+				std::string szDate = TimeToString(0, Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-					sitem.ID, szDate);
+					sitem.ID, szDate.c_str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -2905,7 +2878,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	}
 	scenesgroupsMutexLock.unlock();
 
-	char *vtype;
+	std::string vtype;
 
 	// Now do the user variables.
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -2949,13 +2922,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			//Integer
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
-			vtype = (char*)"integer";
+			vtype = "integer";
 		}
 		else if (uvitem.variableType == 1)
 		{
 			//Float
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
-			vtype = (char*)"float";
+			vtype = "float";
 		}
 		else
 		{
@@ -2963,19 +2936,19 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			if (uvitem.variableType == 2)
 			{
-				vtype = (char*)"string";
+				vtype = "string";
 			}
 			else if (uvitem.variableType == 3)
 			{
-				vtype = (char*)"date";
+				vtype = "date";
 			}
 			else if (uvitem.variableType == 4)
 			{
-				vtype = (char*)"time";
+				vtype = "time";
 			}
 			else
 			{
-				vtype = (char*)"unknown";
+				vtype = "unknown";
 			}
 		}
 		lua_rawset(lua_state, -3);
@@ -2983,7 +2956,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_settable(lua_state, -3); // data table
 
 		lua_pushstring(lua_state, "variableType");
-		lua_pushstring(lua_state, vtype);
+		lua_pushstring(lua_state, vtype.c_str());
 		lua_rawset(lua_state, -3);
 
 		lua_settable(lua_state, -3); // end entry
@@ -3615,12 +3588,19 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushnumber(lua_state, (lua_Number)rnvalue);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "domoticz_listening_port");
-		//	lua_pushstring(lua_state, "8080");
 			lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "domoticz_start_time");
+			lua_pushstring(lua_state, m_szStartTime.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "currentTime");
+			lua_pushstring(lua_state, TimeToString(0, DateTimeMs).c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "systemUptime");
+			lua_pushstring(lua_state, TimeToString(SystemUptime(), DateTime).c_str());
 			lua_rawset(lua_state, -3);
 		}
 	}
-
 	lua_setglobal(lua_state, "globalvariables");
 
 
@@ -3945,16 +3925,10 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
-
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-
-		char szLastUpdate[40];
-		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+		std::string szLastUpdate = TimeToString(0, DateTime);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
-			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
+			nvalue.c_str(), svalue.c_str(), szLastUpdate.c_str(), idx.c_str());
 
 
 		uint64_t ulIdx = 0;
@@ -4691,8 +4665,8 @@ namespace http {
 							std::string actions = array[index].get("actions", "").asString();
 
 							if (
-								(actions.find("SendNotification") != std::string::npos) || 
-								(actions.find("SendEmail") != std::string::npos) || 
+								(actions.find("SendNotification") != std::string::npos) ||
+								(actions.find("SendEmail") != std::string::npos) ||
 								(actions.find("SendSMS") != std::string::npos) ||
 								(actions.find("TriggerIFTTT") != std::string::npos)
 								)
