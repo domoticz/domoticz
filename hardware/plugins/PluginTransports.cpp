@@ -366,36 +366,28 @@ namespace Plugins {
 		{
 			if (!m_Socket)
 			{
+				boost::system::error_code ec;
 				m_bConnected = true;
 				int	iPort = atoi(m_Port.c_str());
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
 
+				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
+				{
+					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
+				}
 				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
 											 boost::bind(&CPluginTransportUDP::handleRead, this,
 													boost::asio::placeholders::error,
 													boost::asio::placeholders::bytes_transferred));
 
-
-/*
-				m_Resolver = new boost::asio::ip::udp::resolver(ios);
-				m_Socket = new boost::asio::ip::udp::socket(ios);
-
-				boost::system::error_code ec;
-				boost::asio::ip::udp::resolver::query query(m_IP, m_Port);
-				boost::asio::ip::udp::resolver::iterator iter = m_Resolver->resolve(query);
-				boost::asio::ip::udp::endpoint endpoint = *iter;
-
-				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
-				//
-				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportUDP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
-*/
 			}
 		}
 		catch (std::exception& e)
