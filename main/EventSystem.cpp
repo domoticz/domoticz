@@ -45,25 +45,10 @@ static std::string m_printprefix;
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
-typedef enum
-{
-	tString = 0,	// 0
-	tFloat,			// 1
-	tInteger,		// 2
-	tBoolean		// 3
-} _eJsonType;
-
-struct _tJsonMap
-{
-	const char* szOriginal;
-	const char* szNew;
-	_eJsonType eType;
-};
-
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in CWebServer::GetJSonDevices, they should
 // be added to this table.
-static const _tJsonMap JsonMap[] =
+const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 {
 	{ "Barometer",			"barometer",				tFloat		},
 	{ "CameraIndx",			"cameraIdx", 				tString		},
@@ -127,13 +112,6 @@ CEventSystem::CEventSystem(void)
 CEventSystem::~CEventSystem(void)
 {
 	StopEventSystem();
-	/*
-	if (m_pLUA!=NULL)
-	{
-	lua_close(m_pLUA);
-	m_pLUA=NULL;
-	}
-	*/
 }
 
 void CEventSystem::StartEventSystem()
@@ -382,11 +360,10 @@ std::string CEventSystem::LowerCase(std::string sResult)
 
 std::string CEventSystem::TimeToString(time_t ltime, _eTimeFormat format)
 {
-	// ltime == 0 -> current time
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
-	if (!ltime)
+	if (!ltime) // current time
 	{
 		gettimeofday(&tv, NULL);
 #ifdef WIN32

@@ -118,12 +118,27 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
-	typedef enum
+	enum _eJsonType
+	{
+		tString = 0,	// 0
+		tFloat,			// 1
+		tInteger,		// 2
+		tBoolean		// 3
+	};
+
+	enum _eTimeFormat
 	{
 		Date = 0,	// 0
 		DateTime,	// 1
 		DateTimeMs	// 2
-	} _eTimeFormat;
+	};
+
+	struct _tJsonMap
+	{
+		const char* szOriginal;
+		const char* szNew;
+		_eJsonType eType;
+	};
 
 	struct _tEventQueue
 	{
@@ -140,7 +155,7 @@ private:
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
-	//lua_State	*m_pLUA;
+	static const _tJsonMap JsonMap[];
 	bool m_bEnabled;
 	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
