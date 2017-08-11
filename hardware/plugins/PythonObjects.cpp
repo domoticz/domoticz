@@ -999,7 +999,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "sss|ssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
@@ -1113,9 +1113,6 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "%s, listen request from '%s' ignored. Transport is connected.", __func__, self->pPlugin->Name.c_str());
 			return Py_None;
 		}
-
-		Py_XDECREF(self->Address);
-		self->Address = PyUnicode_FromString("127.0.0.1");
 
 		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
 		boost::lock_guard<boost::mutex> l(PluginMutex);
