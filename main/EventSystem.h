@@ -137,7 +137,7 @@ private:
 	{
 		const std::string &szOriginal;
 		const std::string &szNew;
-		_eJsonType eType;
+		const _eJsonType eType;
 	};
 
 	struct _tEventQueue
