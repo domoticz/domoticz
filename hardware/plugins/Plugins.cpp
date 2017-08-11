@@ -5,6 +5,8 @@
 //
 #ifdef ENABLE_PYTHON
 
+#include <tinyxml.h>
+
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -15,7 +17,6 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 
 #include "../../notifications/NotificationHelper.h"
