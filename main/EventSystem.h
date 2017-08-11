@@ -135,8 +135,8 @@ private:
 
 	struct _tJsonMap
 	{
-		const char* szOriginal;
-		const char* szNew;
+		const std::string &szOriginal;
+		const std::string &szNew;
 		_eJsonType eType;
 	};
 
