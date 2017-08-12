@@ -562,7 +562,8 @@ std::string TimeToString(time_t ltime, _eTimeFormat format)
 
 	if (format != TF_Date)
 	{
-		sstr << std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+		sstr
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
