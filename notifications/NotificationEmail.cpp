@@ -83,9 +83,9 @@ bool CNotificationEmail::SendMessageImplementation(
 
 	std::string MessageText = Text;
 	stdreplace(MessageText, "&lt;br&gt;", "<br>");
-	
+
 	std::string HtmlBody;
-	
+
 	if (Idx != 0)
 	{
 		HtmlBody = szHTMLMail;
@@ -96,20 +96,7 @@ bool CNotificationEmail::SendMessageImplementation(
 		stdreplace(HtmlBody, "$DEVNAME", Name);
 		stdreplace(HtmlBody, "$MESSAGE", MessageText);
 
-		char szDate[100];
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		struct tm timeinfo;
-#ifdef WIN32
-		//Thanks to the winsock header file
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
+		std::string szDate = TimeToString(0, TF_DateTimeMs);
 		stdreplace(HtmlBody, "$DATETIME", szDate);
 	}
 	else
