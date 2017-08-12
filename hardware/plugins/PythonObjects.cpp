@@ -945,7 +945,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
-				self->Protocol = PyUnicode_FromString("");
+				self->Protocol = PyUnicode_FromString("None");
 				if (self->Protocol == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -1178,7 +1178,12 @@ namespace Plugins {
 
 	PyObject * CConnection_bytes(CConnection * self)
 	{
-		return PyLong_FromLong(self->pTransport->TotalBytes());
+		if (self->pTransport)
+		{
+			return PyLong_FromLong(self->pTransport->TotalBytes());
+		}
+
+		return PyBool_FromLong(0);
 	}
 
 	PyObject * CConnection_isconnecting(CConnection * self)
