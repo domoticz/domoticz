@@ -2732,6 +2732,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("IFTTTEnabled", 0);
 	}
+	if (!GetPreferencesVar("EmailEnabled", nValue))
+	{
+		UpdatePreferencesVar("EmailEnabled", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -2917,45 +2921,50 @@ void CSQLHelper::Do_Work()
 			else if ((itt->_ItemType == TITEM_SEND_EMAIL) || (itt->_ItemType == TITEM_SEND_EMAIL_TO))
 			{
 				int nValue;
-				std::string sValue;
-				if (GetPreferencesVar("EmailServer", nValue, sValue))
+				if (GetPreferencesVar("EmailEnabled", nValue))
 				{
-					if (sValue != "")
+					if (nValue)
 					{
-						std::string EmailFrom;
-						std::string EmailTo;
-						std::string EmailServer = sValue;
-						int EmailPort = 25;
-						std::string EmailUsername;
-						std::string EmailPassword;
-						GetPreferencesVar("EmailFrom", nValue, EmailFrom);
-						if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
+						std::string sValue;
+						if (GetPreferencesVar("EmailServer", sValue))
 						{
-							GetPreferencesVar("EmailTo", nValue, EmailTo);
+							if (sValue != "")
+							{
+								std::string EmailFrom;
+								std::string EmailTo;
+								std::string EmailServer = sValue;
+								int EmailPort = 25;
+								std::string EmailUsername;
+								std::string EmailPassword;
+								GetPreferencesVar("EmailFrom", EmailFrom);
+								if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
+								{
+									GetPreferencesVar("EmailTo", EmailTo);
+								}
+								else
+								{
+									EmailTo = itt->_command;
+								}
+								GetPreferencesVar("EmailUsername", EmailUsername);
+								GetPreferencesVar("EmailPassword", EmailPassword);
+
+								GetPreferencesVar("EmailPort", EmailPort);
+
+								SMTPClient sclient;
+								sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+								sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+								sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
+								sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+								sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
+								sclient.SetHTMLBody(itt->_sValue);
+								bool bRet = sclient.SendEmail();
+
+								if (bRet)
+									_log.Log(LOG_STATUS, "Notification sent (Email)");
+								else
+									_log.Log(LOG_ERROR, "Notification failed (Email)");
+							}
 						}
-						else
-						{
-							EmailTo = itt->_command;
-						}
-						GetPreferencesVar("EmailUsername", nValue, EmailUsername);
-						GetPreferencesVar("EmailPassword", nValue, EmailPassword);
-
-						GetPreferencesVar("EmailPort", EmailPort);
-
-						SMTPClient sclient;
-						sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-						sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-						sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-						sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
-						sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
-						sclient.SetHTMLBody(itt->_sValue);
-						bool bRet = sclient.SendEmail();
-
-						if (bRet)
-							_log.Log(LOG_STATUS, "Notification sent (Email)");
-						else
-							_log.Log(LOG_ERROR, "Notification failed (Email)");
-
 					}
 				}
 			}

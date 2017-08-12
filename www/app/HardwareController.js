@@ -3904,6 +3904,10 @@ define(['app'], function (app) {
 							var statusImg = '<img src="images/' + status + '.png" />';
 							var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
 
+							var Description = item.Description;
+							if (item.IsPlus == true) {
+								Description += "+";
+							}
 							var nodeStr = addLeadingZeros(item.NodeID, 3) + " (0x" + addLeadingZeros(item.NodeID.toString(16), 2) + ")";
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
@@ -3915,7 +3919,7 @@ define(['app'], function (app) {
 								"HaveUserCodes": item.HaveUserCodes,
 								"0": nodeStr,
 								"1": item.Name,
-								"2": item.Description,
+								"2": Description,
 								"3": item.Manufacturer_name,
 								"4": item.Product_id,
 								"5": item.Product_type,

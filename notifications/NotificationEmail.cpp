@@ -48,6 +48,7 @@ const static char *szHTMLMail =
 
 CNotificationEmail::CNotificationEmail() : CNotificationBase(std::string("email"), OPTIONS_HTML_BODY)
 {
+	SetupConfig(std::string("EmailEnabled"), &m_IsEnabled);
 	SetupConfig(std::string("EmailFrom"), _EmailFrom);
 	SetupConfig(std::string("EmailTo"), _EmailTo);
 	SetupConfig(std::string("EmailServer"), _EmailServer);
