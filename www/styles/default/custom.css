@@ -1,5 +1,3 @@
 @import url("/css/legacy.css"); /* Don't remove this line! */
-
-/*
-Default style for Domoticz (no overrides)
-*/
+@import url("base.css"); /* Don't remove this line! */
+@import url("extras_and_animations.css"); /* Adds visual extras. */
