@@ -2789,13 +2789,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 		{
 			lua_pushstring(lua_state, "whTotal");
-			if (strarray.size() > 0)
+			if (strarray.size() > 1)
 				lua_pushnumber(lua_state, atof(strarray[1].c_str()));
 			else
 				lua_pushnumber(lua_state, 0.0f);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "whActual");
-			if (strarray.size() > 1)
+			if (strarray.size() > 0)
 				lua_pushnumber(lua_state, atof(strarray[0].c_str()));
 			else
 				lua_pushnumber(lua_state, 0.0f);
