@@ -28,19 +28,25 @@ body:hover .ui-dialog{
 /*  Fan spinning animation  */
 
 @-webkit-keyframes rotation {
-    from {-webkit-transform: rotate(0deg);}
-    to   {-webkit-transform: rotate(359deg);}
+	from {
+		-webkit-transform: rotate(0deg);
+	}
+
+	to {
+		-webkit-transform: rotate(359deg);
+	}
 }
 
-body.dashboard div.item.Fan.onn .img1 img{
-    -webkit-animation: rotation 15s infinite linear;
-    border-radius:50%!important;
+body.dashboard div.item.Fan.onn .img1 img {
+	-webkit-animation: rotation 15s infinite linear;
+	border-radius: 50% !important;
 }
-body.dashboard div.item.Fan.onn .img1 img:hover{
-    border-radius:50%!important;
-    -webkit-animation: rotation 0.5s infinite linear; 
-    transition: move 2s ease-in
-}
+
+	body.dashboard div.item.Fan.onn .img1 img:hover {
+		border-radius: 50% !important;
+		-webkit-animation: rotation 0.5s infinite linear;
+		transition: move 2s ease-in
+	}
 
 
 /*  BAROMETER EFFECTS 
@@ -66,115 +72,120 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
 
 */
 
-*/
-
-#dashcontent div.item.Barometer tr #img img:hover,
+*/ #dashcontent div.item.Barometer tr #img img:hover,
 #dashcontent div.item.Pressure tr #img img:hover,
 #dashcontent div.item.TempHumidityBaro tr #img img:hover,
-#dashcontent div.item.WeatherStation tr #img img:hover{border-radius:50%!important;}
+#dashcontent div.item.WeatherStation tr #img img:hover {
+	border-radius: 50% !important;
+}
 
 @keyframes baro-unstable {
-  from {
-      -moz-transform:rotate(0deg);
-      -webkit-transform:rotate(0deg);
-      transition:rotate(0deg) 
-  }
-    
-  to {
-      -moz-transform:rotate(90deg);
-      -webkit-transform:rotate(90deg);
-      transition:rotate(90deg) 
-  }
+	from {
+		-moz-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg);
+		transition: rotate(0deg)
+	}
+
+	to {
+		-moz-transform: rotate(90deg);
+		-webkit-transform: rotate(90deg);
+		transition: rotate(90deg)
+	}
 }
 
 
 @keyframes baro-change {
-  from {
-      -moz-transform:rotate(15deg);
-      -webkit-transform:rotate(15deg);
-      transition:rotate(15deg) 
-  }
-  to {
-      -moz-transform:rotate(-15deg);
-      -webkit-transform:rotate(-15deg);
-      transition:rotate(-15deg) 
-  }    
+	from {
+		-moz-transform: rotate(15deg);
+		-webkit-transform: rotate(15deg);
+		transition: rotate(15deg)
+	}
+
+	to {
+		-moz-transform: rotate(-15deg);
+		-webkit-transform: rotate(-15deg);
+		transition: rotate(-15deg)
+	}
 }
 
 @keyframes baro-unknown-loading {
-  from {
-    -webkit-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
-    -moz-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
-    box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
-  }
-  to {
-    -webkit-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
-    -moz-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
-    box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
-  }    
+	from {
+		-webkit-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+		-moz-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+		box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+	}
+
+	to {
+		-webkit-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+		-moz-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+		box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+	}
 }
 
-#dashcontent #dashWeather #unknown tr .img1 img{
-    animation: 10s infinite baro-unknown-loading;
-    border-radius:50%!important;
-    padding:5px;
-    opacity:50;
+#dashcontent #dashWeather #unknown tr .img1 img {
+	animation: 10s infinite baro-unknown-loading;
+	border-radius: 50% !important;
+	padding: 5px;
+	opacity: 50;
 }
 
 
 
 /*  STORM  */
-#dashcontent #dashWeather #thunderstorm tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-thunderstorm.png') no-repeat right top!important; 
-    /*background-color: rgba(250,250,250,0.1)!important;*/
+#dashcontent #dashWeather #thunderstorm tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-thunderstorm.png') no-repeat right top !important;
+	/*background-color: rgba(250,250,250,0.1)!important;*/
 }
+
 #dashcontent div.item.Barometer#thunderstorm tr .img1 img,
 #dashcontent div.item.Pressure#thunderstorm tr .img1 img,
 #dashcontent div.item.TempHumidityBaro#thunderstorm tr .img1 img,
-#dashcontent div.item.WeatherStation#thunderstorm tr .img1 img{
-    -moz-transform:rotate(-60deg);
-    -webkit-transform:rotate(-60deg);
-    transition:rotate(-60deg) 
+#dashcontent div.item.WeatherStation#thunderstorm tr .img1 img {
+	-moz-transform: rotate(-60deg);
+	-webkit-transform: rotate(-60deg);
+	transition: rotate(-60deg)
 }
 
 
 /*  CLOUDY  - this ordering is on purpose, so rain can override cloudy. */
 #dashcontent #dashWeather div#cloudy tr,
 #dashcontent div#someclouds tr,
-#dashcontent div#cloudy tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-cloudy.png') no-repeat right top!important; 
+#dashcontent div#cloudy tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-cloudy.png') no-repeat right top !important;
 }
 
 /*  RAINY  */
-#dashcontent #dashWeather div.item#rain tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-rain.png') no-repeat right top!important; 
+#dashcontent #dashWeather div.item#rain tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-rain.png') no-repeat right top !important;
 }
+
 #dashcontent #dashWeather div.item[id*=rain] .img1 img,
 #dashcontent #dashWeather div.item.Barometer#rain tr .img1 img,
 #dashcontent #dashWeather div.item.Pressure#rain tr .img1 img,
 #dashcontent #dashWeather div.item.TempHumidityBaro#rain tr .img1 img,
-#dashcontent #dashWeather div.item.WeatherStation#rain tr .img1 img{
-    -moz-transform:rotate(-30deg);
-    -webkit-transform:rotate(-30deg);
-    transition:rotate(-30deg);
+#dashcontent #dashWeather div.item.WeatherStation#rain tr .img1 img {
+	-moz-transform: rotate(-30deg);
+	-webkit-transform: rotate(-30deg);
+	transition: rotate(-30deg);
 }
 
 
 /*  CHANGE  */
-#dashcontent #dashWeather div.item#change tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-change.png') no-repeat right top!important; 
-    /*background-color: rgba(250,250,250,0.1)!important;*/
+#dashcontent #dashWeather div.item#change tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-change.png') no-repeat right top !important;
+	/*background-color: rgba(250,250,250,0.1)!important;*/
 }
+
 #dashcontent #dashWeather div.item[id*=change] tr .img1 img,
 #dashcontent div.item.Barometer#change tr .img1 img,
 #dashcontent div.item.Pressure#change tr .img1 img,
 #dashcontent div.item.TempHumidityBaro#change tr .img1 img,
-#dashcontent div.item.WeatherStation#change tr .img1 img{
-    animation: 3s infinite alternate baro-change;
+#dashcontent div.item.WeatherStation#change tr .img1 img {
+	animation: 3s infinite alternate baro-change;
 }
 
 
@@ -182,48 +193,53 @@ Although I've also seen "some clouds". But that may come from a MySensors custom
 #dashcontent div.item.Barometer[id*=sun] tr,
 #dashcontent div.item.Pressure[id*=sun] tr,
 #dashcontent div.item.TempHumidityBaro[id*=sun] tr,
-#dashcontent div.item.WeatherStation[id*=sun] tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-sunny.png') no-repeat right top!important; 
+#dashcontent div.item.WeatherStation[id*=sun] tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-sunny.png') no-repeat right top !important;
 }
-#dashcontent div.item.Barometer[id*=sun] tr .img1 img,
-#dashcontent div.item.Barometer#sunny tr .img1 img,
-#dashcontent div.item.Pressure#sunny tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#sunny tr .img1 img,
-#dashcontent div.item.WeatherStation#sunny tr .img1 img{
-    -moz-transform:rotate(45deg);
-    -webkit-transform:rotate(45deg);
-    transition:rotate(45deg);}
+
+	#dashcontent div.item.Barometer[id*=sun] tr .img1 img,
+	#dashcontent div.item.Barometer#sunny tr .img1 img,
+	#dashcontent div.item.Pressure#sunny tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#sunny tr .img1 img,
+	#dashcontent div.item.WeatherStation#sunny tr .img1 img {
+		-moz-transform: rotate(45deg);
+		-webkit-transform: rotate(45deg);
+		transition: rotate(45deg);
+	}
 
 
 /*  STABLE - very sunny, very dry weather */
 #dashcontent div.item.Barometer#stable tr,
 #dashcontent div.item.Pressure#stable tr,
 #dashcontent div.item.TempHumidityBaro#ustable tr,
-#dashcontent div.item.WeatherStation#stable tr{
-    background-image:none;
-    background: rgba(250,250,250,0.1) url('/images/baro-stable.png') no-repeat right top!important;     
+#dashcontent div.item.WeatherStation#stable tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-stable.png') no-repeat right top !important;
 }
-#dashcontent div.item.Barometer#stable tr .img1 img,
-#dashcontent div.item.Pressure#stable tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#stable tr .img1 img,
-#dashcontent div.item.WeatherStation#stable tr .img1 img{
-    -moz-transform:rotate(80deg);
-    -webkit-transform:rotate(80deg);
-    transition:rotate(80deg);
-}
+
+	#dashcontent div.item.Barometer#stable tr .img1 img,
+	#dashcontent div.item.Pressure#stable tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#stable tr .img1 img,
+	#dashcontent div.item.WeatherStation#stable tr .img1 img {
+		-moz-transform: rotate(80deg);
+		-webkit-transform: rotate(80deg);
+		transition: rotate(80deg);
+	}
 
 
 /*  UNSTABLE  - quicky rising high pressure */
-#dashcontent #dashWeather #unstable tr{background-image:none;}
-
-#dashcontent #dashWeather #unstable tr .img1 img,
-#dashcontent div.item.Barometer#unstable tr .img1 img,
-#dashcontent div.item.Pressure#unstable tr .img1 img,
-#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
-#dashcontent div.item.WeatherStation#unstable tr .img1 img{
-    animation: 10s infinite baro-unstable;
+#dashcontent #dashWeather #unstable tr {
+	background-image: none;
 }
+
+	#dashcontent #dashWeather #unstable tr .img1 img,
+	#dashcontent div.item.Barometer#unstable tr .img1 img,
+	#dashcontent div.item.Pressure#unstable tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
+	#dashcontent div.item.WeatherStation#unstable tr .img1 img {
+		animation: 10s infinite baro-unstable;
+	}
 
 
 
@@ -322,15 +338,14 @@ body{
 #httpremote input[type='checkbox'],
 #linkgooglepubsubparamstable input[type='checkbox'],
 #googlepubsubremote input[type='checkbox'],
-#influxremote input[type='checkbox']
-{
-    visibility: hidden;
-    position:relative;
-    left: 15px;
-    top:0px;
-    margin: 3px 20px 3px 0px;
-    background-color: #3b99fc;
-    z-index:2;
+#influxremote input[type='checkbox'] {
+	visibility: hidden;
+	position: relative;
+	left: 15px;
+	top: 0px;
+	margin: 3px 20px 3px 0px;
+	background-color: #3b99fc;
+	z-index: 2;
 }
 
 #settings input[type=checkbox]:after,
@@ -346,26 +361,25 @@ body{
 #httpremote input[type=checkbox]:after,
 #linkgooglepubsubparamstable input[type=checkbox]:after,
 #googlepubsubremote input[type=checkbox]:after,
-#influxremote input[type=checkbox]:after
-{
-    display: inline-block;
-    visibility: visible;
-    content: "\2714";
-    font-size: 9px;
-    background-color: #fff;
-    color:#fff;
-    height: 12px!important;
-    border-radius: 3px;
-    border: 2px solid #d84c47;
-    border-right: 14px solid #d84c47;
-    width: 12px!important;
-    overflow: hidden;
-    position: relative;
-    left: -12px;
-    top: -2px;
-    -moz-transition: all ease .3s;
-    -webkit-transition: all ease .3s;
-    transition: all ease .3s;
+#influxremote input[type=checkbox]:after {
+	display: inline-block;
+	visibility: visible;
+	content: "\2714";
+	font-size: 9px;
+	background-color: #fff;
+	color: #fff;
+	height: 12px !important;
+	border-radius: 3px;
+	border: 2px solid #d84c47;
+	border-right: 14px solid #d84c47;
+	width: 12px !important;
+	overflow: hidden;
+	position: relative;
+	left: -12px;
+	top: -2px;
+	-moz-transition: all ease .3s;
+	-webkit-transition: all ease .3s;
+	transition: all ease .3s;
 }
 
 #settings input[type=checkbox]:checked:after,
@@ -381,37 +395,35 @@ body{
 #httpremote input[type=checkbox]:checked:after,
 #linkgooglepubsubparamstable input[type=checkbox]:checked:after,
 #googlepubsubremote input[type=checkbox]:checked:after,
-#influxremote input[type=checkbox]:checked:after
-{
-    content: " ";
-    background-color: transparent;
-    content: "\2714";
-    font-size: 9px;
-    background-color: #fff;
-    height: 12px!important;
-    border-radius: 3px;
-    border: 2px solid #378637;
-    border-left: 14px solid #378637;
-    width: 12px!important;
-    overflow: hidden;
-    position: relative;
-    left: -12px;
-    top: -2px;
-    -moz-transition: all ease .1s;
-    -webkit-transition: all ease .1s;
-    transition: all ease .1s;
+#influxremote input[type=checkbox]:checked:after {
+	content: " ";
+	background-color: transparent;
+	content: "\2714";
+	font-size: 9px;
+	background-color: #fff;
+	height: 12px !important;
+	border-radius: 3px;
+	border: 2px solid #378637;
+	border-left: 14px solid #378637;
+	width: 12px !important;
+	overflow: hidden;
+	position: relative;
+	left: -12px;
+	top: -2px;
+	-moz-transition: all ease .1s;
+	-webkit-transition: all ease .1s;
+	transition: all ease .1s;
 }
 
 /*  EXTRA HOVER GLOSS */
 
-.ui-draggable-dragging tr{
-    transform: scale(1.05);
+.ui-draggable-dragging tr {
+	transform: scale(1.05);
 }
 
-#settingscontent .row-fluid.related .span2 a:hover{
-    /*box-shadow: 0px 5px 10px -5px rgba(250,250,250,0.1);
+#settingscontent .row-fluid.related .span2 a:hover {
+	/*box-shadow: 0px 5px 10px -5px rgba(250,250,250,0.1);
     transition: all 0.2s ease;*/
-
 }
 /*
 .btnstylerev,
