@@ -526,7 +526,7 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
-std::string TimeToString(time_t *ltime, _eTimeFormat format)
+std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
@@ -568,7 +568,7 @@ std::string TimeToString(time_t *ltime, _eTimeFormat format)
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
 
-	if (format > TF_DateTime && !ltime)
+	if (format > TF_DateTime && ltime == NULL)
 		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
 
 	return sstr.str();
