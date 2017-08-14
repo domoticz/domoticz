@@ -526,12 +526,12 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
-std::string TimeToString(time_t ltime, _eTimeFormat format)
+std::string TimeToString(time_t *ltime, _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
-	if (!ltime) // current time
+	if (ltime == NULL) // current time
 	{
 #ifdef CLOCK_REALTIME
 		struct timespec ts;
@@ -551,7 +551,7 @@ std::string TimeToString(time_t ltime, _eTimeFormat format)
 #endif
 	}
 	else
-		localtime_r(&ltime, &timeinfo);
+		localtime_r(&(*ltime), &timeinfo);
 
 	if (format > TF_Time)
 	{

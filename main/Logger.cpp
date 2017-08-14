@@ -118,7 +118,7 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	std::stringstream sstr;
 
 	if (m_bEnableLogTimestamps)
-		sstr << TimeToString(0, TF_DateTimeMs) << "  ";
+		sstr << TimeToString(NULL, TF_DateTimeMs) << "  ";
 
 	if (m_bEnableLogThreadIDs)
 	{

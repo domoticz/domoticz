@@ -7182,7 +7182,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 			return "New value same as current, not updating";
 	}
 	*/
-	std::string szLastUpdate = TimeToString(0, TF_DateTime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%q' WHERE (ID == '%q')",
@@ -7210,7 +7210,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 
 bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
 {
-	std::string szLastUpdate = TimeToString(0, TF_DateTime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
 		"UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
@@ -7349,15 +7349,15 @@ std::string CSQLHelper::GetDeviceValue(const char * FieldName , const char *Idx 
 
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(0, TF_DateTime).c_str(), Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(NULL, TF_DateTime).c_str(), Idx.c_str());
 }
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(0, TF_DateTime).c_str(),Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(),Idx.c_str());
 }
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(0, TF_DateTime).c_str(),Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(),Idx.c_str());
 }
 
 //return temperature value from Svalue : is code temperature;humidity;???

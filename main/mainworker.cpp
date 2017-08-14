@@ -12350,7 +12350,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
-	std::string szLastUpdate = TimeToString(0, TF_DateTime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
 		nValue,
 		szLastUpdate.c_str(),
