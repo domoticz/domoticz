@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 117
+#define DB_VERSION 118
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2280,6 +2280,12 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Cameras ADD COLUMN [Protocol] INTEGER DEFAULT 0");
 			}
+		}
+		if (dbversion < 118)
+		{
+			//Delete script that could crash domoticz (maybe the dev can have a look?)
+			std::string sfile = szUserDataFolder + "scripts/python/script_device_PIRsmarter.py";
+			std::remove(sfile.c_str());
 		}
 	}
 	else if (bNewInstall)
