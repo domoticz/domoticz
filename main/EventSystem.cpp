@@ -133,7 +133,7 @@ void CEventSystem::StartEventSystem()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
-	m_szStartTime = TimeToString(m_StartTime, DateTime);
+	m_szStartTime = TimeToString(&m_StartTime, DateTime);
 }
 
 void CEventSystem::StopEventSystem()
@@ -358,12 +358,12 @@ std::string CEventSystem::LowerCase(std::string sResult)
 	return sResult;
 }
 
-std::string CEventSystem::TimeToString(time_t ltime, _eTimeFormat format)
+std::string CEventSystem::TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
 	struct tm timeinfo;
 	struct timeval tv;
 	std::stringstream sstr;
-	if (!ltime) // current time
+	if (ltime == NULL) // current time
 	{
 		gettimeofday(&tv, NULL);
 #ifdef WIN32
@@ -374,7 +374,7 @@ std::string CEventSystem::TimeToString(time_t ltime, _eTimeFormat format)
 #endif
 	}
 	else
-		localtime_r(&ltime, &timeinfo);
+		localtime_r(&(*ltime), &timeinfo);
 
 	sstr << (timeinfo.tm_year + 1900) << "-"
 	<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
@@ -386,7 +386,7 @@ std::string CEventSystem::TimeToString(time_t ltime, _eTimeFormat format)
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
 	}
-	if (format > DateTime && !ltime)
+	if (format > DateTime && ltime == NULL)
 		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
 
 	return sstr.str();
@@ -931,7 +931,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
 					//get value of today
-					std::string szDate = TimeToString(0, Date);
+					std::string szDate = TimeToString(NULL, Date);
 
 					std::vector<std::vector<std::string> > result2;
 					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -985,7 +985,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				//get lowest value of today
-				std::string szDate = TimeToString(0, Date);
+				std::string szDate = TimeToString(NULL, Date);
 				std::vector<std::vector<std::string> > result2;
 
 				if (sitem.subType != sTypeRAINWU)
@@ -1026,7 +1026,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				float GasDivider = 1000.0f;
 				//get lowest value of today
-				std::string szDate = TimeToString(0, Date);
+				std::string szDate = TimeToString(NULL, Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -1052,7 +1052,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
 				//get value of today
-				std::string szDate = TimeToString(0, Date);
+				std::string szDate = TimeToString(NULL, Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -3571,10 +3571,10 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, m_szStartTime.c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "currentTime");
-			lua_pushstring(lua_state, TimeToString(0, DateTimeMs).c_str());
+			lua_pushstring(lua_state, TimeToString(NULL, DateTimeMs).c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "systemUptime");
-			lua_pushstring(lua_state, TimeToString(SystemUptime(), DateTime).c_str());
+			lua_pushnumber(lua_state, (lua_Number)SystemUptime());
 			lua_rawset(lua_state, -3);
 		}
 	}
@@ -3902,7 +3902,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
-		std::string szLastUpdate = TimeToString(0, DateTime);
+		std::string szLastUpdate = TimeToString(NULL, DateTime);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
 			nvalue.c_str(), svalue.c_str(), szLastUpdate.c_str(), idx.c_str());
