@@ -3,7 +3,7 @@
 # Author: Dnpwwo, 2017
 #
 """
-<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.2.0" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
+<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.2.1" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="80"/>
@@ -79,7 +79,8 @@ class BasePlugin:
             Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
 
     def onMessage(self, Connection, Data):
-        strData = Data.decode("utf-8", "ignore")
+        strData = Data['Data'].decode("utf-8", "ignore")
+        Status = int(Data['Status'])
         if (Status == 200):
             Domoticz.Debug("Good Response received for '"+self.pluginState+"'.")
             if (self.pluginState == "GetAuth"):

@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 117
+#define DB_VERSION 118
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2281,6 +2281,12 @@ bool CSQLHelper::OpenDatabase()
 				query("ALTER TABLE Cameras ADD COLUMN [Protocol] INTEGER DEFAULT 0");
 			}
 		}
+		if (dbversion < 118)
+		{
+			//Delete script that could crash domoticz (maybe the dev can have a look?)
+			std::string sfile = szUserDataFolder + "scripts/python/script_device_PIRsmarter.py";
+			std::remove(sfile.c_str());
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2732,6 +2738,10 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("IFTTTEnabled", 0);
 	}
+	if (!GetPreferencesVar("EmailEnabled", nValue))
+	{
+		UpdatePreferencesVar("EmailEnabled", 1);
+	}
 
 	//Start background thread
 	if (!StartThread())
@@ -2917,45 +2927,50 @@ void CSQLHelper::Do_Work()
 			else if ((itt->_ItemType == TITEM_SEND_EMAIL) || (itt->_ItemType == TITEM_SEND_EMAIL_TO))
 			{
 				int nValue;
-				std::string sValue;
-				if (GetPreferencesVar("EmailServer", nValue, sValue))
+				if (GetPreferencesVar("EmailEnabled", nValue))
 				{
-					if (sValue != "")
+					if (nValue)
 					{
-						std::string EmailFrom;
-						std::string EmailTo;
-						std::string EmailServer = sValue;
-						int EmailPort = 25;
-						std::string EmailUsername;
-						std::string EmailPassword;
-						GetPreferencesVar("EmailFrom", nValue, EmailFrom);
-						if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
+						std::string sValue;
+						if (GetPreferencesVar("EmailServer", sValue))
 						{
-							GetPreferencesVar("EmailTo", nValue, EmailTo);
+							if (sValue != "")
+							{
+								std::string EmailFrom;
+								std::string EmailTo;
+								std::string EmailServer = sValue;
+								int EmailPort = 25;
+								std::string EmailUsername;
+								std::string EmailPassword;
+								GetPreferencesVar("EmailFrom", EmailFrom);
+								if (itt->_ItemType != TITEM_SEND_EMAIL_TO)
+								{
+									GetPreferencesVar("EmailTo", EmailTo);
+								}
+								else
+								{
+									EmailTo = itt->_command;
+								}
+								GetPreferencesVar("EmailUsername", EmailUsername);
+								GetPreferencesVar("EmailPassword", EmailPassword);
+
+								GetPreferencesVar("EmailPort", EmailPort);
+
+								SMTPClient sclient;
+								sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
+								sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
+								sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
+								sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
+								sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
+								sclient.SetHTMLBody(itt->_sValue);
+								bool bRet = sclient.SendEmail();
+
+								if (bRet)
+									_log.Log(LOG_STATUS, "Notification sent (Email)");
+								else
+									_log.Log(LOG_ERROR, "Notification failed (Email)");
+							}
 						}
-						else
-						{
-							EmailTo = itt->_command;
-						}
-						GetPreferencesVar("EmailUsername", nValue, EmailUsername);
-						GetPreferencesVar("EmailPassword", nValue, EmailPassword);
-
-						GetPreferencesVar("EmailPort", EmailPort);
-
-						SMTPClient sclient;
-						sclient.SetFrom(CURLEncode::URLDecode(EmailFrom.c_str()));
-						sclient.SetTo(CURLEncode::URLDecode(EmailTo.c_str()));
-						sclient.SetCredentials(base64_decode(EmailUsername), base64_decode(EmailPassword));
-						sclient.SetServer(CURLEncode::URLDecode(EmailServer.c_str()), EmailPort);
-						sclient.SetSubject(CURLEncode::URLDecode(itt->_ID));
-						sclient.SetHTMLBody(itt->_sValue);
-						bool bRet = sclient.SendEmail();
-
-						if (bRet)
-							_log.Log(LOG_STATUS, "Notification sent (Email)");
-						else
-							_log.Log(LOG_ERROR, "Notification failed (Email)");
-
 					}
 				}
 			}
@@ -7182,28 +7197,22 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 			return "New value same as current, not updating";
 	}
 	*/
-
-	time_t now = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
-		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
+		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%q' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,
 		szVarValue.c_str(),
-		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		szLastUpdate.c_str(),
 		idx.c_str()
 		);
 	if (!m_bDisableEventSystem)
 	{
-		std::stringstream ssLastUpdate;
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
-		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, ssLastUpdate.str());
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
 	}
 	if (eventtrigger) {
 		std::stringstream vId_str(idx);
@@ -7216,22 +7225,17 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 
 bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger)
 {
-	time_t now = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
-		"UPDATE UserVariables SET Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %" PRIu64 ")",
+		"UPDATE UserVariables SET Value='%q', LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
 		szVarValue.c_str(),
-		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		szLastUpdate.c_str(),
 		idx
 		);
 	if (!m_bDisableEventSystem)
 	{
-		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
-		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, ssLastUpdate.str());
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
 	}
 	if (eventtrigger)
 	{
@@ -7360,15 +7364,15 @@ std::string CSQLHelper::GetDeviceValue(const char * FieldName , const char *Idx 
 
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value.c_str() ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(NULL, TF_DateTime).c_str(), Idx.c_str());
 }
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%d , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(),Idx.c_str());
 }
 void CSQLHelper::UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx )
 {
-	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )",FieldName, Value ,GetCurrentAsciiTime ().c_str(),Idx.c_str());
+	safe_query("UPDATE DeviceStatus SET %s=%4.2f , LastUpdate='%s' WHERE (ID == %s )", FieldName, Value, TimeToString(NULL, TF_DateTime).c_str(),Idx.c_str());
 }
 
 //return temperature value from Svalue : is code temperature;humidity;???

@@ -945,7 +945,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
-				self->Protocol = PyUnicode_FromString("");
+				self->Protocol = PyUnicode_FromString("None");
 				if (self->Protocol == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -999,7 +999,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "sss|ssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
@@ -1114,9 +1114,6 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		Py_XDECREF(self->Address);
-		self->Address = PyUnicode_FromString("127.0.0.1");
-
 		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
@@ -1181,7 +1178,12 @@ namespace Plugins {
 
 	PyObject * CConnection_bytes(CConnection * self)
 	{
-		return PyLong_FromLong(self->pTransport->TotalBytes());
+		if (self->pTransport)
+		{
+			return PyLong_FromLong(self->pTransport->TotalBytes());
+		}
+
+		return PyBool_FromLong(0);
 	}
 
 	PyObject * CConnection_isconnecting(CConnection * self)

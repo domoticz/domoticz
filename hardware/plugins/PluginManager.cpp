@@ -5,6 +5,8 @@
 //
 #ifdef ENABLE_PYTHON
 
+#include <tinyxml.h>
+
 #include "PluginManager.h"
 #include "Plugins.h"
 #include "PluginMessages.h"
@@ -17,7 +19,6 @@
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "../json/json.h"
-#include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 #ifdef WIN32
 #	include <direct.h>

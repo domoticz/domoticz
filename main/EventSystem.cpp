@@ -2655,9 +2655,9 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushstring(lua_state, "rawData");
 		lua_createtable(lua_state, 0, 0);
 
-		for (uint8_t index2 = 0; index2<strarray.size(); index2++)
+		for (uint8_t index2 = 0; index2 < strarray.size(); index2++)
 		{
-			lua_pushnumber(lua_state, (lua_Number)index2+1);
+			lua_pushnumber(lua_state, (lua_Number)index2 + 1);
 			lua_pushstring(lua_state, strarray[index2].c_str());
 			lua_rawset(lua_state, -3);
 		}
@@ -2695,17 +2695,26 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		if (sitem.devType == pTypeLux && sitem.subType == sTypeLux)
 		{
 			lua_pushstring(lua_state, "lux");
-			lua_pushnumber(lua_state, (lua_Number)atoi(strarray[0].c_str()));
+			if (strarray.size() > 0)
+				lua_pushnumber(lua_state, (lua_Number)atoi(strarray[0].c_str()));
+			else
+				lua_pushnumber(lua_state, (lua_Number)0);
 			lua_rawset(lua_state, -3);
 		}
 
 		if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 		{
 			lua_pushstring(lua_state, "whTotal");
-			lua_pushnumber(lua_state, atof(strarray[1].c_str()));
+			if (strarray.size() > 1)
+				lua_pushnumber(lua_state, atof(strarray[1].c_str()));
+			else
+				lua_pushnumber(lua_state, 0.0f);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "whActual");
-			lua_pushnumber(lua_state, atof(strarray[0].c_str()));
+			if (strarray.size() > 0)
+				lua_pushnumber(lua_state, atof(strarray[0].c_str()));
+			else
+				lua_pushnumber(lua_state, 0.0f);
 			lua_rawset(lua_state, -3);
 		}
 
@@ -2909,8 +2918,6 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	lua_setglobal(lua_state, "domoticzData");
 }
-
-
 
 void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 {
