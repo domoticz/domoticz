@@ -9,7 +9,6 @@
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
 #include "XiaomiGateway.h"
-#include "XiaomiGatewayTokenManager.h"
 #include <openssl/aes.h>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -688,9 +687,7 @@ std::string XiaomiGateway::GetGatewayKey()
 	const unsigned char *key = (unsigned char *)m_GatewayPassword.c_str();
 	unsigned char iv[AES_BLOCK_SIZE] = { 0x17, 0x99, 0x6d, 0x09, 0x3d, 0x28, 0xdd, 0xb3, 0xba, 0x69, 0x5a, 0x2e, 0x6f, 0x58, 0x56, 0x2e };
 	std::string token = XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp);
-	_log.Log(LOG_STATUS, "XiaomiGateway: token is - %s", token.c_str());
 	unsigned char *plaintext = (unsigned char *)token.c_str();
-	//unsigned char *plaintext = (unsigned char *)XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp).c_str();
 	unsigned char ciphertext[128];
 
 	AES_KEY encryption_key;
@@ -703,8 +700,8 @@ std::string XiaomiGateway::GetGatewayKey()
 		sprintf(&gatewaykey[i * 2], "%02X", ciphertext[i]);
 	}
 #ifdef _DEBUG
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
-	//_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey Password - %s", m_GatewayPassword.c_str());
+	_log.Log(LOG_STATUS, "XiaomiGateway: GetGatewayKey key - %s", gatewaykey);
 #endif
 	return gatewaykey;
 #else
@@ -824,7 +821,8 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					if (model == "motion") {
 						type = STYPE_Motion;
 						name = "Xiaomi Motion Sensor";
-					} else if (model == "sensor_motion.aq2") {
+					}
+					else if (model == "sensor_motion.aq2") {
 						type = STYPE_Motion;
 						name = "Aqara Motion Sensor";
 					}
@@ -1053,7 +1051,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
 						}
 					}
-					else if (name == "Xiaomi RGB Gateway") {						
+					else if (name == "Xiaomi RGB Gateway") {
 						std::string rgb = root2["rgb"].asString();
 						std::string illumination = root2["illumination"].asString();
 						if (rgb != "") {
@@ -1089,6 +1087,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 
 							if ((token != "") && (ip != "")) {
 								XiaomiGatewayTokenManager::GetInstance().UpdateTokenSID(ip, token, sid);
+								showmessage = false;
 							}
 						}
 					}
