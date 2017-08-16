@@ -167,35 +167,20 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_NORM,"GPIO: id2 %d", pCmd->LIGHTING2.id2);
 		_log.Log(LOG_NORM,"GPIO: id3 %d", pCmd->LIGHTING2.id3);
 		_log.Log(LOG_NORM,"GPIO: id4 %d", pCmd->LIGHTING2.id4);
-		_log.Log(LOG_NORM,"GPIO: unitcode %d", pCmd->LIGHTING2.unitcode); // in DB columb "Unit" used for identify number switch on board
-		_log.Log(LOG_NORM,"GPIO: cmnd %d", pCmd->LIGHTING2.cmnd);
-		_log.Log(LOG_NORM,"GPIO: level %d", pCmd->LIGHTING2.level);
-		*/
 		unsigned char id1=pCmd->LIGHTING2.id1;
 		unsigned char id2=pCmd->LIGHTING2.id2;
 		unsigned char id3=pCmd->LIGHTING2.id3;
 		unsigned char id4=pCmd->LIGHTING2.id4;
 		int ID=(id1<<24)|(id2<<16)|(id3<<8)|id4;
-		unsigned char Unit = pCmd->LIGHTING2.unitcode;
+		//_log.Log(LOG_NORM,"GPIO: ID %d", ID);
+		_log.Log(LOG_NORM,"GPIO: unitcode %d", pCmd->LIGHTING2.unitcode); // in DB column "Unit" used for identify pin number
+		_log.Log(LOG_NORM,"GPIO: cmnd %d", pCmd->LIGHTING2.cmnd);
+		_log.Log(LOG_NORM,"GPIO: level %d", pCmd->LIGHTING2.level);
+		*/
+		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" used for identify pin number
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-		/*
-		_log.Log(LOG_NORM,"GPIO: ID %d", ID);
-		_log.Log(LOG_NORM,"GPIO: Unit %d", Unit);
-		_log.Log(LOG_NORM,"GPIO: new value %d", value);
-		*/
-		// check my serverd i2c_addr (form Unit I can get i2c_addres of switch)
-		unsigned char i2c_address=PCF8574_get_i2c_addr_from_Unit(Unit);
-		/*
-		_log.Log(LOG_NORM,"GPIO: my served i2c address %d", i2c_addr);
-		_log.Log(LOG_NORM,"GPIO: i2c address from Unit %d", i2c_address);
-		*/
-		if (i2c_address != i2c_addr) return false; //actulaty is served PCF8574 with another i2c address
-		//check ID if is for PCF8574 (my rule, from Unit may get ID and reverse)
-		unsigned char pin_number=PCF8574_get_pin_number_from_Unit(Unit);
-		if ( (PCF8574_ID_ADD+i2c_address*256+pin_number) != ID ) return false; //not for PCF8574
-		/* _log.Log(LOG_NORM,"GPIO: Write value %d to pin %d ,i2c address %d", value, pin_number,i2c_addr ); */
 		value=~value&0x01; // inversion value domoticz on=1, off=0, bat I use PCF8574 pin active pin=0, no active pin=1
-		if (PCF8574_WritePin( pin_number, value)<0) return false; // goto relay exute write to switch (pin)
+		if (PCF8574_WritePin( pin_number, value)<0) return false;
 		else return true;
 	}
 	else {
@@ -310,67 +295,31 @@ void I2C::PCF8574_ReadChipDetails()
 	char buf = 0;
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) {
-		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
 		return;
 	}
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
 	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
-	for (char pin_number=0; pin_number<8; pin_number++){ // to process read byte from i2c
+	for (char pin_number=0; pin_number<8; pin_number++){
 		int DeviceID = PCF8574_create_DeviceID(i2c_addr, pin_number);
-		unsigned char Unit = PCF8574_create_Unit(i2c_addr, pin_number);
+		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
-		bool value = (buf & pin_mask) != 0;
+		bool value=(buf & pin_mask);
 		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
-		// parameters of function SendSwitch: 
-		//	( NodeID , ChildID , BatteryLevel , bOn , Level , default name )
-		// equivalent structure LIGHTING2 :
-		//	( NodeID->id1,id2,id3,id4 , ChildID->unitcode , BatteryLevel->? , bOn->cmd , Level , defaultname->? , packettype=pTypeLighting2 , subtype=sTypeAC )
-		// equivalent DB cloumb in DeviceStatus table:
-		//	( NodeID->DeviceID , ChildID->Unit , BatteryLevel->BatteryLevel, bOn->nValue , Level->?LastLevel, defaultname->Name , Type=pTypeLighting2 , SubType=sTypeAC )
-		// my human name parameters of function SendSwitch:
-		//	( DeviceID, Unit , BatteryLevel, on-off , ?level? , name )
-		// send new value to switch records
 	}
 	close(fd);
 #endif
 }
 
-char I2C::PCF8574_get_pin_number_from_Unit(unsigned char unit)
-{
-	// unit from list devices contain number of reading bit and i2c address of chip
-	// bit0-3 -> number of reding bit
-	return unit & 0x07;
-}
 
-char I2C::PCF8574_get_i2c_addr_from_Unit(unsigned char unit)
-{
-	// unit from list devices contain number of reading bit and i2c address of chip
-	// bit4-6 -> contain A0,A1,A2 part of 7-bit i2c address ->	0|1|0|0|A2|A1|A0 for type PCF8574
-	//								0|1|1|1|A2|A1|A0 for type PCF8574A
-	// bit 7 -> type of chip 0 = PCF8574, 1 = PCF8574A (different fixed pard of i2c address)
-	unsigned char i2c_address= (unit >> 4) & 0x07;
-	if ((unit & 0x80)==0)	i2c_address=0x20 |i2c_address; // addr = 00100XXX (XXX is |A2|A1|A0|)
-	else			i2c_address=0x38 |i2c_address; // addr = 00111XXX (XXX is |A2|A1|A0|)
-	return i2c_address;
-}
-
+/*
+ * I don't know any rule how to create DeviceID, therefore I create own function who
+ * create unique DeviceId from his i2c_address and pin + pseudo random number for this type devices
+ * it can't get 100% guarantee that another device use some DeviceID
+ */
 int I2C::PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask)
 {
 	return PCF8574_ID_ADD+i2c_address*256+pin_mask;
-}
-
-unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
-{
-	// 8-bit i2c_address and number of pin (4bit) code to one 8-bit number used in DeviceStatus table as columb Unit who representative one switch.
-	// It is possible because i2c_address is separated two parts. One volitale (3-bit) in chip documentation signify as A2,A1,A0 a second fixed (5-bit).
-	// Fixed part must be 00100 for PCF8574 or 00111 for PCF8574A.
-	// finally bit mapping:
-	//  |      7     | 6  | 5  | 4  | 3 | 2 | 1 | 0 |bit
-	//  | 0-PCF8574  | A2 | A1 | A0 |  pin number   |
-	//  | 1-PCF8574A |    |    |    |               |
-	char volitale = (i2c_address & 0x07)<<4; // first 3 bit of i2c address (voiled part i2c address for PCF8574 chip) 4x rotate
-	unsigned char fixed = (i2c_address & 0x38)<<4; // last 5 bit of i2c address (fixed part i2c address for PCF8574 chip) 4x rotate => 0x80 for PCF8574A or 0x00 for PCF8574
-	return ( fixed | volitale | pin );
 }
 
 char I2C::PCF8574_WritePin(char pin_number,char  value)
