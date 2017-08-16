@@ -1221,7 +1221,8 @@ std::string CEvohomeWeb::get_next_switchpoint(CEvohomeWeb::temperatureControlSys
 }
 std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 {
-	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId))
+	std::string zoneType = ((*hz->installationInfo).isMember("dhwId")) ? "domesticHotWater" : "temperatureZone";
+	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId, zoneType))
 		return "";
 	return get_next_switchpoint(hz->schedule);
 }
