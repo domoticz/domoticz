@@ -108,6 +108,9 @@ const char* szI2CTypeNames[] = {
 I2C::I2C(const int ID, const _eI2CType DevType, const int Port):
 m_dev_type(DevType)
 {
+	if (m_dev_type == I2CTYPE_PCF8574) {
+		i2c_addr = Port;
+	}
 
 	m_stoprequested = false;
 	m_HwdID = ID;
@@ -294,10 +297,7 @@ void I2C::PCF8574_ReadChipDetails()
 #else
 	char buf = 0;
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
-	if (fd < 0) {
-		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
-		return;
-	}
+	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
 	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
 	for (char pin_number=0; pin_number<8; pin_number++){
@@ -332,17 +332,12 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 	char buf_act = 0;
 	char buf_new = 0;
 	int fd = i2c_Open(m_ActI2CBus.c_str());
-	if (fd < 0) {
-		_log.Log(LOG_ERROR, "GPIO: %s: Error opening device!...", szI2CTypeNames[m_dev_type]);
-		return -1;
-	}
+	if (fd < 0) return -1; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf_act, i2c_addr) < 0 ) return -2;
-	lseek(fd,0,SEEK_SET); // after read back file cursor to begin (prepare to write to begin)
-	//_log.Log(LOG_NORM, "GPIO: actual value byte %d", buf_act);
+	lseek(fd,0,SEEK_SET); // after read back file cursor to begin (prepare to write new value on begin)
 	if (value==1) buf_new = buf_act | pin_mask;	//prepare new value by combinate current value, mask and new value
 	else buf_new = buf_act & ~pin_mask;
-	if (buf_new!=buf_act) { // value change
-		//_log.Log(LOG_NORM, "GPIO: new value byte %d", buf_new);
+	if (buf_new!=buf_act) { // if value change write new value
 		if (writeByteI2C(fd, buf_new, i2c_addr) < 0 ) {
 			_log.Log(LOG_ERROR, "GPIO: %s: Error write to device!...", szI2CTypeNames[m_dev_type]);
 			return -3;
