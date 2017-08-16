@@ -133,7 +133,7 @@ void CEventSystem::StartEventSystem()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
-	m_szStartTime = TimeToString(&m_StartTime, DateTime);
+	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
 void CEventSystem::StopEventSystem()
@@ -898,7 +898,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 				{
 					//get value of today
 					std::string szDate = TimeToString(NULL, TF_Date);
-
 					std::vector<std::vector<std::string> > result2;
 					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 						sitem.ID, szDate.c_str());
@@ -993,7 +992,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 				float GasDivider = 1000.0f;
 				//get lowest value of today
 				std::string szDate = TimeToString(NULL, TF_Date);
-
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 					sitem.ID, szDate.c_str());
@@ -1019,7 +1017,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				//get value of today
 				std::string szDate = TimeToString(NULL, TF_Date);
-
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
 					sitem.ID, szDate.c_str());
@@ -3875,7 +3872,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
-		std::string szLastUpdate = TimeToString(NULL, DateTime);
+		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
 			nvalue.c_str(), svalue.c_str(), szLastUpdate.c_str(), idx.c_str());

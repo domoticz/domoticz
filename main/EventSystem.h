@@ -126,13 +126,6 @@ private:
 		tBoolean		// 3
 	};
 
-	enum _eTimeFormat
-	{
-		Date = 0,	// 0
-		DateTime,	// 1
-		DateTimeMs	// 2
-	};
-
 	struct _tJsonMap
 	{
 		const std::string &szOriginal;
