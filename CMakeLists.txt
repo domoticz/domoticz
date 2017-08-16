@@ -412,7 +412,6 @@ hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
 hardware/Yeelight.cpp
 hardware/XiaomiGateway.cpp
-hardware/XiaomiGatewayTokenManager.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp

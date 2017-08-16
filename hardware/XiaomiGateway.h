@@ -4,6 +4,12 @@
 #include <deque>
 #include <iostream>
 
+#include <memory>
+#include <string>
+#include <vector>
+#include <boost/tuple/tuple.hpp>
+#include <boost/thread/mutex.hpp>
+
 class XiaomiGateway : public CDomoticzHardwareBase
 {
 public:
@@ -62,5 +68,20 @@ private:
 		XiaomiGateway* m_XiaomiGateway;
 		void start_receive();
 		void handle_receive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
+	};
+
+	class XiaomiGatewayTokenManager {
+	public:
+		static XiaomiGateway::XiaomiGatewayTokenManager& GetInstance();
+		void UpdateTokenSID(const std::string &ip, const std::string &token, const std::string &sid);
+		std::string GetToken(const std::string &ip);
+		std::string GetSID(const std::string &sid);
+
+	private:
+		boost::mutex m_mutex;
+		std::vector<boost::tuple<std::string, std::string, std::string> > m_GatewayTokens;
+
+		XiaomiGatewayTokenManager() { ; }
+		~XiaomiGatewayTokenManager() { ; }
 	};
 };

@@ -2053,9 +2053,6 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\XiaomiGatewayTokenManager.h">
-      <Filter>Devices\Xiaomi Gateway</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2741,9 +2738,6 @@
     </ClCompile>
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\XiaomiGatewayTokenManager.cpp">
-      <Filter>Devices\Xiaomi Gateway</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

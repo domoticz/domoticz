@@ -526,7 +526,6 @@
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
     <ClInclude Include="..\hardware\Wunderground.h" />
-    <ClInclude Include="..\hardware\XiaomiGatewayTokenManager.h" />
     <ClInclude Include="..\hardware\Yeelight.h" />
     <ClInclude Include="..\hardware\ZiBlueBase.h" />
     <ClInclude Include="..\hardware\ZiBlueSerial.h" />
@@ -778,7 +777,6 @@
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
     <ClCompile Include="..\hardware\Wunderground.cpp" />
-    <ClCompile Include="..\hardware\XiaomiGatewayTokenManager.cpp" />
     <ClCompile Include="..\hardware\Yeelight.cpp" />
     <ClCompile Include="..\hardware\ZiBlueBase.cpp" />
     <ClCompile Include="..\hardware\ZiBlueSerial.cpp" />
