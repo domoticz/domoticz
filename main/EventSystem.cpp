@@ -358,40 +358,6 @@ std::string CEventSystem::LowerCase(std::string sResult)
 	return sResult;
 }
 
-std::string CEventSystem::TimeToString(const time_t *ltime, const _eTimeFormat format)
-{
-	struct tm timeinfo;
-	struct timeval tv;
-	std::stringstream sstr;
-	if (ltime == NULL) // current time
-	{
-		gettimeofday(&tv, NULL);
-#ifdef WIN32
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-	}
-	else
-		localtime_r(&(*ltime), &timeinfo);
-
-	sstr << (timeinfo.tm_year + 1900) << "-"
-	<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
-	<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
-
-	if (format > Date)
-	{
-		sstr << std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
-	}
-	if (format > DateTime && ltime == NULL)
-		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
-
-	return sstr.str();
-}
-
 void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 {
 	Json::Value tempjson;
@@ -931,7 +897,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
 					//get value of today
-					std::string szDate = TimeToString(NULL, Date);
+					std::string szDate = TimeToString(NULL, TF_Date);
 
 					std::vector<std::vector<std::string> > result2;
 					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -985,7 +951,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				//get lowest value of today
-				std::string szDate = TimeToString(NULL, Date);
+				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
 				if (sitem.subType != sTypeRAINWU)
@@ -1026,7 +992,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				float GasDivider = 1000.0f;
 				//get lowest value of today
-				std::string szDate = TimeToString(NULL, Date);
+				std::string szDate = TimeToString(NULL, TF_Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -1052,7 +1018,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
 				//get value of today
-				std::string szDate = TimeToString(NULL, Date);
+				std::string szDate = TimeToString(NULL, TF_Date);
 
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
@@ -3571,7 +3537,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushstring(lua_state, m_szStartTime.c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "currentTime");
-			lua_pushstring(lua_state, TimeToString(NULL, DateTimeMs).c_str());
+			lua_pushstring(lua_state, TimeToString(NULL, TF_DateTimeMs).c_str());
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "systemUptime");
 			lua_pushnumber(lua_state, (lua_Number)SystemUptime());

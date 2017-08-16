@@ -252,5 +252,4 @@ private:
 	void StripQuotes(std::string &sString);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
-	std::string TimeToString(const time_t *ltime, const _eTimeFormat format);
 };
