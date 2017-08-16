@@ -571,7 +571,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
-	else if (szsysmode == "HeatingOff")
+	else if ((szsysmode == "HeatingOff") && (szmode != "Offline"))
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	else
 	{
@@ -646,7 +646,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		return;
 
 	std::string szId, szmode;
-	std::string szuntil= "";
+	std::string szuntil = "";
 	std::stringstream ssUpdateStat;
 
 	szId = (*tcs->status)["dhw"]["dhwId"].asString();
