@@ -118,21 +118,6 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
-	enum _eJsonType
-	{
-		tString = 0,	// 0
-		tFloat,			// 1
-		tInteger,		// 2
-		tBoolean		// 3
-	};
-
-	struct _tJsonMap
-	{
-		const std::string &szOriginal;
-		const std::string &szNew;
-		const _eJsonType eType;
-	};
-
 	struct _tEventQueue
 	{
 		std::string reason;
@@ -148,7 +133,6 @@ private:
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
-	static const _tJsonMap JsonMap[];
 	bool m_bEnabled;
 	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;

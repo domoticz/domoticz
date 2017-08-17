@@ -45,10 +45,25 @@ static std::string m_printprefix;
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
+typedef enum
+{
+	tString = 0,	// 0
+	tFloat,			// 1
+	tInteger,		// 2
+	tBoolean		// 3
+} _eJsonType;
+
+struct _tJsonMap
+{
+	const char* szOriginal;
+	const char* szNew;
+	_eJsonType eType;
+};
+
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in CWebServer::GetJSonDevices, they should
 // be added to this table.
-const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
+static const _tJsonMap JsonMap[] =
 {
 	{ "Barometer",			"barometer",				tFloat		},
 	{ "CameraIndx",			"cameraIdx", 				tString		},
@@ -98,7 +113,7 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 	{ "ValueUnits",			"valueUnits",				tString		},
 	{ "Visibility",			"visibility",				tFloat		},
 	{ "Voltage",			"voltage",					tFloat		},
-	{ "",					"",							tString 	}
+	{ NULL,					NULL,						tString		}
 };
 
 
@@ -372,7 +387,7 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 		std::string l_JsonValueString;
 		l_JsonValueString.reserve(50);
 
-		while (!JsonMap[index].szOriginal.empty())
+		while (JsonMap[index].szOriginal != NULL)
 		{
 			if (tempjson["result"][0][JsonMap[index].szOriginal] != Json::Value::null)
 			{
@@ -2721,7 +2736,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			typedef std::map<uint8_t, std::string>::const_iterator it_type;
 			for (it_type itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
-				lua_pushstring(lua_state, JsonMap[itt->first].szNew.c_str());
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushstring(lua_state, itt->second.c_str());
 				lua_rawset(lua_state, -3);
 			}
@@ -2732,7 +2747,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			typedef std::map<uint8_t, float>::const_iterator it_type;
 			for (it_type itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
 			{
-				lua_pushstring(lua_state, JsonMap[itt->first].szNew.c_str());
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushnumber(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
@@ -2743,7 +2758,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			typedef std::map<uint8_t, int>::const_iterator it_type;
 			for (it_type itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
 			{
-				lua_pushstring(lua_state, JsonMap[itt->first].szNew.c_str());
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushnumber(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
@@ -2754,7 +2769,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			typedef std::map<uint8_t, bool>::const_iterator it_type;
 			for (it_type itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
 			{
-				lua_pushstring(lua_state, JsonMap[itt->first].szNew.c_str());
+				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushboolean(lua_state, itt->second);
 				lua_rawset(lua_state, -3);
 			}
