@@ -526,50 +526,54 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
-//convert date string 10/12/2014 10:45:58 en  struct tm
-void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
-		tmTime.tm_isdst=0; //dayly saving time
-		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
-		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
-		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
-		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
-		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
-		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+	struct tm timeinfo;
+	struct timeval tv;
+	std::stringstream sstr;
+	if (ltime == NULL) // current time
+	{
+#ifdef CLOCK_REALTIME
+		struct timespec ts;
+		if (!clock_gettime(CLOCK_REALTIME, &ts))
+		{
+			tv.tv_sec = ts.tv_sec;
+			tv.tv_usec = ts.tv_nsec / 1000;
+		}
+		else
+#endif
+			gettimeofday(&tv, NULL);
+#ifdef WIN32
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
+#else
+		localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+	}
+	else
+		localtime_r(&(*ltime), &timeinfo);
 
+	if (format > TF_Time)
+	{
+		sstr << (timeinfo.tm_year + 1900) << "-"
+		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+	}
 
+	if (format != TF_Date)
+	{
+		sstr
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
+	}
+
+	if (format > TF_DateTime && ltime == NULL)
+		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+
+	return sstr.str();
 }
-//convert struct tm time to char
-void AsciiTime (struct tm &ltime , char * pTime )
-{
-		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-}
 
-std::string  GetCurrentAsciiTime ()
-{
-	    time_t now = time(0)+1;
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		char pTime[40];
-		AsciiTime (ltime ,  pTime );
-		return pTime ;
-}
-
-void AsciiTime ( time_t DateStart, char * DateStr )
-{
-	struct tm ltime;
-	localtime_r(&DateStart, &ltime);
-	AsciiTime (ltime ,  DateStr );
-
-}
-
-time_t DateAsciiToTime_t ( std::string & DateStr )
-{
-	struct tm tmTime ;
-	DateAsciiTotmTime (DateStr , tmTime  );
-	return mktime(&tmTime);
-
-}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;

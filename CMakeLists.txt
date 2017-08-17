@@ -246,6 +246,7 @@ FIND_PROGRAM(GIT_EXECUTABLE git
 
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
+include_directories(${CMAKE_SOURCE_DIR}/tinyxpath)
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
@@ -307,6 +308,7 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenIPIn.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp

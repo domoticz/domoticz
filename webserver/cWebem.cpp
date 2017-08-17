@@ -1656,6 +1656,13 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		// do normal handling
 		try
 		{
+			if (requestCopy.uri.find("/images/") == 0)
+			{
+				std::string theme_images_path = myWebem->m_actTheme + requestCopy.uri;
+				if (file_exist((doc_root_ + theme_images_path).c_str()))
+					requestCopy.uri = theme_images_path;
+			}
+
 			request_handler::handle_request(requestCopy, rep, mInfo);
 		}
 		catch (...)

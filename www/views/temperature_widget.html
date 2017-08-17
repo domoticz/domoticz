@@ -1,7 +1,8 @@
+<div class="item" ng-class="ctrl.nbackstyle()">
     <section>
         <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
             <tr>
-                <td id="name" ng-style="ctrl.nbackcolor()" ng-bind="ctrl.item.Name"></td>
+                <td id="name" ng-bind="ctrl.item.Name"></td>
                 <td id="bigtext" class="ng-cloak">
                     <span ng-show="ctrl.displayTemp()">{{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}</span>
                     <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{ctrl.item.SetPoint}}&#176; {{ctrl.tempsign}})</span>
@@ -55,3 +56,4 @@
             </tr>
         </table>
     </section>
+</div>

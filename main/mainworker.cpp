@@ -105,6 +105,7 @@
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/DenkoviSmartdenIPIn.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -834,6 +835,10 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
 		break;
+	case HTYPE_DenkoviSmartdenIPIn:
+		//LAN
+		pHardware = new CDenkoviSmartdenIPIn(ID, Address, Port, Password);
+		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
 		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
@@ -1000,7 +1005,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID);
+		pHardware = new CRtl433(ID,Filename);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
@@ -12326,10 +12331,6 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
 
-	time_t now = time(0);
-	struct tm ltime;
-	localtime_r(&now,&ltime);
-
 	//first set actual scene status
 	std::string Name="Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
@@ -12349,9 +12350,10 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
-	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %" PRIu64 ")",
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
 		nValue,
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		szLastUpdate.c_str(),
 		idx);
 
 	//Check if we need to email a snapshot of a Camera
@@ -12389,10 +12391,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	if (!m_sql.m_bDisableEventSystem)
 	{
-		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
-		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
-		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
+		m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
 	}
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
