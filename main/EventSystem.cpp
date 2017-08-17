@@ -396,66 +396,22 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 				switch (JsonMap[index].eType)
 				{
 					case tString:
-					{
-						std::map<uint8_t, std::string>::const_iterator it;
-						it = item.JsonMapString.find(index);
-						if (it != item.JsonMapString.end())
-							item.JsonMapString[index] = l_JsonValueString.assign(value);
-						else
-							item.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign(value)));
-					}
+						item.JsonMapString[index] = l_JsonValueString.assign(value);
 						break;
-
 					case tFloat:
-					{
-						std::map<uint8_t, float>::const_iterator it;
-						it = item.JsonMapFloat.find(index);
-						if (it != item.JsonMapFloat.end())
-							item.JsonMapFloat[index] = (float)atof(value.c_str());
-						else
-							item.JsonMapFloat.insert(std::pair<uint8_t, float>(index, (float)atof(value.c_str())));
-					}
+						item.JsonMapFloat[index] = (float)atof(value.c_str());
 						break;
-
 					case tInteger:
-					{
-						std::map<uint8_t, int>::const_iterator it;
-						it = item.JsonMapInt.find(index);
-						if (it != item.JsonMapInt.end())
-							item.JsonMapInt[index] = atoi(value.c_str());
-						else
-							item.JsonMapInt.insert(std::pair<uint8_t, int>(index, atoi(value.c_str())));
-					}
+						item.JsonMapInt[index] = atoi(value.c_str());
 						break;
-
 					case tBoolean:
-					{
-						std::map<uint8_t, bool>::const_iterator it;
-						it = item.JsonMapBool.find(index);
-						if (it != item.JsonMapBool.end())
-						{
-							if (strcmp(value.c_str(), "true") == 0)
-								item.JsonMapBool[index] = true;
-							else
-								item.JsonMapBool[index] = false;
-						}
+						if (value == "true")
+							item.JsonMapBool[index] = true;
 						else
-						{
-							if (strcmp(value.c_str(), "true") == 0)
-								item.JsonMapBool.insert(std::pair<uint8_t, bool>(index, true));
-							else
-								item.JsonMapBool.insert(std::pair<uint8_t, bool>(index, false));
-						}
-					}
+							item.JsonMapBool[index] = false;
 						break;
-
 					default:
-						std::map<uint8_t, std::string>::const_iterator it;
-						it = item.JsonMapString.find(index);
-						if (it != item.JsonMapString.end())
-							item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
-						else
-							item.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign("unknown_type")));
+						item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
 				}
 			}
 			index++;
