@@ -80,6 +80,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "en", "English" },
 	{ "ar", "Arabic" },
 	{ "bg", "Bulgarian" },
+	{ "ca", "Catalan" },
 	{ "zh", "Chinese" },
 	{ "cs", "Czech" },
 	{ "da", "Danish" },
@@ -97,6 +98,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "lv", "Latvian" },
 	{ "mk", "Macedonian" },
 	{ "no", "Norwegian" },
+	{ "fa", "Persian" },
 	{ "pl", "Polish" },
 	{ "pt", "Portuguese" },
 	{ "ro", "Romanian" },
@@ -1099,7 +1101,7 @@ namespace http {
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
 				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPIn) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
 				if (address == "" || port == 0)
@@ -1465,7 +1467,7 @@ namespace http {
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) ||
 				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
+				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPIn) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
 				if (address == "")
@@ -9544,26 +9546,28 @@ namespace http {
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
+						double meteroffset = AddjValue;
+
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", dvalue / EnergyDivider);
+							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", dvalue / GasDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", dvalue / WaterDivider);
+							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -14440,46 +14444,7 @@ namespace http {
 								root["delivered"] = true;
 							}
 						}
-					}
-					else
-					{
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
-						if (result.size() > 0)
-						{
-							std::vector<std::vector<std::string> >::const_iterator itt;
-							for (itt = result.begin(); itt != result.end(); ++itt)
-							{
-								std::vector<std::string> sd = *itt;
-
-								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								std::string szValue = sd[0];
-								switch (metertype)
-								{
-								case MTYPE_ENERGY:
-								case MTYPE_ENERGY_GENERATED:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_GAS:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
-									szValue = szTmp;
-									break;
-								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
-									szValue = szTmp;
-									break;
-								default:
-									szValue = "0";
-									break;
-								}
-								root["result"][ii]["v"] = szValue;
-								ii++;
-							}
-						}
-					}
-					//add today (have to calculate it)
-					if (dType == pTypeP1Power)
-					{
+						//add today (have to calculate it)
 						result = m_sql.safe_query(
 							"SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
@@ -14544,9 +14509,47 @@ namespace http {
 								root["delivered"] = true;
 							}
 						}
-					}
+					} //if (dType == pTypeP1Power)
 					else
 					{
+						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC", dbasetable.c_str(), idx, szDateStart, szDateEnd);
+						if (result.size() > 0)
+						{
+							std::vector<std::vector<std::string> >::const_iterator itt;
+							for (itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
+
+								root["result"][ii]["d"] = sd[1].substr(0, 16);
+								std::string szValue = sd[0];
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_COUNTER:
+									sprintf(szTmp, "%.0f", atof(szValue.c_str()));
+									szValue = szTmp;
+									break;
+								default:
+									szValue = "0";
+									break;
+								}
+								root["result"][ii]["v"] = szValue;
+								ii++;
+							}
+						}
+						//add today (have to calculate it)
 						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
 							idx, szDateEnd);
 						if (result.size() > 0)
@@ -14586,7 +14589,7 @@ namespace http {
 							root["result"][ii]["v"] = szValue;
 							ii++;
 						}
-					}
+					} //if (dType != pTypeP1Power)
 				}
 			}//week
 			else if ((srange == "month") || (srange == "year"))
@@ -15744,7 +15747,18 @@ namespace http {
 						else
 						{
 							//Add last counter value
-							sprintf(szTmp, "%d", atoi(sValue.c_str()));
+							if (sValue.find('.') != std::string::npos)
+							{
+								sprintf(szTmp, "%.3f", AddjValue + atof(sValue.c_str()));
+							}
+							else
+							{
+								unsigned long long ullCounter;
+								std::stringstream s_str1(sValue);
+								s_str1 >> ullCounter;
+
+								sprintf(szTmp, "%llu", static_cast<unsigned long long>(AddjValue) + ullCounter);
+							}
 							root["counter"] = szTmp;
 						}
 						//Actual Year

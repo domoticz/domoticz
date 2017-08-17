@@ -53,7 +53,7 @@
 									<tr>
 										<td align="right" style="width:60px"><label for="Language">Language: </label></td>
 										<td>
-											<select id="combolanguage" name="Language" style="width:160px" class="combobox ui-corner-all">
+											<select id="combolanguage" name="Language" style="width:200px" class="combobox ui-corner-all">
 											<!--#embed combolanguage -->
 											</select>
 										</td>
@@ -71,21 +71,22 @@
 									<h2><span data-i18n="Location"></span>:</h2>
 									<label id="sunriseset"></label>
 									<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
-									 <tr>
-
-                                                                                <td align="right" style="width:60px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
-                                                                                <td><input type="input" id="Title" name="Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-                                                                        </tr>
+									<tr>
+										<td align="right" style="width:60px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
+										<td><input type="input" id="Title" name="Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
 									<tr>
 										<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
 										<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="Longitude"><span data-i18n="Longitude"></span>: </label></td>
-										<td><input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										<td>
+											<input type="text" id="Longitude" name="Longitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+											<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a>
+										</td>
 									</tr>
 									</table>
-									<span data-i18n="ToFindGeo"></span> <a class="norm-link" ng-click="GetGeoLocation();"><span class="norm-link" data-i18n="Here"></span></a><br>
 								</div>
 							</div>
 							<br>
@@ -108,7 +109,7 @@
 									</tr>
 									</table>
 								</div>
-								<div class="span3">
+								<div class="span6">
 									<h2><span data-i18n="Mobile"></span>:</h2>
 									<table class="display" id="mobilemodetable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
@@ -150,7 +151,7 @@
 									</table>
 									<br>
 								</div>
-								<div class="span4">
+								<div class="span6">
 									<h2><span data-i18n="SecurityPanel"></span>:</h2>
 									<table class="display" id="sectable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
@@ -160,7 +161,7 @@
 									<tr>
 										<td align="right" style="width:60px"><label><span data-i18n="Delay">Delay</span>: </label></td>
 										<td>
-											<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
+											<input type="input" id="SecOnDelay" name="SecOnDelay" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 											<span data-i18n="(seconds, 0=no delay)"></span>
 										</td>
 									</tr>
@@ -168,13 +169,18 @@
 								</div>
 								<br>
 							</div>
-							<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span>:</h2>
-							<table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
-								<td><input type="password" id="ProtectionPassword" name="ProtectionPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							</table>
+							<br>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Light/Switch Protection">Light/Switch Protection</span>:</h2>
+									<table class="display" id="protectiontable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="ProtectionPassword" name="ProtectionPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
 							<div class="row-fluid">
 								<div class="span6">
@@ -281,31 +287,33 @@
 								</div>
 							</div>
 							<br>
-							<div id="ActiveTabs">
-								<h2><span data-i18n="ActiveMenus"></span>:</h2>
-								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
-									<tr>
-										<td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <span data-i18n="Floorplan"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <span data-i18n="Switches"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <span data-i18n="Scenes"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <span data-i18n="Temperature"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <span data-i18n="Weather"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <span data-i18n="Utility"></span></td>
-									</tr>
-									<tr>
-										<td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <span data-i18n="Custom"></span></td>
-									</tr>
-								</table>
+							<div class="row-fluid">
+								<div class="span12" id="ActiveTabs">
+									<h2><span data-i18n="ActiveMenus"></span>:</h2>
+									<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <span data-i18n="Floorplan"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <span data-i18n="Switches"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <span data-i18n="Scenes"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <span data-i18n="Temperature"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <span data-i18n="Weather"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <span data-i18n="Utility"></span></td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <span data-i18n="Custom"></span></td>
+										</tr>
+									</table>
+								</div>
 							</div>
 						</section>
 					</div>
@@ -313,32 +321,40 @@
 						<!-- Log History
 						================================================== -->
 						<section id="loghistory">
-						  <div class="page-header-small">
-							<h1 data-i18n="Log History">Log History</h1>
-						  </div>
-							<h2><span data-i18n="Light/Switches"></span>:</h2>
-							<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
-								<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							</table>
+							<div class="page-header-small">
+								<h1 data-i18n="Log History">Log History</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Light/Switches"></span>:</h2>
+									<table class="display" id="lightlogtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
+										<td><input type="text" id="LightHistoryDays" name="LightHistoryDays" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Short Log Sensors"></span>:</h2>
-							<table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
-								<td><select id="comboshortlogdays" name="ShortLogDays" style="width:60px" class="combobox ui-corner-all">
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-									<option value="5">5</option>
-									<option value="6">6</option>
-									<option value="7">7</option>
-								</select>&nbsp;&nbsp;<button data-i18n="Clear" class="btn btn-danger" ng-click="CleanupShortLog()">Clear</button></td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Short Log Sensors"></span>:</h2>
+									<table class="display" id="shortlogtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Days"></span>: </label></td>
+										<td><select id="comboshortlogdays" name="ShortLogDays" style="width:60px" class="combobox ui-corner-all">
+											<option value="1">1</option>
+											<option value="2">2</option>
+											<option value="3">3</option>
+											<option value="4">4</option>
+											<option value="5">5</option>
+											<option value="6">6</option>
+											<option value="7">7</option>
+										</select>&nbsp;&nbsp;<button data-i18n="Clear" class="btn btn-danger" ng-click="CleanupShortLog()">Clear</button></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabnotifications">
@@ -633,472 +649,544 @@
 								</div>
 							</div>
 							<br>
-							<h2><span data-i18n="Notification Intervals"></span>:</h2>
-							<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Sensors"></span>: </label></td>
-								<td><select id="comboNotificationSensorInterval" name="NotificationSensorInterval" style="width:100px" class="combobox ui-corner-all">
-									<option data-i18n="1 Minute" value="60">1 Minute</option>
-									<option data-i18n="5 Minutes" value="300">5 Minutes</option>
-									<option data-i18n="10 Minutes" value="600">10 Minutes</option>
-									<option data-i18n="15 Minutes" value="900">15 Minutes</option>
-									<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
-									<option data-i18n="1 Hour" value="3600">1 Hour</option>
-									<option data-i18n="2 Hours" value="7200">2 Hours</option>
-									<option data-i18n="3 Hours" value="10800">3 Hours</option>
-									<option data-i18n="4 Hours" value="14400">4 Hours</option>
-									<option data-i18n="5 Hours" value="18000">5 Hours</option>
-									<option data-i18n="6 Hours" value="21600">6 Hours</option>
-									<option data-i18n="7 Hours" value="25200">7 Hours</option>
-									<option data-i18n="8 Hours" value="28800">8 Hours</option>
-									<option data-i18n="9 Hours" value="32400">9 Hours</option>
-									<option data-i18n="10 Hours" value="36000">10 Hours</option>
-									<option data-i18n="11 Hours" value="39600">11 Hours</option>
-									<option data-i18n="12 Hours" value="43200">12 Hours</option>
-									<option data-i18n="13 Hours" value="46800">13 Hours</option>
-									<option data-i18n="14 Hours" value="50400">14 Hours</option>
-									<option data-i18n="15 Hours" value="54000">15 Hours</option>
-									<option data-i18n="16 Hours" value="57600">16 Hours</option>
-									<option data-i18n="17 Hours" value="61200">17 Hours</option>
-									<option data-i18n="18 Hours" value="64800">18 Hours</option>
-									<option data-i18n="19 Hours" value="68400">19 Hours</option>
-									<option data-i18n="20 Hours" value="72000">20 Hours</option>
-									<option data-i18n="21 Hours" value="75600">21 Hours</option>
-									<option data-i18n="22 Hours" value="79200">22 Hours</option>
-									<option data-i18n="23 Hours" value="82800">23 Hours</option>
-									<option data-i18n="24 Hours" value="86400">24 Hours</option>
-								</select></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Switches"></span>: </label></td>
-								<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:120px" class="combobox ui-corner-all">
-									<option data-i18n="Direct" value="0">Direct</option>
-									<option data-i18n="1 Minute" value="60">1 Minute</option>
-									<option data-i18n="5 Minutes" value="300">5 Minutes</option>
-									<option data-i18n="10 Minutes" value="600">10 Minutes</option>
-									<option data-i18n="15 Minutes" value="900">15 Minutes</option>
-									<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
-									<option data-i18n="1 Hour" value="3600">1 Hour</option>
-									<option data-i18n="2 Hours" value="7200">2 Hour</option>
-									<option data-i18n="3 Hours" value="10800">3 Hour</option>
-									<option data-i18n="4 Hours" value="14400">4 Hour</option>
-									<option data-i18n="5 Hours" value="18000">5 Hour</option>
-									<option data-i18n="6 Hours" value="21600">6 Hour</option>
-									<option data-i18n="7 Hours" value="25200">7 Hour</option>
-									<option data-i18n="8 Hours" value="28800">8 Hour</option>
-									<option data-i18n="9 Hours" value="32400">9 Hour</option>
-									<option data-i18n="10 Hours" value="36000">10 Hour</option>
-									<option data-i18n="11 Hours" value="39600">11 Hour</option>
-									<option data-i18n="12 Hours" value="43200">12 Hours</option>
-									<option data-i18n="13 Hours" value="46800">13 Hours</option>
-									<option data-i18n="14 Hours" value="50400">14 Hours</option>
-									<option data-i18n="15 Hours" value="54000">15 Hours</option>
-									<option data-i18n="16 Hours" value="57600">16 Hours</option>
-									<option data-i18n="17 Hours" value="61200">17 Hours</option>
-									<option data-i18n="18 Hours" value="64800">18 Hours</option>
-									<option data-i18n="19 Hours" value="68400">19 Hours</option>
-									<option data-i18n="20 Hours" value="72000">20 Hours</option>
-									<option data-i18n="21 Hours" value="75600">21 Hours</option>
-									<option data-i18n="22 Hours" value="79200">22 Hours</option>
-									<option data-i18n="23 Hours" value="82800">23 Hours</option>
-									<option data-i18n="24 Hours" value="86400">24 Hours</option>
-								</select></td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Notification Intervals"></span>:</h2>
+									<table class="display" id="nitable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Sensors"></span>: </label></td>
+										<td><select id="comboNotificationSensorInterval" name="NotificationSensorInterval" style="width:100px" class="combobox ui-corner-all">
+											<option data-i18n="1 Minute" value="60">1 Minute</option>
+											<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+											<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+											<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+											<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+											<option data-i18n="1 Hour" value="3600">1 Hour</option>
+											<option data-i18n="2 Hours" value="7200">2 Hours</option>
+											<option data-i18n="3 Hours" value="10800">3 Hours</option>
+											<option data-i18n="4 Hours" value="14400">4 Hours</option>
+											<option data-i18n="5 Hours" value="18000">5 Hours</option>
+											<option data-i18n="6 Hours" value="21600">6 Hours</option>
+											<option data-i18n="7 Hours" value="25200">7 Hours</option>
+											<option data-i18n="8 Hours" value="28800">8 Hours</option>
+											<option data-i18n="9 Hours" value="32400">9 Hours</option>
+											<option data-i18n="10 Hours" value="36000">10 Hours</option>
+											<option data-i18n="11 Hours" value="39600">11 Hours</option>
+											<option data-i18n="12 Hours" value="43200">12 Hours</option>
+											<option data-i18n="13 Hours" value="46800">13 Hours</option>
+											<option data-i18n="14 Hours" value="50400">14 Hours</option>
+											<option data-i18n="15 Hours" value="54000">15 Hours</option>
+											<option data-i18n="16 Hours" value="57600">16 Hours</option>
+											<option data-i18n="17 Hours" value="61200">17 Hours</option>
+											<option data-i18n="18 Hours" value="64800">18 Hours</option>
+											<option data-i18n="19 Hours" value="68400">19 Hours</option>
+											<option data-i18n="20 Hours" value="72000">20 Hours</option>
+											<option data-i18n="21 Hours" value="75600">21 Hours</option>
+											<option data-i18n="22 Hours" value="79200">22 Hours</option>
+											<option data-i18n="23 Hours" value="82800">23 Hours</option>
+											<option data-i18n="24 Hours" value="86400">24 Hours</option>
+										</select></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Switches"></span>: </label></td>
+										<td><select id="comboNotificationSwitchesInterval" name="NotificationSwitchInterval" style="width:120px" class="combobox ui-corner-all">
+											<option data-i18n="Direct" value="0">Direct</option>
+											<option data-i18n="1 Minute" value="60">1 Minute</option>
+											<option data-i18n="5 Minutes" value="300">5 Minutes</option>
+											<option data-i18n="10 Minutes" value="600">10 Minutes</option>
+											<option data-i18n="15 Minutes" value="900">15 Minutes</option>
+											<option data-i18n="30 Minutes" value="1800">30 Minutes</option>
+											<option data-i18n="1 Hour" value="3600">1 Hour</option>
+											<option data-i18n="2 Hours" value="7200">2 Hour</option>
+											<option data-i18n="3 Hours" value="10800">3 Hour</option>
+											<option data-i18n="4 Hours" value="14400">4 Hour</option>
+											<option data-i18n="5 Hours" value="18000">5 Hour</option>
+											<option data-i18n="6 Hours" value="21600">6 Hour</option>
+											<option data-i18n="7 Hours" value="25200">7 Hour</option>
+											<option data-i18n="8 Hours" value="28800">8 Hour</option>
+											<option data-i18n="9 Hours" value="32400">9 Hour</option>
+											<option data-i18n="10 Hours" value="36000">10 Hour</option>
+											<option data-i18n="11 Hours" value="39600">11 Hour</option>
+											<option data-i18n="12 Hours" value="43200">12 Hours</option>
+											<option data-i18n="13 Hours" value="46800">13 Hours</option>
+											<option data-i18n="14 Hours" value="50400">14 Hours</option>
+											<option data-i18n="15 Hours" value="54000">15 Hours</option>
+											<option data-i18n="16 Hours" value="57600">16 Hours</option>
+											<option data-i18n="17 Hours" value="61200">17 Hours</option>
+											<option data-i18n="18 Hours" value="64800">18 Hours</option>
+											<option data-i18n="19 Hours" value="68400">19 Hours</option>
+											<option data-i18n="20 Hours" value="72000">20 Hours</option>
+											<option data-i18n="21 Hours" value="75600">21 Hours</option>
+											<option data-i18n="22 Hours" value="79200">22 Hours</option>
+											<option data-i18n="23 Hours" value="82800">23 Hours</option>
+											<option data-i18n="24 Hours" value="86400">24 Hours</option>
+										</select></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabemail">
 						<!-- Email Setup
 						================================================== -->
 						<section id="emailsetup">
-						  <div class="page-header-small">
-							<h1 data-i18n="Email Setup">Email Setup</h1>
-						  </div>
-							<table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="From"></span>: </label></td>
-								<td><input type="email" id="EmailFrom" name="EmailFrom" style="width: 180px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="To"></span>: </label></td>
-								<td><input type="input" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><span data-i18n="(Separate by a semicolon, For Example"></span>: user@mail.com;user2@mail.com)</td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Server"></span>: </label></td>
-								<td><input type="input" id="EmailServer" name="EmailServer" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Port"></span>: </label></td>
-								<td><input type="input" id="EmailPort" name="EmailPort" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(default 25, StartTLS Port 587, SSL Port 465)"></span></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Username"></span>: </label></td>
-								<td><input type="input" id="EmailUsername" name="EmailUsername" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
-								<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('email')">Test</button></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <span data-i18n="Send Email Notification Alerts"></span></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
-							</tr>
-							<tr>
-								<td></td>
-								<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <span data-i18n="Send Errors as Notification"></span></td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Email Setup"></span>:</h2>
+									<table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>: </td>
+										<td><input type="checkbox" id="EmailEnabled" name="EmailEnabled" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="From"></span>: </label></td>
+										<td><input type="email" id="EmailFrom" name="EmailFrom" style="width: 180px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="To"></span>: </label></td>
+										<td><input type="input" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><span data-i18n="(Separate by a semicolon, For Example"></span>: user@mail.com;user2@mail.com)</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Server"></span>: </label></td>
+										<td><input type="input" id="EmailServer" name="EmailServer" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px; vertical-align:top"><label><span data-i18n="Port"></span>: </label></td>
+										<td><input type="input" id="EmailPort" name="EmailPort" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br><span data-i18n="(default 25, StartTLS Port 587, SSL Port 465)"></span></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Username"></span>: </label></td>
+										<td><input type="input" id="EmailUsername" name="EmailUsername" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Password"></span>: </label></td>
+										<td><input type="password" id="EmailPassword" name="EmailPassword" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('email')">Test</button></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <span data-i18n="Send Email Notification Alerts"></span></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <span data-i18n="Send Errors as Notification"></span></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabmeters">
 						<!-- Meter Settings
 						================================================== -->
 						<section id="metercounters">
-						  <div class="page-header-small">
-							<h1 data-i18n="Meter/Counter Setup">Meter/Counter Setup</h1>
-						  </div>
-							<h2><span data-i18n="Wind Meter"></span>:</h2>
-							<table class="display" id="windmetertable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
-									<td><select id="comboWindUnit" name="WindUnit" style="width:120px" class="combobox ui-corner-all">
-										<option value="0">m/s</option>
-										<option value="1">km/h</option>
-										<option value="2">mph</option>
-										<option value="3">Knots</option>
-										<option value="4">Beaufort</option>
-									</select></td>
-								</tr>
-							</table>
+							<div class="page-header-small">
+								<h1 data-i18n="Meter/Counter Setup">Meter/Counter Setup</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Temperature"></span>:</h2>
+									<table class="display" id="temperaturetable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:240px"><label><span data-i18n="Display"></span>: </label></td>
+											<td>
+												<select id="comboTempUnit" name="TempUnit" style="width:120px" class="combobox ui-corner-all">
+													<option value="0">Celsius</option>
+													<option value="1">Fahrenheit</option>
+												</select>
+											</td>
+										<tr>
+										<tr>
+											<td align="right"><label><span data-i18n="Degree Days"></span> (<span data-i18n="Base Temperature"></span>): </label></td>
+											<td><input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Temperature"></span>:</h2>
-							<table class="display" id="temperaturetable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
-									<td>
-										<select id="comboTempUnit" name="TempUnit" style="width:120px" class="combobox ui-corner-all">
-											<option value="0">Celsius</option>
-											<option value="1">Fahrenheit</option>
-										</select>
-										<label><span data-i18n="Degree Days"></span> (<span data-i18n="Base Temperature"></span>): </label>
-										<input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-									</td>
-								</tr>
-							</table>
-							<h2><span data-i18n="Weight"></span>:</h2>
-							<table class="display" id="weighttable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
-									<td>
-										<select id="comboWeightUnit" name="WeightUnit" style="width:120px" class="combobox ui-corner-all">
-											<option value="0">Kilograms</option>
-											<option value="1">Pounds</option>
-										</select>
-									</td>
-								</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Weight"></span>:</h2>
+									<table class="display" id="weighttable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+											<td>
+												<select id="comboWeightUnit" name="WeightUnit" style="width:120px" class="combobox ui-corner-all">
+													<option value="0">Kilograms</option>
+													<option value="1">Pounds</option>
+												</select>
+											</td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
-							<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Energy"></span>: </label></td>
-								<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T1: </label></td>
-								<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
-								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
-								<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
-							</tr>
-							<tr>
-								<td></td>
-								<td></td>
-								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R1: </label></td>
-								<td><input type="input" id="CostEnergyR1" name="CostEnergyR1" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
-								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R2: </label></td>
-								<td><input type="input" id="CostEnergyR2" name="CostEnergyR2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>
-								<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-								<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
-								<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
-							</tr>
-							<tr>
-								<td align="right" style="width:60px"><label><span data-i18n="Water"></span>: </label></td>
-								<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-								<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
-								<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="RFXMeter/Counter Dividers"></span>:</h2>
+									<table class="display" id="rfxmetertable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Energy"></span>: </label></td>
+										<td><input type="input" id="EnergyDivider" name="EnergyDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T1: </label></td>
+										<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+										<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
+										<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R1: </label></td>
+										<td><input type="input" id="CostEnergyR1" name="CostEnergyR1" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+										<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R2: </label></td>
+										<td><input type="input" id="CostEnergyR2" name="CostEnergyR2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>
+										<td><input type="input" id="GasDivider" name="GasDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
+										<td><input type="input" id="CostGas" name="CostGas" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Water"></span>: </label></td>
+										<td><input type="input" id="WaterDivider" name="WaterDivider" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										<td align="right" style="width:60px"><label><span data-i18n="Costs"></span>: </label></td>
+										<td><input type="input" id="CostWater" name="CostWater" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / m3</td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2>OWL CM113/CM180i:</h2>
-							<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Voltage"></span>: </label></td>
-									<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-								</tr>
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
-									<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
-										<option value="0">Ampere</option>
-										<option value="1">Watt</option>
-									</select></td>
-								</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2>OWL CM113/CM180i:</h2>
+									<table class="display" id="owl113table" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="Voltage"></span>: </label></td>
+											<td><input type="input" id="ElectricVoltage" name="ElectricVoltage" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+										</tr>
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+											<td><select id="comboscm113type" name="CM113DisplayType" style="width:120px" class="combobox ui-corner-all">
+												<option value="0">Ampere</option>
+												<option value="1">Watt</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="P1 Smart Meter Type"></span>:</h2>
-							<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
-									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
-										<option data-i18n="With Decimals" value="0">With Decimals</option>
-										<option data-i18n="No Decimals" value="1">No Decimals</option>
-									</select></td>
-								</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="P1 Smart Meter Type"></span>:</h2>
+									<table class="display" id="p1metertable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="Type"></span>: </label></td>
+											<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
+												<option data-i18n="With Decimals" value="0">With Decimals</option>
+												<option data-i18n="No Decimals" value="1">No Decimals</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabfloorplan">
 						<!-- Floorplans
 						================================================== -->
 						<section id="floorplans">
-						  <div class="page-header-small">
-							<h1 data-i18n="Floorplan">Floorplan</h1>
-						  </div>
-							<h2><span data-i18n="General"></span>:</h2>
-							<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:150px"><label><span data-i18n="Popup Activation Delay"></span>: </label></td>
-								<td><input type="input" id="FloorplanPopupDelay" name="FloorplanPopupDelay" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;<span data-i18n="Milliseconds"></span></td>
-							</tr>
-							<tr>
-								<td align="right" style="width:150px"><label><span data-i18n="Fullscreen Mode">Fullscreen Mode</span>: </label></td>
-								<td>
-									<input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"/>
-								</td>
-							</tr>
-							<tr>
-								<td align="right" style="width:150px"><label><span data-i18n="Animate Transitions">Animate Transitions</span>: </label></td>
-								<td>
-									<input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"/>
-								</td>
-							</tr>
-							</table>
+							<div class="page-header-small">
+								<h1 data-i18n="Floorplan">Floorplan</h1>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="General"></span>:</h2>
+									<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:150px; vertical-align:top"><label><span data-i18n="Popup Activation Delay"></span>: </label></td>
+										<td><input type="input" id="FloorplanPopupDelay" name="FloorplanPopupDelay" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+										(<span data-i18n="Milliseconds"></span>)</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:150px"><label><span data-i18n="Fullscreen Mode">Fullscreen Mode</span>: </label></td>
+										<td>
+											<input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"/>
+										</td>
+									</tr>
+									<tr>
+										<td align="right" style="width:150px"><label><span data-i18n="Animate Transitions">Animate Transitions</span>: </label></td>
+										<td>
+											<input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"/>
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Display Values"></span>:</h2>
-							<table class="display" id="floorplandisplaytable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:150px"><label><span data-i18n="Sensors"></span>: </label></td>
-								<td style="width:50px">
-									<input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/>
-								</td>
-								<td align="right" style="width:50px"><label><span data-i18n="Switches"></span>: </label></td>
-								<td style="width:50px">
-									<input type="checkbox" id="FloorplanShowSwitchValues" name="FloorplanShowSwitchValues"/>
-								</td>
-								<td align="right" style="width:50px"><label><span data-i18n="Scenes"></span>: </label></td>
-								<td>
-									<input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"/>
-								</td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Display Values"></span>:</h2>
+									<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:150px; vertical-align:top"><label><span data-i18n="Sensors"></span>: </label></td>
+										<td><input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:150px"><label><span data-i18n="Switches"></span>: </label></td>
+										<td><input type="checkbox" id="FloorplanShowSwitchValues" name="FloorplanShowSwitchValues"/></td>
+									</tr>
+									<tr>
+										<td align="right" style="width:150px"><label><span data-i18n="Scenes"></span>: </label></td>
+										<td><input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"/></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Colour Options"></span>:</h2>
-							<table class="display" id="floorplancolourtable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:250px"><label><span data-i18n="Room Area Colour"></span>: </label></td>
-									<td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/>&nbsp;&nbsp;&nbsp;<a href="http://www.december.com/html/spec/colorsvg.html" class="norm-link" target="HTML Colours"><span class="norm-link" data-i18n="Colour name or HEX value"></span></a></td>
-								</tr>
-								<tr>
-									<td align="right" style="width:250px"><label><span data-i18n="Active Room Area Opacity"></span>: </label></td>
-									<td><select id="FloorplanActiveOpacity" name="FloorplanActiveOpacity" style="width:70px" class="combobox ui-corner-all">
-										<option value="0">0%</option>
-										<option value="5">5%</option>
-										<option value="10">10%</option>
-										<option value="20">20%</option>
-										<option value="25">25%</option>
-										<option value="33">33%</option>
-										<option value="50">50%</option>
-										<option value="66">66%</option>
-										<option value="75">75%</option>
-										<option value="90">90%</option>
-										<option value="100">100%</option>
-									</select></td>
-								</tr>
-								<tr>
-									<td align="right" style="width:250px"><label><span data-i18n="Inactive Room Area Opacity"></span>: </label></td>
-									<td><select id="FloorplanInactiveOpacity" name="FloorplanInactiveOpacity" style="width:70px" class="combobox ui-corner-all">
-										<option value="0">0%</option>
-										<option value="5">5%</option>
-										<option value="10">10%</option>
-										<option value="20">20%</option>
-										<option value="25">25%</option>
-										<option value="33">33%</option>
-										<option value="50">50%</option>
-										<option value="66">66%</option>
-										<option value="75">75%</option>
-										<option value="90">90%</option>
-										<option value="100">100%</option>
-									</select></td>
-								</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Colour Options"></span>:</h2>
+									<table class="display" id="floorplancolourtable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:250px; vertical-align:top"><label><span data-i18n="Room Area Colour"></span>: </label></td>
+											<td><input type="input" id="FloorplanRoomColour" name="FloorplanRoomColour" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all"/><br>
+											<a href="http://www.december.com/html/spec/colorsvg.html" class="norm-link" target="HTML Colours"><span class="norm-link" data-i18n="Colour name or HEX value"></span></a></td>
+										</tr>
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="Active Room Area Opacity"></span>: </label></td>
+											<td><select id="FloorplanActiveOpacity" name="FloorplanActiveOpacity" style="width:70px" class="combobox ui-corner-all">
+												<option value="0">0%</option>
+												<option value="5">5%</option>
+												<option value="10">10%</option>
+												<option value="20">20%</option>
+												<option value="25">25%</option>
+												<option value="33">33%</option>
+												<option value="50">50%</option>
+												<option value="66">66%</option>
+												<option value="75">75%</option>
+												<option value="90">90%</option>
+												<option value="100">100%</option>
+											</select></td>
+										</tr>
+										<tr>
+											<td align="right" style="width:250px"><label><span data-i18n="Inactive Room Area Opacity"></span>: </label></td>
+											<td><select id="FloorplanInactiveOpacity" name="FloorplanInactiveOpacity" style="width:70px" class="combobox ui-corner-all">
+												<option value="0">0%</option>
+												<option value="5">5%</option>
+												<option value="10">10%</option>
+												<option value="20">20%</option>
+												<option value="25">25%</option>
+												<option value="33">33%</option>
+												<option value="50">50%</option>
+												<option value="66">66%</option>
+												<option value="75">75%</option>
+												<option value="90">90%</option>
+												<option value="100">100%</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabother">
 						<!-- Other Settings
 						================================================== -->
 						<section id="othersettings">
-						  <div class="page-header-small">
-							<h1 data-i18n="Other Settings"></h1>
-						  </div>
-							<h2><span data-i18n="Random Timer"></span>:</h2>
-							<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px"><label><span data-i18n="Spread"></span>: </label></td>
-								<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="(Minutes +/-)"></span></td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="Sensor Timeout"></span>:</h2>
-							<table class="display" id="timeouttable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px"><label><span data-i18n="Timeout"></span>: </label></td>
-								<td><input type="input" id="SensorTimeout" name="SensorTimeout" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (<span data-i18n="Minutes"></span>)</td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="Battery Low Level"></span>:</h2>
-							<table class="display" id="batterytable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px"><label><span data-i18n="Level"></span>: </label></td>
-								<td><input type="input" id="BatterLowLevel" name="BatterLowLevel" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> (%, <span data-i18n="0 = Disabled"></span>)</td>
-							</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="Timer Plan">Timer Plan</span>:</h2>
-							<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:90px"><label><span data-i18n="Plan">Plan</span>: </label></td>
-									<td><select id="comboTimerplan" name="ActiveTimerPlan" style="width:220px" class="combobox ui-corner-all">
-									</select></td>
-								</tr>
-							</table>
-							<br>
-							<div id="LogDebug" style="display:none;">
-							    <h2><span data-i18n="Log "></span>Log:</h2>
-							    <table class="display" id="LogFilterTable" border="0" cellpadding="0" cellspacing="0">
-							    <tr>
-								    <td align="right" style="width:60px"><label><span data-i18n="LogFilter"></span>Filter: </label></td>
-								    <td><input type="input" id="LogFilter" name="LogFilter" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
-							    </tr>
-							    <tr>
-								    <td align="right" style="width:60px"><label><span data-i18n="LogFileName"></span>File Name: </label></td>
-								    <td><input type="input" id="LogFileName" name="LogFileName" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
-							    </tr>
-							    <tr>
-								    <td align="right" style="width:60px"><label><span data-i18n="LogLevel">Level</span>: </label></td>
-								    <td><select id="LogLevel" name="LogLevel" style="width:120px" class="combobox ui-corner-all">
-									    <option data-i18n="Error" value="0">Error</option>
-									    <option data-i18n="Status" value="1">Status</option>
-									    <option data-i18n="Normal" value="2">Normal</option>
-									    <option data-i18n="Trace" value="3">Trace</option>
-										<option data-i18n="ErrorVerbose"  value="4">ErrorVerbose</option>
-										<option data-i18n="StatusVerbose" value="5">StatusVerbose</option>
-										<option data-i18n="NormalVerbose" value="6">NormalVerbose</option>
-										<option data-i18n="TraceVerbose"  value="7">TraceVerbose</option>
-								    </select></td>
-							    </tr>
-							    </table>
-							    <br>
+							<div class="page-header-small">
+								<h1 data-i18n="Other Settings"></h1>
 							</div>
-							<h2><span data-i18n="Doorbell Command"></span>:</h2>
-							<table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:90px"><label><span data-i18n="Command"></span>: </label></td>
-									<td><select id="comboDoorbellCommand" name="DoorbellCommand" style="width:120px" class="combobox ui-corner-all">
-										<option data-i18n="Group On" value="0">Group On</option>
-										<option data-i18n="On" value="1">On</option>
-									</select></td>
-								</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Random Timer"></span>:</h2>
+									<table class="display" id="randomtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px; vertical-align:top"><label><span data-i18n="Spread"></span>: </label></td>
+										<td><input type="input" id="RandomSpread" name="RandomSpread" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+										<span data-i18n="(Minutes +/-)"></span></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="Raspberry Pi Camera Parameters"></span>:</h2>
-							<table class="display" id="picamtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
-								<td>
-									<input type="input" id="RaspCamParams" name="RaspCamParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
-									(<span data-i18n="default"></span>: -w 800 -h 600 -t 1)
-								</td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Sensor Timeout"></span>:</h2>
+									<table class="display" id="timeouttable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px; vertical-align:top"><label><span data-i18n="Timeout"></span>: </label></td>
+										<td><input type="input" id="SensorTimeout" name="SensorTimeout" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+										(<span data-i18n="Minutes"></span>)</td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="UVC Parameters"></span>:</h2>
-							<table class="display" id="uvctable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
-								<td>
-									<input type="input" id="UVCParams" name="UVCParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
-									(<span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100)
-								</td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Battery Low Level"></span>:</h2>
+									<table class="display" id="batterytable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px; vertical-align:top"><label><span data-i18n="Level"></span>: </label></td>
+										<td><input type="input" id="BatterLowLevel" name="BatterLowLevel" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+										(%, <span data-i18n="0 = Disabled"></span>)</td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span>:</h2>
-							<table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px"><label><span data-i18n="Disabled"></span>: </label></td>
-								<td>
-									<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
-								</td>
-							</tr>
-							<tr>
-								<td style="width:90px"></td>
-								<td>
-							 		<input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger" />
-									<label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label>
-								</td>
-							</tr>
-							</table>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Timer Plan">Timer Plan</span>:</h2>
+									<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:90px"><label><span data-i18n="Plan">Plan</span>: </label></td>
+											<td><select id="comboTimerplan" name="ActiveTimerPlan" style="width:220px" class="combobox ui-corner-all">
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-							<h2><span data-i18n="dzVents">dzVents (2.2.0)</span>:</h2>
-							<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
-							<tr>
-								<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
-								<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"></td>
-							</tr>
-							<tr>
-								<td align="right"><label>Log Level:</label></td>
-								<td>
-									<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
-										<option data-i18n="Silent" value="0">
-											Silent
-										</option>
-										<option data-i18n="Errors only" value="1">
-											Errors + forced messages
-										</option>
-										<option data-i18n="Errors + minimal execution info" value="2">
-											Errors + minimal execution info
-										</option>
-										<option data-i18n="Errors + minimal execution info + generic info" value="3">
-											Errors + minimal execution info + generic info
-										</option>
-										<option data-i18n="Debug (everything)" value="4">
-											Debug (everything)
-										</option>
-									</select>
-								</td>
-							</tr>
-							</table>
+							<div class="row-fluid" style="display:none;">
+								<div class="span12">
+									<div id="LogDebug">
+										<h2><span data-i18n="Log "></span>Log:</h2>
+										<table class="display" id="LogFilterTable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="LogFilter"></span>Filter: </label></td>
+											<td><input type="input" id="LogFilter" name="LogFilter" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+										</tr>
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="LogFileName"></span>File Name: </label></td>
+											<td><input type="input" id="LogFileName" name="LogFileName" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+										</tr>
+										<tr>
+											<td align="right" style="width:60px"><label><span data-i18n="LogLevel">Level</span>: </label></td>
+											<td><select id="LogLevel" name="LogLevel" style="width:120px" class="combobox ui-corner-all">
+												<option data-i18n="Error" value="0">Error</option>
+												<option data-i18n="Status" value="1">Status</option>
+												<option data-i18n="Normal" value="2">Normal</option>
+												<option data-i18n="Trace" value="3">Trace</option>
+												<option data-i18n="ErrorVerbose"  value="4">ErrorVerbose</option>
+												<option data-i18n="StatusVerbose" value="5">StatusVerbose</option>
+												<option data-i18n="NormalVerbose" value="6">NormalVerbose</option>
+												<option data-i18n="TraceVerbose"  value="7">TraceVerbose</option>
+											</select></td>
+										</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!-- <br> -->
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Doorbell Command"></span>:</h2>
+									<table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
+										<tr>
+											<td align="right" style="width:90px"><label><span data-i18n="Command"></span>: </label></td>
+											<td><select id="comboDoorbellCommand" name="DoorbellCommand" style="width:120px" class="combobox ui-corner-all">
+												<option data-i18n="Group On" value="0">Group On</option>
+												<option data-i18n="On" value="1">On</option>
+											</select></td>
+										</tr>
+									</table>
+								</div>
+							</div>
 							<br>
-
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Raspberry Pi Camera Parameters"></span>:</h2>
+									<table class="display" id="picamtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
+										<td>
+											<input type="input" id="RaspCamParams" name="RaspCamParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+											(<span data-i18n="default"></span>: -w 800 -h 600 -t 1)
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<br>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="UVC Parameters"></span>:</h2>
+									<table class="display" id="uvctable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px; vertical-align:top;"><label><span data-i18n="Params"></span>: </label></td>
+										<td>
+											<input type="input" id="UVCParams" name="UVCParams" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
+											(<span data-i18n="default"></span>: -S80 -B128 -C128 -G80 -x800 -y600 -q100)
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<br>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span>:</h2>
+									<table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px"><label><span data-i18n="Disabled"></span>: </label></td>
+										<td>
+											<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
+										</td>
+									</tr>
+									<tr>
+										<td style="width:90px"></td>
+										<td>
+											<input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger" />
+											<label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label>
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<br>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="dzVents">dzVents (2.2.0)</span>:</h2>
+									<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
+										<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"></td>
+									</tr>
+									<tr>
+										<td align="right"><label>Log Level:</label></td>
+										<td>
+											<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
+												<option data-i18n="Silent" value="0">
+													Silent
+												</option>
+												<option data-i18n="Errors only" value="1">
+													Errors + forced messages
+												</option>
+												<option data-i18n="Errors + minimal execution info" value="2">
+													Errors + minimal execution info
+												</option>
+												<option data-i18n="Errors + minimal execution info + generic info" value="3">
+													Errors + minimal execution info + generic info
+												</option>
+												<option data-i18n="Debug (everything)" value="4">
+													Debug (everything)
+												</option>
+											</select>
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
 						</section>
 					</div>
 					<div class="tab-pane" id="tabbackuprestore">
@@ -1108,10 +1196,15 @@
 						  <div class="page-header-small">
 							<h1 data-i18n="Backup / Restore Database"></h1>
 						</div>
-							<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
+							<div class="row-fluid">
+								<div class="span12">
+									<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
+								</div>
+							</div>
 						</section>
 					</div>
 				</div>
 			</div>
+		</form>
 	</div>
 </div>

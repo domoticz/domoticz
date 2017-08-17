@@ -1012,7 +1012,8 @@ define(['app'], function (app) {
 			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
-					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout	+
+					"&extra=" + encodeURIComponent($("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val()),
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -3903,6 +3904,10 @@ define(['app'], function (app) {
 							var statusImg = '<img src="images/' + status + '.png" />';
 							var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
 
+							var Description = item.Description;
+							if (item.IsPlus == true) {
+								Description += "+";
+							}
 							var nodeStr = addLeadingZeros(item.NodeID, 3) + " (0x" + addLeadingZeros(item.NodeID.toString(16), 2) + ")";
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
@@ -3914,7 +3919,7 @@ define(['app'], function (app) {
 								"HaveUserCodes": item.HaveUserCodes,
 								"0": nodeStr,
 								"1": item.Name,
-								"2": item.Description,
+								"2": Description,
 								"3": item.Manufacturer_name,
 								"4": item.Product_id,
 								"5": item.Product_type,
@@ -5137,6 +5142,9 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #filename").val(data["Extra"]);
 							$("#hardwarecontent #hardwareparamsmysensorsmqtt #combotopicselect").val(data["Mode1"]);
 						}
+						else if (data["Type"].indexOf("Rtl433") >= 0) {
+							$("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val(data["Extra"]);
+						}
 						else if (data["Type"].indexOf("MQTT") >= 0) {
 							$("#hardwarecontent #hardwareparamsmqtt #filename").val(data["Extra"]);
 							$("#hardwarecontent #hardwareparamsmqtt #combotopicselect").val(data["Mode1"]);
@@ -5599,7 +5607,6 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
-
 			else {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
@@ -5618,9 +5625,14 @@ define(['app'], function (app) {
 			) {
 				$("#hardwarecontent #divlogin").show();
 			}
+			if (text.indexOf("Rtl433") >= 0) {
+				$("#hardwarecontent #divrtl433").show();
+			} else {
+				$("#hardwarecontent #divrtl433").hide();
+			}
 			if (text.indexOf("MySensors Gateway with MQTT") >= 0) {
 				$("#hardwarecontent #divmysensorsmqtt").show();
-			}
+			} 
 			else if (text.indexOf("MQTT") >= 0) {
 				$("#hardwarecontent #divmqtt").show();
 			}
