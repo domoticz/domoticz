@@ -866,6 +866,7 @@ namespace Plugins {
 
 	bool CPlugin::Start()
 	{
+		boost::lock_guard<boost::mutex> l(PythonMutex);
 		PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
 		PyObject *pParamsDict = PyDict_New();
 		if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
@@ -1236,6 +1237,7 @@ namespace Plugins {
 	{
 		try
 		{
+			boost::lock_guard<boost::mutex> l(PythonMutex);
 			if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 			if (m_PyModule && sHandler.length())
 			{
