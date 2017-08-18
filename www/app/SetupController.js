@@ -482,6 +482,9 @@ define(['app'], function (app) {
 					if (typeof data.UseAutoBackup != 'undefined') {
 						$("#autobackuptable #enableautobackup").prop('checked', data.UseAutoBackup == 1);
 					}
+					if (typeof data.EmailEnabled != 'undefined') {
+						$("#emailtable #EmailEnabled").prop('checked', data.EmailEnabled == 1);
+					}
 					if (typeof data.EmailFrom != 'undefined') {
 						$("#emailtable #EmailFrom").val(data.EmailFrom);
 					}

@@ -19,10 +19,12 @@
 	<script type="text/javascript" src="js/bootbox.min.js"></script>
 	<script type="text/javascript" src="js/ace/ace.js"></script>
 	<script type="text/javascript" src="js/ace/ext-language_tools.js"></script>
+	<!-- <script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script> -->
 	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
     <link type="text/css" rel="stylesheet" href="css/style.css" />	
+	<link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
 	    
     <style>
       html, body {
@@ -39,7 +41,7 @@
       .blocklyTreeRow {
         color:black;
       }
-      #saveTable
+      #eventparamstable
       { border-spacing: 8px;
     	padding:2px 2px 2px 2px;
       }
@@ -665,9 +667,11 @@
 						var option = document.createElement("option");
 						option.text = item.name;
 						option.value = item.id;
-						option.style.color = 'red';
-						if (item.eventstatus == '1') {
-							option.style.color = 'black';
+						if (item.eventstatus == '0') {
+							option.style.color = 'red';
+						}
+						else if (item.eventstatus == '1') {
+							//option.style.color = 'white';
 						}
 						else if (item.eventstatus == '2') {
 							option.style.color = 'purple';
@@ -1082,7 +1086,7 @@
     </xml>
     <div id="maindiv" class="container-fluid">
 		<div class="row-fluid">
-			<table id="saveTable" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<table id="eventparamstable" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
 				<td class=container" valign="top">
 					<menu type="context" id="acemenu">

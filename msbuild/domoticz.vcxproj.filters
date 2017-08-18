@@ -477,9 +477,6 @@
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PugiXML">
-      <UniqueIdentifier>{c492c160-f45c-4fb8-8697-9365c5cb0b34}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2056,11 +2053,8 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\pugixml\pugiconfig.hpp">
-      <Filter>PugiXML</Filter>
-    </ClInclude>
-    <ClInclude Include="..\pugixml\pugixml.hpp">
-      <Filter>PugiXML</Filter>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
+      <Filter>Devices\Denkovi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2748,8 +2742,8 @@
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\pugixml\pugixml.cpp">
-      <Filter>PugiXML</Filter>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
+      <Filter>Devices\Denkovi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
