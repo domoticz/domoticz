@@ -4,14 +4,27 @@
 #
 # Works on Linux, Windows appears to filter out UDP from the network even when the firewall is set to allow it
 #
+# Useful IP Address and Port combinations that can be set via the Hardware page:
+#    239.255.250.250:9161 - Dynamic Device Discovery (DDD) (default, shows Global Cache, Denon Amps and more)
+#    239.255.255.250:1900 - Simple Service Discovery Protocol (SSDP), (shows Windows, Kodi, Denon, Chromebooks, Gateways, ...)
 # Author: Dnpwwo, 2017
 #
 """
-<plugin key="UdpDiscover" name="UDP Discovery Example" author="dnpwwo" version="1.0.0">
+<plugin key="UdpDiscover" name="UDP Discovery Example" author="dnpwwo" version="2.1.0">
     <params>
-        <param field="Address" label="IP Address" width="200px" required="true" default="239.255.250.250"/>
-        <param field="Port" label="Port" width="200px" required="true" default="9131"/>
-        <param field="Mode6" label="Debug" width="100px">
+        <param field="Mode1" label="Discovery Type" width="275px">
+            <options>
+                <option label="Dynamic Device Discovery" value="239.255.250.250:9161"/>
+                <option label="Simple Service Discovery Protocol" value="239.255.255.250:1900"  default="true" />
+            </options>
+        </param>
+        <param field="Mode2" label="Create Devices" width="75px">
+            <options>
+                <option label="True" value="True"/>
+                <option label="False" value="False"  default="true" />
+            </options>
+        </param>
+        <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
                 <option label="File Only" value="File" />
@@ -37,7 +50,8 @@ class BasePlugin:
         if Parameters["Mode6"] != "Normal":
             logFile = open(Parameters["HomeFolder"]+Parameters["Key"]+".log",'w')
 
-        self.BeaconConn = Domoticz.Connection(Name="Beacon", Transport="UDP/IP", Address=Parameters["Address"], Port=str(Parameters["Port"]))
+        sAddress, sep, sPort = Parameters["Mode1"].partition(':')
+        self.BeaconConn = Domoticz.Connection(Name="Beacon", Transport="UDP/IP", Address=sAddress, Port=str(sPort))
         self.BeaconConn.Listen()
 
     def onMessage(self, Connection, Data):
@@ -50,6 +64,19 @@ class BasePlugin:
                 logFile = open(Parameters["HomeFolder"]+Parameters["Key"]+".log",'a')
                 logFile.write(Connection.Name+" ("+Connection.Address+"): "+strData+"\n")
                 logFile.close()
+                
+            if (Parameters["Mode2"] == "True"):
+                existingDevice = 0
+                existingName = (Parameters["Name"]+" - "+Connection.Address)
+                for dev in Devices:
+                    if (Devices[dev].Name == existingName):
+                        existingDevice = dev
+                if (existingDevice == 0):
+                    Domoticz.Device(Name=Connection.Address, Unit=len(Devices)+1, TypeName="Text", Image=17).Create()
+                    Domoticz.Log("Created device: "+Connection.Address)
+                    Devices[len(Devices)].Update(nValue=1, sValue=Connection.Address)
+                else:
+                    Devices[existingDevice].Update(nValue=1, sValue=Connection.Address)
 
         except Exception as inst:
             Domoticz.Error("Exception in onMessage, called with Data: '"+str(strData)+"'")
