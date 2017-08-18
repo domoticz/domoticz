@@ -542,6 +542,7 @@ ENDIF(LIBUSB_FOUND)
 #
 # Find MD5/RMD160/SHA library
 #
+option(OPENSSL_USE_STATIC_LIBS "Build with static OpenSSL libraries" YES)
 find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(SEND_ERROR "Failed to find openssl include files (ssl.h), no HTTPS support")
