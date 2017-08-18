@@ -2999,7 +2999,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "domoticz_applyXPath");
 
 #ifdef _DEBUG
-	_log.Log(LOG_STATUS, "EventSystem: script %s trigger", reason.c_str());
+	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", reason.c_str(), filename.c_str());
 #endif
 
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
