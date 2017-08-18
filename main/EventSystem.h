@@ -133,7 +133,6 @@ private:
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
-	//lua_State	*m_pLUA;
 	bool m_bEnabled;
 	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
@@ -147,6 +146,7 @@ private:
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_dzv_Dir;
+	std::string m_szStartTime;
 
 	//our thread
 	void Do_Work();

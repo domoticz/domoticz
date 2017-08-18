@@ -33,6 +33,7 @@ extern "C" {
 #endif
 }
 
+extern time_t m_StartTime;
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
 
@@ -46,10 +47,10 @@ extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds
 
 typedef enum
 {
-	tString = 0,	// 0
-	tFloat,			// 1
-	tInteger,		// 2
-	tBoolean		// 3
+	JTYPE_STRING = 0,	// 0
+	JTYPE_FLOAT,		// 1
+	JTYPE_INT,			// 2
+	JTYPE_BOOL			// 3
 } _eJsonType;
 
 struct _tJsonMap
@@ -64,55 +65,55 @@ struct _tJsonMap
 // be added to this table.
 static const _tJsonMap JsonMap[] =
 {
-	{ "Barometer",			"barometer",				tFloat		},
-	{ "CameraIndx",			"cameraIdx", 				tString		},
-	{ "Chill",				"chill", 					tFloat		},
-	{ "Counter",			"counter", 					tString		},
-	{ "CounterDeliv",		"counterDelivered", 		tFloat		},
-	{ "CounterDelivToday",	"counterDeliveredToday",	tString		},
-	{ "CounterToday",		"counterToday", 			tString		},
-	{ "Current",			"current", 					tFloat		},
-	{ "DewPoint",			"dewPoint", 				tFloat		},
-	{ "Direction",			"direction",				tFloat		},
-	{ "DirectionStr",		"directionString",			tString		},
-	{ "Forecast",			"forecast", 				tInteger	},
-	{ "ForecastStr",		"forecastString",			tString		},
-	{ "HardwareName",		"hardwareName",				tString		},
-	{ "HardwareType",		"hardwareType",				tString		},
-	{ "HardwareTypeVal",	"hardwareTypeValue",		tInteger	},
-	{ "Humidity",			"humidity",					tInteger	},
-	{ "HumidityStatus",		"humidityStatus",			tString		},
-	{ "InternalState",		"internalState",			tString		}, // door contact
-	{ "LevelActions",		"levelActions",				tString		},
-	{ "LevelInt",			"levelVal",					tInteger	},
-	{ "LevelNames",			"levelNames",				tString		},
-	{ "LevelOffHidden",		"levelOffHidden",			tBoolean	},
-	{ "MaxDimLevel",		"maxDimLevel",				tInteger	},
-	{ "Mode",				"mode",						tInteger	}, // zwave thermostat
-	{ "Modes",				"modes",					tString		},
-	{ "Moisture",			"moisture",					tString		},
-	{ "Pressure",			"pressure",					tFloat		},
-	{ "Protected",			"protected",				tBoolean	},
-	{ "Quality",			"quality",					tString		},
-	{ "Radiation",			"radiation",				tFloat		},
-	{ "Rain",				"rain",						tFloat		},
-	{ "RainRate",			"rainRate",					tFloat		},
-	{ "SensorType",			"sensorType",				tInteger	},
-	{ "SensorUnit",			"sensorUnit",				tString		},
-	{ "SetPoint",			"setPoint",					tFloat		},
-	{ "Speed",				"speed",					tFloat		},
-	{ "Temp",				"temperature",				tFloat		},
-	{ "TypeImg",			"icon",						tString		},
-	{ "Unit",				"unit",						tInteger	},
-	{ "Until",				"until",					tString		}, // evohome zone/water
-	{ "Usage",				"usage",					tString		},
-	{ "UsedByCamera",		"usedByCamera",				tBoolean	},
-	{ "UsageDeliv",			"usageDelivered",			tString		},
-	{ "ValueQuantity",		"valueQuantity",			tString		},
-	{ "ValueUnits",			"valueUnits",				tString		},
-	{ "Visibility",			"visibility",				tFloat		},
-	{ "Voltage",			"voltage",					tFloat		},
-	{ NULL,					NULL,						tString		}
+	{ "Barometer",			"barometer",				JTYPE_FLOAT		},
+	{ "CameraIndx",			"cameraIdx", 				JTYPE_STRING	},
+	{ "Chill",				"chill", 					JTYPE_FLOAT		},
+	{ "Counter",			"counter", 					JTYPE_STRING	},
+	{ "CounterDeliv",		"counterDelivered", 		JTYPE_FLOAT		},
+	{ "CounterDelivToday",	"counterDeliveredToday",	JTYPE_STRING	},
+	{ "CounterToday",		"counterToday", 			JTYPE_STRING	},
+	{ "Current",			"current", 					JTYPE_FLOAT		},
+	{ "DewPoint",			"dewPoint", 				JTYPE_FLOAT		},
+	{ "Direction",			"direction",				JTYPE_FLOAT		},
+	{ "DirectionStr",		"directionString",			JTYPE_STRING	},
+	{ "Forecast",			"forecast", 				JTYPE_INT		},
+	{ "ForecastStr",		"forecastString",			JTYPE_STRING	},
+	{ "HardwareName",		"hardwareName",				JTYPE_STRING	},
+	{ "HardwareType",		"hardwareType",				JTYPE_STRING	},
+	{ "HardwareTypeVal",	"hardwareTypeValue",		JTYPE_INT		},
+	{ "Humidity",			"humidity",					JTYPE_INT		},
+	{ "HumidityStatus",		"humidityStatus",			JTYPE_STRING	},
+	{ "InternalState",		"internalState",			JTYPE_STRING	}, // door contact
+	{ "LevelActions",		"levelActions",				JTYPE_STRING	},
+	{ "LevelInt",			"levelVal",					JTYPE_INT		},
+	{ "LevelNames",			"levelNames",				JTYPE_STRING	},
+	{ "LevelOffHidden",		"levelOffHidden",			JTYPE_BOOL		},
+	{ "MaxDimLevel",		"maxDimLevel",				JTYPE_INT		},
+	{ "Mode",				"mode",						JTYPE_INT		}, // zwave thermostat
+	{ "Modes",				"modes",					JTYPE_STRING	},
+	{ "Moisture",			"moisture",					JTYPE_STRING	},
+	{ "Pressure",			"pressure",					JTYPE_FLOAT		},
+	{ "Protected",			"protected",				JTYPE_BOOL		},
+	{ "Quality",			"quality",					JTYPE_STRING	},
+	{ "Radiation",			"radiation",				JTYPE_FLOAT		},
+	{ "Rain",				"rain",						JTYPE_FLOAT		},
+	{ "RainRate",			"rainRate",					JTYPE_FLOAT		},
+	{ "SensorType",			"sensorType",				JTYPE_INT		},
+	{ "SensorUnit",			"sensorUnit",				JTYPE_STRING	},
+	{ "SetPoint",			"setPoint",					JTYPE_FLOAT		},
+	{ "Speed",				"speed",					JTYPE_FLOAT		},
+	{ "Temp",				"temperature",				JTYPE_FLOAT		},
+	{ "TypeImg",			"icon",						JTYPE_STRING	},
+	{ "Unit",				"unit",						JTYPE_INT		},
+	{ "Until",				"until",					JTYPE_STRING	}, // evohome zone/water
+	{ "Usage",				"usage",					JTYPE_STRING	},
+	{ "UsedByCamera",		"usedByCamera",				JTYPE_BOOL		},
+	{ "UsageDeliv",			"usageDelivered",			JTYPE_STRING	},
+	{ "ValueQuantity",		"valueQuantity",			JTYPE_STRING	},
+	{ "ValueUnits",			"valueUnits",				JTYPE_STRING	},
+	{ "Visibility",			"visibility",				JTYPE_FLOAT		},
+	{ "Voltage",			"voltage",					JTYPE_FLOAT		},
+	{ NULL,					NULL,						JTYPE_STRING	}
 };
 
 
@@ -126,13 +127,6 @@ CEventSystem::CEventSystem(void)
 CEventSystem::~CEventSystem(void)
 {
 	StopEventSystem();
-	/*
-	if (m_pLUA!=NULL)
-	{
-	lua_close(m_pLUA);
-	m_pLUA=NULL;
-	}
-	*/
 }
 
 void CEventSystem::StartEventSystem()
@@ -154,6 +148,7 @@ void CEventSystem::StartEventSystem()
 
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
+	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
 void CEventSystem::StopEventSystem()
@@ -400,67 +395,23 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 
 				switch (JsonMap[index].eType)
 				{
-					case tString:
-					{
-						std::map<uint8_t, std::string>::const_iterator it;
-						it = item.JsonMapString.find(index);
-						if (it != item.JsonMapString.end())
-							item.JsonMapString[index] = l_JsonValueString.assign(value);
-						else
-							item.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign(value)));
-					}
+					case JTYPE_STRING:
+						item.JsonMapString[index] = l_JsonValueString.assign(value);
 						break;
-
-					case tFloat:
-					{
-						std::map<uint8_t, float>::const_iterator it;
-						it = item.JsonMapFloat.find(index);
-						if (it != item.JsonMapFloat.end())
-							item.JsonMapFloat[index] = (float)atof(value.c_str());
-						else
-							item.JsonMapFloat.insert(std::pair<uint8_t, float>(index, (float)atof(value.c_str())));
-					}
+					case JTYPE_FLOAT:
+						item.JsonMapFloat[index] = (float)atof(value.c_str());
 						break;
-
-					case tInteger:
-					{
-						std::map<uint8_t, int>::const_iterator it;
-						it = item.JsonMapInt.find(index);
-						if (it != item.JsonMapInt.end())
-							item.JsonMapInt[index] = atoi(value.c_str());
-						else
-							item.JsonMapInt.insert(std::pair<uint8_t, int>(index, atoi(value.c_str())));
-					}
+					case JTYPE_INT:
+						item.JsonMapInt[index] = atoi(value.c_str());
 						break;
-
-					case tBoolean:
-					{
-						std::map<uint8_t, bool>::const_iterator it;
-						it = item.JsonMapBool.find(index);
-						if (it != item.JsonMapBool.end())
-						{
-							if (strcmp(value.c_str(), "true") == 0)
-								item.JsonMapBool[index] = true;
-							else
-								item.JsonMapBool[index] = false;
-						}
+					case JTYPE_BOOL:
+						if (value == "true")
+							item.JsonMapBool[index] = true;
 						else
-						{
-							if (strcmp(value.c_str(), "true") == 0)
-								item.JsonMapBool.insert(std::pair<uint8_t, bool>(index, true));
-							else
-								item.JsonMapBool.insert(std::pair<uint8_t, bool>(index, false));
-						}
-					}
+							item.JsonMapBool[index] = false;
 						break;
-
 					default:
-						std::map<uint8_t, std::string>::const_iterator it;
-						it = item.JsonMapString.find(index);
-						if (it != item.JsonMapString.end())
-							item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
-						else
-							item.JsonMapString.insert(std::pair<uint8_t, std::string>(index, l_JsonValueString.assign("unknown_type")));
+						item.JsonMapString[index] = l_JsonValueString.assign("unknown_type");
 				}
 			}
 			index++;
@@ -619,8 +570,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 	m_windgustValuesByID.clear();
 	m_zwaveAlarmValuesByID.clear();
 
-	std::stringstream szQuery;
-
 	float EnergyDivider = 1000.0f;
 	float GasDivider = 100.0f;
 	float WaterDivider = 100.0f;
@@ -677,9 +626,6 @@ void CEventSystem::GetCurrentMeasurementStates()
 		bool isWindSpeed = false;
 		bool isWindGust = false;
 		bool isZWaveAlarm = false;
-
-		szQuery.clear();
-		szQuery.str("");
 
 		switch (sitem.devType)
 		{
@@ -922,25 +868,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 				else if (sitem.subType == sTypeCounterIncremental)
 				{
 					//get value of today
-					time_t now = mytime(NULL);
-					struct tm tm1;
-					localtime_r(&now, &tm1);
-
-					struct tm ltime;
-					ltime.tm_isdst = tm1.tm_isdst;
-					ltime.tm_hour = 0;
-					ltime.tm_min = 0;
-					ltime.tm_sec = 0;
-					ltime.tm_year = tm1.tm_year;
-					ltime.tm_mon = tm1.tm_mon;
-					ltime.tm_mday = tm1.tm_mday;
-
-					char szDate[40];
-					sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
+					std::string szDate = TimeToString(NULL, TF_Date);
 					std::vector<std::vector<std::string> > result2;
 					result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 					if (result2.size() > 0)
 					{
 						std::vector<std::string> sd2 = result2[0];
@@ -990,37 +921,20 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (splitresults.size() == 2)
 			{
 				//get lowest value of today
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[100];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
+				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 
-				szQuery.clear();
-				szQuery.str("");
 				if (sitem.subType != sTypeRAINWU)
 				{
 					result2 = m_sql.safe_query(
 						"SELECT MIN(Total), MAX(Total) FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 				}
 				else
 				{
 					result2 = m_sql.safe_query(
 						"SELECT Total, Total FROM Rain WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1",
-						sitem.ID, szDate);
+						sitem.ID, szDate.c_str());
 				}
 				if (result2.size()>0)
 				{
@@ -1046,27 +960,12 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeP1Gas:
 			{
-				//get lowest value of today
 				float GasDivider = 1000.0f;
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[40];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
+				//get lowest value of today
+				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-					sitem.ID, szDate);
+					sitem.ID, szDate.c_str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -1088,25 +987,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 			if (sitem.subType == sTypeRFXMeterCount)
 			{
 				//get value of today
-				time_t now = mytime(NULL);
-				struct tm tm1;
-				localtime_r(&now, &tm1);
-
-				struct tm ltime;
-				ltime.tm_isdst = tm1.tm_isdst;
-				ltime.tm_hour = 0;
-				ltime.tm_min = 0;
-				ltime.tm_sec = 0;
-				ltime.tm_year = tm1.tm_year;
-				ltime.tm_mon = tm1.tm_mon;
-				ltime.tm_mday = tm1.tm_mday;
-
-				char szDate[40];
-				sprintf(szDate, "%04d-%02d-%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
-
+				std::string szDate = TimeToString(NULL, TF_Date);
 				std::vector<std::vector<std::string> > result2;
 				result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-					sitem.ID, szDate);
+					sitem.ID, szDate.c_str());
 				if (result2.size()>0)
 				{
 					std::vector<std::string> sd2 = result2[0];
@@ -2914,7 +2798,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	}
 	scenesgroupsMutexLock.unlock();
 
-	char *vtype;
+	std::string vtype;
 
 	// Now do the user variables.
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -2958,13 +2842,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		{
 			//Integer
 			lua_pushnumber(lua_state, atoi(uvitem.variableValue.c_str()));
-			vtype = (char*)"integer";
+			vtype = "integer";
 		}
 		else if (uvitem.variableType == 1)
 		{
 			//Float
 			lua_pushnumber(lua_state, atof(uvitem.variableValue.c_str()));
-			vtype = (char*)"float";
+			vtype = "float";
 		}
 		else
 		{
@@ -2972,19 +2856,19 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 			lua_pushstring(lua_state, uvitem.variableValue.c_str());
 			if (uvitem.variableType == 2)
 			{
-				vtype = (char*)"string";
+				vtype = "string";
 			}
 			else if (uvitem.variableType == 3)
 			{
-				vtype = (char*)"date";
+				vtype = "date";
 			}
 			else if (uvitem.variableType == 4)
 			{
-				vtype = (char*)"time";
+				vtype = "time";
 			}
 			else
 			{
-				vtype = (char*)"unknown";
+				vtype = "unknown";
 			}
 		}
 		lua_rawset(lua_state, -3);
@@ -2992,7 +2876,7 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_settable(lua_state, -3); // data table
 
 		lua_pushstring(lua_state, "variableType");
-		lua_pushstring(lua_state, vtype);
+		lua_pushstring(lua_state, vtype.c_str());
 		lua_rawset(lua_state, -3);
 
 		lua_settable(lua_state, -3); // end entry
@@ -3622,12 +3506,19 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 			lua_pushnumber(lua_state, (lua_Number)rnvalue);
 			lua_rawset(lua_state, -3);
 			lua_pushstring(lua_state, "domoticz_listening_port");
-		//	lua_pushstring(lua_state, "8080");
 			lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "domoticz_start_time");
+			lua_pushstring(lua_state, m_szStartTime.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "currentTime");
+			lua_pushstring(lua_state, TimeToString(NULL, TF_DateTimeMs).c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "systemUptime");
+			lua_pushnumber(lua_state, (lua_Number)SystemUptime());
 			lua_rawset(lua_state, -3);
 		}
 	}
-
 	lua_setglobal(lua_state, "globalvariables");
 
 
@@ -3952,16 +3843,10 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
 		int dlastlevel = atoi(result[0][7].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
-
-		time_t now = time(0);
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-
-		char szLastUpdate[40];
-		sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
-			nvalue.c_str(), svalue.c_str(), szLastUpdate, idx.c_str());
+			nvalue.c_str(), svalue.c_str(), szLastUpdate.c_str(), idx.c_str());
 
 
 		uint64_t ulIdx = 0;
@@ -4698,8 +4583,8 @@ namespace http {
 							std::string actions = array[index].get("actions", "").asString();
 
 							if (
-								(actions.find("SendNotification") != std::string::npos) || 
-								(actions.find("SendEmail") != std::string::npos) || 
+								(actions.find("SendNotification") != std::string::npos) ||
+								(actions.find("SendEmail") != std::string::npos) ||
 								(actions.find("SendSMS") != std::string::npos) ||
 								(actions.find("TriggerIFTTT") != std::string::npos)
 								)
