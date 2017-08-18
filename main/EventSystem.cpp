@@ -47,10 +47,10 @@ extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds
 
 typedef enum
 {
-	tString = 0,	// 0
-	tFloat,			// 1
-	tInteger,		// 2
-	tBoolean		// 3
+	JTYPE_STRING = 0,	// 0
+	JTYPE_FLOAT,		// 1
+	JTYPE_INT,			// 2
+	JTYPE_BOOL			// 3
 } _eJsonType;
 
 struct _tJsonMap
@@ -65,55 +65,55 @@ struct _tJsonMap
 // be added to this table.
 static const _tJsonMap JsonMap[] =
 {
-	{ "Barometer",			"barometer",				tFloat		},
-	{ "CameraIndx",			"cameraIdx", 				tString		},
-	{ "Chill",				"chill", 					tFloat		},
-	{ "Counter",			"counter", 					tString		},
-	{ "CounterDeliv",		"counterDelivered", 		tFloat		},
-	{ "CounterDelivToday",	"counterDeliveredToday",	tString		},
-	{ "CounterToday",		"counterToday", 			tString		},
-	{ "Current",			"current", 					tFloat		},
-	{ "DewPoint",			"dewPoint", 				tFloat		},
-	{ "Direction",			"direction",				tFloat		},
-	{ "DirectionStr",		"directionString",			tString		},
-	{ "Forecast",			"forecast", 				tInteger	},
-	{ "ForecastStr",		"forecastString",			tString		},
-	{ "HardwareName",		"hardwareName",				tString		},
-	{ "HardwareType",		"hardwareType",				tString		},
-	{ "HardwareTypeVal",	"hardwareTypeValue",		tInteger	},
-	{ "Humidity",			"humidity",					tInteger	},
-	{ "HumidityStatus",		"humidityStatus",			tString		},
-	{ "InternalState",		"internalState",			tString		}, // door contact
-	{ "LevelActions",		"levelActions",				tString		},
-	{ "LevelInt",			"levelVal",					tInteger	},
-	{ "LevelNames",			"levelNames",				tString		},
-	{ "LevelOffHidden",		"levelOffHidden",			tBoolean	},
-	{ "MaxDimLevel",		"maxDimLevel",				tInteger	},
-	{ "Mode",				"mode",						tInteger	}, // zwave thermostat
-	{ "Modes",				"modes",					tString		},
-	{ "Moisture",			"moisture",					tString		},
-	{ "Pressure",			"pressure",					tFloat		},
-	{ "Protected",			"protected",				tBoolean	},
-	{ "Quality",			"quality",					tString		},
-	{ "Radiation",			"radiation",				tFloat		},
-	{ "Rain",				"rain",						tFloat		},
-	{ "RainRate",			"rainRate",					tFloat		},
-	{ "SensorType",			"sensorType",				tInteger	},
-	{ "SensorUnit",			"sensorUnit",				tString		},
-	{ "SetPoint",			"setPoint",					tFloat		},
-	{ "Speed",				"speed",					tFloat		},
-	{ "Temp",				"temperature",				tFloat		},
-	{ "TypeImg",			"icon",						tString		},
-	{ "Unit",				"unit",						tInteger	},
-	{ "Until",				"until",					tString		}, // evohome zone/water
-	{ "Usage",				"usage",					tString		},
-	{ "UsedByCamera",		"usedByCamera",				tBoolean	},
-	{ "UsageDeliv",			"usageDelivered",			tString		},
-	{ "ValueQuantity",		"valueQuantity",			tString		},
-	{ "ValueUnits",			"valueUnits",				tString		},
-	{ "Visibility",			"visibility",				tFloat		},
-	{ "Voltage",			"voltage",					tFloat		},
-	{ NULL,					NULL,						tString		}
+	{ "Barometer",			"barometer",				JTYPE_FLOAT		},
+	{ "CameraIndx",			"cameraIdx", 				JTYPE_STRING	},
+	{ "Chill",				"chill", 					JTYPE_FLOAT		},
+	{ "Counter",			"counter", 					JTYPE_STRING	},
+	{ "CounterDeliv",		"counterDelivered", 		JTYPE_FLOAT		},
+	{ "CounterDelivToday",	"counterDeliveredToday",	JTYPE_STRING	},
+	{ "CounterToday",		"counterToday", 			JTYPE_STRING	},
+	{ "Current",			"current", 					JTYPE_FLOAT		},
+	{ "DewPoint",			"dewPoint", 				JTYPE_FLOAT		},
+	{ "Direction",			"direction",				JTYPE_FLOAT		},
+	{ "DirectionStr",		"directionString",			JTYPE_STRING	},
+	{ "Forecast",			"forecast", 				JTYPE_INT		},
+	{ "ForecastStr",		"forecastString",			JTYPE_STRING	},
+	{ "HardwareName",		"hardwareName",				JTYPE_STRING	},
+	{ "HardwareType",		"hardwareType",				JTYPE_STRING	},
+	{ "HardwareTypeVal",	"hardwareTypeValue",		JTYPE_INT		},
+	{ "Humidity",			"humidity",					JTYPE_INT		},
+	{ "HumidityStatus",		"humidityStatus",			JTYPE_STRING	},
+	{ "InternalState",		"internalState",			JTYPE_STRING	}, // door contact
+	{ "LevelActions",		"levelActions",				JTYPE_STRING	},
+	{ "LevelInt",			"levelVal",					JTYPE_INT		},
+	{ "LevelNames",			"levelNames",				JTYPE_STRING	},
+	{ "LevelOffHidden",		"levelOffHidden",			JTYPE_BOOL		},
+	{ "MaxDimLevel",		"maxDimLevel",				JTYPE_INT		},
+	{ "Mode",				"mode",						JTYPE_INT		}, // zwave thermostat
+	{ "Modes",				"modes",					JTYPE_STRING	},
+	{ "Moisture",			"moisture",					JTYPE_STRING	},
+	{ "Pressure",			"pressure",					JTYPE_FLOAT		},
+	{ "Protected",			"protected",				JTYPE_BOOL		},
+	{ "Quality",			"quality",					JTYPE_STRING	},
+	{ "Radiation",			"radiation",				JTYPE_FLOAT		},
+	{ "Rain",				"rain",						JTYPE_FLOAT		},
+	{ "RainRate",			"rainRate",					JTYPE_FLOAT		},
+	{ "SensorType",			"sensorType",				JTYPE_INT		},
+	{ "SensorUnit",			"sensorUnit",				JTYPE_STRING	},
+	{ "SetPoint",			"setPoint",					JTYPE_FLOAT		},
+	{ "Speed",				"speed",					JTYPE_FLOAT		},
+	{ "Temp",				"temperature",				JTYPE_FLOAT		},
+	{ "TypeImg",			"icon",						JTYPE_STRING	},
+	{ "Unit",				"unit",						JTYPE_INT		},
+	{ "Until",				"until",					JTYPE_STRING	}, // evohome zone/water
+	{ "Usage",				"usage",					JTYPE_STRING	},
+	{ "UsedByCamera",		"usedByCamera",				JTYPE_BOOL		},
+	{ "UsageDeliv",			"usageDelivered",			JTYPE_STRING	},
+	{ "ValueQuantity",		"valueQuantity",			JTYPE_STRING	},
+	{ "ValueUnits",			"valueUnits",				JTYPE_STRING	},
+	{ "Visibility",			"visibility",				JTYPE_FLOAT		},
+	{ "Voltage",			"voltage",					JTYPE_FLOAT		},
+	{ NULL,					NULL,						JTYPE_STRING	}
 };
 
 
@@ -395,16 +395,16 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 
 				switch (JsonMap[index].eType)
 				{
-					case tString:
+					case JTYPE_STRING:
 						item.JsonMapString[index] = l_JsonValueString.assign(value);
 						break;
-					case tFloat:
+					case JTYPE_FLOAT:
 						item.JsonMapFloat[index] = (float)atof(value.c_str());
 						break;
-					case tInteger:
+					case JTYPE_INT:
 						item.JsonMapInt[index] = atoi(value.c_str());
 						break;
-					case tBoolean:
+					case JTYPE_BOOL:
 						if (value == "true")
 							item.JsonMapBool[index] = true;
 						else
