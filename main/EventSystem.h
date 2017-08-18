@@ -16,6 +16,7 @@ extern "C" {
 }
 
 #include "LuaCommon.h"
+#include "concurrent_queue.h"
 
 class CEventSystem : public CLuaCommon
 {
@@ -117,7 +118,21 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
-	//lua_State	*m_pLUA;
+	struct _tEventQueue
+	{
+		std::string reason;
+		uint64_t DeviceID;
+		std::string devname;
+		int nValue;
+		std::string sValue;
+		std::string nValueWording;
+		uint64_t varId;
+		std::string lastUpdate;
+		uint8_t lastLevel;
+		queue_element_trigger* trigger;
+	};
+	concurrent_queue<_tEventQueue> m_eventqueue;
+
 	bool m_bEnabled;
 	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
@@ -127,18 +142,17 @@ private:
 	boost::mutex m_measurementStatesMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
-	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
 	int m_SecStatus;
 	std::string m_lua_Dir;
 	std::string m_dzv_Dir;
+	std::string m_szStartTime;
 
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
-	void EvaluateEvent(const std::string &reason);
-	void EvaluateEvent(const std::string &reason, const uint64_t varId);
 	void EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
@@ -168,7 +182,8 @@ private:
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
-
+	void EventQueueThread();
+	void UnlockEventQueueThread();
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
 

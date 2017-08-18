@@ -276,6 +276,10 @@ private:
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteCamera(WebEmSession & session, const request& req, Json::Value &root);
+
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);

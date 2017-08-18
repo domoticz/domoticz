@@ -110,7 +110,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
-
+		<script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script>
 		<script data-main="app/main" src="js/require.js"></script>
 <script type="text/javascript" charset="utf-8" id="init-code">
 
@@ -1641,7 +1641,7 @@ $(document).ready(function() {
 							<li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
 							<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
 							<li ng-show="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
-							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/Light48_On.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
 							<li ng-show="config.EnableTabScenes" class="divider-vertical clScenes"></li>
 							<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
 							<li ng-show="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
@@ -1663,8 +1663,8 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
 									<li id="dUpdate" class="divider"></li>
-									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
-									<li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+									<li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
 									<li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">

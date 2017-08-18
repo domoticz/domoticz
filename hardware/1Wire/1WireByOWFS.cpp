@@ -13,10 +13,10 @@
 
 #include "../../main/Helper.h"
 
-C1WireByOWFS::C1WireByOWFS(const std::string& path) :
-	m_path(path)
+C1WireByOWFS::C1WireByOWFS(const std::string& path)
 {
-	if (m_path == "")
+	m_path = path;
+	if (m_path.empty())
 		m_path = "/mnt/1wire";
 
 	m_simultaneousTemperaturePath = m_path;

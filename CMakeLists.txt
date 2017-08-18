@@ -246,6 +246,7 @@ FIND_PROGRAM(GIT_EXECUTABLE git
 
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
+include_directories(${CMAKE_SOURCE_DIR}/tinyxpath)
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
@@ -266,6 +267,7 @@ main/EventSystem.cpp
 main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
 main/Helper.cpp
+main/IFTTT.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/LuaCommon.cpp
@@ -306,6 +308,7 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenIPIn.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
@@ -543,6 +546,7 @@ ENDIF(LIBUSB_FOUND)
 #
 # Find MD5/RMD160/SHA library
 #
+option(OPENSSL_USE_STATIC_LIBS "Build with static OpenSSL libraries" YES)
 find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
   message(SEND_ERROR "Failed to find openssl include files (ssl.h), no HTTPS support")

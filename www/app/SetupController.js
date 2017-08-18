@@ -482,6 +482,9 @@ define(['app'], function (app) {
 					if (typeof data.UseAutoBackup != 'undefined') {
 						$("#autobackuptable #enableautobackup").prop('checked', data.UseAutoBackup == 1);
 					}
+					if (typeof data.EmailEnabled != 'undefined') {
+						$("#emailtable #EmailEnabled").prop('checked', data.EmailEnabled == 1);
+					}
 					if (typeof data.EmailFrom != 'undefined') {
 						$("#emailtable #EmailFrom").val(data.EmailFrom);
 					}
@@ -661,6 +664,12 @@ define(['app'], function (app) {
 					}
 					if (typeof data.SendErrorsAsNotification != 'undefined') {
 						$("#emailtable #SendErrorsAsNotification").prop('checked', data.SendErrorsAsNotification == 1);
+					}
+					if (typeof data.IFTTTEnabled != 'undefined') {
+						$("#ifttttable #IFTTTEnabled").prop('checked', data.IFTTTEnabled == 1);
+					}
+					if (typeof data.IFTTTAPI != 'undefined') {
+						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
 					}
 				}
 			});

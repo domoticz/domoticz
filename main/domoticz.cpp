@@ -69,44 +69,45 @@ static void dumpstack(void) {
 }
 #endif
 
-const char *szHelp=
-	"Usage: Domoticz -www port -verbose x\n"
-	"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
-	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
+const char *szHelp =
+"Usage: Domoticz -www port -verbose x\n"
+"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
+"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef WWW_ENABLE_SSL
-	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
-	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-	"\t-sslkey file_path (if different from certificate file)\n"
-	"\t-sslpass passphrase (to access to server private key in certificate)\n"
-	"\t-sslmethod method (for SSL method)\n"
-	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
-	"\t-ssldhparam file_path (for SSL DH parameters)\n"
+"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
+"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+"\t-sslkey file_path (if different from certificate file)\n"
+"\t-sslpass passphrase (to access to server private key in certificate)\n"
+"\t-sslmethod method (for SSL method)\n"
+"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
+"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
-	"\t-wwwroot file_path (for example D:\\www)\n"
-	"\t-dbase file_path (for example D:\\domoticz.db)\n"
-	"\t-userdata file_path (for example D:\\domoticzdata)\n"
+"\t-wwwroot file_path (for example D:\\www)\n"
+"\t-dbase file_path (for example D:\\domoticz.db)\n"
+"\t-userdata file_path (for example D:\\domoticzdata)\n"
 #else
-	"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
-	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
-	"\t-userdata file_path (for example /opt/domoticz)\n"
+"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
+"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+"\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
-	"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-	"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
-	"\t-startupdelay seconds (default=0)\n"
-	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
-	"\t-nocache (do not return appcache, use only when developing the web pages)\n"
+"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
+"\t-startupdelay seconds (default=0)\n"
+"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+"\t-nocache (do not return appcache, use only when developing the web pages)\n"
 #if defined WIN32
-	"\t-nobrowser (do not start web browser (Windows Only)\n"
+"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 #if defined WIN32
-	"\t-log file_path (for example D:\\domoticz.log)\n"
+"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
-	"\t-log file_path (for example /var/log/domoticz.log)\n"
+"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
-	"\t-loglevel (0=All, 1=Status+Error, 2=Error , 3= Trace )\n"
-	"\t-debug    allow log trace level 3 \n"
-	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+"\t-loglevel (0=All, 1=Status+Error, 2=Error , 3= Trace )\n"
+"\t-debug    allow log trace level 3 \n"
+"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+"\t-logthreadids (log thread ids; useful for trouble shooting.)\n"
 	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
@@ -563,7 +564,11 @@ int main(int argc, char**argv)
 	{
 		_log.EnableLogTimestamps(false);
 	}
-
+	if (cmdLine.HasSwitch("-logthreadids"))
+	{
+		_log.EnableLogThreadIDs(true);
+	}
+	
 	if (cmdLine.HasSwitch("-approot"))
 	{
 		if (cmdLine.GetArgumentCount("-approot") != 1)

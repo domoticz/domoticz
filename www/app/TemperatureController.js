@@ -576,11 +576,11 @@ define(['app'], function (app) {
 			ShowTemps();
 		};
 	}])
-		.directive('dztemperaturewidget', ['$location', function ($location) {
+		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
-				templateUrl: 'views/temperatures/temperatureWidget.html',
+				templateUrl: 'views/temperature_widget.html',
 				scope: {},
 				bindToController: {
 					item: '=',
@@ -750,11 +750,15 @@ define(['app'], function (app) {
 					};
 
 					ctrl.ShowLog = function () {
-						$location.url('/Temperature/' + ctrl.item.idx + '/Log');
+						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						$('#temptophtm').hide();
+						return ShowTempLog('#tempcontent', "ShowTemps", item.idx, escape(item.Name));
 					};
 
 					ctrl.ShowNotifications = function () {
-						$location.url('/Temperature/' + ctrl.item.idx + '/Notifications');
+						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
+						$('#temptophtm').hide();
+						return ShowNotifications(item.idx, escape(item.Name), '#tempcontent', 'ShowTemps');
 					};
 
 					$element.i18n();

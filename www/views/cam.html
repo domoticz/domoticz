@@ -14,12 +14,21 @@
 						<td><input type="text" id="cameraname" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 					</tr>
 					<tr>
+						<td align="right"><label for="cameraprotocol"><span data-i18n="Protocol">Protocol</span>:</label></td>
+						<td>
+							<select id="cameraprotocol" style="width:80px" class="combobox ui-corner-all">
+								<option value="0">HTTP</option>
+								<option value="1">HTTPS</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<td align="right"><label for="cameraaddress"><span data-i18n="IP Address">IP Address</span>:</label></td>
 						<td><input type="text" id="cameraaddress" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 					</tr>
 					<tr>
 						<td align="right"><label for="cameraport"><span data-i18n="Port">Port</span>:</label></td>
-						<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="80"/></td>
+						<td><input type="text" id="cameraport" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="80" /></td>
 					</tr>
 					<tr>
 						<td align="right"><label id="lblusername" for="username"><span data-i18n="Username">Username</span>:</label></td>
@@ -27,11 +36,11 @@
 					</tr>
 					<tr>
 						<td align="right"><label id="lblpassword" for="password"><span data-i18n="Password">Password</span>:</label></td>
-							<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<td><input type="password" id="password" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 					</tr>
 					<tr>
 						<td align="right"><label for="imageurl"><span data-i18n="ImageURL">ImageURL</span>:</label></td>
-						<td><input type="text" id="imageurl" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="image.jpg"/></td>
+						<td><input type="text" id="imageurl" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="image.jpg" /></td>
 					</tr>
 					<tr>
 						<td></td>
@@ -49,10 +58,10 @@
 </div>
 <div id="cameramain" style="display:none;">
 	<table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
-	<tr>
-		<td align="left"></td>
-		<td align="right"><a class="btnstyle" onclick="AddCameraDevice();" data-i18n="Add Camera">Add Camera</a></td>
-	</tr>
+		<tr>
+			<td align="left"></td>
+			<td align="right"><a class="btnstyle" onclick="AddCameraDevice();" data-i18n="Add Camera">Add Camera</a></td>
+		</tr>
 	</table>
 	<br>
 	<table class="display" id="cameratable" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -63,6 +72,7 @@
 				<th width="48" align="left"></th>
 				<th width="48" align="left"></th>
 				<th width="60" align="left" data-i18n="Enabled">Enabled</th>
+				<th width="80" align="left" data-i18n="Protocol">Protocol</th>
 				<th width="100" align="left" data-i18n="Address">Address</th>
 				<th width="80" align="center" data-i18n="Port">Port</th>
 				<th width="80" align="center" data-i18n="ImageURL">ImageURL</th>
@@ -82,14 +92,14 @@
 	<br>
 	<table class="display" id="activetable" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<thead>
-				<tr valign="middle">
-					<th align="left" data-i18n="Name">Name</th>
-					<th width="60" align="center" data-i18n="When">When</th>
-					<th width="60" align="center" data-i18n="Delay">Delay</th>
-				</tr>
+			<tr valign="middle">
+				<th align="left" data-i18n="Name">Name</th>
+				<th width="60" align="center" data-i18n="When">When</th>
+				<th width="60" align="center" data-i18n="Delay">Delay</th>
+			</tr>
 		</thead>
 	</table>
-    <table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<table id="delclractive" border="0" cellpadding="0" cellspacing="0" width="100%">
 		<tr>
 			<td>
 				<a class="btnstyle3-dis" id="activedevicedelete" data-i18n="Delete">Delete</a>
@@ -104,15 +114,14 @@
 		<tr>
 			<td>
 				<label for="name"><span data-i18n="Device/Scene"></span>: </label>
-				<select id="comboactivedevice" style="width:250px" class="combobox ui-corner-all">
-				</select>
+				<select id="comboactivedevice" style="width:250px" class="combobox ui-corner-all"></select>
 				<label for="name"> <span data-i18n="When"></span>: </label>
 				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="On">On</option>
 					<option value="1" data-i18n="Off">Off</option>
-				</select>			
+				</select>
 				<label for="name"> <span data-i18n="Delay"></span>: </label>
-				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"/>
+				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />
 				<span data-i18n="(seconds, 0=no delay)"></span>
 				<a class="btnstyle3" onclick="AddActiveDevice();" data-i18n="Add">Add</a>
 			</td>
@@ -122,546 +131,562 @@
 
 <script type="text/javascript" charset="utf-8">
 
-function load_testcam_video()
-{
-	if ((typeof $.testcamfeed == 'undefined')||($.testcamfeed==""))
-		return;
-	setTimeout("reload_testcam_image()",100);
-}
+	function load_testcam_video() {
+		if ((typeof $.testcamfeed == 'undefined') || ($.testcamfeed == ""))
+			return;
+		setTimeout("reload_testcam_image()", 100);
+	}
 
-function reload_testcam_image()
-{
-	var xx = new Image();
-	var src = $.testcamfeed;
-	if (src.indexOf("?")!=-1)
-		src+="&count=";
-	else
-		src+="?count=";
-	src+=$.count;
-	xx.src = src;
-	$.count++;
-	$('#dialog-add-edit-camera #camfeed').attr("src", xx.src);
-}
+	function reload_testcam_image() {
+		var xx = new Image();
+		var src = $.testcamfeed;
+		if (src.indexOf("?") != -1)
+			src += "&count=";
+		else
+			src += "?count=";
+		src += $.count;
+		xx.src = src;
+		$.count++;
+		$('#dialog-add-edit-camera #camfeed').attr("src", xx.src);
+	}
 
-
-function AddCameraDevice()
-{
-	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-	$.count=0;
-	$.testcamfeed="";
-	$( "#dialog-add-edit-camera" ).i18n();
-	$( "#dialog-add-edit-camera" ).dialog({
-		resizable: false,
-		width: 720,
-		height:480,
-		modal: true,
-		title: $.t('Add New Camera'),
-		buttons: {
-			"Cancel": function() {
-				$( this ).dialog( "close" );
-			},
-			"Add": function() {
-				var csettings=GetCameraSettings();
-				if (typeof csettings == 'undefined') {
-					return;
-				}
-				$( this ).dialog( "close" );
-				Addcamera();
-			}
-		},
-		close: function() {
-			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-			$.testcamfeed="";
-            $( this ).dialog( "close" );
+	function OnCameraProtocolChange() {
+		var protocol = $('#dialog-add-edit-camera #cameraparamstable #cameraprotocol option:selected').val();
+		var port;
+		if (protocol == 0) {
+			//HTTP
+			port=80;
 		}
-	});
-}
-
-function EditCamera(idx)
-{
-	$.testcamfeed="";
-	$.count=0;
-	$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-	$( "#dialog-add-edit-camera" ).i18n();
-	$( "#dialog-add-edit-camera" ).dialog({
-		resizable: false,
-		width: 720,
-		height:480,
-		modal: true,
-		title: 'Edit Camera',
-		buttons: {
-			"Cancel": function() {
-				$( this ).dialog( "close" );
-			},
-			"Update": function() {
-				var csettings=GetCameraSettings();
-				if (typeof csettings == 'undefined') {
-					return;
-				}
-				$( this ).dialog( "close" );
-				Updatecamera(idx);
-			}
-		},
-		close: function() {
-			$.testcamfeed="";
-			$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
-            $( this ).dialog( "close" );
+		else {
+			//HTTPS
+			port=443;
 		}
-	});
-}
+		$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(port);
+	}
 
-function Deletecamera(idx)
-{
-	bootbox.confirm($.t("Are you sure you want to delete this camera?"), function(result) {
-		if (result==true) {
-			$.ajax({
-				 url: "json.htm?type=command&param=deletecamera&idx=" + idx,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					RefreshcameraTable();
-				 },
-				 error: function(){
+	function AddCameraDevice() {
+		$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+		$.count = 0;
+		$.testcamfeed = "";
+		$("#dialog-add-edit-camera").i18n();
+		$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").change(function () {
+			OnCameraProtocolChange();
+		});
+		$("#dialog-add-edit-camera").dialog({
+			resizable: false,
+			width: 720,
+			height: 480,
+			modal: true,
+			title: $.t('Add New Camera'),
+			buttons: {
+				"Cancel": function () {
+					$(this).dialog("close");
+				},
+				"Add": function () {
+					var csettings = GetCameraSettings();
+					if (typeof csettings == 'undefined') {
+						return;
+					}
+					$(this).dialog("close");
+					Addcamera();
+				}
+			},
+			close: function () {
+				$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+				$.testcamfeed = "";
+				$(this).dialog("close");
+			}
+		});
+	}
+
+	function EditCamera(idx) {
+		$.testcamfeed = "";
+		$.count = 0;
+		$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+		$("#dialog-add-edit-camera").i18n();
+		$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").change(function () {
+			OnCameraProtocolChange();
+		});
+		$("#dialog-add-edit-camera").dialog({
+			resizable: false,
+			width: 720,
+			height: 480,
+			modal: true,
+			title: 'Edit Camera',
+			buttons: {
+				"Cancel": function () {
+					$(this).dialog("close");
+				},
+				"Update": function () {
+					var csettings = GetCameraSettings();
+					if (typeof csettings == 'undefined') {
+						return;
+					}
+					$(this).dialog("close");
+					Updatecamera(idx);
+				}
+			},
+			close: function () {
+				$.testcamfeed = "";
+				$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
+				$(this).dialog("close");
+			}
+		});
+	}
+
+	function Deletecamera(idx) {
+		bootbox.confirm($.t("Are you sure you want to delete this camera?"), function (result) {
+			if (result == true) {
+				$.ajax({
+					url: "json.htm?type=command&param=deletecamera&idx=" + idx,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshcameraTable();
+					},
+					error: function () {
 						HideNotify();
 						ShowNotify('Problem deleting camera!', 2500, true);
-				 }     
-			});
-		}
-	});
-}
-
-function GetCameraSettings()
-{
-	var csettings = {};
-
-	csettings.name=$("#dialog-add-edit-camera #cameraparamstable #cameraname").val();
-	if (csettings.name=="")
-	{
-		ShowNotify('Please enter a Name!', 2500, true);
-		return;
+					}
+				});
+			}
+		});
 	}
-	
-	csettings.bEnabled=$('#dialog-add-edit-camera #cameraparamstable #enabled').is(":checked");
-	
-	csettings.address=$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val();
-	if (csettings.address=="")
-	{
-		ShowNotify('Please enter an address!', 2500, true);
-		return;
-	}
-	csettings.port=$("#dialog-add-edit-camera #cameraparamstable #cameraport").val();
-	if (csettings.port!="")
-	{
-		var intRegex = /^\d+$/;
-		if(!intRegex.test(csettings.port)) {
-			ShowNotify('Please enter a valid Port!', 2500, true);
+
+	function GetCameraSettings() {
+		var csettings = {};
+
+		csettings.name = $("#dialog-add-edit-camera #cameraparamstable #cameraname").val();
+		if (csettings.name == "") {
+			ShowNotify('Please enter a Name!', 2500, true);
 			return;
 		}
-	}
-	else {
-		csettings.port=80;
-	}
-	csettings.username=$('#dialog-add-edit-camera #cameraparamstable #username').val();
-	csettings.password=$('#dialog-add-edit-camera #cameraparamstable #password').val();
 
-	csettings.imageurl=$('#dialog-add-edit-camera #cameraparamstable #imageurl').val();
+		csettings.bEnabled = $('#dialog-add-edit-camera #cameraparamstable #enabled').is(":checked");
 
-	if (csettings.imageurl=="") {
+		csettings.protocol = $('#dialog-add-edit-camera #cameraparamstable #cameraprotocol option:selected').val();
+
+		csettings.address = $("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val();
+		if (csettings.address == "") {
+			ShowNotify('Please enter an address!', 2500, true);
+			return;
+		}
+		csettings.port = $("#dialog-add-edit-camera #cameraparamstable #cameraport").val();
+		if (csettings.port != "") {
+			var intRegex = /^\d+$/;
+			if (!intRegex.test(csettings.port)) {
+				ShowNotify('Please enter a valid Port!', 2500, true);
+				return;
+			}
+		}
+		else {
+			if (csettings.protocol == 0)
+				csettings.port = 80;
+			else
+				csettings.port = 443;
+		}
+		csettings.username = $('#dialog-add-edit-camera #cameraparamstable #username').val();
+		csettings.password = $('#dialog-add-edit-camera #cameraparamstable #password').val();
+
+		csettings.imageurl = $('#dialog-add-edit-camera #cameraparamstable #imageurl').val();
+
+		if (csettings.imageurl == "") {
 			ShowNotify('Please enter a Image url!', 2500, true);
 			return;
+		}
+
+		return csettings;
 	}
 
-	return csettings;
-}
-
-function TestCamFeed()
-{
-	var csettings=GetCameraSettings();
-	if (typeof csettings == 'undefined') {
-		return;
-	}
-	var feedsrc=GenerateCamImageURL(csettings.address,csettings.port,csettings.username,csettings.password,csettings.imageurl);
-	$.testcamfeed=feedsrc;
-	$.count=0;
-	$('#dialog-add-edit-camera #camfeed').attr("src", feedsrc);
-}
-
-function Updatecamera(idx)
-{
-	var csettings=GetCameraSettings();
-	if (typeof csettings == 'undefined') {
-		return;
+	function TestCamFeed() {
+		var csettings = GetCameraSettings();
+		if (typeof csettings == 'undefined') {
+			return;
+		}
+		var feedsrc = GenerateCamImageURL(csettings.address, csettings.port, csettings.username, csettings.password, csettings.imageurl, csettings.protocol);
+		$.testcamfeed = feedsrc;
+		$.count = 0;
+		$('#dialog-add-edit-camera #camfeed').attr("src", feedsrc);
 	}
 
-	var mimageurl=encodeURIComponent(btoa(csettings.imageurl));
+	function Updatecamera(idx) {
+		var csettings = GetCameraSettings();
+		if (typeof csettings == 'undefined') {
+			return;
+		}
 
-	$.ajax({
-		 url: "json.htm?type=command&param=updatecamera&address=" + csettings.address + 
-					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled + "&idx=" + idx + 
-					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
-					"&imageurl=" + encodeURIComponent(mimageurl),
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshcameraTable();
-		 },
-		 error: function(){
-			ShowNotify('Problem updating camera settings!', 2500, true);
-		 }     
-	});
-}
+		var mimageurl = encodeURIComponent(btoa(csettings.imageurl));
 
-function Addcamera()
-{
-	var csettings=GetCameraSettings();
-	if (typeof csettings == 'undefined') {
-		return;
-	}
-
-	var mimageurl=encodeURIComponent(btoa(csettings.imageurl));
-
-	$.ajax({
-		 url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
-					"&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled +
-					"&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
-					"&imageurl=" + encodeURIComponent(mimageurl),
-		 async: false, 
-		 dataType: 'json',
-		 success: function(data) {
-			RefreshcameraTable();
-		 },
-		 error: function(){
-			ShowNotify('Problem adding camera!', 2500, true);
-		 }     
-	});		
-}
-
-function RefreshcameraTable()
-{
-	$('#modal').show();
-
-	$.devIdx=-1;
-
-	$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
-	$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
-
-	var oTable = $('#cameratable').dataTable();
-	oTable.fnClearTable();
-	$.ajax({
-	 url: "json.htm?type=cameras", 
-	 async: false, 
-	 dataType: 'json',
-	 success: function(data) {
-		
-	  if (typeof data.result != 'undefined') {
-		$.each(data.result, function(i,item){
-			var enabledstr=$.t("No");
-			if (item.Enabled=="true") {
-				enabledstr=$.t("Yes");
+		$.ajax({
+			url: "json.htm?type=command&param=updatecamera&address=" + csettings.address +
+					   "&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled + "&idx=" + idx +
+					   "&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
+					   "&imageurl=" + encodeURIComponent(mimageurl) +
+					   "&protocol=" + csettings.protocol,
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				RefreshcameraTable();
+			},
+			error: function () {
+				ShowNotify('Problem updating camera settings!', 2500, true);
 			}
-
-			var previewimg;
-			var imgsrc="camsnapshot.jpg?idx=" + item.idx + "&dtime=" + Math.round(+new Date()/1000);
-			if (item.Enabled=="true") {
-				previewimg='<img src="' + imgsrc + '" height="40"> ';
-			}
-			else {
-				previewimg='<img src="" height="40"> ';
-			}
-			
-			var captureimg='<img src="images/capture.png" title="' + $.t('Take Snapshot') +'" height="32">';
-			
-			captureurl="<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
-
-			var streamimg='<img src="images/webcam.png" title="' + $.t('Stream Video') +'" height="32">';
-			streamurl="<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "'," + item.idx+")\">" + streamimg + "</a>";
-			
-			var addId = oTable.fnAddData( {
-				"DT_RowId": item.idx,
-				"Name": item.Name,
-				"Address": item.Address,
-				"Username": item.Username,
-				"Password": item.Password,
-				"ImageURL": item.ImageURL,
-				"Enabled": item.Enabled,
-				"IntPort": item.Port,
-				"0": previewimg,
-				"1": item.Name,
-				"2": captureurl,
-				"3": streamurl,
-				"4": enabledstr,
-				"5": item.Address,
-				"6": item.Port,
-				"7": item.ImageURL
-			} );
 		});
-	  }
-	 }
-	});
+	}
 
-	/* Add a click handler to the rows - this could be used as a callback */
-	$("#cameratable tbody").off();
-	$("#cameratable tbody").on( 'click', 'tr', function () {
-		$.devIdx=-1;
-
-		if ( $(this).hasClass('row_selected') ) {
-			$(this).removeClass('row_selected');
-			$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
-			$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
-			$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
-			$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
-			$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
-			$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',true);
-			$("#dialog-add-edit-camera #cameraparamstable #username").val("");
-			$("#dialog-add-edit-camera #cameraparamstable #password").val("");
-			$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
+	function Addcamera() {
+		var csettings = GetCameraSettings();
+		if (typeof csettings == 'undefined') {
+			return;
 		}
-		else {
-			var oTable = $('#cameratable').dataTable();
-			oTable.$('tr.row_selected').removeClass('row_selected');
-			$(this).addClass('row_selected');
-			$('#updelclr #cameraedit').attr("class", "btnstyle3");
-			$('#updelclr #cameradelete').attr("class", "btnstyle3");
-			var anSelected = fnGetSelected( oTable );
-			if ( anSelected.length !== 0 ) {
-				var data = oTable.fnGetData( anSelected[0] );
-				var idx= data["DT_RowId"];
-				$.devIdx=idx;
-				$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
-				$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
-				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
-				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
-				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
-				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked',(data["Enabled"]=="true"));
-				$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
-				$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);
-				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val(data["ImageURL"]);
-				RefreshActiveDevicesTable(idx);
+
+		var mimageurl = encodeURIComponent(btoa(csettings.imageurl));
+
+		$.ajax({
+			url: "json.htm?type=command&param=addcamera&address=" + csettings.address +
+					   "&port=" + csettings.port + "&name=" + encodeURIComponent(csettings.name) + "&enabled=" + csettings.bEnabled +
+					   "&username=" + encodeURIComponent(csettings.username) + "&password=" + encodeURIComponent(csettings.password) +
+					   "&imageurl=" + encodeURIComponent(mimageurl) +
+					   "&protocol=" + csettings.protocol,
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				RefreshcameraTable();
+			},
+			error: function () {
+				ShowNotify('Problem adding camera!', 2500, true);
 			}
-		}
-	}); 
-  
-  $('#modal').hide();
-}
+		});
+	}
 
-function RefreshLightSwitchesScenesComboArray()
-{
-	$.LightsSwitchesScenes = [];
-	$.ajax({
-		url: "json.htm?type=command&param=getlightswitchesscenes", 
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (typeof data.result != 'undefined') {
-				$.each(data.result, function(i,item) {
-					$.LightsSwitchesScenes.push({
-						type: item.type,
-						idx: item.idx,
-						name: item.Name
+	function RefreshcameraTable() {
+		$('#modal').show();
+
+		$.devIdx = -1;
+
+		$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
+		$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
+
+		var oTable = $('#cameratable').dataTable();
+		oTable.fnClearTable();
+		$.ajax({
+			url: "json.htm?type=cameras",
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+
+				if (typeof data.result != 'undefined') {
+					$.each(data.result, function (i, item) {
+						var enabledstr = $.t("No");
+						if (item.Enabled == "true") {
+							enabledstr = $.t("Yes");
+						}
+
+						var previewimg;
+						var imgsrc = "camsnapshot.jpg?idx=" + item.idx + "&dtime=" + Math.round(+new Date() / 1000);
+						if (item.Enabled == "true") {
+							previewimg = '<img src="' + imgsrc + '" height="40"> ';
+						}
+						else {
+							previewimg = '<img src="" height="40"> ';
+						}
+
+						var captureimg = '<img src="images/capture.png" title="' + $.t('Take Snapshot') + '" height="32">';
+
+						captureurl = "<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
+
+						var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="32">';
+						streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "'," + item.idx + ")\">" + streamimg + "</a>";
+
+						var protocol;
+						if (item.Protocol == 0)
+							protocol = "HTTP";
+						else
+							protocol = "HTTPS";
+
+						var addId = oTable.fnAddData({
+							"DT_RowId": item.idx,
+							"Name": item.Name,
+							"Address": item.Address,
+							"Username": item.Username,
+							"Password": item.Password,
+							"ImageURL": item.ImageURL,
+							"Enabled": item.Enabled,
+							"Protocol": item.Protocol,
+							"IntPort": item.Port,
+							"0": previewimg,
+							"1": item.Name,
+							"2": captureurl,
+							"3": streamurl,
+							"4": enabledstr,
+							"5": protocol,
+							"6": item.Address,
+							"7": item.Port,
+							"8": item.ImageURL
+						});
 					});
-				});
+				}
 			}
-		}
-	});
-}
+		});
 
-function Showcameras()
-{
-	var oTable;
-	
-	$('#modal').show();
-	
-	$.devIdx=-1;
-	
-	RefreshLightSwitchesScenesComboArray();
-	
-	var htmlcontent = "";
-	htmlcontent+=$('#cameramain').html();
-	$('#cameracontent').html(htmlcontent);
-	$('#cameracontent').i18n();
-	
-	oTable = $('#cameratable').dataTable( {
-		"sDom": '<"H"lfrC>t<"F"ip>',
-		"oTableTools": {
-			"sRowSelect": "single",
-		},
-		"aoColumnDefs": [
-			{ "bSortable": false, "aTargets": [ 0,2 ,3] }
-		],
-		"aaSorting": [[ 1, "asc" ]],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": true,
-		"bJQueryUI": true,
-		"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-		"iDisplayLength" : 25,
-		"sPaginationType": "full_numbers",
-		language: $.DataTableLanguage
-		} );
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#cameratable tbody").off();
+		$("#cameratable tbody").on('click', 'tr', function () {
+			$.devIdx = -1;
 
-	oTable = $('#activetable').dataTable( {
-		"sDom": '<"H"frC>t<"F"i>',
-		"oTableTools": {
-			"sRowSelect": "single",
-		},
-		"aaSorting": [[ 0, "asc" ]],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": true,
-		"bJQueryUI": true,
-		"sPaginationType": "full_numbers",
-		language: $.DataTableLanguage
-	});
-
-	$.each($.LightsSwitchesScenes, function(i,item){
-		var option = $('<option />');
-		option.attr('value', item.idx).text(item.name);
-		$("#cameracontent #comboactivedevice").append(option);
-	});
-
-	$('#modal').hide();
-	RefreshcameraTable();
-}
-
-function RefreshActiveDevicesTable(idx)
-{
-	$('#modal').show();
-
-	$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-
-	var oTable = $('#cameracontent #activetable').dataTable();
-	oTable.fnClearTable();
-  
-	$.ajax({
-		url: "json.htm?type=command&param=getcamactivedevices&idx=" + idx, 
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (typeof data.result != 'undefined') {
-				$.each(data.result, function(i,item){
-					var swhen="On";
-					if (item.when==1) {
-						swhen="Off";
-					}
-					var addId = oTable.fnAddData( {
-						"DT_RowId": item.idx,
-						"0": item.Name,
-						"1": swhen,
-						"2": item.delay
-					} );
-				});
-			}
-		}
-	});
-
-	/* Add a click handler to the rows - this could be used as a callback */
-	$("#cameracontent #activetable tbody").off();
-	$("#cameracontent #activetable tbody").on( 'click', 'tr', function () {
-		if ( $(this).hasClass('row_selected') ) {
-			$(this).removeClass('row_selected');
-			$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
-		}
-		else {
-			var oTable = $('#cameracontent #activetable').dataTable();
-			oTable.$('tr.row_selected').removeClass('row_selected');
-			$(this).addClass('row_selected');
-			$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
-			
-			var anSelected = fnGetSelected( oTable );
-			if ( anSelected.length !== 0 ) {
-				var data = oTable.fnGetData( anSelected[0] );
-				var idx= data["DT_RowId"];
-				$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
-			}
-		}
-	}); 
-
-  $('#modal').hide();
-}
-
-function AddActiveDevice()
-{
-	if ($.devIdx==-1) {
-		bootbox.alert('No Camera Selected!');
-		return;
-	}
-	var ActiveDeviceIdx=$("#cameracontent #comboactivedevice option:selected").val();
-	if (typeof ActiveDeviceIdx == 'undefined') {
-		bootbox.alert('No Active Device Selected!');
-		return ;
-	}
-	var ADType=0;
-	if ($("#cameracontent #comboactivedevice option:selected").text().indexOf("[Scene]") == 0) {
-		ADType=1;
-	}
-	var ADWhen=$("#cameracontent #activewhen option:selected").val();
-	if (typeof ADWhen == 'undefined') {
-		bootbox.alert('Choose When On or Off!');
-		return ;
-	}
-	var sdelay=$("#cameracontent #delay").val();
-	var ADDelay=0;
-	if (sdelay!="")
-	{
-		ADDelay=parseInt(sdelay);
-	}
-	$.ajax({
-		url: "json.htm?type=command&param=addcamactivedevice&idx=" + $.devIdx + 
-			"&activeidx=" + ActiveDeviceIdx +
-			"&activetype=" + ADType +
-			"&activewhen=" + ADWhen +
-			"&activedelay=" + ADDelay,
-		async: false, 
-		dataType: 'json',
-		success: function(data) {
-			if (data.status == 'OK') {
-				RefreshActiveDevicesTable($.devIdx);
+			if ($(this).hasClass('row_selected')) {
+				$(this).removeClass('row_selected');
+				$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
+				$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraname").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #cameraport").val("");
+				$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked', true);
+				$('#dialog-add-edit-camera #cameraparamstable #cameraprotocol').val(0);
+				$("#dialog-add-edit-camera #cameraparamstable #username").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #password").val("");
+				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
 			}
 			else {
-				ShowNotify('Problem adding Active Device!', 2500, true);
+				var oTable = $('#cameratable').dataTable();
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#updelclr #cameraedit').attr("class", "btnstyle3");
+				$('#updelclr #cameradelete').attr("class", "btnstyle3");
+				var anSelected = fnGetSelected(oTable);
+				if (anSelected.length !== 0) {
+					var data = oTable.fnGetData(anSelected[0]);
+					var idx = data["DT_RowId"];
+					$.devIdx = idx;
+					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
+					$("#updelclr #cameradelete").attr("href", "javascript:Deletecamera(" + idx + ")");
+					$("#dialog-add-edit-camera #cameraparamstable #cameraname").val(data["Name"]);
+					$("#dialog-add-edit-camera #cameraparamstable #cameraaddress").val(data["Address"]);
+					$("#dialog-add-edit-camera #cameraparamstable #cameraport").val(data["IntPort"]);
+					$('#dialog-add-edit-camera #cameraparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
+					$('#dialog-add-edit-camera #cameraparamstable #cameraprotocol').val(data["Protocol"]);
+					$("#dialog-add-edit-camera #cameraparamstable #username").val(data["Username"]);
+					$("#dialog-add-edit-camera #cameraparamstable #password").val(data["Password"]);
+					$("#dialog-add-edit-camera #cameraparamstable #imageurl").val(data["ImageURL"]);
+					RefreshActiveDevicesTable(idx);
+				}
 			}
-		},
-		error: function(){
-			HideNotify();
-			ShowNotify('Problem adding Active Device!', 2500, true);
-		}     
-	});
-	
-}
+		});
 
-function DeleteActiveDevice(idx)
-{
-	bootbox.confirm($.t("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function(result) {
-		if (result==true) {
-			$.ajax({
-				 url: "json.htm?type=command&param=deleteamactivedevice&idx=" + idx,
-				 async: false, 
-				 dataType: 'json',
-				 success: function(data) {
-					RefreshActiveDevicesTable($.devIdx);
-				 }
-			});
+		$('#modal').hide();
+	}
+
+	function RefreshLightSwitchesScenesComboArray() {
+		$.LightsSwitchesScenes = [];
+		$.ajax({
+			url: "json.htm?type=command&param=getlightswitchesscenes",
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				if (typeof data.result != 'undefined') {
+					$.each(data.result, function (i, item) {
+						$.LightsSwitchesScenes.push({
+							type: item.type,
+							idx: item.idx,
+							name: item.Name
+						});
+					});
+				}
+			}
+		});
+	}
+
+	function Showcameras() {
+		var oTable;
+
+		$('#modal').show();
+
+		$.devIdx = -1;
+
+		RefreshLightSwitchesScenesComboArray();
+
+		var htmlcontent = "";
+		htmlcontent += $('#cameramain').html();
+		$('#cameracontent').html(htmlcontent);
+		$('#cameracontent').i18n();
+
+		oTable = $('#cameratable').dataTable({
+			"sDom": '<"H"lfrC>t<"F"ip>',
+			"oTableTools": {
+				"sRowSelect": "single",
+			},
+			"aoColumnDefs": [
+				{ "bSortable": false, "aTargets": [0, 2, 3] }
+			],
+			"aaSorting": [[1, "asc"]],
+			"bSortClasses": false,
+			"bProcessing": true,
+			"bStateSave": true,
+			"bJQueryUI": true,
+			"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+			"iDisplayLength": 25,
+			"sPaginationType": "full_numbers",
+			language: $.DataTableLanguage
+		});
+
+		oTable = $('#activetable').dataTable({
+			"sDom": '<"H"frC>t<"F"i>',
+			"oTableTools": {
+				"sRowSelect": "single",
+			},
+			"aaSorting": [[0, "asc"]],
+			"bSortClasses": false,
+			"bProcessing": true,
+			"bStateSave": true,
+			"bJQueryUI": true,
+			"sPaginationType": "full_numbers",
+			language: $.DataTableLanguage
+		});
+
+		$.each($.LightsSwitchesScenes, function (i, item) {
+			var option = $('<option />');
+			option.attr('value', item.idx).text(item.name);
+			$("#cameracontent #comboactivedevice").append(option);
+		});
+
+		$('#modal').hide();
+		RefreshcameraTable();
+	}
+
+	function RefreshActiveDevicesTable(idx) {
+		$('#modal').show();
+
+		$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+
+		var oTable = $('#cameracontent #activetable').dataTable();
+		oTable.fnClearTable();
+
+		$.ajax({
+			url: "json.htm?type=command&param=getcamactivedevices&idx=" + idx,
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				if (typeof data.result != 'undefined') {
+					$.each(data.result, function (i, item) {
+						var swhen = "On";
+						if (item.when == 1) {
+							swhen = "Off";
+						}
+						var addId = oTable.fnAddData({
+							"DT_RowId": item.idx,
+							"0": item.Name,
+							"1": swhen,
+							"2": item.delay
+						});
+					});
+				}
+			}
+		});
+
+		/* Add a click handler to the rows - this could be used as a callback */
+		$("#cameracontent #activetable tbody").off();
+		$("#cameracontent #activetable tbody").on('click', 'tr', function () {
+			if ($(this).hasClass('row_selected')) {
+				$(this).removeClass('row_selected');
+				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
+			}
+			else {
+				var oTable = $('#cameracontent #activetable').dataTable();
+				oTable.$('tr.row_selected').removeClass('row_selected');
+				$(this).addClass('row_selected');
+				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
+
+				var anSelected = fnGetSelected(oTable);
+				if (anSelected.length !== 0) {
+					var data = oTable.fnGetData(anSelected[0]);
+					var idx = data["DT_RowId"];
+					$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
+				}
+			}
+		});
+
+		$('#modal').hide();
+	}
+
+	function AddActiveDevice() {
+		if ($.devIdx == -1) {
+			bootbox.alert('No Camera Selected!');
+			return;
 		}
-	});
-}
-
-function ClearActiveDevices()
-{
-	bootbox.confirm($.t("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function(result) {
-		if (result==true) {
-			$.ajax({
-					url: "json.htm?type=command&param=deleteallactivecamdevices&idx=" + $.devIdx,
-					async: false, 
-					dataType: 'json',
-					success: function(data) {
+		var ActiveDeviceIdx = $("#cameracontent #comboactivedevice option:selected").val();
+		if (typeof ActiveDeviceIdx == 'undefined') {
+			bootbox.alert('No Active Device Selected!');
+			return;
+		}
+		var ADType = 0;
+		if ($("#cameracontent #comboactivedevice option:selected").text().indexOf("[Scene]") == 0) {
+			ADType = 1;
+		}
+		var ADWhen = $("#cameracontent #activewhen option:selected").val();
+		if (typeof ADWhen == 'undefined') {
+			bootbox.alert('Choose When On or Off!');
+			return;
+		}
+		var sdelay = $("#cameracontent #delay").val();
+		var ADDelay = 0;
+		if (sdelay != "") {
+			ADDelay = parseInt(sdelay);
+		}
+		$.ajax({
+			url: "json.htm?type=command&param=addcamactivedevice&idx=" + $.devIdx +
+				"&activeidx=" + ActiveDeviceIdx +
+				"&activetype=" + ADType +
+				"&activewhen=" + ADWhen +
+				"&activedelay=" + ADDelay,
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				if (data.status == 'OK') {
 					RefreshActiveDevicesTable($.devIdx);
 				}
-			});
-		}
-	});
-}
+				else {
+					ShowNotify('Problem adding Active Device!', 2500, true);
+				}
+			},
+			error: function () {
+				HideNotify();
+				ShowNotify('Problem adding Active Device!', 2500, true);
+			}
+		});
 
-$(document).ready(function() {
-  Showcameras();
-} );  
+	}
+
+	function DeleteActiveDevice(idx) {
+		bootbox.confirm($.t("Are you sure to delete this Active Device?\n\nThis action can not be undone..."), function (result) {
+			if (result == true) {
+				$.ajax({
+					url: "json.htm?type=command&param=deleteamactivedevice&idx=" + idx,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshActiveDevicesTable($.devIdx);
+					}
+				});
+			}
+		});
+	}
+
+	function ClearActiveDevices() {
+		bootbox.confirm($.t("Are you sure to delete ALL Active Devices?\n\nThis action can not be undone!!"), function (result) {
+			if (result == true) {
+				$.ajax({
+					url: "json.htm?type=command&param=deleteallactivecamdevices&idx=" + $.devIdx,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshActiveDevicesTable($.devIdx);
+					}
+				});
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		Showcameras();
+	});
 </script>

@@ -8,7 +8,8 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
+
+#include <tinyxml.h>
 
 #define round(a) ( int ) ( a + .5 )
 
