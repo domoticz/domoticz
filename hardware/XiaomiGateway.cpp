@@ -610,6 +610,12 @@ bool XiaomiGateway::StartHardware()
 		if (result.size() > 0) {
 			m_OutputMessage = true;
 		}
+		//check for presence of Xiaomi user variable to enable additional voltage devices
+		m_IncludeVoltage = false;
+		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
+		if (result.size() > 0) {
+			m_IncludeVoltage = true;
+		}
 		_log.Log(LOG_STATUS, "XiaomiGateway: Delaying worker startup...");
 		sleep_seconds(5);
 
@@ -663,7 +669,7 @@ void XiaomiGateway::Do_Work()
 		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address: %s", e.what());
 	}
 
-	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, this);
+	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
 		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
@@ -737,7 +743,7 @@ unsigned int XiaomiGateway::GetShortID(const std::string & nodeid)
 	return sID;
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, XiaomiGateway *parent)
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
@@ -745,6 +751,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_gatewayip = gatewayIp;
 	m_localip = localIp;
 	m_OutputMessage = outputMessage;
+	m_IncludeVoltage = includeVoltage;
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
@@ -1001,7 +1008,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								if (lux != "") {
 									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
 								}
-								if (voltage != "") {
+								if (voltage != "" && m_IncludeVoltage) {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 								}
 							}
