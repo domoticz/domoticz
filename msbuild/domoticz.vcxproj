@@ -352,7 +352,12 @@
     <None Include="..\www\secpanel\media\key.ogg" />
     <None Include="..\www\secpanel\media\wrongcode.aac" />
     <None Include="..\www\secpanel\media\wrongcode.ogg" />
+    <None Include="..\www\styles\default\base.css" />
     <None Include="..\www\styles\default\custom.css" />
+    <None Include="..\www\styles\default\custom.js" />
+    <None Include="..\www\styles\default\extras_and_animations.css" />
+    <None Include="..\www\styles\default\navigation_main_sidebar.css" />
+    <None Include="..\www\styles\default\show_version_number.css" />
     <None Include="..\www\styles\element-dark\custom.css" />
     <None Include="..\www\styles\element-light\custom.css" />
     <None Include="..\www\styles\elemental\custom.css" />

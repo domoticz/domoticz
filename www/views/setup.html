@@ -105,7 +105,7 @@
 									</tr>
 									<tr>
 										<td></td>
-										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <span data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</span></td>
+										<td><input type="checkbox" id="AllowWidgetOrdering" name="AllowWidgetOrdering"/> <label for="AllowWidgetOrdering" data-i18n="AllowWidgetOrdering">Allow Widget Re-Order</label></td>
 									</tr>
 									</table>
 								</div>
@@ -213,7 +213,7 @@
 										<h2><span data-i18n="SoftwareUpdates"></span>:</h2>
 										<table class="display" id="autoupdatetable" border="0" cellpadding="0" cellspacing="0">
 											<tr>
-												<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <span data-i18n="CheckForSoftwareUpdates"></span></td>
+												<td colspan="2"><input type="checkbox" id="checkforupdates" name="checkforupdates"/> <label for="checkforupdates" data-i18n="CheckForSoftwareUpdates"></label></td>
 											</tr>
 											<tr>
 												<td align="right" style="width:130px"><label><span data-i18n="Release Channel">Release Channel</span>: </label></td>
@@ -231,7 +231,7 @@
 										<h2><span data-i18n="AutoBackup"></span>:</h2>
 										<table class="display" id="autobackuptable" border="0" cellpadding="0" cellspacing="0">
 											<tr>
-												<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <span data-i18n="EnableAutoBackup"></span></td>
+												<td colspan="2"><input type="checkbox" id="enableautobackup" name="enableautobackup"/> <label for="enableautobackup" data-i18n="EnableAutoBackup"></label></td>
 											</tr>
 										</table>
 									</div>
@@ -245,14 +245,14 @@
 										<table class="display" id="acceptnewhardwaretable" border="0" cellpadding="0" cellspacing="0">
 											<tr>
 												<td colspan="2">
-													<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <span data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</span> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
+													<input type="checkbox" id="AcceptNewHardware" name="AcceptNewHardware"/> <label for="AcceptNewHardware" data-i18n="AcceptNewHardwareDevices">Accept new Hardware Devices</label> <button data-i18n="Allow for 5 Minutes" class="btn btn-danger" ng-click="AllowNewHardware(5)">Allow for 5 Minutes</button>
 												</td>
 											</tr>
 											<tr>
-												<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <span data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</span></td>
+												<td colspan="2"><input type="checkbox" id="HideDisabledHardwareSensors" name="HideDisabledHardwareSensors"/> <label for="HideDisabledHardwareSensors" data-i18n="HideDisabledHardwareSensors">Hide Disabled Hardware Sensors</label></td>
 											</tr>
 											<tr>
-												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <span data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</span></td>
+												<td colspan="2"><input type="checkbox" id="ShowUpdateEffect" name="ShowUpdateEffect"/> <label for="ShowUpdateEffect" data-i18n="Flash sensor when an update is received">Flash sensor when an update is received</label></td>
 											</tr>
 										</table>
 									</div>
@@ -275,9 +275,9 @@
 											</tr>
 											<tr>
 												<td colspan="2">
-													<input type="checkbox" name="SubsystemHttp" id="SubsystemHttp" value="1" /> <span data-i18n="Enabled"></span><br/>
-													<input type="checkbox" name="SubsystemShared" id="SubsystemShared" value="2" /> <span data-i18n="SharedDomoticzAllowed">Shared Domoticz Allowed</span><br/>
-													<input type="checkbox" name="SubsystemApps" id="SubsystemApps" value="4" /> <span data-i18n="AppsAllowed">Apps Allowed</span>
+													<input type="checkbox" name="SubsystemHttp" id="SubsystemHttp" value="1" /> <label for="SubsystemHttp" data-i18n="Enabled"></label><br/>
+													<input type="checkbox" name="SubsystemShared" id="SubsystemShared" value="2" /> <label for="SubsystemShared" data-i18n="SharedDomoticzAllowed">Shared Domoticz Allowed</label><br/>
+													<input type="checkbox" name="SubsystemApps" id="SubsystemApps" value="4" /> <label for="SubsystemApps" data-i18n="AppsAllowed">Apps Allowed</label>
 												</td>
 											</tr>
 										</table>
@@ -292,25 +292,25 @@
 									<h2><span data-i18n="ActiveMenus"></span>:</h2>
 									<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
-											<td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <span data-i18n="Floorplan"></span></td>
+											<td><input type="checkbox" id="EnableTabFloorplans" name="EnableTabFloorplans"/> <label for="EnableTabFloorplans" data-i18n="Floorplan"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <span data-i18n="Switches"></span></td>
+											<td><input type="checkbox" id="EnableTabLights" name="EnableTabLights"/> <label for="EnableTabLights" data-i18n="Switches"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <span data-i18n="Scenes"></span></td>
+											<td><input type="checkbox" id="EnableTabScenes" name="EnableTabScenes"/> <label for="EnableTabScenes" data-i18n="Scenes"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <span data-i18n="Temperature"></span></td>
+											<td><input type="checkbox" id="EnableTabTemp" name="EnableTabTemp"/> <label for="EnableTabTemp" data-i18n="Temperature"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <span data-i18n="Weather"></span></td>
+											<td><input type="checkbox" id="EnableTabWeather" name="EnableTabWeather"/> <label for="EnableTabWeather" data-i18n="Weather"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <span data-i18n="Utility"></span></td>
+											<td><input type="checkbox" id="EnableTabUtility" name="EnableTabUtility"/> <label for="EnableTabUtility" data-i18n="Utility"></label></td>
 										</tr>
 										<tr>
-											<td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <span data-i18n="Custom"></span></td>
+											<td><input type="checkbox" id="EnableTabCustom" name="EnableTabCustom"/> <label for="EnableTabCustom" data-i18n="Custom"></label></td>
 										</tr>
 									</table>
 								</div>
@@ -369,8 +369,8 @@
 									<h2><span data-i18n="Prowl (iPhone/iPad)"></span>:</h2>
 									<table class="display" id="prowltable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="ProwlEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>: </td>
+										<td><input type="checkbox" id="ProwlEnabled" name="ProwlEnabled"/><label for="ProwlEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="ProwlAPI"><span data-i18n="API Key"></span>: </label></td>
@@ -384,8 +384,8 @@
 									<h2><span data-i18n="NMA (Android)"></span>:</h2>
 									<table class="display" id="nmatable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="NMAEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="NMAEnabled" name="NMAEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="NMAEnabled" name="NMAEnabled"/><label for="NMAEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="NMAAPI"><span data-i18n="API Key"></span>: </label></td>
@@ -401,8 +401,8 @@
 									<h2><span data-i18n="Pushbullet"></span>:</h2>
 									<table class="display" id="pushbullettable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="PushbulletEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="PushbulletEnabled" name="PushbulletEnabled"/><label for="PushbulletEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="PushbulletAPI"><span data-i18n="API Key"></span>: </label></td>
@@ -416,8 +416,8 @@
 									<h2>Pushsafer (iOS/Android/Windows10) + <span data-i18n="ImageURL"></span>:</h2>
 									<table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="PushsaferEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"/><label for="PushsaferEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="PushsaferAPI"><span data-i18n="API Key"></span>: </label></td>
@@ -437,8 +437,8 @@
 									<h2><span data-i18n="Pushover (Android/iOs)"></span>:</h2>
 									<table class="display" id="pushovertable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="PushoverEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="PushoverEnabled" name="PushoverEnabled"/><label for="PushoverEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="PushoverUser"><span data-i18n="USER KEY"></span>: </label></td>
@@ -456,8 +456,8 @@
 									<h2><span data-i18n="Pushalot (Windows/Windows Phone)"></span>:</h2>
 									<table class="display" id="pushalottable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="PushALotEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="PushALotEnabled" name="PushALotEnabled"/><label for="PushALotEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="PushALotAPI"><span data-i18n="API Key"></span>: </label></td>
@@ -473,8 +473,8 @@
 									<h2><span data-i18n="Clickatell SMS">Clickatell SMS</span>:</h2>
 									<table class="display" id="smstable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="ClickatellEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="ClickatellEnabled" name="ClickatellEnabled"/><label for="ClickatellEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="ClickatellAPI"><span data-i18n="API Key">API Key</span>: </label></td>
@@ -507,8 +507,8 @@
 									<h2><span>IFTTT</span>:</h2>
 									<table class="display" id="ifttttable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
-											<td align="right" style="width:80px"><label><span data-i18n="Enabled"></span>: </label></td>
-											<td><input type="checkbox" id="IFTTTEnabled" name="IFTTTEnabled" /></td>
+											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+											<td><input type="checkbox" id="IFTTTEnabled" name="IFTTTEnabled" /><label for="IFTTTEnabled"/></td>
 										</tr>
 										<tr>
 											<td align="right"><label><span data-i18n="API Key">API Key</span>: </label></td>
@@ -522,8 +522,8 @@
 									<h2><span data-i18n="Custom HTTP">Custom HTTP</span>/<span data-i18n="Action">Action</span>:</h2>
 									<table class="display" id="httptable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="HTTPEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td><input type="checkbox" id="HTTPEnabled" name="HTTPEnabled"/><label for="HTTPEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label for="HTTPField1">#FIELD1: </label></td>
@@ -581,8 +581,8 @@
 									<h2><span data-i18n="Kodi Media Player"></span>:</h2>
 									<table class="display" id="koditable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
-											<td align="right" style="width:80px"><label for="KodiEnabled"><span data-i18n="Enabled"></span>: </label></td>
-											<td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/></td>
+											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+											<td><input type="checkbox" id="KodiEnabled" name="KodiEnabled"/><label for="KodiEnabled"/></td>
 										</tr>
 										<tr>
 											<td align="right"><label for="KodiIPAddress"><span data-i18n="IP Address"></span>: </label></td>
@@ -610,8 +610,8 @@
 									<h2><span data-i18n="Logitech Media Server"></span>:</h2>
 									<table class="display" id="lmstable" border="0" cellpadding="0" cellspacing="0">
 										<tr>
-											<td align="right" style="width:80px"><label for="LmsEnabled"><span data-i18n="Enabled"></span>: </label></td>
-											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/></td>
+											<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+											<td><input type="checkbox" id="LmsEnabled" name="LmsEnabled"/><label for="LmsEnabled"/></td>
 										</tr>
 										<tr>
 											<td align="right">
@@ -640,8 +640,8 @@
 									<h2><span data-i18n="Google Cloud Messaging"></span>:</h2>
 									<table class="display" id="gcmtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:80px"><label for="GCMEnabled"><span data-i18n="Enabled"></span>: </label></td>
-										<td><input type="checkbox" id="GCMEnabled" name="GCMEnabled"/></td>
+										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+										<td align="left" style="width: 40px;"><input type="checkbox" id="GCMEnabled" name="GCMEnabled"/><label for="GCMEnabled"/></td>
 										<td><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('gcm')">Test</button></td>
 									</tr>
 									</table>
@@ -737,7 +737,7 @@
 									<table class="display" id="emailtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:80px"><span data-i18n="Enabled"></span>: </td>
-										<td><input type="checkbox" id="EmailEnabled" name="EmailEnabled" /></td>
+										<td><input type="checkbox" id="EmailEnabled" name="EmailEnabled" /><label for="EmailEnabled"/></td>
 									</tr>
 									<tr>
 										<td align="right" style="width:60px"><label><span data-i18n="From"></span>: </label></td>
@@ -769,15 +769,15 @@
 									</tr>
 									<tr>
 										<td></td>
-										<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <span data-i18n="Send Email Notification Alerts"></span></td>
+										<td><input type="checkbox" id="UseEmailInNotifications" name="UseEmailInNotifications"/> <label for="UseEmailInNotifications"><span data-i18n="Send Email Notification Alerts"></span></label></td>
 									</tr>
 									<tr>
 										<td></td>
-										<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+										<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <label for="EmailAsAttachment"><span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></label></td>
 									</tr>
 									<tr>
 										<td></td>
-										<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <span data-i18n="Send Errors as Notification"></span></td>
+										<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <label for="SendErrorsAsNotification"><span data-i18n="Send Errors as Notification"></span></label></td>
 									</tr>
 									</table>
 								</div>
@@ -917,16 +917,12 @@
 										(<span data-i18n="Milliseconds"></span>)</td>
 									</tr>
 									<tr>
-										<td align="right" style="width:150px"><label><span data-i18n="Fullscreen Mode">Fullscreen Mode</span>: </label></td>
-										<td>
-											<input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"/>
-										</td>
+										<td align="right" style="width:150px"><span data-i18n="Fullscreen Mode">Fullscreen Mode</span>:</td>
+										<td><input type="checkbox" id="FloorplanFullscreenMode" name="FloorplanFullscreenMode"/><label for="FloorplanFullscreenMode"/></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:150px"><label><span data-i18n="Animate Transitions">Animate Transitions</span>: </label></td>
-										<td>
-											<input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"/>
-										</td>
+										<td align="right" style="width:150px"><span data-i18n="Animate Transitions">Animate Transitions</span>:</td>
+										<td><input type="checkbox" id="FloorplanAnimateZoom" name="FloorplanAnimateZoom"/><label for="FloorplanAnimateZoom"/></td>
 									</tr>
 									</table>
 								</div>
@@ -937,16 +933,16 @@
 									<h2><span data-i18n="Display Values"></span>:</h2>
 									<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:150px; vertical-align:top"><label><span data-i18n="Sensors"></span>: </label></td>
-										<td><input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/></td>
+										<td align="right" style="width:150px; vertical-align:top"><span data-i18n="Sensors"></span>:</td>
+										<td><input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/><label for="FloorplanShowSensorValues" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:150px"><label><span data-i18n="Switches"></span>: </label></td>
-										<td><input type="checkbox" id="FloorplanShowSwitchValues" name="FloorplanShowSwitchValues"/></td>
+										<td align="right" style="width:150px"><span data-i18n="Switches"></span>:</td>
+										<td><input type="checkbox" id="FloorplanShowSwitchValues" name="FloorplanShowSwitchValues"/><label for="FloorplanShowSwitchValues" /></td>
 									</tr>
 									<tr>
-										<td align="right" style="width:150px"><label><span data-i18n="Scenes"></span>: </label></td>
-										<td><input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"/></td>
+										<td align="right" style="width:150px"><span data-i18n="Scenes"></span>:</td>
+										<td><input type="checkbox" id="FloorplanShowSceneNames" name="FloorplanShowSceneNames"/><label for="FloorplanShowSceneNames" /></td>
 									</tr>
 									</table>
 								</div>
@@ -1138,10 +1134,8 @@
 									<h2><span data-i18n="EventSystem (Lua/Blockly/Scripts)"></span>:</h2>
 									<table class="display" id="eventsystemtable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:90px"><label><span data-i18n="Disabled"></span>: </label></td>
-										<td>
-											<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
-										</td>
+										<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
+										<td><input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/><label for="DisableEventScriptSystem"/></td>
 									</tr>
 									<tr>
 										<td style="width:90px"></td>
@@ -1156,11 +1150,11 @@
 							<br>
 							<div class="row-fluid">
 								<div class="span12">
-									<h2><span data-i18n="dzVents">dzVents (2.2.0)</span>:</h2>
+									<h2><span data-i18n="dzVents">dzVents</span>:</h2>
 									<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
-										<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"></td>
+										<td><input type="checkbox" id="DisableDzVentsSystem" name="DisableDzVentsSystem"><label for="DisableDzVentsSystem"/></td>
 									</tr>
 									<tr>
 										<td align="right"><label>Log Level:</label></td>

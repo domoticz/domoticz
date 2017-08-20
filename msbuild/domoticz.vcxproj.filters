@@ -1346,6 +1346,21 @@
     <None Include="..\www\app\DPInfluxController.js">
       <Filter>www\app</Filter>
     </None>
+    <None Include="..\www\styles\default\base.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\custom.js">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\extras_and_animations.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\navigation_main_sidebar.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\show_version_number.css">
+      <Filter>www\styles\default</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -2055,6 +2070,12 @@
     </ClInclude>
     <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
       <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\tinyxml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\xpath_processor.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
