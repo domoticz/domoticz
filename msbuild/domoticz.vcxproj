@@ -382,7 +382,6 @@
     <None Include="..\www\views\hardware.html" />
     <None Include="..\www\views\history.html" />
     <None Include="..\www\views\lights.html" />
-    <None Include="..\www\views\lights_bak.html" />
     <None Include="..\www\views\log.html" />
     <None Include="..\www\views\login.html" />
     <None Include="..\www\views\logout.html" />

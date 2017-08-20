@@ -1247,9 +1247,6 @@
     <None Include="..\www\views\lights.html">
       <Filter>www\views</Filter>
     </None>
-    <None Include="..\www\views\lights_bak.html">
-      <Filter>www\views</Filter>
-    </None>
     <None Include="..\www\views\log.html">
       <Filter>www\views</Filter>
     </None>
