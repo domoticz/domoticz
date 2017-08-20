@@ -154,7 +154,12 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (!g_bRunAsDaemon)
 	{
 		//output to console
-		std::cout << szIntLog << std::endl;
+#ifndef WIN32
+		if (level == LOG_ERROR)
+			std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
+		else
+#endif
+			std::cout << szIntLog << std::endl;
 	}
 
 	if (m_outputfile.is_open())
