@@ -299,11 +299,11 @@ void I2C::PCF8574_ReadChipDetails()
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
 	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
 	for (char pin_number=0; pin_number<8; pin_number++){
-		DeviceID = 0; // \/ DiviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number \/
-		DeviceID =+ HTYPE_RaspberryPCF8574 << 24;
-		DeviceID =+ 0 << 16;
-		DeviceID =+ i2c_addr << 8;
-		DeviceID =+ pin_number;
+		DeviceID = 0; // \/ DeviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number \/
+		DeviceID =+ (int)HTYPE_RaspberryPCF8574 << 24;
+		DeviceID =+ (int)0 << 16;
+		DeviceID =+ (int)i2c_addr << 8;
+		DeviceID =+ (int)pin_number;
 		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
 		bool value=(buf & pin_mask);
