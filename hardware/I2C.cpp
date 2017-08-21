@@ -302,7 +302,7 @@ void I2C::PCF8574_ReadChipDetails()
 		DeviceID = 0; // \/ DiviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number \/
 		DeviceID =+ HTYPE_RaspberryPCF8574 << 24;
 		DeviceID =+ 0 << 16;
-		DeviceID =+ i2c_address << 8;
+		DeviceID =+ i2c_addr << 8;
 		DeviceID =+ pin_number;
 		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
