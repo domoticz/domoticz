@@ -293,17 +293,12 @@ void I2C::PCF8574_ReadChipDetails()
 	return;
 #else
 	char buf = 0;
-	int DeviceID=0;
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
 	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
 	for (char pin_number=0; pin_number<8; pin_number++){
-		DeviceID = 0; // \/ DeviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number \/
-		DeviceID =+ (int)HTYPE_RaspberryPCF8574 << 24;
-		DeviceID =+ (int)0 << 16;
-		DeviceID =+ (int)i2c_addr << 8;
-		DeviceID =+ (int)pin_number;
+		int DeviceID = (HTYPE_RaspberryPCF8574 << 24) + (0 << 16) + (i2c_addr << 8) + pin_number; // DeviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number
 		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
 		bool value=(buf & pin_mask);
@@ -337,7 +332,6 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 	}
 	//else _log.Log(LOG_NORM, "GPIO: No change");
 	close(fd);
-	//_log.Log(LOG_NORM, "WRITE ON SEAHU DEVICE n.%d value %d is OK", gpioId, value);
 	return 1;
 #endif
 }
