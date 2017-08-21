@@ -93,9 +93,6 @@ const unsigned char BMPx8x_OverSampling = 3;
 #define TSL2561_Channel0	0xAC	// IR+Visible lux
 #define TSL2561_Channel1	0xAE	// IR only lux
 
-// PCF8574 and PCF8574A (8-bit I/O expander for I2C bus)
-#define PCF8574_ID_ADD 0x4000   // base pseudo random DeviceID for PCF8574 devices
-
 const char* szI2CTypeNames[] = {
 	"I2C_Unknown",
 	"I2C_BMP085/180",
@@ -296,31 +293,26 @@ void I2C::PCF8574_ReadChipDetails()
 	return;
 #else
 	char buf = 0;
+	int DeviceID=0;
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
 	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
 	for (char pin_number=0; pin_number<8; pin_number++){
-		int DeviceID = PCF8574_create_DeviceID(i2c_addr, pin_number);
+		DeviceID = 0; // \/ DiviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number \/
+		DeviceID =+ HTYPE_RaspberryPCF8574 << 24;
+		DeviceID =+ 0 << 16;
+		DeviceID =+ i2c_address << 8;
+		DeviceID =+ pin_number;
 		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
 		bool value=(buf & pin_mask);
-		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
+		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // create or update switch
 	}
 	close(fd);
 #endif
 }
 
-
-/*
- * I don't know any rule how to create DeviceID, therefore I create own function who
- * create unique DeviceId from his i2c_address and pin + pseudo random number for this type devices
- * it can't get 100% guarantee that another device use some DeviceID
- */
-int I2C::PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask)
-{
-	return PCF8574_ID_ADD+i2c_address*256+pin_mask;
-}
 
 char I2C::PCF8574_WritePin(char pin_number,char  value)
 {	

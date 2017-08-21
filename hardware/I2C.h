@@ -88,7 +88,6 @@ private:
 	
 	// PCF8574
 	unsigned char	i2c_addr;
-	int				PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask);
 	void			PCF8574_ReadChipDetails();
 	char			PCF8574_WritePin(char pin_number,char  value);
 	char 			readByteI2C(int fd, char *byte, char i2c_addr);
