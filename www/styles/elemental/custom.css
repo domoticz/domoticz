@@ -173,6 +173,20 @@ body table#itemtablenostatus tbody tr{
 	margin-top: 10px;
 }
 
+.btn-group {
+       display: block;
+       white-space: normal;
+}
+
+.btn-group > .btn-small {
+    font-size: 10px;
+}
+
+.btn-small {
+    padding: 2px 3px;
+    font-size: 10px;
+}
+
 #timesun {
 	height: 2.60em;
 	position: fixed;
