@@ -158,35 +158,13 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
-		/*
-		_log.Log(LOG_NORM,"GPIO: packetlength %d", pCmd->LIGHTING2.packetlength);
-		_log.Log(LOG_NORM,"GPIO: packettype %d", pCmd->LIGHTING2.packettype);
-		_log.Log(LOG_NORM,"GPIO: subtype %d", pCmd->LIGHTING2.subtype);
-		_log.Log(LOG_NORM,"GPIO: seqnbr %d", pCmd->LIGHTING2.seqnbr);
-		_log.Log(LOG_NORM,"GPIO: id1 %d", pCmd->LIGHTING2.id1);
-		_log.Log(LOG_NORM,"GPIO: id2 %d", pCmd->LIGHTING2.id2);
-		_log.Log(LOG_NORM,"GPIO: id3 %d", pCmd->LIGHTING2.id3);
-		_log.Log(LOG_NORM,"GPIO: id4 %d", pCmd->LIGHTING2.id4);
-		unsigned char id1=pCmd->LIGHTING2.id1;
-		unsigned char id2=pCmd->LIGHTING2.id2;
-		unsigned char id3=pCmd->LIGHTING2.id3;
-		unsigned char id4=pCmd->LIGHTING2.id4;
-		int ID=(id1<<24)|(id2<<16)|(id3<<8)|id4;
-		//_log.Log(LOG_NORM,"GPIO: ID %d", ID);
-		_log.Log(LOG_NORM,"GPIO: unitcode %d", pCmd->LIGHTING2.unitcode); // in DB column "Unit" used for identify pin number
-		_log.Log(LOG_NORM,"GPIO: cmnd %d", pCmd->LIGHTING2.cmnd);
-		_log.Log(LOG_NORM,"GPIO: level %d", pCmd->LIGHTING2.level);
-		*/
-		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" used for identify pin number
+		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" is used for identify pin number
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-		value=~value&0x01; // inversion value domoticz on=1, off=0, bat I use PCF8574 pin active pin=0, no active pin=1
+		value=~value&0x01; // inversion value: domoticz have on=1, off=0, but in PCF8574 I have on=0, off=1
 		if (PCF8574_WritePin( pin_number, value)<0) return false;
 		else return true;
 	}
-	else {
-		_log.Log(LOG_NORM,"GPIO: WriteToHardware packet type %d or subtype %d unknown", pCmd->LIGHTING1.packettype, pCmd->LIGHTING1.subtype);
-		return false;
-	}
+	else return false;
 }
 
 void I2C::Do_Work()
@@ -296,9 +274,9 @@ void I2C::PCF8574_ReadChipDetails()
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
-	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
+	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz use (1=on, 0=off)
 	for (char pin_number=0; pin_number<8; pin_number++){
-		int DeviceID = (HTYPE_RaspberryPCF8574 << 24) + (0 << 16) + (i2c_addr << 8) + pin_number; // DeviceID from HTYPE_RaspberryPCF8574, i2c_address and pin_number
+		int DeviceID = (i2c_addr << 8) + pin_number; // DeviceID from i2c_address and pin_number
 		unsigned char Unit = pin_number;
 		char pin_mask=0x01<<pin_number;
 		bool value=(buf & pin_mask);
@@ -330,7 +308,6 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 			return -3;
 		}
 	}
-	//else _log.Log(LOG_NORM, "GPIO: No change");
 	close(fd);
 	return 1;
 #endif
