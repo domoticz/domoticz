@@ -81,7 +81,6 @@ matrix:
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
       - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
-      - which python3
       - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
