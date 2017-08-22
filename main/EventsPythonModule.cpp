@@ -157,6 +157,7 @@
                 PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				m_PyInterpreter = NULL;
                 _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
