@@ -171,7 +171,6 @@
                 // _log.Log(LOG_STATUS, "Python Event System: Module found");
                 return pModule;
             } else {
-                _log.Log(LOG_STATUS, "Python EventSystem: Module not found - Trying to initialize.");
                 Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", NULL);
                 pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
