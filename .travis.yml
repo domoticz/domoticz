@@ -7,9 +7,9 @@ language: cpp
 cache:
   - apt
 
-update-alternatives:
-  - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
-  - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
+#update-alternatives:
+#  - install /usr/bin/gcc gcc /usr/bin/gcc-6 50
+#  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
 
 sources:
   - trusty
@@ -33,8 +33,7 @@ matrix:
   - os: linux
     dist: trusty
     sudo: required
-    compiler:
-      - gcc
+    compiler: gcc
     env: TARGET_ARCHITECTURE=x86_64
     addons:
       apt:
@@ -43,8 +42,8 @@ matrix:
           - ubuntu-toolchain-r-test
           - boost-latest
         packages:
-          - gcc-4.9
-          - g++-4.9
+          - gcc-6
+          - g++-6
           - libboost1.55-all-dev
           - cmake
           - cmake-data
@@ -58,16 +57,21 @@ matrix:
           - git
           - libdigest-sha-perl
           - python3-dev
+    env:
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"          
+    before_install:
+      - eval "${MATRIX_EVAL}"    script:
     script:
       - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
-    osx_image: xcode6.2
-    compiler:
-      - gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    osx_image: xcode8
+    compiler: gcc
+    env:
+      - TARGET_ARCHITECTURE=x86_64
+      - MATRIX_EVAL="brew install gcc && CC=gcc-6 && CXX=g++-6"
     install:
       - brew install boost|| true
       - brew install libusb
@@ -79,6 +83,8 @@ matrix:
       - brew install python3
       - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+    before_install:
+      - eval "${MATRIX_EVAL}"    script:
     script:
       - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
