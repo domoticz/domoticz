@@ -43,6 +43,7 @@ class CEventSystem : public CLuaCommon
 		float fRandomSec;
 		int iRepeat;
 		float fRepeatSec;
+		bool bEventTrigger;
 	};
 
 public:
@@ -102,8 +103,9 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessUserVariable(const uint64_t varId);
-	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
+	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId, const bool bEventTrigger = true);
+	void ProcessSceneGroup(const uint64_t sgID, const int nValue, const std::string &lastUpdate, const bool bEventTrigger = true);
+	void ProcessUserVariable(const uint64_t varID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate, const bool bEventTrigger = false);
 	void RemoveSingleState(int ulDevID);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname);
 	void WWWUpdateSecurityState(int securityStatus);
@@ -112,8 +114,6 @@ public:
 	void GetCurrentStates();
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
-	void UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
@@ -165,7 +165,7 @@ private:
 #endif
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
-	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
+	void ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
@@ -175,8 +175,8 @@ private:
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	void UpdateDevice(const std::string &DevParams);
-	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel);
+	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = true);
+	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);

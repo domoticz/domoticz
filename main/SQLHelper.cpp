@@ -2765,7 +2765,7 @@ bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string
 	return SwitchLightFromTasker(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
 }
 
-bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, int hue)
+bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, int hue, const bool bEventTrigger)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -2774,7 +2774,7 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcm
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return m_mainworker.SwitchLightInt(sd, switchcmd, level, hue, false);
+	return m_mainworker.SwitchLightInt(sd, switchcmd, level, hue, false, bEventTrigger);
 }
 
 void CSQLHelper::Do_Work()
@@ -2870,17 +2870,17 @@ void CSQLHelper::Do_Work()
 							break;
 						default:
 							//just update internally
-							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
+							UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true, itt->_eventTrigger);
 							break;
 						}
 						break;
 					case pTypeLighting4:
 						//only update internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true, itt->_eventTrigger);
 						break;
 					default:
 						//unknown hardware type, sensor will only be updated internally
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true, itt->_eventTrigger);
 						break;
 					}
 				}
@@ -2890,7 +2890,7 @@ void CSQLHelper::Do_Work()
 					{
 						//only update internally
 						std::string devname = "";
-						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
+						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true, itt->_eventTrigger);
 					}
 					else
 						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
@@ -2980,12 +2980,12 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
 			{
-				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
+				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_eventTrigger);
 			}
 
 			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
 			{
-				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str());
+				m_mainworker.SwitchScene(itt->_idx, itt->_command.c_str(), itt->_eventTrigger);
 			}
 			else if (itt->_ItemType == TITEM_SET_VARIABLE)
 			{
@@ -2998,7 +2998,7 @@ void CSQLHelper::Do_Work()
 					s_str.clear();
 					s_str.str("");
 					s_str << itt->_idx;
-					std::string updateResult = UpdateUserVariable(s_str.str(), sd[0], sd[1], itt->_sValue, (itt->_nValue == 0) ? false : true);
+					std::string updateResult = UpdateUserVariable(s_str.str(), sd[0], sd[1], itt->_sValue, itt->_eventTrigger);
 					if (updateResult != "OK") {
 						_log.Log(LOG_ERROR, "Error updating variable %s: %s", sd[0].c_str(), updateResult.c_str());
 					}
@@ -3234,19 +3234,19 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 	return results;
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
+uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction, const bool bEventTrigger)
 {
-	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction);
+	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, "", devname, bUseOnOffAction, bEventTrigger);
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const char* sValue, std::string &devname, const bool bUseOnOffAction, const bool bEventTrigger)
 {
-	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue, devname, bUseOnOffAction);
+	return UpdateValue(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, 0, sValue, devname, bUseOnOffAction, bEventTrigger);
 }
 
-uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction, const bool bEventTrigger)
 {
-	uint64_t devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue,devname,bUseOnOffAction);
+	uint64_t devRowID=UpdateValueInt(HardwareID, ID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, bUseOnOffAction, bEventTrigger);
 	if (devRowID == -1)
 		return -1;
 
@@ -3293,7 +3293,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			unsigned char ParentType = (unsigned char)atoi(sd[3].c_str());
 			unsigned char ParentSubType = (unsigned char)atoi(sd[4].c_str());
 			unsigned char ParentUnit = (unsigned char)atoi(sd[5].c_str());
-			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName, 0);
+			m_mainworker.m_eventsystem.ProcessDevice(ParentHardwareID, ParentID, ParentUnit, ParentType, ParentSubType, signallevel, batterylevel, nValue, sValue, ParentName, 0, bEventTrigger);
 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
@@ -3465,7 +3465,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 	return devRowID;
 }
 
-uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
+uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction, const bool bEventTrigger)
 {
 	if (!m_dbase)
 		return -1;
@@ -3839,7 +3839,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 					if (bAdd2DelayQueue==true)
 					{
 						boost::lock_guard<boost::mutex> l(m_background_task_mutex);
-						_tTaskItem tItem=_tTaskItem::SwitchLight(AddjValue,ulID,HardwareID,ID,unit,devType,subType,switchtype,signallevel,batterylevel,cmd,sValue);
+						_tTaskItem tItem=_tTaskItem::SwitchLight(AddjValue, ulID, HardwareID, ID, unit, devType, subType, switchtype, signallevel, batterylevel, cmd, sValue, bEventTrigger);
 						//Remove all instances with this device from the queue first
 						//otherwise command will be send twice, and first one will be to soon as it is currently counting
 						std::vector<_tTaskItem>::iterator itt=m_background_task_queue.begin();
@@ -3871,8 +3871,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"SQLH UpdateValueInt %s HwID:%d  DevID:%s Type:%d  sType:%d nValue:%d sValue:%s ", devname.c_str(),HardwareID, ID, devType, subType, nValue, sValue );
 
-	if (bDeviceUsed)
-		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0);
+	if (bDeviceUsed && !m_bDisableEventSystem)
+		m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulID, unit, devType, subType, signallevel, batterylevel, nValue, sValue, devname, 0, bEventTrigger);
 	return ulID;
 }
 
@@ -7140,6 +7140,7 @@ std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 	return "OK";
 
 }
+
 std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
@@ -7158,25 +7159,23 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 		CURLEncode::URLDecode(varvalue.c_str()).c_str()
 		);
 
-	result = safe_query("SELECT ID FROM UserVariables WHERE (Name == '%q')",
-		varname.c_str()
-	);
-	if (result.size()>0)
-	{
-		std::vector<std::string> sd = result[0];
-		std::stringstream vId_str(sd[0]);
-		uint64_t vId;
-		vId_str >> vId;
-		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
-	}
 	if (!m_bDisableEventSystem)
 	{
-		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+		result = safe_query("SELECT ID FROM UserVariables WHERE (Name == '%q')",
+			varname.c_str()
+		);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream vId_str(sd[0]);
+			uint64_t vId;
+			vId_str >> vId;
+			m_mainworker.m_eventsystem.ProcessUserVariable(vId, varname, CURLEncode::URLDecode(varvalue.c_str()), typei, TimeToString(NULL, TF_DateTime), true);
+		}
 	}
-
 	return "OK";
-
 }
+
 std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger)
 {
 	int typei = atoi(vartype.c_str());
@@ -7212,13 +7211,7 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
-		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
-	}
-	if (eventtrigger) {
-		std::stringstream vId_str(idx);
-		uint64_t vId;
-		vId_str >> vId;
-		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
+		m_mainworker.m_eventsystem.ProcessUserVariable(vId, varname, szVarValue, typei, szLastUpdate, eventtrigger);
 	}
 	return "OK";
 }
@@ -7234,13 +7227,8 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 		idx
 		);
 	if (!m_bDisableEventSystem)
-	{
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
-	}
-	if (eventtrigger)
-	{
-		m_mainworker.m_eventsystem.ProcessUserVariable(idx);
-	}
+		m_mainworker.m_eventsystem.ProcessUserVariable(idx, "", szVarValue, -1, szLastUpdate, eventtrigger);
+
 	return true;
 }
 
