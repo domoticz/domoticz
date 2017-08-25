@@ -2879,7 +2879,7 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
-/*
+
 				if (!m_sql.m_bDisableEventSystem)
 				{
 					if (subType != sTypeAlert &&
@@ -2888,7 +2888,7 @@ namespace http {
 						devType != pTypeTEMP_HUM &&
 						devType != pTypeTEMP_HUM_BARO)
 					m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulIdx, unit, devType, subType, signallevel, batterylevel, invalue, svalue.c_str(), dname, 0, request::findValue(&req, "triggerevent") == "1");
-				} */
+				}
 			}
 		}
 
