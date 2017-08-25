@@ -64,30 +64,39 @@ matrix:
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
-  - os: osx
-    osx_image: xcode8
-    compiler: gcc
-    env:
-      - TARGET_ARCHITECTURE=x86_64
-      - MATRIX_EVAL="brew install gcc && CC=gcc-6 && CXX=g++-6"
-    install:
-      - brew install boost|| true
-      - brew install libusb
-      - brew install libusb-compat
-      - brew install zlib || true
-      - brew install openssl
-      - brew link openssl --force
-      - brew install md5sha1sum
-      - brew install python3
-      - brew linkapps python3
-      - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
-    before_script:
-      - export CXX="g++-6" CC="gcc-6"
-    script:
-      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
-      - make
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
+    - os: osx
+      osx_image: xcode8
+      env:
+        - MATRIX_EVAL="brew install gcc5 && CC=gcc-5 && CXX=g++-5"
+
+    - os: osx
+      osx_image: xcode8
+      env:
+        - MATRIX_EVAL="brew install gcc && CC=gcc-6 && CXX=g++-6"
+  install:
+    - brew install boost|| true
+    - brew install libusb
+    - brew install libusb-compat
+    - brew install zlib || true
+    - brew install openssl
+    - brew link openssl --force
+    - brew install md5sha1sum
+    - brew install python3
+    - brew linkapps python3
+    - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+  before_script:
+    - export CXX="g++-6" CC="gcc-6"
+  script:
+    - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
+    - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+    - make
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
