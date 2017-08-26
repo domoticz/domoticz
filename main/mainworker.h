@@ -57,14 +57,14 @@ public:
 	std::string GetSecureWebserverPort();
 #endif
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
+	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool bEventTrigger = true);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
-	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay, const bool bEventTrigger = true);
+	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay, const bool bEventTrigger = true);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting, const bool bEventTrigger = true);
 
-	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
-	bool SwitchScene(const uint64_t idx, const std::string &switchcmd);
+	bool SwitchScene(const std::string &idx, const std::string &switchcmd, const bool bEventTrigger = true);
+	bool SwitchScene(const uint64_t idx, const std::string &switchcmd, const bool bEventTrigger = true);
 	void CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
 	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 
@@ -112,7 +112,7 @@ public:
 	void SetInternalSecStatus();
 	bool GetSensorData(const uint64_t idx, int &nValue, std::string &sValue);
 
-	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
+	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true, const bool bEventTrigger = false);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
 
@@ -216,18 +216,20 @@ private:
 		int hardwareId;
 		std::vector<unsigned char> vrxCommand;
 		boost::uint16_t crc;
+		bool bEventTrigger;
 		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tRxQueueItem> m_rxMessageQueue;
 	void UnlockRxMessageQueue();
 	void PushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
-	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait);
-	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel); //battery level: 0-100, 255=no battery, -1 = don't set
+	void CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool wait, const bool bEventTrigger = false);
+	void ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel, const bool bEventTrigger = false); //battery level: 0-100, 255=no battery, -1 = don't set
 
 	struct _tRxMessageProcessingResult {
 		std::string DeviceName;
 		uint64_t DeviceRowIdx;
 		bool bProcessBatteryValue;
+		bool bEventTrigger;
 	};
 
 	//(RFX) Message decoders

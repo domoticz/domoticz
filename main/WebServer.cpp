@@ -2812,6 +2812,7 @@ namespace http {
 
 			std::string nvalue = request::findValue(&req, "nvalue");
 			std::string svalue = request::findValue(&req, "svalue");
+			std::string dname;
 
 			if ((nvalue.empty() && svalue.empty()))
 			{
@@ -2837,7 +2838,7 @@ namespace http {
 			{
 				//Get the raw device parameters
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType FROM DeviceStatus WHERE (ID=='%q')",
+				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, Name FROM DeviceStatus WHERE (ID=='%q')",
 					idx.c_str());
 				if (result.empty())
 					return;
@@ -2846,6 +2847,7 @@ namespace http {
 				dunit = result[0][2];
 				dtype = result[0][3];
 				dsubtype = result[0][4];
+				dname = result[0][5];
 			}
 
 			int HardwareID = atoi(hid.c_str());
@@ -2873,10 +2875,20 @@ namespace http {
 			{
 				batterylevel = atoi(sBatteryLevel.c_str());
 			}
-			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel))
+			if (m_mainworker.UpdateDevice(HardwareID, DeviceID, unit, devType, subType, invalue, svalue, signallevel, batterylevel, true, request::findValue(&req, "triggerevent") == "1"))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";
+
+				if (!m_sql.m_bDisableEventSystem)
+				{
+					if (subType != sTypeAlert &&
+						(devType != pTypeAirQuality && subType != sTypeVoltcraft) &&
+						devType != pTypeTEMP &&
+						devType != pTypeTEMP_HUM &&
+						devType != pTypeTEMP_HUM_BARO)
+					m_mainworker.m_eventsystem.ProcessDevice(HardwareID, ulIdx, unit, devType, subType, signallevel, batterylevel, invalue, svalue.c_str(), dname, 0, request::findValue(&req, "triggerevent") == "1");
+				}
 			}
 		}
 
@@ -6455,7 +6467,8 @@ namespace http {
 					}
 				}
 				root["title"] = "SwitchLight";
-				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0) == true)
+
+				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0, !(request::findValue(&req, "triggerevent") == "0")) == true)
 				{
 					root["status"] = "OK";
 				}
@@ -6515,7 +6528,7 @@ namespace http {
 				}
 				_log.Log(LOG_STATUS, "User: %s initiated a scene/group command", Username.c_str());
 
-				if (m_mainworker.SwitchScene(idx, switchcmd) == true)
+				if (m_mainworker.SwitchScene(idx, switchcmd, !(request::findValue(&req, "triggerevent") == "0")) == true)
 				{
 					root["status"] = "OK";
 					root["title"] = "SwitchScene";
