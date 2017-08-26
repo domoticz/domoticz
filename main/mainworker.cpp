@@ -1040,7 +1040,10 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.StartPluginSystem();
+	if (1 == 0)
+	{
+		m_pluginsystem.StartPluginSystem();
+	}
 #endif
 	AddAllDomoticzHardware();
 	m_fibaropush.Start();
