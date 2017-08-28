@@ -43,6 +43,7 @@ class CEventSystem : public CLuaCommon
 		float fRandomSec;
 		int iRepeat;
 		float fRepeatSec;
+		bool bEventTrigger;
 	};
 
 public:
@@ -103,7 +104,7 @@ public:
 
 	void LoadEvents();
 	void ProcessUserVariable(const uint64_t varId);
-	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
+	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId, bool bEventTrigger = true);
 	void RemoveSingleState(int ulDevID);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname);
 	void WWWUpdateSecurityState(int securityStatus);
@@ -118,6 +119,15 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
+	enum _eReason
+	{
+		REASON_DEVICE,			// 0
+		REASON_SCENEGROUP,		// 1
+		REASON_USERVARIABLE,	// 2
+		REASON_TIME,			// 3
+		REASON_SECURITY			// 4
+	};
+
 	struct _tEventQueue
 	{
 		std::string reason;
@@ -133,12 +143,22 @@ private:
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
 
+	struct _tEventTrigger
+	{
+		uint64_t ID;
+		_eReason reason;
+		uint32_t delay;
+		time_t timestamp;
+	};
+
+	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
 	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
 	boost::shared_mutex m_scenesgroupsMutex;
+	boost::shared_mutex m_eventtriggerMutex;
 	boost::mutex m_measurementStatesMutex;
 	boost::mutex luaMutex;
 	volatile bool m_stoprequested;
@@ -151,6 +171,7 @@ private:
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
+	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
@@ -175,7 +196,7 @@ private:
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	void UpdateDevice(const std::string &DevParams);
+	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
 	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel);
 	lua_State *CreateBlocklyLuaState();
 

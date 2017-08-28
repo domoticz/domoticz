@@ -1154,12 +1154,33 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 	}
 }
 
+bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger)
+{
+	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+	if (m_eventtrigger.size() > 0)
+	{
+		std::vector<_tEventTrigger>::iterator itt;
+		time_t atime = mytime(NULL);
+		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		{
+			if (itt->ID == ulDevID &&
+				itt->reason == reason &&
+				(!itt->delay || (atime - itt->timestamp - itt->delay >= 0)))
+			{
+				m_eventtrigger.erase(itt);
+				return (!bEventTrigger ? true : false);
+			}
+		}
+	}
+	return bEventTrigger;
+}
+
 void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
-	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 
+	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
 	if (itt != m_scenesgroups.end())
 	{
@@ -1172,8 +1193,23 @@ void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, 
 			replaceitem.scenesgroupValue = "Mixed";
 		replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
+		scenesgroupsMutexLock.unlock();
+
+		if (GetEventTrigger(ulDevID, REASON_SCENEGROUP, true))
+		{
+			_tEventQueue item;
+			item.nValueWording = replaceitem.scenesgroupValue;
+			item.reason = "scenegroup";
+			item.DeviceID = ulDevID;
+			item.devname = replaceitem.scenesgroupName;
+			item.nValue = nValue;
+			item.lastUpdate = lastUpdate;
+			item.trigger = NULL;
+			m_eventqueue.push(item);
+		}
 	}
 }
+
 
 void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate)
 {
@@ -1195,6 +1231,15 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 
 		replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
+	}
+
+	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
+	{
+		_tEventQueue item;
+		item.reason = "uservariable";
+		item.varId = ulDevID;
+		item.lastUpdate = lastUpdate;
+		m_eventqueue.push(item);
 	}
 }
 
@@ -1286,36 +1331,39 @@ void CEventSystem::EventQueueThread()
 }
 
 
-void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId)
+void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId, bool bEventTrigger)
 {
 	if (!m_bEnabled)
 		return;
 
-	// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
-		devname.c_str());
-	if (result.size() > 0)
+	if (GetEventTrigger(ulDevID, REASON_DEVICE, bEventTrigger))
 	{
-		std::vector<std::string> sd = result[0];
-		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
-		_tEventQueue item;
-		item.reason = "device";
-		item.DeviceID = ulDevID;
-		item.devname = devname;
-		item.nValue = nValue;
-		item.sValue = sValue;
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
-		item.varId = 0;
-		item.lastUpdate = sd[2];
-		item.lastLevel = atoi(sd[3].c_str());
-		item.trigger = NULL;
-		m_eventqueue.push(item);
-	}
-	else
-	{
-		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
+		// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
+			devname.c_str());
+		if (result.size() > 0)
+		{
+			std::vector<std::string> sd = result[0];
+			_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
+			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
+			_tEventQueue item;
+			item.reason = "device";
+			item.DeviceID = ulDevID;
+			item.devname = devname;
+			item.nValue = nValue;
+			item.sValue = sValue;
+			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
+			item.varId = 0;
+			item.lastUpdate = sd[2];
+			item.lastLevel = atoi(sd[3].c_str());
+			item.trigger = NULL;
+			m_eventqueue.push(item);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
+		}
 	}
 }
 
@@ -2431,7 +2479,12 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 			iLastTokenType = 5;
 		} else if ( sToken == "TURN" ) {
 			iLastTokenType = 0;
-		} else if ( sToken.find( "SECOND" ) != std::string::npos ) {
+		}
+		else if (sToken == "NOTRIGGER")
+		{
+			oResults_.bEventTrigger = false;
+		}
+		else if ( sToken.find( "SECOND" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
 				case 1: oResults_.fForSec /= 60.; break;
 				case 3: oResults_.fRandomSec /= 60.; break;
@@ -3747,7 +3800,15 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand == "UpdateDevice")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		UpdateDevice(luaString);
+		size_t aFind = luaString.find(" TRIGGER");
+		bool bEventTrigger = false;
+		if (aFind != std::string::npos)
+		{
+			bEventTrigger = true;
+			std::string newAction = luaString.substr(0, aFind);
+			luaString = newAction;
+		}
+		UpdateDevice(luaString, bEventTrigger);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3759,12 +3820,30 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		float afterTimerSeconds = 0;
 		size_t aFind = variableValue.find(" AFTER ");
-		if ((aFind > 0) && (aFind != std::string::npos)) {
-			std::string delayString = variableValue.substr(aFind + 7);
+		size_t bFind = variableValue.find(" TRIGGER");
+		bool bEventTrigger = false;
+		if ((aFind > 0) && (aFind != std::string::npos))
+		{
+			std::string delayString;
+			if (bFind != std::string::npos)
+			{
+				delayString = variableValue.substr(aFind + 7, bFind - aFind - 7);
+				bEventTrigger = true;
+			}
+			else
+				delayString = variableValue.substr(aFind + 7);
+
 			std::string newAction = variableValue.substr(0, aFind);
 			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 			variableValue = newAction;
 		}
+		else if (bFind != std::string::npos)
+		{
+			bEventTrigger = true;
+			std::string newAction = variableValue.substr(0, bFind);
+			variableValue = newAction;
+		}
+
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (result.size() > 0)
 		{
@@ -3774,7 +3853,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			if (afterTimerSeconds < (1./timer_resolution_hz/2))
 			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
+				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, bEventTrigger);
 				if (updateResult != "OK") {
 					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
 				}
@@ -3786,7 +3865,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 				std::stringstream sstr;
 				sstr << sd[0];
 				sstr >> idx;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, bEventTrigger));
 			}
 			scriptTrue = true;
 		}
@@ -3819,7 +3898,7 @@ void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 	}
 }
 
-void CEventSystem::UpdateDevice(const std::string &DevParams)
+void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventTrigger)
 {
 	std::vector<std::string> strarray;
 	StringSplit(DevParams, "|", strarray);
@@ -3830,19 +3909,18 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	std::string svalue = strarray[2];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
+	result = m_sql.safe_query("SELECT HardwareID, Unit, Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()>0)
 	{
-		std::string hid = result[0][0];
-		std::string did = result[0][1];
-		std::string dunit = result[0][2];
-		std::string dtype = result[0][3];
-		std::string dsubtype = result[0][4];
-		std::string dname = result[0][5];
-		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][6].c_str());
-		int dlastlevel = atoi(result[0][7].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][8].c_str());
+		uint64_t hid = atoi(result[0][0].c_str());
+		uint8_t dunit = atoi(result[0][1].c_str());
+		std::string dtype = result[0][2];
+		std::string dsubtype = result[0][3];
+		std::string dname = result[0][4];
+		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][5].c_str());
+		int dlastlevel = atoi(result[0][6].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][7].c_str());
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue='%q', sValue='%q', LastUpdate='%q' WHERE (ID = '%q')",
@@ -3920,6 +3998,8 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
 			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
 		}
+		if (bEventTrigger)
+			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, atoi(nvalue.c_str()), svalue.c_str(), dname, 0, true);
 	}
 }
 
@@ -4024,7 +4104,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 	unsigned char level = 0;
 	devicestatesMutexLock.unlock();
 
-	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0 };
+	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
 	ParseActionString( Action, oParseResults );
 
 	if ( oParseResults.sCommand.substr( 0, 9 ) == "Set Level" ) {
@@ -4150,6 +4230,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 
 		m_sql.AddTaskItem( tItem );
+		if (oParseResults.bEventTrigger == false)
+		{
+			_tEventTrigger item;
+			item.ID = deviceID;
+			item.reason = !isScene ? REASON_DEVICE : REASON_SCENEGROUP;
+			item.delay = static_cast<uint32_t>(fDelayTime);
+			item.timestamp = mytime(NULL);
+			boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+			m_eventtrigger.push_back(item);
+		}
 #ifdef _DEBUG
 		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime );
 #endif
@@ -4174,13 +4264,21 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, -1, eventName );
 			}
 			m_sql.AddTaskItem( tDelayedtItem );
+			if (oParseResults.bEventTrigger == false)
+			{
+				_tEventTrigger item;
+				item.ID = deviceID;
+				item.reason = !isScene ? REASON_DEVICE : REASON_SCENEGROUP;
+				item.delay = static_cast<uint32_t>(fDelayTime);
+				item.timestamp = mytime(NULL);
+				boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+				m_eventtrigger.push_back(item);
+			}
 #ifdef _DEBUG
 			_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime );
 #endif
 		}
-
 	}
-
 	return true;
 }
 
