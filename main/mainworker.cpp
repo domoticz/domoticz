@@ -1040,9 +1040,12 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	if (1 == 0)
+	if (m_sql.m_bEnableEventSystem)
 	{
-		m_pluginsystem.StartPluginSystem();
+		if (1 == 0)
+		{
+			m_pluginsystem.StartPluginSystem();
+		}
 	}
 #endif
 	AddAllDomoticzHardware();
@@ -1132,7 +1135,7 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
+	m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -12393,7 +12396,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
 	bool bEventTrigger = true;
-	if (!m_sql.m_bDisableEventSystem)
+	if (m_sql.m_bEnableEventSystem)
 		bEventTrigger = m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
 
 	//now switch all attached devices, and only the onces that do not trigger a scene

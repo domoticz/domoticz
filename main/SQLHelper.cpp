@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 118
+#define DB_VERSION 119
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -652,7 +652,7 @@ CSQLHelper::CSQLHelper(void)
 	SetUnitsAndScale();
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
-	m_bDisableEventSystem = false;
+	m_bEnableEventSystem = true;
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
@@ -2287,6 +2287,16 @@ bool CSQLHelper::OpenDatabase()
 			std::string sfile = szUserDataFolder + "scripts/python/script_device_PIRsmarter.py";
 			std::remove(sfile.c_str());
 		}
+		if (dbversion < 119)
+		{
+			//change Disable Event System to Enable Event System
+			int nValue = 0;
+			if (GetPreferencesVar("DisableEventScriptSystem", nValue))
+			{
+				UpdatePreferencesVar("EnableEventScriptSystem", !nValue);
+			}
+			DeletePreferencesVar("DisableEventScriptSystem");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -2617,12 +2627,12 @@ bool CSQLHelper::OpenDatabase()
 		UpdatePreferencesVar("HideDisabledHardwareSensors", 1);
 	}
 	nValue = 0;
-	if (!GetPreferencesVar("DisableEventScriptSystem", nValue))
+	if (!GetPreferencesVar("EnableEventScriptSystem", nValue))
 	{
-		UpdatePreferencesVar("DisableEventScriptSystem", 0);
-		nValue = 0;
+		UpdatePreferencesVar("EnableEventScriptSystem", 1);
+		nValue = 1;
 	}
-	m_bDisableEventSystem = (nValue==1);
+	m_bEnableEventSystem = (nValue == 1);
 
 	nValue = 0;
 	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))
@@ -3723,7 +3733,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				}
 			}
 
-			if (!m_bDisableEventSystem)
+			if (m_bEnableEventSystem)
 			{
 				//Execute possible script
 				std::string scriptname;
@@ -7132,7 +7142,7 @@ void CSQLHelper::FixDaylightSaving()
 std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 {
 	safe_query("DELETE FROM UserVariables WHERE (ID=='%q')", idx.c_str());
-	if (!m_bDisableEventSystem)
+	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 	}
@@ -7169,7 +7179,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 		vId_str >> vId;
 		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
 	}
-	if (!m_bDisableEventSystem)
+	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 	}
@@ -7207,18 +7217,18 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		szLastUpdate.c_str(),
 		idx.c_str()
 		);
-	if (!m_bDisableEventSystem)
+	if (m_bEnableEventSystem)
 	{
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
-	}
-	if (eventtrigger) {
-		std::stringstream vId_str(idx);
-		uint64_t vId;
-		vId_str >> vId;
-		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
+		if (eventtrigger) {
+			std::stringstream vId_str(idx);
+			uint64_t vId;
+			vId_str >> vId;
+			m_mainworker.m_eventsystem.ProcessUserVariable(vId);
+		}
 	}
 	return "OK";
 }
@@ -7233,13 +7243,13 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 		szLastUpdate.c_str(),
 		idx
 		);
-	if (!m_bDisableEventSystem)
+	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
-	}
-	if (eventtrigger)
-	{
-		m_mainworker.m_eventsystem.ProcessUserVariable(idx);
+		if (eventtrigger)
+		{
+			m_mainworker.m_eventsystem.ProcessUserVariable(idx);
+		}
 	}
 	return true;
 }
