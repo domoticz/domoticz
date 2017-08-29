@@ -7679,14 +7679,14 @@ namespace http {
 			m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", DegreeDaysBaseTemperature);
 
 			rnOldvalue = 0;
-			m_sql.GetPreferencesVar("DisableEventScriptSystem", rnOldvalue);
-			std::string DisableEventScriptSystem = request::findValue(&req, "DisableEventScriptSystem");
-			int iDisableEventScriptSystem = (DisableEventScriptSystem == "on" ? 1 : 0);
-			m_sql.UpdatePreferencesVar("DisableEventScriptSystem", iDisableEventScriptSystem);
-			m_sql.m_bDisableEventSystem = (iDisableEventScriptSystem == 1);
-			if (iDisableEventScriptSystem != rnOldvalue)
+			m_sql.GetPreferencesVar("EnableEventScriptSystem", rnOldvalue);
+			std::string EnableEventScriptSystem = request::findValue(&req, "EnableEventScriptSystem");
+			int iEnableEventScriptSystem = (EnableEventScriptSystem == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("EnableEventScriptSystem", iEnableEventScriptSystem);
+			m_sql.m_bEnableEventSystem = (iEnableEventScriptSystem == 1);
+			if (iEnableEventScriptSystem != rnOldvalue)
 			{
-				m_mainworker.m_eventsystem.SetEnabled(!m_sql.m_bDisableEventSystem);
+				m_mainworker.m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
 
@@ -10620,8 +10620,10 @@ namespace http {
 				name.c_str(),
 				atoi(stype.c_str())
 			);
-			if (!m_sql.m_bDisableEventSystem)
+			if (m_sql.m_bEnableEventSystem)
+			{
 				m_mainworker.m_eventsystem.GetCurrentScenesGroups();
+			}
 		}
 
 		void CWebServer::RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -12542,9 +12544,9 @@ namespace http {
 				{
 					root["DegreeDaysBaseTemperature"] = sValue;
 				}
-				else if (Key == "DisableEventScriptSystem")
+				else if (Key == "EnableEventScriptSystem")
 				{
-					root["DisableEventScriptSystem"] = nValue;
+					root["EnableEventScriptSystem"] = nValue;
 				}
 				else if (Key == "DisableDzVentsSystem")
 				{
