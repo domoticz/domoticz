@@ -60,7 +60,6 @@ public:
 	{
 		uint64_t ID;
 		_eReason reason;
-		uint32_t delay;
 		time_t timestamp;
 	};
 
