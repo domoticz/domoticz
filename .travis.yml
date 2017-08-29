@@ -64,9 +64,9 @@ matrix:
       - make
   # Apple OSX
   - os: osx
-    osx_image: xcode6.2
-    compiler:
-      - gcc
+    osx_image: xcode8.3
+    #compiler:
+    #  - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
@@ -81,7 +81,7 @@ matrix:
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
       - which python3
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+      - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
 
