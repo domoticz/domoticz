@@ -1,0 +1,352 @@
+/*  BASE THEME 
+
+Welcome to the base theme.
+
+If you want to create your own theme based on this theme, my advice is to 
+create another CSS file that is loaded after this one, and then work in that. That will be the 'subtheme'.
+
+
+COLOURS
+
+This theme generally tries not to set any colours, and leaves that to the sub-theme. THe exceptions are:
+- link styling. It's important for users that all links are the same colour.
+- Data tables. This theme aims to create a 'middle of the road' design of all data tables.
+- Mobile view. The mobile design follows the standard Apple design.
+- Widgets, like sliders, are partially themed. 
+
+*/
+
+/* GENERAL STYLING AND RESETS */
+
+body {
+	color: #ddd; /*!important;*/
+	background-color: #013 !important;
+	background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);
+	background-attachment: fixed;
+}
+
+html, body {
+	height: 100%;
+}
+
+#main-view {
+	padding-top: 0px;
+}
+
+#holder .container-fluid {
+	margin-top: 20px;
+	padding-bottom: 20px;
+}
+
+.row-fluid .span12,
+.row-fluid .span6 {
+	padding: 10px;
+	margin-bottom: 15px;
+	margin-top: 5px
+}
+
+div.divider .span3,
+div.divider .span4 {
+	margin-bottom: 1em;
+	padding: 0;
+}
+
+.row {
+	clear: both;
+}
+
+/* settings/hardware background color*/
+#settingscontent textarea,
+#settingscontent textarea.ui-widget-content {
+	/*background-color:rgba(255,255,255,0.2);*/
+	border: none;
+	color: #eee;
+	background: #283750;
+	font-weight: normal;
+	margin-bottom: 5px;
+}
+
+	#settingscontent textarea + span,
+	#settingscontent textarea + span + span,
+	#settingscontent textarea + span + span + span,
+	#settingscontent textarea + br + span,
+	#settingscontent textarea + br + span + span,
+	#settingscontent textarea + br + span + span + span {
+		color: #ccc;
+		font-size: 10px
+	}
+
+select {
+	background-color: #283750;
+	color: #fff;
+	border: 0;
+}
+
+.dataTables_length select {
+	background-color: #fff;
+	color: #000;
+	border: 0;
+}
+
+div:not(.ui-dialog) input.ui-widget-content,
+.ui-widget-content select {
+	background-color: #283750;
+	background-image: none !important;
+	border: none;
+}
+
+.ui-dialog, .ui-dialog-buttonpane, .ui-widget-content {
+	color: #ddd; /*!important;*/
+	background-color: #013;
+	background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);
+	background-attachment: fixed;
+}
+
+.ui-dialog-titlebar,
+.ui-state-default:not(.ui-slider-handle),
+.ui-widget-header:not(.ui-slider-handle):not(.ui-slider-range),
+.ui-timepicker-div .ui-slider-handle {
+	background-color: #013;
+	background-image: url("images/ui-bg_gloss-wave_25_333333_500x100.png") !important;
+	;
+}
+
+textarea.ui-widget-content,
+input.ui-widget-content {
+	padding: .2em;
+	border: none;
+	color: #eee;
+	background-color: #283750;
+	background-image: none !important;
+	border-bottom: 1px solid transparent;
+}
+
+input:focus {
+	background-color: #404C63 !important;
+	color: #fff !important;
+	border-bottom: 1px solid #ccc;
+	box-shadow: none;
+}
+
+textarea:focus {
+	color: #fff;
+	background-color: #404C63;
+}
+
+.row-fluid [class^="span"] {
+	background-color: #11213d; /*!important;*/
+	color: #fff !important;
+}
+
+.row-fluid .span2 {
+	background-color: transparent;
+}
+
+#settingscontent input.text {
+	width: calc(100% - 65px) !important;
+}
+
+#settingscontent .ui-widget-content,
+#settingscontent input.text {
+	padding: 3px;
+}
+
+
+#settingscontent .sub-tabs {
+	border-bottom: 1px solid #fff;
+}
+
+	#settingscontent .sub-tabs li.active a {
+		background-color: #73b6ca;
+		color: #fff;
+		border: none;
+		border-bottom: 4px solid #73b6ca;
+	}
+
+	#settingscontent .sub-tabs li:not(.active) {
+		margin-bottom: 1px;
+	}
+
+		#settingscontent .sub-tabs li:not(.active) a {
+			border-bottom: 2px solid transparent;
+			margin-bottom: 1px;
+		}
+
+	#settingscontent .sub-tabs > li > a.btn-succes,
+	.sub-tabs-apply,
+	.btn-succes {
+		color: #fff !important;
+		text-shadow: none;
+	}
+
+#settingscontent .span6 .btn-info {
+	line-height: 12px;
+}
+
+; #settingscontent #ActiveTabs {
+	padding-left: 20px;
+}
+
+#settingscontent {
+	margin-bottom: 80px;
+}
+
+.tab-content {
+	overflow: visible;
+}
+
+/* SETTINGS */
+
+#settingscontent .span6 tr:first-of-type {
+	border-top: none;
+}
+
+#settingscontent .span6 td {
+	padding: 5px;
+	vertical-align: top;
+}
+
+	#settingscontent .span6 td:first-of-type {
+		min-width: 80px;
+		text-align: left !important;
+		padding-top: 7px;
+	}
+
+	#settingscontent .span6 td span {
+		padding-top: 0;
+	}
+
+/* temporary fix for use of tables in odd places */
+#fibaromain > table > tbody > tr > td {
+	display: block;
+}
+
+	#fibaromain > table > tbody > tr > td > table {
+		margin-bottom: 20px
+	}
+
+#influxmain > table > tbody > tr > td {
+	display: block;
+}
+
+	#influxmain > table > tbody > tr > td > table {
+		margin-bottom: 20px
+	}
+
+#googlepubsubmain > table > tbody > tr > td {
+	display: block;
+}
+
+	#googlepubsubmain > table > tbody > tr > td > table {
+		margin-bottom: 20px
+	}
+
+#httpmain > table > tbody > tr > td {
+	display: block;
+}
+
+	#httpmain > table > tbody > tr > td > table {
+		margin-bottom: 20px
+	}
+
+#fibaromain #uservariablesedittable td {
+	display: table-cell;
+}
+
+#divprogress span {
+	font-size: 130%;
+	display: block;
+	background-color: #c00;
+	padding: 20px;
+	color: #fff;
+}
+
+#settingscontent div.row-fluid.related {
+	display: flex;
+	flex-flow: row wrap;
+	align-items: stretch;
+}
+
+	#settingscontent div.row-fluid.related .span2 {
+		width: auto;
+	}
+
+		#settingscontent div.row-fluid.related .span2 img {
+			margin-right: 3px;
+		}
+
+#settingscontent input {
+	background-image: none;
+}
+
+#settingscontent select {
+	min-width: 120px;
+	padding: 5px 0;
+}
+
+
+#settingscontent td > span {
+	/*display:inline-block;*/
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+
+/*
+#settingscontent #ActiveTabs h2{
+    color: #666;
+}*/
+
+#acceptnewhardwaretable td:first-of-type {
+	position: relative;
+}
+
+#acceptnewhardwaretable td:first-child button {
+	width: 50%;
+	margin: 10px 50% 10px 0;
+}
+
+/*#protectiontable, 
+#loghistory table, 
+#notifications>table, 
+#metercounters table, 
+#othersettings table,
+#floorplans table, 
+#settingscontent #ActiveTabs,
+#emailtable,*/
+#hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent #ipnodeparamstable,
+#nodeparamstable,
+#utilitycontent #notificationparamstable,
+#plancontent #activeparamstable,
+#usercontent #userparamstable, #cameracontent #activeparamstable, #hardwarecontent #hardwareparamstable,
+#lightcontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
+#scenecontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
+#weathercontent #notificationparamstable, #lightcontent #timerparamstable,
+#tempnotifications #notificationparamstable, #lightcontent #notificationparamstable,
+#scenecontent #timerparamstable,
+#notificationtable:not(.dataTable),
+#notifications > table,
+#paramstable, #fibaromain #uservariablesedittable,
+#customlog, #timerparamstable,
+#linkparamstable, #influxremote,
+#linkhttpparamstable, #httpremote,
+#linkgooglepubsubparamstable, #googlepubsubremote,
+#fibaromain #linkparamstable, #fibaromain #fibaroremote,
+#userparamstable, #activeparamstable, #lightcontent paramstable,
+#scenecontent #paramstable,
+#notificationparamstable, #hardwareparamstable,
+#eventparamstable {
+	background-color: #11213d;
+	border-top: 10px solid #11213d;
+	border-bottom: 10px solid #11213d;
+}
+
+@media all and (min-width: 768px) {
+	.row-fluid {
+		display: flex;
+		/*flex-wrap: wrap;*/
+		/*align-items: stretch;*/
+	}
+}

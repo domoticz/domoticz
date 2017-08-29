@@ -360,42 +360,35 @@ namespace Plugins {
 		}
 	};
 
-	bool CPluginTransportUDP::handleConnect()
+	bool CPluginTransportUDP::handleListen()
 	{
 		try
 		{
 			if (!m_Socket)
 			{
-				m_bConnected = false;
-				int	iPort = atoi(m_Port.c_str());
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
-
-				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
-											 boost::bind(&CPluginTransportUDP::handleRead, this,
-													boost::asio::placeholders::error,
-													boost::asio::placeholders::bytes_transferred));
-
-
-/*
-				m_Resolver = new boost::asio::ip::udp::resolver(ios);
-				m_Socket = new boost::asio::ip::udp::socket(ios);
-
 				boost::system::error_code ec;
-				boost::asio::ip::udp::resolver::query query(m_IP, m_Port);
-				boost::asio::ip::udp::resolver::iterator iter = m_Resolver->resolve(query);
-				boost::asio::ip::udp::endpoint endpoint = *iter;
+				m_bConnected = true;
+				int	iPort = atoi(m_Port.c_str());
 
-				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
-				//
-				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportUDP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
-				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
 				{
-					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
 				}
-*/
+			}
+
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
+											boost::bind(&CPluginTransportUDP::handleRead, this,
+												boost::asio::placeholders::error,
+												boost::asio::placeholders::bytes_transferred));
+
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			{
+				ios.reset();
+				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
 		catch (std::exception& e)
@@ -410,61 +403,38 @@ namespace Plugins {
 		return true;
 	}
 
-	void CPluginTransportUDP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::udp::resolver::iterator endpoint_iterator)
+	void CPluginTransportUDP::handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
-		if (!err)
+		if (!ec)
 		{
-			boost::asio::ip::udp::endpoint endpoint = *endpoint_iterator;
-			m_Socket->async_connect(endpoint, boost::bind(&CPluginTransportUDP::handleAsyncConnect, this, boost::asio::placeholders::error, ++endpoint_iterator));
-		}
-		else
-		{
-			delete m_Resolver;
-			m_Resolver = NULL;
-			delete m_Socket;
-			m_Socket = NULL;
+			std::string sAddress = m_remote_endpoint.address().to_string();
+			std::string sPort = SSTR(m_remote_endpoint.port());
 
-			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
-		}
-	}
+			PyType_Ready(&CConnectionType);
+			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 
-	void CPluginTransportUDP::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::udp::resolver::iterator endpoint_iterator)
-	{
-		delete m_Resolver;
-		m_Resolver = NULL;
+			// Configure temporary Python Connection object
+			Py_XDECREF(pConnection->Name);
+			pConnection->Name = ((CConnection*)m_pConnection)->Name;
+			Py_INCREF(pConnection->Name);
+			Py_XDECREF(pConnection->Address);
+			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
+			Py_XDECREF(pConnection->Port);
+			pConnection->Port = PyUnicode_FromString(sPort.c_str());
+			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
+			Py_INCREF(pConnection->Transport);
+			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
+			Py_INCREF(pConnection->Protocol);
+			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
-		if (!err)
-		{
-			m_bConnected = true;
-			m_Socket->async_receive(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-				boost::bind(&CPluginTransportUDP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			// Create Protocol object to handle connection's traffic
 			{
-				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
+				PluginMessageQueue.push(pMessage);
 			}
-		}
-		else
-		{
-			delete m_Socket;
-			m_Socket = NULL;
-			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
-	}
-
-	void CPluginTransportUDP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
-	{
-		if (!e)
-		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+			ReadMessage*	Message = new ReadMessage(((CConnection*)pConnection)->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -473,22 +443,20 @@ namespace Plugins {
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
-			//ready for next read
-			if (m_Socket)
-				m_Socket->async_receive(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-					boost::bind(&CPluginTransportUDP::handleRead,
-						this,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred));
+			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
+			Py_DECREF(pConnection);
+
+			// Set up listener again
+			handleListen();
 		}
 		else
 		{
-			if ((e.value() != 2) &&
-				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation cancelled
-				(e.value() != 995) &&	// Abort due to shutdown during disconnect
-				(e.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
+			if ((ec.value() != 2) &&
+				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 995) &&	// Abort due to shutdown during disconnect
+				(ec.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
 
 			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
@@ -500,20 +468,37 @@ namespace Plugins {
 
 	void CPluginTransportUDP::handleWrite(const std::vector<byte>& pMessage)
 	{
-		if (m_Socket)
+		try
 		{
-			try
+			if (!m_Socket)
 			{
-//				m_Socket->async_send_to(boost::asio::buffer(pMessage, pMessage.size()));
+				boost::system::error_code  err;
+				m_Socket = new boost::asio::ip::udp::socket(ios);
+				m_Socket->open(boost::asio::ip::udp::v4(), err);
+				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
 			}
-			catch (...)
+
+
+			// Different handling for multi casting
+			if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
 			{
-				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d bytes", __func__, pMessage.size());
+				m_Socket->set_option(boost::asio::socket_base::broadcast(true));
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), atoi(m_Port.c_str()));
+				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
+			}
+			else
+			{
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), atoi(m_Port.c_str()));
+				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 		}
-		else
+		catch (boost::system::system_error err)
 		{
-			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+			_log.Log(LOG_ERROR, "%s: '%s' during 'send_to' operation: %d bytes", __func__, err.what(), pMessage.size());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Socket error during 'send_to' operation: %d bytes", __func__, pMessage.size());
 		}
 	}
 

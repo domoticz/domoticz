@@ -786,6 +786,9 @@ namespace Plugins {
 			}
 			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
 
+			// Notify MQTT and various push mechanisms
+			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+
 			// Image change
 			if (iImage != self->Image)
 			{
@@ -876,7 +879,7 @@ namespace Plugins {
 	{
 		if (self->pPlugin && self->pPlugin->m_bDebug)
 		{
-			_log.Log(LOG_NORM, "(%s) Deallocating connection object to %s:%s.", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Address);
@@ -942,7 +945,7 @@ namespace Plugins {
 					Py_DECREF(self);
 					return NULL;
 				}
-				self->Protocol = PyUnicode_FromString("");
+				self->Protocol = PyUnicode_FromString("None");
 				if (self->Protocol == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -996,7 +999,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "sss|ssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				self->pPlugin = pModState->pPlugin;
 				if (pName) {
@@ -1111,9 +1114,6 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		Py_XDECREF(self->Address);
-		self->Address = PyUnicode_FromString("127.0.0.1");
-
 		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
@@ -1133,28 +1133,23 @@ namespace Plugins {
 		}
 		else
 		{
-			Py_buffer	PyBuffer;
-			char*		szMessage = NULL;
-			char*		szVerb = NULL;
-			char*		szURL = NULL;
-			PyObject*	pHeaders = NULL;
+			PyObject*	pData = NULL;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s*|ssOi", kwlist, &PyBuffer, &szVerb, &szURL, &pHeaders, &iDelay))
+			static char *kwlist[] = { "Message", "Delay", NULL };
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", self->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", self->pPlugin->Name.c_str());
 				LogPythonException(self->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				//	Add start command to message queue
-				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, &PyBuffer, szURL, szVerb, pHeaders, iDelay);
+				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
 			}
-			Py_XDECREF(PyBuffer.obj);
 		}
 
 		Py_INCREF(Py_None);
@@ -1183,7 +1178,12 @@ namespace Plugins {
 
 	PyObject * CConnection_bytes(CConnection * self)
 	{
-		return PyLong_FromLong(self->pTransport->TotalBytes());
+		if (self->pTransport)
+		{
+			return PyLong_FromLong(self->pTransport->TotalBytes());
+		}
+
+		return PyBool_FromLong(0);
 	}
 
 	PyObject * CConnection_isconnecting(CConnection * self)
@@ -1208,16 +1208,16 @@ namespace Plugins {
 
 	PyObject * CConnection_timestamp(CConnection * self)
 	{
-		if (self->pTransport && false)
+		if (self->pTransport)
 		{
 			time_t	tLastSeen = self->pTransport->LastSeen();
 			struct tm ltime;
 			localtime_r(&tLastSeen, &ltime);
 			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
+//			PyType_Ready(pLastSeen->ob_type);
 			if (PyDateTime_CheckExact(pLastSeen))
 				return pLastSeen;
 		}
-		_log.Log(LOG_ERROR, "%s, LastSeen request from '%s' ignored. Not implemented yet.", __func__, self->pPlugin->Name.c_str());
 
 		Py_INCREF(Py_None);
 		return Py_None;

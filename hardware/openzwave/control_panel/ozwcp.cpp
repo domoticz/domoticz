@@ -45,11 +45,10 @@
 #include "Group.h"
 #include "Notification.h"
 
-#include "../../tinyxpath/tinyxml.h"
-
 #include <sys/stat.h>
 #include <fstream>
 #include <iostream>
+#include <tinyxml.h>
 
 //#include "microhttpd.h"
 #include "ozwcp.h"

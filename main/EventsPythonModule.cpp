@@ -157,6 +157,7 @@
                 PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				m_PyInterpreter = NULL;
                 _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
@@ -170,7 +171,6 @@
                 // _log.Log(LOG_STATUS, "Python Event System: Module found");
                 return pModule;
             } else {
-                _log.Log(LOG_STATUS, "Python EventSystem: Module not found - Trying to initialize.");
                 Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", NULL);
                 pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 

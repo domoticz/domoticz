@@ -1515,6 +1515,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+
 			$.devIdx = idx;
 			$.isslave = isslave;
 			$.stype = stype;
@@ -1546,12 +1547,16 @@ define(['app'], function (app) {
 				}
 			}
 
-			$('#modal').show();
-			var htmlcontent = GetBackbuttonHTMLTable('ShowLights');
+			var htmlcontent = '';
 			htmlcontent += $('#editlightswitch').html();
-			$('#lightcontent').html(htmlcontent);
-			//$('#lightcontent').html($compile(htmlcontent)($scope));
+			$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights') + htmlcontent);
 			$('#lightcontent').i18n();
+
+			var systemsHTML = '<input type="checkbox" id="protected"><label for="protected" />';
+			$('#lightcontent #id_protected').html(systemsHTML);
+
+			var systemsHTML = '<input type="checkbox" id="selectorHiddenOff" name="selectorHiddenOff" value="0"><label for="selectorHiddenOff"/>';
+			$('#lightcontent #id_selectorHiddenOff').html(systemsHTML);
 
 			oTable = $('#lightcontent #subdevicestable').dataTable({
 				"sDom": '<"H"frC>t<"F"i>',
@@ -2077,10 +2082,12 @@ define(['app'], function (app) {
 		}
 
 		GetLightStatusText = function (item) {
-			if (item.SubType == "Evohome")
+			if (item.SubType == "Evohome") {
 				return EvoDisplayTextMode(item.Status);
-			else if (item.SwitchType === "Selector")
+			}
+			else if (item.SwitchType === "Selector") {
 				return item.LevelNames.split('|')[(item.LevelInt / 10)];
+			}
 			else
 				return item.Status;
 		}
@@ -2479,18 +2486,9 @@ define(['app'], function (app) {
 									}
 								}
 
-								var nbackcolor = "#D4E1EE";
-								if (item.HaveTimeout == true) {
-									nbackcolor = "#DF2D3A";
-								}
-								else if (item.Protected == true) {
-									nbackcolor = "#A4B1EE";
-								}
-
-								var obackcolor = rgb2hex($(id + " #name").css("background-color"));
-								if (obackcolor != nbackcolor) {
-									$(id + " #name").css("background-color", nbackcolor);
-								}
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+								$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+								$(id).addClass(backgroundClass);
 
 								if ($(id + " #img").html() != img) {
 									$(id + " #img").html(img);
@@ -2515,19 +2513,22 @@ define(['app'], function (app) {
 									var selector$ = $("#selector" + item.idx);
 									if (typeof selector$ !== 'undefined') {
 										if (item.SelectorStyle === 0) {
-											selector$
-												.find('label')
-												.removeClass('ui-state-active')
-												.removeClass('ui-state-focus')
-												.removeClass('ui-state-hover')
-												.end()
-												.find('input:radio')
-												.removeProp('checked')
-												.filter('[value="' + item.LevelInt + '"]')
-												.prop('checked', true)
-												.end()
-												.end()
-												.buttonset('refresh');
+											var xhtm = '';
+											var levelNames = item.LevelNames.split('|');
+											$.each(levelNames, function (index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
+												xhtm += '<button type="button" class="btn btn-small ';
+												if ((index * 10) == item.LevelInt) {
+													xhtm += 'btn-info"';
+												}
+												else {
+													xhtm += 'btn-default"';
+												}
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+											});
+											selector$.html(xhtm);
 										} else if (item.SelectorStyle === 1) {
 											selector$.val(item.LevelInt);
 											selector$.selectmenu('refresh');
@@ -2655,9 +2656,12 @@ define(['app'], function (app) {
 							}
 							var bAddTimer = true;
 							var bIsDimmer = false;
+
+							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+
 							var status = "";
 							var xhtm =
-								'\t<div class="span4" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n';
 							if ((item.SwitchType == "Blinds") || (item.SwitchType == "Blinds Inverted") || (item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted") || (item.SwitchType.indexOf("Venetian Blinds") == 0) || (item.SwitchType.indexOf("Media Player") == 0)) {
 								if (
@@ -2687,19 +2691,14 @@ define(['app'], function (app) {
 								xhtm += '\t    <table id="itemtablenostatus" border="0" cellpadding="0" cellspacing="0">\n';
 							}
 
-							var nbackcolor = "#D4E1EE";
-							if (item.HaveTimeout == true) {
-								nbackcolor = "#DF2D3A";
-							}
-							else if (item.Protected == true) {
-								nbackcolor = "#A4B1EE";
-							}
-
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n' +
+								'\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
+							if (item.SwitchType === "Selector") {
+								bigtext = GetLightStatusText(item);
+							}
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
@@ -3077,22 +3076,32 @@ define(['app'], function (app) {
 									xhtm += ' data-disabled="true"';
 								xhtm += '></div>';
 							}
-							else if ((item.SwitchType == "Blinds Percentage") || (item.SwitchType == "Blinds Percentage Inverted")) {
+							else if (item.SwitchType == "Blinds Percentage") {
 								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 							}
+							else if (item.SwitchType == "Blinds Percentage Inverted") {
+								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds_inv" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
+							}
 							else if (item.SwitchType == "Selector") {
-								xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 								if (item.SelectorStyle === 0) {
-									xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+									xhtm += '<br/><div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 									var levelNames = item.LevelNames.split('|');
 									$.each(levelNames, function (index, levelName) {
 										if ((index === 0) && (item.LevelOffHidden)) {
 											return;
 										}
-										xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index + '">' + levelName + '</label>';
+										xhtm += '<button type="button" class="btn btn-small ';
+										if ((index * 10) == item.LevelInt) {
+											xhtm += 'btn-info"';
+										}
+										else {
+											xhtm += 'btn-default"';
+										}
+										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
 									});
 									xhtm += '</div>';
 								} else if (item.SelectorStyle === 1) {
+									xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 									xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 									var levelNames = item.LevelNames.split('|');
 									$.each(levelNames, function (index, levelName) {
@@ -3102,8 +3111,8 @@ define(['app'], function (app) {
 										xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 									});
 									xhtm += '</select>';
+									xhtm += '</div>';
 								}
-								xhtm += '</div>';
 							}
 							xhtm += '</td>\n' +
 								'\t      <td>';
@@ -3254,13 +3263,21 @@ define(['app'], function (app) {
 						var bigtext;
 						if (fPercentage == 0) {
 							img = '<img src="images/' + imgname + 'ff.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + idx + ',\'On\',RefreshLights,' + isProtected + ');" class="lcursor" height="48" width="48">';
-							bigtext = "Off";
+							if (dtype == "blinds") {
+								bigtext = "Open";
+							}
+							else if (dtype == "blinds_inv") {
+								bigtext = "Closed";
+							}
+							else {
+								bigtext = "Off";
+							}
 						}
 						else {
 							img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',RefreshLights,' + isProtected + ');" class="lcursor" height="48" width="48">';
 							bigtext = fPercentage + " %";
 						}
-						if (dtype != "blinds") {
+						if ((dtype != "blinds") && (dtype != "blinds_inv")) {
 							if ($(id + " #img").html() != img) {
 								$(id + " #img").html(img);
 							}
@@ -3280,37 +3297,6 @@ define(['app'], function (app) {
 				}
 			});
 			$scope.ResizeDimSliders();
-
-			//Create Selector buttonset
-			$('#lightcontent .selectorlevels div').buttonset({
-				//Selector selectmenu events
-				create: function (event, ui) {
-					var div$ = $(this),
-						idx = div$.data('idx'),
-						type = div$.data('type'),
-						isprotected = div$.data('isprotected'),
-						disabled = div$.data('disabled'),
-						level = div$.data('level'),
-						levelname = div$.data('levelname');
-					if (disabled === true) {
-						div$.buttonset("disable");
-					}
-					div$.find('input[value="' + level + '"]').prop("checked", true);
-
-					div$.find('input').click(function (event) {
-						var target$ = $(event.target);
-						level = parseInt(target$.val(), 10);
-						levelname = div$.find('label[for="' + target$.attr('id') + '"]').text();
-						// Send command
-						SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
-						// Synchronize buttons and div attributes
-						div$.data('level', level);
-						div$.data('levelname', levelname);
-					});
-
-					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
-				}
-			});
 
 			//Create Selector selectmenu
 			$('#lightcontent .selectorlevels select').selectmenu({
@@ -3421,7 +3407,7 @@ define(['app'], function (app) {
 				tothousecodes = 16;
 				totunits = 64;
 			}
-			else if (lighttype == 60) {
+			else if (lighttype == 106) {
 				//Blyss
 				tothousecodes = 16;
 				totunits = 5;
@@ -3522,7 +3508,7 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").show();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 			}
-			else if (lighttype == 60) {
+			else if (lighttype == 106) {
 				//Blyss
 				$('#dialog-addmanuallightdevice #lightparams3 #combogroupcode >option').remove();
 				$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
@@ -3754,7 +3740,7 @@ define(['app'], function (app) {
 			mParams += "&switchtype=" + $("#dialog-addmanuallightdevice #lighttable #comboswitchtype option:selected").val();
 			var lighttype = $("#dialog-addmanuallightdevice #lighttable #combolighttype option:selected").val();
 			mParams += "&lighttype=" + lighttype;
-			if (lighttype == 60) {
+			if (lighttype == 106) {
 				//Blyss
 				mParams += "&groupcode=" + $("#dialog-addmanuallightdevice #lightparams3 #combogroupcode option:selected").val();
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #lightparams3 #combounitcode option:selected").val();

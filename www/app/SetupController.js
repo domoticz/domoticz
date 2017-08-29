@@ -482,6 +482,9 @@ define(['app'], function (app) {
 					if (typeof data.UseAutoBackup != 'undefined') {
 						$("#autobackuptable #enableautobackup").prop('checked', data.UseAutoBackup == 1);
 					}
+					if (typeof data.EmailEnabled != 'undefined') {
+						$("#emailtable #EmailEnabled").prop('checked', data.EmailEnabled == 1);
+					}
 					if (typeof data.EmailFrom != 'undefined') {
 						$("#emailtable #EmailFrom").val(data.EmailFrom);
 					}
@@ -582,8 +585,8 @@ define(['app'], function (app) {
 						$("#acceptnewhardwaretable #ShowUpdateEffect").prop('checked', data.ShowUpdateEffect == 1);
 					}
 
-					if (typeof data.DisableEventScriptSystem != 'undefined') {
-						$("#eventsystemtable #DisableEventScriptSystem").prop('checked', data.DisableEventScriptSystem == 1);
+					if (typeof data.EnableEventScriptSystem != 'undefined') {
+						$("#eventsystemtable #EnableEventScriptSystem").prop('checked', data.EnableEventScriptSystem == 1);
 					}
                     if (typeof data.DisableDzVentsSystem != 'undefined') {
 						
@@ -661,6 +664,12 @@ define(['app'], function (app) {
 					}
 					if (typeof data.SendErrorsAsNotification != 'undefined') {
 						$("#emailtable #SendErrorsAsNotification").prop('checked', data.SendErrorsAsNotification == 1);
+					}
+					if (typeof data.IFTTTEnabled != 'undefined') {
+						$("#ifttttable #IFTTTEnabled").prop('checked', data.IFTTTEnabled == 1);
+					}
+					if (typeof data.IFTTTAPI != 'undefined') {
+						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
 					}
 				}
 			});
