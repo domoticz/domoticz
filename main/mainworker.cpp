@@ -12487,7 +12487,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			if (switchtype != STYPE_PushOn)
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
-				if (!bEventTrigger)
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
 					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(delay));
 				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
 				if (scenetype == SGTYPE_SCENE)
@@ -12495,7 +12495,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 					if ((lstatus != "Off") && (offdelay > 0))
 					{
 						//switch with on delay, and off delay
-						if (!bEventTrigger)
+						if (m_sql.m_bEnableEventSystem && !bEventTrigger)
 							m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay + offdelay));
 						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
 					}
@@ -12503,7 +12503,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			}
 			else
 			{
-				if (!bEventTrigger)
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
 					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay));
 				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
 			}

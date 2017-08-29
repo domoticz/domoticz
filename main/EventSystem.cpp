@@ -1269,8 +1269,8 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			replaceitem.variableType = varType;
 
 		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_USERVARIABLE, false);
-		if (!bEventTrigger)
-			replaceitem.lastUpdate = lastUpdate;
+//		if (!bEventTrigger)
+//			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
 
 		if (bEventTrigger)
