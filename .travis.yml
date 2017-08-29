@@ -81,7 +81,6 @@ matrix:
       - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - which python3
       - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
