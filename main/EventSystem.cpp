@@ -280,10 +280,10 @@ void CEventSystem::Do_Work()
 {
 #ifdef WIN32
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
-	m_dzv_Dir = szUserDataFolder + "scripts\\dzVents\\runtime\\";
+	m_dzv_Dir = szUserDataFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
-	m_dzv_Dir = szUserDataFolder + "scripts/dzVents/runtime/";
+	m_dzv_Dir = szUserDataFolder + "dzVents/runtime/";
 #endif
 
 #ifdef ENABLE_PYTHON
@@ -1138,19 +1138,43 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	m_eventqueue.push(item);
 }
 
-void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel)
+void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason)
 {
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-	if (itt != m_devicestates.end())
+	if (reason == "device")
 	{
-		std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+		if (itt != m_devicestates.end())
+		{
+			std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
 
-		_tDeviceStatus replaceitem = itt->second;
-		replaceitem.lastUpdate = l_lastUpdate;
-		replaceitem.lastLevel = lastLevel;
-		itt->second = replaceitem;
+			_tDeviceStatus replaceitem = itt->second;
+			replaceitem.lastUpdate = l_lastUpdate;
+			replaceitem.lastLevel = lastLevel;
+			itt->second = replaceitem;
+		}
+	}
+	else if (reason == "scenegroup")
+	{
+		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+		if (itt != m_scenesgroups.end())
+		{
+			_tScenesGroups replaceitem = itt->second;
+			replaceitem.lastUpdate = lastUpdate;
+			itt->second = replaceitem;
+		}
+	}
+	else if (reason == "uservariable")
+	{
+		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+		std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(ulDevID);
+		if (itt != m_uservariables.end())
+		{
+			_tUserVariable replaceitem = itt->second;
+			replaceitem.lastUpdate = lastUpdate;
+			itt->second = replaceitem;
+		}
 	}
 }
 
@@ -1165,7 +1189,7 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		{
 			if (itt->ID == ulDevID &&
 				itt->reason == reason &&
-				(!itt->delay || (atime - itt->timestamp - itt->delay >= 0)))
+				(atime - itt->timestamp >= 0))
 			{
 				m_eventtrigger.erase(itt);
 				return (!bEventTrigger ? true : false);
@@ -1175,10 +1199,20 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
+bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
+{
+	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+	_tEventTrigger item;
+	item.ID = ulDevID;
+	item.reason = reason;
+	item.timestamp = mytime(NULL) + static_cast<uint32_t>(fDelayTime);
+	m_eventtrigger.push_back(item);
+}
+
+bool CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
-		return;
+		return false;
 
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
@@ -1191,11 +1225,14 @@ void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, 
 			replaceitem.scenesgroupValue = "On";
 		else
 			replaceitem.scenesgroupValue = "Mixed";
-		replaceitem.lastUpdate = lastUpdate;
+
+		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
+		if (!bEventTrigger)
+			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
 		scenesgroupsMutexLock.unlock();
 
-		if (GetEventTrigger(ulDevID, REASON_SCENEGROUP, true))
+		if (bEventTrigger)
 		{
 			_tEventQueue item;
 			item.nValueWording = replaceitem.scenesgroupValue;
@@ -1206,8 +1243,10 @@ void CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, 
 			item.lastUpdate = lastUpdate;
 			item.trigger = NULL;
 			m_eventqueue.push(item);
+			return true;
 		}
 	}
+	return false;
 }
 
 
@@ -1229,17 +1268,19 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		if (varType != 0)
 			replaceitem.variableType = varType;
 
-		replaceitem.lastUpdate = lastUpdate;
+		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_USERVARIABLE, false);
+		if (!bEventTrigger)
+			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
-	}
 
-	if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
-	{
-		_tEventQueue item;
-		item.reason = "uservariable";
-		item.varId = ulDevID;
-		item.lastUpdate = lastUpdate;
-		m_eventqueue.push(item);
+		if (bEventTrigger)
+		{
+			_tEventQueue item;
+			item.reason = "uservariable";
+			item.varId = ulDevID;
+			item.lastUpdate = lastUpdate;
+			m_eventqueue.push(item);
+		}
 	}
 }
 
@@ -1325,18 +1366,18 @@ void CEventSystem::EventQueueThread()
 			break;
 
 		EvaluateEvent(item.reason, item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, item.varId);
-		if (item.DeviceID)
-			UpdateLastUpdate(item.DeviceID, item.lastUpdate, item.lastLevel);
+		if (item.DeviceID || item.varId)
+			UpdateLastUpdate(item.DeviceID ? item.DeviceID : item.varId, item.lastUpdate, item.lastLevel, item.reason);
 	}
 }
 
 
-void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId, bool bEventTrigger)
+void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId)
 {
 	if (!m_bEnabled)
 		return;
 
-	if (GetEventTrigger(ulDevID, REASON_DEVICE, bEventTrigger))
+	if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 	{
 		// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
 		std::vector<std::vector<std::string> > result;
@@ -2582,7 +2623,7 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 #endif // ENABLE_PYTHON
 
 
-void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID)
+void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_devicestatesMutex);
 	int index = 1;
@@ -2649,24 +2690,16 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
-		if (sitem.ID == deviceID)
-		{
+		if (sitem.ID == deviceID && reason == "device")
 			lua_pushboolean(lua_state, true);
-		}
 		else
-		{
 			lua_pushboolean(lua_state, false);
-		}
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "timedOut");
 		if (timed_out == true)
-		{
 			lua_pushboolean(lua_state, true);
-		}
 		else
-		{
 			lua_pushboolean(lua_state, false);
-		}
 		lua_rawset(lua_state, -3);
 
 		//get all svalues separate
@@ -2802,17 +2835,13 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
 		if (result.size() == 0)
-		{
 			description = "";
-		}
 		else
-		{
 			description = result[0][0].c_str();
-		}
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
-		lua_createtable(lua_state, 1, 5);
+		lua_createtable(lua_state, 1, 6);
 
 		lua_pushstring(lua_state, "name");
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
@@ -2825,17 +2854,20 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "baseType");
 		if (sgitem.scenesgroupType == 0)
-		{
 			lua_pushstring(lua_state, "scene");
-		}
 		else
-		{
 			lua_pushstring(lua_state, "group");
-		}
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sgitem.lastUpdate.c_str());
+		lua_rawset(lua_state, -3);
+
+		lua_pushstring(lua_state, "changed");
+		if (sgitem.ID == deviceID && reason == "scenegroup")
+			lua_pushboolean(lua_state, true);
+		else
+			lua_pushboolean(lua_state, false);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
@@ -3415,7 +3447,7 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 		if (filename == m_dzv_Dir + "dzVents.lua")
-			ExportDomoticzDataToLua(lua_state, DeviceID, varId);
+			ExportDomoticzDataToLua(lua_state, DeviceID, varId, reason);
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
@@ -3999,7 +4031,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
 		}
 		if (bEventTrigger)
-			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, atoi(nvalue.c_str()), svalue.c_str(), dname, 0, true);
+			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, atoi(nvalue.c_str()), svalue.c_str(), dname, 0);
 	}
 }
 
@@ -4208,6 +4240,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + iDeviceDelay + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
 		fPreviousRandomTime = fRandomTime;
 
+		if (!oParseResults.bEventTrigger)
+			SetEventTrigger(deviceID, !isScene ? REASON_DEVICE : REASON_SCENEGROUP, fDelayTime);
+
 		if ( isScene ) {
 
 			if (
@@ -4228,18 +4263,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		} else {
 			tItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, oParseResults.sCommand, level, -1, eventName );
 		}
-
 		m_sql.AddTaskItem( tItem );
-		if (oParseResults.bEventTrigger == false)
-		{
-			_tEventTrigger item;
-			item.ID = deviceID;
-			item.reason = !isScene ? REASON_DEVICE : REASON_SCENEGROUP;
-			item.delay = static_cast<uint32_t>(fDelayTime);
-			item.timestamp = mytime(NULL);
-			boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
-			m_eventtrigger.push_back(item);
-		}
 #ifdef _DEBUG
 		_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime );
 #endif
@@ -4253,6 +4277,9 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		) {
 			fDelayTime += oParseResults.fForSec;
 
+			if (!oParseResults.bEventTrigger)
+				SetEventTrigger(deviceID, !isScene ? REASON_DEVICE : REASON_SCENEGROUP, fDelayTime);
+
 			_tTaskItem tDelayedtItem;
 			if ( isScene ) {
 				if ( oParseResults.sCommand == "On" ) {
@@ -4264,16 +4291,6 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, -1, eventName );
 			}
 			m_sql.AddTaskItem( tDelayedtItem );
-			if (oParseResults.bEventTrigger == false)
-			{
-				_tEventTrigger item;
-				item.ID = deviceID;
-				item.reason = !isScene ? REASON_DEVICE : REASON_SCENEGROUP;
-				item.delay = static_cast<uint32_t>(fDelayTime);
-				item.timestamp = mytime(NULL);
-				boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
-				m_eventtrigger.push_back(item);
-			}
 #ifdef _DEBUG
 			_log.Log(LOG_STATUS, "EventSystem: Scheduled %s after %0.2f.", tDelayedtItem._command.c_str(), tDelayedtItem._DelayTime );
 #endif
