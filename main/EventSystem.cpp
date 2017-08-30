@@ -3829,14 +3829,14 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 	if (strarray.size() < 2 || strarray.size() > 4)
 		return; //Invalid!
 	std::string idx = strarray[0];
-	std::string nvalue;
+	int nvalue = -1;
 	std::string svalue;
 	std::string protect;
-	if (strarray.size() > 1)
-		nvalue = strarray[1];
-	if (strarray.size() > 2)
+	if (strarray.size() > 1 && !strarray[1].empty())
+		nvalue = atoi(strarray[1].c_str());
+	if (strarray.size() > 2 && !strarray[2].empty())
 		svalue = strarray[2];
-	if (strarray.size() > 3)
+	if (strarray.size() > 3 && !strarray[3].empty())
 		protect = strarray[3];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
@@ -3857,21 +3857,18 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 
 		std::stringstream ssQuery;
 		ssQuery << "UPDATE DeviceStatus SET ";
-		if (!nvalue.empty())
-			ssQuery << 	"nValue='" << nvalue << "',";
+		if (nvalue != -1)
+			ssQuery << "nValue='" << nvalue << "',";
 		if (!svalue.empty())
-			ssQuery << 	"sValue='" << svalue << "',";
+			ssQuery << "sValue='" << svalue << "',";
 		if (!protect.empty())
-			ssQuery << 	"Protected=" << atoi(protect.c_str()) << ",";
+			ssQuery << "Protected=" << atoi(protect.c_str()) << ",";
 		ssQuery << "LastUpdate='" << szLastUpdate << "' WHERE (ID = '" << idx << "')";
 
 		m_sql.safe_query(ssQuery.str().c_str());
 
-		if (nvalue.empty() && svalue.empty())
+		if (nvalue == -1 && svalue.empty())
 			return;
-
-		if (nvalue.empty())
-			nvalue = "-1";
 
 		uint64_t ulIdx = 0;
 		std::stringstream s_str(idx);
@@ -3880,7 +3877,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		int devType = atoi(dtype.c_str());
 		int subType = atoi(dsubtype.c_str());
 
-		UpdateSingleState(ulIdx, dname, atoi(nvalue.c_str()), svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
+		UpdateSingleState(ulIdx, dname, nvalue, svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
 		//Check if we need to log this event
 		switch (devType)
@@ -3921,8 +3918,8 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 				break;
 			//Add Lighting log
-			if (nvalue != "-1")
-				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, atoi(nvalue.c_str()), !svalue.empty() ? svalue.c_str() : "0");
+			if (nvalue != -1)
+				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, nvalue, !svalue.empty() ? svalue.c_str() : "0");
 			break;
 		}
 
@@ -3935,15 +3932,15 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
 			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nvalue != "-1")
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nvalue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
-			m_mainworker.SetZWaveThermostatMode(idx, atoi(nvalue.c_str()));
+			m_mainworker.SetZWaveThermostatMode(idx, nvalue);
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nvalue != "-1")
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nvalue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
-			m_mainworker.SetZWaveThermostatFanMode(idx, atoi(nvalue.c_str()));
+			m_mainworker.SetZWaveThermostatFanMode(idx, nvalue);
 		}
 	}
 }
