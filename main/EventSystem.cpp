@@ -3862,8 +3862,10 @@ void CEventSystem::UpdateDevice(const std::string &DevParams)
 		if (!svalue.empty())
 			ssQuery << "sValue='" << svalue << "',";
 		if (!protect.empty())
-			ssQuery << "Protected=" << atoi(protect.c_str()) << ",";
-		ssQuery << "LastUpdate='" << szLastUpdate << "' WHERE (ID = '" << idx << "')";
+			ssQuery << "Protected=" << atoi(protect.c_str());
+		if (nvalue != -1 || !svalue.empty())
+			ssQuery << (!protect.empty() ? "," : "") << "LastUpdate='" << szLastUpdate << "'";
+		ssQuery << " WHERE (ID = '" << idx << "')";
 
 		m_sql.safe_query(ssQuery.str().c_str());
 
