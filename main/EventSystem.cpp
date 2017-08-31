@@ -1377,17 +1377,17 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 	if (!m_bEnabled)
 		return;
 
-	if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
+	// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
+		devname.c_str());
+	if (result.size() > 0)
 	{
-		// query to get switchtype & LastUpdate, can't seem to get it from SQLHelper?
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, SwitchType, LastUpdate, LastLevel, Options FROM DeviceStatus WHERE (Name == '%q')",
-			devname.c_str());
-		if (result.size() > 0)
+		std::vector<std::string> sd = result[0];
+		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
+		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
-			std::vector<std::string> sd = result[0];
-			_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
-			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 			_tEventQueue item;
 			item.reason = "device";
 			item.DeviceID = ulDevID;
@@ -1402,9 +1402,11 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			m_eventqueue.push(item);
 		}
 		else
-		{
-			_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
-		}
+			UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Could not determine switch type for event device %s", devname.c_str());
 	}
 }
 
