@@ -209,7 +209,7 @@ void CEvohomeWeb::Do_Work()
 		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
 		{
 			GetStatus();
-			int pollcounter = LOGONFAILTRESHOLD;
+			pollcounter = LOGONFAILTRESHOLD;
 			m_lastconnect=0;
 		}
 	}
