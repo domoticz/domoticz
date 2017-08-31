@@ -1,4 +1,4 @@
-@import url("/css/legacy.css"); /* Don't remove this line! */
+@import url("../css/legacy.css"); /* Don't remove this line! */
 @import url("base.css"); /* Don't remove this line! */
 @import url("extras_and_animations.css"); /* Adds visual extras. */
 /*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */

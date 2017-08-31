@@ -104,7 +104,7 @@ div:not(.ui-dialog) input.ui-widget-content,
 
 .ui-dialog-titlebar,
 .ui-state-default:not(.ui-slider-handle),
-.ui-widget-header:not(.ui-slider-handle),
+.ui-widget-header:not(.ui-slider-handle):not(.ui-slider-range),
 .ui-timepicker-div .ui-slider-handle {
 	background-color: #013;
 	background-image: url("images/ui-bg_gloss-wave_25_333333_500x100.png") !important;

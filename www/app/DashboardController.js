@@ -467,19 +467,22 @@ define(['app'], function (app) {
 											var selector$ = $("#selector" + item.idx);
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
-													selector$
-														.find('label')
-														.removeClass('ui-state-active')
-														.removeClass('ui-state-focus')
-														.removeClass('ui-state-hover')
-														.end()
-														.find('input:radio')
-														.removeProp('checked')
-														.filter('[value="' + item.LevelInt + '"]')
-														.prop('checked', true)
-														.end()
-														.end()
-														.buttonset('refresh');
+													var xhtm = '';
+													var levelNames = item.LevelNames.split('|');
+													$.each(levelNames, function (index, levelName) {
+														if ((index === 0) && (item.LevelOffHidden)) {
+															return;
+														}
+														xhtm += '<button type="button" class="btn btn-small ';
+														if ((index * 10) == item.LevelInt) {
+															xhtm += 'btn-info"';
+														}
+														else {
+															xhtm += 'btn-default"';
+														}
+														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+													});
+													selector$.html(xhtm);
 												} else if (item.SelectorStyle === 1) {
 													selector$.val(item.LevelInt);
 													selector$.selectmenu('refresh');
@@ -893,18 +896,22 @@ define(['app'], function (app) {
 											var selector$ = $("#selector" + item.idx);
 											if (typeof selector$ !== 'undefined') {
 												if (item.SelectorStyle === 0) {
-													selector$
-														.find('label')
-														.removeClass('ui-state-active')
-														.removeClass('ui-state-focus')
-														.end()
-														.find('input:radio')
-														.removeProp('checked')
-														.filter('[value="' + item.LevelInt + '"]')
-														.prop('checked', true)
-														.end()
-														.end()
-														.buttonset('refresh');
+													var xhtm = '';
+													var levelNames = item.LevelNames.split('|');
+													$.each(levelNames, function (index, levelName) {
+														if ((index === 0) && (item.LevelOffHidden)) {
+															return;
+														}
+														xhtm += '<button type="button" class="btn btn-small ';
+														if ((index * 10) == item.LevelInt) {
+															xhtm += 'btn-info"';
+														}
+														else {
+															xhtm += 'btn-default"';
+														}
+														xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
+													});
+													selector$.html(xhtm);
 												} else if (item.SelectorStyle === 1) {
 													selector$.val(item.LevelInt);
 													selector$.selectmenu('refresh');
@@ -2278,15 +2285,23 @@ define(['app'], function (app) {
 										xhtm += '<tr>';
 										xhtm += '<td colspan="2" style="border:0px solid red; padding-top:4px; padding-bottom:4px;">';
 										if (item.SelectorStyle === 0) {
-											xhtm += '<div style="margin: -15px -4px -5px 24px; text-align: right;" class="selectorlevels">';
-											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<div style="margin: -30px -4px -5px 24px; text-align: right;">';
+											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
-												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index + '">' + levelName + '</label>';
+												xhtm += '<button type="button" class="btn btn-small ';
+												if ((index * 10) == item.LevelInt) {
+													xhtm += 'btn-info"';
+												}
+												else {
+													xhtm += 'btn-default"';
+												}
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
 											});
+											xhtm += '</div>';
 											xhtm += '</div>';
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<div style="margin: -15px 0px -8px 0px; text-align: right;" class="selectorlevels">';
@@ -2349,6 +2364,8 @@ define(['app'], function (app) {
 										var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 										streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
 										bigtext += "&nbsp;" + streamurl;
+									} else if (item.SwitchType == "Selector") {
+										bigtext = GetLightStatusText(item);
 									}
 									xhtm += bigtext + '</span></td>\n';
 									if (item.SwitchType == "Doorbell") {
@@ -2652,16 +2669,24 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Selector") {
 										if (item.SelectorStyle === 0) {
-											xhtm += '<td><div style="margin-top:0.2em;" class="selectorlevels">';
-											xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';
+											xhtm += '<td>';
+											xhtm += '<div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 											var levelNames = item.LevelNames.split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
 												}
-												xhtm += '<input type="radio" id="dSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="dSelector' + item.idx + 'Level' + index + '">' + levelName + '</label>';
+												xhtm += '<button type="button" class="btn btn-small ';
+												if ((index * 10) == item.LevelInt) {
+													xhtm += 'btn-info"';
+												}
+												else {
+													xhtm += 'btn-default"';
+												}
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshFavorites,' + item.isProtected + ');">' + levelName + '</button>';
 											});
-											xhtm += '</div></td>';
+											xhtm += '</div>';
+											xhtm += '</td>';
 										} else if (item.SelectorStyle === 1) {
 											xhtm += '<td><div style="margin-top:0.2em;" class="selectorlevels">';
 											xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelname="' + escape(GetLightStatusText(item)) + '">';

@@ -208,8 +208,8 @@
 			<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr id="trEnablePolling">
-			<td align="right" style="width:80px"><label for="EnablePolling"><span data-i18n="EnablePolling"></span>:</label></td>
-			<td><input type="checkbox" id="EnablePolling"></td>
+			<td align="right" style="width:80px"><span data-i18n="EnablePolling"></span>:</td>
+			<td><input type="checkbox" id="EnablePolling"><label for="EnablePolling"/></td>
 		</tr>
 	</table>
 	<br>
@@ -322,8 +322,8 @@
 	<div id="trChildSettings">
 		<table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td align="right" style="width:120px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
-				<td><input type="checkbox" id="Ack" /></td>
+				<td align="right" style="width:120px"><span data-i18n="Ack"></span>:</td>
+				<td><input type="checkbox" id="Ack"/><label for="Ack"/></td>
 			</tr>
 			<tr>
 				<td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
@@ -774,9 +774,9 @@
 <form id="settings">
 	<table>
 		<tr>
-			<td align="left" style="width:120px"><input type="checkbox" id="Keeloq" name="Keeloq">&nbsp;<label for="Keeloq">Keeloq</label></td>
-			<td align="left" style="width:150px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
-			<td align="left" style="width:150px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="Keeloq" name="Keeloq">&nbsp;<label for="Keeloq">Keeloq</label></td>
+			<td align="left" style="width:160px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
+			<td align="left" style="width:180px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
 			<td align="left" style="width:150px"><input type="checkbox" id="Visonic" name="Visonic">&nbsp;<label for="Visonic">Visonic</label></td>
 		</tr>
 		<tr>
@@ -838,9 +838,9 @@
 <form id="settings">
 	<table>
 		<tr>
-			<td align="left" style="width:150px"><font color="yellow">868.30MHz</font></td>
+			<td align="left" style="width:160px"><font color="yellow">868.30MHz</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.30MHz FSK</font></td>
-			<td align="left" style="width:150px"><font color="yellow">868.35MHz</font></td>
+			<td align="left" style="width:170px"><font color="yellow">868.35MHz</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.35MHz FSK</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.95MHz</font></td>
 		</tr>
@@ -854,7 +854,7 @@
 		<tr>
 			<td></td>
 			<td style="vertical-align:top;"><input type="checkbox" id="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
@@ -1064,8 +1064,8 @@
 		<br>
 		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
-				<td><input type="checkbox" id="enabled" checked></td>
+				<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+				<td><input type="checkbox" id="enabled" checked><label for="enabled"/></td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
@@ -1190,8 +1190,8 @@
             <br>
             <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
                 <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
-                    <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
+                    <td align="right" style="width:110px"><span data-i18n="Auto configure devices">Auto configure devices</span>:</td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked/><label for="sysfsautoconfigure"/></td>
                 </tr>
 				<tr valign="top">
 					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
@@ -1303,12 +1303,10 @@
 		<div id="divcrcp1">
 			<table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
 				<tr valign="top">
-					<td align="right" style="width:110px"><label id="lblcrcp1" for="name"><span data-i18n="CRC message validation">CRC message validation</span>: </label></td>
+					<td align="right" style="width:110px"><span data-i18n="CRC message validation">CRC message validation</span>:</td>
 					<td>
-						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1">
-						<br />
-						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span>
-						<br />
+						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1"><label for="disablecrcp1"/><br />
+						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span><br />
 						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span></font></strong>
 					</td>
 				</tr>
@@ -1378,15 +1376,15 @@
             <br>
             <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
                 <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Poll inputs">Poll inputs</span>:</label></td>
-                    <td><input type="checkbox" id="relaynetpollinputs" checked></td>
+                    <td align="right" style="width:110px"><span data-i18n="Poll inputs">Poll inputs</span>:</td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked><label for="relaynetpollinputs"/></td>
                 </tr>
                 <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Poll relays">Poll relays</span>:</label></td>
-                    <td><input type="checkbox" id="relaynetpollrelays" checked></td>
+                    <td align="right" style="width:110px"><span data-i18n="Poll relays">Poll relays</span>:</td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked><label for="relaynetpollrelays"/></td>
                 </tr>
                 <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Poll interval">Poll interval</span>:</label></td>
+                    <td align="right" style="width:110px"><span data-i18n="Poll interval">Poll interval</span>:</td>
                     <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
                 </tr>
                 <tr>
@@ -1588,29 +1586,23 @@
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px">
-						<label id="lblautoevohomeweb" for="name"><span data-i18n="Synchronize installation">Synchronize installation</span>: </label>
-					</td>
+					<td align="right" style="width:110px"><span data-i18n="Synchronize installation">Synchronize installation</span>:</td>
 					<td>
-						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><br />
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><label for="disableautoevohomeweb"/><br />
 						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px">
-						<label id="lblschedevohomeweb" for="name"><span data-i18n="Show schedule">Show schedule</span>: </label>
-					</td>
+					<td align="right" style="width:110px"><span data-i18n="Show schedule">Show schedule</span>:</td>
 					<td>
-						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><br />
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><label for="showscheduleevohomeweb"/><br />
 						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px">
-						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Show location">Show location</span>: </label>
-					</td>
+					<td align="right" style="width:110px"><span data-i18n="Show location">Show location</span>:</td>
 					<td>
-						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb">
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb"><label for="showlocationevohomeweb"/>
 						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
 					</td>
 				</tr>
