@@ -1269,8 +1269,8 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			replaceitem.variableType = varType;
 
 		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_USERVARIABLE, false);
-//		if (!bEventTrigger)
-//			replaceitem.lastUpdate = lastUpdate;
+		if (!bEventTrigger)
+			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
 
 		if (bEventTrigger)
@@ -3881,7 +3881,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (result.size() > 0)
 		{
+
 			std::vector<std::string> sd = result[0];
+
+			if (bEventTrigger)
+				SetEventTrigger(atoi(sd[0].c_str()), REASON_USERVARIABLE, afterTimerSeconds);
 
 			variableValue = ProcessVariableArgument(variableValue);
 
