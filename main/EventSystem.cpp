@@ -1187,12 +1187,15 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		time_t atime = mytime(NULL);
 		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID &&
-				itt->reason == reason &&
-				(atime - itt->timestamp >= 0))
+			if (itt->ID == ulDevID && itt->reason == reason)
 			{
-				m_eventtrigger.erase(itt);
-				return (!bEventTrigger ? true : false);
+				if (atime >= itt->timestamp)
+				{
+					m_eventtrigger.erase(itt);
+					return (!bEventTrigger ? true : false);
+				}
+				else
+					m_eventtrigger.erase(itt);
 			}
 		}
 	}
@@ -1202,6 +1205,19 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
 {
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
+	if (m_eventtrigger.size() > 0)
+	{
+		std::vector<_tEventTrigger>::iterator itt;
+		time_t atime = mytime(NULL) + static_cast<uint32_t>(fDelayTime);
+		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
+		{
+			if (itt->ID == ulDevID && itt->reason == reason)
+			{
+				if (itt->timestamp >= atime) // cancel later scheduled items
+					m_eventtrigger.erase(itt);
+			}
+		}
+	}
 	_tEventTrigger item;
 	item.ID = ulDevID;
 	item.reason = reason;
