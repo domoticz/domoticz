@@ -91,6 +91,21 @@ namespace Plugins {
 		boost::asio::ip::udp::endpoint	m_remote_endpoint;
 	};
 
+	class CPluginTransportICMP : CPluginTransportIP
+	{
+	public:
+		CPluginTransportICMP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL) { };
+		virtual	bool		handleListen();
+		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
+		virtual void		handleWrite(const std::vector<byte>&);
+		virtual	bool		handleDisconnect();
+		~CPluginTransportICMP();
+	protected:
+		boost::asio::ip::icmp::resolver	*m_Resolver;
+		boost::asio::ip::icmp::socket	*m_Socket;
+		boost::asio::ip::icmp::endpoint	m_remote_endpoint;
+	};
+
 	class CPluginTransportSerial : CPluginTransport, AsyncSerial
 	{
 	private:

@@ -582,9 +582,9 @@ namespace Plugins {
 
 	bool CPlugin::IoThreadRequired()
 	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		if (m_Transports.size())
 		{
-			boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 			{
 				CPluginTransport*	pPluginTransport = *itt;
@@ -616,6 +616,21 @@ namespace Plugins {
 		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
 		m_Transports.push_back(pTransport);
 	}
+
+	void CPlugin::RemoveConnection(CPluginTransport *pTransport)
+	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		{
+			CPluginTransport*	pPluginTransport = *itt;
+			if (pTransport == pPluginTransport)
+			{
+				m_Transports.erase(itt);
+				break;
+			}
+		}
+	}
+
 
 	bool CPlugin::StartHardware()
 	{
@@ -1016,6 +1031,13 @@ namespace Plugins {
 	{
 		ConnectDirective*	pMessage = (ConnectDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
+			return;
+		}
+
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 		if (sTransport == "TCP/IP")
@@ -1044,11 +1066,6 @@ namespace Plugins {
 		{
 			AddConnection(pConnection->pTransport);
 		}
-		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
-		{
-			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
-			return;
-		}
 		if (pConnection->pTransport->handleConnect())
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, action initiated successfully.", Name.c_str());
@@ -1056,6 +1073,7 @@ namespace Plugins {
 		else
 		{
 			_log.Log(LOG_NORM, "(%s) Connect directive received, action initiation failed.", Name.c_str());
+			RemoveConnection(pConnection->pTransport);
 		}
 	}
 
@@ -1063,6 +1081,13 @@ namespace Plugins {
 	{
 		ListenDirective*	pMessage = (ListenDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
+			return;
+		}
+
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 		if (sTransport == "TCP/IP")
@@ -1082,15 +1107,9 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(%s) Unknown transport type specified: '%s'.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
 			return;
 		}
-		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
-		{
-			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
-			return;
-		}
 		if (pConnection->pTransport)
 		{
-			boost::lock_guard<boost::mutex> l(m_TransportsMutex);
-			m_Transports.push_back(pConnection->pTransport);
+			AddConnection(pConnection->pTransport);
 		}
 		if (pConnection->pTransport->handleListen())
 		{
@@ -1099,6 +1118,7 @@ namespace Plugins {
 		else
 		{
 			_log.Log(LOG_NORM, "(%s) Listen directive received, action initiation failed.", Name.c_str());
+			RemoveConnection(pConnection->pTransport);
 		}
 	}
 
@@ -1198,7 +1218,20 @@ namespace Plugins {
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
-			pConnection->pTransport->handleDisconnect();
+
+			// If transport is not connected there won't be a Disconnect Event so tidy it up here
+			if (!pConnection->pTransport->IsConnected())
+			{
+				pConnection->pTransport->handleDisconnect();
+				RemoveConnection(pConnection->pTransport);
+				CPluginTransport *pTransport = pConnection->pTransport;
+				pConnection->pTransport = NULL;
+				delete pConnection->pTransport;
+			}
+			else
+			{
+				pConnection->pTransport->handleDisconnect();
+			}
 		}
 	}
 
@@ -1209,19 +1242,11 @@ namespace Plugins {
 		if (pConnection->pTransport)
 		{
 			{
-				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
-				for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
-				{
-					CPluginTransport*	pPluginTransport = *itt;
-					if (pConnection->pTransport == pPluginTransport)
-					{
-						m_Transports.erase(itt);
-						break;
-					}
-				}
+				RemoveConnection(pConnection->pTransport);
+				CPluginTransport *pTransport = pConnection->pTransport;
+				pConnection->pTransport = NULL;
+				delete pConnection->pTransport;
 			}
-			delete pConnection->pTransport;
-			pConnection->pTransport = NULL;
 
 			// inform the plugin
 			{

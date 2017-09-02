@@ -530,6 +530,44 @@ namespace Plugins {
 		if (m_Resolver) delete m_Resolver;
 	};
 
+	bool CPluginTransportICMP::handleListen()
+	{
+		return false;
+	}
+	void CPluginTransportICMP::handleRead(const boost::system::error_code & e, std::size_t bytes_transferred)
+	{
+	}
+	void CPluginTransportICMP::handleWrite(const std::vector<byte>&)
+	{
+	}
+	bool CPluginTransportICMP::handleDisconnect()
+	{
+		m_tLastSeen = time(0);
+		if (m_bConnected)
+		{
+			if (m_Socket)
+			{
+				boost::system::error_code e;
+				m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
+				m_Socket->close();
+				delete m_Socket;
+				m_Socket = NULL;
+			}
+			m_bConnected = false;
+		}
+		return true;
+	}
+
+	CPluginTransportICMP::~CPluginTransportICMP()
+	{
+		if (m_Socket)
+		{
+			handleDisconnect();
+			delete m_Socket;
+		}
+		if (m_Resolver) delete m_Resolver;
+	}
+
 	CPluginTransportSerial::CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string & Port, int Baud) : CPluginTransport(HwdID, pConnection), m_Baud(Baud)
 	{
 		m_Port = Port;

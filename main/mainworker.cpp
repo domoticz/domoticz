@@ -1042,10 +1042,7 @@ bool MainWorker::Start()
 #ifdef ENABLE_PYTHON
 	if (m_sql.m_bEnableEventSystem)
 	{
-		if (1 == 0)
-		{
-			m_pluginsystem.StartPluginSystem();
-		}
+		m_pluginsystem.StartPluginSystem();
 	}
 #endif
 	AddAllDomoticzHardware();
