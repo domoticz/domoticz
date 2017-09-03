@@ -377,7 +377,7 @@ public:
 	bool		m_bAcceptNewHardware;
 	bool		m_bAllowWidgetOrdering;
 	int			m_ActiveTimerPlan;
-	bool		m_bDisableEventSystem;
+	bool		m_bEnableEventSystem;
 	int			m_ShortLogInterval;
 	bool		m_bLogEventScriptTrigger;
 	bool		m_bDisableDzVentsSystem;

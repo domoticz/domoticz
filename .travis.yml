@@ -58,18 +58,17 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     env:
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"          
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     script:
       - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
-    osx_image: xcode8
-    compiler: gcc
-    env:
-      - TARGET_ARCHITECTURE=x86_64
-      - MATRIX_EVAL="brew install gcc && CC=gcc-6 && CXX=g++-6"
+    osx_image: xcode8.3
+    #compiler:
+    #  - gcc
+    env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
       - brew install libusb
@@ -82,10 +81,8 @@ matrix:
       - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+      - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
-
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
