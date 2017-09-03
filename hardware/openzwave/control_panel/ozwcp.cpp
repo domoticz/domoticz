@@ -41,7 +41,7 @@
 #include <string.h>
 #include "Options.h"
 #include "Manager.h"
-#include "Node.h"
+#include "../Node.h"
 #include "Group.h"
 #include "Notification.h"
 
