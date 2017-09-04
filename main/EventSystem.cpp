@@ -3799,6 +3799,12 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		int idx = atoi(SetPointIdx.c_str());
 		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
 	}
+	else if (lCommand == "BackupDB")
+	{
+		std::string luaString = lua_tostring(lua_state, -1);
+		BackupDatabase(luaString);
+		scriptTrue = true;
+	}
 	else
 	{
 		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
@@ -3810,6 +3816,14 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 }
 
+void CEventSystem::BackupDatabase(const std::string &path)
+{
+	_log.Log(LOG_STATUS, "EventSystem: Starting database backup to %s", path.c_str());
+	if (m_sql.BackupDatabase(path))
+		_log.Log(LOG_STATUS, "EventSystem: Database backup completed successfully");
+	else
+		_log.Log(LOG_ERROR, "EventSystem: Error writing backup file to %s", path.c_str());
+}
 
 void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 {

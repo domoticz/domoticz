@@ -6501,7 +6501,11 @@ bool CSQLHelper::BackupDatabase(const std::string &OutputFile)
 	// Open the database file identified by zFilename.
 	rc = sqlite3_open(OutputFile.c_str(), &pFile);
 	if( rc!=SQLITE_OK )
+	{
+		if (pFile != NULL)
+			sqlite3_close(pFile);
 		return false;
+	}
 
 	// Open the sqlite3_backup object used to accomplish the transfer
     pBackup = sqlite3_backup_init(pFile, "main", m_dbase, "main");
