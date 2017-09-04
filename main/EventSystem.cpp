@@ -1183,8 +1183,8 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
 	{
-		std::vector<_tEventTrigger>::iterator itt;
 		time_t atime = mytime(NULL);
+		std::vector<_tEventTrigger>::iterator itt;
 		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
 			if (itt->ID == ulDevID && itt->reason == reason)
@@ -1195,7 +1195,7 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 					return (!bEventTrigger ? true : false);
 				}
 				else
-					m_eventtrigger.erase(itt);
+					itt = m_eventtrigger.erase(itt) - 1;
 			}
 		}
 	}
@@ -1207,21 +1207,18 @@ bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
 	{
+		time_t atime = mytime(NULL) + static_cast<int>(fDelayTime);
 		std::vector<_tEventTrigger>::iterator itt;
-		time_t atime = mytime(NULL) + static_cast<uint32_t>(fDelayTime);
 		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason)
-			{
-				if (itt->timestamp >= atime) // cancel later scheduled items
-					m_eventtrigger.erase(itt);
-			}
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later scheduled items
+				itt = m_eventtrigger.erase(itt) - 1;
 		}
 	}
 	_tEventTrigger item;
 	item.ID = ulDevID;
 	item.reason = reason;
-	item.timestamp = mytime(NULL) + static_cast<uint32_t>(fDelayTime);
+	item.timestamp = mytime(NULL) + static_cast<int>(fDelayTime);
 	m_eventtrigger.push_back(item);
 }
 
@@ -4263,7 +4260,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		fPreviousRandomTime = fRandomTime;
 
 		if (!oParseResults.bEventTrigger)
-			SetEventTrigger(deviceID, !isScene ? REASON_DEVICE : REASON_SCENEGROUP, fDelayTime);
+			SetEventTrigger(deviceID, (!isScene ? REASON_DEVICE : REASON_SCENEGROUP), fDelayTime);
 
 		if ( isScene ) {
 
@@ -4300,7 +4297,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			fDelayTime += oParseResults.fForSec;
 
 			if (!oParseResults.bEventTrigger)
-				SetEventTrigger(deviceID, !isScene ? REASON_DEVICE : REASON_SCENEGROUP, fDelayTime);
+				SetEventTrigger(deviceID, (!isScene ? REASON_DEVICE : REASON_SCENEGROUP), fDelayTime);
 
 			_tTaskItem tDelayedtItem;
 			if ( isScene ) {
