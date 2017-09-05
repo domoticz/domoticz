@@ -184,12 +184,26 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	std::string dzv_Dir,s;
+	std::string dzv_Dir, dzv_scripts, s;
 #ifdef WIN32
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+	dzv_scripts = szUserDataFolder + "scripts\\dzVents\\";
 #else
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+	dzv_scripts = szUserDataFolder + "scripts/dzVents/";
 #endif
+	const std::string // remove obsolete dirs
+	dzv_rm_Dir1 = dzv_scripts + "runtime",
+	dzv_rm_Dir2 = dzv_scripts + "documentation";
+
+	if ((file_exist(dzv_rm_Dir1.c_str()) || file_exist(dzv_rm_Dir2.c_str())) &&
+		!szUserDataFolder.empty())
+	{
+		std::string errorPath;
+		if (int returncode = RemoveDir(dzv_rm_Dir1 + "|" + dzv_rm_Dir2, errorPath))
+			_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath);
+	}
+
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
@@ -371,6 +385,51 @@ std::string CEventSystem::LowerCase(std::string sResult)
 {
 	std::transform(sResult.begin(), sResult.end(), sResult.begin(), ::tolower);
 	return sResult;
+}
+
+// Temporarily function used for removing leftover dzVents files
+int CEventSystem::RemoveDir(const std::string &dirnames, std::string &errorPath)
+{
+	std::vector<std::string> splitresults;
+	StringSplit(dirnames, "|", splitresults);
+	int returncode = 0;
+	if (!splitresults.empty())
+	{
+#ifdef WIN32
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			size_t s_szLen = strlen(splitresults[i].c_str());
+			if (s_szLen < MAX_PATH)
+			{
+				char deletePath[MAX_PATH + 1];
+				strcpy_s(deletePath, splitresults[i].c_str());
+				deletePath[s_szLen + 1] = '\0'; // SHFILEOPSTRUCT needs an additional null char
+
+				SHFILEOPSTRUCT shfo	= { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
+				if (returncode = SHFileOperation(&shfo))
+				{
+					errorPath = splitresults[i];
+					break;
+				}
+			}
+		}
+#else
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
+			if (returncode)
+			{
+				errorPath = splitresults[i];
+				break;
+			}
+		}
+#endif
+	}
+	return returncode;
 }
 
 void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)

@@ -249,6 +249,7 @@ private:
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
 	void BackupDatabase(const std::string &path);
+	int RemoveDir(const std::string &dirnames, std::string &errorPath);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
 };
