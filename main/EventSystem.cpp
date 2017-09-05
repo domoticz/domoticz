@@ -407,7 +407,7 @@ int CEventSystem::RemoveDir(const std::string &dirnames, std::string &errorPath)
 				strcpy_s(deletePath, splitresults[i].c_str());
 				deletePath[s_szLen + 1] = '\0'; // SHFILEOPSTRUCT needs an additional null char
 
-				SHFILEOPSTRUCT shfo	= { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
+				SHFILEOPSTRUCT shfo = { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
 				if (returncode = SHFileOperation(&shfo))
 				{
 					errorPath = splitresults[i];
