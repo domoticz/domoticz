@@ -591,10 +591,10 @@ void CEventSystem::GetCurrentMeasurementStates()
 
 	//char szTmp[300];
 
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	std::map<uint64_t, _tDeviceStatus>::const_iterator itt;
+	for (itt = m_devicestates.begin(); itt != m_devicestates.end(); ++itt)
 	{
-		_tDeviceStatus sitem = iterator->second;
+		_tDeviceStatus sitem = itt->second;
 		std::vector<std::string> splitresults;
 		StringSplit(sitem.sValue, ";", splitresults);
 
@@ -1535,8 +1535,8 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
+	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator) {
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
 		lua_pushstring(lua_state, sitem.nValueWording.c_str());
@@ -1548,9 +1548,9 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-		_tUserVariable uvitem = iterator->second;
+	std::map<uint64_t, _tUserVariable>::const_iterator ittvar;
+	for (ittvar = m_uservariables.begin(); ittvar != m_uservariables.end(); ++ittvar) {
+		_tUserVariable uvitem = ittvar->second;
 		if (uvitem.variableType == 0) {
 			//Integer
 			lua_pushnumber(lua_state, (lua_Number)uvitem.ID);
@@ -2552,8 +2552,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	lua_createtable(lua_state, 0, 0);
 
 	// First export all the devices.
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		dev_type = RFX_Type_Desc(sitem.devType, 1);
@@ -2689,8 +2689,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 		// Now see if we have additional fields from the JSON data
 		if (sitem.JsonMapString.size() > 0)
 		{
-			typedef std::map<uint8_t, std::string>::const_iterator it_type;
-			for (it_type itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
+			std::map<uint8_t, std::string>::const_iterator itt;
+			for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
 				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushstring(lua_state, itt->second.c_str());
@@ -2700,8 +2700,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		if (sitem.JsonMapFloat.size() > 0)
 		{
-			typedef std::map<uint8_t, float>::const_iterator it_type;
-			for (it_type itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
+			std::map<uint8_t, float>::const_iterator itt;
+			for (itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
 			{
 				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushnumber(lua_state, itt->second);
@@ -2711,8 +2711,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		if (sitem.JsonMapInt.size() > 0)
 		{
-			typedef std::map<uint8_t, int>::const_iterator it_type;
-			for (it_type itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
+			std::map<uint8_t, int>::const_iterator itt;
+			for (itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
 			{
 				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushnumber(lua_state, itt->second);
@@ -2722,8 +2722,8 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 		if (sitem.JsonMapBool.size() > 0)
 		{
-			typedef std::map<uint8_t, bool>::const_iterator it_type;
-			for (it_type itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
+			std::map<uint8_t, bool>::const_iterator itt;
+			for (itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
 			{
 				lua_pushstring(lua_state, JsonMap[itt->first].szNew);
 				lua_pushboolean(lua_state, itt->second);
@@ -2741,10 +2741,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 	const char *description = "";
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 
-	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
-	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
+	std::map<uint64_t, _tScenesGroups>::const_iterator ittScenes;
+	for (ittScenes = m_scenesgroups.begin(); ittScenes != m_scenesgroups.end(); ++ittScenes)
 	{
-		_tScenesGroups sgitem = iterator->second;
+		_tScenesGroups sgitem = ittScenes->second;
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
@@ -2802,10 +2802,10 @@ void CEventSystem::ExportDomoticzDataToLua(lua_State *lua_state, uint64_t device
 
 	// Now do the user variables.
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator)
+	std::map<uint64_t, _tUserVariable>::const_iterator it_var;
+	for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
 	{
-		_tUserVariable uvitem = iterator->second;
+		_tUserVariable uvitem = it_var->second;
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -2891,8 +2891,8 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2902,8 +2902,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_setglobal(lua_state, "otherdevices");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2913,8 +2912,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_setglobal(lua_state, "otherdevices_lastupdate");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2923,8 +2921,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	}
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -2934,8 +2931,7 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_setglobal(lua_state, "otherdevices_idx");
 
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		_tDeviceStatus sitem = iterator->second;
 		lua_pushstring(lua_state, sitem.deviceName.c_str());
@@ -3367,9 +3363,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-		_tUserVariable uvitem = iterator->second;
+	std::map<uint64_t, _tUserVariable>::const_iterator it_var;
+	for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
+		_tUserVariable uvitem = it_var->second;
 		if (uvitem.variableType == 0)  {
 			//Integer
 			lua_pushstring(lua_state, uvitem.variableName.c_str());
@@ -3393,9 +3389,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
-	typedef std::map<uint64_t, _tUserVariable>::iterator it_var;
-	for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-		_tUserVariable uvitem = iterator->second;
+	for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
+		_tUserVariable uvitem = it_var->second;
 		lua_pushstring(lua_state, uvitem.variableName.c_str());
 		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
@@ -3404,9 +3399,8 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	if (reason == "uservariable") {
 		if (varId > 0) {
-			typedef std::map<uint64_t, _tUserVariable>::iterator it_cvar;
-			for (it_cvar iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-				_tUserVariable uvitem = iterator->second;
+			for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
+				_tUserVariable uvitem = it_var->second;
 				if (uvitem.ID == varId) {
 					lua_createtable(lua_state, 1, 0);
 					lua_pushstring(lua_state, uvitem.variableName.c_str());
@@ -3421,9 +3415,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
-	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator) {
-		_tScenesGroups sgitem = iterator->second;
+	std::map<uint64_t, _tScenesGroups>::const_iterator it_scgr;
+	for (it_scgr = m_scenesgroups.begin(); it_scgr != m_scenesgroups.end(); ++it_scgr) {
+		_tScenesGroups sgitem = it_scgr->second;
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
 		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
 		lua_rawset(lua_state, -3);
@@ -3431,10 +3425,9 @@ void CEventSystem::EvaluateLua(const std::string &reason, const std::string &fil
 	lua_setglobal(lua_state, "otherdevices_scenesgroups");
 
 	lua_createtable(lua_state, (int)m_scenesgroups.size(), 0);
-	typedef std::map<uint64_t, _tScenesGroups>::iterator it_scgr;
-	for (it_scgr iterator = m_scenesgroups.begin(); iterator != m_scenesgroups.end(); ++iterator)
+	for (it_scgr = m_scenesgroups.begin(); it_scgr != m_scenesgroups.end(); ++it_scgr)
 	{
-		_tScenesGroups sgitem = iterator->second;
+		_tScenesGroups sgitem = it_scgr->second;
 		lua_pushstring(lua_state, sgitem.scenesgroupName.c_str());
 		lua_pushnumber(lua_state, (lua_Number)sgitem.ID);
 		lua_rawset(lua_state, -3);
@@ -4378,8 +4371,8 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
 	iStates.clear();
-	typedef std::map<uint64_t, _tDeviceStatus>::iterator it_type;
-	for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
+	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		iStates.push_back(iterator->second);
 	}
