@@ -896,6 +896,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Gas Detector";
 						type = STYPE_SMOKEDETECTOR;
 					}
+					else if (model == "sensor_wleak.aq1") {
+						name = "Xiaomi Water Leak Detector";
+						type = STYPE_SMOKEDETECTOR;
+					}
 					else if (model == "curtain") {
 						name = "Xiaomi Curtain";
 						type = STYPE_BlindsPercentage;
@@ -928,12 +932,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (model == "switch") {
 							level = 0;
 						}
-						else if ((model == "smoke") || (model == "natgas")) {
-							if (alarm == "1") {
+						else if ((model == "smoke") || (model == "natgas") || (model == "sensor_wleak.aq1")) {
+							if ((alarm == "1") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
-							else if (alarm == "0") {
+							else if ((alarm == "0") || (status == "no_leak")) {
 								level = 0;
 							}
 							if (density != "")
