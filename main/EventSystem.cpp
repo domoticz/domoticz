@@ -208,6 +208,7 @@ void CEventSystem::LoadEvents()
 		}
 	}
 
+	m_bdzVentsExist = false;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
 	if (result.size()>0)
@@ -239,13 +240,9 @@ void CEventSystem::LoadEvents()
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
 				}
+				m_bdzVentsExist = true;
 			}
 		}
-		m_bdzVentsExist = true;
-	}
-	else
-	{
-		m_bdzVentsExist = false;
 	}
 
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");

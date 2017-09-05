@@ -56,13 +56,6 @@ public:
 		REASON_SECURITY			// 4
 	};
 
-	struct _tEventTrigger
-	{
-		uint64_t ID;
-		_eReason reason;
-		time_t timestamp;
-	};
-
 	struct _tDeviceStatus
 	{
 		uint64_t ID;
@@ -137,6 +130,13 @@ public:
 	bool SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 
 private:
+	struct _tEventTrigger
+	{
+		uint64_t ID;
+		_eReason reason;
+		time_t timestamp;
+	};
+
 	struct _tEventQueue
 	{
 		std::string reason;
