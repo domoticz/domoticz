@@ -971,3 +971,19 @@ div.item.statusTimeout td#name{
 div.item.statusLowBattery td#name{
     background-color:#DDDF2D;
 }
+
+.selectorlevels {
+	font-size: 1em;
+}
+
+#dashcontent .selectorlevels {
+	font-size: 0.9em;
+}
+
+.selectorlevels .ui-button-text-only .ui-button-text {
+	padding: .3em 0.7em;
+}
+
+.selectorlevels .ui-selectmenu-button.ui-widget {
+	font-size: 1.1em;
+}

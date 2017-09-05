@@ -1,4 +1,5 @@
 /* Animations and small cool things */
+/* Animations and small cool things */
 
 
 /*  POPUP ANIMATION  */
@@ -318,101 +319,65 @@ body{
 
 */
 
-
-
-
-
-
 /*  FANCY CHECKBOXES  */
 
-#settings input[type='checkbox'],
-#paramstable input[type='checkbox'],
-#timerparamstable input[type='checkbox'],
-#notificationparamstable input[type='checkbox'],
-#userparamstable input[type='checkbox'],
-#eventparamstable input[type='checkbox'],
-#mobileparamstable input[type='checkbox'],
-#linkparamstable input[type='checkbox'],
-#fibaroremote input[type='checkbox'],
-#linkhttpparamstable input[type='checkbox'],
-#httpremote input[type='checkbox'],
-#linkgooglepubsubparamstable input[type='checkbox'],
-#googlepubsubremote input[type='checkbox'],
-#influxremote input[type='checkbox'] {
-	visibility: hidden;
-	position: relative;
-	left: 15px;
+input[type='checkbox']:not(.noscheck) {
+	max-height: 0;
+	max-width: 0;
+	opacity: 0;
+}
+
+	input[type='checkbox']:not(.noscheck) + label {
+		display: inline-block;
+		position: relative;
+		box-shadow: inset 0 0 0px 1px rgba(191,29,27,1);
+		text-indent: 44px;
+		white-space: nowrap;
+		height: 18px;
+		width: 40px;
+		border-radius: 0px;
+		background: rgba(191,29,27,1);
+		margin: 3px 28px 3px 0px;
+	}
+
+input[type='checkbox']:not(.noscheck) + label:before {
+	content: "";
+	position: absolute;
+	display: block;
+	height: 18px;
+	width: 30px;
 	top: 0px;
-	margin: 3px 20px 3px 0px;
-	background-color: #3b99fc;
-	z-index: 2;
+	left: 0px;
+	border-radius: 0px;
+	-moz-transition: .25s ease-in-out;
+	-webkit-transition: .25s ease-in-out;
+	transition: .25s ease-in-out;
 }
 
-#settings input[type=checkbox]:after,
-#paramstable input[type=checkbox]:after,
-#timerparamstable input[type=checkbox]:after,
-#notificationparamstable input[type=checkbox]:after,
-#userparamstable input[type=checkbox]:after,
-#eventparamstable input[type=checkbox]:after,
-#mobileparamstable input[type=checkbox]:after,
-#linkparamstable input[type=checkbox]:after,
-#fibaroremote input[type=checkbox]:after,
-#linkhttpparamstable input[type=checkbox]:after,
-#httpremote input[type=checkbox]:after,
-#linkgooglepubsubparamstable input[type=checkbox]:after,
-#googlepubsubremote input[type=checkbox]:after,
-#influxremote input[type=checkbox]:after {
-	display: inline-block;
-	visibility: visible;
-	content: "\2714";
-	font-size: 9px;
-	background-color: #fff;
-	color: #fff;
-	height: 12px !important;
-	border-radius: 3px;
-	border: 2px solid #d84c47;
-	border-right: 14px solid #d84c47;
-	width: 12px !important;
-	overflow: hidden;
-	position: relative;
-	left: -12px;
-	top: -2px;
-	-moz-transition: all ease .3s;
-	-webkit-transition: all ease .3s;
-	transition: all ease .3s;
+input[type='checkbox']:not(.noscheck) + label:after {
+	content: "";
+	position: absolute;
+	display: block;
+	height: 14px;
+	width: 19px;
+	top: 2px;
+	left: 2px;
+	border-radius: 0px;
+	background: white;
+	box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.2);
+	-moz-transition: .25s ease-in-out;
+	-webkit-transition: .25s ease-in-out;
+	transition: .25s ease-in-out;
 }
 
-#settings input[type=checkbox]:checked:after,
-#paramstable input[type=checkbox]:checked:after,
-#timerparamstable input[type=checkbox]:checked:after,
-#notificationparamstable input[type=checkbox]:checked:after,
-#userparamstable input[type=checkbox]:checked:after,
-#eventparamstable input[type=checkbox]:checked:after,
-#mobileparamstable input[type=checkbox]:checked:after,
-#linkparamstable input[type=checkbox]:checked:after,
-#fibaroremote input[type=checkbox]:checked:after,
-#linkhttpparamstable input[type=checkbox]:checked:after,
-#httpremote input[type=checkbox]:checked:after,
-#linkgooglepubsubparamstable input[type=checkbox]:checked:after,
-#googlepubsubremote input[type=checkbox]:checked:after,
-#influxremote input[type=checkbox]:checked:after {
-	content: " ";
-	background-color: transparent;
-	content: "\2714";
-	font-size: 9px;
-	background-color: #fff;
-	height: 12px !important;
-	border-radius: 3px;
-	border: 2px solid #378637;
-	border-left: 14px solid #378637;
-	width: 12px !important;
-	overflow: hidden;
-	position: relative;
-	left: -12px;
-	top: -2px;
-	-moz-transition: all ease .1s;
-	-webkit-transition: all ease .1s;
-	transition: all ease .1s;
+input[type='checkbox']:not(.noscheck):checked + label:before {
+	width: 40px;
+	background: rgba(19,191,17,1);
+}
+
+input[type='checkbox']:not(.noscheck):checked + label:after {
+	left: 20px;
+	box-shadow: inset 0 0 0 1px rgba(19,191,17,1), 0 2px 4px rgba(0,0,0,.2);
 }
 
 /*  EXTRA HOVER GLOSS */
