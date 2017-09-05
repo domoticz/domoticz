@@ -474,6 +474,9 @@
     <Filter Include="Devices\Teleinfo\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IFTTT">
+      <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1244,9 +1247,6 @@
     <None Include="..\www\views\lights.html">
       <Filter>www\views</Filter>
     </None>
-    <None Include="..\www\views\lights_bak.html">
-      <Filter>www\views</Filter>
-    </None>
     <None Include="..\www\views\log.html">
       <Filter>www\views</Filter>
     </None>
@@ -1330,6 +1330,33 @@
     </None>
     <None Include="..\www\views\mobile_notifications.html">
       <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpgooglepubsub.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpinflux.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\DPGooglePubSubController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPInfluxController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\styles\default\base.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\custom.js">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\extras_and_animations.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\navigation_main_sidebar.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\show_version_number.css">
+      <Filter>www\styles\default</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1433,9 +1460,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\SunRiseSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
@@ -2043,6 +2067,18 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\IFTTT.h">
+      <Filter>IFTTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\tinyxml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\xpath_processor.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2732,6 +2768,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\IFTTT.cpp">
+      <Filter>IFTTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
+      <Filter>Devices\Denkovi</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

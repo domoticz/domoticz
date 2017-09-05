@@ -166,31 +166,21 @@ namespace Plugins {
 	class ReceivedMessage : public CCallbackBase, public CHasConnection
 	{
 	public:
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Data(NULL), m_Extra(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
 		{
 			m_Buffer.reserve(Buffer.length());
 			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Status(-1), m_Data(NULL), m_Extra(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
 		{
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer, const int Status, PyObject*	pObject) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
+		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
-			m_Buffer = Buffer;
-			m_Status = Status;
-			m_Extra = pObject;
-		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData, const int Status, PyObject*	pObject) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
-		{
-			m_Status = Status;
 			m_Data = pData;
-			m_Extra = pObject;
 		};
 		std::vector<byte>		m_Buffer;
-		int						m_Status;
 		PyObject*				m_Data;
-		PyObject*				m_Extra;
 
 		virtual void Process()
 		{
@@ -199,17 +189,7 @@ namespace Plugins {
 			// Data is stored in a single vector of bytes
 			if (m_Buffer.size())
 			{
-				if (m_Extra)
-				{
-					PyObject*	pHeaders = m_Extra;
-					pParams = Py_BuildValue("Oy#iO", m_pConnection, &m_Buffer[0], m_Buffer.size(), m_Status, pHeaders);
-					Py_XDECREF(pHeaders);
-				}
-				else
-				{
-					Py_INCREF(Py_None);
-					pParams = Py_BuildValue("Oy#iO", m_pConnection, &m_Buffer[0], m_Buffer.size(), m_Status, Py_None);
-				}
+				pParams = Py_BuildValue("Oy#", m_pConnection, &m_Buffer[0], m_Buffer.size());
 				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
 				Callback(pParams);
 			}
@@ -217,16 +197,7 @@ namespace Plugins {
 			// Data is in a dictionary
 			if (m_Data)
 			{
-				if (m_Extra)
-				{
-					pParams = Py_BuildValue("OOiO", m_pConnection, m_Data, m_Status, m_Extra);
-					Py_XDECREF(m_Extra);
-				}
-				else
-				{
-					Py_INCREF(Py_None);
-					pParams = Py_BuildValue("OOiO", m_pConnection, m_Data, m_Status, Py_None);
-				}
+				pParams = Py_BuildValue("OO", m_pConnection, m_Data);
 				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
 				Callback(pParams);
 				Py_XDECREF(m_Data);
@@ -320,29 +291,19 @@ namespace Plugins {
 	class WriteDirective : public CDirectiveBase, public CHasConnection
 	{
 	public:
-		WriteDirective(CPlugin* pPlugin, PyObject* Connection, const Py_buffer* Buffer, const char* URL, const char* Verb, PyObject*	pHeaders, const int Delay) :
-			CDirectiveBase(pPlugin), CHasConnection(Connection)
+		PyObject*		m_Object;
+		WriteDirective(CPlugin* pPlugin, PyObject* Connection, PyObject* pData, const int Delay) : CDirectiveBase(pPlugin), CHasConnection(Connection)
 		{
-			if (Buffer)
-			{
-				m_Buffer.reserve((size_t)Buffer->len);
-				m_Buffer.assign((const byte*)Buffer->buf, (const byte*)Buffer->buf + Buffer->len);
-			}
-			
-			if (URL) m_URL = URL;
-			if (Verb) m_Operation = Verb;
-			m_Object = NULL;
-			if (pHeaders)
-			{
-				m_Object = pHeaders;
-				Py_INCREF(pHeaders);
-			}
+			m_Object = pData;
+			if (m_Object)
+				Py_INCREF(m_Object);
 			if (Delay) m_When += Delay;
 		};
-		std::vector<byte>		m_Buffer;
-		std::string				m_URL;
-		std::string				m_Operation;
-		PyObject*				m_Object;
+		~WriteDirective()
+		{
+			if (m_Object)
+				Py_DECREF(m_Object);
+		}
 
 		virtual void Process() { m_pPlugin->ConnectionWrite(this); };
 	};

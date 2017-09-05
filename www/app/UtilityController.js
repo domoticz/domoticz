@@ -941,12 +941,9 @@ define(['app'], function (app) {
 
 								if (typeof item.Counter != 'undefined') {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
-										status = item.Counter;
 										bigtext = item.CounterToday;
 									}
-									else {
-										status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
-									}
+									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 								}
 								else if (item.Type == "Current") {
 									status = item.Data;
@@ -1046,25 +1043,9 @@ define(['app'], function (app) {
 									}
 								}
 
-								var nbackcolor = "#D4E1EE";
-								if (item.Protected == true) {
-									nbackcolor = "#A4B1EE";
-								}
-								if (item.HaveTimeout == true) {
-									nbackcolor = "#DF2D3A";
-								}
-								else {
-									var BatteryLevel = parseInt(item.BatteryLevel);
-									if (BatteryLevel != 255) {
-										if (BatteryLevel <= 10) {
-											nbackcolor = "#DDDF2D";
-										}
-									}
-								}
-								var obackcolor = rgb2hex($(id + " #name").css("background-color"));
-								if (obackcolor != nbackcolor) {
-									$(id + " #name").css("background-color", nbackcolor);
-								}
+								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+								$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
+								$(id).addClass(backgroundClass);
 
 								if ($(id + " #status").html() != status) {
 									$(id + " #bigtext").html(bigtext);
@@ -1174,28 +1155,15 @@ define(['app'], function (app) {
 								htmlcontent += '<div class="row divider">\n';
 								bHaveAddedDevider = true;
 							}
+							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 
 							var xhtm =
-								'\t<div class="span4" id="' + item.idx + '">\n' +
+								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n' +
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
-							var nbackcolor = "#D4E1EE";
-							if (item.Protected == true) {
-								nbackcolor = "#A4B1EE";
-							}
-							if (item.HaveTimeout == true) {
-								nbackcolor = "#DF2D3A";
-							}
-							else {
-								var BatteryLevel = parseInt(item.BatteryLevel);
-								if (BatteryLevel != 255) {
-									if (BatteryLevel <= 10) {
-										nbackcolor = "#DDDF2D";
-									}
-								}
-							}
-							xhtm += '\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
+
+							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;

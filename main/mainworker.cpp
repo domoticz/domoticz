@@ -106,6 +106,7 @@
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/DenkoviSmartdenIPIn.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -298,6 +299,9 @@ void MainWorker::StopDomoticzHardware()
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
+#endif
 		(*itt)->Stop();
 		delete (*itt);
 	}
@@ -401,10 +405,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos=FindDomoticzHardware(HwdId);
 	if (dpos==-1)
 		return;
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 #ifdef ENABLE_PYTHON
 	m_pluginsystem.DeregisterPlugin(HwdId);
 #endif
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -835,6 +839,10 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
 		break;
+	case HTYPE_DenkoviSmartdenIPIn:
+		//LAN
+		pHardware = new CDenkoviSmartdenIPIn(ID, Address, Port, Password);
+		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
 		pHardware = new CHEOS(ID, Address, Port, Username, Password, Mode1, Mode2);
@@ -1001,7 +1009,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID);
+		pHardware = new CRtl433(ID,Filename);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
@@ -1036,7 +1044,13 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.StartPluginSystem();
+	if (m_sql.m_bEnableEventSystem)
+	{
+		if (1 == 0)
+		{
+			m_pluginsystem.StartPluginSystem();
+		}
+	}
 #endif
 	AddAllDomoticzHardware();
 	m_fibaropush.Start();
@@ -1125,7 +1139,7 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
+	m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -12328,10 +12342,6 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
 
-	time_t now = time(0);
-	struct tm ltime;
-	localtime_r(&now,&ltime);
-
 	//first set actual scene status
 	std::string Name="Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
@@ -12351,9 +12361,10 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
-	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %" PRIu64 ")",
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
 		nValue,
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		szLastUpdate.c_str(),
 		idx);
 
 	//Check if we need to email a snapshot of a Camera
@@ -12389,12 +12400,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
-	if (!m_sql.m_bDisableEventSystem)
+	if (m_sql.m_bEnableEventSystem)
 	{
-		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
-		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
-		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
+		m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
 	}
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
@@ -12730,8 +12738,8 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	typedef std::map<std::string, time_t>::iterator hb_components;
-	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
+	std::map<std::string, time_t>::const_iterator iterator;
+	for (iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
 		double dif = difftime(now, iterator->second);
 		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 60)

@@ -24,13 +24,13 @@ history_file="history_${OS}_${MACH}.txt"
 echo "Updating to server revision..."
 git fetch --all
 
-TOTCOUNT="$(git rev-list HEAD...origin/master --count)"
+TOTCOUNT="$(git rev-list HEAD...origin/development --count)"
 if [ "$TOTCOUNT" -lt 1 ]; then
         echo "No Changes..."
         exit;
 fi
 
-git reset --hard origin/master
+git reset --hard origin/development
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 if [ $? -ne 0 ]
