@@ -19,7 +19,7 @@ for a variety of Xiaomi sensors.
 They can be purchased on AliExpress or other stores at very
 competitive prices.
 Protocol is Zigbee and WiFi, and the gateway and
-Domoticz need to be in the same network/subnet
+Domoticz need to be in the same network/subnet with multicast working
 */
 
 #define round(a) ( int ) ( a + .5 )
