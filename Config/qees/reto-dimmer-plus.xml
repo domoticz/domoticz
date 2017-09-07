@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- QEES RETO Dimmer Plus 2013 -->
-<Product xmlns='http://code.google.com/p/open-zwave/'>
-	<!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
-	<CommandClass id="38" action="remove" />
+<Product xmlns='http://code.google.com/p/open-zwave/'>	
 	<!-- Basic set as report -->
 	<CommandClass id="32" setasreport="true"/>
 	<!-- Association Groups -->

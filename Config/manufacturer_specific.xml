@@ -9,6 +9,7 @@
 		<Product type="1e12" id="015e" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
+		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
 	</Manufacturer>
@@ -338,6 +339,7 @@
 		<Product type="0004" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
 		<Product type="0001" id="0003" name="Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0004" id="0001" name="Motion Detector" config="ecolink/motion.xml"/>
+		<Product type="0004" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
 		<Product type="0004" id="0003" name="Garage Door Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0005" id="000f" name="FireFighter" config="ecolink/firefighter.xml"/>
 	</Manufacturer>
@@ -511,6 +513,9 @@
 	</Manufacturer>
 	<Manufacturer id="0137" name="Followgood">
 		<Product type="3001" id="0002" name="SWZ-1002 Binary Power Switch"/>
+	</Manufacturer>
+	<Manufacturer id="0207" name="Forest Group Nederland B.V.">
+		<Product type="0027" id="0100" name="Shuttle L Z-Wave" config="forest/fs2z5232000002.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0084" name="FortrezZ">
 		<Product type="0021" id="010a" name="WWA-02 Water and Temperature Alarm" config="fortrezz/wwa02.xml"/>
@@ -811,6 +816,7 @@
 		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
 		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
+		<Product type="0003" id="108b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0178" name="Nexia">
 		<!-- full name in Z-wave database: Ingersoll Rand - Nexia Home Intelligence -->
@@ -1060,6 +1066,7 @@
 	</Manufacturer>
 	<Manufacturer id="0109" name="Vision">
 		<Product type="1001" id="0101" name="ZU1401 Z-Wave USB Stick"/>
+		<Product type="1001" id="0104" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="1001" id="0105" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="2001" id="0101" name="ZD2102 US Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0102" name="ZD2102 AU Door/Window Sensor" config="vision/zd2102.xml"/>
@@ -1091,6 +1098,7 @@
 		<Product type="2012" id="1203" name="ZR1202 Repeater"/>
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
+		<Product type="201a" id="1aa4" name="ZL7261 Plug-in Power Monitor" config="vision/zl7261.xml"/>
 		<Product type="201c" id="1c01" name="ZF5201 Flood sensor" config="vision/zf5201.xml"/>
 		<Product type="201f" id="1f10" name="ZD2201 Multisensor 4in1" config="vision/zd2201.xml"/>
 		<Product type="201f" id="1f20" name="ZD2301 Multisensor 4in1" config="vision/zd2301.xml"/>
@@ -1186,6 +1194,7 @@
 	<Manufacturer id="027a" name="Zooz">
 		<Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />
 		<Product type="0003" id="0083" name="ZSE09 Mini Sensor" config="zooz/zse09.xml" />
+		<Product type="0003" id="0085" name="ZSE30 Water Sensor" config="zooz/zse30.xml" />
 		<Product type="0003" id="0087" name="ZEN07 Mini Plug" config="zooz/zen07.xml" />
 		<Product type="2021" id="2101" name="ZSE40 4-in-1 sensor" config="zooz/zse40.xml" />
 		<Product type="0003" id="0088" name="ZSE33 Smart Chime" config="zooz/zse33.xml" />

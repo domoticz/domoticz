@@ -1515,6 +1515,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
+
 			$.devIdx = idx;
 			$.isslave = isslave;
 			$.stype = stype;
@@ -1546,12 +1547,16 @@ define(['app'], function (app) {
 				}
 			}
 
-			$('#modal').show();
-			var htmlcontent = GetBackbuttonHTMLTable('ShowLights');
+			var htmlcontent = '';
 			htmlcontent += $('#editlightswitch').html();
-			$('#lightcontent').html(htmlcontent);
-			//$('#lightcontent').html($compile(htmlcontent)($scope));
+			$('#lightcontent').html(GetBackbuttonHTMLTable('ShowLights') + htmlcontent);
 			$('#lightcontent').i18n();
+
+			var systemsHTML = '<input type="checkbox" id="protected"><label for="protected" />';
+			$('#lightcontent #id_protected').html(systemsHTML);
+
+			var systemsHTML = '<input type="checkbox" id="selectorHiddenOff" name="selectorHiddenOff" value="0"><label for="selectorHiddenOff"/>';
+			$('#lightcontent #id_selectorHiddenOff').html(systemsHTML);
 
 			oTable = $('#lightcontent #subdevicestable').dataTable({
 				"sDom": '<"H"frC>t<"F"i>',
@@ -2077,10 +2082,12 @@ define(['app'], function (app) {
 		}
 
 		GetLightStatusText = function (item) {
-			if (item.SubType == "Evohome")
+			if (item.SubType == "Evohome") {
 				return EvoDisplayTextMode(item.Status);
-			else if (item.SwitchType === "Selector")
+			}
+			else if (item.SwitchType === "Selector") {
 				return item.LevelNames.split('|')[(item.LevelInt / 10)];
+			}
 			else
 				return item.Status;
 		}
@@ -2506,19 +2513,22 @@ define(['app'], function (app) {
 									var selector$ = $("#selector" + item.idx);
 									if (typeof selector$ !== 'undefined') {
 										if (item.SelectorStyle === 0) {
-											selector$
-												.find('label')
-												.removeClass('ui-state-active')
-												.removeClass('ui-state-focus')
-												.removeClass('ui-state-hover')
-												.end()
-												.find('input:radio')
-												.removeProp('checked')
-												.filter('[value="' + item.LevelInt + '"]')
-												.prop('checked', true)
-												.end()
-												.end()
-												.buttonset('refresh');
+											var xhtm = '';
+											var levelNames = item.LevelNames.split('|');
+											$.each(levelNames, function (index, levelName) {
+												if ((index === 0) && (item.LevelOffHidden)) {
+													return;
+												}
+												xhtm += '<button type="button" class="btn btn-small ';
+												if ((index * 10) == item.LevelInt) {
+													xhtm += 'btn-info"';
+												}
+												else {
+													xhtm += 'btn-default"';
+												}
+												xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
+											});
+											selector$.html(xhtm);
 										} else if (item.SelectorStyle === 1) {
 											selector$.val(item.LevelInt);
 											selector$.selectmenu('refresh');
@@ -2686,6 +2696,9 @@ define(['app'], function (app) {
 								'\t      <td id="name">' + item.Name + '</td>\n' +
 								'\t      <td id="bigtext">';
 							var bigtext = TranslateStatusShort(item.Status);
+							if (item.SwitchType === "Selector") {
+								bigtext = GetLightStatusText(item);
+							}
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
 								var streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + escape(item.Name) + "','" + item.CameraIdx + "')\">" + streamimg + "</a>";
@@ -3070,18 +3083,25 @@ define(['app'], function (app) {
 								xhtm += '<br><div style="margin-left:108px; margin-top:7px;" class="dimslider dimsmall" id="slider" data-idx="' + item.idx + '" data-type="blinds_inv" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';
 							}
 							else if (item.SwitchType == "Selector") {
-								xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 								if (item.SelectorStyle === 0) {
-									xhtm += '<div id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+									xhtm += '<br/><div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 									var levelNames = item.LevelNames.split('|');
 									$.each(levelNames, function (index, levelName) {
 										if ((index === 0) && (item.LevelOffHidden)) {
 											return;
 										}
-										xhtm += '<input type="radio" id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '"><label for="lSelector' + item.idx + 'Level' + index + '">' + levelName + '</label>';
+										xhtm += '<button type="button" class="btn btn-small ';
+										if ((index * 10) == item.LevelInt) {
+											xhtm += 'btn-info"';
+										}
+										else {
+											xhtm += 'btn-default"';
+										}
+										xhtm += 'id="lSelector' + item.idx + 'Level' + index + '" name="selector' + item.idx + 'Level" value="' + (index * 10) + '" onclick="SwitchSelectorLevel(' + item.idx + ',\'' + unescape(levelName) + '\',' + (index * 10) + ',RefreshLights,' + item.isProtected + ');">' + levelName + '</button>';
 									});
 									xhtm += '</div>';
 								} else if (item.SelectorStyle === 1) {
+									xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
 									xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
 									var levelNames = item.LevelNames.split('|');
 									$.each(levelNames, function (index, levelName) {
@@ -3091,8 +3111,8 @@ define(['app'], function (app) {
 										xhtm += '<option value="' + (index * 10) + '">' + levelName + '</option>';
 									});
 									xhtm += '</select>';
+									xhtm += '</div>';
 								}
-								xhtm += '</div>';
 							}
 							xhtm += '</td>\n' +
 								'\t      <td>';
@@ -3277,37 +3297,6 @@ define(['app'], function (app) {
 				}
 			});
 			$scope.ResizeDimSliders();
-
-			//Create Selector buttonset
-			$('#lightcontent .selectorlevels div').buttonset({
-				//Selector selectmenu events
-				create: function (event, ui) {
-					var div$ = $(this),
-						idx = div$.data('idx'),
-						type = div$.data('type'),
-						isprotected = div$.data('isprotected'),
-						disabled = div$.data('disabled'),
-						level = div$.data('level'),
-						levelname = div$.data('levelname');
-					if (disabled === true) {
-						div$.buttonset("disable");
-					}
-					div$.find('input[value="' + level + '"]').prop("checked", true);
-
-					div$.find('input').click(function (event) {
-						var target$ = $(event.target);
-						level = parseInt(target$.val(), 10);
-						levelname = div$.find('label[for="' + target$.attr('id') + '"]').text();
-						// Send command
-						SwitchSelectorLevel(idx, unescape(levelname), level, RefreshLights, isprotected);
-						// Synchronize buttons and div attributes
-						div$.data('level', level);
-						div$.data('levelname', levelname);
-					});
-
-					$('#lightcontent #' + idx + " #bigtext").html(unescape(levelname));
-				}
-			});
 
 			//Create Selector selectmenu
 			$('#lightcontent .selectorlevels select').selectmenu({

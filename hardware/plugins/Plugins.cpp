@@ -866,6 +866,7 @@ namespace Plugins {
 
 	bool CPlugin::Start()
 	{
+		boost::lock_guard<boost::mutex> l(PythonMutex);
 		PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
 		PyObject *pParamsDict = PyDict_New();
 		if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
@@ -1187,7 +1188,16 @@ namespace Plugins {
 
 		if (pConnection->pTransport)
 		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
+			if (m_bDebug)
+			{
+				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if (sTransport == "Serial")
+					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", Name.c_str(), sAddress.c_str());
+				else
+					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
+			}
 			pConnection->pTransport->handleDisconnect();
 		}
 	}
@@ -1236,6 +1246,7 @@ namespace Plugins {
 	{
 		try
 		{
+			boost::lock_guard<boost::mutex> l(PythonMutex);
 			if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 			if (m_PyModule && sHandler.length())
 			{

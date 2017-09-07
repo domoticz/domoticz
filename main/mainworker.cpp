@@ -1040,7 +1040,13 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.StartPluginSystem();
+	if (m_sql.m_bEnableEventSystem)
+	{
+		if (1 == 0)
+		{
+			m_pluginsystem.StartPluginSystem();
+		}
+	}
 #endif
 	AddAllDomoticzHardware();
 	m_fibaropush.Start();
@@ -1129,7 +1135,7 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
+	m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -12389,7 +12395,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
-	if (!m_sql.m_bDisableEventSystem)
+	if (m_sql.m_bEnableEventSystem)
 	{
 		m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
 	}
@@ -12727,8 +12733,8 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	typedef std::map<std::string, time_t>::iterator hb_components;
-	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
+	std::map<std::string, time_t>::const_iterator iterator;
+	for (iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
 		double dif = difftime(now, iterator->second);
 		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 60)
