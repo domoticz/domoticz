@@ -201,7 +201,7 @@ void CEventSystem::LoadEvents()
 	{
 		std::string errorPath;
 		if (int returncode = RemoveDir(dzv_rm_Dir1 + "|" + dzv_rm_Dir2, errorPath))
-			_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath);
+			_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath.c_str());
 	}
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
