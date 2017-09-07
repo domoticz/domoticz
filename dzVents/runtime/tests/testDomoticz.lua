@@ -237,7 +237,7 @@ describe('Domoticz', function()
 
 		it('should create a backup', function()
 			domoticz.backupDatabase('/path/to/db.db')
-			assert.is_same({ { ['BackupDatabase'] = '/path/to/db.db' } }, domoticz.commandArray)
+			assert.is_same({ { ['BackupDB'] = '/path/to/db.db' } }, domoticz.commandArray)
 		end)
 	end)
 

@@ -202,7 +202,7 @@ local function Domoticz(settings)
 	end
 
 	function self.backupDatabase(path)
-		self.sendCommand('BackupDatabase', path)
+		self.sendCommand('BackupDB', path)
 	end
 
 	if (_G.TESTMODE) then
