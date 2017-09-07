@@ -571,6 +571,7 @@ Note that if you do not find your specific device type here you can always inspe
 #### Humidity sensor
  - **humidity**: *Number*
  - **humidityStatus**: *String*
+ - **humidityStatusValue**: *Number*. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
  - **updateHumidity(humidity, status)**: Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET
 
 #### Kodi
@@ -689,7 +690,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **forecast**: *Number*.
  - **forecastString**: *String*.
  - **temperature**: *Number*
- - **updateTempBaro(temperature, humidity, status, pressure, forecast)**: *Function*. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
+ - **updateTempBaro(temperature, pressure, forecast)**: *Function*. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
 #### Temperature, Humidity, Barometer sensor
  - **barometer**: *Number*
@@ -698,6 +699,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **forecastString**: *String*.
  - **humidity**: *Number*
  - **humidityStatus**: *String*
+ - **humidityStatusValue**: *Number*. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
  - **temperature**: *Number*
  - **updateTempHumBaro(temperature, humidity, status, pressure, forecast)**: *Function*. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
@@ -705,6 +707,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
  - **dewPoint**: *Number*
  - **humidity**: *Number*
  - **humidityStatus**: *String*
+ - **humidityStatusValue**: *Number*. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
  - **temperature**: *Number*
  - **updateTempHum(temperature, humidity, status)**: *Function*. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use `domoticz.toCelsius()` to convert a Fahrenheit temperature to Celsius.
 
@@ -1536,6 +1539,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added compare(time) method to Time object to calculate the difference between them. Returns a table. See documentation.
  - Added round() method to Domoticz object.
  - You can now put your own non-dzVents modules in your scripts folder or write them with the Domoticz GUI editor.
+ - Added humidityStatusValue for humidity devices. This value matches with the values used for setting the humidy status.
 
 
 [2.2.0]

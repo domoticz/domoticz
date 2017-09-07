@@ -161,6 +161,7 @@ local testHumidity = function(name)
 	local res = true
 	res = res and checkAttributes(dev, {
 		["humidityStatus"] = "Wet";
+		["humidityStatusValue"] = 3;
 		["humidity"] = 88;
 	})
 	tstMsg('Test humidity device', res)
@@ -337,6 +338,7 @@ local testTempHum = function(name)
 		["temperature"] = 34,
 		["humidity"] = 88,
 		["humidityStatus"] = "Wet";
+		["humidityStatusValue"] = 3;
 	})
 	tstMsg('Test temperature+humidity device', res)
 	return res
@@ -352,6 +354,7 @@ local testTempHumBaro = function(name)
 		["forecastString"] = "Partly Cloudy";
 		["forecast"] = 2;
 		["humidityStatus"] = "Wet";
+		["humidityStatusValue"] = 3;
 	})
 	tstMsg('Test temperature+humidity+barometer device', res)
 	return res

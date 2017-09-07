@@ -714,30 +714,42 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['type'] = 'Humidity',
+				['additionalDataData'] = {
+					["humidityStatus"] = "Wet";
+				}
 			})
 
 			device.updateHumidity(66, 'wet')
 			assert.is_same({ { ["UpdateDevice"] = "1|66|wet TRIGGER" } }, commandArray)
+			assert.is_same(3, device.humidityStatusValue)
 		end)
 
 		it('should detect a temp+humidity device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['type'] = 'Temp + Humidity',
+				['additionalDataData'] = {
+					["humidityStatus"] = "Dry";
+				}
 			})
 
 			device.updateTempHum(10, 12, 'wet')
 			assert.is_same({ { ["UpdateDevice"] = "1|0|10;12;wet TRIGGER" } }, commandArray)
+			assert.is_same(2, device.humidityStatusValue)
 		end)
 
 		it('should detect a temp+humidity+barometer device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
-				['type'] = 'Temp + Humidity + Baro'
+				['type'] = 'Temp + Humidity + Baro',
+				['additionalDataData'] = {
+					["humidityStatus"] = "Comfortable";
+				}
 			})
 
 			device.updateTempHumBaro(10, 12, 'wet', 1000, 'rain')
 			assert.is_same({ { ["UpdateDevice"] = '1|0|10;12;wet;1000;4 TRIGGER' } }, commandArray)
+			assert.is_same(1, device.humidityStatusValue)
 		end)
 
 		it('should detect a temp+barometer device', function()

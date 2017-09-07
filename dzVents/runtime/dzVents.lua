@@ -29,7 +29,6 @@ end
 
 commandArray = {}
 
-
 utils.log('dzVents version: 2.3.0', utils.LOG_DEBUG)
 utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
 
@@ -44,7 +43,7 @@ elseif triggerReason == 'security' then
 elseif triggerReason == 'scenegroup' then
 	commandArray = helpers.dispatchSceneGroupEventsToScripts()
 else
-	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_DEBUG)
+	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_ERROR)
 end
 
 if (TESTMODE) then

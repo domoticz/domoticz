@@ -1,3 +1,10 @@
+local humidityMapping = {
+	['dry'] = 2,
+	['normal'] = 0,
+	['comfortable'] = 1,
+	['wet'] = 3
+}
+
 return {
 
 	baseType = 'device',
@@ -15,6 +22,10 @@ return {
 	process = function (device, data, domoticz, utils, adapterManager)
 
 		-- from data: dewPoint, humidity, humidityStatus, temperature
+
+		local humVal = humidityMapping[string.lower(device.humidityStatus or '')] or -1
+		device.humidityStatusValue = humVal
+
 
 		function device.updateTempHum(temperature, humidity, status)
 			if (status == nil) then

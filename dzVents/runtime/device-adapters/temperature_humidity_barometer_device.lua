@@ -6,6 +6,14 @@ local constMapping = {
 	['rain'] = 4
 }
 
+local humidityMapping = {
+	['dry'] = 2,
+	['normal'] = 0,
+	['comfortable'] = 1,
+	['wet'] = 3
+}
+
+
 return {
 
 	baseType = 'device',
@@ -24,6 +32,10 @@ return {
 
 		-- from data: barometer, dewPoint, humidity, forecast
 		-- humidityStatus, forecastString, temperature
+
+		local humVal = humidityMapping[string.lower(device.humidityStatus or '')] or -1
+		device.humidityStatusValue = humVal
+
 
 		function device.updateTempHumBaro(temperature, humidity, status, pressure, forecast)
 
