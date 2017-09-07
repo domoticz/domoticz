@@ -140,7 +140,7 @@ describe('variables', function()
 		local var = Variable(domoticz, testData.domoticzData[zVar])
 		var.set('dzVents').afterSec(5)
 		assert.is_same(1, _.size(commandArray))
-		assert.is_same({ ['Variable:z'] = 'dzVents AFTER 5 TRIGGER' }, commandArray[1])
+		assert.is_same({ ['Variable:z'] = 'dzVents AFTER 5 SECONDS TRIGGER' }, commandArray[1])
 	end)
 
 end)

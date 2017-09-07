@@ -766,25 +766,31 @@ Many of the commands you issue with dzVents support extra options like controlli
 	-- switch on but do not trigger follow up events
 	device.switchOn().silent()
 
+	-- flash a light for 3 times
+	device.switchOn().forSec(2).rpt(3).secBetweenRepeat(1)
+
 ####Options:
- - **afterSec(seconds)**: *Function*. Activates the command after a certain amount of seconds.
- - **afterMin(minutes)**: *Function*. Activates the command after a certain amount of minutes.
- - **forMin(minutes)**: *Function*. Activates the command for the duration of a certain amount of minutes (cannot be specified in seconds). Doesn't apply for user variables.
- - **withinMin(minutes)**: *Function*. Activates the command within a certain period *randomly*.
+ - **afterHour(hours), afterMin(minutes), afterSec(seconds)**: *Function*. Activates the command after a certain amount of hours, minutes or seconds.
+ - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of a certain amount of hours, minutes or seconds. See table below for applicability.
+ - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or second) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
+ - **rpt(amount)**: *Function*. Repeats the sequence an amount of times. The time between repeats is specified using the `xxxBetweenRepeat()` commands. Note that specified `afterXXX()` time is not repeated. For those who wonder: `repeat` is a reserved name in Lua hence the short name.
+ - **hourBetweenRepeat(hours), minBetweenRepeat(minutes), secBetweenRepeat(seconds)**: *Function*. Specifies the amount of time between each repeat.
 
 Note that **dimTo()** doesn't support **forMin()**.
+Also note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
 ####Availability
 The options are not always available. All the options are available to device switch-like commands like `myDevice.swithOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating devices (usually dummy devices) like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
 
-| option         | on/off like commands    | update commands | user variables |
-|----------------|-------------------------|-----------------|----------------|
-| `afterSec()`   |  •                      |  -              | •              |
-| `afterMin()`   |  •                      |  -              | •              |
-| `forMin()`     |  • (not with `dimTo()`) |  -              | -              |
-| `withinMin()`  |  •                      |  -              | -              |
-| `silent()`     |  •                      |  •              | •              |
+| option               | on/off like commands    | update commands | user variables |
+|----------------------|-------------------------|-----------------|----------------|
+| `afterXXX()`         |  •                      |  n/a            | •              |
+| `forXXX()`           |  •                      |  n/a            | n/a            |
+| `withinXXX()`        |  •                      |  n/a            | n/a            |
+| `silent()`           |  •                      |  •              | •              |
+| `rpt()`              |  •                      |  n/a            | n/a            |
+| `xxxBetweenRepeat()` |  •                      |  n/a            | n/a            |
 
 
 #### About follow-up event triggers
@@ -1503,7 +1509,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 [2.3.0]
 
- - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
+  - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
  - Added active to devices (more logical naming than bState). myDevice.active is true or false depending on a set of known state values (like On, Off, Open, Closed etc).
  - Added simple urlEncode method on the Domoticz object so you can prepare a string before using it in openURL().
  - Updating text from dzVents in a text-device now triggers the event system.
@@ -1514,6 +1520,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added the lua Lodash library (http://axmat.github.io/lodash.lua, MIT license).
  - Fixed documentation about levelNames for selector switches and added the missing levelName.
  - Added silent() option to timed commands like switchOn().afterSec(4).silent() causing no follow up events to be triggered. This also works when updating non-switch devices.
+ - Added more options to the various switch commands: .switchOff().silent(), .forSec(), .forHour(), .afterHour(), .rpt(), .secBetweenRepeat(), .minBetweenRepeat(), .hourBetweenRepeat(), .withinHour(). See documentation about command options.
  - Moved dzVents runtime code away from the /path/to/domoticz/scripts/dzVents folder as this scripts folder contains user stuff.
  - Added more trigger examples in the documentation.
  - Active section is now optional. If you don't specify an active = true/false then true is assumed (script is active). Handy for when you use Domoticz' internal script editor as it has its own way of activating and deactivating scripts.

@@ -1157,6 +1157,15 @@ local testSecurity = function()
 	return res
 end
 
+local testRepeatSwitch = function(name)
+	local dev = dz.devices(name)
+	dz.globalData.repeatSwitch.reset()
+	dz.globalData.repeatSwitch.add('Start')
+	dev.switchOn().afterSec(5).forSec(2).rpt(1).secBetweenRepeat(5) -- 14s total
+	tstMsg('Test switch device', res)
+	return true
+end
+
 return {
 	active = true,
 	on = {
@@ -1223,6 +1232,7 @@ return {
 		res = res and testSilentGroup('gpSilentGroup')
 		res = res and testSilentVar('varSilent')
 		res = res and testAPITemperature('vdAPITemperature');
+		res = res and testRepeatSwitch('vdRepeatSwitch');
 
 		storeLastUpdates()
 
@@ -1233,6 +1243,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(8)
+		dz.devices('stage2Trigger').switchOn().afterSec(16)
 	end
 }

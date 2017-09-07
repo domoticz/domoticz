@@ -4,8 +4,6 @@ local scriptPath = ''
 
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
 
-local testData = require('tstData')
-
 describe('timed commands', function()
 	local TimedCommand
 	local commandArray = {}
@@ -35,90 +33,477 @@ describe('timed commands', function()
 		TimedCommand = nil
 	end)
 
-	before_each(function()
-		cmd = TimedCommand(domoticz, 'mySwitch', 'On')
+	describe('device', function()
+
+		before_each(function()
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On')
+		end)
+
+		after_each(function()
+			commandArray = {}
+			cmd = nil
+		end)
+
+		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.afterSec)
+			assert.is_function(cmd.afterMin)
+			assert.is_function(cmd.afterHour)
+			assert.is_function(cmd.forSec)
+			assert.is_function(cmd.forMin)
+			assert.is_function(cmd.forHour)
+			assert.is_function(cmd.withinMin)
+			assert.is_function(cmd.withinSec)
+			assert.is_function(cmd.withinHour)
+			assert.is_function(cmd.silent)
+			assert.is_function(cmd.rpt)
+			assert.is_function(cmd.secBetweenRepeat)
+			assert.is_function(cmd.minBetweenRepeat)
+			assert.is_function(cmd.hourBetweenRepeat)
+
+		end)
+
+		it('should return proper function when called after', function()
+			local res = cmd.afterSec(1)
+			assert.is_function(res.forSec)
+			assert.is_function(res.forMin)
+			assert.is_function(res.forHour)
+			assert.is_function(res.silent)
+			assert.is_function(res.rpt)
+			assert.is_function(res.secBetweenRepeat)
+			assert.is_function(res.minBetweenRepeat)
+			assert.is_function(res.hourBetweenRepeat)
+
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+		end)
+
+		it('should return proper function when called for', function()
+			local res = cmd.forSec(1)
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+			assert.is_function(res.silent)
+			assert.is_function(res.rpt)
+			assert.is_function(res.secBetweenRepeat)
+			assert.is_function(res.minBetweenRepeat)
+			assert.is_function(res.hourBetweenRepeat)
+
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+		end)
+
+		it('should return proper functions called silent', function()
+			local res = cmd.silent()
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.forSec)
+			assert.is_function(res.forMin)
+			assert.is_function(res.forHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+			assert.is_function(res.rpt)
+			assert.is_function(res.secBetweenRepeat)
+			assert.is_function(res.minBetweenRepeat)
+			assert.is_function(res.hourBetweenRepeat)
+
+			assert.is_nil(res.silent)
+		end)
+
+		it('should return proper functions when called rpt', function()
+			local res = cmd.rpt(1)
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.forSec)
+			assert.is_function(res.forMin)
+			assert.is_function(res.forHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+			assert.is_function(res.silent)
+			assert.is_function(res.secBetweenRepeat)
+			assert.is_function(res.minBetweenRepeat)
+			assert.is_function(res.hourBetweenRepeat)
+			assert.is_nil(res.rpt)
+
+		end)
+
+		it('should return proper functions when called between', function()
+			local res = cmd.secBetweenRepeat(1)
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.forSec)
+			assert.is_function(res.forMin)
+			assert.is_function(res.forHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+			assert.is_function(res.silent)
+			assert.is_function(res.rpt)
+
+			assert.is_nil(res.secBetweenRepeat)
+			assert.is_nil(res.minBetweenRepeat)
+			assert.is_nil(res.hourBetweenRepeat)
+		end)
 	end)
 
-	after_each(function()
-		commandArray = {}
-		cmd = nil
+	describe('variable', function()
+
+		before_each(function()
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'variable')
+		end)
+
+		after_each(function()
+			commandArray = {}
+			cmd = nil
+		end)
+
+
+		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.afterSec)
+			assert.is_function(cmd.afterMin)
+			assert.is_function(cmd.afterHour)
+			assert.is_function(cmd.silent)
+			assert.is_function(cmd.withinMin)
+			assert.is_function(cmd.withinSec)
+			assert.is_function(cmd.withinHour)
+
+			assert.is_nil(cmd.forSec)
+			assert.is_nil(cmd.forMin)
+			assert.is_nil(cmd.forHour)
+			assert.is_nil(cmd.rpt)
+			assert.is_nil(cmd.secBetweenRepeat)
+			assert.is_nil(cmd.minBetweenRepeat)
+			assert.is_nil(cmd.hourBetweenRepeat)
+		end)
+
+		it('should return proper function when called after', function()
+
+			local res = cmd.afterSec(1)
+
+			assert.is_function(res.silent)
+
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+			assert.is_nil(res.rpt)
+			assert.is_nil(res.secBetweenRepeat)
+			assert.is_nil(res.minBetweenRepeat)
+			assert.is_nil(res.hourBetweenRepeat)
+		end)
+
+		it('should return proper functions called silent', function()
+
+			local res = cmd.silent()
+
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+
+			assert.is_nil(res.silent)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.rpt)
+			assert.is_nil(res.secBetweenRepeat)
+			assert.is_nil(res.minBetweenRepeat)
+			assert.is_nil(res.hourBetweenRepeat)
+		end)
+
 	end)
 
-	it('should instantiate', function()
-		assert.is_not_nil(cmd)
+	describe('variable', function()
+
+		before_each(function()
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'updatedevice')
+		end)
+
+		after_each(function()
+			commandArray = {}
+			cmd = nil
+		end)
+
+
+		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.afterSec)
+			assert.is_function(cmd.afterMin)
+			assert.is_function(cmd.afterHour)
+			assert.is_function(cmd.silent)
+			assert.is_function(cmd.withinMin)
+			assert.is_function(cmd.withinSec)
+			assert.is_function(cmd.withinHour)
+
+			assert.is_nil(cmd.forSec)
+			assert.is_nil(cmd.forMin)
+			assert.is_nil(cmd.forHour)
+			assert.is_nil(cmd.rpt)
+			assert.is_nil(cmd.secBetweenRepeat)
+			assert.is_nil(cmd.minBetweenRepeat)
+			assert.is_nil(cmd.hourBetweenRepeat)
+		end)
+
+		it('should return proper function when called after', function()
+
+			local res = cmd.afterSec(1)
+
+			assert.is_function(res.silent)
+
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+			assert.is_nil(res.rpt)
+			assert.is_nil(res.secBetweenRepeat)
+			assert.is_nil(res.minBetweenRepeat)
+			assert.is_nil(res.hourBetweenRepeat)
+		end)
+
+		it('should return proper functions called silent', function()
+
+			local res = cmd.silent()
+
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+
+			assert.is_nil(res.silent)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.rpt)
+			assert.is_nil(res.secBetweenRepeat)
+			assert.is_nil(res.minBetweenRepeat)
+			assert.is_nil(res.hourBetweenRepeat)
+		end)
 	end)
 
-	it('should have a handle to command', function()
-		latest = cmd._latest
-		assert.is_same({["mySwitch"]="On"}, latest)
-	end)
+	describe('commands', function()
 
-	it('should have an after_sec method', function()
-		assert.is_function(cmd.afterSec)
-		local res = cmd.afterSec(5)
-		assert.is_same({["mySwitch"]="On AFTER 5"}, cmd._latest)
+		before_each(function()
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On')
+		end)
 
-		-- and it should have a for_min
-		assert.is_function(res.forMin)
-		res.forMin(10)
-		assert.is_same({["mySwitch"]="On AFTER 5 FOR 10"}, cmd._latest)
+		after_each(function()
+			commandArray = {}
+			cmd = nil
+		end)
 
-		assert.is_same({{["mySwitch"]="On AFTER 5 FOR 10"}}, commandArray)
-	end)
+		describe('after', function()
+			it('should create a proper afterSec command', function()
+				cmd.afterSec(1)
 
-	it('should have an after_min method', function()
-		assert.is_function(cmd.afterMin)
-		local res = cmd.afterMin(5)
-		assert.is_same({["mySwitch"]="On AFTER 300"}, cmd._latest)
+				assert.is_same({
+					{ ["mySwitch"] = "On AFTER 1 SECONDS" },
+				}, commandArray)
+			end)
 
-		-- and it should have a for_min
-		assert.is_function(res.forMin)
-		res.forMin(10)
-		assert.is_same({["mySwitch"]="On AFTER 300 FOR 10"}, cmd._latest)
-		assert.is_same({{["mySwitch"]="On AFTER 300 FOR 10"}}, commandArray)
-	end)
+			it('should create a proper afterMin command', function()
+				cmd.afterMin(1)
 
-	it('should have an for_min method', function()
-		assert.is_function(cmd.forMin)
-		local res = cmd.forMin(5)
-		assert.is_same({["mySwitch"]="On FOR 5"}, cmd._latest)
+				assert.is_same({
+					{ ["mySwitch"] = "On AFTER 60 SECONDS" },
+				}, commandArray)
+			end)
 
-		-- and it should have an after_sec
-		assert.is_function(res.afterSec)
-		res.afterSec(10)
-		assert.is_same({["mySwitch"]="On AFTER 10 FOR 5"}, cmd._latest)
+			it('should create a proper afterHour command', function()
+				cmd.afterHour(1)
 
-		-- and it should have an after_min
-		assert.is_function(res.afterMin)
-		res.afterMin(10)
-		assert.is_same({["mySwitch"]="On AFTER 600 FOR 5"}, cmd._latest)
+				assert.is_same({
+					{ ["mySwitch"] = "On AFTER 3600 SECONDS" },
+				}, commandArray)
+			end)
+		end)
 
-		assert.is_same({{["mySwitch"]="On AFTER 600 FOR 5"}}, commandArray)
-	end)
+		describe('for', function()
+			it('should create a proper forSec command', function()
+				cmd.forSec(1)
 
-	it('should have an within_min method', function()
-		assert.is_function(cmd.withinMin)
-		local res = cmd.withinMin(5)
-		assert.is_same({["mySwitch"]="On RANDOM 5"}, cmd._latest)
+				assert.is_same({
+					{ ["mySwitch"] = "On FOR 1 SECONDS" },
+				}, commandArray)
+			end)
 
-		-- and it should have a for_min
-		assert.is_function(res.forMin)
-		res.forMin(10)
-		assert.is_same({["mySwitch"]="On RANDOM 5 FOR 10"}, cmd._latest)
-		assert.is_same({{["mySwitch"]="On RANDOM 5 FOR 10"}}, commandArray)
-	end)
+			it('should create a proper forMin command', function()
+				cmd.forMin(1)
 
-	it('should have a silent method', function()
-		assert.is_function(cmd.silent)
+				assert.is_same({
+					{ ["mySwitch"] = "On FOR 60 SECONDS" },
+				}, commandArray)
+			end)
 
-		local res = cmd.silent()
+			it('should create a proper forHour command', function()
+				cmd.forHour(1)
 
-		assert.is_same({ ["mySwitch"] = "On NOTRIGGER" }, cmd._latest)
+				assert.is_same({
+					{ ["mySwitch"] = "On FOR 3600 SECONDS" },
+				}, commandArray)
+			end)
+		end)
 
-		-- combi
-		res.forMin(10).silent().withinMin(4)
-		assert.is_same({ ["mySwitch"] = "On RANDOM 4 FOR 10 NOTRIGGER" }, cmd._latest)
-		assert.is_same({ { ["mySwitch"] = "On RANDOM 4 FOR 10 NOTRIGGER" } }, commandArray)
+		describe('within', function()
+			it('should create a proper withinSec command', function()
+				cmd.withinSec(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On RANDOM 1 SECONDS" }
+				}, commandArray)
+			end)
+
+			it('should create a proper withinMin command', function()
+				cmd.withinMin(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On RANDOM 60 SECONDS" }
+				}, commandArray)
+			end)
+
+			it('should create a proper withinHour command', function()
+				cmd.withinHour(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On RANDOM 3600 SECONDS" }
+				}, commandArray)
+			end)
+		end)
+
+		describe('silent', function()
+			it('should create a proper silent command', function()
+				cmd.silent()
+
+				assert.is_same({
+					{ ["mySwitch"] = "On NOTRIGGER" }
+				}, commandArray)
+			end)
+
+			it('should create a proper silent command for a variable', function()
+
+				commandArray = {}
+
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'variable')
+
+				cmd.silent()
+
+				assert.is_same({
+					{ ["mySwitch"] = "On" }
+				}, commandArray)
+			end)
+
+			it('should create a proper silent command for a variable', function()
+
+				commandArray = {}
+
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'variable')
+
+				assert.is_same({
+					{ ["mySwitch"] = "On TRIGGER" }
+				}, commandArray)
+			end)
+
+			it('should create a proper silent command for a updatedevice', function()
+
+				commandArray = {}
+
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'updatedevice')
+
+				cmd.silent()
+
+				assert.is_same({
+					{ ["mySwitch"] = "On" }
+				}, commandArray)
+			end)
+
+			it('should create a proper silent command for a updatedevice', function()
+
+				commandArray = {}
+
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'updatedevice')
+
+				assert.is_same({
+					{ ["mySwitch"] = "On TRIGGER" }
+				}, commandArray)
+			end)
+		end)
+
+		describe('repeat', function()
+			it('should create a proper repeat command', function()
+				cmd.rpt(2)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On REPEAT 3" }
+				}, commandArray)
+			end)
+		end)
+
+		describe('xxxBetweenRepeat', function()
+
+			it('should create a proper secBetweenRepeat command', function()
+				cmd.secBetweenRepeat(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On INTERVAL 1 SECONDS" }
+				}, commandArray)
+			end)
+
+			it('should create a proper minBetweenRepeat command', function()
+				cmd.minBetweenRepeat(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On INTERVAL 60 SECONDS" }
+				}, commandArray)
+			end)
+
+			it('should create a proper hourBetweenRepeat command', function()
+				cmd.hourBetweenRepeat(1)
+
+				assert.is_same({
+					{ ["mySwitch"] = "On INTERVAL 3600 SECONDS" }
+				}, commandArray)
+			end)
+
+		end)
+
+		describe('combined', function()
+
+			it('should create a combined command', function()
+
+				cmd.afterMin(2).forHour(2).silent().rpt(2).secBetweenRepeat(2)
+
+				assert.is_same({
+					{ ["mySwitch"] = 'On AFTER 120 SECONDS FOR 7200 SECONDS NOTRIGGER REPEAT 3 INTERVAL 2 SECONDS' }
+				}, commandArray)
+
+			end)
+
+		end)
+
 	end)
 
 end)

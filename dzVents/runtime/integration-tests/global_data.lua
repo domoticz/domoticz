@@ -1,5 +1,6 @@
 return {
 	data = {
-		stage1Time = { initial = nil }
+		stage1Time = { initial = nil },
+		repeatSwitch = { history = true }
 	}
 }

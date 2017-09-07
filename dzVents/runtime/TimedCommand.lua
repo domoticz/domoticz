@@ -3,19 +3,10 @@ package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
 
--- generic 'switch' class with timed options
--- supports chainging like:
--- switch(v1).for_min(v2).after_sec/min(v3)
--- switch(v1).within_min(v2).for_min(v3)
--- switch(v1).after_sec(v2).for_min(v3)
-
-local function deprecationWarning(msg)
-	utils.log(msg, utils.LOG_ERROR)
-end
-
 local function TimedCommand(domoticz, name, value, mode)
 	local valueValue = value
-	local afterValue, forValue, randomValue, silentValue
+	local afterValue, forValue, randomValue, silentValue, repeatValue, delayValue
+	local _for, _after, _within, _rpt, _silent, _between
 
 	local constructCommand = function()
 
@@ -24,15 +15,15 @@ local function TimedCommand(domoticz, name, value, mode)
 		table.insert(command, valueValue)
 
 		if (randomValue ~= nil) then
-			table.insert(command, 'RANDOM ' .. tostring(randomValue))
+			table.insert(command, 'RANDOM ' .. tostring(randomValue) .. ' SECONDS')
 		end
 
 		if (afterValue ~= nil) then
-			table.insert(command, 'AFTER ' .. tostring(afterValue))
+			table.insert(command, 'AFTER ' .. tostring(afterValue) .. ' SECONDS')
 		end
 
 		if (forValue ~= nil) then
-			table.insert(command, 'FOR ' .. tostring(forValue))
+			table.insert(command, 'FOR ' .. tostring(forValue) .. ' SECONDS')
 		end
 
 		if (mode == 'updatedevice' or mode == 'variable') then
@@ -45,6 +36,15 @@ local function TimedCommand(domoticz, name, value, mode)
 			end
 		end
 
+		if (repeatValue ~= nil) then
+			table.insert(command, 'REPEAT ' .. tostring(repeatValue))
+		end
+
+		if (delayValue ~= nil) then
+			table.insert(command, 'INTERVAL ' .. tostring(delayValue) .. ' SECONDS')
+		end
+
+
 		local sCommand = table.concat(command, " ")
 
 		utils.log('Constructed timed-command: ' .. sCommand, utils.LOG_DEBUG)
@@ -56,115 +56,99 @@ local function TimedCommand(domoticz, name, value, mode)
 	-- get a reference to the latest entry in the commandArray so we can
 	-- keep modifying it here.
 	local latest, command, sValue = domoticz.sendCommand(name, constructCommand())
-	local forMin, afterSec, afterMin, silent, withinMin
 
+	local function factory()
 
-	forMin = function(minutes)
-		forValue = minutes
-		latest[command] = constructCommand()
-		return {
-			['afterSec'] = afterSec,
-			['afterMin'] = afterMin,
-			['silent'] = silent,
-			['withinMin'] = withinMin
-		}
-	end
+		local res = {}
 
-	afterSec = function(seconds)
-		afterValue = seconds
-		latest[command] = constructCommand()
-		if (mode == 'variable') then
-			return {
-				['afterMin'] = afterMin,
-				['silent'] = silent,
-			}
-		else
-			return {
-				['afterMin'] = afterMin,
-				['forMin'] = forMin,
-				['silent'] = silent,
-				['withinMin'] = withinMin
-			}
+		if (afterValue == nil and randomValue == nil) then
+			res.afterSec = _after(1)
+			res.afterMin = _after(60)
+			res.afterHour = _after(3600)
+			res.withinSec = _within(1)
+			res.withinMin = _within(60)
+			res.withinHour = _within(3600)
 		end
 
-	end
-
-	afterMin = function(minutes)
-		afterValue = minutes * 60
-		latest[command] = constructCommand()
-		if (mode == 'variable') then
-			return {
-				['afterSec'] = afterSec,
-				['silent'] = silent,
-			}
-		else
-			return {
-				['afterSec'] = afterSec,
-				['forMin'] = forMin,
-				['silent'] = silent,
-				['withinMin'] = withinMin
-			}
+		if (forValue == nil and mode ~= 'variable' and mode ~= 'updatedevice' ) then
+			res.forSec = _for(1)
+			res.forMin = _for(60)
+			res.forHour = _for(3600)
 		end
 
+		if (silentValue == nil) then
+			res.silent = _silent
+		end
+
+		if (repeatValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
+			res.rpt = _rpt
+		end
+
+		if (delayValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
+			res.secBetweenRepeat = _between(1)
+			res.minBetweenRepeat = _between(60)
+			res.hourBetweenRepeat = _between(3600)
+		end
+
+		res._latest = latest
+
+		return res
 	end
 
-	silent = function()
+	_checkValue = function(value, msg)
+		if (value == nil) then utils.log(msg, utils.LOG_ERROR) end
+	end
+
+	_after = function(factor)
+		return function(value)
+			_checkValue(value, "No value given for 'afterXXX' command")
+			afterValue = value * factor
+			latest[command] = constructCommand()
+			return factory()
+		end
+	end
+
+	_within = function(factor)
+		return function(value)
+			_checkValue(value, "No value given for 'withinXXX' command")
+			randomValue = value * factor
+			latest[command] = constructCommand()
+			return factory()
+		end
+	end
+
+	_for = function(factor)
+		return function(value)
+			_checkValue(value, "No value given for 'forXXX' command")
+			forValue = value * factor
+			latest[command] = constructCommand()
+			return factory()
+		end
+	end
+
+	_silent = function()
 		silentValue = true;
 		latest[command] = constructCommand()
-		if (mode == 'variable') then
-			return {
-				['afterMin'] = afterMin,
-				['afterSec'] = afterSec,
-			}
-		elseif (mode == 'updatedevice') then
-			return {}
-		else
-			return {
-				['afterMin'] = afterMin,
-				['afterSec'] = afterSec,
-				['forMin'] = forMin,
-				['withinMin'] = withinMin
-			}
+		return factory()
+	end
+
+	_rpt = function(amount)
+		_checkValue(value, "No value given for 'rpt' command")
+		repeatValue = amount + 1 -- add one due to a bug in domoticz
+		latest[command] = constructCommand()
+		return factory()
+	end
+
+	_between = function(factor)
+		_checkValue(value, "No value given for 'xxxBetweenRepeat' command")
+		return function(value)
+			delayValue = value * factor
+			latest[command] = constructCommand()
+			return factory()
 		end
 	end
 
-	withinMin = function(minutes)
-		randomValue = minutes
-		latest[command] = constructCommand()
-		return {
-			['afterMin'] = afterMin,
-			['afterSec'] = afterSec,
-			['forMin'] = forMin,
-			['silent'] = silent
-		}
-	end
-
-	if (mode == 'variable') then
-		return {
-			['_constructCommand'] = constructCommand, -- for testing purposes
-			['_latest'] = latest, -- for testing purposes
-			['afterSec'] = afterSec,
-			['afterMin'] = afterMin,
-			['silent'] = silent
-		}
-
-	elseif (mode == 'updatedevice') then
-		return {
-			['_constructCommand'] = constructCommand, -- for testing purposes
-			['_latest'] = latest, -- for testing purposes
-			['silent'] = silent
-		}
-	else
-		return {
-			['_constructCommand'] = constructCommand, -- for testing purposes
-			['_latest'] = latest, -- for testing purposes
-			['afterSec'] = afterSec,
-			['afterMin'] = afterMin,
-			['forMin'] = forMin,
-			['withinMin'] = withinMin,
-			['silent'] = silent
-		}
-	end
+	return factory()
 
 end
 

@@ -12,7 +12,7 @@ local jsonParser = require('JSON')
 local BASE_URL = 'http://localhost:8080'
 local API_URL = BASE_URL .. '/json.htm?'
 local DUMMY_HW = 15
-local SECPANEL_INDEX = 47
+local SECPANEL_INDEX = 48
 local SWITCH_TYPES = {
 	BLINDS = 3,
 	BLINDS_INVERTED= 6,
@@ -78,6 +78,7 @@ local VIRTUAL_DEVICES = {
 	TEMP_BARO = { 247, 'vdTempBaro' },
 	SILENT_SWITCH = { 6, 'vdSilentSwitch' },
 	API_TEMP = { 80, 'vdAPITemperature' },
+	REPEAT_SWITCH = { 6, 'vdRepeatSwitch' },
 }
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -446,6 +447,7 @@ describe('Integration test', function ()
 		os.remove(getScriptTargetPath('stage2.lua'))
 		os.remove(getScriptTargetPath('silent.lua'))
 		os.remove(getScriptTargetPath('vdSwitchDimmer.lua'))
+		os.remove(getScriptTargetPath('vdRepeatSwitch.lua'))
 		os.remove(getScriptTargetPath('secArmedAway.lua'))
 		os.remove(getScriptTargetPath('varString.lua'))
 		os.remove(getScriptTargetPath('scScene.lua'))
@@ -671,6 +673,12 @@ describe('Integration test', function ()
 			local ok, idx = createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.API_TEMP[2], VIRTUAL_DEVICES.API_TEMP[1])
 			assert.is_true(ok)
 		end)
+
+		it('should create an repeat device', function()
+			local ok, idx = createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.REPEAT_SWITCH[2], VIRTUAL_DEVICES.REPEAT_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
 	end)
 
 	describe('Groups and scenes', function()
@@ -804,6 +812,10 @@ describe('Integration test', function ()
 			copyScript('vdSwitchDimmer.lua')
 		end)
 
+		it('Should move vdRepeatSwitch script in place', function()
+			copyScript('vdRepeatSwitch.lua')
+		end)
+
 		it('Should move varString script in place', function()
 			copyScript('varString.lua')
 		end)
@@ -884,7 +896,7 @@ describe('Integration test', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(12) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(20) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local switchDimmerResultsDevice
 			local varStringResultsDevice

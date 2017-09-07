@@ -492,19 +492,19 @@ describe('device', function()
 
 			device.disarm().afterSec(2)
 
-			assert.is_same({ { ['myDevice'] = 'Disarm AFTER 2' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Disarm AFTER 2 SECONDS' } }, commandArray)
 
 			commandArray = {}
 
 			device.armAway().afterSec(3)
 
-			assert.is_same({ { ['myDevice'] = 'Arm Away AFTER 3' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Arm Away AFTER 3 SECONDS' } }, commandArray)
 
 			commandArray = {}
 
 			device.armHome().afterSec(4)
 
-			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4' } }, commandArray)
+			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4 SECONDS' } }, commandArray)
 
 		end)
 

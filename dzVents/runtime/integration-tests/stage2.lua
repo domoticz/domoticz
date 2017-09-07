@@ -1,5 +1,6 @@
 local log
 local dz
+local _ = require('lodash')
 
 local err = function(msg)
 	log(msg, dz.LOG_ERROR)
@@ -540,6 +541,35 @@ local testAmpere3 = function(name)
 	return res
 end
 
+local testRepeatSwitch = function(name)
+	local dev = dz.devices(name)
+	local res = true
+
+	local start = dz.globalData.repeatSwitch.getOldest()
+	local firstOn = dz.globalData.repeatSwitch.get(4)
+	local firstOff = dz.globalData.repeatSwitch.get(3)
+	local secondOn = dz.globalData.repeatSwitch.get(2)
+	local secondOff = dz.globalData.repeatSwitch.get(1)
+
+	res = res and expectEql(dz.globalData.repeatSwitch.size, 5, 'Number of switch moments is not correct')
+
+	local diffStartFirstOn = firstOn.time.compare(start.time)
+	res = res and expectEql(diffStartFirstOn.secs, 5, 'Difference between start and first on should be 5 seconds')
+
+	local diffFirstOnFirstOff = firstOff.time.compare(firstOn.time)
+	res = res and expectEql(diffFirstOnFirstOff.secs, 2, 'Difference between first on and first off should be 2 seconds')
+
+	local diffFirstOffSecondOn = secondOn.time.compare(firstOff.time)
+	res = res and expectEql(diffFirstOffSecondOn.secs, 5, 'Difference between first off and second on should be 5 seconds')
+
+	local diffSecondOnSecondOff = secondOff.time.compare(secondOn.time)
+	res = res and expectEql(diffSecondOnSecondOff.secs, 2, 'Difference between second on and second off should be 2 seconds')
+
+	tstMsg('Test repeat switch', res)
+	return res
+
+end
+
 local testLastUpdates = function(stage2Trigger)
 
 	local Time = require('Time')
@@ -558,7 +588,10 @@ local testLastUpdates = function(stage2Trigger)
 	if (results) then
 		results = dz.devices().reduce(function(acc, device)
 
-			if (device.name ~= 'endResult' and device.name ~= 'stage1Trigger' and device.name ~= 'stage2Trigger') then
+			if (device.name ~= 'endResult' and
+				device.name ~= 'stage1Trigger' and
+				device.name ~= 'vdRepeatSwitch' and
+				device.name ~= 'stage2Trigger') then
 				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
 
 				-- test if lastUpdate for the device is close to stage1Time
@@ -641,6 +674,7 @@ return {
 		res = res and testAPITemperature('vdAPITemperature')
 
 		res = res and testLastUpdates(stage2Trigger)
+		res = res and testRepeatSwitch('vdRepeatSwitch')
 
 		-- test a require
 		local m = require('some_module')
