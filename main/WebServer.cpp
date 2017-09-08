@@ -2477,6 +2477,7 @@ namespace http {
 			root["version"] = szAppVersion;
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
+			root["dzvents_version"] = DZVENTS_VERSION;
 
 			if (session.rights != 2)
 			{

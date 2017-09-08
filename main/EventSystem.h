@@ -18,6 +18,8 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 
+#define DZVENTS_VERSION "2.3.0"
+
 class CEventSystem : public CLuaCommon
 {
 	typedef struct lua_State lua_State;
