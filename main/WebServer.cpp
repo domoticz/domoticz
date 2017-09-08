@@ -7694,7 +7694,7 @@ namespace http {
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
 			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
-			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
 			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
 			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
 
