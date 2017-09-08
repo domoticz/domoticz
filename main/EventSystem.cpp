@@ -1302,7 +1302,6 @@ bool CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, 
 		if (!bEventTrigger)
 			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
-		scenesgroupsMutexLock.unlock();
 
 		if (bEventTrigger)
 		{
@@ -1340,12 +1339,9 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		if (varType != 0)
 			replaceitem.variableType = varType;
 
-		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_USERVARIABLE, false);
-		if (!bEventTrigger)
+		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 			replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
-		if (bEventTrigger)
+		else
 		{
 			_tEventQueue item;
 			item.reason = "uservariable";
@@ -1353,6 +1349,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			item.lastUpdate = lastUpdate;
 			m_eventqueue.push(item);
 		}
+		itt->second = replaceitem;
 	}
 }
 
