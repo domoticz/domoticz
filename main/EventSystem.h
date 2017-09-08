@@ -56,13 +56,6 @@ public:
 		REASON_SECURITY			// 4
 	};
 
-	struct _tEventTrigger
-	{
-		uint64_t ID;
-		_eReason reason;
-		time_t timestamp;
-	};
-
 	struct _tDeviceStatus
 	{
 		uint64_t ID;
@@ -134,9 +127,16 @@ public:
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
-	bool SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
+	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 
 private:
+	struct _tEventTrigger
+	{
+		uint64_t ID;
+		_eReason reason;
+		time_t timestamp;
+	};
+
 	struct _tEventQueue
 	{
 		std::string reason;
