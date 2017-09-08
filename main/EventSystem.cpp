@@ -1240,7 +1240,6 @@ bool CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, 
 		if (!bEventTrigger)
 			replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
-		scenesgroupsMutexLock.unlock();
 
 		if (bEventTrigger)
 		{
@@ -1278,12 +1277,9 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		if (varType != 0)
 			replaceitem.variableType = varType;
 
-		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_USERVARIABLE, false);
-		if (!bEventTrigger)
+		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 			replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
-		if (bEventTrigger)
+		else
 		{
 			_tEventQueue item;
 			item.reason = "uservariable";
@@ -1291,6 +1287,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			item.lastUpdate = lastUpdate;
 			m_eventqueue.push(item);
 		}
+		itt->second = replaceitem;
 	}
 }
 
@@ -3901,7 +3898,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 			if (afterTimerSeconds < (1./timer_resolution_hz/2))
 			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, bEventTrigger);
+				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
 				if (updateResult != "OK") {
 					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
 				}
@@ -3913,7 +3910,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 				std::stringstream sstr;
 				sstr << sd[0];
 				sstr >> idx;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, bEventTrigger));
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(DelayTime, idx, variableValue, false));
 			}
 			scriptTrue = true;
 		}
