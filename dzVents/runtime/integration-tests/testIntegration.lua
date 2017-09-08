@@ -896,7 +896,7 @@ describe('Integration test', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(20) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(23) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local switchDimmerResultsDevice
 			local varStringResultsDevice

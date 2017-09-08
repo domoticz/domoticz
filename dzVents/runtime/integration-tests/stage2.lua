@@ -557,7 +557,7 @@ local testRepeatSwitch = function(name)
 	res = res and expectEql(dz.globalData.repeatSwitch.size, 5, 'Number of switch moments is not correct')
 
 	local diffStartFirstOn = firstOn.time.compare(start.time)
-	res = res and expectEql(diffStartFirstOn.secs, 5, 'Difference between start and first on should be 5 seconds')
+	res = res and expectEql(diffStartFirstOn.secs, 8, 'Difference between start and first on should be 5 seconds')
 
 	local diffFirstOnFirstOff = firstOff.time.compare(firstOn.time)
 	res = res and expectEql(diffFirstOnFirstOff.secs, 2, 'Difference between first on and first off should be 2 seconds')
