@@ -690,7 +690,6 @@
 		$("#blockId").html("");
 		Blockly.mainWorkspace.clear();
 		editor.setValue("");
-		$("#eventType").val("All");
 		$("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
@@ -698,21 +697,22 @@
 		$('#btnDelete').attr("class", "btnstyle3-dis");
 		if ($("#interpreter").val() == "Blockly") {
 			ResizeBlockyWindow();
+			$("#eventType").val("All");
 		}
 		else {
 			var eventType = $("#eventType").val();
-				if (eventInterpreter == "dzvents") {
-					eventInterpreter = "lua";
-				//$("#eventType").prop('disabled', true);
+			if (eventInterpreter == "dzvents") {
+				eventInterpreter = "lua";
 				$("#eventType").hide();
 				$("#dzVentsEventTypes").show();
-				eventType = $("#dzVentsEventTypes").val()
-
+				eventType = $("#dzVentsEventTypes").val();
+			} else if (eventInterpreter == "python") {
+				$("#eventType").val("All");
 			} else {
 				$("#eventType").show();
 				$("#dzVentsEventTypes").hide();
-				}
-				editor.getSession().setMode("ace/mode/" + eventInterpreter);
+			}
+			editor.getSession().setMode("ace/mode/" + eventInterpreter);
 			$.ajax({
 				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+eventType,
 				async: false,
