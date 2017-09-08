@@ -27,7 +27,8 @@
  - Added compare(time) method to Time object to calculate the difference between them. Returns a table. See documentation.
  - Added round() method to Domoticz object.
  - You can now put your own non-dzVents modules in your scripts folder or write them with the Domoticz GUI editor.
- - Added humidityStatusValue for humidity devices. This value matches with the values used for setting the humidy status.
+ - Added humidityStatusValue for humidity devices. This value matches with the values used for setting the humidity status.
+ - Inverted the dzVents disabled GUI setup setting to enabled. More clear now.
 
 [2.2.0]
 
