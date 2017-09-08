@@ -1,0 +1,274 @@
+/* This feature makes the highlighted (bigger) items on the dashboard partially see-through. 
+This can give a nice effect with background images. */
+
+/*  Hide from mobile  */
+@media screen and (min-width: 600px){
+
+    /*  CONTENT MODIFICATIONS */
+
+    #dashcontent .ui-draggable:not(.ui-dialog) tr:hover,
+    #dashcontent .ui-draggable:not(.ui-dialog) tr{
+        background-image:none;
+        background-color:transparent;
+    }
+
+    #dashcontent #lastupdate,
+    #dashcontent .item .name,
+    #dashcontent #name{
+        background-color: rgba(250,250,250,0.1)!important;
+        /*background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.2) 100%); 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.2) 100%); 
+        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.2) 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=0 );*/
+    }
+    #dashcontent .item .name{color:#fff;}
+    #dashcontent #lastupdate{color:#ccc;}   
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate > span{
+        background-color:rgba(250,250,250,0.1)!important;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.statusTimeout) tr td#lastupdate > span{
+        color: rgba(255,255,255,0.4);
+    }
+
+    td.widget div.dimslider{
+        background-color: rgba(250,250,250,0.3)!important;
+        border-color:rgba(150,150,250,0.3)!important;
+    }
+    
+    div.item .options{
+        background-image: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.07) 80%,rgba(0,0,0,0.0) 80%)
+    }
+    
+
+    /*  BACKGROUND AND STATUS MODIFICATIONS (and reset/overrule) */
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr{
+        background-color:transparent!important;
+        background-image:none;
+        /*
+        background: -moz-linear-gradient(top, rgba(30,87,153,0.3) 0%, rgba(125,185,232,0.1) 100%); 
+        background: -webkit-linear-gradient(top, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
+        background: linear-gradient(to bottom, rgba(30,87,153,0.3) 0%,rgba(125,185,232,0.1) 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4d1e5799', endColorstr='#1a7db9e8',GradientType=0 );*/
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 100%); 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 100%);
+        /*background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 100%);*/
+        background: linear-gradient(to bottom, rgba(0, 158, 255, 0.18) 0%,rgba(121, 54, 195, 0.1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
+    }
+
+
+    /*  this has to happen before the override for the highlighted items  */
+    body:not(.dashMobile) div.item #status span{
+        color: rgba(255,255,255,0.8);
+    }
+    body:not(.dashMobile) div.item tr > #name > span{
+        color: rgba(255,255,255,0.8)/*!important*/;
+    }
+
+
+    /*  CONTENT MODIFICATIONS  */
+
+    #dashcontent .selectorlevels .ui-buttonset,
+    #dashcontent .selectorlevels .ui-buttonset .ui-button{
+        border-radius:3px!important;    
+    }
+    #dashcontent .selectorlevels .ui-buttonset .ui-button{
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    }
+
+    #dashcontent .selectorlevels .ui-state-default{
+        background-color:#bbb;
+    }
+
+    #dashcontent .ui-selectmenu-button span.ui-selectmenu-text{
+        background-color:rgba(50,50,50,0.2);
+        color:#eee;
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);    
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-selectmenu-button{
+        background-color:transparent;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels  .ui-buttonset{
+       /* align-content:space-between; */
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button{
+        background-image:none;
+        background-color:rgba(100,150,200,0.4);
+        box-shadow: none;
+        color: rgba(50,50,50,0.5);
+        font-size: 100%;   
+        transition: all 0.1s linear;
+        border-radius:0;   
+        align-items: center;
+        padding-top:2px;   
+        background: -moz-linear-gradient(top, rgba(70, 177, 217, 0.7) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.7) 100%);
+        background: -webkit-linear-gradient(top, rgba(70, 177, 217, 0.7) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.7) 100%);
+        background: linear-gradient(to bottom, rgba(70, 177, 217, 0.7) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.7) 100%);
+        
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button.ui-state-active{
+        background-color: rgba(100,100,200,0.8);
+        color:#ddd;
+        background: -moz-linear-gradient(top, rgba(70, 177, 217, 0.6) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.6) 100%);
+        background: -webkit-linear-gradient(top, rgba(70, 177, 217, 0.6) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.6) 100%);
+        background: linear-gradient(to bottom, rgba(70, 177, 217, 0.6) 0%, rgba(61, 155, 201, 0.7) 50%, rgba(46, 140, 188, 0.7) 51%, rgba(37, 113, 171, 0.6) 100%);
+        box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.2);
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button.ui-state-active span{
+            color:#ddd;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button:hover{
+        background-color: rgba(200,200,200,0.2);
+        color: #fff;
+        transition: all 0.1s linear; 
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);    
+    }
+    
+    #dashcontent .item .bigtext,
+    #dashcontent #bigtext,
+    #dashcontent #bigtext span{
+        color:#fff;
+        background-color:transparent!important;
+    }
+
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img1, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img2, 
+    #dashcontent [class^="span"] #itemtablesmalltrippleicon #img3 {
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    }
+
+    
+    /*  Fix for people who use mobile dashboard on the desktop  */
+    #dashcontent .mobileitem td.name,
+    #dashcontent table.mobileitem td#name{
+        color:#333!important;
+        background-color:white!important;
+        background-image:none!important;
+    }
+
+    #dashcontent table.mobileitem .selectorlevels .ui-buttonset,
+    #dashcontent table.mobileitem .selectorlevels .ui-selectmenu-button{
+        top:0!important
+    }        
+    
+    #dashcontent .ui-slider-range{
+        background-color: rgba(73,175,205,0.6);
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span {color:#fff}
+    
+    
+    
+    /*  non-dashboard see through options.*/
+    body:not(.dashboard) .ui-draggable:not(.ui-dialog) tr{
+        background-color: transparent;
+        background-image:none;
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%)!important; 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important;
+        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important; 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
+    }
+    
+    body:not(.dashboard) #type,
+    body:not(.dashboard) #lastupdate{
+        background-color: transparent;
+        color: rgba(255,255,255,0.6);
+    }
+    
+    body:not(.dashboard) #name{
+        background-color: transparent;
+        color: rgba(255,255,255,0.8);
+        background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%); 
+        background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
+        background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=0 );
+    }
+    body:not(.dashboard) .item .lastupdate > span, /* the modern way of selecting an element */
+    body:not(.dashboard) .item .name > span{ 
+        background-color: transparent;
+        background-image: none;
+    }    
+    
+    body:not(.dashboard) #bigtext span{
+        color: rgba(255,255,255,0.8);
+        background-image:none;
+        background-color: transparent;
+    }
+    
+    .selectorlevels .ui-buttonset .ui-button:hover{
+        background-color: rgba(200,200,200,0.2);
+        color: #fff;
+        transition: all 0.3s linear; 
+        /*background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%); */   
+    }
+    
+    body:not(.dashboard) td#status{color:rgba(250,250,250,0.7);}
+
+    body:not(.dashboard) .selectorlevels .ui-state-default{
+        background-color:#bbb;
+    }
+
+    body:not(.dashboard) .ui-selectmenu-button span.ui-selectmenu-text{
+        background-color:rgba(50,50,50,0.2);
+        color:#eee;
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);    
+    }
+
+    body:not(.dashboard) .selectorlevels .ui-selectmenu-button{
+        background-color:transparent;
+        background-image: none;
+    }    
+    
+    body:not(.dashboard) .selectorlevels .ui-state-active{
+        background-color: rgba(100,100,200,0.4);
+    }
+
+    body:not(.dashboard) .selectorlevels  .ui-buttonset{
+        align-content:space-between;
+    }
+
+    body:not(.dashboard) .selectorlevels .ui-buttonset .ui-button{
+        background-image:none;
+        background-color:rgba(100,150,200,0.4);
+        box-shadow: none;
+        font-size: 100%;   
+        transition: all 0.1s linear;  
+        align-items: center;
+        padding-top:2px;   
+        flex-grow: 1;
+        background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+        background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+        background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    }
+
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Percentage td.overlay > div{
+        background-color: rgba(36, 130, 199, 0.3);
+        /*background-color: rgba(255,255,255,0.08);*/
+        box-shadow: none;/*inset -5px 0 16px -3px rgba(255,255,255,0.15);*/
+    }
+    
+    
+    
+} /*  End of mobile protection  */

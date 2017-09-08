@@ -1,0 +1,11 @@
+/* forced popups to be centered on the screen. */
+
+.ui-popup{
+    height:auto!important;
+    width:auto!important;    
+    position:fixed!important;
+    top: 30%!important;
+    top:calc(50% - 100px)!important;
+    left:30%!important;
+    left:calc(50% - 150px)!important; 
+}
