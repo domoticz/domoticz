@@ -1,0 +1,15 @@
+return {
+	on = {
+		devices = {},
+		timer = {},
+		variables = {},
+		scenes = {},
+		groups = {},
+		security = {}
+	},
+	data = {},
+	logger = {},
+	execute = function(domoticz, triggeredItem, info)
+
+	end
+}
