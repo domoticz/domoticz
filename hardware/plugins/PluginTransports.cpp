@@ -544,6 +544,7 @@ namespace Plugins {
 
 			if (!m_Initialised)
 			{
+				// Listen will fail (10022 - bad parameter) unless something has been sent(?)
 				std::string body("ping");
 				handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
 				m_Initialised = true;
@@ -577,44 +578,33 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
-			std::string sAddress = m_remote_endpoint.address().to_string();
-			std::string sPort = "0";
+			ipv4_header*	pIPv4 = (ipv4_header*)&m_Buffer;
+			icmp_header*	pICMP = (icmp_header*)(&m_Buffer[0] + 20);
+			std::string		sAddress;
 
-			PyType_Ready(&CConnectionType);
-			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
-
-			// Configure temporary Python Connection object
-			Py_XDECREF(pConnection->Name);
-			pConnection->Name = ((CConnection*)m_pConnection)->Name;
-			Py_INCREF(pConnection->Name);
-			Py_XDECREF(pConnection->Address);
-			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
-			Py_XDECREF(pConnection->Port);
-			pConnection->Port = PyUnicode_FromString(sPort.c_str());
-			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
-			Py_INCREF(pConnection->Transport);
-			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
-			Py_INCREF(pConnection->Protocol);
-			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-
-			// Create Protocol object to handle connection's traffic
+			// Under Linux all ICMP traffic will be seen so filter out extra traffic
+			if (pICMP->type() == icmp_header::echo_reply)						// Successful Echo Reply for the requested address
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
-				PluginMessageQueue.push(pMessage);
+				sAddress = pIPv4->source_address().to_string();
+			}
+			else if (pICMP->type() == icmp_header::destination_unreachable)		// Unsuccessful Echo Reply for the requested address
+			{
+				// on failure part of the original request is appended to the ICMP header
+				ipv4_header*	pIPv4 = (ipv4_header*)(pICMP+1);
+				sAddress = pIPv4->destination_address().to_string();
 			}
 
-			ReadMessage*	Message = new ReadMessage(((CConnection*)pConnection)->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer);
+			if (sAddress == m_IP)
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+
+				m_tLastSeen = time(0);
+				m_iTotalBytes += bytes_transferred;
 			}
-
-			m_tLastSeen = time(0);
-			m_iTotalBytes += bytes_transferred;
-
-			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
-			Py_DECREF(pConnection);
 
 			// Set up listener again
 			handleListen();
@@ -626,7 +616,7 @@ namespace Plugins {
 				(ec.value() != 125) &&	// Operation cancelled
 				(ec.value() != 995) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
+				_log.Log(LOG_ERROR, "Plugin: Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
 
 			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{

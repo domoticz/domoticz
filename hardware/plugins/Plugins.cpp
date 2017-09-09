@@ -1035,6 +1035,7 @@ namespace Plugins {
 			pProtocol->AuthenticationDetails(m_Username, m_Password);
 			pConnection->pProtocol = (CPluginProtocol*)pProtocol;
 		}
+		else if (sProtocol == "ICMP") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolICMP();
 		else pConnection->pProtocol = new CPluginProtocol();
 	}
 
