@@ -94,7 +94,7 @@ namespace Plugins {
 	class CPluginTransportICMP : CPluginTransportIP
 	{
 	public:
-		CPluginTransportICMP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL) { };
+		CPluginTransportICMP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL), m_SequenceNo(0), m_Initialised(false) { };
 		virtual	bool		handleListen();
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&);
@@ -104,6 +104,9 @@ namespace Plugins {
 		boost::asio::ip::icmp::resolver	*m_Resolver;
 		boost::asio::ip::icmp::socket	*m_Socket;
 		boost::asio::ip::icmp::endpoint	m_remote_endpoint;
+
+		int								m_SequenceNo;
+		bool							m_Initialised;
 	};
 
 	class CPluginTransportSerial : CPluginTransport, AsyncSerial

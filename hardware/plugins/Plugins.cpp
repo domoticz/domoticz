@@ -483,7 +483,14 @@ namespace Plugins {
 
 				if (sError.length())
 				{
-					_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d, offset: %d", Name.c_str(), sError.c_str(), lineno, offset);
+					if ((lineno > 0) && (lineno < 1000))
+					{
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d, offset: %d", Name.c_str(), sError.c_str(), lineno, offset);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d", Name.c_str(), sError.c_str(), offset);
+					}
 					sError = "";
 				}
 
@@ -494,6 +501,10 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", Name.c_str(), pBytes->ob_sval);
 					Py_XDECREF(pString);
 					Py_XDECREF(pBytes);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) Error Line details not available.", Name.c_str());
 				}
 
 				if (sError.length())
@@ -1046,12 +1057,12 @@ namespace Plugins {
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
-		else if (sTransport == "UDP/IP")
-		{
-			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
-		}
+//		else if (sTransport == "UDP/IP")
+//		{
+//			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+//			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+//			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+//		}
 		else if (sTransport == "Serial")
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
@@ -1059,7 +1070,7 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Unknown transport type specified: '%s'.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP and Serial.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)
@@ -1102,9 +1113,15 @@ namespace Plugins {
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
+		else if (sTransport == "ICMP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Unknown transport type specified: '%s'.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)

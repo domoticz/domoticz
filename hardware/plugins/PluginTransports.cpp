@@ -14,6 +14,8 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include "icmp_header.hpp"
+#include "ipv4_header.hpp"
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
@@ -77,7 +79,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -105,7 +107,7 @@ namespace Plugins {
 			delete m_Socket;
 			m_Socket = NULL;
 
-			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -393,7 +395,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			//	_log.Log(LOG_ERROR, "Plugin: Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -532,14 +534,142 @@ namespace Plugins {
 
 	bool CPluginTransportICMP::handleListen()
 	{
-		return false;
+		try
+		{
+			if (!m_Socket)
+			{
+				m_bConnected = true;
+				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
+			}
+
+			if (!m_Initialised)
+			{
+				std::string body("ping");
+				handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
+				m_Initialised = true;
+			}
+
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
+				boost::bind(&CPluginTransportICMP::handleRead, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			{
+				ios.reset();
+				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+			}
+		}
+		catch (std::exception& e)
+		{
+			_log.Log(LOG_ERROR, "%s Exception: '%s' connecting to '%s'", __func__, e.what(), m_IP.c_str());
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+			return false;
+		}
+
+		return true;
 	}
-	void CPluginTransportICMP::handleRead(const boost::system::error_code & e, std::size_t bytes_transferred)
+
+	void CPluginTransportICMP::handleRead(const boost::system::error_code & ec, std::size_t bytes_transferred)
 	{
+		if (!ec)
+		{
+			std::string sAddress = m_remote_endpoint.address().to_string();
+			std::string sPort = "0";
+
+			PyType_Ready(&CConnectionType);
+			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
+
+			// Configure temporary Python Connection object
+			Py_XDECREF(pConnection->Name);
+			pConnection->Name = ((CConnection*)m_pConnection)->Name;
+			Py_INCREF(pConnection->Name);
+			Py_XDECREF(pConnection->Address);
+			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
+			Py_XDECREF(pConnection->Port);
+			pConnection->Port = PyUnicode_FromString(sPort.c_str());
+			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
+			Py_INCREF(pConnection->Transport);
+			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
+			Py_INCREF(pConnection->Protocol);
+			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+
+			// Create Protocol object to handle connection's traffic
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
+				PluginMessageQueue.push(pMessage);
+			}
+
+			ReadMessage*	Message = new ReadMessage(((CConnection*)pConnection)->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			m_tLastSeen = time(0);
+			m_iTotalBytes += bytes_transferred;
+
+			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
+			Py_DECREF(pConnection);
+
+			// Set up listener again
+			handleListen();
+		}
+		else
+		{
+			if ((ec.value() != 2) &&
+				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 995) &&	// Abort due to shutdown during disconnect
+				(ec.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
+
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(DisconnectMessage);
+			}
+		}
 	}
-	void CPluginTransportICMP::handleWrite(const std::vector<byte>&)
+
+	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
 	{
+		boost::asio::ip::icmp::resolver resolver_(ios);
+		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP.c_str(), "");
+		boost::asio::ip::icmp::endpoint destination_ = *resolver_.resolve(query);
+
+		// Create an ICMP header for an echo request.
+		icmp_header echo_request;
+		echo_request.type(icmp_header::echo_request);
+		echo_request.code(0);
+#if defined(BOOST_ASIO_WINDOWS)
+		echo_request.identifier(static_cast<unsigned short>(::GetCurrentProcessId()));
+#else
+		echo_request.identifier(::getpid());
+#endif
+		echo_request.sequence_number(m_SequenceNo++);
+		compute_checksum(echo_request, pMessage.begin(), pMessage.end());
+
+		// Encode the request packet.
+		boost::asio::streambuf request_buffer;
+		std::ostream os(&request_buffer);
+		std::string	 sData(pMessage.begin(), pMessage.end());
+		os << echo_request << sData;
+
+		if (!m_Socket)
+		{
+			m_bConnected = true;
+			m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
+		}
+
+		// Send the request.
+		m_Socket->send_to(request_buffer.data(), destination_);
 	}
+
 	bool CPluginTransportICMP::handleDisconnect()
 	{
 		m_tLastSeen = time(0);
