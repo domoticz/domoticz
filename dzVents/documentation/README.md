@@ -772,8 +772,16 @@ Many of the commands you issue with dzVents support extra options like controlli
 	-- flash a light for 3 times
 	device.switchOn().forSec(2).repeatAfterSec(1, 3)
 
+	-- switch the device on but only if the current state isn't already on:
+	device.switchOn().checkFirst()
+	-- this is a short for:
+	if (device.state == 'Off') then
+		devices.switchOn()
+	end
+
 ####Options:
  - **afterHour(hours), afterMin(minutes), afterSec(seconds)**: *Function*. Activates the command after a certain amount of hours, minutes or seconds.
+ - **checkFirst()**: *Function*. Checks if the current state of the device is different then the desired new state. If the target state is the same, no command is sent. So if you do `mySwitch.switchOn().checkFirst()` then no switch command is sent if the switch is already on. This command is only works with switch-like devices. Not available with toggle and dim commands either.
  - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of a certain amount of hours, minutes or seconds. See table below for applicability.
  - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or second) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
@@ -792,6 +800,7 @@ The options are not always available. All the options are available to device sw
 | `withinXXX()`        |  •                      |  n/a            | n/a            |
 | `silent()`           |  •                      |  •              | •              |
 | `repeatAfterXXX()`   |  •                      |  n/a            | n/a            |
+| `checkFirst()`         |  • (switch-like devices |  n/a            | n/a            |
 
 
 #### About follow-up event triggers
