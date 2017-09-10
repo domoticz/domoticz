@@ -544,6 +544,20 @@ local testAmpere3 = function(name)
 	return res
 end
 
+local testRepeatSwitchDelta = function(expectedState, expectedDelta, state, delta)
+
+	local res = true
+
+	res = res and expectEql(state, expectedState, 'State is not correct')
+
+	local deltaDiff = delta - expectedDelta
+	local ok = (deltaDiff <= 1) -- some leniency
+	res = res and expectEql(true, ok, 'Time between events is not correct')
+
+	return res
+end
+
+
 local testRepeatSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -554,19 +568,10 @@ local testRepeatSwitch = function(name)
 	local secondOn = dz.globalData.repeatSwitch.get(2)
 	local secondOff = dz.globalData.repeatSwitch.get(1)
 
-	res = res and expectEql(dz.globalData.repeatSwitch.size, 5, 'Number of switch moments is not correct')
-
-	local diffStartFirstOn = firstOn.time.compare(start.time)
-	res = res and expectEql(diffStartFirstOn.secs, 8, 'Difference between start and first on should be 5 seconds')
-
-	local diffFirstOnFirstOff = firstOff.time.compare(firstOn.time)
-	res = res and expectEql(diffFirstOnFirstOff.secs, 2, 'Difference between first on and first off should be 2 seconds')
-
-	local diffFirstOffSecondOn = secondOn.time.compare(firstOff.time)
-	res = res and expectEql(diffFirstOffSecondOn.secs, 5, 'Difference between first off and second on should be 5 seconds')
-
-	local diffSecondOnSecondOff = secondOff.time.compare(secondOn.time)
-	res = res and expectEql(diffSecondOnSecondOff.secs, 2, 'Difference between second on and second off should be 2 seconds')
+	res = res and testRepeatSwitchDelta('On', 8, firstOn.data.state, firstOn.data.delta)
+	res = res and testRepeatSwitchDelta('Off', 2, firstOff.data.state, firstOff.data.delta)
+	res = res and testRepeatSwitchDelta('On', 5, secondOn.data.state, secondOn.data.delta)
+	res = res and testRepeatSwitchDelta('Off', 2, secondOff.data.state, secondOff.data.delta)
 
 	tstMsg('Test repeat switch', res)
 	return res

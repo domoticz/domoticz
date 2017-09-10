@@ -1160,8 +1160,8 @@ end
 local testRepeatSwitch = function(name)
 	local dev = dz.devices(name)
 	dz.globalData.repeatSwitch.reset()
-	dz.globalData.repeatSwitch.add('Start')
-	dev.switchOn().afterSec(8).forSec(2).rpt(1).secBetweenRepeat(5) -- 17s total
+	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
+	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
 	tstMsg('Test switch device', res)
 	return true
 end

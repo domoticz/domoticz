@@ -11,7 +11,7 @@
  - Added the lua Lodash library (http://axmat.github.io/lodash.lua, MIT license).
  - Fixed documentation about levelNames for selector switches and added the missing levelName.
  - Added silent() option to timed commands like switchOn().afterSec(4).silent() causing no follow up events to be triggered. This also works when updating non-switch devices.
- - Added more options to the various switch commands: .switchOff().silent(), .forSec(), .forHour(), .afterHour(), .rpt(), .secBetweenRepeat(), .minBetweenRepeat(), .hourBetweenRepeat(), .withinHour(). See documentation about command options.
+ - Added more options to the various switch commands: .switchOff().silent(), .forSec(), .forHour(), .afterHour(), .repeatAfterSec(), .repeatAfterMin(), .repeatAfterHour(), .withinHour(). See documentation about command options.
  - Moved dzVents runtime code away from the /path/to/domoticz/scripts/dzVents folder as this scripts folder contains user stuff.
  - Added more trigger examples in the documentation.
  - Active section is now optional. If you don't specify an active = true/false then true is assumed (script is active). Handy for when you use Domoticz' internal script editor as it has its own way of activating and deactivating scripts.
