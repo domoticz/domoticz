@@ -785,10 +785,9 @@ Many of the commands you issue with dzVents support extra options like controlli
  - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of a certain amount of hours, minutes or seconds. See table below for applicability.
  - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or second) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
- - **repeatAfterHour(hours, [amount]), repeatAfterMin(minutes, [amount]), repeatAfterSec(seconds, [amount])**: *Function*. Repeats the sequence an x amount of times after the specied time (value). When no amount is provided an amount of 1 is used.
+ - **repeatAfterHour(hours, [amount]), repeatAfterMin(minutes, [amount]), repeatAfterSec(seconds, [amount])**: *Function*. Repeats the sequence an x amount of times after the specified time (value). When no amount is provided an amount of 1 is used.
 
-Note that **dimTo()** doesn't support **forMin()**.
-Also note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
+Note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
 ####Availability
 The options are not always available. All the options are available to device switch-like commands like `myDevice.swithOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating devices (usually dummy devices) like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
