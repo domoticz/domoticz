@@ -1160,8 +1160,8 @@ end
 local testRepeatSwitch = function(name)
 	local dev = dz.devices(name)
 	dz.globalData.repeatSwitch.reset()
-	dz.globalData.repeatSwitch.add('Start')
-	dev.switchOn().afterSec(5).forSec(2).rpt(1).secBetweenRepeat(5) -- 14s total
+	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
+	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
 	tstMsg('Test switch device', res)
 	return true
 end
@@ -1243,6 +1243,6 @@ return {
 			log('Results stage 1: SUCCEEDED')
 		end
 
-		dz.devices('stage2Trigger').switchOn().afterSec(16)
+		dz.devices('stage2Trigger').switchOn().afterSec(20)
 	end
 }

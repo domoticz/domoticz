@@ -97,7 +97,6 @@ return {
 			return TimedCommand(domoticz, device.name, newState)
 		end
 
-
 		for attribute, value in pairs(data.data) do
 			if (device[attribute] == nil) then
 				device[attribute] = value

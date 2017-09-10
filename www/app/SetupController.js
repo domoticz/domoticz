@@ -589,8 +589,8 @@ define(['app'], function (app) {
 						$("#eventsystemtable #EnableEventScriptSystem").prop('checked', data.EnableEventScriptSystem == 1);
 					}
                     if (typeof data.DisableDzVentsSystem != 'undefined') {
-						
-                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 1);
+						console.log(data.DisableDzVentsSystem);                 //TODO - >> REMOVE << -
+                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 0);
                     }
                     if (typeof data.DzVentsLogLevel != 'undefined') {
                         $("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);

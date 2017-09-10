@@ -1,4 +1,4 @@
-local TESTMODE = true
+local TESTMODE = false
 
 local currentPath = globalvariables['script_path']
 local triggerReason = globalvariables['script_reason']
@@ -24,7 +24,7 @@ local utils = require('Utils')
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
 	utils.log('Dumping domoticz data to ' .. currentPath .. '/domoticzData.lua', utils.LOG_DEBUG)
 	local persistence = require('persistence')
-	persistence.store(currentPath .. '/domoticzData.lua', domoticzData)
+	persistence.store(currentPath .. 'domoticzData.lua', domoticzData)
 end
 
 commandArray = {}

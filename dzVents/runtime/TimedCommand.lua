@@ -5,7 +5,7 @@ local utils = require('Utils')
 
 local function TimedCommand(domoticz, name, value, mode)
 	local valueValue = value
-	local afterValue, forValue, randomValue, silentValue, repeatValue, delayValue
+	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue
 	local _for, _after, _within, _rpt, _silent, _between
 
 	local constructCommand = function()
@@ -40,8 +40,8 @@ local function TimedCommand(domoticz, name, value, mode)
 			table.insert(command, 'REPEAT ' .. tostring(repeatValue))
 		end
 
-		if (delayValue ~= nil) then
-			table.insert(command, 'INTERVAL ' .. tostring(delayValue) .. ' SECONDS')
+		if (repeatIntervalValue ~= nil) then
+			table.insert(command, 'INTERVAL ' .. tostring(repeatIntervalValue) .. ' SECONDS')
 		end
 
 
@@ -80,19 +80,19 @@ local function TimedCommand(domoticz, name, value, mode)
 			res.silent = _silent
 		end
 
-		if (repeatValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
-			res.rpt = _rpt
-		end
-
-		if (delayValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
-			res.secBetweenRepeat = _between(1)
-			res.minBetweenRepeat = _between(60)
-			res.hourBetweenRepeat = _between(3600)
+		if (repeatIntervalValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
+			res.repeatAfterSec = _between(1)
+			res.repeatAfterMin = _between(60)
+			res.repeatAfterHour = _between(3600)
 		end
 
 		res._latest = latest
 
 		return res
+	end
+
+	local function updateCommand()
+		latest[command] = constructCommand()
 	end
 
 	_checkValue = function(value, msg)
@@ -103,7 +103,7 @@ local function TimedCommand(domoticz, name, value, mode)
 		return function(value)
 			_checkValue(value, "No value given for 'afterXXX' command")
 			afterValue = value * factor
-			latest[command] = constructCommand()
+			updateCommand()
 			return factory()
 		end
 	end
@@ -112,7 +112,9 @@ local function TimedCommand(domoticz, name, value, mode)
 		return function(value)
 			_checkValue(value, "No value given for 'withinXXX' command")
 			randomValue = value * factor
-			latest[command] = constructCommand()
+
+			updateCommand()
+
 			return factory()
 		end
 	end
@@ -121,29 +123,36 @@ local function TimedCommand(domoticz, name, value, mode)
 		return function(value)
 			_checkValue(value, "No value given for 'forXXX' command")
 			forValue = value * factor
-			latest[command] = constructCommand()
+			updateCommand()
 			return factory()
 		end
 	end
 
 	_silent = function()
 		silentValue = true;
-		latest[command] = constructCommand()
+		updateCommand()
 		return factory()
 	end
 
 	_rpt = function(amount)
 		_checkValue(value, "No value given for 'rpt' command")
 		repeatValue = amount + 1 -- add one due to a bug in domoticz
-		latest[command] = constructCommand()
+		updateCommand()
 		return factory()
 	end
 
 	_between = function(factor)
-		_checkValue(value, "No value given for 'xxxBetweenRepeat' command")
-		return function(value)
-			delayValue = value * factor
-			latest[command] = constructCommand()
+		_checkValue(value, "No value given for 'repeatAfterXXX' command")
+		return function(value, amount)
+
+			if (amount == nil) then
+				amount = 1
+			end
+
+			repeatIntervalValue = value * factor
+			repeatValue = amount + 1 -- add one due to a bug in domoticz
+
+			updateCommand()
 			return factory()
 		end
 	end

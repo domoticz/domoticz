@@ -176,7 +176,7 @@ When al the above conditions are met (active == true and the on section has at l
 * the [[#Domoticz_object_API|domoticz object]]. This gives access to almost everything in your Domoticz system including all methods to manipulate them like modifying switches or sending notifications. More about the domoticz object below.
 * the actual [[#Device_object_API|device]] or [[#Variable_object_API|variable]] or [[#Scene|scene]] or [[#Group|group]] that was defined in the '''on''' part and caused the script to be called. '''Note: of course, if the script was triggered by a timer event, or a security-change event this parameter is ''nil''! You may have to test this in your code if your script is triggered by timer events AND device events'''
 * information about what triggered the script. This is a small table with two keys:
-** '''triggerInfo.type''': (either domoticz.EVENT_TYPE_TIMER, domoticz.EVENT_TYPE_DEVICE, domoticz.EVENT_TYPE_SECURITY or domoticz.EVENT_TYPE_VARIABLE): was the script executed due to a timer event, device-change event, security-change or user variable-change event?
+** '''triggerInfo.type''': (either domoticz.EVENT_TYPE_TIMER, domoticz.EVENT_TYPE_DEVICE, domoticz.EVENT_TYPE_SECURITY, domoticz.EVENT_TYPE_SCENE, domoticz.EVENT_TYPE_GROUP or domoticz.EVENT_TYPE_VARIABLE): was the script executed due to a timer event, device-change event, security-change or user variable-change event?
 ** '''triggerInfo.trigger''': which timer rule triggered the script in case the script was called due to a timer event. or the security state that triggered the security trigger rule. See [[#timer_trigger_options|below]] for the possible timer trigger options. Note that dzVents lists the first timer definition that matches the current time so if there are more timer triggers that could have been triggering the script, dzVents only picks the first for this trigger property.
 
 === data = { ... } (optional) ===
@@ -383,6 +383,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 * '''log(message, [level])''': ''Function''. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: <code>domoticz.LOG_INFO</code>, <code>domoticz.LOG_DEBUG</code>, <code>domoticz.LOG_ERROR</code> or <code>domoticz.LOG_FORCE</code>. In Domoticz settings you can set the log level for dzVents.
 * '''notify(subject, message, priority, sound, extra, subsystem)''': ''Function''. Send a notification (like Prowl). Priority can be like <code>domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY</code>. For sound see the SOUND constants below. <code>subsystem</code> can be a table containing one or more notification subsystems. See <code>domoticz.NSS_xxx</code> types.
 * '''openURL(url)''': ''Function''. Have Domoticz 'call' a URL.
+* '''round(number, decimalPlaces)''': ''Function''. Helper function to round numbers.
 * '''scenes(idx/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#Looping_through_the_collections:_iterators|Looping through the collections: iterators]]. Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>.
 * '''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.
 * '''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''
@@ -578,6 +579,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 * '''humidity''': ''Number''
 * '''humidityStatus''': ''String''
+* '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''updateHumidity(humidity, status)''': Update humidity. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET
 
 ==== Kodi ====
@@ -715,7 +717,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''forecast''': ''Number''.
 * '''forecastString''': ''String''.
 * '''temperature''': ''Number''
-* '''updateTempBaro(temperature, humidity, status, pressure, forecast)''': ''Function''. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius.
+* '''updateTempBaro(temperature, pressure, forecast)''': ''Function''. Forecast can be domoticz.BARO_STABLE, BARO_SUNNY, BARO_CLOUDY, BARO_UNSTABLE, BARO_THUNDERSTORM. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius.
 
 ==== Temperature, Humidity, Barometer sensor ====
 
@@ -725,6 +727,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''forecastString''': ''String''.
 * '''humidity''': ''Number''
 * '''humidityStatus''': ''String''
+* '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''temperature''': ''Number''
 * '''updateTempHumBaro(temperature, humidity, status, pressure, forecast)''': ''Function''. forecast can be domoticz.BARO_NOINFO, BARO_SUNNY, BARO_PARTLY_CLOUDY, BARO_CLOUDY, BARO_RAIN. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius.
 
@@ -733,6 +736,7 @@ There are many switch-like devices. Not all methods are applicable for all switc
 * '''dewPoint''': ''Number''
 * '''humidity''': ''Number''
 * '''humidityStatus''': ''String''
+* '''humidityStatusValue''': ''Number''. Value matches with domoticz.HUM_NORMAL, -HUM_DRY, HUM_COMFORTABLE, -HUM_WET.
 * '''temperature''': ''Number''
 * '''updateTempHum(temperature, humidity, status)''': ''Function''. status can be domoticz.HUM_NORMAL, HUM_COMFORTABLE, HUM_DRY, HUM_WET. Note: temperature must be in Celsius. Use <code>domoticz.toCelsius()</code> to convert a Fahrenheit temperature to Celsius.
 
@@ -802,16 +806,20 @@ device.open().afterSec(20)
 device.open().afterMin(2)
 
 -- switch on but do not trigger follow up events
-device.switchOn().silent()</pre>
+device.switchOn().silent()
+
+-- flash a light for 3 times
+device.switchOn().forSec(2).rpt(3).repeatAfterSec(1)</pre>
 ==== Options: ====
 
-* '''afterSec(seconds)''': ''Function''. Activates the command after a certain amount of seconds.
-* '''afterMin(minutes)''': ''Function''. Activates the command after a certain amount of minutes.
-* '''forMin(minutes)''': ''Function''. Activates the command for the duration of a certain amount of minutes (cannot be specified in seconds). Doesn't apply for user variables.
-* '''withinMin(minutes)''': ''Function''. Activates the command within a certain period ''randomly''.
+* '''afterHour(hours), afterMin(minutes), afterSec(seconds)''': ''Function''. Activates the command after a certain amount of hours, minutes or seconds.
+* '''forHour(hours), forMin(minutes), forSec(seconds)''': ''Function''. Activates the command for the duration of a certain amount of hours, minutes or seconds. See table below for applicability.
+* '''withinHour(hours), withinMin(minutes), withinSec(seconds)''': ''Function''. Activates the command within a certain period (specified in hours, minutes or second) ''randomly''. See table below for applicability.
 * '''silent()''': ''Function''. No follow-up events will be triggered: <code>mySwitch.switchOff().silent()</code>.
+* '''rpt(amount)''': ''Function''. Repeats the sequence an amount of times. The time between repeats is specified using the <code>xxxBetweenRepeat()</code> commands. Note that specified <code>afterXXX()</code> time is not repeated. For those who wonder: <code>repeat</code> is a reserved name in Lua hence the short name.
+* '''repeatAfterHour(hours), repeatAfterMin(minutes), repeatAfterSec(seconds)''': ''Function''. Specifies the amount of time between each repeat.
 
-Note that '''dimTo()''' doesn't support '''forMin()'''.
+Note that '''dimTo()''' doesn't support '''forMin()'''. Also note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
 ==== Availability ====
 
@@ -823,30 +831,35 @@ The options are not always available. All the options are available to device sw
 ! update commands
 ! user variables
 |-
-| <code>afterSec()</code>
+| <code>afterXXX()</code>
 | •
-| -
-| •
-|-
-| <code>afterMin()</code>
-| •
-| -
+| n/a
 | •
 |-
-| <code>forMin()</code>
-| • (not with <code>dimTo()</code>)
-| -
-| -
-|-
-| <code>withinMin()</code>
+| <code>forXXX()</code>
 | •
-| -
-| -
+| n/a
+| n/a
+|-
+| <code>withinXXX()</code>
+| •
+| n/a
+| n/a
 |-
 | <code>silent()</code>
 | •
 | •
 | •
+|-
+| <code>rpt()</code>
+| •
+| n/a
+| n/a
+|-
+| <code>xxxBetweenRepeat()</code>
+| •
+| n/a
+| n/a
 |}
 
 ==== About follow-up event triggers ====
@@ -1618,6 +1631,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added the lua Lodash library (http://axmat.github.io/lodash.lua, MIT license).
 * Fixed documentation about levelNames for selector switches and added the missing levelName.
 * Added silent() option to timed commands like switchOn().afterSec(4).silent() causing no follow up events to be triggered. This also works when updating non-switch devices.
+* Added more options to the various switch commands: .switchOff().silent(), .forSec(), .forHour(), .afterHour(), .rpt(), .repeatAfterSec(), .repeatAfterMin(), .repeatAfterHour(), .withinHour(). See documentation about command options.
 * Moved dzVents runtime code away from the /path/to/domoticz/scripts/dzVents folder as this scripts folder contains user stuff.
 * Added more trigger examples in the documentation.
 * Active section is now optional. If you don't specify an active = true/false then true is assumed (script is active). Handy for when you use Domoticz' internal script editor as it has its own way of activating and deactivating scripts.
@@ -1625,12 +1639,16 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added dzVents/scripts/modules and dzVents/modules to the Lua package path for custom modules.
 * Added support for timed commands when setting uservariables like myVar.set(44).afterSec(10)
 * Added time rule between xx and yy. You can now do things like: 'between 16:34 and sunset' or 'between 10 minutes before sunset and sunrise'. See the doc.
-* Added dzVents specify boilerplate/templates for internal web editor.
+* Added dzVents-specific boilerplate/templates for internal web editor.
 * Added domoticz.systemUptime (in seconds) indicating the number of seconds the machine is running.
 * Time object will initialize to current time if nothing is passed: local current = Time()
 * Added support for milliseconds in Time object. This also give a ms part in the time-stamp for historical persistent data. You can now do msAgo() on time stamp when you inspect a data point from an history variable.
 * Added daysAgo() to Time object.
 * Added compare(time) method to Time object to calculate the difference between them. Returns a table. See documentation.
+* Added round() method to Domoticz object.
+* You can now put your own non-dzVents modules in your scripts folder or write them with the Domoticz GUI editor.
+* Added humidityStatusValue for humidity devices. This value matches with the values used for setting the humidity status.
+* Inverted the dzVents disabled GUI setup setting to enabled. More clear now.
 
 [2.2.0]
 
