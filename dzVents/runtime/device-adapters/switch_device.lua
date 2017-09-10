@@ -67,7 +67,7 @@ return {
 				if (current ~= nil) then
 					inv = current.inv
 					if (inv ~= nil) then
-						return TimedCommand(domoticz, device.name, inv)
+						return TimedCommand(domoticz, device.name, inv, 'device')
 					end
 				end
 			end
@@ -75,31 +75,31 @@ return {
 		end
 
 		function device.switchOn()
-			return TimedCommand(domoticz, device.name, 'On')
+			return TimedCommand(domoticz, device.name, 'On', 'device', device.state)
 		end
 
 		function device.switchOff()
-			return TimedCommand(domoticz, device.name, 'Off')
+			return TimedCommand(domoticz, device.name, 'Off', 'device', device.state)
 		end
 
 		function device.close()
-			return TimedCommand(domoticz, device.name, 'Off')
+			return TimedCommand(domoticz, device.name, 'Off', 'device', device.state)
 		end
 
 		function device.open()
-			return TimedCommand(domoticz, device.name, 'On')
+			return TimedCommand(domoticz, device.name, 'On', 'device', device.state)
 		end
 
 		function device.stop() -- blinds
-			return TimedCommand(domoticz, device.name, 'Stop')
+			return TimedCommand(domoticz, device.name, 'Stop', 'device', device.state)
 		end
 
 		function device.dimTo(percentage)
-			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage))
+			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(percentage), 'device')
 		end
 
 		function device.switchSelector(level)
-			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(level))
+			return TimedCommand(domoticz, device.name, 'Set Level ' .. tostring(level), 'device')
 		end
 
 		if (device.switchType == 'Selector') then

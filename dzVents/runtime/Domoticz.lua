@@ -193,12 +193,12 @@ local function Domoticz(settings)
 
 	-- send a scene switch command
 	function self.setScene(scene, value)
-		return TimedCommand(self, 'Scene:' .. scene, value)
+		return TimedCommand(self, 'Scene:' .. scene, value, 'device', scene.state)
 	end
 
 	-- send a group switch command
 	function self.switchGroup(group, value)
-		return TimedCommand(self, 'Group:' .. group, value)
+		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
 	end
 
 	function self.backupDatabase(path)

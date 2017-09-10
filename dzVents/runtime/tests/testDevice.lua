@@ -131,10 +131,10 @@ describe('device', function()
 		},
 		['radixSeparator'] = '.',
 		switchGroup = function(group, value)
-			return TimedCommand(_d, 'Group:' .. group, value)
+			return TimedCommand(_d, 'Group:' .. group, value, 'device')
 		end,
 		setScene = function(scene, value)
-			return TimedCommand(_d, 'Scene:' .. scene, value)
+			return TimedCommand(_d, 'Scene:' .. scene, value, 'device')
 		end,
 		sendCommand = function(command, value)
 			table.insert(commandArray, {[command] = value})

@@ -785,7 +785,7 @@ Also note that the actual switching or changing of the device is done by Domotic
 ####Availability
 The options are not always available. All the options are available to device switch-like commands like `myDevice.swithOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating devices (usually dummy devices) like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
 
-| option               | on/off like commands    | update commands | user variables |
+| option               | state changes           | update commands | user variables |
 |----------------------|-------------------------|-----------------|----------------|
 | `afterXXX()`         |  •                      |  n/a            | •              |
 | `forXXX()`           |  •                      |  n/a            | n/a            |

@@ -36,7 +36,7 @@ describe('timed commands', function()
 	describe('device', function()
 
 		before_each(function()
-			cmd = TimedCommand(domoticz, 'mySwitch', 'On')
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device')
 		end)
 
 		after_each(function()
@@ -58,6 +58,7 @@ describe('timed commands', function()
 			assert.is_function(cmd.repeatAfterSec)
 			assert.is_function(cmd.repeatAfterMin)
 			assert.is_function(cmd.repeatAfterHour)
+			assert.is_nil(cmd.checkFirst) -- no current state is set
 
 		end)
 
@@ -132,6 +133,12 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
 		end)
+
+		it('should return checkFirst if a currentState is set', function()
+			local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device', 'On')
+			assert.is_function(cmd.checkFirst)
+		end)
+
 	end)
 
 	describe('variable', function()
@@ -161,6 +168,7 @@ describe('timed commands', function()
 			assert.is_nil(cmd.repeatAfterSec)
 			assert.is_nil(cmd.repeatAfterMin)
 			assert.is_nil(cmd.repeatAfterHour)
+			assert.is_nil(cmd.checkFirst)
 		end)
 
 		it('should return proper function when called after', function()
@@ -181,6 +189,7 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterSec)
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(cmd.checkFirst)
 		end)
 
 		it('should return proper functions called silent', function()
@@ -201,11 +210,12 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterSec)
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(cmd.checkFirst)
 		end)
 
 	end)
 
-	describe('variable', function()
+	describe('updatedevice', function()
 
 		before_each(function()
 			cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'updatedevice')
@@ -218,14 +228,14 @@ describe('timed commands', function()
 
 
 		it('should return proper functions when nothing is set', function()
-			assert.is_function(cmd.afterSec)
-			assert.is_function(cmd.afterMin)
-			assert.is_function(cmd.afterHour)
 			assert.is_function(cmd.silent)
-			assert.is_function(cmd.withinMin)
-			assert.is_function(cmd.withinSec)
-			assert.is_function(cmd.withinHour)
 
+			assert.is_nil(cmd.afterSec)
+			assert.is_nil(cmd.afterMin)
+			assert.is_nil(cmd.afterHour)
+			assert.is_nil(cmd.withinMin)
+			assert.is_nil(cmd.withinSec)
+			assert.is_nil(cmd.withinHour)
 			assert.is_nil(cmd.forSec)
 			assert.is_nil(cmd.forMin)
 			assert.is_nil(cmd.forHour)
@@ -234,36 +244,17 @@ describe('timed commands', function()
 			assert.is_nil(cmd.repeatAfterHour)
 		end)
 
-		it('should return proper function when called after', function()
-
-			local res = cmd.afterSec(1)
-
-			assert.is_function(res.silent)
-
-			assert.is_nil(res.afterSec)
-			assert.is_nil(res.afterMin)
-			assert.is_nil(res.afterHour)
-			assert.is_nil(res.forSec)
-			assert.is_nil(res.forMin)
-			assert.is_nil(res.forHour)
-			assert.is_nil(res.withinSec)
-			assert.is_nil(res.withinMin)
-			assert.is_nil(res.withinHour)
-			assert.is_nil(res.repeatAfterSec)
-			assert.is_nil(res.repeatAfterMin)
-			assert.is_nil(res.repeatAfterHour)
-		end)
 
 		it('should return proper functions called silent', function()
 
 			local res = cmd.silent()
 
-			assert.is_function(res.afterSec)
-			assert.is_function(res.afterMin)
-			assert.is_function(res.afterHour)
-			assert.is_function(res.withinMin)
-			assert.is_function(res.withinSec)
-			assert.is_function(res.withinHour)
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinHour)
 
 			assert.is_nil(res.silent)
 			assert.is_nil(res.forSec)
@@ -278,7 +269,7 @@ describe('timed commands', function()
 	describe('commands', function()
 
 		before_each(function()
-			cmd = TimedCommand(domoticz, 'mySwitch', 'On')
+			cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device')
 		end)
 
 		after_each(function()
@@ -365,7 +356,7 @@ describe('timed commands', function()
 		end)
 
 		describe('silent', function()
-			it('should create a proper silent command', function()
+			it('should create a proper silent command for a device', function()
 				cmd.silent()
 
 				assert.is_same({
@@ -447,6 +438,34 @@ describe('timed commands', function()
 					{ ["mySwitch"] = "On REPEAT 3 INTERVAL 3600 SECONDS" }
 				}, commandArray)
 			end)
+
+		end)
+
+		describe('checkState', function()
+
+			it('should not issue a command if the current state is the same as the target state', function()
+				commandArray = {}
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device', 'On')
+
+				cmd.afterMin(2).checkFirst().forMin(2)
+
+				assert.is_same({
+					{  }
+				}, commandArray)
+
+			end)
+
+			it('should issue a command if the current state is not the same as the target state', function()
+				commandArray = {}
+				local cmd = TimedCommand(domoticz, 'mySwitch', 'On', 'device', 'Off')
+
+				cmd.afterMin(2).checkFirst().forMin(2)
+
+				assert.is_same({
+					{ ['mySwitch'] = 'On AFTER 120 SECONDS FOR 120 SECONDS' }
+				}, commandArray)
+			end)
+
 
 		end)
 

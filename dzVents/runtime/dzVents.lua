@@ -1,4 +1,4 @@
-local TESTMODE = false
+local TESTMODE = true
 
 local currentPath = globalvariables['script_path']
 local triggerReason = globalvariables['script_reason']

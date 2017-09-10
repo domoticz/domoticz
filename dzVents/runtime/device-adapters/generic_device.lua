@@ -94,7 +94,7 @@ return {
 
 		function device.setState(newState)
 			-- generic state update method
-			return TimedCommand(domoticz, device.name, newState)
+			return TimedCommand(domoticz, device.name, newState, 'device', device.state)
 		end
 
 		for attribute, value in pairs(data.data) do
