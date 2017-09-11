@@ -4137,7 +4137,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			m_mainworker.SetZWaveThermostatFanMode(idx, nvalue);
 		}
 		if (bEventTrigger)
-			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, atoi(nvalue.c_str()), svalue.c_str(), dname, 0);
+			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, nvalue, svalue.c_str(), dname, 0);
 	}
 }
 
