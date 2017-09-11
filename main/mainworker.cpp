@@ -12738,8 +12738,8 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	typedef std::map<std::string, time_t>::iterator hb_components;
-	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
+	std::map<std::string, time_t>::const_iterator iterator;
+	for (iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
 		double dif = difftime(now, iterator->second);
 		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 60)

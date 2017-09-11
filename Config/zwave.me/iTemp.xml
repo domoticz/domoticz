@@ -1,4 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
   <CommandClass id="67" base="0"/>
+
+  <!-- COMMAND_CLASS_CONFIGURATION. Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Factory reset" units="" min="0" max="1" value="0" size="1">
+      <Help>Reset but keep on network</Help>
+      <Item label="No" value="0"/>
+      <Item label="Reset" value="1"/>
+    </Value>
+    <Value type="list" index="2" genre="config" label="Dry contact report type" units="" min="0" max="1" value="1" size="1">
+      <Help>Report type on group 1</Help>
+      <Item label="Alarm" value="0"/>
+      <Item label="Basic" value="1"/>
+    </Value>
+    <Value type="list" index="5" genre="config" label="Operation Mode" units="" min="1" max="3" value="1" size="1">
+      <Help></Help>
+      <Item label="Normal" value="1"/>
+      <Item label="Always Awake" value="3"/>
+    </Value>
+    <Value type="short" index="6" genre="config" label="Temperature offset" units="K" value="1" size="2">
+      <Help></Help>
+    </Value>
+  </CommandClass>
+
+  <!-- COMMAND_CLASS_ASSOCIATION -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="5" label="Binary report" auto="false"/>
+      <Group index="2" max_associations="5" label="Tamper report"/>
+    </Associations>
+  </CommandClass>
 </Product>
