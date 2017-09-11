@@ -1222,7 +1222,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
-		return false;
+		return true; // seems counterintuitive, but prevents device triggers being queued
 
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
