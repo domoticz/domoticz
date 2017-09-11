@@ -6,6 +6,13 @@ local constMapping = {
 	['rain'] = 4
 }
 
+local constHumStatus = {
+	['Normal'] = 0,
+	['Comfortable'] = 1,
+	['Dry'] = 2,
+	['Wet'] = 3
+}
+
 return {
 
 	baseType = 'device',
@@ -33,6 +40,10 @@ return {
 				return
 			end
 
+			if (type(forecast)=='string') then forecast=constMapping[forecast]
+				elseif (type(forecast)=='nil') then forecast=0
+			end
+			
 			forecast = forecast ~= nil and constMapping[forecast] or 5
 
 			local value = tostring(temperature) .. ';' ..
