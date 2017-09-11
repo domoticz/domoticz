@@ -3,14 +3,21 @@ package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
 
-local function TimedCommand(domoticz, name, value, mode)
+local function TimedCommand(domoticz, name, value, mode, currentState)
+
 	local valueValue = value
-	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue
+	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue, checkValue
 	local _for, _after, _within, _rpt, _silent, _between
 
 	local constructCommand = function()
 
+
 		local command = {} -- array of command parts
+
+		if (checkValue == true and currentState == valueValue) then
+			-- do nothing
+			return nil
+		end
 
 		table.insert(command, valueValue)
 
@@ -26,7 +33,7 @@ local function TimedCommand(domoticz, name, value, mode)
 			table.insert(command, 'FOR ' .. tostring(forValue) .. ' SECONDS')
 		end
 
-		if (mode == 'updatedevice' or mode == 'variable') then
+		if (mode ~= 'device') then
 			if (silentValue == false or silentValue == nil) then
 				table.insert(command, 'TRIGGER')
 			end
@@ -44,7 +51,6 @@ local function TimedCommand(domoticz, name, value, mode)
 			table.insert(command, 'INTERVAL ' .. tostring(repeatIntervalValue) .. ' SECONDS')
 		end
 
-
 		local sCommand = table.concat(command, " ")
 
 		utils.log('Constructed timed-command: ' .. sCommand, utils.LOG_DEBUG)
@@ -61,7 +67,25 @@ local function TimedCommand(domoticz, name, value, mode)
 
 		local res = {}
 
-		if (afterValue == nil and randomValue == nil) then
+		if (mode == 'device') then
+			if (forValue == nil and mode == 'device') then
+				res.forSec = _for(1)
+				res.forMin = _for(60)
+				res.forHour = _for(3600)
+			end
+
+			if (repeatIntervalValue == nil) then
+				res.repeatAfterSec = _between(1)
+				res.repeatAfterMin = _between(60)
+				res.repeatAfterHour = _between(3600)
+			end
+
+			if (checkValue == nil and currentState ~= nil) then
+				res.checkFirst = _checkState
+			end
+		end
+
+		if (afterValue == nil and randomValue == nil and mode ~= 'updatedevice') then
 			res.afterSec = _after(1)
 			res.afterMin = _after(60)
 			res.afterHour = _after(3600)
@@ -70,20 +94,8 @@ local function TimedCommand(domoticz, name, value, mode)
 			res.withinHour = _within(3600)
 		end
 
-		if (forValue == nil and mode ~= 'variable' and mode ~= 'updatedevice' ) then
-			res.forSec = _for(1)
-			res.forMin = _for(60)
-			res.forHour = _for(3600)
-		end
-
 		if (silentValue == nil) then
 			res.silent = _silent
-		end
-
-		if (repeatIntervalValue == nil and mode ~= 'variable' and mode ~= 'updatedevice') then
-			res.repeatAfterSec = _between(1)
-			res.repeatAfterMin = _between(60)
-			res.repeatAfterHour = _between(3600)
 		end
 
 		res._latest = latest
@@ -134,13 +146,6 @@ local function TimedCommand(domoticz, name, value, mode)
 		return factory()
 	end
 
-	_rpt = function(amount)
-		_checkValue(value, "No value given for 'rpt' command")
-		repeatValue = amount + 1 -- add one due to a bug in domoticz
-		updateCommand()
-		return factory()
-	end
-
 	_between = function(factor)
 		_checkValue(value, "No value given for 'repeatAfterXXX' command")
 		return function(value, amount)
@@ -155,6 +160,12 @@ local function TimedCommand(domoticz, name, value, mode)
 			updateCommand()
 			return factory()
 		end
+	end
+
+	_checkState = function()
+		checkValue = true;
+		updateCommand()
+		return factory()
 	end
 
 	return factory()

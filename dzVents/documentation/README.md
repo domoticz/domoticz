@@ -376,7 +376,7 @@ One tip:
 The domoticz object holds all information about your Domoticz system. It has a couple of global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups** and when applicable, a collection of **changedDevices** and **changedVariables**. All these collections each have three iterator functions: `forEach(function)`, `filter(function)` and `reduce(function)` to make searching for devices easier. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators) below.
 
 ### Domoticz attributes and methods
- - **backupDatabase(path)**: *Function*. Creates a backup of the Domoticz database. You have to provide the full path+name to the backup.
+ - **backupDatabase(path)**: *Function*. Creates a backup of the Domoticz database. **You have to provide the full path+filename to the backup.**
  - **changedDevices(idx/name)**: *Function*. A function returning the device by idx (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.changedDevices()) do .. end`.
  - **changedVariables(idx/name)**: *Function*. A function returning the user variable by idx or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.changedVariables()) do .. end`.
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
@@ -772,26 +772,34 @@ Many of the commands you issue with dzVents support extra options like controlli
 	-- flash a light for 3 times
 	device.switchOn().forSec(2).repeatAfterSec(1, 3)
 
+	-- switch the device on but only if the current state isn't already on:
+	device.switchOn().checkFirst()
+	-- this is a short for:
+	if (device.state == 'Off') then
+		devices.switchOn()
+	end
+
 ####Options:
  - **afterHour(hours), afterMin(minutes), afterSec(seconds)**: *Function*. Activates the command after a certain amount of hours, minutes or seconds.
+ - **checkFirst()**: *Function*. Checks if the current state of the device is different then the desired new state. If the target state is the same, no command is sent. So if you do `mySwitch.switchOn().checkFirst()` then no switch command is sent if the switch is already on. This command is only works with switch-like devices. Not available with toggle and dim commands either.
  - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of a certain amount of hours, minutes or seconds. See table below for applicability.
  - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or second) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
- - **repeatAfterHour(hours, [amount]), repeatAfterMin(minutes, [amount]), repeatAfterSec(seconds, [amount])**: *Function*. Repeats the sequence an x amount of times after the specied time (value). When no amount is provided an amount of 1 is used.
+ - **repeatAfterHour(hours, [amount]), repeatAfterMin(minutes, [amount]), repeatAfterSec(seconds, [amount])**: *Function*. Repeats the sequence an x amount of times after the specified time (value). When no amount is provided an amount of 1 is used.
 
-Note that **dimTo()** doesn't support **forMin()**.
-Also note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
+Note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do. So if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
 ####Availability
 The options are not always available. All the options are available to device switch-like commands like `myDevice.swithOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating devices (usually dummy devices) like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
 
-| option               | on/off like commands    | update commands | user variables |
+| option               | state changes           | update commands | user variables |
 |----------------------|-------------------------|-----------------|----------------|
 | `afterXXX()`         |  •                      |  n/a            | •              |
 | `forXXX()`           |  •                      |  n/a            | n/a            |
 | `withinXXX()`        |  •                      |  n/a            | n/a            |
 | `silent()`           |  •                      |  •              | •              |
 | `repeatAfterXXX()`   |  •                      |  n/a            | n/a            |
+| `checkFirst()`         |  • (switch-like devices |  n/a            | n/a            |
 
 
 #### About follow-up event triggers
@@ -1510,36 +1518,33 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 [2.3.0]
 
-  - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
- - Added active to devices (more logical naming than bState). myDevice.active is true or false depending on a set of known state values (like On, Off, Open, Closed etc).
- - Added simple urlEncode method on the Domoticz object so you can prepare a string before using it in openURL().
- - Updating text from dzVents in a text-device now triggers the event system.
+ - Added `active` attribute to devices (more logical naming than the attribute 'bState'). `myDevice.active` is true or false depending on a set of known state values (like On, Off, Open, Closed etc). Use like `if mySwitch.active then .. end`
+ - Added `domoticz.urlEncode` method on the `domoticz` object so you can prepare a string before using it with `openURL()`.
+ - Updating devices, user variables, scenes and groups now always trigger the event system for follow-up events.
+ - Added support for groups and scenes change-event scripts. Use `on = { scenes = { 'myScene1', 'myScene2' }, groups = {'myGroup1'} }`
+ - Added method `domoticz.backupDatabase(path)` to the `domoticz` object. Now you can create your own (timer) scripts to create backups.
  - Added adapter for the new Temperature+Barometer device.
- - Added support for groups and scenes change events. Use "on = { scenes = { 'myScene1', 'myScene2' }, groups = {'myGroup1'} }"
- - Added method backupDatabase to the domoticz object. Now you can create your own (timer) scripts to create backups.
- - Added domoticz.startTime giving you the time at which the Domoticz service was started.
+ - Added `domoticz.startTime` giving you the time at which the Domoticz service was started. Returns a Time object.
+ - Added `domoticz.systemUptime` (in seconds) indicating the number of seconds the machine is running. Returns a Time object.
+ - Added more options to the various commands/methods: e.g. `myDevice.switchOff().silent()`, `.forSec()`, `.forHour()`, `.afterHour()`, `.repeatAfterSec()`, `.repeatAfterMin()`, `.repeatAfterHour()`, `.withinHour()` and `.checkFirst()`. This now works not only for devices but also scenes, groups and user variables. See documentation about command options.
+ - Added `.silent()` option to commands like `switchOn().afterSec(4).silent()` causing no follow-up events to be triggered. This also works when updating non-switch-like devices, scenes, groups and user variables. If you do not call `silent()``, a follow-up event is *always* triggered (for devices, scenes, groups and user variables).
+ - Added time rule `between xx and yy`. You can now do things like: `between 16:34 and sunset` or `between 10 minutes before sunset and sunrise`. See the doc.
+ - Added support for milliseconds in `Time` object. This also give a ms part in the time-stamp for historical persistent data. You can now do `msAgo()` on time stamp when you inspect a data point from an history variable.
+ - Added `daysAgo()` to `Time` object.
+ - Added `compare(time)` method to `Time` object to calculate the difference between them. Returns a table. See documentation.
+ - Added `domoticz.round()` method to `domoticz` object.
+ - `active` section is now optional in your dzVents script. If you don't specify an `active = true/false` then true is assumed (script is active). Handy for when you use Domoticz' GUI script editor as it has its own way of activating and deactivating scripts.
+ - Added `humidityStatusValue` for humidity devices. This value matches with the values used for setting the humidity status.
+ - `Time` object will initialize to current time if nothing is passed: `local current = Time()`.
  - Added the lua Lodash library (http://axmat.github.io/lodash.lua, MIT license).
  - Fixed documentation about levelNames for selector switches and added the missing levelName.
- - Added silent() option to timed commands like switchOn().afterSec(4).silent() causing no follow up events to be triggered. This also works when updating non-switch devices.
- - Added more options to the various switch commands: .switchOff().silent(), .forSec(), .forHour(), .afterHour(), .repeatAfterSec(), .repeatAfterMin(), .repeatAfterHour(), .withinHour(). See documentation about command options.
- - Moved dzVents runtime code away from the /path/to/domoticz/scripts/dzVents folder as this scripts folder contains user stuff.
+ - Moved dzVents runtime code away from the `/path/to/domoticz/scripts/dzVents` folder as this scripts folder contains user stuff.
  - Added more trigger examples in the documentation.
- - Active section is now optional. If you don't specify an active = true/false then true is assumed (script is active). Handy for when you use Domoticz' internal script editor as it has its own way of activating and deactivating scripts.
- - Active section is now optional. If you don't specify an active = true/false then true is assumed (script is active). Handy for when you use Domoticz' internal script editor as it has its own way of activating and deactivating scripts.
- - Added dzVents/scripts/modules and dzVents/modules to the Lua package path for custom modules.
- - Added support for timed commands when setting uservariables like myVar.set(44).afterSec(10)
- - Added time rule between xx and yy. You can now do things like: 'between 16:34 and sunset' or 'between 10 minutes before sunset and sunrise'. See the doc.
+ - You can now put your own non-dzVents modules in your scripts folder or write them with the Domoticz GUI editor. dzVents is no longer bothered by it. You can require your modules in Lua's standard way.
+ - Added `/path/to/domoticz/scripts/dzVents/scripts/modules` and `/path/to/domoticz/scripts/dzVents/modules` to the Lua package path for custom modules. You can now place your modules in there and require them from anywhere in your scripts.
  - Added dzVents-specific boilerplate/templates for internal web editor.
- - Added domoticz.systemUptime (in seconds) indicating the number of seconds the machine is running.
- - Time object will initialize to current time if nothing is passed: local current = Time()
- - Added support for milliseconds in Time object. This also give a ms part in the time-stamp for historical persistent data. You can now do msAgo() on time stamp when you inspect a data point from an history variable.
- - Added daysAgo() to Time object.
- - Added compare(time) method to Time object to calculate the difference between them. Returns a table. See documentation.
- - Added round() method to Domoticz object.
- - You can now put your own non-dzVents modules in your scripts folder or write them with the Domoticz GUI editor.
- - Added humidityStatusValue for humidity devices. This value matches with the values used for setting the humidity status.
- - Inverted the dzVents disabled GUI setup setting to enabled. More clear now.
-
+ - Fixed the confusing setting for enabling/disabling dzVents event system in Domoticz settings.
+ - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
 
 [2.2.0]
 

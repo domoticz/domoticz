@@ -23,11 +23,12 @@ return {
 		end
 
 		function device.switchOn()
-			return domoticz.setScene(device.name, 'On')
+			return TimedCommand(domoticz, 'Scene:' .. device.name, 'On', 'device', device.state)
+			--return domoticz.setScene(device.name, 'On')
 		end
 
 		function device.switchOff()
-			return domoticz.setScene(device.name, 'Off')
+			return TimedCommand(domoticz, 'Scene:' .. device.name, 'Off', 'device', device.state)
 		end
 	end
 
