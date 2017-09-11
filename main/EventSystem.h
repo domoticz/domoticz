@@ -122,12 +122,12 @@ public:
 	void GetCurrentStates();
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
-	bool UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
+	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
 	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
-	bool SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
+	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 
 private:
 	struct _tEventTrigger

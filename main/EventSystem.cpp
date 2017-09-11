@@ -1199,7 +1199,7 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
+void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
 {
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
@@ -1208,7 +1208,7 @@ bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		std::vector<_tEventTrigger>::iterator itt;
 		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later scheduled items
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later queued items
 				itt = m_eventtrigger.erase(itt) - 1;
 		}
 	}
@@ -1219,7 +1219,7 @@ bool CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	m_eventtrigger.push_back(item);
 }
 
-bool CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
+bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return false;
@@ -4061,7 +4061,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			m_mainworker.SetZWaveThermostatFanMode(idx, nvalue);
 		}
 		if (bEventTrigger)
-			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, atoi(nvalue.c_str()), svalue.c_str(), dname, 0);
+			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, nvalue, svalue.c_str(), dname, 0);
 	}
 }
 

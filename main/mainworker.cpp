@@ -12397,7 +12397,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	bool bEventTrigger = true;
 	if (m_sql.m_bEnableEventSystem)
-		bEventTrigger = m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
+		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate);
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
