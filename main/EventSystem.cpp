@@ -1137,6 +1137,9 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 
 void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason)
 {
+	if (lastUpdate.empty() && !lastLevel)
+		return;
+
 	if (reason == "device")
 	{
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
@@ -1274,7 +1277,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			replaceitem.variableName = varName;
 		if (!varValue.empty())
 			replaceitem.variableValue = varValue;
-		if (varType != 0)
+		if (varType != -1)
 			replaceitem.variableType = varType;
 
 		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
@@ -1424,16 +1427,6 @@ void CEventSystem::ProcessMinute()
 {
 	_tEventQueue item;
 	item.reason = "time";
-	m_eventqueue.push(item);
-}
-
-void CEventSystem::ProcessUserVariable(const uint64_t varId)
-{
-	if (!m_bEnabled)
-		return;
-	_tEventQueue item;
-	item.reason = "uservariable";
-	item.varId = varId;
 	m_eventqueue.push(item);
 }
 

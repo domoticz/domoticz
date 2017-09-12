@@ -112,7 +112,6 @@ public:
 	void StopEventSystem();
 
 	void LoadEvents();
-	void ProcessUserVariable(const uint64_t varId);
 	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
 	void RemoveSingleState(int ulDevID);
 	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname);
