@@ -85,6 +85,11 @@ Name: "{app}\log"; Permissions: everyone-full
 [PostCompile]
 Name: "S:\Domoticz\msbuild\WindowsInstaller\makedist.bat"; Flags: cmdprompt redirectoutput
 
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\scripts\dzVents\documentation"
+Type: filesandordirs; Name: "{app}\scripts\dzVents\runtime"
+
+
 [Code]
 var
   ConfigPage: TInputQueryWizardPage;
