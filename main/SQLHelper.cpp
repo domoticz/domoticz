@@ -7154,6 +7154,7 @@ std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 	return "OK";
 
 }
+
 std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
@@ -7172,25 +7173,25 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 		CURLEncode::URLDecode(varvalue.c_str()).c_str()
 		);
 
-	result = safe_query("SELECT ID FROM UserVariables WHERE (Name == '%q')",
-		varname.c_str()
-	);
-	if (result.size()>0)
-	{
-		std::vector<std::string> sd = result[0];
-		std::stringstream vId_str(sd[0]);
-		uint64_t vId;
-		vId_str >> vId;
-		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
-	}
 	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')",
+			varname.c_str()
+		);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream vId_str(sd[0]);
+			uint64_t vId;
+			vId_str >> vId;
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", "", -1, sd[1]);
+		}
 	}
-
 	return "OK";
-
 }
+
 std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger)
 {
 	int typei = atoi(vartype.c_str());
@@ -7226,13 +7227,9 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
-		if (eventtrigger) {
-			std::stringstream vId_str(idx);
-			uint64_t vId;
-			vId_str >> vId;
-			m_mainworker.m_eventsystem.ProcessUserVariable(vId);
-		}
 	}
 	return "OK";
 }
@@ -7249,11 +7246,9 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 		);
 	if (m_bEnableEventSystem)
 	{
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
 		if (eventtrigger)
-		{
-			m_mainworker.m_eventsystem.ProcessUserVariable(idx);
-		}
+			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
 	}
 	return true;
 }

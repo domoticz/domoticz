@@ -222,6 +222,7 @@ void CEventSystem::LoadEvents()
 		}
 	}
 
+	m_bdzVentsExist = false;
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
 	if (result.size()>0)
@@ -253,13 +254,9 @@ void CEventSystem::LoadEvents()
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
 				}
+				m_bdzVentsExist = true;
 			}
 		}
-		m_bdzVentsExist = true;
-	}
-	else
-	{
-		m_bdzVentsExist = false;
 	}
 
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
@@ -1199,6 +1196,9 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 
 void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason)
 {
+	if (lastUpdate.empty() && !lastLevel)
+		return;
+
 	if (reason == "device")
 	{
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
@@ -1270,7 +1270,7 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		std::vector<_tEventTrigger>::iterator itt;
 		for (itt = m_eventtrigger.begin(); itt != m_eventtrigger.end(); ++itt)
 		{
-			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later scheduled items
+			if (itt->ID == ulDevID && itt->reason == reason && itt->timestamp >= atime) // cancel later queued items
 				itt = m_eventtrigger.erase(itt) - 1;
 		}
 	}
@@ -1281,10 +1281,10 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	m_eventtrigger.push_back(item);
 }
 
-bool CEventSystem::UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
+bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
-		return false;
+		return true; // seems counterintuitive, but prevents device triggers being queued
 
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
@@ -1336,7 +1336,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			replaceitem.variableName = varName;
 		if (!varValue.empty())
 			replaceitem.variableValue = varValue;
-		if (varType != 0)
+		if (varType != -1)
 			replaceitem.variableType = varType;
 
 		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
@@ -1486,16 +1486,6 @@ void CEventSystem::ProcessMinute()
 {
 	_tEventQueue item;
 	item.reason = "time";
-	m_eventqueue.push(item);
-}
-
-void CEventSystem::ProcessUserVariable(const uint64_t varId)
-{
-	if (!m_bEnabled)
-		return;
-	_tEventQueue item;
-	item.reason = "uservariable";
-	item.varId = varId;
 	m_eventqueue.push(item);
 }
 
