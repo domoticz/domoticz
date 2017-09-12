@@ -855,7 +855,7 @@ You can use this in combination with the various dzVents time attributes:
 	local tonight = Time(domoticz.time.rawDate .. ' 20:00:00')
 	print (tonight.getISO())
 	-- will print something like: 2016-12-12T20:00:00Z
-	print(t.minutesAgo()) -- difference from 'now' in minutes
+	print(t.minutesAgo) -- difference from 'now' in minutes
 
 	-- and you can feed it with all same rules as you use
 	-- for the timer = { .. } section:
