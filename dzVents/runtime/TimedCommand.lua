@@ -7,7 +7,7 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 
 	local valueValue = value
 	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue, checkValue
-	local _for, _after, _within, _rpt, _silent, _between
+	local _for, _after, _within, _rpt, _silent, _repeatAfter
 
 	local constructCommand = function()
 
@@ -75,9 +75,9 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 			end
 
 			if (repeatIntervalValue == nil) then
-				res.repeatAfterSec = _between(1)
-				res.repeatAfterMin = _between(60)
-				res.repeatAfterHour = _between(3600)
+				res.repeatAfterSec = _repeatAfter(1)
+				res.repeatAfterMin = _repeatAfter(60)
+				res.repeatAfterHour = _repeatAfter(3600)
 			end
 
 			if (checkValue == nil and currentState ~= nil) then
@@ -146,7 +146,7 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 		return factory()
 	end
 
-	_between = function(factor)
+	_repeatAfter = function(factor)
 		_checkValue(value, "No value given for 'repeatAfterXXX' command")
 		return function(value, amount)
 
