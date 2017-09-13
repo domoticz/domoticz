@@ -131,6 +131,12 @@ namespace Plugins {
 				if (!shared_lib_) FindLibrary("python3.6", true);
 				if (!shared_lib_) FindLibrary("python3.5", true);
 				if (!shared_lib_) FindLibrary("python3.4", true);
+#ifdef __FreeBSD__
+				if (!shared_lib_) FindLibrary("python3.7m", true);
+				if (!shared_lib_) FindLibrary("python3.6m", true);
+				if (!shared_lib_) FindLibrary("python3.5m", true);
+				if (!shared_lib_) FindLibrary("python3.4m", true);
+#endif /* FreeBSD */
 #endif
 				if (shared_lib_)
 				{
