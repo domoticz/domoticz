@@ -12395,10 +12395,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
+	bool bEventTrigger = true;
 	if (m_sql.m_bEnableEventSystem)
-	{
-		m_eventsystem.UpdateScenesGroups(idx, nValue, szLastUpdate);
-	}
+		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate);
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
@@ -12488,18 +12487,24 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			if (switchtype != STYPE_PushOn)
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(delay));
 				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
 				if (scenetype == SGTYPE_SCENE)
 				{
 					if ((lstatus != "Off") && (offdelay > 0))
 					{
 						//switch with on delay, and off delay
+						if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+							m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay + offdelay));
 						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
 					}
 				}
 			}
 			else
 			{
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay));
 				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
 			}
 			sleep_milliseconds(50);
