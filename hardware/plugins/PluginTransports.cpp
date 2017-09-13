@@ -532,28 +532,62 @@ namespace Plugins {
 		if (m_Resolver) delete m_Resolver;
 	};
 
+	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, boost::asio::ip::icmp::resolver::iterator endpoint_iterator)
+	{
+		if (!ec)
+		{
+			m_bConnected = true;
+			m_IP = endpoint_iterator->endpoint().address().to_string();
+
+			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
+			std::string body("ping");
+			handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
+
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
+				boost::bind(&CPluginTransportICMP::handleRead, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+		}
+		else
+		{
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(DisconnectMessage);
+			}
+		}
+	}
+
 	bool CPluginTransportICMP::handleListen()
 	{
 		try
 		{
-			if (!m_Socket)
-			{
-				m_bConnected = true;
-				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
-			}
-
 			if (!m_Initialised)
 			{
-				// Listen will fail (10022 - bad parameter) unless something has been sent(?)
-				std::string body("ping");
-				handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
+				m_bConnecting = false;
+				m_bConnected = false;
+				m_Resolver = new boost::asio::ip::icmp::resolver(ios);
+				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
+
+				boost::system::error_code ec;
+				boost::asio::ip::icmp::resolver::query query(m_IP, "0");
+				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver->resolve(query);
+				m_Endpoint = *iter;
+
+				//
+				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
+				//
+				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+
 				m_Initialised = true;
 			}
-
-			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
-				boost::bind(&CPluginTransportICMP::handleRead, this,
-					boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred));
+			else
+			{
+				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
+					boost::bind(&CPluginTransportICMP::handleRead, this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
+			}
 
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
@@ -628,10 +662,6 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
 	{
-		boost::asio::ip::icmp::resolver resolver_(ios);
-		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP.c_str(), "");
-		boost::asio::ip::icmp::endpoint destination_ = *resolver_.resolve(query);
-
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;
 		echo_request.type(icmp_header::echo_request);
@@ -650,14 +680,8 @@ namespace Plugins {
 		std::string	 sData(pMessage.begin(), pMessage.end());
 		os << echo_request << sData;
 
-		if (!m_Socket)
-		{
-			m_bConnected = true;
-			m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
-		}
-
 		// Send the request.
-		m_Socket->send_to(request_buffer.data(), destination_);
+		m_Socket->send_to(request_buffer.data(), m_Endpoint);
 	}
 
 	bool CPluginTransportICMP::handleDisconnect()
