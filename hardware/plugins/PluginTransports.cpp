@@ -16,6 +16,7 @@
 #include <boost/thread/lock_guard.hpp>
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
@@ -456,7 +457,7 @@ namespace Plugins {
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 				(ec.value() != 125) &&	// Operation cancelled
-				(ec.value() != 995) &&	// Abort due to shutdown during disconnect
+				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
 
@@ -598,7 +599,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			_log.Log(LOG_ERROR, "%s Exception: '%s' connecting to '%s'", __func__, e.what(), m_IP.c_str());
+			_log.Log(LOG_ERROR, "%s Exception: '%s' failed connecting to '%s'", __func__, e.what(), m_IP.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -606,6 +607,23 @@ namespace Plugins {
 		}
 
 		return true;
+	}
+
+	void CPluginTransportICMP::handleTimeout(const boost::system::error_code& ec)
+	{
+		if (!ec)  // Timeout, no response
+		{
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, NULL);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+		}
+		else if (ec != boost::asio::error::operation_aborted)  // Timer cancelled by message arriving
+		{
+			_log.Log(LOG_ERROR, "Plugin: %s: %d, %s", __func__, ec.value(), ec.message().c_str());
+		}
 	}
 
 	void CPluginTransportICMP::handleRead(const boost::system::error_code & ec, std::size_t bytes_transferred)
@@ -630,6 +648,12 @@ namespace Plugins {
 
 			if (sAddress == m_IP)
 			{
+				// Cancel timeout
+				if (m_Timer)
+				{
+					m_Timer->cancel();
+				}
+
 				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
@@ -648,7 +672,7 @@ namespace Plugins {
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 				(ec.value() != 125) &&	// Operation cancelled
-				(ec.value() != 995) &&	// Abort due to shutdown during disconnect
+				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
 
@@ -662,6 +686,14 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
 	{
+		// Reset timeout if one is set or set one
+		if (!m_Timer)
+		{
+			m_Timer = new boost::asio::deadline_timer(ios);
+		}
+		m_Timer->expires_from_now(boost::posix_time::seconds(5));
+		m_Timer->async_wait(boost::bind(&CPluginTransportICMP::handleTimeout, this, boost::asio::placeholders::error));
+
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;
 		echo_request.type(icmp_header::echo_request);
@@ -680,7 +712,7 @@ namespace Plugins {
 		std::string	 sData(pMessage.begin(), pMessage.end());
 		os << echo_request << sData;
 
-		// Send the request.
+		// Send the request
 		m_Socket->send_to(request_buffer.data(), m_Endpoint);
 	}
 
@@ -689,6 +721,13 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			if (m_Timer)
+			{
+				m_Timer->cancel();
+				delete m_Timer;
+				m_Timer = NULL;
+			}
+
 			if (m_Socket)
 			{
 				boost::system::error_code e;

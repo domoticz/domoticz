@@ -656,112 +656,133 @@ namespace Plugins {
 	{
 		PyObject*	pObj = NULL;
 		PyObject*	pDataDict = PyDict_New();
-		PyObject*	pIPv4Dict = PyDict_New();
 		int			iTotalData = 0;
 		int			iDataOffset = 0;
 
-		if (pDataDict && pIPv4Dict)
+		// Handle response
+		if (Message->m_Buffer.size())
 		{
-			if (PyDict_SetItemString(pDataDict, "IPv4", (PyObject*)pIPv4Dict) == -1)
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "IPv4");
-			else
+			PyObject*	pIPv4Dict = PyDict_New();
+			if (pDataDict && pIPv4Dict)
 			{
-				Py_XDECREF((PyObject*)pIPv4Dict);
-
-				ipv4_header*	pIPv4 = (ipv4_header*)(&Message->m_Buffer[0]);
-
-				pObj = Py_BuildValue("s", pIPv4->source_address().to_string().c_str());
-				PyDict_SetItemString(pIPv4Dict, "Source", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("s", pIPv4->destination_address().to_string().c_str());
-				PyDict_SetItemString(pIPv4Dict, "Destination", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("b", pIPv4->version());
-				PyDict_SetItemString(pIPv4Dict, "Version", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("b", pIPv4->protocol());
-				PyDict_SetItemString(pIPv4Dict, "Protocol", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("b", pIPv4->type_of_service());
-				PyDict_SetItemString(pIPv4Dict, "TypeOfService", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pIPv4->header_length());
-				PyDict_SetItemString(pIPv4Dict, "HeaderLength", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pIPv4->total_length());
-				PyDict_SetItemString(pIPv4Dict, "TotalLength", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pIPv4->identification());
-				PyDict_SetItemString(pIPv4Dict, "Identification", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pIPv4->header_checksum());
-				PyDict_SetItemString(pIPv4Dict, "HeaderChecksum", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("i", pIPv4->time_to_live());
-				PyDict_SetItemString(pIPv4Dict, "TimeToLive", pObj);
-				Py_DECREF(pObj);
-
-				iTotalData = pIPv4->total_length();
-				iDataOffset = pIPv4->header_length();
-			}
-			pIPv4Dict = NULL;
-		}
-
-		PyObject*	pIcmpDict = PyDict_New();
-		if (pDataDict && pIcmpDict)
-		{
-			if (PyDict_SetItemString(pDataDict, "ICMP", (PyObject*)pIcmpDict) == -1)
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "ICMP");
-			else
-			{
-				Py_XDECREF((PyObject*)pIcmpDict);
-
-				icmp_header*	pICMP = (icmp_header*)(&Message->m_Buffer[0] + 20);
-
-				pObj = Py_BuildValue("b", pICMP->type());
-				PyDict_SetItemString(pIcmpDict, "Type", pObj);
-				Py_DECREF(pObj);
-
-				if (pICMP->type() == icmp_header::echo_reply)
-					pObj = Py_BuildValue("b", pICMP->type());
+				if (PyDict_SetItemString(pDataDict, "IPv4", (PyObject*)pIPv4Dict) == -1)
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "IPv4");
 				else
-					pObj = Py_BuildValue("b", -1);
-				PyDict_SetItemString(pDataDict, "Status", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("b", pICMP->code());
-				PyDict_SetItemString(pIcmpDict, "Code", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pICMP->checksum());
-				PyDict_SetItemString(pIcmpDict, "Checksum", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pICMP->identifier());
-				PyDict_SetItemString(pIcmpDict, "Identifier", pObj);
-				Py_DECREF(pObj);
-
-				pObj = Py_BuildValue("h", pICMP->sequence_number());
-				PyDict_SetItemString(pIcmpDict, "SequenceNumber", pObj);
-				Py_DECREF(pObj);
-
-				iDataOffset += sizeof(icmp_header);
-				if (pICMP->type() == icmp_header::destination_unreachable)
 				{
-					ipv4_header*	pIPv4 = (ipv4_header*)(pICMP + 1);
-					iDataOffset += pIPv4->header_length() + sizeof(icmp_header);
+					Py_XDECREF((PyObject*)pIPv4Dict);
+
+					ipv4_header*	pIPv4 = (ipv4_header*)(&Message->m_Buffer[0]);
+
+					pObj = Py_BuildValue("s", pIPv4->source_address().to_string().c_str());
+					PyDict_SetItemString(pIPv4Dict, "Source", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("s", pIPv4->destination_address().to_string().c_str());
+					PyDict_SetItemString(pIPv4Dict, "Destination", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("b", pIPv4->version());
+					PyDict_SetItemString(pIPv4Dict, "Version", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("b", pIPv4->protocol());
+					PyDict_SetItemString(pIPv4Dict, "Protocol", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("b", pIPv4->type_of_service());
+					PyDict_SetItemString(pIPv4Dict, "TypeOfService", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pIPv4->header_length());
+					PyDict_SetItemString(pIPv4Dict, "HeaderLength", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pIPv4->total_length());
+					PyDict_SetItemString(pIPv4Dict, "TotalLength", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pIPv4->identification());
+					PyDict_SetItemString(pIPv4Dict, "Identification", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pIPv4->header_checksum());
+					PyDict_SetItemString(pIPv4Dict, "HeaderChecksum", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("i", pIPv4->time_to_live());
+					PyDict_SetItemString(pIPv4Dict, "TimeToLive", pObj);
+					Py_DECREF(pObj);
+
+					iTotalData = pIPv4->total_length();
+					iDataOffset = pIPv4->header_length();
 				}
+				pIPv4Dict = NULL;
 			}
-			pIcmpDict = NULL;
+
+			PyObject*	pIcmpDict = PyDict_New();
+			if (pDataDict && pIcmpDict)
+			{
+				if (PyDict_SetItemString(pDataDict, "ICMP", (PyObject*)pIcmpDict) == -1)
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "ICMP");
+				else
+				{
+					Py_XDECREF((PyObject*)pIcmpDict);
+
+					icmp_header*	pICMP = (icmp_header*)(&Message->m_Buffer[0] + 20);
+
+					pObj = Py_BuildValue("b", pICMP->type());
+					PyDict_SetItemString(pIcmpDict, "Type", pObj);
+					Py_DECREF(pObj);
+
+					if (pICMP->type() == icmp_header::echo_reply)
+						pObj = Py_BuildValue("b", pICMP->type());
+					else
+						pObj = Py_BuildValue("b", -1);
+					PyDict_SetItemString(pDataDict, "Status", pObj);
+					Py_DECREF(pObj);
+
+					if (pICMP->type() == icmp_header::echo_reply)
+						pObj = Py_BuildValue("s", "Successful Response");
+					else
+						pObj = Py_BuildValue("s", "Unsuccessful Response");
+					PyDict_SetItemString(pDataDict, "Description", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("b", pICMP->code());
+					PyDict_SetItemString(pIcmpDict, "Code", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pICMP->checksum());
+					PyDict_SetItemString(pIcmpDict, "Checksum", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pICMP->identifier());
+					PyDict_SetItemString(pIcmpDict, "Identifier", pObj);
+					Py_DECREF(pObj);
+
+					pObj = Py_BuildValue("h", pICMP->sequence_number());
+					PyDict_SetItemString(pIcmpDict, "SequenceNumber", pObj);
+					Py_DECREF(pObj);
+
+					iDataOffset += sizeof(icmp_header);
+					if (pICMP->type() == icmp_header::destination_unreachable)
+					{
+						ipv4_header*	pIPv4 = (ipv4_header*)(pICMP + 1);
+						iDataOffset += pIPv4->header_length() + sizeof(icmp_header);
+					}
+				}
+				pIcmpDict = NULL;
+			}
+		}
+		else
+		{
+			pObj = Py_BuildValue("b", -1);
+			PyDict_SetItemString(pDataDict, "Status", pObj);
+			Py_DECREF(pObj);
+
+			pObj = Py_BuildValue("s", "No Response");
+			PyDict_SetItemString(pDataDict, "Description", pObj);
+			Py_DECREF(pObj);
 		}
 
 		std::string		sData(Message->m_Buffer.begin(), Message->m_Buffer.end());
