@@ -13,17 +13,8 @@ CEvohomeRadio(ID, UserContID), m_szIPAddress(IPAddress), m_usIPPort(usIPPort)
 
 bool CEvohomeTCP::StopHardware()
 {
-    m_stoprequested=true;
-	if (isConnected())
-	{
-		try {
-			disconnect();
-			close();
-		} catch(...)
-		{
-			//Don't throw from a Stop command
-		}
-	}
+	m_stoprequested=true;
+
 	try {
 		if (m_thread)
 		{
@@ -34,6 +25,16 @@ bool CEvohomeTCP::StopHardware()
 	catch (...)
 	{
 		//Don't throw from a Stop command
+	}
+
+	if (isConnected())
+	{
+		try {
+			disconnect();
+		} catch(...)
+		{
+			//Don't throw from a Stop command
+		}
 	}
 
 	m_bIsStarted=false;
