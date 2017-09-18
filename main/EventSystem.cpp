@@ -120,7 +120,7 @@ static const _tJsonMap JsonMap[] =
 CEventSystem::CEventSystem(void)
 {
 	m_stoprequested = false;
-	m_bEnabled = true;
+	m_bEnabled = false;
 }
 
 
