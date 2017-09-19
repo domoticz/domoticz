@@ -1154,8 +1154,8 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 
 bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 {
-	int where = idx;
-	int _temp = (int)(temp * 10);
+int where = idx;
+int _temp = (int)(temp * 10);
 
 
 
@@ -1169,9 +1169,8 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 	std::stringstream whereStr;
 	whereStr << (where & ~OPENWEBNET_GROUP_ID);
 	std::string sWhere = "";
-	if ((where & OPENWEBNET_GROUP_ID))
-		sWhere += "#";
-	sWhere += whereStr.str();
+	// add # to set value permanent
+	sWhere += "#" + whereStr.str();
 
 	std::stringstream dimensionStr;
 	dimensionStr << TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE;
