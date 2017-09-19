@@ -570,6 +570,9 @@ int I2C::I2CWriteReg16(int fd, uint8_t reg, uint16_t value)
 
 uint16_t I2C::I2CReadReg16(int fd, unsigned char reg)
 {
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
 	int rc;
 	i2c_data data;
 	struct i2c_rdwr_ioctl_data messagebuffer;
@@ -584,6 +587,7 @@ uint16_t I2C::I2CReadReg16(int fd, unsigned char reg)
 		return rc;
 	}
 	return data.word ;	
+#endif
 }
 
 int I2C::WriteCmd(int fd, uint8_t devAction)
