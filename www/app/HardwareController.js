@@ -131,7 +131,7 @@ define(['app'], function (app) {
 					hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				}
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
-				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+				if ((text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) || text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
@@ -1148,11 +1148,11 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("I2C ") >= 0 && text.indexOf("I2C sensor PIO 8bit expander PCF8574") < 0) {
+			else if (text.indexOf("I2C ") >= 0 && ((text.indexOf("I2C sensor PIO 8bit expander PCF8574") < 0) || text.indexOf("I2C sensor GPIO 16bit expander MCP23017") < 0)) {
 				hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				var port = "";
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
-				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+				if ((text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) || text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
@@ -5005,7 +5005,7 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("I2C ") >= 0) {
 							$("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
-							if (data["Type"].indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+							if ((data["Type"].indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) || data["Type"].indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
 							}
 						}
@@ -5369,7 +5369,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divi2caddress").hide();
 				var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
-				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+				if ((text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) || text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					$("#hardwarecontent #divi2caddress").show();
 				}
 			}

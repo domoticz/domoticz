@@ -638,6 +638,7 @@ bool MainWorker::AddHardwareFromParams(
 		return true;
 
 	CDomoticzHardwareBase *pHardware=NULL;
+	_log.Log(LOG_STATUS, "Type: %d", Type);
 
 	switch (Type)
 	{
@@ -875,6 +876,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_RaspberryBME280:
 		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, 0);
+		break;
+	case HTYPE_RaspberryMCP23017:
+		pHardware = new I2C(ID, I2C::I2CTYPE_MCP23017, Port);
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID,Username,Password);
