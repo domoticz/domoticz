@@ -11,6 +11,7 @@ This code supports:
 - PCF8574, PCF8574A
 - HTU21D
 - TSL2561
+- MCP23017
 
 PS there are better density and QNH formulas.
 
@@ -18,6 +19,7 @@ Authors:
 - GizMoCuz
 - Eric Maasdorp
 - Ondrej Lycka (ondrej.lycka@seznam.cz)
+- Guillermo Estevez (gestevezluka@gmail.com)
 */
 
 #include "stdafx.h"
@@ -38,6 +40,7 @@ Authors:
 #include "../main/RFXtrx.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../main/SQLHelper.h"
 
 #define round(a) ( int ) ( a + .5 )
 
@@ -46,6 +49,8 @@ Authors:
 #define I2C_IO_EXPANDER_READ_INTERVAL 1
 
 #define sleepms(ms)  usleep((ms)*1000)
+
+
 // BMP085 & BMP180 Specific code
 #define BMPx8x_I2CADDR           0x77
 #define BMPx8x_CtrlMeas          0xF4
@@ -93,6 +98,47 @@ const unsigned char BMPx8x_OverSampling = 3;
 #define TSL2561_Channel0	0xAC	// IR+Visible lux
 #define TSL2561_Channel1	0xAE	// IR only lux
 
+// MCP23017 registers
+#define MCP23x17_IODIRA         0x00
+#define MCP23x17_IPOLA          0x02
+#define MCP23x17_GPINTENA       0x04
+#define MCP23x17_DEFVALA        0x06
+#define MCP23x17_INTCONA        0x08
+#define MCP23x17_IOCON          0x0A
+#define MCP23x17_GPPUA          0x0C
+#define MCP23x17_INTFA          0x0E
+#define MCP23x17_INTCAPA        0x10
+#define MCP23x17_GPIOA          0x12
+#define MCP23x17_OLATA          0x14
+
+#define MCP23x17_IODIRB         0x01
+#define MCP23x17_IPOLB          0x03
+#define MCP23x17_GPINTENB       0x05
+#define MCP23x17_DEFVALB        0x07
+#define MCP23x17_INTCONB        0x09
+#define MCP23x17_IOCONB         0x0B
+#define MCP23x17_GPPUB          0x0D
+#define MCP23x17_INTFB          0x0F
+#define MCP23x17_INTCAPB        0x11
+#define MCP23x17_GPIOB          0x13
+#define MCP23x17_OLATB          0x15
+
+// MCP23x17 - Bits in the IOCON register
+#define IOCON_UNUSED    0x01
+#define IOCON_INTPOL    0x02
+#define IOCON_ODR       0x04
+#define IOCON_HAEN      0x08
+#define IOCON_DISSLW    0x10
+#define IOCON_SEQOP     0x20
+#define IOCON_MIRROR    0x40
+#define IOCON_BANK_MODE 0x80
+
+typedef union _i2c_data
+{
+  uint8_t  byte[2] ;
+  uint16_t word ;
+} i2c_data;
+
 const char* szI2CTypeNames[] = {
 	"I2C_Unknown",
 	"I2C_BMP085/180",
@@ -100,12 +146,13 @@ const char* szI2CTypeNames[] = {
 	"I2C_TSL2561",
 	"I2C_PCF8574",
 	"I2C_BME280",
+	"I2C_MCP23017",
 };
 
 I2C::I2C(const int ID, const _eI2CType DevType, const int Port):
 m_dev_type(DevType)
 {
-	if (m_dev_type == I2CTYPE_PCF8574) {
+	if ((m_dev_type == I2CTYPE_PCF8574) || (m_dev_type == I2CTYPE_MCP23017)) {
 		i2c_addr = Port;
 	}
 
@@ -134,6 +181,9 @@ bool I2C::StartHardware()
 		m_LastSendForecast = baroForecastNoInfo;
 	}
 
+	if (m_dev_type == I2CTYPE_MCP23017)
+		MCP23017_Init();
+	
 	//Start worker thread
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&I2C::Do_Work, this)));
 	sOnConnected(this);
@@ -153,16 +203,23 @@ bool I2C::StopHardware()
 bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//Giz: Could the author of this function please check his/her spelling!
-	if (m_dev_type != I2CTYPE_PCF8574)
+	if (m_dev_type != I2CTYPE_PCF8574 && m_dev_type != I2CTYPE_MCP23017)
 		return false;
-
+	
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
 		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" is used for identify pin number
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-		value=~value&0x01; // inversion value: domoticz have on=1, off=0, but in PCF8574 I have on=0, off=1
-		if (PCF8574_WritePin( pin_number, value)<0) return false;
-		else return true;
+		if (m_dev_type == I2CTYPE_PCF8574) {
+			value=~value&0x01; // inversion value: domoticz have on=1, off=0, but in PCF8574 I have on=0, off=1
+			if (PCF8574_WritePin( pin_number, value)<0) return false;
+			else return true;
+		}
+		else if (m_dev_type == I2CTYPE_MCP23017) {
+			value=~value&0x01; // inversion value: domoticz have on=1, off=0, but in MCP23017 I have on=0, off=1
+			if (MCP23017_WritePin( pin_number, value)<0) return false;
+			else return true;
+		}
 	}
 	else return false;
 }
@@ -198,6 +255,10 @@ void I2C::Do_Work()
 					if (m_dev_type == I2CTYPE_PCF8574)
 					{
 						PCF8574_ReadChipDetails();
+					}
+					else if (m_dev_type == I2CTYPE_MCP23017)
+					{
+						MCP23017_ReadChipDetails();
 					}
 				}
 				if (sec_counter % I2C_SENSOR_READ_INTERVAL == 0)
@@ -313,6 +374,117 @@ char I2C::PCF8574_WritePin(char pin_number,char  value)
 #endif
 }
 
+// MCP23017
+
+void I2C::MCP23017_Init()
+{
+#ifndef HAVE_LINUX_I2C
+	return;
+#else
+	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
+	if (fd < 0) return; // Error opening i2c device!
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> >::const_iterator itt;
+	unsigned char nvalue;
+	uint16_t GPIO_reg = 0xFFFF;
+	int unit;
+	
+	result = m_sql.safe_query("SELECT Unit, nValue FROM DeviceStatus WHERE (HardwareID = %d) AND (DeviceID like '000%02X%%');", m_HwdID, i2c_addr);
+	if (!result.empty())
+	{
+		for (itt = result.begin(); itt != result.end(); ++itt)
+		{
+			std::vector<std::string> sd=*itt;
+			unit = atoi(sd[0].c_str());
+			nvalue = atoi(sd[1].c_str());
+
+			nvalue ^= 1;
+			//prepare new value by combinating current value, mask and new value
+			if (nvalue==1) 
+				GPIO_reg |= (0x01 << unit);
+			else if (nvalue==0) 
+				GPIO_reg &= ~(0x01 << unit);
+		}
+	}
+	if (I2CWriteReg16(fd, MCP23x17_GPIOA, GPIO_reg) < 0 ) 	// write values from domoticz db to gpio register
+		return; 											// write to i2c failed
+	if (I2CWriteReg16(fd, MCP23x17_IODIRA, 0x0000) < 0 ) 	// set all gpio pins on the port as output
+		return; 											// write to i2c failed
+	close(fd);
+#endif
+}
+
+void I2C::MCP23017_ReadChipDetails()
+{	
+#ifndef HAVE_LINUX_I2C
+	return;
+#else
+	uint16_t data = 0;
+	uint16_t cur_iodir = 0;
+
+
+	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
+	if (fd < 0) return; // Error opening i2c device!
+
+	cur_iodir = I2CReadReg16(fd, MCP23x17_IODIRA); 				// get current iodir port value
+	if (cur_iodir < 0) return; //read from i2c 
+	if ((cur_iodir == 0xFFFF)){									// if oidir port is 0xFFFF means the chip has been reset
+		MCP23017_Init();										// initialize gpio pins with switch status from db
+	}
+
+	data = I2CReadReg16(fd, MCP23x17_GPIOA);
+	if (data < 0) return; 										//read from i2c failed
+	data=~data; 												// I use inversion value for active pin (0=on, 1=off) beside domoticz use (1=on, 0=off)
+	for (char pin_number=0; pin_number<16; pin_number++){
+		int DeviceID = (i2c_addr << 8) + pin_number; 			// DeviceID from i2c_address and pin_number
+		unsigned char Unit = pin_number;
+		uint16_t pin_mask=0x01<<pin_number;
+		bool value=(data & pin_mask);
+		SendSwitch(DeviceID, Unit, 255, value, 0, ""); 			// create or update switch
+	}
+	close(fd);
+#endif
+}
+
+char I2C::MCP23017_WritePin(char pin_number,char  value)
+{	
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	_log.Log(LOG_NORM, "GPIO: WRITE TO MCP23017 pin:%d, value: %d, i2c_address:%d", pin_number, value, i2c_addr);
+	uint16_t pin_mask=0, iodir_mask=0;
+	unsigned char gpio_port, iodir_port;
+	uint16_t cur_data = 0, new_data = 0, cur_iodir = 0;
+	
+	pin_mask=0x01<<(pin_number);
+	iodir_mask &= ~(0x01 << (pin_number));
+	
+	// open i2c device
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) return -1; 								// Error opening i2c device!
+	
+	cur_data = I2CReadReg16(fd, MCP23x17_GPIOA); 		// get current gio port value
+	if (cur_data < 0) return -2; 						//read from i2c failed
+	cur_iodir = I2CReadReg16(fd, MCP23x17_IODIRA); 		// get current iodir port value
+	if (cur_iodir < 0) return -2; 						//read from i2c failed
+	cur_iodir &= iodir_mask; 							// create mask for iodir register to set pin as output.
+	
+	if (value==1) new_data = cur_data | pin_mask;		//prepare new value by combinating current value, mask and new value
+	else new_data = cur_data & ~pin_mask;
+	
+	if (new_data!=cur_data) { 							// if value change write new value
+		if (I2CWriteReg16(fd, MCP23x17_GPIOA, new_data) < 0 ) {
+			_log.Log(LOG_ERROR, "GPIO: %s: Error write to device!...", szI2CTypeNames[m_dev_type]);
+			return -3;
+		}
+		if (I2CWriteReg16(fd, MCP23x17_IODIRA, cur_iodir) < 0 ) 		// write to iodir register, set gpio pin as output
+			return -3;													// write to i2c failed
+	}
+	close(fd);
+	return 1;
+#endif
+}
+
 // BMP085, BMP180, HTU and TSL common code
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
@@ -337,7 +509,6 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 		{ BMEx8x_I2CADDR, 0, 1, &startReg },
 		{ BMEx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
 	};
-
 	//Build a register read command
 	//Requires a one complete message containing a command
 	//and another complete message for the reply
@@ -371,6 +542,54 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 #endif
 }
 
+int I2C::I2CWriteReg16(int fd, uint8_t reg, uint16_t value)
+{
+	#ifndef HAVE_LINUX_I2C
+		return -1;
+	#else
+		int rc;
+		struct i2c_rdwr_ioctl_data messagebuffer;
+		uint8_t datatosend[3];
+		i2c_data bytes;
+		bytes.word = value;
+		struct i2c_msg write_reg[1] = {
+			{ i2c_addr, 0, 3, datatosend } // flag absent == write, two registers, one for register address and one for the value to write
+		};
+		datatosend[0] = reg;						// address of register to write
+		datatosend[1] = bytes.byte[0];						// value to write
+		datatosend[2] = bytes.byte[1];						// value to write
+		messagebuffer.msgs = write_reg;				//load the 'write_reg' message into the buffer
+		messagebuffer.nmsgs = 1;
+		rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
+		if (rc < 0) {
+			return rc;
+		}
+		return 0;
+	#endif
+}
+
+uint16_t I2C::I2CReadReg16(int fd, unsigned char reg)
+{
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	int rc;
+	i2c_data data;
+	struct i2c_rdwr_ioctl_data messagebuffer;
+	struct i2c_msg read_reg[3] = {
+		{ i2c_addr, 0, 1, &reg },					//flag absent == write, address of register to read
+		{ i2c_addr, I2C_M_RD, 2, data.byte }		//flag I2C_M_RD == read
+	};
+	messagebuffer.nmsgs = 2;                  		//Two message/action
+	messagebuffer.msgs = read_reg;            		//load the 'read__reg' message into the buffer
+	rc = ioctl(fd, I2C_RDWR, &messagebuffer); 		//Send the buffer to the bus and returns a send status
+	if (rc < 0) {
+		return rc;
+	}
+	return data.word ;	
+#endif
+}
+
 int I2C::WriteCmd(int fd, uint8_t devAction)
 {
 #ifndef HAVE_LINUX_I2C
@@ -390,6 +609,9 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	};
 	struct i2c_msg bme_write_reg[1] = {
 		{ BMEx8x_I2CADDR, 0, 2, datatosend }
+	};
+	struct i2c_msg MCP23017_write_reg[1] = {
+		{ i2c_addr, 0, 2, datatosend }
 	};
 
 	if (m_dev_type == I2CTYPE_BMP085)
@@ -422,7 +644,14 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		//Requires one complete message containing a reg address and command
 		messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
 	}
-
+	else if (m_dev_type == I2CTYPE_MCP23017)
+	{
+		datatosend[0] = BMEx8x_CtrlMeas;
+		datatosend[1] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
+	}
 	messagebuffer.nmsgs = 1;                  //One message/action
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
 	if (rc < 0) {
