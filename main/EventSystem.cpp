@@ -1263,6 +1263,9 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 
 void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
 {
+	if (!m_bEnabled)
+		return;
+
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
 	if (m_eventtrigger.size() > 0)
 	{
@@ -4023,18 +4026,16 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 		protect = strarray[3];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT HardwareID, Unit, Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()>0)
 	{
-		uint64_t hid = atoi(result[0][0].c_str());
-		uint8_t dunit = atoi(result[0][1].c_str());
-		std::string dtype = result[0][2];
-		std::string dsubtype = result[0][3];
-		std::string dname = result[0][4];
-		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][5].c_str());
-		int dlastlevel = atoi(result[0][6].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][7].c_str());
+		std::string dtype = result[0][0];
+		std::string dsubtype = result[0][1];
+		std::string dname = result[0][2];
+		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][3].c_str());
+		int dlastlevel = atoi(result[0][4].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][5].c_str());
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
 		std::stringstream ssQuery;
@@ -4127,7 +4128,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			m_mainworker.SetZWaveThermostatFanMode(idx, nvalue);
 		}
 		if (bEventTrigger)
-			ProcessDevice(hid, ulIdx, dunit, devType, subType, 255, 255, nvalue, svalue.c_str(), dname, 0);
+			ProcessDevice(0, ulIdx, 0, devType, subType, 255, 255, nvalue, svalue.c_str(), dname, 0);
 	}
 }
 

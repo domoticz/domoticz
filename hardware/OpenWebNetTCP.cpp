@@ -7,6 +7,9 @@ Written by: Stéphane Lebrasseur
 Date: 04-11-2016
 Update by: Matteo Facchetti
 
+Date: 13-09-2017
+Update by: Marco Olivieri - Olix81 -
+
 License: Public domain
 
 
@@ -429,11 +432,17 @@ void COpenWebNetTCP::MonitorFrames()
 **/
 void COpenWebNetTCP::UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname)
 {
-    int cnode =  ((who << 12) & 0xF000) | (where & 0xFFF);
+	//zone are max 99,, every zone can have 8 slave sensor. Slave sensor address. YZZ: y as slave address (1-8) ,zz zone number (1-99)
+    int cnode =  ((who << 12) & 0xF000) | (where & 0xFFF); 
     SendTempSensor(cnode, BatteryLevel, fval, devname);
 }
 
 
+void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, const char *devname)
+{
+	int cnode = ((who << 12) & 0xF000) | (where & 0xFF); //setpoint zone (1 - 99)
+	SendSetPointSensor((who & 0xFF), 0, (cnode & 0xFF), fval, devname); 
+}
 
 /**
     Insert/Update blinds device
@@ -736,15 +745,23 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			{
 				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
 				return;
-			}             // 4
-			if (atoi(dimension.c_str()) == 0)
-			{
-				devname = OPENWEBNET_TEMPERATURE;
-				devname += " " + where;
-				UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
 			}
-			else
+             // 4: this is a openwebnet termoregulation update/poll messagge, setup devname
+			devname = OPENWEBNET_TEMPERATURE;
+			devname += " " + where;
+			switch (atoi(dimension.c_str()))
+			{
+			case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:
+				UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
+				break;
+			case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
+				devname += " Setpoint";
+				UpdateSetPoint(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), devname.c_str());
+				break;
+			default:
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+				break;
+			}
 			break;
 
 		case WHO_BURGLAR_ALARM:                         // 5
@@ -961,7 +978,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
 		case WHO_ENERGY_MANAGEMENT:                     // 18
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
-		case WHO_DIAGNOSTIC:                            // 1000
+		case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
@@ -1020,11 +1037,11 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 
                     if (pCmd->cmnd == gswitch_sOff)
                     {
-                        what = LIGHT_WHAT_OFF;
+                        what = LIGHTING_WHAT_OFF;
                     }
                     else if (pCmd->cmnd == gswitch_sOn)
                     {
-                        what = LIGHT_WHAT_ON;
+                        what = LIGHTING_WHAT_ON;
                     }
                     else if (pCmd->cmnd == gswitch_sSetLevel)
                     {
@@ -1036,7 +1053,7 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
                         }
                         else
                         {
-                            what = LIGHT_WHAT_OFF;
+                            what = LIGHTING_WHAT_OFF;
                         }
                     }
                     break;
@@ -1098,7 +1115,7 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 	else {
 		vector<bt_openwebnet> responses;
 		bt_openwebnet request;
-		
+
 		std::stringstream whoStr;
 		whoStr << who;
 		std::string sWho = whoStr.str();
@@ -1120,7 +1137,7 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 
 		std::string lev = "";
 		std::string when = "";
-		
+
 		request.CreateMsgOpen(sWho, sWhat, sWhere, lev, sInterface, when);
 		if (sendCommand(request, responses))
 		{
@@ -1131,8 +1148,56 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 		}
 	}
 
-	return true;
+		return true;
 }
+
+
+bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
+{
+int where = idx;
+int _temp = (int)(temp * 10);
+
+
+
+	vector<bt_openwebnet> responses;
+	bt_openwebnet request;
+
+	std::stringstream whoStr;
+	whoStr << WHO_TEMPERATURE_CONTROL;
+	std::string sWho = whoStr.str();
+	
+	std::stringstream whereStr;
+	whereStr << (where & ~OPENWEBNET_GROUP_ID);
+	std::string sWhere = "";
+	// add # to set value permanent
+	sWhere += "#" + whereStr.str();
+
+	std::stringstream dimensionStr;
+	dimensionStr << TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE;
+	std::string sDimension = dimensionStr.str();
+
+	std::stringstream valueStr;
+
+
+	valueStr << 0;
+	valueStr << _temp;
+	vector<std::string> sValue;
+	sValue.push_back(valueStr.str());
+	sValue.push_back("3");					//send generic mode. We don't need to know in witch state the bt3550 or BTI-L4695 is (cooling or heating).
+
+	request.CreateWrDimensionMsgOpen(sWho, sWhere, sDimension, sValue); // (const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
+	if (sendCommand(request, responses, 1, false))
+	{
+		if (responses.size() > 0)
+		{
+			return responses.at(0).IsOKFrame();
+		}
+	}
+
+	return false;
+}
+
+
 
 /**
    Send OpenWebNet command to device
@@ -1413,7 +1478,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
 		case WHO_ENERGY_MANAGEMENT:                     // 18
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
-		case WHO_DIAGNOSTIC:                            // 1000
+		case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
