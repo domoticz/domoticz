@@ -11940,7 +11940,8 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
-		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) || 
+		(pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -12001,6 +12002,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		{
 			CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_OpenWebNetTCP)
+		{
+			COpenWebNetTCP *pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
+			return pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else
