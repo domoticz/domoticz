@@ -36,7 +36,7 @@ local function Domoticz(settings)
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
 	nowTime['sunsetInMinutes'] = timeofday['SunsetInMinutes']
-
+	
 	-- the new instance
 	local self = {
 		['settings'] = settings,
