@@ -35,6 +35,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	boost::shared_ptr<boost::thread> m_udp_thread;
 	bool m_OutputMessage;
+	bool m_IncludeVoltage;
 	bool m_ListenPort9898;
 	std::string GetGatewayKey();
 	unsigned int GetShortID(const std::string & nodeid);
@@ -53,7 +54,7 @@ private:
 	class xiaomi_udp_server
 	{
 	public:
-		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, XiaomiGateway *parent);
+		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, const bool includeVolage, XiaomiGateway *parent);
 		~xiaomi_udp_server();
 
 	private:
@@ -65,6 +66,7 @@ private:
 		std::string m_gatewayip;
 		std::string m_localip;
 		bool m_OutputMessage;
+		bool m_IncludeVoltage;
 		XiaomiGateway* m_XiaomiGateway;
 		void start_receive();
 		void handle_receive(const boost::system::error_code& error, std::size_t /*bytes_transferred*/);
