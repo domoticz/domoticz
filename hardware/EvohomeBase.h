@@ -31,8 +31,10 @@
 class CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -64,8 +66,10 @@ public:
 class CEvohomeTemp : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -97,8 +101,10 @@ public:
 class CEvohomeID : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -176,8 +182,10 @@ public:
 class CEvohomeDateTime : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -264,8 +272,10 @@ public:
 class CEvohomeDate : public CEvohomeDateTime
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -287,8 +297,10 @@ public:
 class CEvohomeZoneFlags
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -312,8 +324,10 @@ public:
 class CEvohomeMsg
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -444,8 +458,10 @@ public:
 
 class CEvohomeBase : public CDomoticzHardwareBase
 {
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
