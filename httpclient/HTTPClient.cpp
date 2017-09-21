@@ -179,6 +179,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 	{
 		return false;
 	}
+	return false;
 }
 
 bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outputfile)
