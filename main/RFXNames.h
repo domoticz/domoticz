@@ -188,6 +188,7 @@ enum _eHardwareTypes {
 	HTYPE_Rtl433,				//103
 	HTYPE_OnkyoAVTCP,			//104
 	HTYPE_DenkoviSmartdenIPIn,	//105
+	HTYPE_EVOHOME_TCP,			//106
 	HTYPE_END
 };
 

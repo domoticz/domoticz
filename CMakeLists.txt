@@ -319,8 +319,10 @@ hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
+hardware/EvohomeRadio.cpp
 hardware/EvohomeScript.cpp
 hardware/EvohomeSerial.cpp
+hardware/EvohomeTCP.cpp
 hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
