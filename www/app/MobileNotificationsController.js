@@ -108,11 +108,12 @@ define(['app'], function (app) {
 								"Enabled": item.Enabled,
 								"Name": item.Name,
 								"UUID": item.UUID,
-								"0": enabledstr,
-								"1": item.Name,
-								"2": item.UUID,
-								"3": item.DeviceType,
-								"4": lUpdateItem
+								"0": item.idx,
+								"1": enabledstr,
+								"2": item.Name,
+								"3": item.UUID,
+								"4": item.DeviceType,
+								"5": lUpdateItem
 							});
 						});
 					}
