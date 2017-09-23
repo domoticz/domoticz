@@ -1139,7 +1139,6 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -1520,6 +1519,7 @@ void MainWorker::Do_Work()
 				m_pluginsystem.AllPluginsStarted();
 #endif
 				ParseRFXLogFile();
+				m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_eventsystem.StartEventSystem();
 			}
 		}
