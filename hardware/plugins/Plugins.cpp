@@ -376,9 +376,6 @@ namespace Plugins {
 		Py_INCREF((PyObject *)&CImageType);
 		PyModule_AddObject(pModule, "Image", (PyObject *)&CImageType);
 
-		// Initialise objects
-		PythonObjectsInit();
-
 		return pModule;
 	}
 

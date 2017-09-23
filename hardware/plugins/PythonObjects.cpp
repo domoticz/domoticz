@@ -30,11 +30,6 @@ namespace Plugins {
 		PyObject*	error;
 	};
 
-	void PythonObjectsInit()
-	{
-		PyDateTime_IMPORT;
-	}
-
 	void CImage_dealloc(CImage* self)
 	{
 		Py_XDECREF(self->Base);
@@ -1213,10 +1208,10 @@ namespace Plugins {
 			time_t	tLastSeen = self->pTransport->LastSeen();
 			struct tm ltime;
 			localtime_r(&tLastSeen, &ltime);
-			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
-//			PyType_Ready(pLastSeen->ob_type);
-			if (PyDateTime_CheckExact(pLastSeen))
-				return pLastSeen;
+			char date[32];
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+			PyObject* pLastSeen = PyUnicode_FromString(date);
+			return pLastSeen;
 		}
 
 		Py_INCREF(Py_None);
@@ -1225,10 +1220,15 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
-		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
+		time_t	tLastSeen = self->pTransport->LastSeen();
+		struct tm ltime;
+		localtime_r(&tLastSeen, &ltime);
+		char date[32];
+		strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
 			self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
 			(self->pTransport ? self->pTransport->TotalBytes() : -1),
-			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
+			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
 		return pRetVal;
 	}
 
