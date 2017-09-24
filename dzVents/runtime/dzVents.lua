@@ -51,4 +51,3 @@ if (TESTMODE) then
 end
 
 return commandArray
-

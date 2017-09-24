@@ -4,7 +4,6 @@
  - Added `domoticz.urlEncode` method on the `domoticz` object so you can prepare a string before using it with `openURL()`.
  - Updating devices, user variables, scenes and groups now always trigger the event system for follow-up events.
  - Added support for groups and scenes change-event scripts. Use `on = { scenes = { 'myScene1', 'myScene2' }, groups = {'myGroup1'} }`
- - Added method `domoticz.backupDatabase(path)` to the `domoticz` object. Now you can create your own (timer) scripts to create backups.
  - Added adapter for the new Temperature+Barometer device.
  - Added `domoticz.startTime` giving you the time at which the Domoticz service was started. Returns a Time object.
  - Added `domoticz.systemUptime` (in seconds) indicating the number of seconds the machine is running. Returns a Time object.
@@ -195,4 +194,3 @@
 [0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
-
