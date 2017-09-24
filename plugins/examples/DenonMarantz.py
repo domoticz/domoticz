@@ -3,20 +3,28 @@
 #
 #       Author:     Dnpwwo, 2016 - 2017
 #
-#   Mode3 ("Sources") needs to have '|' delimited names of sources that the Denon knows about.  The Selector can be changed afterwards to any  text and the plugin will still map to the actual Denon name.
+#   Mode4 ("Sources") needs to have '|' delimited names of sources that the Denon knows about.  The Selector can be changed afterwards to any  text and the plugin will still map to the actual Denon name.
 #
 """
-<plugin key="Denon4306" version="2.6.2" name="Denon/Marantz Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
+<plugin key="Denon4306" version="3.1.5" name="Denon/Marantz Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
     <description>
 Denon (& Marantz) AVR Plugin.<br/><br/>
 &quot;Sources&quot; need to have '|' delimited names of sources that the Denon knows about from the technical manual.<br/>
 The Sources Selector(s) can be changed after initial creation to any text and the plugin will still map to the actual Denon name.<br/><br/>
-Devices will be created in the Devices Tab only and will need to be manually made active.
+Devices will be created in the Devices Tab only and will need to be manually made active.<br/><br/>
+Auto-discovery is known to work on Linux but may not on Windows.
     </description>
     <params>
-        <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="23"/>
-        <param field="Mode2" label="Startup Delay" width="50px" required="true">
+        <param field="Mode1" label="Auto-Detect" width="75px">
+            <options>
+                <option label="True" value="Discover" default="true"/>
+                <option label="False" value="Fixed" />
+            </options>
+        </param>
+        <param field="Address" label="IP Address" width="200px"/>
+        <param field="Mode2" label="Discovery Match" width="250px" default="SDKClass=Receiver"/>
+        <param field="Mode3" label="Startup Delay" width="50px" required="true">
             <options>
                 <option label="2" value="2"/>
                 <option label="3" value="3"/>
@@ -27,7 +35,7 @@ Devices will be created in the Devices Tab only and will need to be manually mad
                 <option label="10" value="10"/>
             </options>
         </param>
-        <param field="Mode3" label="Sources" width="550px" required="true" default="Off|DVD|VDP|TV|CD|DBS|Tuner|Phono|VCR-1|VCR-2|V.Aux|CDR/Tape|AuxNet|AuxIPod"/>
+        <param field="Mode4" label="Sources" width="550px" required="true" default="Off|DVD|VDP|TV|CD|DBS|Tuner|Phono|VCR-1|VCR-2|V.Aux|CDR/Tape|AuxNet|AuxIPod"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -42,9 +50,8 @@ import base64
 import datetime
 
 class BasePlugin:
-    TelnetConn = None
+    DenonConn = None
 
-    nextConnect = 3
     oustandingPings = 0
 
     powerOn = False
@@ -64,7 +71,7 @@ class BasePlugin:
     ignoreMessages = "|SS|SV|SD|MS|PS|CV|SY|TP|"
     selectorMap = {}
     pollingDict =  {"PW":"ZM?\r", "ZM":"SI?\r", "SI":"MV?\r", "MV":"MU?\r", "MU":"PW?\r" }
-    lastMessage = ""
+    lastMessage = "PW"
     lastHeartbeat = datetime.datetime.now()
 
     SourceOptions = {}
@@ -73,8 +80,8 @@ class BasePlugin:
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
 
-        self.SourceOptions = {'LevelActions': '|'*Parameters["Mode3"].count('|'),
-                             'LevelNames': Parameters["Mode3"],
+        self.SourceOptions = {'LevelActions': '|'*Parameters["Mode4"].count('|'),
+                             'LevelNames': Parameters["Mode4"],
                              'LevelOffHidden': 'false',
                              'SelectorStyle': '1'}
             
@@ -103,115 +110,141 @@ class BasePlugin:
                 
         DumpConfigToLog()
         dictValue=0
-        for item in Parameters["Mode3"].split('|'):
+        for item in Parameters["Mode4"].split('|'):
             self.selectorMap[dictValue] = item
             dictValue = dictValue + 10
-        self.TelnetConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
-        self.TelnetConn.Connect()
+
+        self.handleConnect()
         return
 
     def onConnect(self, Connection, Status, Description):
-        if (Connection == self.TelnetConn):
+        if (Connection == self.DenonConn):
             if (Status == 0):
                 Domoticz.Log("Connected successfully to: "+Connection.Address+":"+Connection.Port)
-                self.TelnetConn.Send('PW?\r')
-                self.TelnetConn.Send('ZM?\r', Delay=1)
-                self.TelnetConn.Send('Z2?\r', Delay=2)
-                self.TelnetConn.Send('Z3?\r', Delay=3)
+                self.DenonConn.Send('PW?\r')
+                self.DenonConn.Send('ZM?\r', Delay=1)
+                self.DenonConn.Send('Z2?\r', Delay=2)
+                self.DenonConn.Send('Z3?\r', Delay=3)
+        else:
+            if (Description.find("Only one usage of each socket address") > 0):
+                Domoticz.Log(Connection.Address+":"+Connection.Port+" is busy, waiting.")
             else:
-                self.powerOn = False
-                Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
-                Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
-                self.SyncDevices()
-        return
+                Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port)
+                Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port+" with error: "+Description)
+            self.DenonConn = None
+            self.powerOn = False
+            self.SyncDevices()
 
     def onMessage(self, Connection, Data):
-        self.oustandingPings = self.oustandingPings - 1
         strData = Data.decode("utf-8", "ignore")
         Domoticz.Debug("onMessage called with Data: '"+str(strData)+"'")
-        
-        strData = strData.strip()
-        action = strData[0:2]
-        detail = strData[2:]
-        if (action in self.pollingDict): self.lastMessage = action
 
-        if (action == "PW"):        # Power Status
-            if (detail == "STANDBY"):
-                self.powerOn = False
-            elif (detail == "ON"):
-                self.powerOn = True
-            else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
-        elif (action == "ZM"):      # Main Zone on/off
-            if (detail == "ON"):
-                self.mainOn = True
-            elif (detail == "OFF"):
-                self.mainOn = False
-            else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
-        elif (action == "SI"):      # Main Zone Source Input
-            for key, value in self.selectorMap.items():
-                if (detail == value):      self.mainSource = key
-        elif (action == "MV"):      # Master Volume
-            if (detail.isdigit()):
-                if (abs(self.mainVolume1) != int(detail[0:2])): self.mainVolume1 = int(detail[0:2])
-            elif (detail[0:3] == "MAX"): Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
-            else: Domoticz.Log("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
-        elif (action == "MU"):      # Overall Mute
-            if (detail == "ON"):         self.mainVolume1 = abs(self.mainVolume1)*-1
-            elif (detail == "OFF"):      self.mainVolume1 = abs(self.mainVolume1)
-            else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
-        elif (action == "Z2"):      # Zone 2
-            # Zone 2 response, make sure we have Zone 2 devices in Domoticz and they are polled
-            if (4 not in Devices):
-                LevelActions = '|'*Parameters["Mode3"].count('|')
-                Domoticz.Device(Name="Zone 2", Unit=4, TypeName="Selector Switch", Switchtype=18, Image=5, Options=self.SourceOptions).Create()
-                Domoticz.Log("Zone 2 responded, devices added.")
-            if (5 not in Devices):
-                Domoticz.Device(Name="Volume 2", Unit=5, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
-            if ("Z2" not in self.pollingDict):
-                self.pollingDict = {"PW":"ZM?\r", "ZM":"SI?\r", "SI":"MV?\r", "MV":"MU?\r", "MU":"Z2?\r", "Z2":"PW?\r" }
+        try:
+            # Beacon messages to find the amplifier
+            if (Connection.Name == "Beacon"):
+                dictAMXB = DecodeDDDMessage(strData)
+                if (strData.find(Parameters["Mode2"]) >= 0):
+                    self.DenonConn = None
+                    self.DenonConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Connection.Address, Port=Parameters["Port"])
+                    self.DenonConn.Connect()
+                    try:
+                        Domoticz.Log(dictAMXB['Make']+", "+dictAMXB['Model']+" Receiver discovered successfully at address: "+Connection.Address)
+                    except KeyError:
+                        Domoticz.Log("'Unknown' Receiver discovered successfully at address: "+Connection.Address)
+                else:
+                    try:
+                        Domoticz.Log("Discovery message for Type: '"+dictAMXB['SDKClass']+"', '"+dictAMXB['Make']+", "+dictAMXB['Model']+"' seen at address: "+Connection.Address)
+                    except KeyError:
+                        Domoticz.Log("Discovery message '"+str(strData)+"' seen at address: "+Connection.Address)
+            # Otherwise handle amplifier
+            else:
+                self.oustandingPings = 0
 
-            if (detail == "ON"):
-                self.zone2On = True
-            elif (detail == "OFF"):
-                self.zone2On = False
-            elif (detail == "MUON"):
-                self.zone2Volume = abs(self.zone2Volume)*-1
-            elif (detail == "MUOFF"):
-                self.zone2Volume = abs(self.zone2Volume)
-            elif (detail.isdigit()):
-                if (abs(self.zone2Volume) != int(detail[0:2])): self.zone2Volume = int(detail[0:2])
-            else:
-                for key, value in self.selectorMap.items():
-                    if (detail == value):      self.zone2Source = key
-        elif (action == "Z3"):      # Zone 3
-            # Zone 3 response, make sure we have Zone 3 devices in Domoticz and they are polled
-            if (6 not in Devices):
-                LevelActions = '|'*Parameters["Mode3"].count('|')
-                Domoticz.Device(Name="Zone 3", Unit=6, TypeName="Selector Switch", Switchtype=18, Image=5, Options=self.SourceOptions).Create()
-                Domoticz.Log("Zone 3 responded, devices added.")
-            if (7 not in Devices):
-                Domoticz.Device(Name="Volume 3", Unit=7, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
-            if ("Z3" not in self.pollingDict):
-                self.pollingDict = {"PW":"ZM?\r", "ZM":"SI?\r", "SI":"MV?\r", "MV":"MU?\r", "MU":"Z2?\r", "Z2":"Z3?\r", "Z3":"PW?\r" }
-                
-            if (detail == "ON"):
-                self.zone3On = True
-            elif (detail == "OFF"):
-                self.zone3On = False
-            elif (detail == "MUON"):
-                self.zone3Volume = abs(self.zone3Volume)*-1
-            elif (detail == "MUOFF"):
-                self.zone3Volume = abs(self.zone3Volume)
-            elif (detail.isdigit()):
-                if (abs(self.zone3Volume) != int(detail[0:2])): self.zone3Volume = int(detail[0:2])
-            else:
-                for key, value in self.selectorMap.items():
-                    if (detail == value):      self.zone3Source = key
-        else:
-            if (self.ignoreMessages.find(action) < 0):
-                Domoticz.Debug("Unknown message '"+action+"' ignored.")
-        self.SyncDevices()
-        return
+                strData = strData.strip()
+                action = strData[0:2]
+                detail = strData[2:]
+                if (action in self.pollingDict): self.lastMessage = action
+
+                if (action == "PW"):        # Power Status
+                    if (detail == "STANDBY"):
+                        self.powerOn = False
+                    elif (detail == "ON"):
+                        self.powerOn = True
+                    else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
+                elif (action == "ZM"):      # Main Zone on/off
+                    if (detail == "ON"):
+                        self.mainOn = True
+                    elif (detail == "OFF"):
+                        self.mainOn = False
+                    else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
+                elif (action == "SI"):      # Main Zone Source Input
+                    for key, value in self.selectorMap.items():
+                        if (detail == value):      self.mainSource = key
+                elif (action == "MV"):      # Master Volume
+                    if (detail.isdigit()):
+                        if (abs(self.mainVolume1) != int(detail[0:2])): self.mainVolume1 = int(detail[0:2])
+                    elif (detail[0:3] == "MAX"): Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
+                    else: Domoticz.Log("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
+                elif (action == "MU"):      # Overall Mute
+                    if (detail == "ON"):         self.mainVolume1 = abs(self.mainVolume1)*-1
+                    elif (detail == "OFF"):      self.mainVolume1 = abs(self.mainVolume1)
+                    else: Domoticz.Debug("Unknown: Action "+action+", Detail '"+detail+"' ignored.")
+                elif (action == "Z2"):      # Zone 2
+                    # Zone 2 response, make sure we have Zone 2 devices in Domoticz and they are polled
+                    if (4 not in Devices):
+                        LevelActions = '|'*Parameters["Mode4"].count('|')
+                        Domoticz.Device(Name="Zone 2", Unit=4, TypeName="Selector Switch", Switchtype=18, Image=5, Options=self.SourceOptions).Create()
+                        Domoticz.Log("Zone 2 responded, devices added.")
+                    if (5 not in Devices):
+                        Domoticz.Device(Name="Volume 2", Unit=5, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+                    if ("Z2" not in self.pollingDict):
+                        self.pollingDict = {"PW":"ZM?\r", "ZM":"SI?\r", "SI":"MV?\r", "MV":"MU?\r", "MU":"Z2?\r", "Z2":"PW?\r" }
+
+                    if (detail == "ON"):
+                        self.zone2On = True
+                    elif (detail == "OFF"):
+                        self.zone2On = False
+                    elif (detail == "MUON"):
+                        self.zone2Volume = abs(self.zone2Volume)*-1
+                    elif (detail == "MUOFF"):
+                        self.zone2Volume = abs(self.zone2Volume)
+                    elif (detail.isdigit()):
+                        if (abs(self.zone2Volume) != int(detail[0:2])): self.zone2Volume = int(detail[0:2])
+                    else:
+                        for key, value in self.selectorMap.items():
+                            if (detail == value):      self.zone2Source = key
+                elif (action == "Z3"):      # Zone 3
+                    # Zone 3 response, make sure we have Zone 3 devices in Domoticz and they are polled
+                    if (6 not in Devices):
+                        LevelActions = '|'*Parameters["Mode4"].count('|')
+                        Domoticz.Device(Name="Zone 3", Unit=6, TypeName="Selector Switch", Switchtype=18, Image=5, Options=self.SourceOptions).Create()
+                        Domoticz.Log("Zone 3 responded, devices added.")
+                    if (7 not in Devices):
+                        Domoticz.Device(Name="Volume 3", Unit=7, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+                    if ("Z3" not in self.pollingDict):
+                        self.pollingDict = {"PW":"ZM?\r", "ZM":"SI?\r", "SI":"MV?\r", "MV":"MU?\r", "MU":"Z2?\r", "Z2":"Z3?\r", "Z3":"PW?\r" }
+                        
+                    if (detail == "ON"):
+                        self.zone3On = True
+                    elif (detail == "OFF"):
+                        self.zone3On = False
+                    elif (detail == "MUON"):
+                        self.zone3Volume = abs(self.zone3Volume)*-1
+                    elif (detail == "MUOFF"):
+                        self.zone3Volume = abs(self.zone3Volume)
+                    elif (detail.isdigit()):
+                        if (abs(self.zone3Volume) != int(detail[0:2])): self.zone3Volume = int(detail[0:2])
+                    else:
+                        for key, value in self.selectorMap.items():
+                            if (detail == value):      self.zone3Source = key
+                else:
+                    if (self.ignoreMessages.find(action) < 0):
+                        Domoticz.Debug("Unknown message '"+action+"' ignored.")
+                self.SyncDevices()
+        except Exception as inst:
+            Domoticz.Error("Exception in onMessage, called with Data: '"+str(strData)+"'")
+            Domoticz.Error("Exception detail: '"+str(inst)+"'")
+            raise
 
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level))
@@ -222,7 +255,7 @@ class BasePlugin:
         params = params.capitalize()
         delay = 0
         if (self.powerOn == False):
-            delay = int(Parameters["Mode2"])
+            delay = int(Parameters["Mode3"])
         else:
             # Amp will ignore commands if it is responding to a heartbeat so delay send
             lastHeartbeatDelta = (datetime.datetime.now()-self.lastHeartbeat).total_seconds()
@@ -232,81 +265,81 @@ class BasePlugin:
 
         if (Unit == 1):     # Main power switch
             if (action == "On"):
-                self.TelnetConn.Send(Message='PWON\r')
+                self.DenonConn.Send(Message='PWON\r')
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='PWSTANDBY\r', Delay=delay)
+                self.DenonConn.Send(Message='PWSTANDBY\r', Delay=delay)
 
         # Main Zone devices
         elif (Unit == 2):     # Main selector
             if (action == "On"):
-                self.TelnetConn.Send(Message='ZMON\r')
+                self.DenonConn.Send(Message='ZMON\r')
             elif (action == "Set"):
-                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
-                self.TelnetConn.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
+                if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
+                self.DenonConn.Send(Message='SI'+self.selectorMap[Level]+'\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='ZMOFF\r', Delay=delay)
+                self.DenonConn.Send(Message='ZMOFF\r', Delay=delay)
         elif (Unit == 3):     # Main Volume control
-            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
             if (action == "On"):
-                self.TelnetConn.Send(Message='MUOFF\r', Delay=delay)
+                self.DenonConn.Send(Message='MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.TelnetConn.Send(Message='MV'+str(Level)+'\r', Delay=delay)
+                self.DenonConn.Send(Message='MV'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='MUON\r', Delay=delay)
+                self.DenonConn.Send(Message='MUON\r', Delay=delay)
 
         # Zone 2 devices
         elif (Unit == 4):   # Zone 2 selector
             if (action == "On"):
-                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
-                self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
+                if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
+                self.DenonConn.Send(Message='Z2ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+                if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
                 if (self.zone2On == False):
-                    self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
+                    self.DenonConn.Send(Message='Z2ON\r', Delay=delay)
                     delay += 1
-                self.TelnetConn.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                self.TelnetConn.Send(Message='Z2?\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2?\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='Z2OFF\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2OFF\r', Delay=delay)
         elif (Unit == 5):   # Zone 2 Volume control
-            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
             if (self.zone2On == False):
-                self.TelnetConn.Send(Message='Z2ON\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                self.TelnetConn.Send(Message='Z2MUOFF\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.TelnetConn.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='Z2MUON\r', Delay=delay)
+                self.DenonConn.Send(Message='Z2MUON\r', Delay=delay)
 
         # Zone 3 devices
         elif (Unit == 6):   # Zone 3 selector
             if (action == "On"):
-                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
-                self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
+                if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
+                self.DenonConn.Send(Message='Z3ON\r', Delay=delay)
             elif (action == "Set"):
-                if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+                if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
                 if (self.zone3On == False):
-                    self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
+                    self.DenonConn.Send(Message='Z3ON\r', Delay=delay)
                     delay += 1
-                self.TelnetConn.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3'+self.selectorMap[Level]+'\r', Delay=delay)
                 delay += 1
-                self.TelnetConn.Send(Message='Z3?\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3?\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='Z3OFF\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3OFF\r', Delay=delay)
         elif (Unit == 7):   # Zone 3 Volume control
-            if (self.powerOn == False): self.TelnetConn.Send(Message='PWON\r')
+            if (self.powerOn == False): self.DenonConn.Send(Message='PWON\r')
             if (self.zone3On == False):
-                self.TelnetConn.Send(Message='Z3ON\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3ON\r', Delay=delay)
                 delay += 1
             if (action == "On"):
-                self.TelnetConn.Send(Message='Z3MUOFF\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3MUOFF\r', Delay=delay)
             elif (action == "Set"):
-                self.TelnetConn.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3'+str(Level)+'\r', Delay=delay)
             elif (action == "Off"):
-                self.TelnetConn.Send(Message='Z3MUON\r', Delay=delay)
+                self.DenonConn.Send(Message='Z3MUON\r', Delay=delay)
 
         return
 
@@ -315,25 +348,31 @@ class BasePlugin:
         return
 
     def onHeartbeat(self):
-        if (self.TelnetConn.Connected() == True):
-            if (self.oustandingPings > 5):
-                self.TelnetConn.Disconnect()
-                self.nextConnect = 0
-            else:
-                self.TelnetConn.Send(self.pollingDict[self.lastMessage])
-                Domoticz.Debug("onHeartbeat: self.lastMessage "+self.lastMessage+", Sending '"+self.pollingDict[self.lastMessage][0:2]+"'.")
-                self.oustandingPings = self.oustandingPings + 1
+        Domoticz.Debug("onHeartbeat called, last response seen "+str(self.oustandingPings)+" heartbeats ago.")
+        if (self.DenonConn == None):
+            self.handleConnect()
         else:
-            # if not connected try and reconnected every 3 heartbeats
-            self.oustandingPings = 0
-            self.nextConnect = self.nextConnect - 1
-            if (self.nextConnect <= 0):
-                self.nextConnect = 3
-                self.TelnetConn.Connect()
+            if (self.DenonConn.Name == "Telnet") and (self.DenonConn.Connected()):
+                self.DenonConn.Send(self.pollingDict[self.lastMessage])
+                Domoticz.Debug("onHeartbeat: self.lastMessage "+self.lastMessage+", Sending '"+self.pollingDict[self.lastMessage][0:2]+"'.")
                 
-        self.lastHeartbeat = datetime.datetime.now()
-        return
+            if (self.oustandingPings > 5):
+                Domoticz.Error(self.DenonConn.Name+" has not responded to 5 pings, terminating connection.")
+                self.DenonConn = None
+                self.powerOn = False
+                self.oustandingPings = -1
+            self.oustandingPings = self.oustandingPings + 1
+            self.lastHeartbeat = datetime.datetime.now()
 
+    def handleConnect(self):
+        self.DenonConn = None
+        if Parameters["Mode1"] == "Discover":
+            self.DenonConn = Domoticz.Connection(Name="Beacon", Transport="UDP/IP", Address="239.255.250.250", Port=str(9131))
+            self.DenonConn.Listen()
+        else:
+            self.DenonConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
+            self.DenonConn.Connect()
+    
     def SyncDevices(self):
         if (self.powerOn == False):
             UpdateDevice(1, 0, "Off")
@@ -406,8 +445,12 @@ def DumpConfigToLog():
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
 
-def stringToBase64(s):
-    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
+def DecodeDDDMessage(Message):
+    # Sample discovery message
+    # AMXB<-SDKClass=Receiver><-Make=DENON><-Model=AVR-4306>
+    strChunks = Message.strip()
+    strChunks = strChunks[4:len(strChunks)-1].replace("<-","")
+    dirChunks = dict(item.split("=") for item in strChunks.split(">"))
+    return dirChunks
 
-def base64ToString(b):
-    return base64.b64decode(b).decode('utf-8')
+

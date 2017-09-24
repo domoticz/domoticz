@@ -2663,12 +2663,6 @@ void CEventSystem::EvaluatePython(const std::string &reason, const std::string &
 	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", 0);
 }
 
-
-// this should be filled in by the preprocessor
-const char * Python_exe = "PYTHON_EXE";
-
-
-
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
     ScheduleEvent(ID, Action,eventName);

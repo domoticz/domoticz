@@ -48,6 +48,7 @@ namespace Plugins {
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
+		void RemoveConnection(CPluginTransport*);
 
 		bool	Initialise();
 		bool	LoadSettings();
