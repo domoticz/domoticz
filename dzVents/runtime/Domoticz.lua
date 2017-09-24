@@ -188,6 +188,7 @@ local function Domoticz(settings)
 
 	-- have domoticz open a url
 	function self.openURL(url)
+		utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
 		self.sendCommand('OpenURL', url)
 	end
 
