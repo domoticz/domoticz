@@ -26,12 +26,15 @@ function self.print(msg)
 	print(msg)
 end
 
-function self.urlEncode(str)
+function self.urlEncode(str, strSub)
+
+	if (strSub == nil) then strSub = "+"
+
 	if (str) then
 		str = string.gsub(str, "\n", "\r\n")
 		str = string.gsub(str, "([^%w %-%_%.%~])",
 			function(c) return string.format("%%%02X", string.byte(c)) end)
-		str = string.gsub(str, " ", "+")
+		str = string.gsub(str, " ", strSub)
 	end
 	return str
 end

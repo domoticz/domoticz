@@ -36,7 +36,7 @@ local function Domoticz(settings)
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
 	nowTime['sunsetInMinutes'] = timeofday['SunsetInMinutes']
-	
+
 	-- the new instance
 	local self = {
 		['settings'] = settings,
@@ -237,8 +237,8 @@ local function Domoticz(settings)
 		return ((f-32) / 1.8)
 	end
 
-	function self.urlEncode(s)
-		return utils.urlEncode(s)
+	function self.urlEncode(s, strSub)
+		return utils.urlEncode(s, strSub)
 	end
 
 	function self.round(x, n)

@@ -400,7 +400,7 @@ The domoticz object holds all information about your Domoticz system. It has a c
 	 - **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
 	 - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
  - **toCelsius(f, relative)**: *Function*. Converts temperature from Fahrenheit to Celsius along the temperature scale or when relative==true it uses the fact that 1F==0.56C. So `toCelsius(5, true)` returns 5F*(1/1.8) = 2.78C.
- - **urlEncode(s)**: *Functon*. Simple url encoder for string so you can use them in openURL().
+ - **urlEncode(s, [strSub])**: *Functon*. Simple url encoder for string so you can use them in `openURL()`. `strSub` is optional and defaults to + but you can also pass %20 if you like/need.
  - **variables(idx/name)**: *Function*. A function returning a variable by it's name or idx. See  [Variable object API](#Variable_object_API) for the attributes. To iterate over all variables do: `domoticz.variables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). **Note that you cannot do `for i, j in pairs(domoticz.variables()) do .. end`**.
 
 ### Looping through the collections: iterators
