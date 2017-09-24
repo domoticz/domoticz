@@ -28,7 +28,11 @@ end
 
 function self.urlEncode(str, strSub)
 
-	if (strSub == nil) then strSub = "+" end
+	if (strSub == nil) then
+		strSub = "+"
+	else
+		strSub = "%" .. strSub
+	end
 
 	if (str) then
 		str = string.gsub(str, "\n", "\r\n")
