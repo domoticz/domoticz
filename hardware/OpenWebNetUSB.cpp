@@ -119,33 +119,33 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 				case sSwitchBlindsT1:
 				case sSwitchBlindsT2:
 					//Blinds/Window command
-					who = bt_openwebnet::WHO_AUTOMATION;
+					who = WHO_AUTOMATION;
 			
 					if (pCmd->cmnd == gswitch_sOff)
 					{
-						what = bt_openwebnet::AUTOMATION_WHAT_UP;
+						what = AUTOMATION_WHAT_UP;
 					}
 					else if (pCmd->cmnd == gswitch_sOn)
 					{
-						what = bt_openwebnet::AUTOMATION_WHAT_DOWN;
+						what = AUTOMATION_WHAT_DOWN;
 					}
 					else if (pCmd->cmnd == gswitch_sStop)
 					{
-						what = bt_openwebnet::AUTOMATION_WHAT_STOP;
+						what = AUTOMATION_WHAT_STOP;
 					}
 					break;
 				case sSwitchLightT1:
 				case sSwitchLightT2:
 					//Light/Switch command
-					who = bt_openwebnet::WHO_LIGHTING;
+					who = WHO_LIGHTING;
 			
 					if (pCmd->cmnd == gswitch_sOff)
 					{
-						what = bt_openwebnet::LIGHTING_WHAT_OFF;
+						what = LIGHTING_WHAT_OFF;
 					}
 					else if (pCmd->cmnd == gswitch_sOn)
 					{
-						what = bt_openwebnet::LIGHTING_WHAT_ON;
+						what = LIGHTING_WHAT_ON;
 					}
 					else if (pCmd->cmnd == gswitch_sSetLevel)
 					{
@@ -155,45 +155,45 @@ bool COpenWebNetUSB::WriteToHardware(const char *pdata, const unsigned char leng
 						// Set command based on level value
 						if (level == 0)
 						{
-							what = bt_openwebnet::LIGHTING_WHAT_OFF;
+							what = LIGHTING_WHAT_OFF;
 						}
 						else if (level == 255)
 						{
-							what = bt_openwebnet::LIGHTING_WHAT_ON;
+							what = LIGHTING_WHAT_ON;
 						}
 						else
 						{
 							// For dimmers we only allow level 0-99
 
 							if (level<20) {
-								what = bt_openwebnet::LIGHTING_WHAT_OFF;
+								what = LIGHTING_WHAT_OFF;
 							}
 							else if (level<30) {
-								what = bt_openwebnet::LIGHTING_WHAT_20;
+								what = LIGHTING_WHAT_20;
 							}
 							else if (level<40) {
-								what = bt_openwebnet::LIGHTING_WHAT_30;
+								what = LIGHTING_WHAT_30;
 							}
 							else if (level<50) {
-								what = bt_openwebnet::LIGHTING_WHAT_40;
+								what = LIGHTING_WHAT_40;
 							}
 							else if (level<60) {
-								what = bt_openwebnet::LIGHTING_WHAT_50;
+								what = LIGHTING_WHAT_50;
 							}
 							else if (level<70) {
-								what = bt_openwebnet::LIGHTING_WHAT_60;
+								what = LIGHTING_WHAT_60;
 							}
 							else if (level<80) {
-								what = bt_openwebnet::LIGHTING_WHAT_70;
+								what = LIGHTING_WHAT_70;
 							}
 							else if (level<90) {
-								what = bt_openwebnet::LIGHTING_WHAT_80;
+								what = LIGHTING_WHAT_80;
 							}
 							else if (level<100) {
-								what = bt_openwebnet::LIGHTING_WHAT_90;
+								what = LIGHTING_WHAT_90;
 							}
 							else {
-								what = bt_openwebnet::LIGHTING_WHAT_100;
+								what = LIGHTING_WHAT_100;
 							}
 						}
 					}

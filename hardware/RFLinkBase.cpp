@@ -130,6 +130,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "YW_Sensor", sSwitchTypeYW_Sensor },
 	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
 	{ "SysfsGpio", sSwitchTypeSysfsGpio },
+	{ "Hager", sSwitchTypeHager },
+	{ "Faber", sSwitchTypeFaber },
 	{ "", -1 }
 };
 
