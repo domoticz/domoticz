@@ -319,6 +319,8 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			m_bConnected = false;
+
 			if (m_Socket)
 			{
 				boost::system::error_code e;
@@ -341,9 +343,11 @@ namespace Plugins {
 			m_Acceptor->cancel();
 		}
 
-		if (m_Resolver) delete m_Resolver;
+		if (m_Resolver)
+		{
+			delete m_Resolver;
+		}
 
-		m_bConnected = false;
 		m_bDisconnectQueued = false;
 
 		return true;
@@ -461,10 +465,14 @@ namespace Plugins {
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			if (!m_bDisconnectQueued)
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				m_bDisconnectQueued = true;
+				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(DisconnectMessage);
+				}
 			}
 		}
 	}
@@ -510,6 +518,8 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			m_bConnected = false;
+
 			if (m_Socket)
 			{
 				boost::system::error_code e;
@@ -518,7 +528,6 @@ namespace Plugins {
 				delete m_Socket;
 				m_Socket = NULL;
 			}
-			m_bConnected = false;
 		}
 		return true;
 	}
@@ -676,10 +685,14 @@ namespace Plugins {
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "Plugin: Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			if (!m_bDisconnectQueued)
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				m_bDisconnectQueued = true;
+				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(DisconnectMessage);
+				}
 			}
 		}
 	}
@@ -721,6 +734,8 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			m_bConnected = false;
+
 			if (m_Timer)
 			{
 				m_Timer->cancel();
@@ -732,12 +747,25 @@ namespace Plugins {
 			{
 				boost::system::error_code e;
 				m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
-				m_Socket->close();
+				if (e)
+				{
+					_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
+				}
+				else
+				{
+					m_Socket->close();
+				}
 				delete m_Socket;
 				m_Socket = NULL;
 			}
-			m_bConnected = false;
 		}
+
+		if (m_Resolver)
+		{
+			delete m_Resolver;
+			m_Resolver = NULL;
+		}
+
 		return true;
 	}
 
