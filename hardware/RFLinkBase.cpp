@@ -408,7 +408,10 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			bSendOn = true;
 		    }
 			break;
-
+		case Limitless_NightMode:
+			switchcmnd = "ALLOFF";
+			bSendOn = true;
+			break;
 		// need work:
 		case Limitless_SetBrightUp:
 			switchcmnd = "BRIGHT";
