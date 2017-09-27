@@ -57,6 +57,11 @@ namespace Plugins {
 		};
 	};
 
+	class CPluginProtocolICMP : CPluginProtocol
+	{
+		virtual void	ProcessInbound(const ReadMessage* Message);
+	};
+
 	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?
 
 }
