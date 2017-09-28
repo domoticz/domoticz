@@ -37,7 +37,7 @@ elseif triggerReason == "uservariable" then
 elseif triggerReason == 'security' then
 	commandArray = helpers.dispatchSecurityEventsToScripts()
 else
-	utils.log("Unknown trigger: ", triggerReason, utils.LOG_DEBUG)
+	utils.log('Unknown trigger: ' .. triggerReason, utils.LOG_DEBUG)
 end
 
 return commandArray
