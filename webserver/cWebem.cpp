@@ -1136,30 +1136,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	if (sHost.size()<3)
 		return false;
 
-	std::string host=sHost;
 	std::vector<_tIPNetwork>::const_iterator itt;
-
-	if (host=="127.0.0.1")
-	{
-		//We could be using a proxy server
-		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
-		if (host_header!=NULL)
-		{
-			host=host_header;
-			if (strstr(host_header,",")!=NULL)
-			{
-				//Multiple proxies are used... this is not very common
-				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-				if (!host_header)
-				{
-					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)",host.c_str());
-					return false;
-				}
-				host=host_header;
-			}
-		}
-	}
 
 	/* RK, this doesn't work with IPv6 addresses.
 	pos=host.find_first_of(":");
@@ -1169,7 +1146,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 
 	for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 	{
-		if (IsIPInRange(host,*itt))
+		if (IsIPInRange(sHost,*itt))
 		{
 			return true;
 		}
@@ -1591,6 +1568,30 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;
+
+	if (session.remote_host == "127.0.0.1")
+	{
+		//We could be using a proxy server
+		//Check if we have the "X-Forwarded-For" (connection via proxy)
+		const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
+		if (host_header != NULL)
+		{
+			session.remote_host = host_header;
+			if (strstr(host_header, ",") != NULL)
+			{
+				//Multiple proxies are used... this is not very common
+				host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+				if (!host_header)
+				{
+					_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+					rep = reply::stock_reply(reply::forbidden);
+					return;
+				}
+				session.remote_host = host_header;
+			}
+		}
+	}
+
 	session.reply_status = reply::ok;
 	session.isnew = false;
 	session.forcelogin = false;
