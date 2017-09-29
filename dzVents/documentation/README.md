@@ -376,7 +376,6 @@ One tip:
 The domoticz object holds all information about your Domoticz system. It has a couple of global attributes and methods to query and manipulate your system. It also has a collection of **devices**, **variables** (user variables in Domoticz), **scenes**, **groups** and when applicable, a collection of **changedDevices** and **changedVariables**. All these collections each have three iterator functions: `forEach(function)`, `filter(function)` and `reduce(function)` to make searching for devices easier. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators) below.
 
 ### Domoticz attributes and methods
- - **backupDatabase(path)**: *Function*. Creates a backup of the Domoticz database. **You have to provide the full path+filename to the backup.**
  - **changedDevices(idx/name)**: *Function*. A function returning the device by idx (or name).  To iterate over all changed devices do: `domoticz.changedDevices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.changedDevices()) do .. end`.
  - **changedVariables(idx/name)**: *Function*. A function returning the user variable by idx or name. To iterate over all changed variables do: `domoticz.changedVariables().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.changedVariables()) do .. end`.
  - **devices(idx/name)**: *Function*. A function returning a device by idx or name: `domoticz.devices(123)` or `domoticz.devices('My switch')`. See [Device object API](#Device_object_API) below. To iterate over all devices do: `domoticz.devices().forEach(..)`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.devices()) do .. end`.
@@ -1522,7 +1521,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added `domoticz.urlEncode` method on the `domoticz` object so you can prepare a string before using it with `openURL()`.
  - Updating devices, user variables, scenes and groups now always trigger the event system for follow-up events.
  - Added support for groups and scenes change-event scripts. Use `on = { scenes = { 'myScene1', 'myScene2' }, groups = {'myGroup1'} }`
- - Added method `domoticz.backupDatabase(path)` to the `domoticz` object. Now you can create your own (timer) scripts to create backups.
  - Added adapter for the new Temperature+Barometer device.
  - Added `domoticz.startTime` giving you the time at which the Domoticz service was started. Returns a Time object.
  - Added `domoticz.systemUptime` (in seconds) indicating the number of seconds the machine is running. Returns a Time object.

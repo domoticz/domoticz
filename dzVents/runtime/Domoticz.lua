@@ -188,6 +188,7 @@ local function Domoticz(settings)
 
 	-- have domoticz open a url
 	function self.openURL(url)
+		utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
 		self.sendCommand('OpenURL', url)
 	end
 
@@ -199,10 +200,6 @@ local function Domoticz(settings)
 	-- send a group switch command
 	function self.switchGroup(group, value)
 		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
-	end
-
-	function self.backupDatabase(path)
-		self.sendCommand('BackupDB', path)
 	end
 
 	if (_G.TESTMODE) then
