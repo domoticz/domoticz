@@ -2477,7 +2477,7 @@ namespace http {
 			root["version"] = szAppVersion;
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
-			root["dzvents_version"] = DZVENTS_VERSION;
+			root["dzvents_version"] = m_mainworker.m_eventsystem.m_dzvents.GetVersion();
 
 			if (session.rights != 2)
 			{

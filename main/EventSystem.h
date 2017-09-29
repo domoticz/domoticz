@@ -18,10 +18,11 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 
-#define DZVENTS_VERSION "2.3.0"
+#include "dzVents.h"
 
 class CEventSystem : public CLuaCommon
 {
+	friend class CdzVents;
 	typedef struct lua_State lua_State;
 
 	struct _tEventItem
@@ -130,7 +131,24 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 
+	CdzVents m_dzvents;
+
 private:
+	typedef enum
+	{
+		JTYPE_STRING = 0,	// 0
+		JTYPE_FLOAT,		// 1
+		JTYPE_INT,			// 2
+		JTYPE_BOOL			// 3
+	} _eJsonType;
+
+	struct _tJsonMap
+	{
+		const char* szOriginal;
+		const char* szNew;
+		_eJsonType eType;
+	};
+
 	struct _tEventTrigger
 	{
 		uint64_t ID;
@@ -169,6 +187,8 @@ private:
 	std::string m_lua_Dir;
 	std::string m_dzv_Dir;
 	std::string m_szStartTime;
+
+	static const _tJsonMap JsonMap[];
 
 	//our thread
 	void Do_Work();
@@ -249,7 +269,6 @@ private:
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
-	int RemoveDir(const std::string &dirnames, std::string &errorPath);
 	std::string SpaceToUnderscore(std::string sResult);
 	std::string LowerCase(std::string sResult);
 };
