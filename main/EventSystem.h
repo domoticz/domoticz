@@ -207,7 +207,6 @@ private:
 #endif
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
-	void ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
