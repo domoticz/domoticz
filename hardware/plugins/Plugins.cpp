@@ -1345,6 +1345,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyErr_Clear();
+
 			// Stop Python
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
