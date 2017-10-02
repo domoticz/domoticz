@@ -47,6 +47,11 @@ function self.log(msg, level)
 
 	if (level == nil) then level = self.LOG_INFO end
 
+	if (type(level) ~= 'number') then
+		self.print('Error: log level is not a number. Got: ' .. tostring(level) .. ', type: ' .. type(level))
+		return
+	end
+
 	local lLevel = _G.logLevel == nil and 1 or _G.logLevel
 	local marker = ''
 
