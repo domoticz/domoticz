@@ -1074,12 +1074,6 @@ namespace Plugins {
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
-//		else if (sTransport == "UDP/IP")
-//		{
-//			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-//			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-//			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
-//		}
 		else if (sTransport == "Serial")
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
@@ -1183,7 +1177,7 @@ namespace Plugins {
 				return;
 			}
 
-			if (!pConnection->pTransport->IsConnected())
+			if ((sTransport != "ICMP/IP") && (!pConnection->pTransport->IsConnected()))
 			{
 				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
@@ -1421,9 +1415,9 @@ namespace Plugins {
 		if (m_bDebug)
 		{
 			if (Incoming)
-				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:.", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:", Name.c_str(), Buffer.size());
 			else
-				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:.", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:", Name.c_str(), Buffer.size());
 
 			for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
 			{

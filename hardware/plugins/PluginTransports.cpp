@@ -546,7 +546,7 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
-			m_bConnected = true;
+			//m_bConnected = true;
 			m_IP = endpoint_iterator->endpoint().address().to_string();
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
@@ -699,6 +699,14 @@ namespace Plugins {
 
 	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
 	{
+		// Check transport is usable
+		if (!m_Initialised)
+		{
+			CConnection*	pConnection = (CConnection*)this->m_pConnection;
+			std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+			_log.Log(LOG_ERROR, "(%s) Transport not initialised, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
+		}
+
 		// Reset timeout if one is set or set one
 		if (!m_Timer)
 		{
