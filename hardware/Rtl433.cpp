@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/round.hpp>
 
 #include "Rtl433.h"
 
@@ -100,7 +101,7 @@ void CRtl433::Do_Work()
 		std::vector<std::string> headers;
 		std::string sLastLine = "";
 
-		std::string szFlags = "-F csv -q -I 2";
+		std::string szFlags = "-G -F csv -q -I 2";
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
@@ -144,6 +145,7 @@ void CRtl433::Do_Work()
 					continue;
 				}
 				time_t atime = time(NULL);
+				_log.Log(LOG_STATUS, "Rtl433: line: (%s)", line);
 				std::string slineRaw(line);
 				if (slineRaw.find(',') != std::string::npos)
 				{
@@ -164,6 +166,7 @@ void CRtl433::Do_Work()
 				{
 					std::string header = *(h++);
 					data[header] = *vi;
+
 				}
 				int id = 0;
 				bool hasid = false;
@@ -232,11 +235,12 @@ void CRtl433::Do_Work()
 				try {
 					if (!data["humidity"].empty())
 					{
-						humidity = boost::lexical_cast<int>(data["humidity"]);
+						humidity = static_cast<int>(boost::math::round(boost::lexical_cast<float>(data["humidity"])));
 						hashumidity = true;
 					}
 				}
 				catch (boost::bad_lexical_cast e) {
+						_log.Log(LOG_STATUS, "Rtl433: bad cast -- humidity");
 				}
 				try {
 					if (!data["pressure"].empty())
