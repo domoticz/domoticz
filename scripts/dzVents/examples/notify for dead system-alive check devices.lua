@@ -17,8 +17,12 @@ local devicesToCheck = {'ESP8266 CV', 'ESP8266 ManCave', 'ESP8266 Watermeter'}
 return {
 	active = true,
 	on = {
-		devices = devicesToCheck,
-		timer = 'every 5 minutes'
+		devices = {
+			devicesToCheck
+		},
+		timer = {
+			'every 5 minutes'
+		}
 	},
 	data = {
 		notified = { initial = {} }
@@ -30,7 +34,7 @@ return {
 			-- check all devices that are off and have not been updated in the past 5 minutes and have not been notified for
 			for index, deviceName in pairs(devicesToCheck) do
 
-				local device = domoticz.devices[deviceName]
+				local device = domoticz.devices(deviceName)
 
 				if (device.state == 'Off' and
 						device.lastUpdate.minutesAgo >= THRESHOLD and

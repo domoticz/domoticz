@@ -206,6 +206,7 @@ namespace Plugins {
 	PyObject* CConnection_send(CConnection *self, PyObject *args, PyObject *kwds);
 	PyObject* CConnection_disconnect(CConnection* self);
 	PyObject* CConnection_bytes(CConnection* self);
+	PyObject* CConnection_isconnecting(CConnection* self);
 	PyObject* CConnection_isconnected(CConnection* self);
 	PyObject* CConnection_timestamp(CConnection* self);
 	PyObject* CConnection_str(CConnection* self);
@@ -224,6 +225,7 @@ namespace Plugins {
 		{ "Listen", (PyCFunction)CConnection_listen, METH_NOARGS, "Listen on specified Port." },
 		{ "Disconnect", (PyCFunction)CConnection_disconnect, METH_NOARGS, "Disconnect connection or stop listening." },
 		{ "BytesTransferred", (PyCFunction)CConnection_bytes, METH_NOARGS, "Bytes transferred since connection was opened." },
+		{ "Connecting", (PyCFunction)CConnection_isconnecting, METH_NOARGS, "Connection in progress." },
 		{ "Connected", (PyCFunction)CConnection_isconnected, METH_NOARGS, "Connection status." },
 		{ "LastSeen", (PyCFunction)CConnection_timestamp, METH_NOARGS, "Last seen timestamp." },
 		{ NULL }  /* Sentinel */

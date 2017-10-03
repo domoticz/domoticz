@@ -2108,7 +2108,7 @@ define(['app'], function (app) {
 			var id = "";
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=Name&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -2275,22 +2275,22 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Blinds Percentage") {
 									isdimmer = true;
-									if ((item.Status == 'Closed') || (item.Status.indexOf('Set ') == 0)) {
-										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-									}
-									else {
+									if (item.Status == 'Open') {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+									}
+									else {
+										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
 								}
 								else if (item.SwitchType == "Blinds Percentage Inverted") {
 									isdimmer = true;
-									if ((item.Status == 'Closed') || (item.Status.indexOf('Set ') != 0)) {
+									if (item.Status == 'Closed') {
 										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
-									else {
+									else if ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
@@ -2630,7 +2630,7 @@ define(['app'], function (app) {
 			var j = 0;
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=Name&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -2872,13 +2872,13 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Blinds Percentage") {
 								bIsDimmer = true;
-								if (item.Status == 'Closed') {
-									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-								}
-								else {
+								if (item.Status == 'Open') {
 									xhtm += '\t      <td id="img"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 									xhtm += '\t      <td id="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+								}
+								else {
+									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Blinds Percentage Inverted") {

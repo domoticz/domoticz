@@ -1219,7 +1219,7 @@ bool MySensorsBase::GetBlindsValue(const int NodeID, const int ChildID, int &bli
 	return true;
 }
 
-bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue)
+bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue)
 {
 	char szIdx[10];
 	if ((sub_type == V_RGB) || (sub_type == V_RGBW))
@@ -1231,7 +1231,7 @@ bool MySensorsBase::GetSwitchValue(const unsigned char Idx, const int SubUnit, c
 	}
 	else
 	{
-		sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
+		sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, 0, Idx);
 	}
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, SubUnit);

@@ -10,6 +10,7 @@ typedef unsigned char byte;
 namespace Plugins {
 
 	class CDirectiveBase;
+	class CEventBase;
 	class CPluginMessageBase;
 	class CPluginNotifier;
 	class CPluginTransport;
@@ -26,6 +27,8 @@ namespace Plugins {
 		std::string		m_Author;
 
 		CPluginNotifier*	m_Notifier;
+
+		boost::mutex	m_TransportsMutex;
 		std::vector<CPluginTransport*>	m_Transports;
 
 		boost::shared_ptr<boost::thread> m_thread;
@@ -55,6 +58,7 @@ namespace Plugins {
 		void	ConnectionRead(CPluginMessageBase*);
 		void	ConnectionWrite(CDirectiveBase*);
 		void	ConnectionDisconnect(CDirectiveBase*);
+		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
 		void	Stop();
 

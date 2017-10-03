@@ -754,7 +754,20 @@ void CScheduler::CheckSchedules()
 
 							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 							int ilevel = maxDimLevel;
-							if (((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) && (maxDimLevel != 0))
+							if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+							{
+								if (itt->timerCmd == TCMD_ON)
+								{
+									switchcmd = "Set Level";
+									float fLevel = (maxDimLevel / 100.0f)*itt->Level;
+									if (fLevel > 100)
+										fLevel = 100;
+									ilevel = int(fLevel) + 1;
+								}
+								else if (itt->timerCmd == TCMD_OFF)
+									ilevel = 0;
+							}
+							else if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
 							{
 								if (itt->timerCmd == TCMD_ON)
 								{
@@ -824,7 +837,7 @@ void CScheduler::DeleteExpiredTimers()
 			);
 		iExpiredTimers += result.size();
 	}
-	
+
 	// Check SceneTimers
 	result = m_sql.safe_query("SELECT ID FROM SceneTimers WHERE (Type == %i AND ((Date < '%q') OR (Date == '%q' AND Time < '%q')))",
 		TTYPE_FIXEDDATETIME,

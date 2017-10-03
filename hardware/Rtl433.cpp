@@ -335,7 +335,9 @@ void CRtl433::Do_Work()
 				{
 					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor type, please report: (%s)", line);
 				}
-			} //fgets
+			} else { //fgets
+			  break; // bail out, subprocess has failed
+			}
 		} // while !m_stoprequested
 		if (m_hPipe)
 		{

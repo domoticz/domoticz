@@ -107,6 +107,7 @@ static const _tGuiLanguage guiLanguage[] =
 	{ "es", "Spanish" },
 	{ "sv", "Swedish" },
 	{ "tr", "Turkish" },
+	{ "uk", "Ukrainian" },
 	{ NULL, NULL }
 };
 
@@ -537,13 +538,12 @@ namespace http {
 			RegisterCommandCode("vacuumdatabase", boost::bind(&CWebServer::Cmd_VacuumDatabase, this, _1, _2, _3));
 
 			RegisterCommandCode("addmobiledevice", boost::bind(&CWebServer::Cmd_AddMobileDevice, this, _1, _2, _3));
+			RegisterCommandCode("updatemobiledevice", boost::bind(&CWebServer::Cmd_UpdateMobileDevice, this, _1, _2, _3));
 			RegisterCommandCode("deletemobiledevice", boost::bind(&CWebServer::Cmd_DeleteMobileDevice, this, _1, _2, _3));
 
 			RegisterCommandCode("addyeelight", boost::bind(&CWebServer::Cmd_AddYeeLight, this, _1, _2, _3));
 
-
 			RegisterCommandCode("addArilux", boost::bind(&CWebServer::Cmd_AddArilux, this, _1, _2, _3));
-
 
 			RegisterRType("graph", boost::bind(&CWebServer::RType_HandleGraph, this, _1, _2, _3));
 			RegisterRType("lightlog", boost::bind(&CWebServer::RType_LightLog, this, _1, _2, _3));
@@ -557,6 +557,7 @@ namespace http {
 			RegisterRType("deletedevice", boost::bind(&CWebServer::RType_DeleteDevice, this, _1, _2, _3));
 			RegisterRType("cameras", boost::bind(&CWebServer::RType_Cameras, this, _1, _2, _3));
 			RegisterRType("users", boost::bind(&CWebServer::RType_Users, this, _1, _2, _3));
+			RegisterRType("mobiles", boost::bind(&CWebServer::RType_Mobiles, this, _1, _2, _3));
 
 			RegisterRType("timers", boost::bind(&CWebServer::RType_Timers, this, _1, _2, _3));
 			RegisterRType("scenetimers", boost::bind(&CWebServer::RType_SceneTimers, this, _1, _2, _3));
@@ -4054,8 +4055,10 @@ namespace http {
 				std::string notification_Message = "Domoticz test message!";
 				std::string subsystem = request::findValue(&req, "subsystem");
 
+				std::string extraData = request::findValue(&req, "extradata");
+
 				m_notifications.ConfigFromGetvars(req, false);
-				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, std::string(""), 1, std::string(""), false)) {
+				if (m_notifications.SendMessage(0, std::string(""), subsystem, notification_Title, notification_Message, extraData, 1, std::string(""), false)) {
 					root["status"] = "OK";
 				}
 				/* we need to reload the config, because the values that were set were only for testing */
@@ -7569,6 +7572,11 @@ namespace http {
 			m_sql.UpdatePreferencesVar("TempUnit", nUnit);
 			m_sql.m_tempunit = (_eTempUnit)nUnit;
 
+			nUnit = atoi(request::findValue(&req, "WeightUnit").c_str());
+			m_sql.UpdatePreferencesVar("WeightUnit", nUnit);
+			m_sql.m_weightunit = (_eWeightUnit)nUnit;
+
+
 			m_sql.SetUnitsAndScale();
 
 			std::string AuthenticationMethod = request::findValue(&req, "AuthenticationMethod");
@@ -7785,6 +7793,15 @@ namespace http {
 				m_mainworker.m_eventsystem.SetEnabled(!m_sql.m_bDisableEventSystem);
 				m_mainworker.m_eventsystem.StartEventSystem();
 			}
+
+			rnOldvalue = 0;
+			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
+			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
+			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+
+			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
 
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
 			m_sql.m_bLogEventScriptTrigger = (LogEventScriptTrigger == "on" ? 1 : 0);
@@ -10511,7 +10528,7 @@ namespace http {
 					}
 					else if (dType == pTypeWEIGHT)
 					{
-						sprintf(szTmp, "%.1f kg", atof(sValue.c_str()));
+						sprintf(szTmp, "%.1f %s", m_sql.m_weightscale * atof(sValue.c_str()), m_sql.m_weightsign.c_str());
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["HaveTimeout"] = false;
 					}
@@ -10699,6 +10716,8 @@ namespace http {
 				name.c_str(),
 				atoi(stype.c_str())
 			);
+			if (!m_sql.m_bDisableEventSystem)
+				m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 		}
 
 		void CWebServer::RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -11194,6 +11213,43 @@ namespace http {
 					root["result"][ii]["Rights"] = atoi(sd[4].c_str());
 					root["result"][ii]["RemoteSharing"] = atoi(sd[5].c_str());
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
+					ii++;
+				}
+			}
+		}
+
+		void CWebServer::RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			bool bHaveUser = (session.username != "");
+			int urights = 3;
+			if (bHaveUser)
+			{
+				int iUser = FindUser(session.username.c_str());
+				if (iUser != -1)
+					urights = static_cast<int>(m_users[iUser].userrights);
+			}
+			if (urights < 2)
+				return;
+
+			root["status"] = "OK";
+			root["title"] = "Mobiles";
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name ASC");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					root["result"][ii]["idx"] = sd[0];
+					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
+					root["result"][ii]["Name"] = sd[2];
+					root["result"][ii]["UUID"] = sd[3];
+					root["result"][ii]["LastUpdate"] = sd[4];
+					root["result"][ii]["DeviceType"] = sd[5];
 					ii++;
 				}
 			}
@@ -11731,6 +11787,8 @@ namespace http {
 		{
 			std::string suuid = request::findValue(&req, "uuid");
 			std::string ssenderid = request::findValue(&req, "senderid");
+			std::string sname = request::findValue(&req, "name");
+			std::string sdevtype = request::findValue(&req, "devicetype");
 			if (
 				(suuid.empty()) ||
 				(ssenderid.empty())
@@ -11740,11 +11798,11 @@ namespace http {
 			root["title"] = "AddMobileDevice";
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
+			result = m_sql.safe_query("SELECT ID, Name, DeviceType FROM MobileDevices WHERE (UUID=='%q')", suuid.c_str());
 			if (result.empty())
 			{
 				//New
-				m_sql.safe_query("INSERT INTO MobileDevices (UUID,SenderID) VALUES ('%q','%q')", suuid.c_str(), ssenderid.c_str());
+				m_sql.safe_query("INSERT INTO MobileDevices (Active,UUID,SenderID,Name,DeviceType) VALUES (1,'%q','%q','%q','%q')", suuid.c_str(), ssenderid.c_str(), sname.c_str(), sdevtype.c_str());
 			}
 			else
 			{
@@ -11757,7 +11815,45 @@ namespace http {
 					ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 					suuid.c_str()
 				);
+
+				std::string dname = result[0][1];
+				std::string ddevtype = result[0][2];
+				if (dname.empty() || ddevtype.empty())
+				{
+					m_sql.safe_query("UPDATE MobileDevices SET Name='%q', DeviceType='%q' WHERE (UUID == '%q')",
+						sname.c_str(), sdevtype.c_str(),
+						suuid.c_str()
+					);
+				}
 			}
+		}
+
+		void CWebServer::Cmd_UpdateMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			std::string enabled = request::findValue(&req, "enabled");
+			std::string name = request::findValue(&req, "name");
+
+			if (
+				(sidx.empty()) ||
+				(enabled.empty()) ||
+				(name.empty())
+				)
+				return;
+			uint64_t idx = 0;
+			std::stringstream s_str(sidx);
+			s_str >> idx;
+
+			m_sql.safe_query("UPDATE MobileDevices SET Name='%q', Active=%d WHERE (ID==%" PRIu64 ")",
+				name.c_str(), (enabled == "true") ? 1 : 0, idx);
+
+			root["status"] = "OK";
+			root["title"] = "UpdateMobile";
 		}
 
 		void CWebServer::Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root)
@@ -12067,8 +12163,8 @@ namespace http {
 				double tempcelcius = atof(setPoint.c_str());
 				if (m_sql.m_tempunit == TEMPUNIT_F)
 				{
-					//Convert back to celcius
-					tempcelcius = (tempcelcius - 32) / 1.8;
+					//Convert back to Celsius
+					tempcelcius = ConvertToCelsius(tempcelcius);
 				}
 				sprintf(szTmp, "%.2f", tempcelcius);
 				if (dType == pTypeEvohomeZone || dType == pTypeEvohomeWater)//sql update now done in setsetpoint for evohome devices
@@ -12092,12 +12188,16 @@ namespace http {
 			else
 			{
 				if (switchtype == -1)
+				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q' WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), idx.c_str());
+				}
 				else
+				{
 					m_sql.safe_query(
 						"UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')",
 						used, name.c_str(), description.c_str(), switchtype, CustomImage, idx.c_str());
+				}
 			}
 
 			if (bHasstrParam1)
@@ -12491,6 +12591,10 @@ namespace http {
 				{
 					root["TempUnit"] = nValue;
 				}
+				else if (Key == "WeightUnit")
+				{
+					root["WeightUnit"] = nValue;
+				}
 				else if (Key == "AuthenticationMethod")
 				{
 					root["AuthenticationMethod"] = nValue;
@@ -12526,6 +12630,14 @@ namespace http {
 				else if (Key == "DisableEventScriptSystem")
 				{
 					root["DisableEventScriptSystem"] = nValue;
+				}
+				else if (Key == "DisableDzVentsSystem")
+				{
+					root["DisableDzVentsSystem"] = nValue;
+				}
+				else if (Key == "DzVentsLogLevel")
+				{
+					root["DzVentsLogLevel"] = nValue;
 				}
 				else if (Key == "LogEventScriptTrigger")
 				{
@@ -13370,7 +13482,7 @@ namespace http {
 								std::vector<std::string> sd = *itt;
 
 								root["result"][ii]["d"] = sd[1].substr(0, 16);
-								sprintf(szTmp, "%.1f", atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f );
 								root["result"][ii]["v"] = szTmp;
 								ii++;
 							}
@@ -15432,9 +15544,9 @@ namespace http {
 								std::vector<std::string> sd = *itt;
 
 								root["result"][ii]["d"] = sd[2].substr(0, 16);
-								sprintf(szTmp, "%.1f", atof(sd[0].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[0].c_str()) / 10.0f);
 								root["result"][ii]["v_min"] = szTmp;
-								sprintf(szTmp, "%.1f", atof(sd[1].c_str()) / 10.0f);
+								sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(sd[1].c_str()) / 10.0f);
 								root["result"][ii]["v_max"] = szTmp;
 								ii++;
 							}
@@ -16013,9 +16125,9 @@ namespace http {
 						if (result.size() > 0)
 						{
 							root["result"][ii]["d"] = szDateEnd;
-							sprintf(szTmp, "%.1f", atof(result[0][0].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale* atof(result[0][0].c_str()) / 10.0f);
 							root["result"][ii]["v_min"] = szTmp;
-							sprintf(szTmp, "%.1f", atof(result[0][1].c_str()) / 10.0f);
+							sprintf(szTmp, "%.1f", m_sql.m_weightscale * atof(result[0][1].c_str()) / 10.0f);
 							root["result"][ii]["v_max"] = szTmp;
 							ii++;
 						}

@@ -176,7 +176,10 @@ bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 	if (result.size() < 1)
 		return false;
 	std::string ProductDescription = result[0][0];
-	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
+	return (
+		(ProductDescription.find("FGRGBWM441") != std::string::npos)
+		|| (ProductDescription.find("ZMNHWD") != std::string::npos)
+		);
 }
 
 void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
@@ -184,7 +187,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	if (
 		(pDevice->devType!=ZDTYPE_SWITCH_NORMAL)&&
 		(pDevice->devType != ZDTYPE_SWITCH_DIMMER) &&
-		(pDevice->devType != ZDTYPE_SWITCH_FGRGBWM441)&&
+		(pDevice->devType != ZDTYPE_SWITCH_RGBW)&&
 		(pDevice->devType != ZDTYPE_SWITCH_COLOR)
 		)
 		return; //only for switches
@@ -195,7 +198,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		BatLevel = pDevice->batValue;
 	}
 
-	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
+	if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
 		unsigned char ID2 = 0;
@@ -384,7 +387,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatLevel);
 		return;
 	}
-	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
+	else if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
 		unsigned char ID2 = 0;
@@ -1008,7 +1011,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		int nodeID = (ID2 << 8) | ID3;
 		int instanceID = ID4;
 		int indexID = ID1;
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_FGRGBWM441);
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_RGBW);
 		if (pDevice)
 		{
 			int svalue = 0;
@@ -1168,7 +1171,7 @@ void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int n
 				{
 					if (IsNodeRGBW(homeID, nodeID))
 					{
-						zdevice.devType = ZDTYPE_SWITCH_FGRGBWM441;
+						zdevice.devType = ZDTYPE_SWITCH_RGBW;
 						zdevice.instanceID = 100;
 						SendDevice2Domoticz(&zdevice);
 					}

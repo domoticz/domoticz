@@ -57,6 +57,16 @@ public:
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		uint8_t switchtype;
+		std::string description;
+		std::string deviceID;
+		int batteryLevel;
+		int signalLevel;
+		int unit;
+		int hardwareID;
+		std::map<uint8_t, int> JsonMapInt;
+		std::map<uint8_t, float> JsonMapFloat;
+		std::map<uint8_t, bool> JsonMapBool;
+		std::map<uint8_t, std::string> JsonMapString;
 	};
 
 	struct _tUserVariable
@@ -77,6 +87,13 @@ public:
 		std::string lastUpdate;
 	};
 
+	struct _tHardwareListInt {
+		std::string Name;
+		int HardwareTypeVal;
+		std::string HardwareType;
+		bool Enabled;
+	} tHardwareList;
+
 	CEventSystem(void);
 	~CEventSystem(void);
 
@@ -92,14 +109,17 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
 	void GetCurrentStates();
-
-	void exportDeviceStatesToLua(lua_State *lua_state);
-
-    bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
+	void GetCurrentScenesGroups();
+	void GetCurrentUserVariables();
+	void UpdateScenesGroups(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
+	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
+	void ExportDeviceStatesToLua(lua_State *lua_state);
+	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 
 private:
 	//lua_State	*m_pLUA;
 	bool m_bEnabled;
+	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
@@ -109,14 +129,13 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	int m_SecStatus;
-
+	std::string m_lua_Dir;
+	std::string m_dzv_Dir;
 
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
-	void GetCurrentUserVariables();
-	void GetCurrentScenesGroups();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const std::string &reason);
 	void EvaluateEvent(const std::string &reason, const uint64_t varId);
@@ -125,12 +144,14 @@ private:
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
+	std::string m_python_Dir;
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString);
 	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 #endif
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
+	void ExportDomoticzDataToLua(lua_State *lua_state, uint64_t deviceID, uint64_t varID);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
@@ -141,10 +162,12 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams);
+	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
+	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
@@ -189,4 +212,6 @@ private:
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
+	std::string SpaceToUnderscore(std::string sResult);
+	std::string LowerCase(std::string sResult);
 };

@@ -3,7 +3,10 @@ local GLOBAL = false
 local LOCAL = true
 _G.TESMODE = true
 
-package.path = package.path .. ";../?.lua"
+--package.path = package.path .. ";../?.lua"
+local scriptPath = ''
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;./data/?.lua;./generated_scripts/?.lua'
+local Time = require('Time')
 
 local clock = os.clock
 function sleep(n)  -- seconds
@@ -30,23 +33,58 @@ describe('event helper storage', function()
 	local domoticz = {
 		['settings'] = {},
 		['name'] = 'domoticz', -- used in script1
-		['devices'] = {
-			['device1'] = { name = '' },
-			['onscript1'] = { name = 'onscript1', id = 1 },
-			['onscript4'] = { name = 'onscript4', id = 4 },
-			['on_script_5'] = { name = 'on_script_5', id = 5 },
-			['wildcard'] = { name = 'wildcard', id = 6 },
-			['someweirddevice'] = { name = 'someweirddevice', id = 7 },
-			['mydevice'] = { name = 'mydevice', id = 8 }
-		}
+		['time'] = Time('2017-06-03 12:04:00'),
+		['devices'] = function(id)
+			local devs = {
+				['device1'] = { name = '' },
+				['onscript1'] = { name = 'onscript1', id = 1 },
+				['onscript4'] = { name = 'onscript4', id = 4 },
+				['on_script_5'] = { name = 'on_script_5', id = 5 },
+				['wildcard'] = { name = 'wildcard', id = 6 },
+				['someweirddevice'] = { name = 'someweirddevice', id = 7 },
+				['mydevice'] = { name = 'mydevice', id = 8 },
+				['someswitch'] = { name = 'someswitch', id = 9 },
+			}
+			return devs[id]
+		end
 	}
 
 	setup(function()
 		local settings = {
+			['Domoticz url'] = 'http://10.0.0.8:8080',
 			['Log level'] = 1
 		}
 
 		_G.TESTMODE = true
+
+		_G.dataFolderPath = './data'
+		_G.generatedScriptsFolderPath = './generated_scripts'
+
+		_G.globalvariables = {
+			Security = 'sec',
+			['radix_separator'] = '.',
+			['script_path'] = scriptPath,
+			['dzVents_log_level'] = 1,
+			['domoticz_listening_port'] = '8080'
+		}
+
+		_G.scripts = {
+			['myInternalScript'] = [[
+				return {
+					active = true,
+					on = {
+						'someswitch'
+					},
+					data = {
+						x = { initial = 4 }
+					},
+					execute = function(domoticz, device, triggerInfo)
+						domoticz.data.x = domoticz.data.x + 10
+
+					end
+				}
+			]],
+		}
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -56,11 +94,12 @@ describe('event helper storage', function()
 	end)
 
 	before_each(function()
-		helpers = EventHelpers(settings, domoticz)
+		helpers = EventHelpers(domoticz)
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
-		os.remove('../tests/scripts/storage/__data_script_data.lua')
-		os.remove('../tests/scripts/storage/__data_global_data.lua')
+		os.remove('../tests/data/__data_script_data.lua')
+		os.remove('../tests/data/__data_global_data.lua')
+		os.remove('../tests/data/__data_internal1.lua')
 	end)
 
 	after_each(function()
@@ -135,6 +174,20 @@ describe('event helper storage', function()
 
 	end)
 
+	it('should write local storage inside the script for internal scripts', function()
+		local bindings = helpers.getEventBindings()
+		local script_data = bindings['mySwitch'][1]
+
+		local res = helpers.callEventHandler(script_data, { name = 'someswitch' })
+
+		-- should pass the arguments to the execute function
+		-- and catch the results from the function
+		local newContext = helpers.getStorageContext(script_data.data, script_data.dataFileName)
+		assert.is_same({ 'x' }, keys(newContext))
+		assert.is_same(14, newContext.x)
+	end)
+
+
 	it('should have a default global context', function()
 		local bindings = helpers.getEventBindings()
 		local script_data = bindings['somedevice'][1]
@@ -155,12 +208,12 @@ describe('event helper storage', function()
 
 		helpers.writeStorageContext(
 			helpers.globalsDefinition,
-			helpers.scriptsFolderPath .. '/storage/__data_global_data.lua',
-			helpers.scriptsFolderPath .. '/storage/__data_global_data',
+			helpers.dataFolderPath .. '/__data_global_data.lua',
+			helpers.dataFolderPath .. '/__data_global_data',
 			context)
 
 
-		local exists = utils.fileExists('../tests/scripts/storage/__data_global_data.lua')
+		local exists = utils.fileExists('../tests/data/__data_global_data.lua')
 
 		assert.is_true(exists)
 		-- check if it was properly stored
@@ -192,6 +245,65 @@ describe('event helper storage', function()
 		assert.is_same({'g', 'h'}, keys(globalContext))
 		assert.is_same(456, globalContext.g)
 		assert.is_same(false, globalContext.h)
+	end)
+
+	it('should allow you to add/remove variables from an existing context', function()
+		local bindings = helpers.getEventBindings()
+		local script_data = bindings['somedevice'][1]
+
+		local def = {
+			x = { initial = 1},
+			y = { initial = 2}
+		}
+
+
+		local context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		-- just checking
+		assert.is_same({ 'x', 'y' }, keys(context))
+
+		-- create some new data
+		context['x'] = 10
+		context['y'] = 20
+
+		-- write the data
+
+		helpers.writeStorageContext(def,
+			script_data.dataFilePath,
+			script_data.dataFileName,
+			context)
+
+		-- just checking again
+		local exists = utils.fileExists(script_data.dataFilePath)
+
+
+		-- now add a new var to the def
+
+		def['z'] = { initial = 3 }
+
+		context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		assert.is_same({ 'x', 'y', 'z' }, keys(context))
+		assert.is_same(10, context.x) -- the updated old ones
+		assert.is_same(20, context.y)
+		assert.is_same(3, context.z) -- the new one with initial value
+
+		-- now remove a var from the def and check if the old var isn't still in the
+		-- file data
+
+		def['z'] = nil
+
+		context = helpers.getStorageContext(def, script_data.dataFileName)
+
+		helpers.writeStorageContext(def,
+			script_data.dataFilePath,
+			script_data.dataFileName,
+			context)
+
+		-- require the file
+		fileStorage = require(script_data.dataFileName)
+		assert.is_same({ 'x', 'y'}, keys(fileStorage)) -- z is no longer there
+
 	end)
 
 	describe('Historical storage', function()
@@ -547,7 +659,7 @@ describe('event helper storage', function()
 			assert.is_same(6, hs.avg(3,7))
 
 			hs = HS()
-			assert.is_same(nil, hs.avg(1,10))
+			assert.is_same(0, hs.avg(1,10))
 		end)
 
 		it('should return average over a time period', function()
@@ -556,7 +668,7 @@ describe('event helper storage', function()
 			assert.is_same(9, avg) -- 10,9,8
 
 			hs = HS()
-			assert.is_same(nil, hs.avgSince('0:10:1'))
+			assert.is_same(0, hs.avgSince('0:10:1'))
 		end)
 
 		it('should return the minimum value of a range', function()
@@ -656,6 +768,12 @@ describe('event helper storage', function()
 			assert.is_same(34,sum) -- 10,9,8,7
 		end)
 
+		it('should return 0 as the sum over an empty set', function()
+			local hs = HS()
+			local sum = hs.sum()
+			assert.is_same(0, sum)
+		end)
+
 		it('should return the sum over a period', function()
 			data[5].data = 20
 			local hs = HS(data)
@@ -663,7 +781,7 @@ describe('event helper storage', function()
 			assert.is_same(54,sum)
 
 			hs = HS()
-			assert.is_nil(hs.sumSince('0:0:1'))
+			assert.is_same(0, hs.sumSince('0:0:1'))
 		end)
 
 		it('should smooth an item with its neighbours', function()

@@ -126,13 +126,12 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'Domoticz' to the existing table of built-in modules.");
 				return false;
 			}
-#ifdef ENABLE_PYTHON
-            if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
+
+			if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
 			{
 				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
 				return false;
 			}
-#endif //ENABLE_PYTHON
 
 			Py_Initialize();
 			m_InitialPythonThread = PyEval_SaveThread();

@@ -266,6 +266,29 @@ void CDomoticzHardwareBase::SendTempHumBaroSensorFloat(const int NodeID, const i
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.TEMP_HUM_BARO, defaultname.c_str(), BatteryLevel);
 }
 
+void CDomoticzHardwareBase::SendTempBaroSensor(const int NodeID, const int BatteryLevel, const float temperature, const float pressure, const std::string &defaultname)
+{
+	_tTempBaro tsensor;
+	tsensor.id1 = NodeID;
+	tsensor.temp = temperature;
+	tsensor.baro = pressure;
+	tsensor.altitude = 188;
+
+	//this is probably not good, need to take the rising/falling of the pressure into account?
+	//any help would be welcome!
+
+	tsensor.forecast = baroForecastNoInfo;
+	if (tsensor.baro < 1000)
+		tsensor.forecast = baroForecastRain;
+	else if (tsensor.baro < 1020)
+		tsensor.forecast = baroForecastCloudy;
+	else if (tsensor.baro < 1030)
+		tsensor.forecast = baroForecastPartlyCloudy;
+	else
+		tsensor.forecast = baroForecastSunny;
+	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), BatteryLevel);
+}
+
 void CDomoticzHardwareBase::SendSetPointSensor(const int NodeID, const int ChildID, const unsigned char SensorID, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
@@ -293,28 +316,14 @@ void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int Child
 
 void CDomoticzHardwareBase::SendTextSensor(const int NodeID, const int ChildID, const int BatteryLevel, const std::string &textMessage, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
-	std::vector<std::vector<std::string> > result;
-
-	char szTmp[30];
-	sprintf(szTmp, "%08X", (NodeID << 8) | ChildID);
-
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeTextStatus));
-	if (result.size() < 1)
-	{
-		bDeviceExits = false;
-	}
-
-	std::string rname;
-	m_sql.UpdateValue(m_HwdID, szTmp, 1, pTypeGeneral, sTypeTextStatus, 12, BatteryLevel, 0, textMessage.c_str(), rname);
-
-	if (!bDeviceExits)
-	{
-		//Assign default name for device
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-			defaultname.c_str(), m_HwdID, szTmp, int(pTypeGeneral), int(sTypeTextStatus));
-	}
+	_tGeneralDevice gdevice;
+	gdevice.subtype = sTypeTextStatus;
+	gdevice.intval1 = (NodeID << 8) | ChildID;
+	std::string sstatus = textMessage;
+	if (sstatus.size() > 63)
+		sstatus = sstatus.substr(0, 63);
+	strcpy(gdevice.text, sstatus.c_str());
+	sDecodeRXMessage(this, (const unsigned char *)&gdevice, defaultname.c_str(), BatteryLevel);
 }
 
 std::string CDomoticzHardwareBase::GetTextSensorText(const int NodeID, const int ChildID, bool &bExists)

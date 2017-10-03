@@ -342,6 +342,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'ZWaveTopologyController',
 				permission: 'Admin'
 			})).
+			when('/Mobile', angularAMD.route({
+				templateUrl: 'views/mobile_notifications.html',
+				controller: 'MobileNotificationsController',
+				permission: 'Admin'
+			})).
 			when('/About', angularAMD.route({
 				templateUrl: 'views/about.html',
 				controller: 'AboutController'
