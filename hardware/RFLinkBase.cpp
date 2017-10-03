@@ -132,6 +132,8 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "SysfsGpio", sSwitchTypeSysfsGpio },
 	{ "Hager", sSwitchTypeHager },
 	{ "Faber", sSwitchTypeFaber },
+	{ "Drayton", sSwitchTypeDrayton },
+	{ "V2Phoenix", sSwitchTypeV2Phoenix },
 	{ "", -1 }
 };
 
