@@ -717,6 +717,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveCurrent = false; float current = 0;
 	bool bHaveCurrent2 = false; float current2 = 0;
 	bool bHaveCurrent3 = false; float current3 = 0;
+	bool bHaveWeight = false; float weight = 0;
 	bool bHaveImpedance = false; float impedance = 0;
 	bool bHaveSwitch = false; int switchunit = 0;
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
@@ -889,11 +890,17 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			bHaveCurrent3 = true;
 			current3 = float(iTemp) / 10.0f;
 		}
+		else if (results[ii].find("WEIGHT") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveWeight = true;
+			weight = float(iTemp) *100;			// weight in grams
+		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			bHaveCurrent = true;
-			current = float(iTemp) / 10.0f;
+			bHaveImpedance = true;
+			impedance = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("SWITCH") != std::string::npos)
 		{
@@ -1023,6 +1030,11 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}
+	if (bHaveWeight)
+	{
+		SendCustomSensor(Node_ID, Child_ID, BatteryLevel, weight, "Weight", "g");
+	}
+
 	if (bHaveImpedance)
 	{
 		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);
