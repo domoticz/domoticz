@@ -145,7 +145,6 @@ void CRtl433::Do_Work()
 					continue;
 				}
 				time_t atime = time(NULL);
-				_log.Log(LOG_STATUS, "Rtl433: line: (%s)", line);
 				std::string slineRaw(line);
 				if (slineRaw.find(',') != std::string::npos)
 				{
@@ -166,7 +165,6 @@ void CRtl433::Do_Work()
 				{
 					std::string header = *(h++);
 					data[header] = *vi;
-
 				}
 				int id = 0;
 				bool hasid = false;
