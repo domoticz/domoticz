@@ -38,4 +38,5 @@ scripts/dzVents/runtime/tests/luacov.stats.out
 scripts/dzVents/runtime/tests/luacov.report.out
 .idea/
 /.idea_/
-
+/www/images/floorplans/*.png
+/www/images/floorplans/*.jpg
