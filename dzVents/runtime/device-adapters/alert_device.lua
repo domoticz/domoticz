@@ -17,6 +17,7 @@ return {
 	process = function (device, data, domoticz, utils, adapterManager)
 
 		device.color = data.data._nValue
+		device.text = device.rawData[1] or ''
 
 		function device.updateAlertSensor(level, text)
 			--[[ level can be
