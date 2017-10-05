@@ -514,6 +514,7 @@ Note that if you do not find your specific device type here you can always inspe
 ==== Alert sensor ====
 
 * '''color''': ''Number''. Color of the alert. See domoticz color constants for possible values.
+* '''text''': ''String''
 * '''updateAlertSensor(level, text)''': ''Function''. Level can be domoticz.ALERTLEVEL_GREY, ALERTLEVEL_GREEN, ALERTLEVEL_YELLOW, ALERTLEVEL_ORANGE, ALERTLEVEL_RED
 
 ==== Ampère, 1-phase ====
@@ -1640,6 +1641,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added <code>daysAgo()</code> to <code>Time</code> object.
 * Added <code>compare(time)</code> method to <code>Time</code> object to calculate the difference between them. Returns a table. See documentation.
 * Added <code>domoticz.round()</code> method to <code>domoticz</code> object.
+* Added <code>text</code> property to alert sensor.
 * <code>active</code> section is now optional in your dzVents script. If you don't specify an <code>active = true/false</code> then true is assumed (script is active). Handy for when you use Domoticz' GUI script editor as it has its own way of activating and deactivating scripts.
 * Added <code>humidityStatusValue</code> for humidity devices. This value matches with the values used for setting the humidity status.
 * <code>Time</code> object will initialize to current time if nothing is passed: <code>local current = Time()</code>.

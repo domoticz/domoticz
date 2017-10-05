@@ -799,7 +799,7 @@ The options are not always available. All the options are available to device sw
 | `withinXXX()`        |  •                      |  n/a            | n/a            |
 | `silent()`           |  •                      |  •              | •              |
 | `repeatAfterXXX()`   |  •                      |  n/a            | n/a            |
-| `checkFirst()`         |  • (switch-like devices |  n/a            | n/a            |
+| `checkFirst()`         |  • (switch-like devices) |  n/a            | n/a            |
 
 
 #### About follow-up event triggers
