@@ -14,6 +14,7 @@
  - Added `daysAgo()` to `Time` object.
  - Added `compare(time)` method to `Time` object to calculate the difference between them. Returns a table. See documentation.
  - Added `domoticz.round()` method to `domoticz` object.
+ - Added `text` property to alert sensor.
  - `active` section is now optional in your dzVents script. If you don't specify an `active = true/false` then true is assumed (script is active). Handy for when you use Domoticz' GUI script editor as it has its own way of activating and deactivating scripts.
  - Added `humidityStatusValue` for humidity devices. This value matches with the values used for setting the humidity status.
  - `Time` object will initialize to current time if nothing is passed: `local current = Time()`.

@@ -850,10 +850,12 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['subType'] = 'Alert',
+				['rawData'] = { [1] = 'some text' },
 				['additionalDataData'] = { ['_nValue'] = 4 }
 			})
 
 			assert.is_same(4, device.color)
+			assert.is_same('some text', device.text)
 			device.updateAlertSensor(0, 'Oh dear!')
 			assert.is_same({ { ["UpdateDevice"] = "1|0|Oh dear! TRIGGER" } }, commandArray)
 		end)
