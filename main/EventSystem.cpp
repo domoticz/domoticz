@@ -116,11 +116,11 @@ CEventSystem::~CEventSystem(void)
 
 void CEventSystem::StartEventSystem()
 {
-	m_printprefix = "LUA";
 	StopEventSystem();
 	if (!m_bEnabled)
 		return;
 
+	m_printprefix = "LUA";
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 
 	LoadEvents();
@@ -169,67 +169,14 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
-	std::string dzv_Dir, s;
-#ifdef WIN32
-	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
-#else
-	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
-#endif
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
 
-	// Remove dzVents DB files from disk
-	std::vector<std::string> FileEntries;
-	std::vector<std::string>::const_iterator itt;
-	std::string filename;
-	DirectoryListing(FileEntries, dzv_Dir, false, true);
-	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
-	{
-		filename = dzv_Dir + *itt;
-		if (filename.find("README.md") == std::string::npos)
-		{
-			std::remove(filename.c_str());
-		}
-	}
+	if (!m_sql.m_bDisableDzVentsSystem)
+		m_dzvents.LoadEvents();
 
-	m_bdzVentsExist = false;
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
-	if (result.size()>0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
-			eitem.Name = sd[1];
-			eitem.Interpreter = sd[2];
-			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
-			eitem.Type = sd[3];
-			eitem.EventStatus = atoi(sd[4].c_str());
-			eitem.Actions = sd[5];
-			eitem.SequenceNo = 0;
-			m_events.push_back(eitem);
-
-			// Write active dzVents scripts to disk.
-			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
-			{
-				s = dzv_Dir + eitem.Name.c_str() + ".lua";
-				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
-				FILE *fOut = fopen(s.c_str(), "wb+");
-				if (fOut)
-				{
-					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
-					fclose(fOut);
-				}
-				m_bdzVentsExist = true;
-			}
-		}
-	}
-
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
 	if (result.size()>0)
 	{
@@ -250,7 +197,6 @@ void CEventSystem::LoadEvents()
 			eitem.EventStatus = atoi(sd[4].c_str());
 			eitem.SequenceNo = atoi(sd[5].c_str());
 			m_events.push_back(eitem);
-
 		}
 	}
 #ifdef _DEBUG
@@ -260,14 +206,6 @@ void CEventSystem::LoadEvents()
 
 void CEventSystem::Do_Work()
 {
-#ifdef WIN32
-	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
-	m_dzv_Dir = szUserDataFolder + "dzVents\\runtime\\";
-#else
-	m_lua_Dir = szUserDataFolder + "scripts/lua/";
-	m_dzv_Dir = szUserDataFolder + "dzVents/runtime/";
-#endif
-
 #ifdef ENABLE_PYTHON
 #ifdef WIN32
 	m_python_Dir = szUserDataFolder + "scripts\\python\\";
@@ -1125,13 +1063,14 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 	if (lastUpdate.empty() && !lastLevel)
 		return;
 
+	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
+
 	if (reason == "device")
 	{
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
 		{
-			std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
 
 			_tDeviceStatus replaceitem = itt->second;
 			replaceitem.lastUpdate = l_lastUpdate;
@@ -1146,7 +1085,7 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 		if (itt != m_scenesgroups.end())
 		{
 			_tScenesGroups replaceitem = itt->second;
-			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.lastUpdate = l_lastUpdate;
 			itt->second = replaceitem;
 		}
 	}
@@ -1157,7 +1096,7 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 		if (itt != m_uservariables.end())
 		{
 			_tUserVariable replaceitem = itt->second;
-			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.lastUpdate = l_lastUpdate;
 			itt->second = replaceitem;
 		}
 	}
