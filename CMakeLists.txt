@@ -435,6 +435,7 @@ notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
 notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
+notifications/NotificationTelegram.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
