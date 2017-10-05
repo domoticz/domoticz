@@ -42,4 +42,5 @@ install_manifest.txt
 /scripts/dzVents/scripts/
 .idea/
 /.idea_/
-
+/www/images/floorplans/*.png
+/www/images/floorplans/*.jpg
