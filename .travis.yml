@@ -87,7 +87,7 @@ matrix:
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
   - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
   - cp History.txt history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt
