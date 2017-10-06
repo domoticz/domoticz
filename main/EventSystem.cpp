@@ -1117,6 +1117,8 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 	_tEventQueue item;
 	item.reason = "security";
+	item.DeviceID = 0;
+	item.varId = 0;
 	m_eventqueue.push(item);
 }
 
@@ -1125,13 +1127,14 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 	if (lastUpdate.empty() && !lastLevel)
 		return;
 
+	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
+
 	if (reason == "device")
 	{
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
 		{
-			std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
 
 			_tDeviceStatus replaceitem = itt->second;
 			replaceitem.lastUpdate = l_lastUpdate;
@@ -1146,7 +1149,7 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 		if (itt != m_scenesgroups.end())
 		{
 			_tScenesGroups replaceitem = itt->second;
-			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.lastUpdate = l_lastUpdate;
 			itt->second = replaceitem;
 		}
 	}
@@ -1157,7 +1160,7 @@ void CEventSystem::UpdateLastUpdate(const uint64_t ulDevID, const std::string &l
 		if (itt != m_uservariables.end())
 		{
 			_tUserVariable replaceitem = itt->second;
-			replaceitem.lastUpdate = lastUpdate;
+			replaceitem.lastUpdate = l_lastUpdate;
 			itt->second = replaceitem;
 		}
 	}
@@ -1240,6 +1243,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.DeviceID = ulDevID;
 			item.devname = replaceitem.scenesgroupName;
 			item.nValue = nValue;
+			item.varId = 0;
 			item.lastUpdate = lastUpdate;
 			item.trigger = NULL;
 			m_eventqueue.push(item);
@@ -1274,6 +1278,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		{
 			_tEventQueue item;
 			item.reason = "uservariable";
+			item.DeviceID = 0;
 			item.varId = ulDevID;
 			item.lastUpdate = lastUpdate;
 			m_eventqueue.push(item);
@@ -1415,6 +1420,8 @@ void CEventSystem::ProcessMinute()
 {
 	_tEventQueue item;
 	item.reason = "time";
+	item.DeviceID = 0;
+	item.varId = 0;
 	m_eventqueue.push(item);
 }
 
