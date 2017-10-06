@@ -190,7 +190,10 @@ void CRtl433::Do_Work()
 				bool haspressure = false;
 				float rain;
 				bool hasrain = false;
-
+				float depth_cm;
+				bool hasdepth_cm = false;
+				float depth;
+				bool hasdepth = false;
 				// attempt parsing field values
 				try {
 					if (!data["id"].empty()) {
@@ -265,6 +268,24 @@ void CRtl433::Do_Work()
 				}
 				catch (boost::bad_lexical_cast e) {
 				}
+				try {
+					if (!data["depth_cm"].empty())
+					{
+						depth_cm = boost::lexical_cast<float>(data["depth_cm"]);
+						hasdepth_cm = true;
+					}
+				}
+				catch (boost::bad_lexical_cast e) {
+				}
+                                try {
+                                        if (!data["depth"].empty())
+                                        {
+                                                depth = boost::lexical_cast<float>(data["depth"]);
+                                                hasdepth = true;
+                                        }
+                                }
+                                catch (boost::bad_lexical_cast e) {
+                                }
 
 				std::string model = data["model"];
 
@@ -335,10 +356,29 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
+				if (hasdepth_cm)
+				{
+
+					SendDistanceSensor(sensoridx, unit, 
+						batterylevel, depth_cm, model);
+					bHaveSend = true;
+				}
+                                if (hasdepth)
+                                {
+
+                                        SendDistanceSensor(sensoridx, unit,
+                                                batterylevel, depth, model);
+                                        bHaveSend = true;
+                                }
 
 				if (!bHaveSend)
 				{
 					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor type, please report: (%s)", line);
+				}
+				else
+				{
+					//Added 	
+					_log.Log(LOG_NORM, "Rtl433: Raw Data: (%s)", line);
 				}
 			} else { //fgets
 			  break; // bail out, subprocess has failed
