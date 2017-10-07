@@ -3081,6 +3081,10 @@ void CSQLHelper::Do_Work()
 					IFTTT::Send_IFTTT_Trigger(itt->_ID, sValue1, sValue2, sValue3);
 				}
 			}
+			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
+			{
+				m_mainworker.m_eventsystem.UpdateDevice(itt->_sValue, itt->_nValue ? true : false);
+			}
 
 			++itt;
 		}
@@ -6377,7 +6381,9 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 
 	if (
 		(tItem._ItemType == TITEM_SWITCHCMD_EVENT) ||
-		(tItem._ItemType == TITEM_SWITCHCMD_SCENE)
+		(tItem._ItemType == TITEM_SWITCHCMD_SCENE) ||
+		(tItem._ItemType == TITEM_UPDATEDEVICE)
+
 		)
 	{
 		std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();

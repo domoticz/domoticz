@@ -3344,15 +3344,41 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand == "UpdateDevice")
 	{
 		std::string luaString = lua_tostring(lua_state, -1);
-		size_t aFind = luaString.find(" TRIGGER");
+
+		float afterTimerSeconds = 0;
+		size_t aFind = luaString.find(" AFTER ");
+		size_t bFind = luaString.find(" TRIGGER");
 		bool bEventTrigger = false;
-		if (aFind != std::string::npos)
+		if ((aFind > 0) && (aFind != std::string::npos))
 		{
-			bEventTrigger = true;
+			std::string delayString;
+			if (bFind != std::string::npos)
+			{
+				delayString = luaString.substr(aFind + 7, bFind - aFind - 7);
+				bEventTrigger = true;
+			}
+			else
+				delayString = luaString.substr(aFind + 7);
+
 			std::string newAction = luaString.substr(0, aFind);
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
 			luaString = newAction;
 		}
-		UpdateDevice(luaString, bEventTrigger);
+		else if (bFind != std::string::npos)
+		{
+			bEventTrigger = true;
+			std::string newAction = luaString.substr(0, bFind);
+			luaString = newAction;
+		}
+
+		std::vector<std::string> strarray;
+		StringSplit(luaString, "|", strarray);
+		if (strarray.size() < 2 || strarray.size() > 4)
+			return false; //Invalid!
+		uint64_t idx = atoi(strarray[0].c_str());
+
+		float DelayTime = afterTimerSeconds;
+		m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, idx, luaString, bEventTrigger));
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
