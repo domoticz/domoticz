@@ -68,6 +68,7 @@
 #include "../hardware/EvohomeBase.h"
 #include "../hardware/EvohomeScript.h"
 #include "../hardware/EvohomeSerial.h"
+#include "../hardware/EvohomeTCP.h"
 #include "../hardware/EvohomeWeb.h"
 #include "../hardware/MySensorsSerial.h"
 #include "../hardware/MySensorsTCP.h"
@@ -105,6 +106,7 @@
 #include "../hardware/Sterbox.h"
 #include "../hardware/RAVEn.h"
 #include "../hardware/DenkoviSmartdenLan.h"
+#include "../hardware/DenkoviSmartdenIPIn.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
 #include "../hardware/Ec3kMeterTCP.h"
@@ -297,6 +299,9 @@ void MainWorker::StopDomoticzHardware()
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
 	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
 	{
+#ifdef ENABLE_PYTHON
+		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
+#endif
 		(*itt)->Stop();
 		delete (*itt);
 	}
@@ -400,10 +405,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos=FindDomoticzHardware(HwdId);
 	if (dpos==-1)
 		return;
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 #ifdef ENABLE_PYTHON
 	m_pluginsystem.DeregisterPlugin(HwdId);
 #endif
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -690,6 +695,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_EVOHOME_SERIAL:
 		pHardware = new CEvohomeSerial(ID,SerialPort,Mode1,Filename);
 		break;
+	case HTYPE_EVOHOME_TCP:
+		pHardware = new CEvohomeTCP(ID, Address, Port, Filename);
+		break;
 	case HTYPE_RFLINKUSB:
 		pHardware = new CRFLinkSerial(ID, SerialPort);
 		break;
@@ -830,6 +838,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_DenkoviSmartdenLan:
 		//LAN
 		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
+		break;
+	case HTYPE_DenkoviSmartdenIPIn:
+		//LAN
+		pHardware = new CDenkoviSmartdenIPIn(ID, Address, Port, Password);
 		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON
@@ -997,7 +1009,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID);
+		pHardware = new CRtl433(ID,Filename);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
@@ -1032,7 +1044,10 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.StartPluginSystem();
+	if (m_sql.m_bEnableEventSystem)
+	{
+		m_pluginsystem.StartPluginSystem();
+	}
 #endif
 	AddAllDomoticzHardware();
 	m_fibaropush.Start();
@@ -1121,7 +1136,6 @@ bool MainWorker::StartThread()
 
 	//Start Scheduler
 	m_scheduler.StartScheduler();
-	m_eventsystem.SetEnabled(m_sql.m_bDisableEventSystem == false);
 	m_cameras.ReloadCameras();
 
 	int rnvalue=0;
@@ -1502,6 +1516,7 @@ void MainWorker::Do_Work()
 				m_pluginsystem.AllPluginsStarted();
 #endif
 				ParseRFXLogFile();
+				m_eventsystem.SetEnabled(m_sql.m_bEnableEventSystem);
 				m_eventsystem.StartEventSystem();
 			}
 		}
@@ -6268,7 +6283,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	unsigned char devType=pTypeEvohome;
 	unsigned char subType=pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	if (HwdType==HTYPE_EVOHOME_SERIAL)
+	if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
 		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
 	else //GB3: web based evohome uses decimal device ID's
 		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
@@ -6332,7 +6347,7 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		if (HwdType==HTYPE_EVOHOME_SERIAL)
+		if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
 			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		else //GB3: web based evohome uses decimal device ID's
 			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
@@ -11725,7 +11740,7 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else  //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
@@ -11829,7 +11844,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL)
+	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
@@ -11841,7 +11856,7 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	unsigned char dSubType=atoi(sd[4].c_str());
 	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
-	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 	{
 		REVOBUF tsen;
 		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
@@ -11918,10 +11933,12 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
+		(pHardware->HwdType == HTYPE_EVOHOME_TCP) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
-		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) || 
+		(pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -11974,7 +11991,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			CNefitEasy *pGateway = reinterpret_cast<CNefitEasy*>(pHardware);
 			pGateway->SetSetpoint(ID2, TempValue);
 		}
-		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB)
+		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
 			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
 		}
@@ -11982,6 +11999,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		{
 			CInComfort *pGateway = reinterpret_cast<CInComfort*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_OpenWebNetTCP)
+		{
+			COpenWebNetTCP *pGateway = reinterpret_cast<COpenWebNetTCP*>(pHardware);
+			return pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
 	else
@@ -12323,10 +12345,6 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
 
-	time_t now = time(0);
-	struct tm ltime;
-	localtime_r(&now,&ltime);
-
 	//first set actual scene status
 	std::string Name="Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
@@ -12346,9 +12364,10 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
 
-	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %" PRIu64 ")",
+	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
+	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",
 		nValue,
-		ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
+		szLastUpdate.c_str(),
 		idx);
 
 	//Check if we need to email a snapshot of a Camera
@@ -12384,13 +12403,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 
 	_log.Log(LOG_NORM, "Activating Scene/Group: [%s]", Name.c_str());
 
-	if (!m_sql.m_bDisableEventSystem)
-	{
-		std::stringstream ssLastUpdate;
-		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
-		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
-		m_eventsystem.UpdateScenesGroups(idx, nValue, ssLastUpdate.str());
-	}
+	bool bEventTrigger = true;
+	if (m_sql.m_bEnableEventSystem)
+		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate);
 
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
@@ -12480,18 +12495,24 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 			if (switchtype != STYPE_PushOn)
 			{
 				int delay = (lstatus == "Off") ? offdelay : ondelay;
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(delay));
 				SwitchLight(idx, lstatus, ilevel, hue, false, delay);
 				if (scenetype == SGTYPE_SCENE)
 				{
 					if ((lstatus != "Off") && (offdelay > 0))
 					{
 						//switch with on delay, and off delay
+						if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+							m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay + offdelay));
 						SwitchLight(idx, "Off", ilevel, hue, false, ondelay + offdelay);
 					}
 				}
 			}
 			else
 			{
+				if (m_sql.m_bEnableEventSystem && !bEventTrigger)
+					m_eventsystem.SetEventTrigger(idx, m_eventsystem.REASON_DEVICE, static_cast<float>(ondelay));
 				SwitchLight(idx, "On", ilevel, hue, false, ondelay);
 			}
 			sleep_milliseconds(50);
@@ -12725,8 +12746,8 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	typedef std::map<std::string, time_t>::iterator hb_components;
-	for (hb_components iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
+	std::map<std::string, time_t>::const_iterator iterator;
+	for (iterator = m_componentheartbeats.begin(); iterator != m_componentheartbeats.end(); ++iterator) {
 		double dif = difftime(now, iterator->second);
 		//_log.Log(LOG_STATUS, "%s last checking  %.2lf seconds ago", iterator->first.c_str(), dif);
 		if (dif > 60)
@@ -13100,8 +13121,3 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	}
 	return true;
 }
-
-
-
-
-

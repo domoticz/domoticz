@@ -22,7 +22,7 @@ namespace Plugins {
 		PyObject*		m_pConnection;
 
 	public:
-		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnecting(false), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0)
+		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnecting(false), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0), m_tLastSeen(0)
 		{
 			Py_INCREF(m_pConnection);
 		};
@@ -80,9 +80,7 @@ namespace Plugins {
 	{
 	public:
 		CPluginTransportUDP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL) { };
-		virtual	bool		handleConnect();
-		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::udp::resolver::iterator endpoint_iterator);
-		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::udp::resolver::iterator endpoint_iterator);
+		virtual	bool		handleListen();
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&);
 		virtual	bool		handleDisconnect();
@@ -91,6 +89,27 @@ namespace Plugins {
 		boost::asio::ip::udp::resolver	*m_Resolver;
 		boost::asio::ip::udp::socket	*m_Socket;
 		boost::asio::ip::udp::endpoint	m_remote_endpoint;
+	};
+
+	class CPluginTransportICMP : CPluginTransportIP
+	{
+	public:
+		CPluginTransportICMP(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port) : CPluginTransportIP(HwdID, pConnection, Address, Port), m_Socket(NULL), m_Resolver(NULL), m_Timer(NULL), m_SequenceNo(0), m_Initialised(false) { };
+		virtual	void		handleAsyncResolve(const boost::system::error_code& err, boost::asio::ip::icmp::resolver::iterator endpoint_iterator);
+		virtual	bool		handleListen();
+		virtual void		handleTimeout(const boost::system::error_code&);
+		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
+		virtual void		handleWrite(const std::vector<byte>&);
+		virtual	bool		handleDisconnect();
+		~CPluginTransportICMP();
+	protected:
+		boost::asio::ip::icmp::resolver*	m_Resolver;
+		boost::asio::ip::icmp::socket*		m_Socket;
+		boost::asio::ip::icmp::endpoint		m_Endpoint;
+		boost::asio::deadline_timer*		m_Timer;
+
+		int									m_SequenceNo;
+		bool								m_Initialised;
 	};
 
 	class CPluginTransportSerial : CPluginTransport, AsyncSerial

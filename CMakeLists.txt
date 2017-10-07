@@ -246,6 +246,7 @@ FIND_PROGRAM(GIT_EXECUTABLE git
 
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
+include_directories(${CMAKE_SOURCE_DIR}/tinyxpath)
 
 # a custom target that is always built
 ADD_CUSTOM_TARGET(revisiontag ALL)
@@ -262,10 +263,12 @@ main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
+main/dzVents.cpp
 main/EventSystem.cpp
 main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
 main/Helper.cpp
+main/IFTTT.cpp
 main/localtime_r.cpp
 main/Logger.cpp
 main/LuaCommon.cpp
@@ -306,6 +309,7 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenIPIn.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
@@ -316,8 +320,10 @@ hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
+hardware/EvohomeRadio.cpp
 hardware/EvohomeScript.cpp
 hardware/EvohomeSerial.cpp
+hardware/EvohomeTCP.cpp
 hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
 hardware/FritzboxTCP.cpp
@@ -541,15 +547,16 @@ ENDIF(LIBUSB_FOUND)
 #
 find_package(OpenSSL)
 if(NOT OPENSSL_INCLUDE_DIR)
-  message(SEND_ERROR "Failed to find openssl include files (ssl.h), no HTTPS support")
+	message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
 endif()
 if(NOT OPENSSL_FOUND)
-  message(SEND_ERROR "Failed to find the openssl library, no HTTPS support")
+  message(SEND_ERROR "Failed to find the OpenSSL library, no HTTPS support")
   find_library(MD_LIBRARY NAMES md)
   if(MD_LIBRARY)
     target_link_libraries(domoticz ${MD_LIBRARY})
   endif(MD_LIBRARY)
 else()
+  message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
   add_definitions(-DWWW_ENABLE_SSL)
   include_directories(${OPENSSL_INCLUDE_DIR})
   target_link_libraries(domoticz ${OPENSSL_LIBRARIES})

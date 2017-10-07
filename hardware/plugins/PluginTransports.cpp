@@ -14,6 +14,9 @@
 #include <queue>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include "icmp_header.hpp"
+#include "ipv4_header.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
 
@@ -77,7 +80,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -105,7 +108,7 @@ namespace Plugins {
 			delete m_Socket;
 			m_Socket = NULL;
 
-			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -360,47 +363,40 @@ namespace Plugins {
 		}
 	};
 
-	bool CPluginTransportUDP::handleConnect()
+	bool CPluginTransportUDP::handleListen()
 	{
 		try
 		{
 			if (!m_Socket)
 			{
-				m_bConnected = false;
-				int	iPort = atoi(m_Port.c_str());
-				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
-
-				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
-											 boost::bind(&CPluginTransportUDP::handleRead, this,
-													boost::asio::placeholders::error,
-													boost::asio::placeholders::bytes_transferred));
-
-
-/*
-				m_Resolver = new boost::asio::ip::udp::resolver(ios);
-				m_Socket = new boost::asio::ip::udp::socket(ios);
-
 				boost::system::error_code ec;
-				boost::asio::ip::udp::resolver::query query(m_IP, m_Port);
-				boost::asio::ip::udp::resolver::iterator iter = m_Resolver->resolve(query);
-				boost::asio::ip::udp::endpoint endpoint = *iter;
+				m_bConnected = true;
+				int	iPort = atoi(m_Port.c_str());
 
-				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
-				//
-				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportUDP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
-				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+				m_Socket = new boost::asio::ip::udp::socket(ios, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), iPort));
+				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
+				if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
 				{
-					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+					m_Socket->set_option(boost::asio::ip::multicast::join_group(boost::asio::ip::address::from_string(m_IP.c_str())), ec);
+					m_Socket->set_option(boost::asio::ip::multicast::hops(2), ec);
 				}
-*/
+			}
+
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_remote_endpoint,
+											boost::bind(&CPluginTransportUDP::handleRead, this,
+												boost::asio::placeholders::error,
+												boost::asio::placeholders::bytes_transferred));
+
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			{
+				ios.reset();
+				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
 		catch (std::exception& e)
 		{
-			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
+			//	_log.Log(LOG_ERROR, "Plugin: Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -410,61 +406,38 @@ namespace Plugins {
 		return true;
 	}
 
-	void CPluginTransportUDP::handleAsyncResolve(const boost::system::error_code & err, boost::asio::ip::udp::resolver::iterator endpoint_iterator)
+	void CPluginTransportUDP::handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
 	{
-		if (!err)
+		if (!ec)
 		{
-			boost::asio::ip::udp::endpoint endpoint = *endpoint_iterator;
-			m_Socket->async_connect(endpoint, boost::bind(&CPluginTransportUDP::handleAsyncConnect, this, boost::asio::placeholders::error, ++endpoint_iterator));
-		}
-		else
-		{
-			delete m_Resolver;
-			m_Resolver = NULL;
-			delete m_Socket;
-			m_Socket = NULL;
+			std::string sAddress = m_remote_endpoint.address().to_string();
+			std::string sPort = SSTR(m_remote_endpoint.port());
 
-			//	_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
-		}
-	}
+			PyType_Ready(&CConnectionType);
+			CConnection* pConnection = (CConnection*)CConnection_new(&CConnectionType, (PyObject*)NULL, (PyObject*)NULL);
 
-	void CPluginTransportUDP::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::udp::resolver::iterator endpoint_iterator)
-	{
-		delete m_Resolver;
-		m_Resolver = NULL;
+			// Configure temporary Python Connection object
+			Py_XDECREF(pConnection->Name);
+			pConnection->Name = ((CConnection*)m_pConnection)->Name;
+			Py_INCREF(pConnection->Name);
+			Py_XDECREF(pConnection->Address);
+			pConnection->Address = PyUnicode_FromString(sAddress.c_str());
+			Py_XDECREF(pConnection->Port);
+			pConnection->Port = PyUnicode_FromString(sPort.c_str());
+			pConnection->Transport = ((CConnection*)m_pConnection)->Transport;
+			Py_INCREF(pConnection->Transport);
+			pConnection->Protocol = ((CConnection*)m_pConnection)->Protocol;
+			Py_INCREF(pConnection->Protocol);
+			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
-		if (!err)
-		{
-			m_bConnected = true;
-			m_Socket->async_receive(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-				boost::bind(&CPluginTransportUDP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			// Create Protocol object to handle connection's traffic
 			{
-				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
-				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
+				PluginMessageQueue.push(pMessage);
 			}
-		}
-		else
-		{
-			delete m_Socket;
-			m_Socket = NULL;
-			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
-	}
-
-	void CPluginTransportUDP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
-	{
-		if (!e)
-		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+			ReadMessage*	Message = new ReadMessage(((CConnection*)pConnection)->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -473,22 +446,20 @@ namespace Plugins {
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
-			//ready for next read
-			if (m_Socket)
-				m_Socket->async_receive(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
-					boost::bind(&CPluginTransportUDP::handleRead,
-						this,
-						boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred));
+			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
+			Py_DECREF(pConnection);
+
+			// Set up listener again
+			handleListen();
 		}
 		else
 		{
-			if ((e.value() != 2) &&
-				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation cancelled
-				(e.value() != 995) &&	// Abort due to shutdown during disconnect
-				(e.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
+			if ((ec.value() != 2) &&
+				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
+				(ec.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
 
 			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
@@ -500,20 +471,37 @@ namespace Plugins {
 
 	void CPluginTransportUDP::handleWrite(const std::vector<byte>& pMessage)
 	{
-		if (m_Socket)
+		try
 		{
-			try
+			if (!m_Socket)
 			{
-//				m_Socket->async_send_to(boost::asio::buffer(pMessage, pMessage.size()));
+				boost::system::error_code  err;
+				m_Socket = new boost::asio::ip::udp::socket(ios);
+				m_Socket->open(boost::asio::ip::udp::v4(), err);
+				m_Socket->set_option(boost::asio::ip::udp::socket::reuse_address(true));
 			}
-			catch (...)
+
+
+			// Different handling for multi casting
+			if ((m_IP.substr(0, 4) >= "224.") && (m_IP.substr(0, 4) <= "239.") || (m_IP.substr(0, 4) == "255."))
 			{
-				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d bytes", __func__, pMessage.size());
+				m_Socket->set_option(boost::asio::socket_base::broadcast(true));
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address_v4::broadcast(), atoi(m_Port.c_str()));
+				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
+			}
+			else
+			{
+				boost::asio::ip::udp::endpoint destination(boost::asio::ip::address::from_string(m_IP.c_str()), atoi(m_Port.c_str()));
+				int bytes_transferred = m_Socket->send_to(boost::asio::buffer(pMessage, pMessage.size()), destination);
 			}
 		}
-		else
+		catch (boost::system::system_error err)
 		{
-			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+			_log.Log(LOG_ERROR, "%s: '%s' during 'send_to' operation: %d bytes", __func__, err.what(), pMessage.size());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Socket error during 'send_to' operation: %d bytes", __func__, pMessage.size());
 		}
 	}
 
@@ -544,6 +532,224 @@ namespace Plugins {
 		}
 		if (m_Resolver) delete m_Resolver;
 	};
+
+	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, boost::asio::ip::icmp::resolver::iterator endpoint_iterator)
+	{
+		if (!ec)
+		{
+			m_bConnected = true;
+			m_IP = endpoint_iterator->endpoint().address().to_string();
+
+			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
+			std::string body("ping");
+			handleWrite(std::vector<byte>(&body[0], &body[body.length()]));
+
+			m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
+				boost::bind(&CPluginTransportICMP::handleRead, this,
+					boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+		}
+		else
+		{
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(DisconnectMessage);
+			}
+		}
+	}
+
+	bool CPluginTransportICMP::handleListen()
+	{
+		try
+		{
+			if (!m_Initialised)
+			{
+				m_bConnecting = false;
+				m_bConnected = false;
+				m_Resolver = new boost::asio::ip::icmp::resolver(ios);
+				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
+
+				boost::system::error_code ec;
+				boost::asio::ip::icmp::resolver::query query(m_IP, "0");
+				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver->resolve(query);
+				m_Endpoint = *iter;
+
+				//
+				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
+				//
+				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+
+				m_Initialised = true;
+			}
+			else
+			{
+				m_Socket->async_receive_from(boost::asio::buffer(m_Buffer, sizeof m_Buffer), m_Endpoint,
+					boost::bind(&CPluginTransportICMP::handleRead, this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
+			}
+
+			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+			{
+				ios.reset();
+				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+			}
+		}
+		catch (std::exception& e)
+		{
+			_log.Log(LOG_ERROR, "%s Exception: '%s' failed connecting to '%s'", __func__, e.what(), m_IP.c_str());
+			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message);
+			return false;
+		}
+
+		return true;
+	}
+
+	void CPluginTransportICMP::handleTimeout(const boost::system::error_code& ec)
+	{
+		if (!ec)  // Timeout, no response
+		{
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, NULL);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+		}
+		else if (ec != boost::asio::error::operation_aborted)  // Timer cancelled by message arriving
+		{
+			_log.Log(LOG_ERROR, "Plugin: %s: %d, %s", __func__, ec.value(), ec.message().c_str());
+		}
+	}
+
+	void CPluginTransportICMP::handleRead(const boost::system::error_code & ec, std::size_t bytes_transferred)
+	{
+		if (!ec)
+		{
+			ipv4_header*	pIPv4 = (ipv4_header*)&m_Buffer;
+			icmp_header*	pICMP = (icmp_header*)(&m_Buffer[0] + 20);
+			std::string		sAddress;
+
+			// Under Linux all ICMP traffic will be seen so filter out extra traffic
+			if (pICMP->type() == icmp_header::echo_reply)						// Successful Echo Reply for the requested address
+			{
+				sAddress = pIPv4->source_address().to_string();
+			}
+			else if (pICMP->type() == icmp_header::destination_unreachable)		// Unsuccessful Echo Reply for the requested address
+			{
+				// on failure part of the original request is appended to the ICMP header
+				ipv4_header*	pIPv4 = (ipv4_header*)(pICMP+1);
+				sAddress = pIPv4->destination_address().to_string();
+			}
+
+			if (sAddress == m_IP)
+			{
+				// Cancel timeout
+				if (m_Timer)
+				{
+					m_Timer->cancel();
+				}
+
+				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+
+				m_tLastSeen = time(0);
+				m_iTotalBytes += bytes_transferred;
+			}
+
+			// Set up listener again
+			handleListen();
+		}
+		else
+		{
+			if ((ec.value() != 2) &&
+				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
+				(ec.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "Plugin: Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
+
+			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(DisconnectMessage);
+			}
+		}
+	}
+
+	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
+	{
+		// Reset timeout if one is set or set one
+		if (!m_Timer)
+		{
+			m_Timer = new boost::asio::deadline_timer(ios);
+		}
+		m_Timer->expires_from_now(boost::posix_time::seconds(5));
+		m_Timer->async_wait(boost::bind(&CPluginTransportICMP::handleTimeout, this, boost::asio::placeholders::error));
+
+		// Create an ICMP header for an echo request.
+		icmp_header echo_request;
+		echo_request.type(icmp_header::echo_request);
+		echo_request.code(0);
+#if defined(BOOST_ASIO_WINDOWS)
+		echo_request.identifier(static_cast<unsigned short>(::GetCurrentProcessId()));
+#else
+		echo_request.identifier(::getpid());
+#endif
+		echo_request.sequence_number(m_SequenceNo++);
+		compute_checksum(echo_request, pMessage.begin(), pMessage.end());
+
+		// Encode the request packet.
+		boost::asio::streambuf request_buffer;
+		std::ostream os(&request_buffer);
+		std::string	 sData(pMessage.begin(), pMessage.end());
+		os << echo_request << sData;
+
+		// Send the request
+		m_Socket->send_to(request_buffer.data(), m_Endpoint);
+	}
+
+	bool CPluginTransportICMP::handleDisconnect()
+	{
+		m_tLastSeen = time(0);
+		if (m_bConnected)
+		{
+			if (m_Timer)
+			{
+				m_Timer->cancel();
+				delete m_Timer;
+				m_Timer = NULL;
+			}
+
+			if (m_Socket)
+			{
+				boost::system::error_code e;
+				m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
+				m_Socket->close();
+				delete m_Socket;
+				m_Socket = NULL;
+			}
+			m_bConnected = false;
+		}
+		return true;
+	}
+
+	CPluginTransportICMP::~CPluginTransportICMP()
+	{
+		if (m_Socket)
+		{
+			handleDisconnect();
+			delete m_Socket;
+		}
+		if (m_Resolver) delete m_Resolver;
+	}
 
 	CPluginTransportSerial::CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string & Port, int Baud) : CPluginTransport(HwdID, pConnection), m_Baud(Baud)
 	{

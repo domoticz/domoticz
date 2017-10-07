@@ -41,9 +41,9 @@ public:
 
 	typedef struct
 	{
-		unsigned int					m_homeId;
-		unsigned char					m_nodeId;
-		bool							m_polled;
+		unsigned int					homeId;
+		unsigned char					nodeId;
+		bool							polled;
 
 		std::string						szType;
 		int								iVersion;
@@ -59,8 +59,9 @@ public:
 		eNodeState						eState;
 
 		bool							HaveUserCodes;
+		bool							IsPlus;
 
-		time_t							m_LastSeen;
+		time_t							LastSeen;
 
 		//Thermostat settings
 		int								tClockDay;
@@ -79,7 +80,7 @@ public:
 	bool GetUpdates();
 	void OnZWaveNotification( OpenZWave::Notification const* _notification);
 	void OnZWaveDeviceStatusUpdate(int cs, int err);
-	void EnableDisableNodePolling(int NodeID);
+	void EnableDisableNodePolling(const int nodeID);
 	void SetNodeName(const unsigned int homeID, const int nodeID, const std::string &Name);
 	std::string GetNodeStateString(const unsigned int homeID, const int nodeID);
 	void GetNodeValuesJson(const unsigned int homeID, const int nodeID, Json::Value &root, const int index);
@@ -128,7 +129,7 @@ public:
 	unsigned char m_controllerNodeId;
 	COpenZWaveControlPanel m_ozwcp;
 private:
-	void NodeQueried(int NodeID);
+	void NodeQueried(const unsigned int homeID, const int nodeID);
 	void DeleteNode(const unsigned int homeID, const int nodeID);
 	void AddNode(const unsigned int homeID, const int nodeID,const NodeInfo *pNode);
 	void EnableNodePoll(const unsigned int homeID, const int nodeID, const int pollTime);

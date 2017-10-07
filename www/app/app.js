@@ -298,19 +298,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'TemperatureController',
 				controllerAs: 'ctrl'
 			})).
-			when('/Temperature/:idx/Notifications', angularAMD.route({
-				templateUrl: 'views/temperature_notifications.html',
-				controller: 'TemperatureNotificationsController',
-				controllerAs: 'ctrl'
-			})).
 			when('/Temperature/CustomTempLog', angularAMD.route({
 				templateUrl: 'views/temperature_custom_temp_log.html',
 				controller: 'TemperatureCustomLogController',
-				controllerAs: 'ctrl'
-			})).
-			when('/Temperature/:idx/Log', angularAMD.route({
-				templateUrl: 'views/temperature_log.html',
-				controller: 'TemperatureLogController',
 				controllerAs: 'ctrl'
 			})).
 			when('/Update', angularAMD.route({
@@ -604,6 +594,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.appversion = data.version;
 					$rootScope.config.apphash = data.hash;
 					$rootScope.config.appdate = data.build_time;
+					$rootScope.config.dzventsversion = data.dzvents_version;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 					$("#appversion").text("V" + data.version);
 					if (data.SystemName != "windows") {
@@ -706,8 +697,31 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				});
 			}
 		};
+		$rootScope.GetItemBackgroundStatus = function (item) {
+			// generate protected/timeout/lowbattery status
+			var backgroundClass = "statusNormal";
+			if (item.HaveTimeout == true) {
+				backgroundClass = "statusTimeout";
+			}
+			else {
+				var BatteryLevel = parseInt(item.BatteryLevel);
+				if (BatteryLevel != 255) {
+					if (BatteryLevel <= 10) {
+						backgroundClass = "statusLowBattery";
+					}
+					else if (item.Protected == true) {
+						backgroundClass = "statusProtected";
+					}
+				}
+				else if (item.Protected == true) {
+					backgroundClass = "statusProtected";
+				}
+			}
+			return backgroundClass;
+		}
+
 	});
 
 	// Bootstrap Angular when DOM is ready
 	return angularAMD.bootstrap(app);
-}); 
+});
