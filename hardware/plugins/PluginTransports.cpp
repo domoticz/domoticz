@@ -73,7 +73,8 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
 			}
@@ -129,7 +130,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -168,7 +170,8 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
 			}
@@ -394,7 +397,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -602,7 +606,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -740,32 +745,27 @@ namespace Plugins {
 	bool CPluginTransportICMP::handleDisconnect()
 	{
 		m_tLastSeen = time(0);
-		if (m_bConnected)
+		if (m_Timer)
 		{
-			m_bConnected = false;
+			m_Timer->cancel();
+			delete m_Timer;
+			m_Timer = NULL;
+		}
 
-			if (m_Timer)
+		if (m_Socket)
+		{
+			boost::system::error_code e;
+			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
+			if (e)
 			{
-				m_Timer->cancel();
-				delete m_Timer;
-				m_Timer = NULL;
+				_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
 			}
-
-			if (m_Socket)
+			else
 			{
-				boost::system::error_code e;
-				m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
-				if (e)
-				{
-					_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
-				}
-				else
-				{
-					m_Socket->close();
-				}
-				delete m_Socket;
-				m_Socket = NULL;
+				m_Socket->close();
 			}
+			delete m_Socket;
+			m_Socket = NULL;
 		}
 
 		if (m_Resolver)
