@@ -6,14 +6,14 @@
     <script type="text/javascript" src="js/en_compressed.js"></script>
     <script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
-	<script src="js/bootbox.min.js"></script> 
+	<script src="js/bootbox.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
     <script type="text/javascript" src="js/noty/layouts/top.js"></script>
     <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
     <script type="text/javascript" src="js/noty/themes/default.js"></script>
     <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
-    <script type="text/javascript" src="js/domoticzblocks_messages_en.js"></script>	
+    <script type="text/javascript" src="js/domoticzblocks_messages_en.js"></script>
     <script type="text/javascript" src="js/domoticzblocks.js"></script>
 	<script src="js/i18next-1.8.0.min.js"></script>
 	<script type="text/javascript" src="js/bootbox.min.js"></script>
@@ -23,9 +23,9 @@
 	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
-    <link type="text/css" rel="stylesheet" href="css/style.css" />	
+    <link type="text/css" rel="stylesheet" href="css/style.css" />
 	<link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
-	    
+
     <style>
       html, body {
         background-color: transparent;
@@ -36,7 +36,7 @@
       }
       .blocklySvg {
         height:100%;
-        width: 100%; 
+        width: 100%;
       }
       .blocklyTreeRow {
         color:black;
@@ -45,14 +45,14 @@
       { border-spacing: 8px;
     	padding:2px 2px 2px 2px;
       }
-		#aceDiv { 
+		#aceDiv {
 			position: relative;
 			height: 700px;
 			}
     </style>
     <script>
 	  var editor;
-	  
+
       function init() {
       	Blockly.inject(document.getElementById('blocklyDiv'),
         {
@@ -75,7 +75,7 @@
 		editor.setOptions({enableBasicAutocompletion: true, enableSnippets: true, enableLiveAutocompletion: true});
         load_blocks();
       }
-      
+
       function opSymbol(operand) {
 	     switch(operand)
 		{
@@ -98,12 +98,12 @@
 		  operand = ' >= ';
 		  break;
 		default:
-		} 
-		return operand;		     
+		}
+		return operand;
       }
-      
+
       function parseXml(xml) {
-      
+
         if ($(xml).children().length > 1) {
 		  	return "err:Please make sure there is only a single block structure";
 		}
@@ -118,26 +118,26 @@
 		    elseIfCount = parseInt(elseIfString);
 	    }
 	    elseIfCount++;
-	    
+
 	    var json = {};
 	    json.eventlogic = []
-	    
+
 	    for (var i=0;i<elseIfCount;i++)
-	    { 
+	    {
 	    	conditionActionPair = parseXmlBlocks(xml,i);
 		    var oneevent = {};
 		    oneevent.conditions = conditionActionPair[0].toString();
 		    oneevent.actions = conditionActionPair[1].toString();
 		    json.eventlogic.push(oneevent);
  		}
-		
+
 		return json;
-		
+
       }
-      
+
       function parseXmlBlocks(xml,pairId) {
       	var boolString = "";
-     
+
 		function GetValueText(value, variableType) {
 			if (variableType.indexOf("switchvariables") >= 0) {
 				var fieldA = $(value).find("field")[0];
@@ -178,10 +178,10 @@
 			else {
 				var fieldB = $(value).find("field")[0];
 				if ($(fieldB).attr("name") == "State") {
-					return '"'+$(fieldB).text()+'"'; 
+					return '"'+$(fieldB).text()+'"';
 				}
 				else if ($(fieldB).attr("name") == "TEXT") {
-					return '"'+$(fieldB).text()+'"'; 
+					return '"'+$(fieldB).text()+'"';
 				}
 				else if ($(fieldB).attr("name") == "NUM") {
 					return $(fieldB).text();
@@ -189,7 +189,7 @@
 				return "unknown comparevariable "+variableType;
 			}
 		}
-     
+
 		function parseLogicCompare(thisBlock){
 			var locOperand = opSymbol($($(thisBlock).children("field:first")).text());
 			var valueA = $(thisBlock).children("value[name='A']")[0];
@@ -201,17 +201,17 @@
 
 			var compareString = varTextA;
 			compareString += locOperand;
-			compareString += varTextB; 
+			compareString += varTextB;
 			return compareString;
 		}
-		
+
 		function parseLogicTimeOfDay(thisBlock) {
 				var compareString = "";
 				var locOperand = opSymbol($($(thisBlock).children("field:first")).text());
 				var valueTime = $(thisBlock).children("value[name='Time']")[0];
 				var timeBlock = $(valueTime).children("block:first");
-				if (timeBlock.attr("type")=="logic_timevalue") {	
-					var valueA = $(timeBlock).children("field[name='TEXT']")[0];			
+				if (timeBlock.attr("type")=="logic_timevalue") {
+					var valueA = $(timeBlock).children("field[name='TEXT']")[0];
 					var hours=parseInt($(valueA).text().substr(0,2));
 					var minutes=parseInt($(valueA).text().substr(3,2));
 					var totalminutes=(hours*60)+minutes;
@@ -219,30 +219,30 @@
 				}
 				else if (timeBlock.attr("type")=="logic_sunrisesunset") {
 					var valueA = $(timeBlock).children("field[name='SunriseSunset']")[0];
-					compareString = 'timeofday '+locOperand+' @'+$(valueA).text(); 
+					compareString = 'timeofday '+locOperand+' @'+$(valueA).text();
 				}
 				else if (timeBlock.attr("type").indexOf("uservariables") >= 0) {
 					var fieldA = $(timeBlock).find("field[name='Variable']")[0];
-					var valueA = "variable["+$(fieldA).text()+"]";         
+					var valueA = "variable["+$(fieldA).text()+"]";
 					compareString = 'timeofday '+locOperand+' tonumber(string.sub('+valueA+',1,2))*60+tonumber(string.sub('+valueA+',4,5))';
 				}
-				return compareString;	
+				return compareString;
 		}
-		
+
 		function parseLogicWeekday(thisBlock) {
 				var locOperand = opSymbol($($(thisBlock).children("field:first")).text());
 				var valueA = $(thisBlock).children("field[name='Weekday']")[0];
-				var compareString = 'weekday '+locOperand+' '+$(valueA).text(); 
+				var compareString = 'weekday '+locOperand+' '+$(valueA).text();
 			  	return compareString;
-		}		
+		}
 
 		function parseSecurityStatus(thisBlock) {
 				var locOperand = opSymbol($($(thisBlock).children("field:first")).text());
 				var valueA = $(thisBlock).children("field[name='Status']")[0];
-				var compareString = 'securitystatus '+locOperand+' '+$(valueA).text(); 
+				var compareString = 'securitystatus '+locOperand+' '+$(valueA).text();
 			  	return compareString;
 		}
-		
+
 		function parseValueBlock(thisBlock,locOperand,Sequence) {
 			var firstBlock = $(thisBlock).children("block:first");
 			if (firstBlock.attr("type")=="logic_compare") {
@@ -264,9 +264,9 @@
 			else if (firstBlock.attr("type")=="security_status") {
       			var conditionstring = parseSecurityStatus(firstBlock);
       			return conditionstring;
-      		} 
+      		}
 		}
-		
+
     	function parseLogicOperation(thisBlock){
     		var locOperand = ' '+$($(thisBlock).children("field:first")).text().toLowerCase()+' ';
 			var valueA = $(thisBlock).children("value[name='A']")[0];
@@ -274,9 +274,9 @@
 			var conditionA = parseValueBlock(valueA,locOperand,"A");
 			var conditionB = parseValueBlock(valueB,locOperand,"B");
 			var conditionstring = "("+conditionA+" "+locOperand+" "+conditionB+")";
-			return conditionstring; 
+			return conditionstring;
 		}
-	    
+
 	    var ifBlock = $($(xml).find("value[name='IF"+pairId+"']")[0]).children('block:first');
 
       	if (ifBlock.attr("type")=="logic_compare") {
@@ -289,7 +289,7 @@
       		// nested logic operation, drill down
       		var compareString = parseLogicOperation(ifBlock);
        		boolString += compareString;
-    
+
       	}
       	else if (ifBlock.attr("type")=="logic_timeofday") {
       		// nested logic operation, drill down
@@ -305,24 +305,24 @@
       		// nested logic operation, drill down
       		var compareString = parseSecurityStatus(ifBlock);
       		boolString += compareString;
-      	}      	
+      	}
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO"+pairId+"']")[0]);
- 	      $(doBlock).find('block').each (function(){ 
+ 	      $(doBlock).find('block').each (function(){
 			if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var fieldA = $(valueA).find("field")[0];
 	        	var blockA = $(valueA).children("block:first");
-				if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+				if (blockA.attr("type").indexOf("uservariables") >= 0) {
 					var setString = "commandArray[Variable:"+$(fieldA).text()+"]";
 					var valueB = $(this).find("value[name='B']")[0];
 					var fieldB = $(valueB).find("field")[0];
 					var blockB = $(valueB).children("block:first");
 					var variableTypeB = $(valueB).children("block:first").attr("type");
 					var dtext=GetValueText(valueB,variableTypeB);
-					setString += '='+dtext+''; 
+					setString += '='+dtext+'';
 					setArray.push(setString);
-								
+
 				}
 				else {
 					var setString = "commandArray["+$(fieldA).text()+"]";
@@ -330,11 +330,11 @@
 					var fieldB = $(valueB).find("field")[0];
 					var blockB = $(valueB).children("block:first");
 					if ((blockB.attr("type")=="logic_states") && ($(fieldB).attr("name") == "State")) {
-						setString += '="'+$(fieldB).text()+'"'; 
+						setString += '="'+$(fieldB).text()+'"';
 						setArray.push(setString);
 					}
 					else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
-						setString += '="Set Level '+$(fieldB).text()+'"'; 
+						setString += '="Set Level '+$(fieldB).text()+'"';
 						setArray.push(setString);
 					}
 					else {
@@ -342,7 +342,7 @@
 						//alert('A Type: ' + blockA.attr("type") + ', B Type: ' + blockB.attr("type") + ', FieldB: ' + $(fieldB).attr("name"));
 					}
 					//else if ((blockB.attr("type")=="math_number") && ($(fieldB).attr("name") == "NUM")) {
-					//	setString += '="'+$(fieldB).text()+'"'; 
+					//	setString += '="'+$(fieldB).text()+'"';
 					//	setArray.push(setString);
 					//}
 				}
@@ -357,36 +357,36 @@
 	        	var valueB = $(this).find("value[name='B']")[0];
 	        	var fieldB = $(valueB).find("field")[0];
 	        	var blockB = $(valueB).children("block:first");
-	        	
+
 	        	var blockBType=blockB.attr("type");
 	        	var fieldBName=$(fieldB).attr("name");
 		        if ((blockBType=="logic_states") && (fieldBName == "State")) {
-	        		setString += '="'+$(fieldB).text()+' AFTER '+ $(fieldC).text()+'"'; 
+	        		setString += '="'+$(fieldB).text()+' AFTER '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
-	        	}        	
+	        	}
 	        	else if ((blockBType=="logic_setlevel") && (fieldBName == "NUM")) {
-	        		setString += '="Set Level '+$(fieldB).text()+' AFTER '+ $(fieldC).text()+'"'; 
+	        		setString += '="Set Level '+$(fieldB).text()+' AFTER '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
 	        	}
 		        else if ((blockBType=="math_number") && (fieldBName == "NUM")) {
-					if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+					if (blockA.attr("type").indexOf("uservariables") >= 0) {
 						var setString = "commandArray[Variable:"+$(fieldA).text()+"]";
 						var valueB = $(this).find("value[name='B']")[0];
 						var fieldB = $(valueB).find("field")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+$(fieldB).text()+''; 
-						setString += ' AFTER '+ $(fieldC).text()+'"'; 
+						setString += '="'+$(fieldB).text()+'';
+						setString += ' AFTER '+ $(fieldC).text()+'"';
 						setArray.push(setString);
 					}
 	        	}
 		        else if ((blockBType=="text") && (fieldBName == "TEXT")) {
-					if (blockA.attr("type").indexOf("uservariables") >= 0) { 
+					if (blockA.attr("type").indexOf("uservariables") >= 0) {
 						var setString = "commandArray[Variable:"+$(fieldA).text()+"]";
 						var valueB = $(this).find("value[name='B']")[0];
 						var fieldB = $(valueB).find("field")[0];
 						var blockB = $(valueB).children("block:first");
-						setString += '="'+$(fieldB).text()+'"'; 
-						setString += ' AFTER '+ $(fieldC).text()+'"'; 
+						setString += '="'+$(fieldB).text()+'"';
+						setString += ' AFTER '+ $(fieldC).text()+'"';
 						setArray.push(setString);
 					}
 	        	}
@@ -402,13 +402,13 @@
 	        	var fieldB = $(valueB).find("field")[0];
 	        	var blockB = $(valueB).children("block:first");
 		        if ((blockB.attr("type")=="logic_states") && ($(fieldB).attr("name") == "State")) {
-	        		setString += '="'+$(fieldB).text()+' FOR '+ $(fieldC).text()+'"'; 
+	        		setString += '="'+$(fieldB).text()+' FOR '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
-	        	}        	
+	        	}
 	        	else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
-	        		setString += '="Set Level '+$(fieldB).text()+' FOR '+ $(fieldC).text()+'"'; 
+	        		setString += '="Set Level '+$(fieldB).text()+' FOR '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
-	        	}	        	
+	        	}
 
 		    }
 	      	else if ($(this).attr('type') == 'logic_setrandom') {
@@ -421,14 +421,14 @@
 	        	var blockA = $(valueA).children("block:first");
 		        var setString = "commandArray["+$(fieldA).text()+"]";
 	        	var blockB = $(valueB).children("block:first");
-		        if ((blockB.attr("type")=="logic_states") && ($(fieldB).attr("name") == "State")) {	        	
-	        		setString += '="'+$(fieldB).text()+' RANDOM '+ $(fieldC).text()+'"'; 
+		        if ((blockB.attr("type")=="logic_states") && ($(fieldB).attr("name") == "State")) {
+	        		setString += '="'+$(fieldB).text()+' RANDOM '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
 	        	}
 		       	else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
-	        		setString += '="Set Level '+$(fieldB).text()+' RANDOM '+ $(fieldC).text()+'"'; 
+	        		setString += '="Set Level '+$(fieldB).text()+' RANDOM '+ $(fieldC).text()+'"';
 	        		setArray.push(setString);
-	        	}        	
+	        	}
 	 	    }
 		    else if ($(this).attr('type') == 'send_notification') {
 		    	var subjectBlock = $(this).find("value[name='notificationTextSubject']")[0];
@@ -440,14 +440,14 @@
 
 			var sTT=GetValueText(subjectBlock,$(subjectBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
 			var bTT=GetValueText(bodyBlock,$(bodyBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
-				
+
 		    	var pTT=$(notificationBlock).text();
 			var aTT=$(soundBlock).text();
 			var subTT=$(subsystemBlock).text();
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
 	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'$'+aTT+'$'+subTT+'"';
-	        	setArray.push(setString);		      	
+	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'send_email') {
 				var subjectBlock = $(this).children("field[name='TextSubject']")[0];
@@ -459,7 +459,7 @@
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
 	        	var setString = 'commandArray["SendEmail"]="'+sSubject+'$'+sBody+'$'+sTo+'"';
-	        	setArray.push(setString);		      	
+	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'send_sms') {
 				var subjectBlock = $(this).children("field[name='TextSubject']")[0];
@@ -467,14 +467,14 @@
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
 	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
-	        	setArray.push(setString);		      	
+	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'trigger_ifttt') {
 				var idBlock = $(this).children("field[name='EventID']")[0];
 				var value1Block = $(this).children("field[name='TextValue1']")[0];
 				var value2Block = $(this).children("field[name='TextValue2']")[0];
 				var value3Block = $(this).children("field[name='TextValue3']")[0];
-				
+
 				var sID = $(idBlock).text();
 				var sValue1 = $(value1Block).text().replace(/\,/g, ' ');
 				var sValue2 = $(value2Block).text().replace(/\,/g, ' ');
@@ -482,7 +482,7 @@
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
 	        	var setString = 'commandArray["TriggerIFTTT"]="'+sID+'$'+sValue1+'$'+sValue2+'$'+sValue3+'"';
-	        	setArray.push(setString);		      	
+	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'start_script') {
 				var pathBlock = $(this).children("field[name='TextPath']")[0];
@@ -494,13 +494,13 @@
 				// message separator here cannot be # like in scripts, changed to $..
 				// also removed commas as we need to separate commandArray later.
 				var setString = 'commandArray["StartScript"]="'+sPath+'$'+sParam+'"';
-				setArray.push(setString);		      	
+				setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
 		    	var urlText = $(urlBlock).find("field[name='TEXT']")[0];
 		    	var setString = 'commandArray["OpenURL"]="'+$(urlText).text()+'"';
-	        	setArray.push(setString);		      	
+	        	setArray.push(setString);
 		    }
 			else if ($(this).attr('type') == 'writetolog') {
 		    	var logBlock = $(this).find("value[name='writeToLog']")[0];
@@ -525,47 +525,47 @@
 					var deviceVar = $(blockInfo).find("field")[0];
 					setString = 'commandArray["WriteToLogDeviceVariable"]="'+$(deviceVar).text()+'"';
 					setArray.push(setString);
-				}		
+				}
 			}
 		    else if ($(this).attr('type') == 'groupvariables') {
 			   	var fieldA = $(this).find("field[name='Group']")[0];
 			   	var fieldB = $(this).find("field[name='Status']")[0];
 	        	var setString = "commandArray[Group:"+$(fieldA).text()+"]";
-	        	setString += '="'+$(fieldB).text()+'"'; 
+	        	setString += '="'+$(fieldB).text()+'"';
 	        	setArray.push(setString);
 		    }
 		    else if ($(this).attr('type') == 'scenevariables') {
 			   	var fieldA = $(this).find("field[name='Scene']")[0];
 			   	var fieldB = $(this).find("field[name='Status']")[0];
 	        	var setString = "commandArray[Scene:"+$(fieldA).text()+"]";
-	        	setString += '="'+$(fieldB).text()+'"'; 
+	        	setString += '="'+$(fieldB).text()+'"';
 	        	setArray.push(setString);
-		    }		    
+		    }
 		    else if ($(this).attr('type') == 'cameravariables') {
 			   	var fieldA = $(this).find("field[name='Camera']")[0];
 			   	var fieldB = $(this).find("field[name='Subject']")[0];
 			   	var fieldC = $(this).find("field[name='NUM']")[0];
 	        	var setString = "commandArray[SendCamera:"+$(fieldA).text()+"]";
-	        	setString += '="'+ $(fieldB).text()+'" AFTER ' + $(fieldC).text().replace(/\,/g, ' '); 
+	        	setString += '="'+ $(fieldB).text()+'" AFTER ' + $(fieldC).text().replace(/\,/g, ' ');
 	        	setArray.push(setString);
-		    }		    
+		    }
 		    else if ($(this).attr('type') == 'setpointvariables') {
 			   	var fieldA = $(this).find("field[name='SetPoint']")[0];
 			   	var fieldB = $(this).find("field[name='NUM']")[0];
 	        	var setString = "commandArray[SetSetpoint:"+$(fieldA).text()+"]";
-	        	setString += '="'+$(fieldB).text()+'"'; 
+	        	setString += '="'+$(fieldB).text()+'"';
 	        	setArray.push(setString);
-		    }		    
+		    }
 		  });
 		  var conditionArray = [];
 		  conditionArray.push(boolString);
-	      return [conditionArray,setArray];     
+	      return [conditionArray,setArray];
       }
-      
+
       function loadSelectedEvent(id) {
       		$.ajax({
-			  	url: "json.htm?type=events&param=load&event="+id, 
-			  	async: false, 
+			  	url: "json.htm?type=events&param=load&event="+id,
+			  	async: false,
 			  	dataType: 'json',
 			  	success: function(data) {
 				  	if (typeof data.result != 'undefined') {
@@ -593,11 +593,13 @@
 							else {
 								if (data.result[0].interpreter == 'dzVents') {
 									editor.getSession().setMode("ace/mode/lua");
-									$("#eventType").val(data.result[0].type).prop('disabled', true);
+									$("#eventType").hide();
+									$("#dzVentsEventTypes").show();
 								}
 								else {
 									editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
-									$("#eventType").val(data.result[0].type).prop('disabled', false);
+									$("#dzVentsEventTypes").hide();
+									$("#eventType").show();
 								}
 								editor.setValue("");
 								editor.setValue(data.result[0].xmlstatement);
@@ -613,15 +615,15 @@
 				}
 			});
 	  }
-	  
+
       function delete_block() {
         var id = document.getElementById("savedEvents").value;
         if ((id!=null)&&(id!="")) {
 			bootbox.confirm($.t("Are you sure to delete this Event?\n\nThis action can not be undone..."), function(result) {
 				if (result==true) {
 					$.ajax({
-						url: "json.htm?type=events&param=delete&event="+id, 
-						async: false, 
+						url: "json.htm?type=events&param=delete&event="+id,
+						async: false,
 						dataType: 'json',
 						success: function(data) {
 							if (typeof data != 'undefined') {
@@ -645,22 +647,22 @@
 			bootbox.alert("Nothing selected!")
 		}
 	  }
-	  
+
 	  function load_blocks() {
 		  var select = document.getElementById("savedEvents");
 		  select.options.length = 0;
 		  var interpreters = document.getElementById("interpreter");
 		  interpreters.options.length = 0;
 		  $.ajax({
-		  	url: "json.htm?type=events&param=list", 
-		  	async: false, 
+		  	url: "json.htm?type=events&param=list",
+		  	async: false,
 		  	dataType: 'json',
 		  	success: function(data) {
 				var aInterpreters = data.interpreters.split(':');
 				$.each(aInterpreters, function(i,item){
 					var option = document.createElement("option");
 					option.text = item;
-					interpreters.appendChild(option); 
+					interpreters.appendChild(option);
 				});
 			  	if (typeof data.result != 'undefined') {
 				  	$.each(data.result, function(i,item){
@@ -675,20 +677,19 @@
 						}
 						else if (item.eventstatus == '2') {
 							option.style.color = 'purple';
-						}						
+						}
 						select.appendChild(option);
 					});
 				}
 			}
 		  });
 	  }
-	  
+
 	function new_block() {
 			var eventInterpreter = $("#interpreter").val().toLowerCase();
 		$("#blockId").html("");
 		Blockly.mainWorkspace.clear();
 		editor.setValue("");
-		$("#eventType").val("All");
 		$("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
@@ -696,16 +697,25 @@
 		$('#btnDelete').attr("class", "btnstyle3-dis");
 		if ($("#interpreter").val() == "Blockly") {
 			ResizeBlockyWindow();
+			$("#eventType").val("All");
 		}
 		else {
-				if (eventInterpreter == "dzvents") {
-					eventInterpreter = "lua";
-					$("#eventType").prop('disabled', true);
-				}
-				editor.getSession().setMode("ace/mode/" + eventInterpreter);
+			var eventType = $("#eventType").val();
+			if (eventInterpreter == "dzvents") {
+				eventInterpreter = "lua";
+				$("#eventType").hide();
+				$("#dzVentsEventTypes").show();
+				eventType = $("#dzVentsEventTypes").val();
+			} else if (eventInterpreter == "python") {
+				$("#eventType").val("All");
+			} else {
+				$("#eventType").show();
+				$("#dzVentsEventTypes").hide();
+			}
+			editor.getSession().setMode("ace/mode/" + eventInterpreter);
 			$.ajax({
-				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
-				async: false, 
+				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+eventType,
+				async: false,
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data.template != 'undefined') {
@@ -718,13 +728,37 @@
 			});
 		}
 	}
-      
+
       function save_block() {
       	var eventName = $("#eventName").val();
       	var eventInterpreter = $("#interpreter").val();
       	var id = "";
-      	if (eventName) { 
-      		var exists = false; 
+
+      	if (eventName &&
+			eventInterpreter === 'dzVents') {
+
+			if (eventName.indexOf('.lua') >= 0) {
+				bootbox.alert('You cannot have .lua in the name.');
+				return;
+			}
+
+			if (eventName == 'Device' ||
+				eventName == 'Domoticz' ||
+				eventName == 'dzVents' ||
+				eventName == 'EventHelpers' ||
+				eventName == 'HistoricalStorage' ||
+				eventName == 'persistence' ||
+				eventName == 'Time' ||
+				eventName == 'TimedCommand' ||
+				eventName == 'Utils' ||
+				eventName == 'Variable') {
+				bootbox.alert('You cannot use these names for your scripts: Device, Domoticz, dzVents, EventHelpers, HistoricalStorage, persistence, Time, TimedCommand, Utils or Variable. It interferes with the dzVents subsystem. Please rename your script.');
+				return;
+			}
+		}
+
+      	if (eventName) {
+      		var exists = false;
       		var doSave = false;
       		$('#savedEvents option').each(function(){
 	      		if (this.text == eventName) {
@@ -768,7 +802,7 @@
 
 				var isActive = 0;
 				if ($('#eventActive').is(':checked')) {isActive = 1};
-/*				
+/*
 				$http({
 					method: 'POST',
 					url: 'event_create.webem',
@@ -845,11 +879,11 @@
 							selIndex++;
 						});
 					}
-				})				
-/*				
+				})
+/*
 				$.ajax({
-					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme, 
-					async: false, 
+					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme,
+					async: false,
 					dataType: 'json',
 					success: function(data) {
 						if (typeof data != 'undefined') {
@@ -875,7 +909,7 @@
 						}
 					}
 				});
-*/				
+*/
 			}
 			else {
 				bootbox.alert("Save aborted!")
@@ -888,18 +922,18 @@
 
 	  function show_states() {
 	  	$.ajax({
-	    	url : "json.htm?type=events&param=currentstates", 
-	      	async: false, 
+	    	url : "json.htm?type=events&param=currentstates",
+	      	async: false,
 	      	dataType: 'json',
 	      	success: function(data) {
 		    	if (typeof data != 'undefined') {
 					if (data.status=="OK") {
 						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
 						if (typeof data.result != 'undefined') {
-							
+
 							$.each(data.result, function(i,item){
 								if (item.name != "Unknown") {
-									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>'; 
+									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>';
 									devicestates += oneitem;
 								}
 							});
@@ -910,9 +944,9 @@
 							type: 'information',
 							modal: true,
 							buttons: [
-							{addClass: 'btn btn-primary', text: 'Ok', onClick: function($noty) 
+							{addClass: 'btn btn-primary', text: 'Ok', onClick: function($noty)
 								{$noty.close();
-									
+
 								}
 							}]
 						});
@@ -924,13 +958,13 @@
 			}
 		});
 	  }
-	  
-	function block_export() {  
-	
+
+	function block_export() {
+
 	}
 
-	function block_import() {  
-	
+	function block_import() {
+
 	}
 
 	$(window).resize(function() {
@@ -966,12 +1000,12 @@
 	{
 		($("#eventName").val() == '') ? $('#btnSave').attr('class', 'btnstyle3-dis') : $('#btnSave').attr('class', 'btnstyle3');
 	}
-	
-	$(document).ready(function() 
+
+	$(document).ready(function()
 	{
 		$.ajax({
 			 url: "json.htm?type=command&param=getlanguage",
-			 async: false, 
+			 async: false,
 			 dataType: 'json',
 			 success: function(data) {
 				if (typeof data.language != 'undefined') {
@@ -984,10 +1018,10 @@
 			 error: function(){
 			 }
 		});
-	
+
 		ResizeBlockyWindow();
 	});
-      
+
     </script>
 
   </head>
@@ -1040,25 +1074,25 @@
 		   	<block type="writetolog"></block>
 			<block type="text"></block>
 	   	</category>
-   		<category name="Devices">   		
+   		<category name="Devices">
 		   	<category name="Switches">
 			   	<block type="switchvariablesAF"></block>
 			   	<block type="switchvariablesGL"></block>
 			   	<block type="switchvariablesMR"></block>
 			   	<block type="switchvariablesSZ"></block>
-			</category>   		
+			</category>
 		   	<category name="Temperature">
 			   	<block type="temperaturevariables"></block>
-		   	</category>	   		   		
+		   	</category>
 		   	<category name="Humidity">
 			   	<block type="humidityvariables"></block>
-		   	</category>	
+		   	</category>
 		   	<category name="Dewpoint">
 			   	<block type="dewpointvariables"></block>
-		   	</category>	   		   		
+		   	</category>
 		   	<category name="Barometer">
 			   	<block type="barometervariables"></block>
-		   	</category>	
+		   	</category>
 		   	<category name="Weather">
 			   	<block type="weathervariables"></block>
 		   	</category>
@@ -1114,7 +1148,7 @@
 					<label for="eventName">Event name:</label><br>
 					<input type="input" id="eventName" name="eventName" oninput="SetSaveButton();" onchange="SetSaveButton();" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 					<p>
-					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">	
+					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">
 						<option selected="selected">Blockly</option>
 						<option>Lua</option>
 						<option>dzVents</option>
@@ -1127,6 +1161,16 @@
 					  <option>Security</option>
 					  <option>Time</option>
 					  <option>UserVariable</option>
+					</select>
+					<select name="dzVentsEventTypes" id="dzVentsEventTypes" class="ui-widget-content ui-corner-all" style="width: 12em; padding: .2em;display: none">
+						<option value="All">All (commented)</option>
+						<option value="Bare">Minimal</option>
+						<option value="Device" selected="selected">Device</option>
+						<option value="Group">Group</option>
+						<option value="Security">Security</option>
+						<option value="Scene">Scene</option>
+						<option value="Timer">Timer</option>
+						<option value="UserVariable">User variable</option>
 					</select>
 					<p>
 						<input type="checkbox" id="eventActive" name="eventActive" /><label for="eventActive"><span data-i18n="Event active">Event active</span></label>

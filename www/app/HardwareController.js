@@ -3143,42 +3143,8 @@ define(['app'], function (app) {
 			});
 		}
 
-		BleBoxUpdateNode = function (nodeid) {
-			if ($('#updelclr #nodedelete').attr("class") == "btnstyle3-dis") {
-				return;
-			}
-
-			var name = $("#hardwarecontent #bleboxnodeparamstable #nodename").val();
-			if (name == "") {
-				ShowNotify($.t('Please enter a Name!'), 2500, true);
-				return;
-			}
-			var ip = $("#hardwarecontent #bleboxnodeparamstable #nodeip").val();
-			if (ip == "") {
-				ShowNotify($.t('Please enter a IP Address!'), 2500, true);
-				return;
-			}
-
-			$.ajax({
-				url: "json.htm?type=command&param=bleboxupdatenode" +
-				"&idx=" + $.devIdx +
-				"&nodeid=" + nodeid +
-				"&name=" + encodeURIComponent(name) +
-				"&ip=" + ip,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					RefreshBleBoxNodeTable();
-				},
-				error: function () {
-					ShowNotify($.t('Problem Updating Node!'), 2500, true);
-				}
-			});
-		}
-
 		RefreshBleBoxNodeTable = function () {
 			$('#modal').show();
-			$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 			$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 			$("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
 			$("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
@@ -3217,7 +3183,6 @@ define(['app'], function (app) {
 				$('#updelclr #nodedelete').attr("class", "btnstyle3-dis");
 				if ($(this).hasClass('row_selected')) {
 					$(this).removeClass('row_selected');
-					$('#updelclr #nodeupdate').attr("class", "btnstyle3-dis");
 					$("#hardwarecontent #bleboxnodeparamstable #nodename").val("");
 					$("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
 				}
@@ -3225,12 +3190,10 @@ define(['app'], function (app) {
 					var oTable = $('#bleboxnodestable').dataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
-					$('#updelclr #nodeupdate').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
-						$("#updelclr #nodeupdate").attr("href", "javascript:BleBoxUpdateNode(" + idx + ")");
 						$('#updelclr #nodedelete').attr("class", "btnstyle3");
 						$("#updelclr #nodedelete").attr("href", "javascript:BleBoxDeleteNode(" + idx + ")");
 						$("#hardwarecontent #bleboxnodeparamstable #nodename").val(data["1"]);
