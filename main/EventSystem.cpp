@@ -169,6 +169,12 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
+#ifdef WIN32
+	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
+#else
+	m_lua_Dir = szUserDataFolder + "scripts/lua/";
+#endif
+
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
