@@ -178,9 +178,7 @@ void CEventSystem::LoadEvents()
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-
-	if (!m_sql.m_bDisableDzVentsSystem)
-		m_dzvents.LoadEvents();
+	m_dzvents.LoadEvents();
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");

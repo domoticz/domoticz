@@ -7697,7 +7697,7 @@ namespace http {
 			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
 			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
 			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
-			if (!m_sql.m_bDisableDzVentsSystem && m_sql.m_bEnableEventSystem && iDisableDzVentsSystem != rnOldvalue)
+			if (iDisableDzVentsSystem != rnOldvalue)
 				m_mainworker.m_eventsystem.m_dzvents.LoadEvents();
 
 			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));

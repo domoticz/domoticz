@@ -46,6 +46,9 @@ void CdzVents::LoadEvents()
 			std::remove(filename.c_str());
 	}
 
+	if (m_sql.m_bDisableDzVentsSystem)
+		return;
+
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
 	if (result.size() > 0)
