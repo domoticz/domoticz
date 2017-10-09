@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2017
 #
 """
-<plugin key="ICMP" name="ICMP Listener" author="dnpwwo" version="1.7.4">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="1.7.5">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
