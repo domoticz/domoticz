@@ -352,13 +352,14 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else {		// RFLink Milight extension
 		_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
-
-		//_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
-		//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
-		//_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
-		//_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
-		//_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
-		//_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
+      /*
+		_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
+		_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
+		_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
+		_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+		_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
+		_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
+        */
 		bool bSendOn = false;
 
 		const int m_LEDType = pLed->type;
@@ -375,8 +376,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetRGBColour:
 			{
-			//Milight colorfix
-			int iHue = ((255 - pLed->value) + 108) & 0xFF;
+            int iHue = ((pLed->value)+0x20) & 0xFF;  //Milight color offset correction
 			m_colorbright = m_colorbright & 0xff;
 			m_colorbright = (((unsigned char) iHue) << 8) + m_colorbright;
 			switchcmnd = "COLOR";
