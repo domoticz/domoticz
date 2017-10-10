@@ -62,6 +62,8 @@
       <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_63_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -69,7 +71,7 @@
       <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_63_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
-      <Profile>true</Profile>
+      <Profile>false</Profile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)makeversion.bat"</Command>
