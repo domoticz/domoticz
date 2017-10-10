@@ -1,13 +1,15 @@
 return {
-	active = false,
 	on = {
 		devices = {},
 		timer = {},
-		variables = {}
+		variables = {},
+		scenes = {},
+		groups = {},
+		security = {}
 	},
 	data = {},
 	logger = {},
-	execute = function(domoticz, device, info)
-		-- code
+	execute = function(domoticz, triggeredItem, info)
+
 	end
 }

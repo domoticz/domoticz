@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 119
+#define DB_VERSION 120
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2296,6 +2296,29 @@ bool CSQLHelper::OpenDatabase()
 				UpdatePreferencesVar("EnableEventScriptSystem", !nValue);
 			}
 			DeletePreferencesVar("DisableEventScriptSystem");
+		}
+		if (dbversion < 120)
+		{
+			// remove old dzVents dirs
+			std::string dzv_Dir, dzv_scripts;
+#ifdef WIN32
+			dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+			dzv_scripts = szUserDataFolder + "scripts\\dzVents\\";
+#else
+			dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+			dzv_scripts = szUserDataFolder + "scripts/dzVents/";
+#endif
+			const std::string
+			dzv_rm_Dir1 = dzv_scripts + "runtime",
+			dzv_rm_Dir2 = dzv_scripts + "documentation";
+
+			if ((file_exist(dzv_rm_Dir1.c_str()) || file_exist(dzv_rm_Dir2.c_str())) &&
+				!szUserDataFolder.empty())
+			{
+				std::string errorPath;
+				if (int returncode = RemoveDir(dzv_rm_Dir1 + "|" + dzv_rm_Dir2, errorPath))
+					_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath.c_str());
+			}
 		}
 	}
 	else if (bNewInstall)

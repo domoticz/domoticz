@@ -263,6 +263,7 @@ main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
+main/dzVents.cpp
 main/EventSystem.cpp
 main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
