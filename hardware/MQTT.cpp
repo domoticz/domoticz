@@ -327,7 +327,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["switchcmd"].isString())
 			goto mqttinvaliddata;
 		std::string switchcmd = root["switchcmd"].asString();
-		if ((switchcmd != "On") && (switchcmd != "Off"))
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
 			goto mqttinvaliddata;
 		if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
 		{
