@@ -1077,7 +1077,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 	}
 }
 
-void CEventSystem::RemoveSingleState(int ulDevID, const _eReason reason)
+void CEventSystem::RemoveSingleState(const uint64_t ulDevID, const _eReason reason)
 {
 	if (!m_bEnabled)
 		return;
