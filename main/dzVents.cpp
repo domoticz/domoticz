@@ -22,7 +22,7 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const uint8_t reason)
 {
 	std::stringstream lua_DirT;
 
@@ -37,7 +37,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_reason");
-	lua_pushstring(lua_state, reason.c_str());
+	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szReason[reason].c_str());
 	lua_rawset(lua_state, -3);
 
 	char szTmp[10];
@@ -79,7 +79,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason
 	lua_rawset(lua_state, -3);
 }
 
-void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason)
+void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const uint8_t reason)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
@@ -146,7 +146,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
-		if (sitem.ID == deviceID && reason == "device")
+		if (sitem.ID == deviceID && reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			lua_pushboolean(lua_state, true);
 		else
 			lua_pushboolean(lua_state, false);
@@ -320,7 +320,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "changed");
-		if (sgitem.ID == deviceID && reason == "scenegroup")
+		if (sgitem.ID == deviceID && reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 			lua_pushboolean(lua_state, true);
 		else
 			lua_pushboolean(lua_state, false);

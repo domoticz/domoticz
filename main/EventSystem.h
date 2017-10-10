@@ -158,7 +158,7 @@ private:
 
 	struct _tEventQueue
 	{
-		std::string reason;
+		_eReason reason;
 		uint64_t DeviceID;
 		std::string devname;
 		int nValue;
@@ -188,6 +188,7 @@ private:
 	std::string m_dzv_Dir;
 	std::string m_szStartTime;
 
+	static const std::string m_szReason[];
 	static const _tJsonMap JsonMap[];
 
 	//our thread
@@ -195,19 +196,20 @@ private:
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
-	void EvaluateEvent(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	void EvaluateEvent(const _tEventQueue &item);
 	void EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
 	std::string m_python_Dir;
-	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t varId);
-	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString);
-	void EvaluatePython(const std::string &reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	void EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString, const uint64_t varId);
+	void EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString);
+	void EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 #endif
-	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
-	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
-	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	void EvaluateLua(const _eReason reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
+	void EvaluateLua(const _eReason reason, const std::string &filename, const std::string &LuaString);
+	//void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
+	void EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
@@ -217,7 +219,7 @@ private:
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
-	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason);
+	void UpdateLastUpdate(const _tEventQueue &item);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);
