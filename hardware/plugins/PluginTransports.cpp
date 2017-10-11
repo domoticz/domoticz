@@ -330,7 +330,7 @@ namespace Plugins {
 				m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
 				if (e)
 				{
-					_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
+					_log.Log(LOG_ERROR, "(%s): Socket Shutdown Error: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
 				}
 				else
 				{
@@ -589,7 +589,7 @@ namespace Plugins {
 				m_Endpoint = *iter;
 
 				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
+				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
 				//
 				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 
@@ -756,14 +756,7 @@ namespace Plugins {
 		{
 			boost::system::error_code e;
 			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
-			if (e)
-			{
-				_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
-			}
-			else
-			{
-				m_Socket->close();
-			}
+			m_Socket->close();
 			delete m_Socket;
 			m_Socket = NULL;
 		}
