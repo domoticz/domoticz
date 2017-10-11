@@ -213,7 +213,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__
+#if defined (__FreeBSD__) || defined (__OpenBSD__)
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
