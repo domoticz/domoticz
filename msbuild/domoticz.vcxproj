@@ -551,6 +551,7 @@
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
+    <ClInclude Include="..\main\dzVents.h" />
     <ClInclude Include="..\main\EventsPythonDevice.h" />
     <ClInclude Include="..\main\EventsPythonModule.h" />
     <ClInclude Include="..\main\EventSystem.h" />
@@ -801,6 +802,7 @@
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
     <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
+    <ClCompile Include="..\main\dzVents.cpp" />
     <ClCompile Include="..\main\EventsPythonDevice.cpp" />
     <ClCompile Include="..\main\EventsPythonModule.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />

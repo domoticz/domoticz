@@ -3,7 +3,7 @@
 /*
   --== Dark th3me by G3rard ==--
   Based on Sverto's Dark Theme for Domoticz
-  v 16-02-2017
+  v 28-08-2017
 */
 @font-face {
   font-family: "Ubuntu";
@@ -724,7 +724,7 @@ input[type="search"] {
 .btn.btn-info:hover
  {
   margin-bottom: 3px;
-  color: yellow;
+  color: yellow !important;
   background: #353535;
 }
 #type br {
@@ -939,5 +939,22 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .label-important:hover {
   background-color: #b94a48;
   text-transform: uppercase;
+  color: yellow !important;
+}
+.ace_editor * {
+  font-family: monospace !important;
+}
+/* buttons for selector switch */
+.btn-small {
+  height: 23px;
+  margin: -2px -2px 2px -2px;
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  background: #353535 !important;
+  color: #FFBB3F !important;
+  text-shadow: none !important;
+}
+.btn-small:hover {
+  background: #555555 !important;
   color: yellow !important;
 }

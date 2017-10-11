@@ -75,7 +75,7 @@ return {
 		local myDevice = domoticz.devices['myDevice']
 		local myVariable = domoticz.variables['myUserVariable']
 		local myGroup = domoticz.groups['myGroup']
-		local myScene = domoticz.sceneds['myScene']
+		local myScene = domoticz.scenes['myScene']
 
 		The device object is the device that was triggered due to the device in the 'on' section above.
 		The device object == nil when the script was triggered due to a timer rule or a security event rule.
