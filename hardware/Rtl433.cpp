@@ -14,9 +14,10 @@
 #include <stdio.h>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/math/special_functions/round.hpp>
 
 #include "Rtl433.h"
+
+#define round(a) ( int ) ( a + .5 )
 
 CRtl433::CRtl433(const int ID) :
 	m_stoprequested(false)
@@ -233,7 +234,7 @@ void CRtl433::Do_Work()
 				try {
 					if (!data["humidity"].empty())
 					{
-						humidity = static_cast<int>(boost::math::round(boost::lexical_cast<float>(data["humidity"])));
+						humidity = static_cast<int>(round(boost::lexical_cast<float>(data["humidity"])));
 						hashumidity = true;
 					}
 				}
