@@ -130,6 +130,7 @@ public:
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
+	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
 
 	CdzVents m_dzvents;
 
@@ -216,7 +217,6 @@ private:
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
 	void UpdateLastUpdate(const uint64_t ulDevID, const std::string &lastUpdate, const uint8_t lastLevel, const std::string &reason);
 	lua_State *CreateBlocklyLuaState();
 

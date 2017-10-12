@@ -25,64 +25,62 @@ const std::string CdzVents::GetVersion()
 void CdzVents::LoadEvents()
 {
 	m_mainworker.m_eventsystem.m_bdzVentsExist = false;
-	if (!m_sql.m_bDisableDzVentsSystem)
+	std::string dzv_Dir, s;
+#ifdef WIN32
+	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+	m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents\\runtime\\";
+#else
+	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+	m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents/runtime/";
+#endif
+
+	// Remove dzVents DB files from disk
+	std::vector<std::string> FileEntries;
+	std::vector<std::string>::const_iterator itt;
+	std::string filename;
+	DirectoryListing(FileEntries, dzv_Dir, false, true);
+	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 	{
-		std::string dzv_Dir, s;
-	#ifdef WIN32
-		dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
-		m_mainworker.m_eventsystem.m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
-		m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents\\runtime\\";
-	#else
-		dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
-		m_mainworker.m_eventsystem.m_lua_Dir = szUserDataFolder + "scripts/lua/";
-		m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents/runtime/";
-	#endif
+		filename = dzv_Dir + *itt;
+		if (filename.find("README.md") == std::string::npos)
+			std::remove(filename.c_str());
+	}
 
-		// Remove dzVents DB files from disk
-		std::vector<std::string> FileEntries;
-		std::vector<std::string>::const_iterator itt;
-		std::string filename;
-		DirectoryListing(FileEntries, dzv_Dir, false, true);
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
-		{
-			filename = dzv_Dir + *itt;
-			if (filename.find("README.md") == std::string::npos)
-				std::remove(filename.c_str());
-		}
+	if (m_sql.m_bDisableDzVentsSystem)
+		return;
 
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
-		if (result.size() > 0)
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+	if (result.size() > 0)
+	{
+		std::vector<std::vector<std::string> >::const_iterator itt;
+		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			for (itt = result.begin(); itt != result.end(); ++itt)
+			std::vector<std::string> sd = *itt;
+			CEventSystem::_tEventItem eitem;
+			std::stringstream s_str(sd[0]);
+			s_str >> eitem.ID;
+			eitem.Name = sd[1];
+			eitem.Interpreter = sd[2];
+			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			eitem.Type = sd[3];
+			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.Actions = sd[5];
+			eitem.SequenceNo = 0;
+			m_mainworker.m_eventsystem.m_events.push_back(eitem);
+
+			// Write active dzVents scripts to disk.
+			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				std::vector<std::string> sd = *itt;
-				CEventSystem::_tEventItem eitem;
-				std::stringstream s_str(sd[0]);
-				s_str >> eitem.ID;
-				eitem.Name = sd[1];
-				eitem.Interpreter = sd[2];
-				std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
-				eitem.Type = sd[3];
-				eitem.EventStatus = atoi(sd[4].c_str());
-				eitem.Actions = sd[5];
-				eitem.SequenceNo = 0;
-				m_mainworker.m_eventsystem.m_events.push_back(eitem);
-
-				// Write active dzVents scripts to disk.
-				if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
+				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
+				FILE *fOut = fopen(s.c_str(), "wb+");
+				if (fOut)
 				{
-					s = dzv_Dir + eitem.Name.c_str() + ".lua";
-					_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
-					FILE *fOut = fopen(s.c_str(), "wb+");
-					if (fOut)
-					{
-						fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
-						fclose(fOut);
-					}
-					m_mainworker.m_eventsystem.m_bdzVentsExist = true;
+					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
+					fclose(fOut);
 				}
+				m_mainworker.m_eventsystem.m_bdzVentsExist = true;
 			}
 		}
 	}
