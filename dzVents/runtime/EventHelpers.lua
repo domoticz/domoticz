@@ -697,7 +697,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local allEventScripts = self.getEventBindings()
 
 		domoticz.changedDevices().forEach( function(device)
-			utils.log('Device-event for: ' .. device.name .. ' value: ' .. device.state, utils.LOG_DEBUG)
+			utils.log('Device-event for: ' .. device.name .. ' value: ' .. tostring(device.state), utils.LOG_DEBUG)
 
 			local scriptsToExecute = self.findScriptForChangedItem(device.name, allEventScripts)
 			local idScripts = allEventScripts[device.id]
@@ -713,7 +713,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. device.name .. '", value: "' .. device.state .. '"', utils.LOG_INFO)
+				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, device, nil, nil)
 			end
 
@@ -732,7 +732,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local allEventScripts = self.getEventBindings('scenegroups')
 
 		local processItem = function(item, loglabel)
-			utils.log(loglabel .. '-event for: ' .. item.name .. ' value: ' .. item.state, utils.LOG_DEBUG)
+			utils.log(loglabel .. '-event for: ' .. item.name .. ' value: ' .. tostring(item.state), utils.LOG_DEBUG)
 
 			local scriptsToExecute = self.findScriptForChangedItem(item.name, allEventScripts)
 			local idScripts = allEventScripts[item.id]
@@ -748,7 +748,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling events for: "' .. item.name .. '", value: "' .. item.state .. '"', utils.LOG_INFO)
+				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, nil, nil, nil, item)
 			end
 		end
@@ -792,7 +792,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		domoticz.changedVariables().forEach(function(variable)
 
-			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. variable.value, utils.LOG_DEBUG)
+			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. tostring(variable.value), utils.LOG_DEBUG)
 
 			local scriptsToExecute
 
@@ -805,7 +805,7 @@ local function EventHelpers(domoticz, mainMethod)
 			end
 
 			if (scriptsToExecute ~= nil) then
-				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. variable.value .. '"', utils.LOG_INFO)
+				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, nil, variable, nil)
 			end
 		end)
