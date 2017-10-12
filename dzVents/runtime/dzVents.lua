@@ -1,6 +1,6 @@
 local TESTMODE = false
 
-local currentPath = globalvariables['script_path']
+local currentPath = globalvariables['script_path'] -- should be path/to/domoticz/scripts/dzVents
 local triggerReason = globalvariables['script_reason']
 
 _G.scriptsFolderPath = currentPath .. 'scripts' -- global
@@ -12,6 +12,7 @@ package.path = package.path .. ';' .. currentPath .. '../../dzVents/runtime/?.lu
 package.path = package.path .. ';' .. currentPath .. '../../dzVents/runtime/device-adapters/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'dzVents/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
+package.path = package.path .. ';' .. currentPath .. '../lua/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'scripts/modules/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'generated_scripts/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
