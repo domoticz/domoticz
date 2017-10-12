@@ -991,7 +991,7 @@ Here is an example. Let's say you want to send a notification if some switch has
     	    counter = {initial=0}
     	},
         execute = function(domoticz, switch)
-    		if (domoticz.data.counter = 5) then
+    		if (domoticz.data.counter == 5) then
     			domoticz.notify('The switch was pressed 5 times!')
     			domoticz.data.counter = 0 -- reset the counter
     		else
