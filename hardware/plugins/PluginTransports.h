@@ -42,7 +42,7 @@ namespace Plugins {
 		time_t				LastSeen() { return m_tLastSeen; };
 		virtual bool		ThreadPoolRequired() { return false; };
 		long				TotalBytes() { return m_iTotalBytes; };
-		void				VerifyConnection();
+		virtual void		VerifyConnection();
 		PyObject*			Connection() { return m_pConnection; };
 	};
 
