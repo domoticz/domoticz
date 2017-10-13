@@ -12,6 +12,7 @@
 #include "NotificationPushsafer.h"
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
+#include "NotificationTelegram.h"
 #include "NotificationSMS.h"
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
@@ -40,6 +41,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationProwl());
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
+	AddNotifier(new CNotificationTelegram());
 	AddNotifier(new CNotificationPushover());
 	AddNotifier(new CNotificationPushsafer());
 	AddNotifier(new CNotificationPushalot());

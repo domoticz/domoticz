@@ -1861,6 +1861,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationTelegram.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\LogitechMediaServer.h">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClInclude>
@@ -2521,6 +2524,9 @@
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationTelegram.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
