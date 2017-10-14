@@ -266,12 +266,12 @@ void MainWorker::AddAllDomoticzHardware()
 			int mode5 = atoi(sd[14].c_str());
 			int mode6 = atoi(sd[15].c_str());
 			int DataTimeout = atoi(sd[16].c_str());
-			std::string Mode1Str = sd[10].c_str();
-			std::string Mode2Str = sd[11].c_str();
-			std::string Mode3Str = sd[12].c_str();
-			std::string Mode4Str = sd[13].c_str();
-			std::string Mode5Str = sd[14].c_str();
-			std::string Mode6Str = sd[15].c_str();
+			std::string Mode1Str = sd[10];
+			std::string Mode2Str = sd[11];
+			std::string Mode3Str = sd[12];
+			std::string Mode4Str = sd[13];
+			std::string Mode5Str = sd[14];
+			std::string Mode6Str = sd[15];
 			AddHardwareFromParams(ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, mode1, mode2, mode3, mode4, mode5, mode6, DataTimeout, false);
 		}
 		m_hardwareStartCounter = 0;
@@ -600,12 +600,12 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
-	std::string Mode1Str = sd[9].c_str();
-	std::string Mode2Str = sd[10].c_str();
-	std::string Mode3Str = sd[11].c_str();
-	std::string Mode4Str = sd[12].c_str();
-	std::string Mode5Str = sd[13].c_str();
-	std::string Mode6Str = sd[14].c_str();
+	std::string Mode1Str = sd[9];
+	std::string Mode2Str = sd[10];
+	std::string Mode3Str = sd[11];
+	std::string Mode4Str = sd[12];
+	std::string Mode5Str = sd[13];
+	std::string Mode6Str = sd[14];
 
 	return AddHardwareFromParams(atoi(idx.c_str()), Name, (senabled == "true") ? true : false, htype, address, port, serialport, username, password, extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, true);
 }
@@ -1263,18 +1263,15 @@ void MainWorker::HandleAutomaticBackups()
 	std::stringstream backup_DirM;
 
 #ifdef WIN32
-	backup_DirH << szUserDataFolder << "backups\\hourly\\";
-	backup_DirD << szUserDataFolder << "backups\\daily\\";
-	backup_DirM << szUserDataFolder << "backups\\monthly\\";
+	std::string sbackup_DirH = szUserDataFolder + "backups\\hourly\\";
+	std::string sbackup_DirD = szUserDataFolder + "backups\\daily\\";
+	std::string sbackup_DirM = szUserDataFolder + "backups\\monthly\\";
 #else
-	backup_DirH << szUserDataFolder << "backups/hourly/";
-	backup_DirD << szUserDataFolder << "backups/daily/";
-	backup_DirM << szUserDataFolder << "backups/monthly/";
+	std::string sbackup_DirH = szUserDataFolder + "backups/hourly/";
+	std::string sbackup_DirD = szUserDataFolder + "backups/daily/";
+	std::string sbackup_DirM = szUserDataFolder + "backups/monthly/";
 #endif
 
-	std::string sbackup_DirH = backup_DirH.str();
-	std::string sbackup_DirD = backup_DirD.str();
-	std::string sbackup_DirM = backup_DirM.str();
 
 	//create folders if they not exists
 	mkdir_deep(sbackup_DirH.c_str(), 0755);
@@ -1706,120 +1703,113 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pR
 	char szTmp[300];
 	std::vector<std::vector<std::string> > result;
 
-	if (devType==pTypeLighting1)
-	{
+	switch(devType) {
+	case pTypeLighting1:
 		sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
 		ID = szTmp;
 		Unit=pResponse->LIGHTING1.unitcode;
-	}
-	else if (devType==pTypeLighting2)
-	{
+		break;
+	case pTypeLighting2:
 		sprintf(szTmp,"%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
 		ID = szTmp;
 		Unit=pResponse->LIGHTING2.unitcode;
-	}
-	else if (devType==pTypeLighting5)
-	{
+		break;
+	case pTypeLighting5:
 		if (subType != 	sTypeEMW100)
 			sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 		else
 			sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 		ID = szTmp;
 		Unit=pResponse->LIGHTING5.unitcode;
-	}
-	else if (devType==pTypeLighting6)
-	{
+		break;
+	case pTypeLighting6:
 		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
 		ID = szTmp;
 		Unit=pResponse->LIGHTING6.unitcode;
-	}
-	else if (devType == pTypeHomeConfort)
-	{
+		break;
+	case pTypeHomeConfort:
 		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3, pResponse->HOMECONFORT.housecode);
 		ID = szTmp;
 		Unit = pResponse->HOMECONFORT.unitcode;
+		break;
+	case pTypeRadiator1:
+		if ( subType == sTypeSmartwaresSwitchRadiator )
+		{
+			sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
+			ID = szTmp;
+			Unit = pResponse->RADIATOR1.unitcode;
+		}
+		break;
+		case pTypeLimitlessLights: 
+			{
+				_tLimitlessLights *pLed=(_tLimitlessLights *)pResponse;
+				ID = "1";
+				Unit=pLed->dunit;
+			}
+			break;
+		case pTypeCurtain:
+			sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+			ID = szTmp;
+			Unit=pResponse->CURTAIN1.unitcode;
+			break;
+		case pTypeBlinds:
+			sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
+			ID = szTmp;
+			Unit=pResponse->BLINDS1.unitcode;
+			break;
+		case pTypeRFY:
+			sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
+			ID = szTmp;
+			Unit=pResponse->RFY.unitcode;
+			break;
+		case pTypeSecurity1:
+			sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
+			ID=szTmp;
+			Unit=0;
+			break;
+		case pTypeSecurity2:
+			sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
+			ID = szTmp;
+			Unit = 0;
+			break;
+		case pTypeChime:
+			sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			ID = szTmp;
+			Unit=pResponse->CHIME.sound;
+			break;
+		case pTypeThermostat:
+			{
+				const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
+				sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+				ID = szTmp;
+				Unit = pMeter->dunit;
+			}
+			break;
+		case pTypeThermostat2:
+			ID = "1";
+			Unit = pResponse->THERMOSTAT2.unitcode;
+			break;
+		case pTypeThermostat3:
+			sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
+			ID = szTmp;
+			Unit=0;
+			break;
+		case pTypeThermostat4:
+			sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
+			ID = szTmp;
+			Unit = 0;
+			break;
+		case pTypeGeneralSwitch:
+			{
+				const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
+				sprintf(szTmp, "%08X", pSwitch->id);
+				ID = szTmp;
+				Unit = pSwitch->unitcode;
+			}
+			break;
+		default:
+			return -1;
 	}
-	else if ((devType == pTypeRadiator1) && (subType == sTypeSmartwaresSwitchRadiator))
-	{
-		sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
-		ID = szTmp;
-		Unit = pResponse->RADIATOR1.unitcode;
-	}
-	else if (devType == pTypeLimitlessLights)
-	{
-		_tLimitlessLights *pLed=(_tLimitlessLights *)pResponse;
-		ID = "1";
-		Unit=pLed->dunit;
-	}
-	else if (devType==pTypeCurtain)
-	{
-		sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
-		ID = szTmp;
-		Unit=pResponse->CURTAIN1.unitcode;
-	}
-	else if (devType==pTypeBlinds)
-	{
-		sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
-		ID = szTmp;
-		Unit=pResponse->BLINDS1.unitcode;
-	}
-	else if (devType==pTypeRFY)
-	{
-		sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
-		ID = szTmp;
-		Unit=pResponse->RFY.unitcode;
-	}
-	else if (devType==pTypeSecurity1)
-	{
-		sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
-		ID=szTmp;
-		Unit=0;
-	}
-	else if (devType == pTypeSecurity2)
-	{
-		sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
-		ID = szTmp;
-		Unit = 0;
-	}
-	else if (devType == pTypeChime)
-	{
-		sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
-		ID = szTmp;
-		Unit=pResponse->CHIME.sound;
-	}
-	else if (devType == pTypeThermostat)
-	{
-		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
-		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-		ID = szTmp;
-		Unit = pMeter->dunit;
-	}
-	else if (devType == pTypeThermostat2)
-	{
-		ID = "1";
-		Unit = pResponse->THERMOSTAT2.unitcode;
-	}
-	else if (devType == pTypeThermostat3)
-	{
-		sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
-		ID = szTmp;
-		Unit=0;
-	}
-	else if (devType == pTypeThermostat4)
-	{
-		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
-		ID = szTmp;
-		Unit = 0;
-	}
-	else if (devType == pTypeGeneralSwitch)
-	{
-		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
-		sprintf(szTmp, "%08X", pSwitch->id);
-		ID = szTmp;
-		Unit = pSwitch->unitcode;
-	}
-	else
-		return -1;
 
 	if (ID!="")
 	{
@@ -2866,40 +2856,9 @@ unsigned char MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bI
 	}
 	unsigned char ret=0;
 	if (bIsInPercentage)
-	{
-		switch (level)
-		{
-		case 0:
-			ret=10;
-			break;
-		case 1:
-			ret=20;
-			break;
-		case 2:
-			ret=30;
-			break;
-		case 3:
-			ret=40;
-			break;
-		case 4:
-			ret=50;
-			break;
-		case 5:
-			ret=60;
-			break;
-		case 6:
-			ret=70;
-			break;
-		case 7:
-			ret=80;
-			break;
-		case 8:
-			ret=90;
-			break;
-		case 9:
-			ret=100;
-			break;
-		}
+	{	
+		if (level >= 0 && level <= 9)
+			ret = (level + 1) * 10;
 	}
 	else
 	{
