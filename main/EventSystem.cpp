@@ -1577,18 +1577,18 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 			if (eventInScope && eventActive) {
 				if (it->Interpreter == "Lua")
 					EvaluateLua(item, it->Name, it->Actions);
-#ifdef ENABLE_PYTHON
 				else if (it->Interpreter == "Python") {
+#ifdef ENABLE_PYTHON
 					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 					if (item.reason == REASON_DEVICE)		EvaluatePython(item.reason, it->Name, it->Actions, item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, 0);
 					if (item.reason == REASON_TIME)			EvaluatePython(item.reason, it->Name, it->Actions);
 					if (item.reason == REASON_SECURITY)		EvaluatePython(item.reason, it->Name, it->Actions);
 					if (item.reason == REASON_USERVARIABLE)	EvaluatePython(item.reason, it->Name, it->Actions, item.varId);
 					//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
-				}
 #else
 					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
 #endif
+				}
 			}
 		}
 	}
@@ -3266,7 +3266,6 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 {
 	int status;
-
 	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
 	report_errors(lua_state, status, filename);
 

@@ -134,13 +134,13 @@ public:
 	CdzVents m_dzvents;
 
 private:
-	typedef enum
+	enum _eJsonType
 	{
 		JTYPE_STRING = 0,	// 0
 		JTYPE_FLOAT,		// 1
 		JTYPE_INT,			// 2
 		JTYPE_BOOL			// 3
-	} _eJsonType;
+	};
 
 	struct _tJsonMap
 	{

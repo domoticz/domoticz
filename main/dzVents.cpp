@@ -22,7 +22,7 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const uint8_t reason)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const int reason)
 {
 	std::stringstream lua_DirT;
 
@@ -79,7 +79,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const uint8_t reason)
 	lua_rawset(lua_state, -3);
 }
 
-void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const uint8_t reason)
+void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const int reason)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
