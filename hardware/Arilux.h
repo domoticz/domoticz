@@ -1,14 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iostream>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-
-using boost::asio::ip::udp;
-
+#include <iosfwd>
 
 class Arilux : public CDomoticzHardwareBase
 {

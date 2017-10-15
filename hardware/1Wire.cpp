@@ -11,8 +11,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../main/SQLHelper.h"
 
+#include <set>
 #include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>

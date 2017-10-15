@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include <iosfwd>
 #include <vector>
 
 class HTTPClient
