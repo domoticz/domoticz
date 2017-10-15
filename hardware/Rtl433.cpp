@@ -17,11 +17,19 @@
 
 #include "Rtl433.h"
 
-#define round(a) ( int ) ( a + .5 )
 
-CRtl433::CRtl433(const int ID) :
-	m_stoprequested(false)
+void removeCharsFromString(std::string &str, const char* charsToRemove ) {
+   for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
+      str.erase( remove(str.begin(), str.end(), charsToRemove[i]), str.end() );
+   }
+}
+
+CRtl433::CRtl433(const int ID, const std::string &cmdline) :
+	m_stoprequested(false),
+	m_cmdline(cmdline)
 {
+	// Basic protection from malicious command line
+	removeCharsFromString(m_cmdline, ":;/$()`<>|&");
 	m_HwdID = ID;
 	m_hPipe = NULL;
 }
@@ -93,7 +101,7 @@ std::vector<std::string> CRtl433::ParseCSVLine(const char *input)
 void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
-	_log.Log(LOG_STATUS, "Rtl433: Worker started...");
+	_log.Log(LOG_STATUS, "Rtl433: Worker started... (%s)",m_cmdline.c_str());
 
 	bool bHaveReceivedData = false;
 	while (!m_stoprequested)
@@ -102,7 +110,8 @@ void CRtl433::Do_Work()
 		std::vector<std::string> headers;
 		std::string sLastLine = "";
 
-		std::string szFlags = "-G -F csv -q -I 2";
+
+		std::string szFlags = "-F csv -q -I 2 " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
@@ -115,9 +124,9 @@ void CRtl433::Do_Work()
 			if (!m_stoprequested) {
 				// sleep 30 seconds before retrying
 #ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (C:\\rtl433.exe) https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit");
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)",szCommand.c_str());
 #else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (https://github.com/merbanan/rtl_433)");
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433",szCommand.c_str());
 #endif
 				for (int i = 0; i < 30 && !m_stoprequested; i++) {
 					sleep_milliseconds(1000);
@@ -352,9 +361,9 @@ void CRtl433::Do_Work()
 			if (!bHaveReceivedData)
 			{
 #ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (C:\\rtl433.exe) https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit");
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)",szCommand.c_str());
 #else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (https://github.com/merbanan/rtl_433)");
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433",szCommand.c_str());
 #endif
 			}
 			else

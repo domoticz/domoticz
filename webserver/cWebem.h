@@ -215,6 +215,8 @@ namespace http {
 			//Whitelist url strings that bypass authentication checks (not used by basic-auth authentication)
 			std::vector < std::string > myWhitelistURLs;
 			server_settings m_settings;
+			// actual theme selected
+			std::string m_actTheme;
 		private:
 			/// store map between include codes and application functions
 			std::map < std::string, webem_include_function > myIncludes;
@@ -228,8 +230,6 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages_w;
 			/// boost::asio web server (RK: plain or secure)
 			boost::shared_ptr<server_base> myServer;
-			// actual theme selected
-			std::string m_actTheme;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
 			/// request handler specialized to handle webem requests

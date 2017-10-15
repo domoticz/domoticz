@@ -581,7 +581,10 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	{
 		strcpy(szData, rawsendValue.c_str());
 	}
-	
+	else if (vType == "Distance")
+	{
+		strcpy(szData, rawsendValue.c_str());
+	}
 	else if (vType == "Status")
 	{
 		sprintf(szData, "%d", nValue);
