@@ -376,9 +376,6 @@ namespace Plugins {
 		Py_INCREF((PyObject *)&CImageType);
 		PyModule_AddObject(pModule, "Image", (PyObject *)&CImageType);
 
-		// Initialise objects
-		PythonObjectsInit();
-
 		return pModule;
 	}
 
@@ -1077,12 +1074,6 @@ namespace Plugins {
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
-//		else if (sTransport == "UDP/IP")
-//		{
-//			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-//			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-//			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
-//		}
 		else if (sTransport == "Serial")
 		{
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
@@ -1136,7 +1127,7 @@ namespace Plugins {
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
 		else
@@ -1177,17 +1168,18 @@ namespace Plugins {
 		WriteDirective*	pMessage = (WriteDirective*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
 		if (pConnection->pTransport)
 		{
 			if (sTransport == "UDP/IP")
 			{
-				_log.Log(LOG_ERROR, "(%s) Connectionless Transport is listening, write directive ignored.", Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) Connectionless Transport is listening, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
 
-			if (!pConnection->pTransport->IsConnected())
+			if ((sTransport != "ICMP/IP") && (!pConnection->pTransport->IsConnected()))
 			{
-				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
 		}
@@ -1199,19 +1191,23 @@ namespace Plugins {
 			{
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+				if (m_bDebug)
+					if (sPort.length())
+						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s for '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str(), sConnection.c_str());
+					else
+						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
 				pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
 		}
 
 		if (!pConnection->pProtocol)
 		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
 			pConnection->pProtocol = new CPluginProtocol();
 		}
 
@@ -1250,7 +1246,7 @@ namespace Plugins {
 				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
 				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
-				if (sTransport == "Serial")
+				if ((sTransport == "Serial") || (!sPort.length()))
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", Name.c_str(), sAddress.c_str());
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1343,6 +1339,8 @@ namespace Plugins {
 	{
 		try
 		{
+			PyErr_Clear();
+
 			// Stop Python
 			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
 			if (m_ImageDict) Py_XDECREF(m_ImageDict);
@@ -1417,9 +1415,9 @@ namespace Plugins {
 		if (m_bDebug)
 		{
 			if (Incoming)
-				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:.", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:", Name.c_str(), Buffer.size());
 			else
-				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:.", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:", Name.c_str(), Buffer.size());
 
 			for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
 			{

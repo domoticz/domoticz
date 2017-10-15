@@ -648,6 +648,25 @@
 									<br>
 								</div>
 							</div>
+							<div class="span6">
+                                                                        <h2><span data-i18n="Telegram"></span>:</h2>
+                                                                        <table class="display" id="telegramtable" border="0" cellpadding="0" cellspacing="0">
+                                                                        <tr>
+                                                                                <td align="right" style="width:80px"><label for="TelegramEnabled"><span data-i18n="Enabled"></span>: </label></td>
+                                                                                <td><input type="checkbox" id="TelegramEnabled" name="TelegramEnabled"/></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                                <td align="right"><label for="TelegramAPI"><span data-i18n="API Key"></span>: </label></td>
+                                                                                <td><input type="input" id="TelegramAPI" name="TelegramAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('telegram')">Test</button></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                                <td align="right"><label for="TelegramChat"><span data-i18n="Chat ID"></span>: </label></td>
+                                                                                <td><input type="input" id="TelegramChat" name="TelegramChat" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+                                                                        </tr>
+                                                                        </table>
+                                                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://telegram.org/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                                                        <br>
+                                                                </div>
 							<br>
 							<div class="row-fluid">
 								<div class="span12">
