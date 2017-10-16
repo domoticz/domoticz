@@ -477,6 +477,9 @@
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\EnphaseAPI">
+      <UniqueIdentifier>{ba95ccb4-c1a4-4993-a898-ad3ccee82e2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2080,6 +2083,12 @@
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnphaseAPI.h">
+      <Filter>Devices\EnphaseAPI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2774,6 +2783,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
       <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnphaseAPI.cpp">
+      <Filter>Devices\EnphaseAPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
