@@ -17,6 +17,8 @@
 
 #include "Rtl433.h"
 
+#define round(a) ( int ) ( a + .5 )
+
 void removeCharsFromString(std::string &str, const char* charsToRemove ) {
    for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
       str.erase( remove(str.begin(), str.end(), charsToRemove[i]), str.end() );
@@ -241,11 +243,12 @@ void CRtl433::Do_Work()
 				try {
 					if (!data["humidity"].empty())
 					{
-						humidity = boost::lexical_cast<int>(data["humidity"]);
+						humidity = round(boost::lexical_cast<float>(data["humidity"]));
 						hashumidity = true;
 					}
 				}
 				catch (boost::bad_lexical_cast e) {
+						_log.Log(LOG_STATUS, "Rtl433: bad cast -- humidity");
 				}
 				try {
 					if (!data["pressure"].empty())
