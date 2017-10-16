@@ -136,8 +136,8 @@ void EnphaseAPI::getProduction()
 	//We only poll one hour before sunrise till one hour after sunset
 	if (ActHourMin + 60 < sunRise)
 		return;
-	//if (ActHourMin - 60 > sunSet)
-	//	return;
+	if (ActHourMin - 60 > sunSet)
+		return;
 
 	getProductionDetail();
 }
