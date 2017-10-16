@@ -16,7 +16,8 @@ extern "C" {
 #endif
 }
 
-#include "../tinyxpath/xpath_processor.h"
+#include <xpath_processor.h>
+
 #include "../json/json.h"
 #include "SQLHelper.h"
 #include "mainworker.h"

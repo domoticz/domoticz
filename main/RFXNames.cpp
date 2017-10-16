@@ -191,6 +191,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_EVOHOME_WEB, "Evohome via Web API" },
+		{ HTYPE_EVOHOME_TCP, "Evohome via LAN (remote HGI/S80)" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
@@ -252,6 +253,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
+		{ HTYPE_DenkoviSmartdenIPIn, "Denkovi Smartden IP In with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -871,6 +873,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
 		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
 		{ pTypeGeneralSwitch, sSwitchTypeSysfsGpio, "SysfsGpio" },
+		{ pTypeGeneralSwitch, sSwitchTypeHager, "Hager" },
+		{ pTypeGeneralSwitch, sSwitchTypeFaber, "Faber" },
+		{ pTypeGeneralSwitch, sSwitchTypeDrayton, "Drayton" },
+		{ pTypeGeneralSwitch, sSwitchTypeV2Phoenix, "V2Phoenix" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -889,6 +895,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_PLAYING, "Playing" },
 		{ MSTAT_DISCONNECTED, "Disconnected" },
+		{ MSTAT_SLEEPING, "Sleeping" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};
@@ -1935,7 +1942,7 @@ void GetLightStatus(
 		}
 		break;
 	}
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s", 
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 

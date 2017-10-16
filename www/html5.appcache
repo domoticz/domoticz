@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1405
+# ref 1438
 
 CACHE:
 # CSS
@@ -11,6 +11,7 @@ css/jquery.dataTables.min.css
 css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
+css/legacy.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
 secpanel/css/font.less
@@ -173,6 +174,7 @@ images/forward_enabled_hover.png
 images/Gas48.png
 images/gauge.png
 images/gauge48.png
+images/general.png
 images/Generic.png
 images/Generic48_Off.png
 images/Generic48_On.png
@@ -310,6 +312,7 @@ images/unknown.png
 images/up.png
 images/Up48.png
 images/Up48_2.png
+images/update.png
 images/users.png
 images/utility.png
 images/uv.png
@@ -484,8 +487,6 @@ app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
 app/TemperatureCustomLogController.js
-app/TemperatureLogController.js
-app/TemperatureNotificationsController.js
 app/TimerplanController.js
 app/UpdateController.js
 app/UsersController.js
@@ -587,10 +588,8 @@ views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
+views/temperature_widget.html
 views/temperature_custom_temp_log.html
-views/temperature_log.html
-views/temperature_notifications.html
-views/temperatures/temperatureWidget.html
 views/timerplan.html
 views/update.html
 views/users.html

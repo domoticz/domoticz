@@ -19,18 +19,18 @@ MACH=`uname -m`
 archive_file="domoticz_${OS}_${MACH}.tgz"
 version_file="version_${OS}_${MACH}.h"
 history_file="history_${OS}_${MACH}.txt"
- 
+
 # Make sure we are on latest commit
 echo "Updating to server revision..."
 git fetch --all
 
-TOTCOUNT="$(git rev-list HEAD...origin/master --count)"
+TOTCOUNT="$(git rev-list HEAD...origin/development --count)"
 if [ "$TOTCOUNT" -lt 1 ]; then
         echo "No Changes..."
         exit;
 fi
 
-git reset --hard origin/master
+git reset --hard origin/development
 
 cmake -DCMAKE_BUILD_TYPE=Release .
 if [ $? -ne 0 ]
@@ -43,7 +43,7 @@ if [ $? -ne 0 ]
 then
 	echo "Compilation failed!...";
 	exit 1
-fi 
+fi
 echo "Success, making beta...";
 
 cp -f appversion.h ${version_file}
@@ -61,7 +61,7 @@ then
   rm ${archive_file}.sha256sum
 fi
 
-tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ plugins/
+tar -zcf ${archive_file} domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ plugins/ dzVents/
 if [ $? -ne 0 ]
 then
         echo "Error creating archive!...";
@@ -91,4 +91,4 @@ rm -f ${version_file}
 rm -f ${history_file}
 
 echo "Done!...";
-exit 0; 
+exit 0;

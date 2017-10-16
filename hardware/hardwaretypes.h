@@ -180,6 +180,10 @@
 #define sSwitchTypeYW_Sensor		0x73
 #define sSwitchTypeLegrandcad		0x74
 #define sSwitchTypeSysfsGpio		0x75
+#define sSwitchTypeHager			0x76
+#define sSwitchTypeFaber			0x77
+#define sSwitchTypeDrayton			0x78
+#define sSwitchTypeV2Phoenix		0x79
 
 //Switch commands
 #define gswitch_sOff				0x00
