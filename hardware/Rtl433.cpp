@@ -243,7 +243,7 @@ void CRtl433::Do_Work()
 				try {
 					if (!data["humidity"].empty())
 					{
-						humidity = static_cast<int>(round(boost::lexical_cast<float>(data["humidity"])));
+						humidity = round(boost::lexical_cast<float>(data["humidity"]));
 						hashumidity = true;
 					}
 				}
