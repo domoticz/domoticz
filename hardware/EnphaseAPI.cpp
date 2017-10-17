@@ -14,7 +14,7 @@
 #define Enphase_request_INTERVAL 30
 
 #ifdef _DEBUG
-#define DEBUG_EnphaseAPI
+//#define DEBUG_EnphaseAPI
 #endif
 
 #ifdef DEBUG_EnphaseAPI
@@ -149,10 +149,9 @@ void EnphaseAPI::getProductionDetail()
 {
 	std::string sResult;
 
-#/*ifdef DEBUG_EnphaseAPI
+#ifdef DEBUG_EnphaseAPI
 	sResult = ReadFile("C:\\TEMP\\EnphaseAPI_get_production.txt");
-#else*/
-
+#else
 	std::stringstream sURL;
 	sURL << "http://" << m_szIPAddress << "/production.json";
 
@@ -161,11 +160,11 @@ void EnphaseAPI::getProductionDetail()
 	bret = HTTPClient::GET(szURL, sResult);
 	if (!bret)
 	{
-		_log.Log(LOG_ERROR, "EnphaseEnlighten: Error getting http data!");
+		_log.Log(LOG_ERROR, "EnphaseAPI: Error getting http data!");
 		return;
 	}
 
-	//#endif
+#endif
 
 	Json::Value root;
 	Json::Reader jReader;
@@ -173,19 +172,24 @@ void EnphaseAPI::getProductionDetail()
 	bool ret = jReader.parse(sResult, root);
 	if ((!ret) || (!root.isObject()))
 	{
-		_log.Log(LOG_ERROR, "EnphaseEnlighten: Invalid data received!");
+		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received!");
 		return;
 	}
 	if (root["production"].empty() == true)
 	{
-		_log.Log(LOG_ERROR, "EnphaseEnlighten: Invalid data received, or invalid APIKey or invalid userId");
+		_log.Log(LOG_ERROR, "EnphaseAPI: Invalid data received");
 		return;
 	}
 
 	Json::Value reading = root["production"][0];
 
-	m_p1power.powerusage1 = reading["whLifetime"].asInt();
+	int musage = reading["wNow"].asInt();
+	int mtotal = reading["whLifetime"].asInt();
+
+	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
+
+	m_p1power.powerusage1 = mtotal;
 	m_p1power.powerusage2 = 0;
-	m_p1power.usagecurrent = reading["wNow"].asInt();
-	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Emphase Production kWh Total", 255);
+	m_p1power.usagecurrent = musage;
+	sDecodeRXMessage(this, (const unsigned char *)&m_p1power, "Enphase Production kWh Total", 255);
 }
