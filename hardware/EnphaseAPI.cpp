@@ -14,7 +14,7 @@
 #define Enphase_request_INTERVAL 30
 
 #ifdef _DEBUG
-	#define DEBUG_EnphaseAPI
+#define DEBUG_EnphaseAPI
 #endif
 
 #ifdef DEBUG_EnphaseAPI
@@ -133,11 +133,14 @@ void EnphaseAPI::getProduction()
 	int sunRise = getSunRiseSunSetMinutes(true);
 	int sunSet = getSunRiseSunSetMinutes(false);
 
-	//We only poll one hour before sunrise till one hour after sunset
-	if (ActHourMin + 60 < sunRise)
-		return;
-	if (ActHourMin - 60 > sunSet)
-		return;
+	if (sunRise != 0 && sunSet != 0)
+	{
+		//We only poll one hour before sunrise till one hour after sunset
+		if (ActHourMin + 60 < sunRise)
+			return;
+		if (ActHourMin - 60 > sunSet)
+			return;
+	}
 
 	getProductionDetail();
 }
@@ -146,12 +149,12 @@ void EnphaseAPI::getProductionDetail()
 {
 	std::string sResult;
 
-#ifdef DEBUG_EnphaseAPI
+#/*ifdef DEBUG_EnphaseAPI
 	sResult = ReadFile("C:\\TEMP\\EnphaseAPI_get_production.txt");
-#else
+#else*/
 
 	std::stringstream sURL;
-	sURL << "https://" << m_szIPAddress << "/api/production.json";
+	sURL << "http://" << m_szIPAddress << "/production.json";
 
 	bool bret;
 	std::string szURL = sURL.str();
@@ -162,7 +165,7 @@ void EnphaseAPI::getProductionDetail()
 		return;
 	}
 
-#endif
+	//#endif
 
 	Json::Value root;
 	Json::Reader jReader;
@@ -178,7 +181,7 @@ void EnphaseAPI::getProductionDetail()
 		_log.Log(LOG_ERROR, "EnphaseEnlighten: Invalid data received, or invalid APIKey or invalid userId");
 		return;
 	}
-		
+
 	Json::Value reading = root["production"][0];
 
 	m_p1power.powerusage1 = reading["whLifetime"].asInt();

@@ -318,6 +318,7 @@ hardware/Dummy.cpp
 hardware/EcoDevices.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
+hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeRadio.cpp
