@@ -209,7 +209,7 @@ void CEvohomeWeb::Do_Work()
 		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
 		{
 			GetStatus();
-			int pollcounter = LOGONFAILTRESHOLD;
+			pollcounter = LOGONFAILTRESHOLD;
 			m_lastconnect=0;
 		}
 	}
@@ -571,7 +571,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
-	else if (szsysmode == "HeatingOff")
+	else if ((szsysmode == "HeatingOff") && (szmode != "Offline"))
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	else
 	{
@@ -646,7 +646,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		return;
 
 	std::string szId, szmode;
-	std::string szuntil= "";
+	std::string szuntil = "";
 	std::stringstream ssUpdateStat;
 
 	szId = (*tcs->status)["dhw"]["dhwId"].asString();
@@ -1221,7 +1221,8 @@ std::string CEvohomeWeb::get_next_switchpoint(CEvohomeWeb::temperatureControlSys
 }
 std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 {
-	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId))
+	std::string zoneType = ((*hz->installationInfo).isMember("dhwId")) ? "domesticHotWater" : "temperatureZone";
+	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId, zoneType))
 		return "";
 	return get_next_switchpoint(hz->schedule);
 }
