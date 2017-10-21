@@ -17,8 +17,6 @@
 
 #include "Rtl433.h"
 
-#define round(a) ( int ) ( a + .5 )
-
 CRtl433::CRtl433(const int ID) :
 	m_stoprequested(false)
 {
@@ -102,7 +100,7 @@ void CRtl433::Do_Work()
 		std::vector<std::string> headers;
 		std::string sLastLine = "";
 
-		std::string szFlags = "-G -F csv -q -I 2";
+		std::string szFlags = "-F csv -q -I 2";
 #ifdef WIN32
 		std::string szCommand = "C:\\rtl_433.exe " + szFlags;
 		m_hPipe = _popen(szCommand.c_str(), "r");
@@ -234,12 +232,11 @@ void CRtl433::Do_Work()
 				try {
 					if (!data["humidity"].empty())
 					{
-						humidity = static_cast<int>(round(boost::lexical_cast<float>(data["humidity"])));
+						humidity = boost::lexical_cast<int>(data["humidity"]);
 						hashumidity = true;
 					}
 				}
 				catch (boost::bad_lexical_cast e) {
-						_log.Log(LOG_STATUS, "Rtl433: bad cast -- humidity");
 				}
 				try {
 					if (!data["pressure"].empty())
