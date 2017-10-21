@@ -17,6 +17,7 @@
 
 #include <boost/crc.hpp>
 #include <algorithm>
+#include <set>
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
@@ -10790,10 +10791,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
 
-        //when asking for Toggle, just switch to the opposite value
-        if (switchcmd=="Toggle") {
-                switchcmd=(atoi(sd[7].c_str())==1?"Off":"On");
-        }
+	//when asking for Toggle, just switch to the opposite value
+	if (switchcmd=="Toggle") {
+		switchcmd=(atoi(sd[7].c_str())==1?"Off":"On");
+	}
 
 	//when level = 0, set switch command to Off
 	if (switchcmd=="Set Level")
@@ -12296,22 +12297,21 @@ bool MainWorker::DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd
 	return false;
 }
 
-bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
+bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 {
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;
 	int nValue=(switchcmd=="On")?1:0;
-
-	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
 
 	//first set actual scene status
 	std::string Name="Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
 	std::string onaction="";
 	std::string offaction="";
+	std::string status="";
 
 	//Get Scene Name
-	result=m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
+	result=m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
 	if (result.size()>0)
 	{
 		std::vector<std::string> sds=result[0];
@@ -12319,9 +12319,18 @@ bool MainWorker::SwitchScene(const uint64_t idx, const std::string &switchcmd)
 		scenetype=(_eSceneGroupType)atoi(sds[1].c_str());
 		onaction=sds[2];
 		offaction=sds[3];
+		status=sds[4];
+
+		//when asking for Toggle, just switch to the opposite value
+		if (switchcmd=="Toggle") {
+			nValue=(atoi(status.c_str())==0?1:0);
+			switchcmd=(nValue==1?"On":"Off");
+		}
 
 		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
 	}
+
+	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
 
 	std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 	m_sql.safe_query("UPDATE Scenes SET nValue=%d, LastUpdate='%q' WHERE (ID == %" PRIu64 ")",

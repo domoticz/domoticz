@@ -64,7 +64,7 @@ public:
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
-	bool SwitchScene(const uint64_t idx, const std::string &switchcmd);
+	bool SwitchScene(const uint64_t idx, std::string switchcmd);
 	void CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
 	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 

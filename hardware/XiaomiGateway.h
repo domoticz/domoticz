@@ -1,8 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 
 #include <memory>
 #include <string>

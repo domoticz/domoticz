@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "RFLinkBase.h"
 

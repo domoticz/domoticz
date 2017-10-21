@@ -13,8 +13,6 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include "Rtl433.h"
 
 
@@ -192,34 +190,32 @@ void CRtl433::Do_Work()
 				bool haspressure = false;
 				float rain;
 				bool hasrain = false;
-
+				float depth_cm;
+				bool hasdepth_cm = false;
+				float depth;
+				bool hasdepth = false;
 				// attempt parsing field values
-				try {
-					if (!data["id"].empty()) {
-						id = boost::lexical_cast<int>(data["id"]);
-						hasid = true;
-					}
+				//atoi/f functions return 0 if string conv fails.
+				
+				if (!data["id"].empty()) {
+					id = atoi(data["id"].c_str());
+					hasid = true;
 				}
-				catch (boost::bad_lexical_cast e) {
+				
+				
+				if (!data["unit"].empty())
+				{
+					unit = atoi(data["unit"].c_str());
+					hasunit = true;
 				}
-				try {
-					if (!data["unit"].empty())
-					{
-						unit = boost::lexical_cast<int>(data["unit"]);
-						hasunit = true;
-					}
+				
+				
+				if (!data["channel"].empty())
+				{
+					channel = atoi(data["channel"].c_str());
+					haschannel = true;
 				}
-				catch (boost::bad_lexical_cast e) {
-				}
-				try {
-					if (!data["channel"].empty())
-					{
-						channel = boost::lexical_cast<int>(data["channel"]);
-						haschannel = true;
-					}
-				}
-				catch (boost::bad_lexical_cast e) {
-				}
+				
 				if (!data["battery"].empty())
 				{
 					if (data["battery"] == "LOW") {
@@ -230,44 +226,43 @@ void CRtl433::Do_Work()
 						batterylevel = 100;
 						hasbattery = true;
 					}
+				}				
+				if (!data["temperature_C"].empty())
+				{
+					tempC = atof(data["temperature_C"].c_str());
+					hastempC = true;
 				}
-				try {
-					if (!data["temperature_C"].empty())
-					{
-						tempC = boost::lexical_cast<float>(data["temperature_C"]);
-						hastempC = true;
-					}
+				
+				
+				if (!data["humidity"].empty())
+				{
+					humidity = atoi(data["humidity"].c_str());
+					hashumidity = true;
 				}
-				catch (boost::bad_lexical_cast e) {
+				
+				if (!data["pressure"].empty())
+				{
+					pressure = atof(data["pressure"].c_str());
+					haspressure = true;
 				}
-				try {
-					if (!data["humidity"].empty())
-					{
-						humidity = static_cast<int>(round(boost::lexical_cast<float>(data["humidity"])));
-						hashumidity = true;
-					}
+
+				if (!data["rain"].empty())
+				{
+					rain = atof(data["rain"].c_str());
+					hasrain = true;
 				}
-				catch (boost::bad_lexical_cast e) {
-						_log.Log(LOG_STATUS, "Rtl433: bad cast -- humidity");
+				if (!data["depth_cm"].empty())
+				{
+					depth_cm = atof(data["depth_cm"].c_str());
+					hasdepth_cm = true;
 				}
-				try {
-					if (!data["pressure"].empty())
-					{
-						pressure = boost::lexical_cast<float>(data["pressure"]);
-						haspressure = true;
-					}
-				}
-				catch (boost::bad_lexical_cast e) {
-				}
-				try {
-					if (!data["rain"].empty())
-					{
-						rain = boost::lexical_cast<float>(data["rain"]);
-						hasrain = true;
-					}
-				}
-				catch (boost::bad_lexical_cast e) {
-				}
+				
+                                if (!data["depth"].empty())
+                                {
+                                	depth = atof(data["depth"].c_str());
+                                        hasdepth = true;
+                                }
+ 
 
 				std::string model = data["model"];
 
@@ -338,10 +333,29 @@ void CRtl433::Do_Work()
 						model);
 					bHaveSend = true;
 				}
+				if (hasdepth_cm)
+				{
+
+					SendDistanceSensor(sensoridx, unit, 
+						batterylevel, depth_cm, model);
+					bHaveSend = true;
+				}
+                                if (hasdepth)
+                                {
+
+                                        SendDistanceSensor(sensoridx, unit,
+                                                batterylevel, depth, model);
+                                        bHaveSend = true;
+                                }
 
 				if (!bHaveSend)
 				{
 					_log.Log(LOG_STATUS, "Rtl433: Unhandled sensor type, please report: (%s)", line);
+				}
+				else
+				{
+					//Useful as some sensors will be skipped if temp is available  	
+					//_log.Log(LOG_NORM, "Rtl433: Raw Data: (%s)", line);
 				}
 			} else { //fgets
 			  break; // bail out, subprocess has failed
