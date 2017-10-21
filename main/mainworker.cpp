@@ -17,6 +17,7 @@
 
 #include <boost/crc.hpp>
 #include <algorithm>
+#include <set>
 
 //Hardware Devices
 #include "../hardware/hardwaretypes.h"
