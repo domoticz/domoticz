@@ -1,11 +1,14 @@
 #set to minimum version that supports clean build on cygwin
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.8.0)
 
 project(domoticz)
 
 ## required min. libBoost version
 SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
+
+set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD_REQUIRED ON)
 
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
@@ -645,12 +648,11 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
-elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+find_package(Threads REQUIRED)
+IF(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} Threads::Threads ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} Threads::Threads ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")

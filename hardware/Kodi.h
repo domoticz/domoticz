@@ -9,8 +9,9 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/lexical_cast.hpp>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+#define SSTR( x ) boost::lexical_cast<std::string>(x)
 
 class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 {
