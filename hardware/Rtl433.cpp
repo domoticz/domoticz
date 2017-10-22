@@ -15,6 +15,7 @@
 
 #include "Rtl433.h"
 
+
 void removeCharsFromString(std::string &str, const char* charsToRemove ) {
    for ( unsigned int i = 0; i < strlen(charsToRemove); ++i ) {
       str.erase( remove(str.begin(), str.end(), charsToRemove[i]), str.end() );
@@ -106,6 +107,7 @@ void CRtl433::Do_Work()
 		char line[2048];
 		std::vector<std::string> headers;
 		std::string sLastLine = "";
+
 
 		std::string szFlags = "-F csv -q -I 2 " + m_cmdline; // -f 433.92e6 -f 868.24e6 -H 60 -d 0
 #ifdef WIN32
@@ -224,8 +226,7 @@ void CRtl433::Do_Work()
 						batterylevel = 100;
 						hasbattery = true;
 					}
-				}
-				
+				}				
 				if (!data["temperature_C"].empty())
 				{
 					tempC = atof(data["temperature_C"].c_str());
