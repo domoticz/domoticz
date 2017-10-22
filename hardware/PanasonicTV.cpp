@@ -424,7 +424,6 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 
 int CPanasonicNode::handleMessage(std::string pMessage)
 {
-	bool bFound = false;
 	int iPosBegin = 0;
 	int iPosEnd = 0;
 	std::string begin(">");
@@ -459,34 +458,28 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	}
 
 	// Reset for next Search
-	bFound = false;
 	iPosBegin = 0;
 	iPosEnd = 0;
 
-	while (!bFound)
+	while (1)
 	{
 		iPosBegin = pMessage.find(begin, iPosBegin);
-		if (iPosBegin != std::string::npos)
-		{
-			iPosEnd = pMessage.find(end, iPosBegin+1);
-			if (iPosEnd != std::string::npos)
-			{
-				std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
-				if (is_number(sFound))
-				{
-					return atoi(sFound.c_str());
-				}
-			}
-		}
 		if (iPosBegin == std::string::npos)
 			break;
-		else
-			iPosBegin++;
+		iPosEnd = pMessage.find(end, iPosBegin+1);
+		if (iPosEnd != std::string::npos)
+		{
+			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
+			if (is_number(sFound))
+			{
+				return atoi(sFound.c_str());
+			}
+		}
+		iPosBegin++;
 	}
 
 	// If we got here we didn't find a return string
 	return -1;
-	
 }
 
 std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)

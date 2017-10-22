@@ -29,7 +29,7 @@ bool RAVEn::StartHardware()
     try
     {
         _log.Log(LOG_STATUS, "RAVEn: Using serial port: %s", device_.c_str());
-        open(device_.c_str(), 115200);
+        open(device_, 115200);
     }
     catch (boost::exception & e)
     {

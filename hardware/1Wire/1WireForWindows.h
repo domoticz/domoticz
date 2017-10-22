@@ -36,7 +36,7 @@ protected:
    static bool StartService(){return false;}
 
    // Socket
-   std::string SendAndReceive(std::string requestToSend) const;
+   std::string SendAndReceive(const std::string &requestToSend) const;
 
    SOCKET m_Socket;
    boost::mutex m_SocketMutex;

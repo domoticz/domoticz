@@ -25,7 +25,9 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	m_system(NULL),
 	m_sensorThreadPeriod(sensorThreadPeriod),
 	m_switchThreadPeriod(switchThreadPeriod),
-	m_path(path)
+	m_path(path),
+	m_bSensorFirstTime(true),
+	m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 

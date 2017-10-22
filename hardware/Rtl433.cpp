@@ -98,7 +98,7 @@ std::vector<std::string> CRtl433::ParseCSVLine(const char *input)
 void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
-	_log.Log(LOG_STATUS, "Rtl433: Worker started... (%s)",m_cmdline.c_str());
+	_log.Log(LOG_STATUS, "Rtl433: Worker started... (%s)", m_cmdline.c_str());
 
 	bool bHaveReceivedData = false;
 	while (!m_stoprequested)
@@ -120,9 +120,9 @@ void CRtl433::Do_Work()
 			if (!m_stoprequested) {
 				// sleep 30 seconds before retrying
 #ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)",szCommand.c_str());
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
 #else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433",szCommand.c_str());
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
 #endif
 				for (int i = 0; i < 30 && !m_stoprequested; i++) {
 					sleep_milliseconds(1000);
@@ -194,26 +194,26 @@ void CRtl433::Do_Work()
 				bool hasdepth = false;
 				// attempt parsing field values
 				//atoi/f functions return 0 if string conv fails.
-				
+
 				if (!data["id"].empty()) {
 					id = atoi(data["id"].c_str());
 					hasid = true;
 				}
-				
-				
+
+
 				if (!data["unit"].empty())
 				{
 					unit = atoi(data["unit"].c_str());
 					hasunit = true;
 				}
-				
-				
+
+
 				if (!data["channel"].empty())
 				{
 					channel = atoi(data["channel"].c_str());
 					haschannel = true;
 				}
-				
+
 				if (!data["battery"].empty())
 				{
 					if (data["battery"] == "LOW") {
@@ -225,43 +225,43 @@ void CRtl433::Do_Work()
 						hasbattery = true;
 					}
 				}
-				
+
 				if (!data["temperature_C"].empty())
 				{
-					tempC = atof(data["temperature_C"].c_str());
+					tempC = (float)atof(data["temperature_C"].c_str());
 					hastempC = true;
 				}
-				
-				
+
+
 				if (!data["humidity"].empty())
 				{
 					humidity = atoi(data["humidity"].c_str());
 					hashumidity = true;
 				}
-				
+
 				if (!data["pressure"].empty())
 				{
-					pressure = atof(data["pressure"].c_str());
+					pressure = (float)atof(data["pressure"].c_str());
 					haspressure = true;
 				}
 
 				if (!data["rain"].empty())
 				{
-					rain = atof(data["rain"].c_str());
+					rain = (float)atof(data["rain"].c_str());
 					hasrain = true;
 				}
 				if (!data["depth_cm"].empty())
 				{
-					depth_cm = atof(data["depth_cm"].c_str());
+					depth_cm = (float)atof(data["depth_cm"].c_str());
 					hasdepth_cm = true;
 				}
-				
-                                if (!data["depth"].empty())
-                                {
-                                	depth = atof(data["depth"].c_str());
-                                        hasdepth = true;
-                                }
- 
+
+				if (!data["depth"].empty())
+				{
+					depth = (float)atof(data["depth"].c_str());
+					hasdepth = true;
+				}
+
 
 				std::string model = data["model"];
 
@@ -335,17 +335,17 @@ void CRtl433::Do_Work()
 				if (hasdepth_cm)
 				{
 
-					SendDistanceSensor(sensoridx, unit, 
+					SendDistanceSensor(sensoridx, unit,
 						batterylevel, depth_cm, model);
 					bHaveSend = true;
 				}
-                                if (hasdepth)
-                                {
+				if (hasdepth)
+				{
 
-                                        SendDistanceSensor(sensoridx, unit,
-                                                batterylevel, depth, model);
-                                        bHaveSend = true;
-                                }
+					SendDistanceSensor(sensoridx, unit,
+						batterylevel, depth, model);
+					bHaveSend = true;
+				}
 
 				if (!bHaveSend)
 				{
@@ -356,8 +356,9 @@ void CRtl433::Do_Work()
 					//Useful as some sensors will be skipped if temp is available  	
 					//_log.Log(LOG_NORM, "Rtl433: Raw Data: (%s)", line);
 				}
-			} else { //fgets
-			  break; // bail out, subprocess has failed
+			}
+			else { //fgets
+				break; // bail out, subprocess has failed
 			}
 		} // while !m_stoprequested
 		if (m_hPipe)
@@ -374,9 +375,9 @@ void CRtl433::Do_Work()
 			if (!bHaveReceivedData)
 			{
 #ifdef WIN32
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)",szCommand.c_str());
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed. (%s)  https://cognito.me.uk/computers/rtl_433-windows-binary-32-bit)", szCommand.c_str());
 #else
-				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433",szCommand.c_str());
+				_log.Log(LOG_STATUS, "Rtl433: rtl_433 startup failed. Make sure it's properly installed (%s). https://github.com/merbanan/rtl_433", szCommand.c_str());
 #endif
 			}
 			else

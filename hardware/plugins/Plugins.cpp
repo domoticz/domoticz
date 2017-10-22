@@ -1325,9 +1325,9 @@ namespace Plugins {
 
 			if (pParams) Py_XDECREF(pParams);
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -1348,9 +1348,9 @@ namespace Plugins {
 			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 			Py_XDECREF(m_PyModule);
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e->what());
 		}
 		catch (...)
 		{

@@ -134,11 +134,9 @@ std::string ZWaveBase::GenerateDeviceStringID(const _tZWaveDevice *pDevice)
 void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	device.string_id=GenerateDeviceStringID(&device);
-
-	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
-	
 	device.lastreceived=mytime(NULL);
 #ifdef _DEBUG
+	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	if (bNewDevice)
 	{
 		_log.Log(LOG_NORM, "New device: %s", device.string_id.c_str());
@@ -710,12 +708,12 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
 	{
-		uint16_t NodeID = (ID3 << 8) | ID4;
+		//uint16_t NodeID = (ID3 << 8) | ID4;
 		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, BatLevel, pDevice->floatValue, "Moisture");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
 	{
-		uint16_t NodeID = (ID3 << 8) | ID4;
+		//uint16_t NodeID = (ID3 << 8) | ID4;
 		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, "Tank Capacity", "l");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)

@@ -89,11 +89,7 @@ namespace Plugins {
 	{
 	public:
 		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) {};
-		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection)
-		{
-			m_Status = Code;
-			m_Text = Text;
-		};
+		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) {};
 		int						m_Status;
 		std::string				m_Text;
 		virtual void Process()

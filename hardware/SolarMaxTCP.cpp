@@ -197,8 +197,6 @@ void SolarMaxTCP::Do_Work()
 			(!m_stoprequested)
 			)
 		{
-			if (m_stoprequested)
-				break;
 			m_retrycntr++;
 			if (m_retrycntr >= RETRY_DELAY)
 			{

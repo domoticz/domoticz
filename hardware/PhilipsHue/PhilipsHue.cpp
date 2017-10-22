@@ -542,7 +542,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 bool CPhilipsHue::GetStates()
 {
-	vector<string> ExtraHeaders;
 	string sResult;
 
 #ifdef DEBUG_PhilipsHue
@@ -554,6 +553,7 @@ bool CPhilipsHue::GetStates()
 		<< "/api/" << m_UserName;
 	//Get Data
 	string sURL = sstr2.str();
+	vector<string> ExtraHeaders;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
