@@ -428,6 +428,8 @@ hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
+hardware/USBtin.cpp
+hardware/USBtin_MultiblocV8.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

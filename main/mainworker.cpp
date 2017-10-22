@@ -128,6 +128,8 @@
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/Rtl433.h"
 #include "../hardware/OnkyoAVTCP.h"
+#include "../hardware/USBtin.h"
+#include "../hardware/USBtin_MultiblocV8.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1014,6 +1016,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
+		break;
+	case HTYPE_USBtinGateway:
+		pHardware = new USBtin(ID, SerialPort,Mode1,Mode2);
 		break;
 	}
 
@@ -4435,6 +4440,8 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
+		case sTypeSFSP_M:
+		case sTypeSFSP_E:
 			switch (pResponse->LIGHTING2.subtype)
 			{
 			case sTypeAC:
@@ -4445,6 +4452,12 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case sTypeANSLUT:
 				WriteMessage("subtype       = ANSLUT");
+				break;
+			case sTypeSFSP_M:
+				WriteMessage("subtype       = SFSP Master");
+				break;
+			case sTypeSFSP_E:
+				WriteMessage("subtype       = SFSP Slave");
 				break;
 			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING2.seqnbr);

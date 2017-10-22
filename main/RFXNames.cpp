@@ -254,6 +254,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
 		{ HTYPE_DenkoviSmartdenIPIn, "Denkovi Smartden IP In with LAN interface" },
+		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -581,7 +582,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
-
+		{ pTypeLighting2, sTypeSFSP_M, "SFSP Master" },
+		{ pTypeLighting2, sTypeSFSP_E, "SFSP Slave" },
+		
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
 		{ pTypeLighting4, sTypePT2262, "PT2262" },
@@ -1085,6 +1088,8 @@ void GetLightStatus(
 		case sTypeHEU:
 		case sTypeANSLUT:
 		case sTypeKambrook:
+		case sTypeSFSP_M:
+		case sTypeSFSP_E:
 			bHaveDimmer=true;
 			bHaveGroupCmd=true;
 			switch (nValue)
@@ -3271,6 +3276,7 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_CurrentCostMeter:
 	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
+	case HTYPE_USBtinGateway:
 		return true;
 	default:
 		return false;
