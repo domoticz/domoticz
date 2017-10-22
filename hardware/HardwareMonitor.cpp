@@ -633,6 +633,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 
 	void CHardwareMonitor::FetchUnixCPU()
 	{
+		char szTmp[300];
 		//CPU
 		char cname[50];
 		if (m_lastquerytime==0)
@@ -673,7 +674,6 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 #endif
 			if (fIn!=NULL)
 			{
-				char szTmp[300];
 				bool bFirstLine=true;
 				while( fgets(szTmp, sizeof(szTmp), fIn) != NULL )
 				{
