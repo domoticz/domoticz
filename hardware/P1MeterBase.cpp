@@ -135,12 +135,16 @@ void P1MeterBase::Init()
 	m_gasoktime=0;
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'P1GasMeterChannel')");
-	if ((result.size() > 0) && (result[0][0].size()==1) && (result[0][0]>"0") && (result[0][0]<"5"))
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
+	if (!result.empty())
 	{
-		m_gasmbuschannel=(char)result[0][0][0];
-		m_gasprefix[2]=m_gasmbuschannel;
-		_log.Log(LOG_STATUS,"P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+		std::string s_gasmbuschannel = result[0][0];
+		if ((s_gasmbuschannel.length()==1) && (s_gasmbuschannel[0]>0x30) && (s_gasmbuschannel[0]<0x35)) // value must be a single digit number between 1 and 4
+		{
+			m_gasmbuschannel=(char)s_gasmbuschannel[0];
+			m_gasprefix[2]=m_gasmbuschannel;
+			_log.Log(LOG_STATUS,"P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+		}
 	}
 }
 
