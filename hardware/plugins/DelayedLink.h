@@ -126,16 +126,10 @@ namespace Plugins {
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python35_d.dll");
 				if (!shared_lib_) shared_lib_ = LoadLibrary("python34_d.dll");
 #	else
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python37.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python36.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python35.dll");
-				if (!shared_lib_) shared_lib_ = LoadLibrary("python34.dll");
+				if (!shared_lib_) shared_lib_ = LoadLibrary("python3.dll");
 #	endif
 #else
-				if (!shared_lib_) FindLibrary("python3.7", true);
-				if (!shared_lib_) FindLibrary("python3.6", true);
-				if (!shared_lib_) FindLibrary("python3.5", true);
-				if (!shared_lib_) FindLibrary("python3.4", true);
+				if (!shared_lib_) FindLibrary("python3", true);
 #endif
 				if (shared_lib_)
 				{
@@ -232,22 +226,10 @@ namespace Plugins {
 						library = "lib" + sLibrary + ".so";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
-					// look in directories covered by ldconfig but 'm' variant
-					if (!shared_lib_)
-					{
-						library = "lib" + sLibrary + "m.so";
-						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-					}
 					// look in /usr/lib directories
 					if (!shared_lib_)
 					{
 						library = "/usr/lib/" + sLibrary + "/";
-						FindLibrary(library, false);
-					}
-					// look in /usr/lib directories but 'm' variant
-					if (!shared_lib_)
-					{
-						library = "/usr/lib/" + sLibrary + "m/";
 						FindLibrary(library, false);
 					}
 					// look in /usr/local/lib directory (handles build from source)
@@ -256,12 +238,6 @@ namespace Plugins {
 						library = "/usr/local/lib/lib" + sLibrary + ".so";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 
-					}
-					// look in /usr/local/lib directory (handles build from source) but 'm' variant
-					if (!shared_lib_)
-					{
-						library = "/usr/local/lib/lib" + sLibrary + "m.so";
-						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
 				else
