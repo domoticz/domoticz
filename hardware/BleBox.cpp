@@ -591,7 +591,7 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
 	char szIdx[10];
-	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
