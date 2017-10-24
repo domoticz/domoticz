@@ -205,11 +205,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			int change;
 			if (general->cmnd == gswitch_sOn)
 			{ 
-				change = m_LastQuickAccess | (1 << (general->unitcode - 1));
+				change = m_LastQuickAccess | (general->unitcode);
 			}
 			else
 			{ 
-				change = m_LastQuickAccess & ~(1 << (general->unitcode - 1));
+				change = m_LastQuickAccess & ~(general->unitcode);
 			}
 
 			unsigned char buffer[100];
