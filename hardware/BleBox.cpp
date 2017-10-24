@@ -22,19 +22,6 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
 };
 
-int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
-{
-	for (unsigned int i = 0; i < TOT_TYPE; ++i)
-	{
-		if (DevicesType[i].api_name == apiName)
-		{
-			return DevicesType[i].unit;
-		}
-	}
-	_log.Log(LOG_ERROR, "BleBox: unknown device api name(%s)", apiName.c_str());
-	return -1;
-}
-
 BleBox::BleBox(const int id, const int pollIntervalsec) :
 	m_stoprequested(false)
 {
@@ -50,6 +37,7 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
+	LoadNodes();
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
 	m_bIsStarted = true;
 	sOnConnected(this);
@@ -238,6 +226,19 @@ std::string BleBox::GetDeviceIP(const std::string &id)
 	sprintf(ip, "%d.%d.%d.%d", id1, id2, id3, id4);
 
 	return ip;
+}
+
+int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
+{
+	for (unsigned int i = 0; i < TOT_TYPE; ++i)
+	{
+		if (DevicesType[i].api_name == apiName)
+		{
+			return DevicesType[i].unit;
+		}
+	}
+	_log.Log(LOG_ERROR, "BleBox: unknown device api name(%s)", apiName.c_str());
+	return -1;
 }
 
 std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
