@@ -327,7 +327,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["switchcmd"].isString())
 			goto mqttinvaliddata;
 		std::string switchcmd = root["switchcmd"].asString();
-		if ((switchcmd != "On") && (switchcmd != "Off"))
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
 			goto mqttinvaliddata;
 		if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
 		{
@@ -639,11 +639,10 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 
 void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 {
-	std::vector<std::vector<std::string> > result, result2;
+	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID==%" PRIu64 ") ORDER BY [Order]", SceneIdx);
 	if (result.empty())
 		return;
-	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::vector<std::string> sd = result[0];
 
 	std::string sName = sd[1];

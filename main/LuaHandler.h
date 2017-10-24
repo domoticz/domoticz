@@ -8,7 +8,7 @@ struct lua_Debug;
 class CLuaHandler : public CLuaCommon
 {
 public:
-	CLuaHandler(int hwdID = 0);
+	explicit CLuaHandler(int hwdID = 0);
 
 	bool executeLuaScript(const std::string &script, const std::string &content);
 	bool executeLuaScript(const std::string &script, const std::string &content, std::vector<std::string>& allParameters);

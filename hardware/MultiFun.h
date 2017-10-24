@@ -3,7 +3,6 @@
 // implememtation for regulators : https://www.recalart.com/
 // by Fantom (szczukot@poczta.onet.pl)
 
-#include <map>
 #include "DomoticzHardware.h"
 
 class csocket;
