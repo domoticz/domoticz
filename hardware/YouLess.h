@@ -2,7 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iostream>
+#include <iosfwd>
 
 typedef struct _tYouLessMeter {
 	unsigned char len;

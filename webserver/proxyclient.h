@@ -1,6 +1,6 @@
 #pragma once
 #ifndef NOCLOUD
-#include <iostream>
+#include <iosfwd>
 #include <queue>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>

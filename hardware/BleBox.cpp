@@ -50,14 +50,10 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
-	if (LoadNodes())
-	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
-		m_bIsStarted = true;
-		sOnConnected(this);
-		return (m_thread != NULL);
-	}
-	return false;
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
+	m_bIsStarted = true;
+	sOnConnected(this);
+	return (m_thread != NULL);
 }
 
 bool BleBox::StopHardware()
@@ -545,7 +541,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
+bool BleBox::IsNodeExists(const Json::Value &root, const std::string &node)
 {
 	if (root[node].empty() == true)
 	{
@@ -555,7 +551,7 @@ bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
 	return true;
 }
 
-bool BleBox::IsNodesExist(const Json::Value root, const std::string node, const std::string value)
+bool BleBox::IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value)
 {
 	if (IsNodeExists(root, node) == false)
 		return false;
@@ -772,36 +768,6 @@ namespace http {
 			pHardware->AddNode(name, ip);
 		}
 
-		void CWebServer::Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string hwid = request::findValue(&req, "idx");
-			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "")
-				)
-				return;
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
-			if (pBaseHardware == NULL)
-				return;
-			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
-
-			root["status"] = "OK";
-			root["title"] = "BleBoxUpdateNode";
-			int ID = atoi(nodeid.c_str());
-			pHardware->UpdateNode(ID, name, ip);
-		}
-
 		void CWebServer::Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -984,8 +950,6 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 	if (root["uptime"].empty() == true)
 		return "unknown";
 
-	std::string result;
-
 	uint64_t msec = root["uptime"].asUInt64();
 	char timestring[32] = "";
 
@@ -1065,27 +1029,6 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 			m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 	}
 	ReloadNodes();
-}
-
-bool BleBox::UpdateNode(const int id, const std::string &name, const std::string &IPAddress)
-{
-	std::string deviceApiName = IdentifyDevice(IPAddress);
-	if (deviceApiName.empty())
-		return false;
-
-	int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
-	if (deviceTypeID == -1)
-		return false;
-
-	STR_DEVICE deviceType = DevicesType[deviceTypeID];
-
-	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
-
-	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
-		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);
-
-	ReloadNodes();
-	return true;
 }
 
 void BleBox::RemoveNode(const int id)

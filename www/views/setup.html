@@ -647,6 +647,25 @@
 									</table>
 									<br>
 								</div>
+								<div class="span6">
+                                                                        <h2><span>Telegram</span>:</h2>
+                                                                        <table class="display" id="telegramtable" border="0" cellpadding="0" cellspacing="0">
+                                                                        <tr>
+                                                                                <td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
+                                                                                <td><input type="checkbox" id="TelegramEnabled" name="TelegramEnabled"/><label for="TelegramEnabled"/></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                                <td align="right"><label for="TelegramAPI"><span data-i18n="API Key"></span>: </label></td>
+                                                                                <td><input type="input" id="TelegramAPI" name="TelegramAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('telegram')">Test</button></td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                                <td align="right"><label for="TelegramChat"><span data-i18n="Chat ID">Chat ID</span>: </label></td>
+                                                                                <td><input type="input" id="TelegramChat" name="TelegramChat" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+                                                                        </tr>
+                                                                        </table>
+                                                                        <span data-i18n="To get a free account/API key click"></span> <a href="https://telegram.org/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+                                                                        <br>
+                                                                </div>
 							</div>
 							<br>
 							<div class="row-fluid">
@@ -943,7 +962,7 @@
 							<div class="row-fluid">
 								<div class="span12">
 									<h2><span data-i18n="Display Values"></span>:</h2>
-									<table class="display" id="floorplanoptionstable" border="0" cellpadding="0" cellspacing="0">
+									<table class="display" id="floorplandisplaytable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
 										<td align="right" style="width:150px; vertical-align:top"><span data-i18n="Sensors"></span>:</td>
 										<td><input type="checkbox" id="FloorplanShowSensorValues" name="FloorplanShowSensorValues"/><label for="FloorplanShowSensorValues" /></td>
@@ -1162,7 +1181,7 @@
 									<h2><span data-i18n="dzVents">dzVents</span>:</h2>
 									<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
 									<tr>
-										<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
+										<td align="right" style="width:90px"><span data-i18n="Enabled"></span>:</td>
 										<td><input type="checkbox" id="DisableDzVentsSystem" name="DisableDzVentsSystem"><label for="DisableDzVentsSystem"/></td>
 									</tr>
 									<tr>

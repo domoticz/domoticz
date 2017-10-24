@@ -417,7 +417,6 @@ namespace http {
 			RegisterCommandCode("bleboxsetmode", boost::bind(&CWebServer::Cmd_BleBoxSetMode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxgetnodes", boost::bind(&CWebServer::Cmd_BleBoxGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxaddnode", boost::bind(&CWebServer::Cmd_BleBoxAddNode, this, _1, _2, _3));
-			RegisterCommandCode("bleboxupdatenode", boost::bind(&CWebServer::Cmd_BleBoxUpdateNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxremovenode", boost::bind(&CWebServer::Cmd_BleBoxRemoveNode, this, _1, _2, _3));
 			RegisterCommandCode("bleboxclearnodes", boost::bind(&CWebServer::Cmd_BleBoxClearNodes, this, _1, _2, _3));
 			RegisterCommandCode("bleboxautosearchingnodes", boost::bind(&CWebServer::Cmd_BleBoxAutoSearchingNodes, this, _1, _2, _3));
@@ -1184,7 +1183,7 @@ namespace http {
 			else if (htype == HTYPE_Tellstick) {
 				//all fine here!
 			}
-			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB) {
+			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB || htype == HTYPE_EVOHOME_TCP) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_PiFace) {
@@ -1530,7 +1529,7 @@ namespace http {
 			else if (htype == HTYPE_Dummy) {
 				//All fine here
 			}
-			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB) {
+			else if (htype == HTYPE_EVOHOME_SCRIPT || htype == HTYPE_EVOHOME_SERIAL || htype == HTYPE_EVOHOME_WEB || htype == HTYPE_EVOHOME_TCP) {
 				//All fine here
 			}
 			else if (htype == HTYPE_PiFace) {
@@ -2477,6 +2476,7 @@ namespace http {
 			root["version"] = szAppVersion;
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
+			root["dzvents_version"] = m_mainworker.m_eventsystem.m_dzvents.GetVersion();
 
 			if (session.rights != 2)
 			{
@@ -3626,6 +3626,7 @@ namespace http {
 							(Type == HTYPE_EVOHOME_SCRIPT) ||
 							(Type == HTYPE_EVOHOME_SERIAL) ||
 							(Type == HTYPE_EVOHOME_WEB) ||
+							(Type == HTYPE_EVOHOME_TCP) ||
 							(Type == HTYPE_RaspberryGPIO) ||
 							(Type == HTYPE_RFLINKUSB) ||
 							(Type == HTYPE_RFLINKTCP) ||
@@ -7693,7 +7694,7 @@ namespace http {
 			rnOldvalue = 0;
 			m_sql.GetPreferencesVar("DisableDzVentsSystem", rnOldvalue);
 			std::string DisableDzVentsSystem = request::findValue(&req, "DisableDzVentsSystem");
-			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 1 : 0);
+			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
 			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
 			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
 
@@ -8184,7 +8185,7 @@ namespace http {
 							"WHERE (A.HardwareID == %q) "
 							"ORDER BY ");
 						szQuery += szOrderBy;
-                                                result = m_sql.safe_query(szQuery.c_str(), hardwareid.c_str(), order.c_str());
+						result = m_sql.safe_query(szQuery.c_str(), hardwareid.c_str(), order.c_str());
 					}
 					else {
 						szQuery = (
@@ -8199,12 +8200,15 @@ namespace http {
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"ORDER BY ");
 						szQuery += szOrderBy;
-                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
+						result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 					}
 				}
 			}
 			else
 			{
+				if (iUser == -1) {
+					return;
+				}
 				//Specific devices
 				if (rowid != "")
 				{
@@ -8281,7 +8285,9 @@ namespace http {
 					}
 
 					if (order.empty() || (!isAlpha))
+					{
 						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+					}
 					else
 					{
 						sprintf(szOrderBy, "A.[Order],A.%%s ASC");
@@ -8302,7 +8308,7 @@ namespace http {
 						"WHERE (B.DeviceRowID==A.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY ");
 					szQuery += szOrderBy;
-                                        result = m_sql.safe_query(szQuery.c_str(), m_users[iUser].ID, order.c_str());
+					result = m_sql.safe_query(szQuery.c_str(), m_users[iUser].ID, order.c_str());
 				}
 			}
 
@@ -10643,6 +10649,10 @@ namespace http {
 			m_sql.safe_query("DELETE FROM SceneDevices WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneTimers WHERE (SceneRowID == '%q')", idx.c_str());
 			m_sql.safe_query("DELETE FROM SceneLog WHERE (SceneRowID=='%q')", idx.c_str());
+			std::stringstream sstridx(idx);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
 		void CWebServer::RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -10683,6 +10693,10 @@ namespace http {
 				offaction.c_str(),
 				idx.c_str()
 			);
+			std::stringstream sstridx(idx);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
 		bool compareIconsByName(const http::server::CWebServer::_tCustomIcon &a, const http::server::CWebServer::_tCustomIcon &b)
@@ -11607,6 +11621,10 @@ namespace http {
 			root["title"] = "RenameDevice";
 
 			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
+			std::stringstream sstridx(sidx);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
 		}
 
 		void CWebServer::Cmd_RenameScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -11629,6 +11647,10 @@ namespace http {
 			root["title"] = "RenameScene";
 
 			m_sql.safe_query("UPDATE Scenes SET Name='%q' WHERE (ID == %d)", sname.c_str(), idx);
+			std::stringstream sstridx(sidx);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
 		}
 
 		void CWebServer::Cmd_SetUnused(WebEmSession & session, const request& req, Json::Value &root)
@@ -12060,7 +12082,7 @@ namespace http {
 			std::stringstream sstridx(idx);
 			uint64_t ullidx;
 			sstridx >> ullidx;
-			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name);
+			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_DEVICE);
 
 			std::vector<std::vector<std::string> > result;
 

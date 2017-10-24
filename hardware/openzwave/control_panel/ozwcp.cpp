@@ -39,11 +39,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include "Options.h"
-#include "Manager.h"
-#include "Node.h"
-#include "Group.h"
-#include "Notification.h"
+#include "../Options.h"
+#include "../Manager.h"
+#include "../Node.h"
+#include "../Group.h"
+#include "../Notification.h"
 
 #include <sys/stat.h>
 #include <fstream>

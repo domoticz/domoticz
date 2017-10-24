@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 119
+#define DB_VERSION 120
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2297,6 +2297,29 @@ bool CSQLHelper::OpenDatabase()
 			}
 			DeletePreferencesVar("DisableEventScriptSystem");
 		}
+		if (dbversion < 120)
+		{
+			// remove old dzVents dirs
+			std::string dzv_Dir, dzv_scripts;
+#ifdef WIN32
+			dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+			dzv_scripts = szUserDataFolder + "scripts\\dzVents\\";
+#else
+			dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+			dzv_scripts = szUserDataFolder + "scripts/dzVents/";
+#endif
+			const std::string
+			dzv_rm_Dir1 = dzv_scripts + "runtime",
+			dzv_rm_Dir2 = dzv_scripts + "documentation";
+
+			if ((file_exist(dzv_rm_Dir1.c_str()) || file_exist(dzv_rm_Dir2.c_str())) &&
+				!szUserDataFolder.empty())
+			{
+				std::string errorPath;
+				if (int returncode = RemoveDir(dzv_rm_Dir1 + "|" + dzv_rm_Dir2, errorPath))
+					_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath.c_str());
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4042,7 +4065,7 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
-void CSQLHelper::DeletePreferencesVar(const std::string Key )
+void CSQLHelper::DeletePreferencesVar(const std::string &Key)
 {
   std::string sValue ;
 	if (!m_dbase)
@@ -6005,7 +6028,10 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", (*itt).c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", (*itt).c_str());
 			//notify eventsystem device is no longer present
-			m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+			std::stringstream sstridx(*itt);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", (*itt).c_str());
 		}
@@ -7150,6 +7176,7 @@ std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 	return "OK";
 
 }
+
 std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::string &vartype, const std::string &varvalue)
 {
 	int typei = atoi(vartype.c_str());
@@ -7168,25 +7195,25 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 		CURLEncode::URLDecode(varvalue.c_str()).c_str()
 		);
 
-	result = safe_query("SELECT ID FROM UserVariables WHERE (Name == '%q')",
-		varname.c_str()
-	);
-	if (result.size()>0)
-	{
-		std::vector<std::string> sd = result[0];
-		std::stringstream vId_str(sd[0]);
-		uint64_t vId;
-		vId_str >> vId;
-		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
-	}
 	if (m_bEnableEventSystem)
 	{
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+		result = safe_query("SELECT ID, LastUpdate FROM UserVariables WHERE (Name == '%q')",
+			varname.c_str()
+		);
+		if (result.size()>0)
+		{
+			std::vector<std::string> sd = result[0];
+			std::stringstream vId_str(sd[0]);
+			uint64_t vId;
+			vId_str >> vId;
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", "", -1, sd[1]);
+		}
 	}
-
 	return "OK";
-
 }
+
 std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger)
 {
 	int typei = atoi(vartype.c_str());
@@ -7222,13 +7249,9 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 		std::stringstream vId_str(idx);
 		uint64_t vId;
 		vId_str >> vId;
+		if (eventtrigger)
+			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
 		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, szLastUpdate);
-		if (eventtrigger) {
-			std::stringstream vId_str(idx);
-			uint64_t vId;
-			vId_str >> vId;
-			m_mainworker.m_eventsystem.ProcessUserVariable(vId);
-		}
 	}
 	return "OK";
 }
@@ -7245,11 +7268,9 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 		);
 	if (m_bEnableEventSystem)
 	{
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
 		if (eventtrigger)
-		{
-			m_mainworker.m_eventsystem.ProcessUserVariable(idx);
-		}
+			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
 	}
 	return true;
 }

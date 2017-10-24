@@ -34,7 +34,9 @@ matrix:
     dist: trusty
     sudo: required
     compiler: gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    env: 
+          - TARGET_ARCHITECTURE=x86_64
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     addons:
       apt:
         sources:
@@ -57,10 +59,8 @@ matrix:
           - git
           - libdigest-sha-perl
           - python3-dev
-    env:
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     script:
-      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
+      - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
@@ -87,7 +87,7 @@ matrix:
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
+  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
   - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
   - cp History.txt history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt

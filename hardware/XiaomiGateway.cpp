@@ -19,7 +19,7 @@ for a variety of Xiaomi sensors.
 They can be purchased on AliExpress or other stores at very
 competitive prices.
 Protocol is Zigbee and WiFi, and the gateway and
-Domoticz need to be in the same network/subnet
+Domoticz need to be in the same network/subnet with multicast working
 */
 
 #define round(a) ( int ) ( a + .5 )
@@ -295,7 +295,7 @@ void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTempSensor(sID, battery, Temperature, Name.c_str());
+		SendTempSensor(sID, battery, Temperature, Name);
 	}
 }
 
@@ -303,7 +303,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendHumiditySensor(sID, battery, Humidity, Name.c_str());
+		SendHumiditySensor(sID, battery, Humidity, Name);
 	}
 }
 
@@ -311,7 +311,7 @@ void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
+		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name);
 	}
 }
 
@@ -536,7 +536,7 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
+		SendTextSensor(sID, sID, 255, degrees.c_str(), Name);
 	}
 }
 
@@ -610,6 +610,12 @@ bool XiaomiGateway::StartHardware()
 		if (result.size() > 0) {
 			m_OutputMessage = true;
 		}
+		//check for presence of Xiaomi user variable to enable additional voltage devices
+		m_IncludeVoltage = false;
+		result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name == 'XiaomiVoltage')");
+		if (result.size() > 0) {
+			m_IncludeVoltage = true;
+		}
 		_log.Log(LOG_STATUS, "XiaomiGateway: Delaying worker startup...");
 		sleep_seconds(5);
 
@@ -663,7 +669,7 @@ void XiaomiGateway::Do_Work()
 		_log.Log(LOG_STATUS, "XiaomiGateway: Could not detect local IP address: %s", e.what());
 	}
 
-	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, this);
+	XiaomiGateway::xiaomi_udp_server udp_server(io_service, m_HwdID, m_GatewayIp, m_LocalIp, m_ListenPort9898, m_OutputMessage, m_IncludeVoltage, this);
 	boost::thread bt;
 	if (m_ListenPort9898) {
 		bt = boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
@@ -737,7 +743,7 @@ unsigned int XiaomiGateway::GetShortID(const std::string & nodeid)
 	return sID;
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, XiaomiGateway *parent)
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
@@ -745,6 +751,7 @@ XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_
 	m_gatewayip = gatewayIp;
 	m_localip = localIp;
 	m_OutputMessage = outputMessage;
+	m_IncludeVoltage = includeVoltage;
 	if (listenPort9898) {
 		try {
 			socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
@@ -889,6 +896,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Gas Detector";
 						type = STYPE_SMOKEDETECTOR;
 					}
+					else if (model == "sensor_wleak.aq1") {
+						name = "Xiaomi Water Leak Detector";
+						type = STYPE_SMOKEDETECTOR;
+					}
 					else if (model == "curtain") {
 						name = "Xiaomi Curtain";
 						type = STYPE_BlindsPercentage;
@@ -921,12 +932,12 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (model == "switch") {
 							level = 0;
 						}
-						else if ((model == "smoke") || (model == "natgas")) {
-							if (alarm == "1") {
+						else if ((model == "smoke") || (model == "natgas") || (model == "sensor_wleak.aq1")) {
+							if ((alarm == "1") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
-							else if (alarm == "0") {
+							else if ((alarm == "0") || (status == "no_leak")) {
 								level = 0;
 							}
 							if (density != "")
@@ -1001,7 +1012,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 								if (lux != "") {
 									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
 								}
-								if (voltage != "") {
+								if (voltage != "" && m_IncludeVoltage) {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
 								}
 							}

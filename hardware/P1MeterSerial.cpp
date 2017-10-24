@@ -108,10 +108,10 @@ bool P1MeterSerial::StartHardware()
 		_log.Log(LOG_ERROR,"P1 Smart Meter: Error opening serial port!!!");
 		return false;
 	}
+
+	Init();
+
 	m_bIsStarted=true;
-	m_linecount=0;
-	m_exclmarkfound=0;
-	m_lastUpdateTime=0;
 	setReadCallback(boost::bind(&P1MeterSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;

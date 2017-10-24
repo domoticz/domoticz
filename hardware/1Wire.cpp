@@ -11,8 +11,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../main/SQLHelper.h"
 
+#include <set>
 #include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,7 +25,9 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	m_system(NULL),
 	m_sensorThreadPeriod(sensorThreadPeriod),
 	m_switchThreadPeriod(switchThreadPeriod),
-	m_path(path)
+	m_path(path),
+	m_bSensorFirstTime(true),
+	m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 
@@ -514,7 +516,7 @@ void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const un
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE]={0};
 	DeviceIdToByteArray(deviceId,deviceIdByteArray);
 
-	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter, "Counter");
+	SendMeterSensor(deviceIdByteArray[0], deviceIdByteArray[1]+unit, 255, (const float)counter/1000.0f, "Counter");
 }
 
 void C1Wire::ReportVoltage(const std::string& deviceId, const int unit, const int voltage)

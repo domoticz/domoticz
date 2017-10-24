@@ -58,7 +58,7 @@ private:
 	bool m_bForceLogin;
 	bool m_bIsHomeCoach;
 
-	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);
-	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);
+	int GetBatteryLevel(const std::string &ModuleType, const int battery_percent);
+	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);
 };
 
