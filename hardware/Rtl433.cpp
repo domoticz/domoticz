@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdio.h>
-
 #include "Rtl433.h"
 
 void removeCharsFromString(std::string &str, const char* charsToRemove ) {
@@ -49,16 +48,6 @@ bool CRtl433::StopHardware()
 	if (m_thread)
 	{
 		m_stoprequested = true;
-		if (m_hPipe)
-		{
-			boost::lock_guard<boost::mutex> l(m_pipe_mutex);
-#ifdef WIN32
-			_pclose(m_hPipe);
-#else
-			pclose(m_hPipe);
-#endif
-			m_hPipe = NULL;
-		}
 		m_thread->join();
 	}
 
@@ -98,7 +87,10 @@ std::vector<std::string> CRtl433::ParseCSVLine(const char *input)
 void CRtl433::Do_Work()
 {
 	sleep_milliseconds(1000);
-	_log.Log(LOG_STATUS, "Rtl433: Worker started... (%s)", m_cmdline.c_str());
+	if (!m_cmdline.empty())
+		_log.Log(LOG_STATUS, "Rtl433: Worker started... (Extra Arguments: %s)", m_cmdline.c_str());
+	else
+		_log.Log(LOG_STATUS, "Rtl433: Worker started...");
 
 	bool bHaveReceivedData = false;
 	while (!m_stoprequested)
@@ -130,15 +122,22 @@ void CRtl433::Do_Work()
 			}
 			continue;
 		}
-
+#ifndef WIN32
+		//Set to non-blocking mode
+		int fd = fileno(m_hPipe);
+		int flags;
+		flags = fcntl(fd, F_GETFL, 0);
+		flags |= O_NONBLOCK;
+		fcntl(fd, F_SETFL, flags);
+#endif
 		bool bFirstTime = true;
 		time_t time_last_received = time(NULL);
 		while (!m_stoprequested)
 		{
 			sleep_milliseconds(100);
-			boost::lock_guard<boost::mutex> l(m_pipe_mutex);
 			if (m_hPipe == NULL)
-				continue;
+				break;
+			//size_t bread = read(fd, (char*)&line, sizeof(line));
 			line[0] = 0;
 			if (fgets(line, sizeof(line) - 1, m_hPipe) != NULL)
 			{
@@ -358,6 +357,9 @@ void CRtl433::Do_Work()
 				}
 			}
 			else { //fgets
+				if ((errno == EWOULDBLOCK)|| (errno == EAGAIN)) {
+					continue;
+				}
 				break; // bail out, subprocess has failed
 			}
 		} // while !m_stoprequested

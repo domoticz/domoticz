@@ -912,7 +912,22 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
 					}
 				});
-			}
+			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout	+
+					"&idx=" + idx +
+					"&extra=" + encodeURIComponent($("#hardwarecontent #hardwareparamsrtl433 #rtl433cmdline").val()),
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+		        }
 		}
 
 		AddHardware = function () {
