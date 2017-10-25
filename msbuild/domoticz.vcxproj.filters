@@ -2074,14 +2074,17 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
-      <Filter>Devices\Denkovi</Filter>
-    </ClInclude>
     <ClInclude Include="..\tinyxpath\tinyxml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
+      <Filter>Devices\Denkovi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2778,7 +2781,10 @@
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
       <Filter>Devices\Denkovi</Filter>
     </ClCompile>
   </ItemGroup>

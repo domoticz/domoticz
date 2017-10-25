@@ -435,7 +435,7 @@
     <ClInclude Include="..\hardware\Daikin.h" />
     <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h" />
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h" />
     <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
@@ -690,7 +690,7 @@
     <ClCompile Include="..\hardware\Daikin.cpp" />
     <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp" />
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp" />
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
