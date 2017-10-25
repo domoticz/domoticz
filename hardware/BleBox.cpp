@@ -27,6 +27,9 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
+	LimitlessRGBWcHueState = 0.0;
+	LimitlessRGBWisWhiteState = true;
+	LimitlessRGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
 }
 
@@ -516,12 +519,74 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string IPAddress = GetDeviceRevertIP(output);
 
 		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
-		int red, green, blue;
-		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-		hue2rgb(cHue, red, green, blue);
+		int red, green, blue, white;
+		bool setColor = true;
+		
+		switch (pLed->command)
+		{
+			case Limitless_LedOn: {
+				if(LimitlessRGBWcHueState != 0.0 && !LimitlessRGBWisWhiteState)
+				{
+					hue2rgb(LimitlessRGBWcHueState, red, green, blue, LimitlessRGBWbrightnessState);
+					white = 0;
+				}
+				else
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = LimitlessRGBWbrightnessState;
+				}
+				break;
+			}
+			case Limitless_LedOff:
+				red = 0;
+				green = 0;
+				blue = 0;
+				white = 0;
+				break;
+			case Limitless_SetColorToWhite: {
+				LimitlessRGBWisWhiteState = true;
+				LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetRGBColour: {
+				LimitlessRGBWisWhiteState = false;
+				LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetBrightnessLevel: {
+				int BrightnessBase = (int)pLed->value;
+				int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
+
+				LimitlessRGBWbrightnessState = dMax_Send;
+
+				if(LimitlessRGBWisWhiteState)
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = dMax_Send;
+				}
+				else
+				{
+					hue2rgb(LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					white = 0;
+				}
+				break;
+			}
+			default:
+				setColor = false;
+				break;
+		}
+
+		if(!setColor)
+			return false;
 
 		char level[10];
-		sprintf(level, "%02x%02x%02x%02x", red, green, blue, 255);
+		sprintf(level, "%02x%02x%02x%02x", red, green, blue, white);
 		std::string state(level);
 
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
