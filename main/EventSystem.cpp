@@ -1077,35 +1077,52 @@ void CEventSystem::GetCurrentMeasurementStates()
 	}
 }
 
-void CEventSystem::RemoveSingleState(int ulDevID)
+void CEventSystem::RemoveSingleState(const uint64_t ulDevID, const _eReason reason)
 {
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-
-	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
-	m_devicestates.erase(ulDevID);
-
+	if (reason == REASON_DEVICE)
+	{
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		m_devicestates.erase(ulDevID);
+	}
+	else if (reason == REASON_SCENEGROUP)
+	{
+		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		m_scenesgroups.erase(ulDevID);
+	}
 }
 
-void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname)
+void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason)
 {
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
 
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-	if (itt != m_devicestates.end()) {
-		//_log.Log(LOG_STATUS,"EventSystem: www update device %" PRIu64 "",ulDevID);
+	if (reason == REASON_DEVICE)
+	{
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-		// Fix string capacity to avoid map entry resizing
-		std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
-
-		_tDeviceStatus replaceitem = itt->second;
-		replaceitem.deviceName = l_deviceName;
-		itt->second = replaceitem;
+		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+		if (itt != m_devicestates.end())
+		{
+			_tDeviceStatus replaceitem = itt->second;
+			replaceitem.deviceName = l_deviceName;
+			itt->second = replaceitem;
+		}
+	}
+	else if (reason == REASON_SCENEGROUP)
+	{
+		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+		if (itt != m_scenesgroups.end())
+		{
+			_tScenesGroups replaceitem = itt->second;
+			replaceitem.scenesgroupName = l_deviceName;
+			itt->second = replaceitem;
+		}
 	}
 }
 
@@ -1254,7 +1271,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 }
 
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;

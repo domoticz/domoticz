@@ -23,7 +23,6 @@ m_refresh(refresh)
 	// extract the data
 	std::vector<std::string> strextra;
 	StringSplit(extradata, "|", strextra);
-	std::string script;
 	if (strextra.size() == 3 || strextra.size() == 4 || strextra.size() == 5)
 	{
 		m_script = base64_decode(strextra[0]);

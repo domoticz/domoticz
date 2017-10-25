@@ -1863,6 +1863,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationTelegram.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\LogitechMediaServer.h">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClInclude>
@@ -2073,9 +2076,6 @@
     <ClInclude Include="..\main\IFTTT.h">
       <Filter>IFTTT</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\DenkoviSmartdenIPIn.h">
-      <Filter>Devices\Denkovi</Filter>
-    </ClInclude>
     <ClInclude Include="..\tinyxpath\tinyxml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2085,6 +2085,7 @@
     <ClInclude Include="..\main\dzVents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="..\notifications\NotificationBrowser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2099,6 +2100,8 @@
     </ClInclude>
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Header Files</Filter>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
+      <Filter>Devices\Denkovi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2543,6 +2546,9 @@
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
+    <ClCompile Include="..\notifications\NotificationTelegram.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClCompile>
@@ -2792,7 +2798,10 @@
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\DenkoviSmartdenIPIn.cpp">
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
       <Filter>Devices\Denkovi</Filter>
     </ClCompile>
     <ClCompile Include="..\main\dzVents.cpp">

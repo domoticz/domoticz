@@ -221,7 +221,7 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const std::string sLibrary, bool bSimple = false)
+			void FindLibrary(const std::string &sLibrary, bool bSimple = false)
 			{
 				std::string library;
 				if (bSimple)

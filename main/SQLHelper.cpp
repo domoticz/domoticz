@@ -4065,7 +4065,7 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
-void CSQLHelper::DeletePreferencesVar(const std::string Key )
+void CSQLHelper::DeletePreferencesVar(const std::string &Key)
 {
   std::string sValue ;
 	if (!m_dbase)
@@ -6028,7 +6028,10 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", (*itt).c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", (*itt).c_str());
 			//notify eventsystem device is no longer present
-			m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+			std::stringstream sstridx(*itt);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", (*itt).c_str());
 		}

@@ -633,8 +633,8 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 
 	void CHardwareMonitor::FetchUnixCPU()
 	{
-		//CPU
 		char szTmp[300];
+		//CPU
 		char cname[50];
 		if (m_lastquerytime==0)
 		{
@@ -746,7 +746,6 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	void CHardwareMonitor::FetchUnixDisk()
 	{
 		//Disk Usage
-		char szTmp[300];
 		std::map<std::string, _tDUsageStruct> _disks;
 		std::map<std::string, std::string> _dmounts_;
 		int returncode = 0;
@@ -796,6 +795,7 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 				{
 					double UsagedPercentage = (100 / double(dusage.TotalBlocks))*double(dusage.UsedBlocks);
 					//std::cout << "Disk: " << (*ittDisks).first << ", Mount: " << dusage.MountPoint << ", Used: " << UsagedPercentage << std::endl;
+					char szTmp[300];
 					sprintf(szTmp, "%.2f", UsagedPercentage);
 					std::string hddname = "HDD " + dusage.MountPoint;
 					UpdateSystemSensor("Load", 2 + dindex, hddname, szTmp);
