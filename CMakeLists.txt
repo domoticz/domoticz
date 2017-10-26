@@ -410,6 +410,8 @@ hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
+hardware/USBtin.cpp
+hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp
 hardware/RAVEn.cpp
 hardware/Winddelen.cpp
@@ -428,8 +430,6 @@ hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
-hardware/USBtin.cpp
-hardware/USBtin_MultiblocV8.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp

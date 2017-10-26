@@ -5,17 +5,15 @@ Version : 1.0
 Description : This class manage the USBtin Gateway with Scheiber CanBus protocol
 
 History :
-- 2017-01-01 : Creation
+- 2017-01-01 : Creation base
 
 */
 
 #pragma once
-
 #include <vector>
 #include "ASyncSerial.h"
 #include "USBtin_MultiblocV8.h"
 #include "DomoticzHardware.h"
-
 
 #define USBTIN_BAUD_RATE         115200
 #define USBTIN_PARITY            boost::asio::serial_port_base::parity::none
@@ -23,6 +21,7 @@ History :
 #define USBTIN_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define USBTIN_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
+#define	TIME_3sec				3000000
 #define	TIME_1sec				1000000
 #define	TIME_500ms				500000
 #define	TIME_200ms				200000
@@ -32,7 +31,6 @@ History :
 
 #define	USBTIN_CR							0x0D
 #define	USBTIN_BELSIGNAL					0x07
-
 #define	USBTIN_FIRMWARE_VERSION				0x76
 #define	USBTIN_HARDWARE_VERSION				0x56
 #define	USBTIN_SERIAL_NUMBER				0x4E
@@ -45,7 +43,11 @@ History :
 
 #define	USBTIN_FW_VERSION	"v"
 #define	USBTIN_HW_VERSION	"V"
-#define USBTIN_RETRY_DELAY 30
+#define USBTIN_RETRY_DELAY  30
+
+#define NoCanDefine		0x00
+#define	Multibloc_V8	0x01
+#define FreeCan			0x02
 
 class USBtin : public USBtin_MultiblocV8,AsyncSerial
 {
@@ -65,15 +67,13 @@ private:
 	volatile bool m_stoprequested;
 	bool OpenSerialDevice();
 	unsigned int EtapeInitCan;
-	//int Reponse;
+	
 	int m_retrycntr;	
 	int BelErrorCount;
-	unsigned char m_buffer[390]; //buffer capable de stocker 15 trames en 1 fois
+	char m_bufferUSBtin[390]; //buffer capable de stocker 15 trames en 1 fois
 	int m_bufferpos;
-	int BusCANType;
+	unsigned int Bus_CANType;
 	bool BOOL_Debug; //1 = activ
-	//static USBtin::Match m_matchlist[19];
-	time_t m_LastReceivedTime;
 	
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;
@@ -84,7 +84,7 @@ private:
 	void Do_Work();
 	// Read callback, stores data in the buffer
 	void readCallback(const char *data, size_t len);
-	void ParseData(const unsigned char *pData, int Len);
+	void ParseData(const char *pData, int Len);
 	void Init();
 	bool writeFrame(const std::string&);
 	void ConfigCanPort();
@@ -95,7 +95,3 @@ private:
 	void OpenCanPort();
 	void CloseCanPort();
 };
-
-#define NoCanDefine		0x00
-#define	Multibloc_V8	0x01
-#define FreeCan			0x02

@@ -4440,8 +4440,6 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 		case sTypeAC:
 		case sTypeHEU:
 		case sTypeANSLUT:
-		case sTypeSFSP_M:
-		case sTypeSFSP_E:
 			switch (pResponse->LIGHTING2.subtype)
 			{
 			case sTypeAC:
@@ -4452,12 +4450,6 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				break;
 			case sTypeANSLUT:
 				WriteMessage("subtype       = ANSLUT");
-				break;
-			case sTypeSFSP_M:
-				WriteMessage("subtype       = SFSP Master");
-				break;
-			case sTypeSFSP_E:
-				WriteMessage("subtype       = SFSP Slave");
 				break;
 			}
 			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING2.seqnbr);

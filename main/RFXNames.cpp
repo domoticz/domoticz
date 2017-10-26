@@ -582,9 +582,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLighting2, sTypeAC, "AC" },
 		{ pTypeLighting2, sTypeHEU, "HomeEasy EU" },
 		{ pTypeLighting2, sTypeANSLUT, "Anslut" },
-		{ pTypeLighting2, sTypeSFSP_M, "SFSP Master" },
-		{ pTypeLighting2, sTypeSFSP_E, "SFSP Slave" },
-		
+
 		{ pTypeLighting3, sTypeKoppla, "Ikea Koppla" },
 
 		{ pTypeLighting4, sTypePT2262, "PT2262" },
@@ -1088,8 +1086,6 @@ void GetLightStatus(
 		case sTypeHEU:
 		case sTypeANSLUT:
 		case sTypeKambrook:
-		case sTypeSFSP_M:
-		case sTypeSFSP_E:
 			bHaveDimmer=true;
 			bHaveGroupCmd=true;
 			switch (nValue)
