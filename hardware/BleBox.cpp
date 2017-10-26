@@ -27,9 +27,9 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
-	LimitlessRGBWcHueState = 0.0;
-	LimitlessRGBWisWhiteState = true;
-	LimitlessRGBWbrightnessState = 255;
+	m_LimitlessRGBWcHueState = 0.0;
+	m_LimitlessRGBWisWhiteState = true;
+	m_LimitlessRGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
 }
 
@@ -525,9 +525,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		switch (pLed->command)
 		{
 			case Limitless_LedOn: {
-				if(LimitlessRGBWcHueState != 0.0 && !LimitlessRGBWisWhiteState)
+				if(m_LimitlessRGBWcHueState != 0.0 && !m_LimitlessRGBWisWhiteState)
 				{
-					hue2rgb(LimitlessRGBWcHueState, red, green, blue, LimitlessRGBWbrightnessState);
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, m_LimitlessRGBWbrightnessState);
 					white = 0;
 				}
 				else
@@ -535,7 +535,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					red = 0;
 					green = 0;
 					blue = 0;
-					white = LimitlessRGBWbrightnessState;
+					white = m_LimitlessRGBWbrightnessState;
 				}
 				break;
 			}
@@ -546,14 +546,14 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				white = 0;
 				break;
 			case Limitless_SetColorToWhite: {
-				LimitlessRGBWisWhiteState = true;
-				LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				m_LimitlessRGBWisWhiteState = true;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
 				setColor = false;//Sending is done by SetBrightnessLevel
 				break;
 			}
 			case Limitless_SetRGBColour: {
-				LimitlessRGBWisWhiteState = false;
-				LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				m_LimitlessRGBWisWhiteState = false;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
 				setColor = false;//Sending is done by SetBrightnessLevel
 				break;
 			}
@@ -561,9 +561,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				int BrightnessBase = (int)pLed->value;
 				int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
 
-				LimitlessRGBWbrightnessState = dMax_Send;
+				m_LimitlessRGBWbrightnessState = dMax_Send;
 
-				if(LimitlessRGBWisWhiteState)
+				if(m_LimitlessRGBWisWhiteState)
 				{
 					red = 0;
 					green = 0;
@@ -572,7 +572,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				else
 				{
-					hue2rgb(LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, dMax_Send);
 					white = 0;
 				}
 				break;
