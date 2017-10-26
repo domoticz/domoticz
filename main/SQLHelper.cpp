@@ -4065,7 +4065,7 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
-void CSQLHelper::DeletePreferencesVar(const std::string Key )
+void CSQLHelper::DeletePreferencesVar(const std::string &Key)
 {
   std::string sValue ;
 	if (!m_dbase)
@@ -6586,7 +6586,7 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
@@ -6629,7 +6629,7 @@ void CSQLHelper::HomeConfortGroupCmd(const std::string &ID, const unsigned char 
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	safe_query("UPDATE DeviceStatus SET nValue='%s', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include "hardwaretypes.h"
 
 class CurrentCostMeterBase : public CDomoticzHardwareBase
 {

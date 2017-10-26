@@ -3,7 +3,7 @@
 #ifndef WIN32
 #ifdef WITH_LIBUSB
 #include "DomoticzHardware.h"
-#include <iostream>
+#include <iosfwd>
 
 class CVolcraftCO20 : public CDomoticzHardwareBase
 {

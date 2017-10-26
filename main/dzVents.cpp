@@ -22,7 +22,7 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string &reason)
 {
 	std::stringstream lua_DirT;
 
@@ -83,11 +83,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
-	bool timed_out = false;
-	const char* dev_type;
-	const char* sub_type;
-	std::vector<std::vector<std::string> > result;
-
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
@@ -106,13 +101,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 	for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin(); iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
 	{
 		CEventSystem::_tDeviceStatus sitem = iterator->second;
-		dev_type = RFX_Type_Desc(sitem.devType, 1);
-		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
+		const char *dev_type = RFX_Type_Desc(sitem.devType, 1);
+		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
-		timed_out = (now - checktime >= SensorTimeOut * 60);
+		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 

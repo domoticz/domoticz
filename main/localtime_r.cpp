@@ -47,7 +47,7 @@ time_t mytime(time_t * _Time)
  *
  * Returns false if no time can be created
  */
-bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate) {
+bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	if (localtime_r(&now, &ltime) == NULL)
@@ -55,7 +55,7 @@ bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLda
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
 }
 
-bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string szSQLdate, int isdst) {
+bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate, int isdst) {
 	if (szSQLdate.length() < 19) {
 		return false;
 	}

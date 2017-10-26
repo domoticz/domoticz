@@ -542,7 +542,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
+bool BleBox::IsNodeExists(const Json::Value &root, const std::string &node)
 {
 	if (root[node].empty() == true)
 	{
@@ -552,7 +552,7 @@ bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
 	return true;
 }
 
-bool BleBox::IsNodesExist(const Json::Value root, const std::string node, const std::string value)
+bool BleBox::IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value)
 {
 	if (IsNodeExists(root, node) == false)
 		return false;
@@ -950,8 +950,6 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 
 	if (root["uptime"].empty() == true)
 		return "unknown";
-
-	std::string result;
 
 	uint64_t msec = root["uptime"].asUInt64();
 	char timestring[32] = "";

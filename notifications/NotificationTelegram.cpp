@@ -27,12 +27,11 @@ bool CNotificationTelegram::SendMessageImplementation(
 	const bool bFromNotification)
 {
 	//send message to Telegram
-	std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
+	//std::string cSubject = (Subject == Text) ? "Domoticz" : Subject;
 
 	bool bRet;
 	std::string sPostData;
 	std::string sUrl;
-	std::stringstream sHeaderKey;
 	std::stringstream sBuildUrl;
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;

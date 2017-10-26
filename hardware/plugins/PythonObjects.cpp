@@ -72,9 +72,9 @@ namespace Plugins {
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -131,9 +131,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -232,7 +232,7 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM CustomImages WHERE (ID==%d)", self->ImageID);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
+					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
 					PyObject*	pKey = PyLong_FromLong(self->ImageID);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
@@ -326,9 +326,9 @@ namespace Plugins {
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -577,9 +577,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -835,7 +835,7 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
 					PyObject*	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
@@ -950,9 +950,9 @@ namespace Plugins {
 				self->pProtocol = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -1032,9 +1032,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{

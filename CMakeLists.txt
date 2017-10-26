@@ -40,6 +40,11 @@ set (domoticz_VERSION_MAJOR 3)
 set (domoticz_VERSION_MINOR 0)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
+option(USE_OPENSSL_STATIC "Link OpenSSL static" YES)
+IF(USE_OPENSSL_STATIC)
+	set(OPENSSL_USE_STATIC_LIBS TRUE)
+ENDIF(USE_OPENSSL_STATIC)
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -309,7 +314,7 @@ hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
-hardware/DenkoviSmartdenIPIn.cpp
+hardware/DenkoviSmartdenIPInOut.cpp
 hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
@@ -478,9 +483,37 @@ add_executable(domoticz ${domoticz_SRCS})
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
 
+INCLUDE(TestBigEndian)
+TEST_BIG_ENDIAN(BIGENDIAN)
+IF(${BIGENDIAN})
+     ADD_DEFINITIONS(-DIS_BIG_ENDIAN)
+ENDIF(${BIGENDIAN})
 
 ## Link libraries
 
+#
+# Find MD5/RMD160/SHA library
+#
+find_package(OpenSSL REQUIRED)
+if(NOT OPENSSL_INCLUDE_DIR)
+	message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
+endif()
+if(NOT OPENSSL_FOUND)
+  message(SEND_ERROR "Failed to find the OpenSSL library, no HTTPS support")
+  find_library(MD_LIBRARY NAMES md)
+  if(MD_LIBRARY)
+    target_link_libraries(domoticz ${MD_LIBRARY})
+  endif(MD_LIBRARY)
+else()
+  message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
+  add_definitions(-DWWW_ENABLE_SSL)
+  include_directories(${OPENSSL_INCLUDE_DIR})
+  target_link_libraries(domoticz ${OPENSSL_LIBRARIES})
+endif()
+
+#
+# Boost
+#
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
@@ -501,8 +534,9 @@ endif(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-
-
+#
+# ZLIB
+#
 option(USE_BUILTIN_ZLIB "Use builtin zlib library" NO)
 if(USE_BUILTIN_ZLIB)
   add_subdirectory (zlib)
@@ -518,6 +552,9 @@ else(USE_BUILTIN_ZLIB)
   endif(ZLIB_FOUND)
 endif(USE_BUILTIN_ZLIB)
 
+#
+# CURL
+#
 FIND_PACKAGE(CURL)
 IF(CURL_FOUND)
   MESSAGE(STATUS "Curl libraries found at: ${CURL_LIBRARIES}")
@@ -528,6 +565,9 @@ else()
   MESSAGE(FATAL_ERROR "cURL not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install curl libcurl4-openssl-dev')")
 ENDIF(CURL_FOUND)
 
+#
+# USB
+#
 find_path(LIBUSB_INCLUDE_DIR usb.h
    HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
 find_library(LIBUSB_LIBRARY NAMES usb
@@ -543,33 +583,16 @@ else()
   MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
 ENDIF(LIBUSB_FOUND)
 
-#
-# Find MD5/RMD160/SHA library
-#
-find_package(OpenSSL)
-if(NOT OPENSSL_INCLUDE_DIR)
-	message(SEND_ERROR "Failed to find OpenSSL include files (ssl.h), no HTTPS support")
-endif()
-if(NOT OPENSSL_FOUND)
-  message(SEND_ERROR "Failed to find the OpenSSL library, no HTTPS support")
-  find_library(MD_LIBRARY NAMES md)
-  if(MD_LIBRARY)
-    target_link_libraries(domoticz ${MD_LIBRARY})
-  endif(MD_LIBRARY)
-else()
-  message(STATUS "OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
-  add_definitions(-DWWW_ENABLE_SSL)
-  include_directories(${OPENSSL_INCLUDE_DIR})
-  target_link_libraries(domoticz ${OPENSSL_LIBRARIES})
-endif()
-
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # SET(OperatingSystem "Linux")
 # add_definitions(-DLUA_USE_LINUX)
 #ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+#
+# OpenZWave
 # try to find open-zwave, if found, include support
+#
 option(USE_STATIC_OPENZWAVE "Build with static OpenZwave libraries" YES)
 if(USE_STATIC_OPENZWAVE)
   find_library(OpenZWave NAMES libopenzwave.a HINTS "../open-zwave-read-only" "../open-zwave-read-only/cpp/build")
@@ -710,9 +733,3 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTAL
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 
-INCLUDE(TestBigEndian)
-
-TEST_BIG_ENDIAN(BIGENDIAN)
-IF(${BIGENDIAN})
-     ADD_DEFINITIONS(-DIS_BIG_ENDIAN)
-ENDIF(${BIGENDIAN})

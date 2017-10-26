@@ -11,8 +11,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../main/SQLHelper.h"
 
+#include <set>
 #include <cmath>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,7 +25,9 @@ C1Wire::C1Wire(const int ID, const int sensorThreadPeriod, const int switchThrea
 	m_system(NULL),
 	m_sensorThreadPeriod(sensorThreadPeriod),
 	m_switchThreadPeriod(switchThreadPeriod),
-	m_path(path)
+	m_path(path),
+	m_bSensorFirstTime(true),
+	m_bSwitchFirstTime(true)
 {
 	m_HwdID = ID;
 

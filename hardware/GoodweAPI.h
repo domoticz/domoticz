@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iostream>
+#include <iosfwd>
 #include "../json/json.h"
 
 class GoodweAPI : public CDomoticzHardwareBase
@@ -18,15 +18,15 @@ private:
 	void Init();
 	bool StartHardware();
 	bool StopHardware();
-	uint32_t hash(const std::string str);
+	uint32_t hash(const std::string &str);
 	int getSunRiseSunSetMinutes(const bool bGetSunRise);
-	float getPowerWatt(const std::string str);
-	float getEnergyWh(const std::string str);
+	float getPowerWatt(const std::string &str);
+	float getEnergyWh(const std::string &str);
 	void Do_Work();
 	void GetMeterDetails();
-	void ParseStation(const std::string sStationId, const std::string sStationName);
-	void ParseDeviceList(const std::string sStationId, const std::string sStationName);
-	void ParseDevice(Json::Value device, std::string sStationId, std::string sStationName);
+	void ParseStation(const std::string &sStationId, const std::string &sStationName);
+	void ParseDeviceList(const std::string &sStationId, const std::string &sStationName);
+	void ParseDevice(Json::Value device, const std::string &sStationId, const std::string &sStationName);
 
 };
 

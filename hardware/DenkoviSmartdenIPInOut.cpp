@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "DenkoviSmartdenIPIn.h"
+#include "DenkoviSmartdenIPInOut.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/HTTPClient.h"
@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenIPIn_POLL_INTERVAL 60
+#define DenkoviSmartdenIPInOut_POLL_INTERVAL 60
 
 #ifdef _DEBUG
 //#define DEBUG_DenkoviInR
@@ -31,7 +31,7 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-CDenkoviSmartdenIPIn::CDenkoviSmartdenIPIn(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
+CDenkoviSmartdenIPInOut::CDenkoviSmartdenIPInOut(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
 m_szIPAddress(IPAddress),
 m_Password(CURLEncode::URLEncode(password))
 {
@@ -42,26 +42,26 @@ m_Password(CURLEncode::URLEncode(password))
 	Init();
 }
 
-CDenkoviSmartdenIPIn::~CDenkoviSmartdenIPIn(void)
+CDenkoviSmartdenIPInOut::~CDenkoviSmartdenIPInOut(void)
 {
 }
 
-void CDenkoviSmartdenIPIn::Init()
+void CDenkoviSmartdenIPInOut::Init()
 {
 }
 
-bool CDenkoviSmartdenIPIn::StartHardware()
+bool CDenkoviSmartdenIPInOut::StartHardware()
 {
 	Init();
 	//Start worker thread
-	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviSmartdenIPIn::Do_Work, this)));
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDenkoviSmartdenIPInOut::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
 	_log.Log(LOG_STATUS, "Denkovi_IP_In: Started");
 	return (m_thread!=NULL);
 }
 
-bool CDenkoviSmartdenIPIn::StopHardware()
+bool CDenkoviSmartdenIPInOut::StopHardware()
 {
 	if (m_thread!=NULL)
 	{
@@ -73,9 +73,9 @@ bool CDenkoviSmartdenIPIn::StopHardware()
     return true;
 }
 
-void CDenkoviSmartdenIPIn::Do_Work()
+void CDenkoviSmartdenIPInOut::Do_Work()
 {
-	int sec_counter = DenkoviSmartdenIPIn_POLL_INTERVAL - 2;
+	int sec_counter = DenkoviSmartdenIPInOut_POLL_INTERVAL - 2;
 
 	while (!m_stoprequested)
 	{
@@ -86,7 +86,7 @@ void CDenkoviSmartdenIPIn::Do_Work()
 			m_LastHeartbeat=mytime(NULL);
 		}
 
-		if (sec_counter % DenkoviSmartdenIPIn_POLL_INTERVAL == 0)
+		if (sec_counter % DenkoviSmartdenIPInOut_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
@@ -94,13 +94,63 @@ void CDenkoviSmartdenIPIn::Do_Work()
 	_log.Log(LOG_STATUS,"Denkovi_IP_In: Worker stopped...");
 }
 
-bool CDenkoviSmartdenIPIn::WriteToHardware(const char *pdata, const unsigned char length)
+bool CDenkoviSmartdenIPInOut::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	_log.Log(LOG_ERROR, "Denkovi_IP_In: Can not send switch commands, this is an Input Only device!");
+	const tRBUF *pSen = reinterpret_cast<const tRBUF*>(pdata);
+
+	unsigned char packettype = pSen->ICMND.packettype;
+	//unsigned char subtype = pSen->ICMND.subtype;
+
+	if (packettype == pTypeLighting2)
+	{
+		//light command
+
+		int Idx = pSen->LIGHTING2.id4;
+		if (Idx != 2)
+		{
+			_log.Log(LOG_ERROR, "Denkovi_IP: Not a valid Output switch, does the device support Digital Outputs?!");
+			return false;
+		}
+		int Relay = pSen->LIGHTING2.unitcode;
+		if (Relay > 20)
+			return false;
+
+		std::stringstream szURL;
+
+		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/current_state.xml";
+		if (!m_Password.empty())
+		{
+			szURL << "?pw=" << m_Password << "&";
+		}
+		else
+			szURL << "?";
+		szURL << "Output" << Relay << "=";
+		if (pSen->LIGHTING2.cmnd == light2_sOff)
+		{
+			szURL << "0";
+		}
+		else
+		{
+			szURL << "1";
+		}
+		std::string sResult;
+		if (!HTTPClient::GET(szURL.str(), sResult))
+		{
+			_log.Log(LOG_ERROR, "Denkovi: Error sending relay command to: %s", m_szIPAddress.c_str());
+			return false;
+		}
+		if (sResult.find("CurrentState") == std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "Denkovi: Error sending relay command to: %s", m_szIPAddress.c_str());
+			return false;
+		}
+		return true;
+	}
+	_log.Log(LOG_ERROR, "Denkovi_IP: Not a valid Output switch, does the device support Digital Outputs?!");
 	return false;
 }
 
-void CDenkoviSmartdenIPIn::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
+void CDenkoviSmartdenIPInOut::UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname)
 {
 	double rlevel = (15.0 / 100)*Level;
 	int level = int(rlevel);
@@ -149,7 +199,7 @@ void CDenkoviSmartdenIPIn::UpdateSwitch(const unsigned char Idx, const int SubUn
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-void CDenkoviSmartdenIPIn::GetMeterDetails()
+void CDenkoviSmartdenIPInOut::GetMeterDetails()
 {
 	std::string sResult;
 #ifdef DEBUG_DenkoviInR
@@ -187,6 +237,7 @@ void CDenkoviSmartdenIPIn::GetMeterDetails()
 	int pos1;
 	int Idx = -1;
 
+	bool bHaveDigitalOutput = false;
 	bool bHaveDigitalInput = false;
 	bool bHaveAnalogInput = false;
 	bool bHaveTemperatureInput = false;
@@ -197,11 +248,12 @@ void CDenkoviSmartdenIPIn::GetMeterDetails()
 		
 		if (
 			(!bHaveDigitalInput) &&
+			(!bHaveDigitalOutput) &&
 			(!bHaveAnalogInput) &&
 			(!bHaveTemperatureInput)
 			)
 		{
-			//Digital
+			//Digital Input
 			pos1 = tmpstr.find("<DigitalInput");
 			if (pos1 != std::string::npos)
 			{
@@ -211,6 +263,19 @@ void CDenkoviSmartdenIPIn::GetMeterDetails()
 				{
 					Idx = atoi(tmpstr.substr(0, pos1).c_str());
 					bHaveDigitalInput = true;
+					continue;
+				}
+			}
+			//Digital Output
+			pos1 = tmpstr.find("<Output");
+			if (pos1 != std::string::npos)
+			{
+				tmpstr = tmpstr.substr(pos1 + strlen("<Output"));
+				pos1 = tmpstr.find(">");
+				if (pos1 != std::string::npos)
+				{
+					Idx = atoi(tmpstr.substr(0, pos1).c_str());
+					bHaveDigitalOutput = true;
 					continue;
 				}
 			}
@@ -270,6 +335,27 @@ void CDenkoviSmartdenIPIn::GetMeterDetails()
 					UpdateSwitch(1, Idx, (lValue == 1) ? true : false, 100, sstr.str());
 					Idx = -1;
 					bHaveDigitalInput = false;
+					continue;
+				}
+			}
+		}
+		else if (bHaveDigitalOutput)
+		{
+			pos1 = tmpstr.find("<Value>");
+			if (pos1 != std::string::npos)
+			{
+				if (Idx == -1)
+					continue;
+				tmpstr = tmpstr.substr(pos1 + strlen("<Value>"));
+				pos1 = tmpstr.find('<');
+				if (pos1 != std::string::npos)
+				{
+					int lValue = atoi(tmpstr.substr(0, pos1).c_str());
+					std::stringstream sstr;
+					sstr << "Output " << Idx << " (" << name << ")";
+					UpdateSwitch(2, Idx, (lValue == 1) ? true : false, 100, sstr.str());
+					Idx = -1;
+					bHaveDigitalOutput = false;
 					continue;
 				}
 			}

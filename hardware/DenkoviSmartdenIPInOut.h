@@ -1,13 +1,13 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iostream>
+#include <iosfwd>
 
-class CDenkoviSmartdenIPIn : public CDomoticzHardwareBase
+class CDenkoviSmartdenIPInOut : public CDomoticzHardwareBase
 {
 public:
-	CDenkoviSmartdenIPIn(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password);
-	~CDenkoviSmartdenIPIn(void);
+	CDenkoviSmartdenIPInOut(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password);
+	~CDenkoviSmartdenIPInOut(void);
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:

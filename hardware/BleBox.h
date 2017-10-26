@@ -36,9 +36,8 @@ public:
 	std::string GetUptime(const std::string &IPAddress);
 	int GetDeviceType(const std::string &IPAddress);
 	Json::Value GetApiDeviceState(const std::string &IPAddress);
-	bool IsNodeExists(const Json::Value root, const std::string node);
-	bool IsNodesExist(const Json::Value root, const std::string node, const std::string value);
-
+	bool IsNodeExists(const Json::Value &root, const std::string &node);
+	bool IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value);
 private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;

@@ -126,7 +126,7 @@ void CEvohomeBase::InitControllerName()
 }
 
 
-void CEvohomeBase::SetControllerName(std::string szName)
+void CEvohomeBase::SetControllerName(const std::string &szName)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxControllerName);
 	m_szControllerName=szName;
@@ -155,7 +155,7 @@ void CEvohomeBase::InitZoneNames()
 }
 
 
-void CEvohomeBase::SetZoneName(uint8_t nZone, std::string szName)
+void CEvohomeBase::SetZoneName(const uint8_t nZone, const std::string &szName)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneName);
 	if(nZone>=m_ZoneNames.size()) //should be pre-sized to max zones

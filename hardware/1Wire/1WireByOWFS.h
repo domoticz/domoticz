@@ -15,7 +15,7 @@ private:
 	std::string m_simultaneousTemperaturePath; // OWFS mountpoint + "/simultaneous/temperature"
 
 public:
-   C1WireByOWFS(const std::string& path);
+   explicit C1WireByOWFS(const std::string& path);
    virtual ~C1WireByOWFS() {}
 
    // I_1WireSystem implementation
@@ -41,6 +41,6 @@ protected:
    void GetDevice(const std::string &inDir, const std::string &dirname, /*out*/_t1WireDevice& device) const;
    void GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const;
    std::string readRawData(const std::string& filename) const;
-   void writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const;
+   void writeData(const _t1WireDevice& device,const std::string &propertyName,const std::string &value) const;
    std::string nameHelper(const std::string& dirname, const _e1WireFamilyType family) const;
 };

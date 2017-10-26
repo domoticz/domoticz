@@ -498,7 +498,7 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 			std::string custommsg;
 			std::string ltype;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
-			float ampere;
+			float ampere = 0.0f;
 			bool bSendNotification = false;
 			bool bCustomMessage = false;
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
