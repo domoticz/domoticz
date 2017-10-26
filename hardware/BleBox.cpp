@@ -252,11 +252,11 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeLimitlessLights)
 	{ 
-		sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		sprintf(szIdx, "%08X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 	}
 	else
 	{
-		sprintf(szIdx, "%02x%02x%02x%02x", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		sprintf(szIdx, "%X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 	}
 	return szIdx;
 }
@@ -591,7 +591,7 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
