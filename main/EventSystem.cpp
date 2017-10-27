@@ -3511,6 +3511,25 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		int idx = atoi(SetPointIdx.c_str());
 		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
 	}
+	else if (lCommand.find("Cancel:") == 0)
+	{
+		std::string Type = lCommand.substr(7);
+		uint64_t Idx = lua_tointeger(lua_state, -1);
+
+		if (Type == "Device")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SwitchLightEvent(0, Idx, "", 0, 0, ""));
+		}
+		else if (Type == "Scene")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SwitchSceneEvent(0, Idx, "", ""));
+		}
+		else if (Type == "Variable")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SetVariable(0, Idx, "", false));
+
+		}
+	}
 	else
 	{
 		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
