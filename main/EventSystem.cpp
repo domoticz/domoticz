@@ -3483,13 +3483,16 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	{
 		std::string Type = lCommand.substr(7);
 		uint64_t Idx = lua_tointeger(lua_state, -1);
+		int count;
 
 		if (Type == "Device")
-			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_EVENT);
+			count = m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_EVENT);
 		else if (Type == "Scene")
-			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_SCENE);
+			count = m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_SCENE);
 		else if (Type == "Variable")
-			m_sql.RemoveTaskItem(Idx, TITEM_SET_VARIABLE);
+			count = m_sql.RemoveTaskItem(Idx, TITEM_SET_VARIABLE);
+		if (count)
+			_log.Log(LOG_STATUS, "EventSystem: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, Idx, Type);
 	}
 	else
 	{
