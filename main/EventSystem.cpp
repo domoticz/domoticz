@@ -3485,18 +3485,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		uint64_t Idx = lua_tointeger(lua_state, -1);
 
 		if (Type == "Device")
-		{
-			m_sql.RemoveTaskItem(_tTaskItem::SwitchLightEvent(0, Idx, "", 0, 0, ""));
-		}
+			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_EVENT);
 		else if (Type == "Scene")
-		{
-			m_sql.RemoveTaskItem(_tTaskItem::SwitchSceneEvent(0, Idx, "", ""));
-		}
+			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_SCENE);
 		else if (Type == "Variable")
-		{
-			m_sql.RemoveTaskItem(_tTaskItem::SetVariable(0, Idx, "", false));
-
-		}
+			m_sql.RemoveTaskItem(Idx, TITEM_SET_VARIABLE);
 	}
 	else
 	{
@@ -3504,9 +3497,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			scriptTrue = true;
 		}
 	}
-
 	return scriptTrue;
-
 }
 
 void CEventSystem::report_errors(lua_State *L, int status, std::string filename)

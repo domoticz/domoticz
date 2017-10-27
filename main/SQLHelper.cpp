@@ -6414,17 +6414,17 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 	m_background_task_queue.push_back(tItem);
 }
 
-void CSQLHelper::RemoveTaskItem(const _tTaskItem &tItem)
+void CSQLHelper::RemoveTaskItem(const uint64_t Idx, const _eTaskItemType ItemType)
 {
 	std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
 	while (itt != m_background_task_queue.end())
 	{
 		if (_log.isTraceEnabled())
 			 _log.Log(LOG_TRACE, "SQLH RemoveTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
-		if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
+		if (itt->_idx == Idx && itt->_ItemType == ItemType)
 		{
 			if (_log.isTraceEnabled())
-				 _log.Log(LOG_TRACE, "SQLH RmoveTask: => Present. Cancelling previous task item");
+				 _log.Log(LOG_TRACE, "SQLH RmoveTask: => Present. Cancelling item");
 			itt = m_background_task_queue.erase(itt);
 		}
 		else
