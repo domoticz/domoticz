@@ -87,10 +87,9 @@ void CWinddelen::GetMeterDetails()
 
 	char szURL[200];
 
-   sprintf(szURL,"http://backend.windcentrale.nl/windcentrale/productie_%d.txt", m_usMillID);
-	
+	sprintf(szURL, "http://backend.windcentrale.nl/windcentrale/productie?id=%d", m_usMillID);
 
-	if (!HTTPClient::GET(szURL,sResult))
+	if (!HTTPClient::GETSingleLine(szURL,sResult))
 	{
 		_log.Log(LOG_ERROR,"Winddelen: Error connecting to: %s", szURL);
 		return;
@@ -98,7 +97,7 @@ void CWinddelen::GetMeterDetails()
 
 	std::vector<std::string> results;
 	StringSplit(sResult, ",", results);
-	if (results.size()<2)
+	if (results.size()<7)
 	{
 		_log.Log(LOG_ERROR,"Winddelen: Invalid response for '%s'", m_szIPAddress.c_str());
 		return;

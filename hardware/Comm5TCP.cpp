@@ -4,8 +4,6 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
-#include "../httpclient/HTTPClient.h"
-#include "../httpclient/UrlEncode.h"
 
 #include <iostream>
 

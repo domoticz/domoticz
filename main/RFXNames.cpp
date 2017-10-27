@@ -253,7 +253,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
-		{ HTYPE_DenkoviSmartdenIPIn, "Denkovi Smartden IP In with LAN interface" },
+		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

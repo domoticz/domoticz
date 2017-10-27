@@ -4069,7 +4069,7 @@ bool CSQLHelper::GetPreferencesVar(const std::string &Key, int &nValue)
 	std::string sValue;
 	return GetPreferencesVar(Key, nValue, sValue);
 }
-void CSQLHelper::DeletePreferencesVar(const std::string Key )
+void CSQLHelper::DeletePreferencesVar(const std::string &Key)
 {
   std::string sValue ;
 	if (!m_dbase)
@@ -6032,7 +6032,10 @@ void CSQLHelper::DeleteDevices(const std::string &idx)
 			safe_exec_no_return("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==0) AND (DevSceneRowID == '%q')", (*itt).c_str());
 			safe_exec_no_return("DELETE FROM SharedDevices WHERE (DeviceRowID== '%q')", (*itt).c_str());
 			//notify eventsystem device is no longer present
-			m_mainworker.m_eventsystem.RemoveSingleState(atoi((*itt).c_str()));
+			std::stringstream sstridx(*itt);
+			uint64_t ullidx;
+			sstridx >> ullidx;
+			m_mainworker.m_eventsystem.RemoveSingleState(ullidx, m_mainworker.m_eventsystem.REASON_DEVICE);
 			//and now delete all records in the DeviceStatus table itself
 			safe_exec_no_return("DELETE FROM DeviceStatus WHERE (ID == '%q')", (*itt).c_str());
 		}
@@ -6411,6 +6414,24 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 	m_background_task_queue.push_back(tItem);
 }
 
+void CSQLHelper::RemoveTaskItem(const _tTaskItem &tItem)
+{
+	std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
+	while (itt != m_background_task_queue.end())
+	{
+		if (_log.isTraceEnabled())
+			 _log.Log(LOG_TRACE, "SQLH RemoveTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+		if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
+		{
+			if (_log.isTraceEnabled())
+				 _log.Log(LOG_TRACE, "SQLH RmoveTask: => Present. Cancelling previous task item");
+			itt = m_background_task_queue.erase(itt);
+		}
+		else
+			++itt;
+	}
+}
+
 void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
 {
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
@@ -6589,7 +6610,7 @@ void CSQLHelper::Lighting2GroupCmd(const std::string &ID, const unsigned char su
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
@@ -6632,7 +6653,7 @@ void CSQLHelper::HomeConfortGroupCmd(const std::string &ID, const unsigned char 
 	struct tm ltime;
 	localtime_r(&now, &ltime);
 
-	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%s', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	safe_query("UPDATE DeviceStatus SET nValue='%s', sValue='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,

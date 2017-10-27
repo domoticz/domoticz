@@ -73,7 +73,8 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
 			}
@@ -129,7 +130,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -168,7 +170,8 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
 			}
@@ -284,7 +287,7 @@ namespace Plugins {
 				(e.value() != 125) &&	// Operation cancelled
 				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", e.value(), e.message().c_str());
+				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
 
 			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
@@ -319,13 +322,15 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			m_bConnected = false;
+
 			if (m_Socket)
 			{
 				boost::system::error_code e;
 				m_Socket->shutdown(boost::asio::ip::tcp::socket::shutdown_both, e);
 				if (e)
 				{
-					_log.Log(LOG_ERROR, "Plugin: Disconnect Exception: %d, %s", e.value(), e.message().c_str());
+					_log.Log(LOG_ERROR, "(%s): Socket Shutdown Error: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
 				}
 				else
 				{
@@ -341,9 +346,11 @@ namespace Plugins {
 			m_Acceptor->cancel();
 		}
 
-		if (m_Resolver) delete m_Resolver;
+		if (m_Resolver)
+		{
+			delete m_Resolver;
+		}
 
-		m_bConnected = false;
 		m_bDisconnectQueued = false;
 
 		return true;
@@ -390,7 +397,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -459,12 +467,16 @@ namespace Plugins {
 				(ec.value() != 125) &&	// Operation cancelled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Read Exception: %d, %s", ec.value(), ec.message().c_str());
+				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			if (!m_bDisconnectQueued)
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				m_bDisconnectQueued = true;
+				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(DisconnectMessage);
+				}
 			}
 		}
 	}
@@ -510,6 +522,8 @@ namespace Plugins {
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
+			m_bConnected = false;
+
 			if (m_Socket)
 			{
 				boost::system::error_code e;
@@ -518,7 +532,6 @@ namespace Plugins {
 				delete m_Socket;
 				m_Socket = NULL;
 			}
-			m_bConnected = false;
 		}
 		return true;
 	}
@@ -537,7 +550,7 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
-			m_bConnected = true;
+			//m_bConnected = true;
 			m_IP = endpoint_iterator->endpoint().address().to_string();
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
@@ -571,12 +584,12 @@ namespace Plugins {
 				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
 
 				boost::system::error_code ec;
-				boost::asio::ip::icmp::resolver::query query(m_IP, "0");
+				boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP, "");
 				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver->resolve(query);
 				m_Endpoint = *iter;
 
 				//
-				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
+				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
 				//
 				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 
@@ -593,7 +606,8 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
@@ -674,18 +688,30 @@ namespace Plugins {
 				(ec.value() != 125) &&	// Operation cancelled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "Plugin: Async Receive From Exception: %d, %s", ec.value(), ec.message().c_str());
+				_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
 
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			if (!m_bDisconnectQueued)
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				m_bDisconnectQueued = true;
+				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(DisconnectMessage);
+				}
 			}
 		}
 	}
 
 	void CPluginTransportICMP::handleWrite(const std::vector<byte>& pMessage)
 	{
+		// Check transport is usable
+		if (!m_Initialised)
+		{
+			CConnection*	pConnection = (CConnection*)this->m_pConnection;
+			std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+			_log.Log(LOG_ERROR, "(%s) Transport not initialised, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
+		}
+
 		// Reset timeout if one is set or set one
 		if (!m_Timer)
 		{
@@ -719,25 +745,28 @@ namespace Plugins {
 	bool CPluginTransportICMP::handleDisconnect()
 	{
 		m_tLastSeen = time(0);
-		if (m_bConnected)
+		if (m_Timer)
 		{
-			if (m_Timer)
-			{
-				m_Timer->cancel();
-				delete m_Timer;
-				m_Timer = NULL;
-			}
-
-			if (m_Socket)
-			{
-				boost::system::error_code e;
-				m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
-				m_Socket->close();
-				delete m_Socket;
-				m_Socket = NULL;
-			}
-			m_bConnected = false;
+			m_Timer->cancel();
+			delete m_Timer;
+			m_Timer = NULL;
 		}
+
+		if (m_Socket)
+		{
+			boost::system::error_code e;
+			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
+			m_Socket->close();
+			delete m_Socket;
+			m_Socket = NULL;
+		}
+
+		if (m_Resolver)
+		{
+			delete m_Resolver;
+			m_Resolver = NULL;
+		}
+
 		return true;
 	}
 

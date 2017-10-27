@@ -62,6 +62,8 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string &APIKey):
 	m_SiteID = 0;
 	m_HwdID = ID;
 	m_stoprequested=false;
+	m_totalActivePower = 0;
+	m_totalEnergy = 0;
 }
 
 SolarEdgeAPI::~SolarEdgeAPI(void)

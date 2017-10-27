@@ -295,7 +295,7 @@ void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTempSensor(sID, battery, Temperature, Name.c_str());
+		SendTempSensor(sID, battery, Temperature, Name);
 	}
 }
 
@@ -303,7 +303,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendHumiditySensor(sID, battery, Humidity, Name.c_str());
+		SendHumiditySensor(sID, battery, Humidity, Name);
 	}
 }
 
@@ -311,7 +311,7 @@ void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
+		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name);
 	}
 }
 
@@ -536,7 +536,7 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
+		SendTextSensor(sID, sID, 255, degrees.c_str(), Name);
 	}
 }
 
@@ -743,7 +743,7 @@ unsigned int XiaomiGateway::GetShortID(const std::string & nodeid)
 	return sID;
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;

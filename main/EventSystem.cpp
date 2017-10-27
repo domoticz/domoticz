@@ -1019,35 +1019,52 @@ void CEventSystem::GetCurrentMeasurementStates()
 	}
 }
 
-void CEventSystem::RemoveSingleState(int ulDevID)
+void CEventSystem::RemoveSingleState(const uint64_t ulDevID, const _eReason reason)
 {
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-
-	//_log.Log(LOG_STATUS,"EventSystem: deleted device %d",ulDevID);
-	m_devicestates.erase(ulDevID);
-
+	if (reason == REASON_DEVICE)
+	{
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		m_devicestates.erase(ulDevID);
+	}
+	else if (reason == REASON_SCENEGROUP)
+	{
+		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		m_scenesgroups.erase(ulDevID);
+	}
 }
 
-void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname)
+void CEventSystem::WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason)
 {
 	if (!m_bEnabled)
 		return;
 
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
 
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-	if (itt != m_devicestates.end()) {
-		//_log.Log(LOG_STATUS,"EventSystem: www update device %" PRIu64 "",ulDevID);
+	if (reason == REASON_DEVICE)
+	{
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 
-		// Fix string capacity to avoid map entry resizing
-		std::string l_deviceName;		l_deviceName.reserve(100);		l_deviceName.assign(devname);
-
-		_tDeviceStatus replaceitem = itt->second;
-		replaceitem.deviceName = l_deviceName;
-		itt->second = replaceitem;
+		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+		if (itt != m_devicestates.end())
+		{
+			_tDeviceStatus replaceitem = itt->second;
+			replaceitem.deviceName = l_deviceName;
+			itt->second = replaceitem;
+		}
+	}
+	else if (reason == REASON_SCENEGROUP)
+	{
+		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
+		std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+		if (itt != m_scenesgroups.end())
+		{
+			_tScenesGroups replaceitem = itt->second;
+			replaceitem.scenesgroupName = l_deviceName;
+			itt->second = replaceitem;
+		}
 	}
 }
 
@@ -1059,6 +1076,8 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	m_sql.GetPreferencesVar("SecStatus", m_SecStatus);
 	_tEventQueue item;
 	item.reason = "security";
+	item.DeviceID = 0;
+	item.varId = 0;
 	m_eventqueue.push(item);
 }
 
@@ -1183,6 +1202,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.DeviceID = ulDevID;
 			item.devname = replaceitem.scenesgroupName;
 			item.nValue = nValue;
+			item.varId = 0;
 			item.lastUpdate = lastUpdate;
 			item.trigger = NULL;
 			m_eventqueue.push(item);
@@ -1193,7 +1213,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 }
 
 
-void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate)
+void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
@@ -1217,6 +1237,7 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		{
 			_tEventQueue item;
 			item.reason = "uservariable";
+			item.DeviceID = 0;
 			item.varId = ulDevID;
 			item.lastUpdate = lastUpdate;
 			m_eventqueue.push(item);
@@ -1358,6 +1379,8 @@ void CEventSystem::ProcessMinute()
 {
 	_tEventQueue item;
 	item.reason = "time";
+	item.DeviceID = 0;
+	item.varId = 0;
 	m_eventqueue.push(item);
 }
 
@@ -3456,6 +3479,25 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		int idx = atoi(SetPointIdx.c_str());
 		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
 	}
+	else if (lCommand.find("Cancel:") == 0)
+	{
+		std::string Type = lCommand.substr(7);
+		uint64_t Idx = lua_tointeger(lua_state, -1);
+
+		if (Type == "Device")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SwitchLightEvent(0, Idx, "", 0, 0, ""));
+		}
+		else if (Type == "Scene")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SwitchSceneEvent(0, Idx, "", ""));
+		}
+		else if (Type == "Variable")
+		{
+			m_sql.RemoveTaskItem(_tTaskItem::SetVariable(0, Idx, "", false));
+
+		}
+	}
 	else
 	{
 		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
@@ -3482,44 +3524,53 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 	if (strarray.size() < 2 || strarray.size() > 4)
 		return; //Invalid!
 	std::string idx = strarray[0];
-	int nvalue = -1;
-	std::string svalue;
-	std::string protect;
+	int nValue = -1;
+	std::string sValue;
+	std::string Protected;
 	if (strarray.size() > 1 && !strarray[1].empty())
-		nvalue = atoi(strarray[1].c_str());
+		nValue = atoi(strarray[1].c_str());
 	if (strarray.size() > 2 && !strarray[2].empty())
-		svalue = strarray[2];
+		sValue = strarray[2];
 	if (strarray.size() > 3 && !strarray[3].empty())
-		protect = strarray[3];
+		Protected = strarray[3];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options FROM DeviceStatus WHERE (ID=='%q')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate FROM DeviceStatus WHERE (ID=='%q')",
 		idx.c_str());
 	if (result.size()>0)
 	{
-		std::string dtype = result[0][0];
-		std::string dsubtype = result[0][1];
-		std::string dname = result[0][2];
-		_eSwitchType dswitchtype = (_eSwitchType)atoi(result[0][3].c_str());
-		int dlastlevel = atoi(result[0][4].c_str());
-		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][5].c_str());
+		std::vector<std::string> sd = result[0];
+
+		std::string dtype = sd[0];
+		std::string dsubtype = sd[1];
+		std::string dname = sd[2];
+		_eSwitchType dswitchtype = (_eSwitchType)atoi(sd[3].c_str());
+		int dlastlevel = atoi(sd[4].c_str());
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[5].c_str());
+		int db_nValue = atoi(sd[6].c_str());
+		std::string db_sValue = sd[7];
+		int db_Protected = atoi(sd[8].c_str());
+		std::string db_LastUpdate = sd[9];
+
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
-		std::stringstream ssQuery;
-		ssQuery << "UPDATE DeviceStatus SET ";
-		if (nvalue != -1)
-			ssQuery << "nValue='" << nvalue << "',";
-		if (!svalue.empty())
-			ssQuery << "sValue='" << svalue << "',";
-		if (!protect.empty())
-			ssQuery << "Protected=" << atoi(protect.c_str());
-		if (nvalue != -1 || !svalue.empty())
-			ssQuery << (!protect.empty() ? "," : "") << "LastUpdate='" << szLastUpdate << "'";
-		ssQuery << " WHERE (ID = '" << idx << "')";
+		if (nValue != -1)
+			db_nValue = nValue;
+		if (!sValue.empty())
+			db_sValue = sValue;
+		if (!Protected.empty())
+			db_Protected = atoi(Protected.c_str());
+		if (nValue != -1 || !sValue.empty())
+			db_LastUpdate = szLastUpdate;
 
-		m_sql.safe_query(ssQuery.str().c_str());
+		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', Protected=%d, LastUpdate='%s' WHERE (ID=='%s')",
+			db_nValue,
+			db_sValue.c_str(),
+			db_Protected,
+			db_LastUpdate.c_str(),
+			idx.c_str());
 
-		if (nvalue == -1 && svalue.empty())
+		if ((nValue == -1) && (sValue.empty()))
 			return;
 
 		uint64_t ulIdx = 0;
@@ -3529,7 +3580,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 		int devType = atoi(dtype.c_str());
 		int subType = atoi(dsubtype.c_str());
 
-		UpdateSingleState(ulIdx, dname, nvalue, svalue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
+		UpdateSingleState(ulIdx, dname, nValue, sValue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
 		//Check if we need to log this event
 		switch (devType)
@@ -3570,32 +3621,32 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			if ((devType == pTypeRadiator1) && (subType != sTypeSmartwaresSwitchRadiator))
 				break;
 			//Add Lighting log
-			if (nvalue != -1)
-				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, nvalue, !svalue.empty() ? svalue.c_str() : "0");
+			if (nValue != -1)
+				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, nValue, !sValue.empty() ? sValue.c_str() : "0");
 			break;
 		}
 
 		//Check if it's a setpoint device, and if so, set the actual setpoint
 		if (
 			((devType == pTypeThermostat) && (subType == sTypeThermSetpoint)) ||
-			(devType == pTypeRadiator1 && !svalue.empty())
+			(devType == pTypeRadiator1 && !sValue.empty())
 			)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
-			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(svalue.c_str())));
+			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(sValue.c_str())));
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nvalue != -1)
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
-			m_mainworker.SetZWaveThermostatMode(idx, nvalue);
+			m_mainworker.SetZWaveThermostatMode(idx, nValue);
 		}
-		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nvalue != -1)
+		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
-			m_mainworker.SetZWaveThermostatFanMode(idx, nvalue);
+			m_mainworker.SetZWaveThermostatFanMode(idx, nValue);
 		}
 		if (bEventTrigger)
-			ProcessDevice(0, ulIdx, 0, devType, subType, 255, 255, nvalue, svalue.c_str(), dname, 0);
+			ProcessDevice(0, ulIdx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname, 0);
 	}
 }
 

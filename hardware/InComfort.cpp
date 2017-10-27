@@ -17,10 +17,10 @@
 //#define DEBUG_InComfort
 #endif
 
-CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 
@@ -35,7 +35,6 @@ CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigne
 	m_LastCentralHeatingTemperature = 0.0;
 	m_LastCentralHeatingPressure = 0.0;
 	m_LastTapWaterTemperature = 0.0;
-	m_LastStatusText = "";
 	m_LastIO = 0;
 
 	Init();
