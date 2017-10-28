@@ -45,6 +45,7 @@ static std::string m_printprefix;
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 #endif
 
+// Helper table for Blockly and SQL name mapping
 const std::string CEventSystem::m_szReason[] =
 {
 	"device",			// 0
