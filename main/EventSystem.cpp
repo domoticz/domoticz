@@ -1467,7 +1467,6 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
 		if (m_bdzVentsExist)
-			//EvaluateLua(item.reason, m_dzv_Dir + "dzVents.lua", "", item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, item.varId);
 			EvaluateLua(item, m_dzv_Dir + "dzVents.lua", "");
 		else
 		{
@@ -1527,17 +1526,11 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 					EvaluateLua(item, m_lua_Dir + filename, "");
 				}
 			}
-			else if (item.reason == REASON_TIME && filename.find("_time_") != std::string::npos)
+			else if ((item.reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
+				(item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
+				(item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
 			{
-				EvaluateLua(item.reason, m_lua_Dir + filename, "");
-			}
-			else if (item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos)
-			{
-				EvaluateLua(item.reason, m_lua_Dir + filename, "");
-			}
-			else if (item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos)
-			{
-				EvaluateLua(item.reason, m_lua_Dir + filename, "", item.varId);
+				EvaluateLua(item, m_lua_Dir + filename, "");
 			}
 		}
 		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
@@ -1557,21 +1550,12 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 				filename.compare(filename.length() - 3, 3, ".py") == 0 &&
 				filename.find("_demo.py") == std::string::npos)
 			{
-				if (item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
+				if ((item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos) ||
+					(item.reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
+					(item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
+					(item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
 				{
-					EvaluatePython(item.reason, m_python_Dir + filename, "", item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, 0);
-				}
-				else if (item.reason == REASON_TIME && filename.find("_time_") != std::string::npos)
-				{
-					EvaluatePython(item.reason, m_python_Dir + filename, "");
-				}
-				else if (item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos)
-				{
-					EvaluatePython(item.reason, m_python_Dir + filename, "");
-				}
-				else if (item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos)
-				{
-					EvaluatePython(item.reason, m_python_Dir + filename, "", item.varId);
+					EvaluatePython(item, m_python_Dir + filename, "");
 				}
 			}
 			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
@@ -1583,7 +1567,7 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 	uservariablesMutexLock.unlock();
 #endif
 
-	EvaluateBlockly(m_szReason[item.reason], item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, item.varId);
+	EvaluateBlockly(item);
 
 	// handle database held scripts
 	try {
@@ -1598,10 +1582,7 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 				else if (it->Interpreter == "Python") {
 #ifdef ENABLE_PYTHON
 					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-					if (item.reason == REASON_DEVICE)		EvaluatePython(item.reason, it->Name, it->Actions, item.DeviceID, item.devname, item.nValue, item.sValue.c_str(), item.nValueWording, 0);
-					if (item.reason == REASON_TIME)			EvaluatePython(item.reason, it->Name, it->Actions);
-					if (item.reason == REASON_SECURITY)		EvaluatePython(item.reason, it->Name, it->Actions);
-					if (item.reason == REASON_USERVARIABLE)	EvaluatePython(item.reason, it->Name, it->Actions, item.varId);
+					EvaluatePython(item, it->Name, it->Actions);
 					//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
 #else
 					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
@@ -1840,7 +1821,7 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	return lua_state;
 }
 
-void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
+void CEventSystem::EvaluateBlockly(const _tEventQueue &item)
 {
 //#ifdef _DEBUG
 	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
@@ -1848,18 +1829,18 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 
 	lua_State *lua_state=NULL;
 
-	if ((reason == "device") && (DeviceID >0)) {
+	if ((item.reason == REASON_DEVICE) && (item.DeviceID >0)) {
 		std::size_t found;
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type=="all")||(it->Type == reason)));
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type=="all")||(it->Type == m_szReason[item.reason])));
 			bool eventActive = (it->EventStatus == 1);
 			if (eventInScope && eventActive)
 			{
 				std::stringstream sstr;
 				//sstr << "device[" << DeviceID << "]";
-				sstr << "[" << DeviceID << "]";
+				sstr << "[" << item.DeviceID << "]";
 				std::string conditions(it->Conditions);
 				found = conditions.find(sstr.str());
 				if (found != std::string::npos)
@@ -1906,13 +1887,13 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 			}
 		}
 	}
-	else if (reason == "security") {
+	else if (item.reason == REASON_SECURITY) {
 		// security status change
 		std::size_t found;
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
 			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
 			sstr << "securitystatus";
@@ -1962,11 +1943,11 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 			}
 		}
 	}
-	else if (reason == "time") {
+	else if (item.reason == REASON_TIME) {
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
 			bool eventActive = (it->EventStatus == 1);
 			if ((eventInScope) && (eventActive)) {
 				// time rules will only run when time or date based critera are found
@@ -2014,15 +1995,15 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 			}
 		}
 	}
-	else if ((reason == "uservariable") && (varId >0)) {
+	else if ((item.reason == REASON_USERVARIABLE) && (item.varId >0)) {
 		std::size_t found;
 		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 		std::vector<_tEventItem>::iterator it;
 		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == reason)));
+			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
 			bool eventActive = (it->EventStatus == 1);
 			std::stringstream sstr;
-			sstr << "variable[" << varId << "]";
+			sstr << "variable[" << item.varId << "]";
 			std::string conditions (it->Conditions);
 			found = conditions.find(sstr.str());
 
@@ -2611,30 +2592,19 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 
 #ifdef ENABLE_PYTHON
 
-void CEventSystem::EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString, const uint64_t varId)
-{
-	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", varId);
-}
-
-void CEventSystem::EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString)
-{
-	EvaluatePython(reason, filename, PyString, 0, "", 0, "", "", 0);
-}
-
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
     ScheduleEvent(ID, Action,eventName);
     return true;
 }
 
-void CEventSystem::EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId)
+void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString)
 {
 	//_log.Log(LOG_NORM, "EventSystem: Already scheduled this event, skipping");
 	// _log.Log(LOG_STATUS, "EventSystem: script %s trigger, file: %s, script: %s, deviceName: %s" , reason.c_str(), filename.c_str(), PyString.c_str(), devname.c_str());
 
-    Plugins::PythonEventsProcessPython(m_szReason[reason], filename, PyString, DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
+    Plugins::PythonEventsProcessPython(m_szReason[item.reason], filename, PyString, item.DeviceID, m_devicestates, m_uservariables, getSunRiseSunSetMinutes("Sunrise"),
         getSunRiseSunSetMinutes("Sunset"));
-
 
 	//Py_Finalize();
 }
@@ -2694,21 +2664,6 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	}
 	lua_setglobal(lua_state, "otherdevices_lastlevel");
 	devicestatesMutexLock2.unlock();
-}
-
-void CEventSystem::EvaluateLua(const _eReason reason, const std::string &filename, const std::string &LuaString, const uint64_t varId)
-{
-	_tEventQueue item;
-	item.reason = reason;
-	item.varId = varId;
-	EvaluateLua(item, filename, LuaString);
-}
-
-void CEventSystem::EvaluateLua(const _eReason reason, const std::string &filename, const std::string &LuaString)
-{
-	_tEventQueue item;
-	item.reason = reason;
-	EvaluateLua(item, filename, LuaString);
 }
 
 void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString)
