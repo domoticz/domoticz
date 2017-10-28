@@ -158,7 +158,7 @@ define(['app'], function (app) {
                         success: function(data) {
                             if (typeof data.result != 'undefined') {
                                 $.each(data.result, function(i,item){
-                                    $("#customlog #devicecontainer").append('<input type="checkbox" class="devicecheckbox" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
+                                    $("#customlog #devicecontainer").append('<input type="checkbox" class="devicecheckbox noscheck" id="'+item.idx+'" value="'+item.Name+'" onChange="AddDeviceToGraph(this)">'+item.Name+'<br />');
                                 });
                             }
                         }
