@@ -1,12 +1,10 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 //#include "MochadBase.h"
 
 #include "DomoticzHardware.h"
-#include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 
 class MochadTCP: public CDomoticzHardwareBase,  ASyncTCP

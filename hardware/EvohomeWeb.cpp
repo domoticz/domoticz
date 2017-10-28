@@ -209,7 +209,7 @@ void CEvohomeWeb::Do_Work()
 		if ((sec_counter % m_refreshrate == 0) && (pollcounter++ > m_logonfailures) && (m_lastconnect>=MINPOLINTERVAL))
 		{
 			GetStatus();
-			int pollcounter = LOGONFAILTRESHOLD;
+			pollcounter = LOGONFAILTRESHOLD;
 			m_lastconnect=0;
 		}
 	}
@@ -571,7 +571,7 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 		}
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	}
-	else if (szsysmode == "HeatingOff")
+	else if ((szsysmode == "HeatingOff") && (szmode != "Offline"))
 		ssUpdateStat << sztemperature << ";" << szsetpoint << ";" << szsysmode;
 	else
 	{
@@ -646,7 +646,7 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 		return;
 
 	std::string szId, szmode;
-	std::string szuntil= "";
+	std::string szuntil = "";
 	std::stringstream ssUpdateStat;
 
 	szId = (*tcs->status)["dhw"]["dhwId"].asString();
@@ -769,7 +769,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 /*
  * Helper to convert local time strings to UTC time strings
  */
-std::string CEvohomeWeb::local_to_utc(std::string local_time)
+std::string CEvohomeWeb::local_to_utc(const std::string &local_time)
 {
 	if (local_time.size() < 19)
 		return "";
@@ -1062,7 +1062,7 @@ bool CEvohomeWeb::full_installation()
  *									*
  ************************************************************************/
 
-bool CEvohomeWeb::get_status(std::string locationId)
+bool CEvohomeWeb::get_status(const std::string &locationId)
 {
 	if (m_locations.size() == 0)
 		return false;
@@ -1151,7 +1151,7 @@ bool CEvohomeWeb::get_status(int location)
  *									*
  ************************************************************************/
 
-CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
+CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(const std::string &zoneId)
 {
 	if (m_locations.size() == 0)
 		full_installation();
@@ -1184,15 +1184,15 @@ CEvohomeWeb::zone* CEvohomeWeb::get_zone_by_ID(std::string zoneId)
  *									*
  ************************************************************************/
 
-bool CEvohomeWeb::get_zone_schedule(std::string zoneId)
+bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId)
 {
 	return get_zone_schedule(zoneId, "temperatureZone");
 }
-bool CEvohomeWeb::get_dhw_schedule(std::string dhwId)
+bool CEvohomeWeb::get_dhw_schedule(const std::string &dhwId)
 {
 	return get_zone_schedule(dhwId, "domesticHotWater");
 }
-bool CEvohomeWeb::get_zone_schedule(std::string zoneId, std::string zoneType)
+bool CEvohomeWeb::get_zone_schedule(const std::string &zoneId, const std::string &zoneType)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/" << zoneType << "/" << zoneId << "/schedule";
@@ -1221,7 +1221,8 @@ std::string CEvohomeWeb::get_next_switchpoint(CEvohomeWeb::temperatureControlSys
 }
 std::string CEvohomeWeb::get_next_switchpoint(zone* hz)
 {
-	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId))
+	std::string zoneType = ((*hz->installationInfo).isMember("dhwId")) ? "domesticHotWater" : "temperatureZone";
+	if ((hz->schedule.isNull()) && !get_zone_schedule(hz->zoneId, zoneType))
 		return "";
 	return get_next_switchpoint(hz->schedule);
 }
@@ -1348,7 +1349,7 @@ std::string CEvohomeWeb::get_next_switchpoint_ex(Json::Value &schedule, std::str
  ************************************************************************/
 
 
-bool CEvohomeWeb::verify_datetime(std::string datetime)
+bool CEvohomeWeb::verify_datetime(const std::string &datetime)
 {
 	if (datetime.length() < 19)
 		return false;
@@ -1373,7 +1374,7 @@ bool CEvohomeWeb::verify_datetime(std::string datetime)
 }
 
 
-bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
+bool CEvohomeWeb::set_system_mode(const std::string &systemId, int mode)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureControlSystem/" << systemId << "/mode";
@@ -1386,7 +1387,7 @@ bool CEvohomeWeb::set_system_mode(std::string systemId, int mode)
 }
 
 
-bool CEvohomeWeb::set_temperature(std::string zoneId, std::string temperature, std::string time_until)
+bool CEvohomeWeb::set_temperature(const std::string &zoneId, const std::string &temperature, const std::string &time_until)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/heatSetpoint";
@@ -1407,7 +1408,7 @@ bool CEvohomeWeb::set_temperature(std::string zoneId, std::string temperature, s
 }
 
 
-bool CEvohomeWeb::cancel_temperature_override(std::string zoneId)
+bool CEvohomeWeb::cancel_temperature_override(const std::string &zoneId)
 {
 	std::stringstream url;
 	url << EVOHOME_HOST << "/WebAPI/emea/api/v1/temperatureZone/" << zoneId << "/heatSetpoint";
@@ -1425,7 +1426,7 @@ bool CEvohomeWeb::has_dhw(CEvohomeWeb::temperatureControlSystem *tcs)
 }
 
 
-bool CEvohomeWeb::set_dhw_mode(std::string dhwId, std::string mode, std::string time_until)
+bool CEvohomeWeb::set_dhw_mode(const std::string &dhwId, const std::string &mode, const std::string &time_until)
 {
 	std::stringstream data;
 	if (mode == "auto")

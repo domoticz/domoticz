@@ -1,7 +1,8 @@
 #pragma once
 
-#include <set>
 
+#include <iosfwd>
+#include <set>
 #include "DomoticzHardware.h"
 #include "../hardware/1Wire/1WireCommon.h"
 

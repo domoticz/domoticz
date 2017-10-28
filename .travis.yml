@@ -34,7 +34,9 @@ matrix:
     dist: trusty
     sudo: required
     compiler: gcc
-    env: TARGET_ARCHITECTURE=x86_64
+    env: 
+          - TARGET_ARCHITECTURE=x86_64
+          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     addons:
       apt:
         sources:
@@ -57,8 +59,6 @@ matrix:
           - git
           - libdigest-sha-perl
           - python3-dev
-    env:
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     script:
       - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only

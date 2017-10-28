@@ -46,7 +46,6 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 #ifdef _DEBUG
 	if (length < 2)
 		return false;
-	std::stringstream sTmp;
 	std::string sdevicetype = RFX_Type_Desc(pdata[1], 1);
 	if (pdata[1] == pTypeGeneral)
 	{

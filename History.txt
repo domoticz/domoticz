@@ -1,4 +1,4 @@
-Version 3.xxx (August xxth 2017)
+Version 3.xxx (October xxth 2017)
 - Implemented: Adjustment Value for Counter/Incremental sensors
 - Implemented: Camera, can now handle HTTPS url's
 - Implemented: Catalan language support (Big thanks to "delfisastre")

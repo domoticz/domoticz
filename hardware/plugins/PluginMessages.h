@@ -89,11 +89,7 @@ namespace Plugins {
 	{
 	public:
 		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) {};
-		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection)
-		{
-			m_Status = Code;
-			m_Text = Text;
-		};
+		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) {};
 		int						m_Status;
 		std::string				m_Text;
 		virtual void Process()
@@ -111,7 +107,11 @@ namespace Plugins {
 			m_Buffer.assign(Data, Data + ByteCount);
 		};
 		std::vector<byte>		m_Buffer;
-		virtual void Process() { m_pPlugin->ConnectionRead(this); };
+		virtual void Process()
+		{
+			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+			m_pPlugin->ConnectionRead(this);
+		};
 	};
 
 	class DisconnectMessage : public CCallbackBase, public CHasConnection
@@ -190,7 +190,6 @@ namespace Plugins {
 			if (m_Buffer.size())
 			{
 				pParams = Py_BuildValue("Oy#", m_pConnection, &m_Buffer[0], m_Buffer.size());
-				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
 				Callback(pParams);
 			}
 
@@ -198,7 +197,6 @@ namespace Plugins {
 			if (m_Data)
 			{
 				pParams = Py_BuildValue("OO", m_pConnection, m_Data);
-				m_pPlugin->WriteDebugBuffer(m_Buffer, true);
 				Callback(pParams);
 				Py_XDECREF(m_Data);
 			}
