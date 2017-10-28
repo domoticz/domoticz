@@ -22,24 +22,14 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
 };
 
-int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
-{
-	for (unsigned int i = 0; i < TOT_TYPE; ++i)
-	{
-		if (DevicesType[i].api_name == apiName)
-		{
-			return DevicesType[i].unit;
-		}
-	}
-	_log.Log(LOG_ERROR, "BleBox: unknown device api name(%s)", apiName.c_str());
-	return -1;
-}
-
 BleBox::BleBox(const int id, const int pollIntervalsec) :
 	m_stoprequested(false)
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
+	m_LimitlessRGBWcHueState = 0.0;
+	m_LimitlessRGBWisWhiteState = true;
+	m_LimitlessRGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
 }
 
@@ -50,14 +40,11 @@ BleBox::~BleBox()
 
 bool BleBox::StartHardware()
 {
-	if (LoadNodes())
-	{
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
-		m_bIsStarted = true;
-		sOnConnected(this);
-		return (m_thread != NULL);
-	}
-	return false;
+	LoadNodes();
+	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&BleBox::Do_Work, this)));
+	m_bIsStarted = true;
+	sOnConnected(this);
+	return (m_thread != NULL);
 }
 
 bool BleBox::StopHardware()
@@ -244,6 +231,19 @@ std::string BleBox::GetDeviceIP(const std::string &id)
 	return ip;
 }
 
+int BleBox::GetDeviceTypeByApiName(const std::string &apiName)
+{
+	for (unsigned int i = 0; i < TOT_TYPE; ++i)
+	{
+		if (DevicesType[i].api_name == apiName)
+		{
+			return DevicesType[i].unit;
+		}
+	}
+	_log.Log(LOG_ERROR, "BleBox: unknown device api name(%s)", apiName.c_str());
+	return -1;
+}
+
 std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 {
 	std::vector<std::string> strarray;
@@ -255,11 +255,11 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeLimitlessLights)
 	{ 
-		sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		sprintf(szIdx, "%08X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 	}
 	else
 	{
-		sprintf(szIdx, "%02x%02x%02x%02x", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		sprintf(szIdx, "%X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 	}
 	return szIdx;
 }
@@ -519,12 +519,74 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string IPAddress = GetDeviceRevertIP(output);
 
 		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
-		int red, green, blue;
-		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-		hue2rgb(cHue, red, green, blue);
+		int red, green, blue, white;
+		bool setColor = true;
+		
+		switch (pLed->command)
+		{
+			case Limitless_LedOn: {
+				if(m_LimitlessRGBWcHueState != 0.0 && !m_LimitlessRGBWisWhiteState)
+				{
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, m_LimitlessRGBWbrightnessState);
+					white = 0;
+				}
+				else
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = m_LimitlessRGBWbrightnessState;
+				}
+				break;
+			}
+			case Limitless_LedOff:
+				red = 0;
+				green = 0;
+				blue = 0;
+				white = 0;
+				break;
+			case Limitless_SetColorToWhite: {
+				m_LimitlessRGBWisWhiteState = true;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetRGBColour: {
+				m_LimitlessRGBWisWhiteState = false;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetBrightnessLevel: {
+				int BrightnessBase = (int)pLed->value;
+				int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
+
+				m_LimitlessRGBWbrightnessState = dMax_Send;
+
+				if(m_LimitlessRGBWisWhiteState)
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = dMax_Send;
+				}
+				else
+				{
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					white = 0;
+				}
+				break;
+			}
+			default:
+				setColor = false;
+				break;
+		}
+
+		if(!setColor)
+			return false;
 
 		char level[10];
-		sprintf(level, "%02x%02x%02x%02x", red, green, blue, 255);
+		sprintf(level, "%02x%02x%02x%02x", red, green, blue, white);
 		std::string state(level);
 
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
@@ -545,7 +607,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 	return false;
 }
 
-bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
+bool BleBox::IsNodeExists(const Json::Value &root, const std::string &node)
 {
 	if (root[node].empty() == true)
 	{
@@ -555,7 +617,7 @@ bool BleBox::IsNodeExists(const Json::Value root, const std::string node)
 	return true;
 }
 
-bool BleBox::IsNodesExist(const Json::Value root, const std::string node, const std::string value)
+bool BleBox::IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value)
 {
 	if (IsNodeExists(root, node) == false)
 		return false;
@@ -772,36 +834,6 @@ namespace http {
 			pHardware->AddNode(name, ip);
 		}
 
-		void CWebServer::Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root)
-		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
-			std::string hwid = request::findValue(&req, "idx");
-			std::string nodeid = request::findValue(&req, "nodeid");
-			std::string name = request::findValue(&req, "name");
-			std::string ip = request::findValue(&req, "ip");
-			if (
-				(hwid == "") ||
-				(nodeid == "") ||
-				(name == "") ||
-				(ip == "")
-				)
-				return;
-			CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
-			if (pBaseHardware == NULL)
-				return;
-			BleBox *pHardware = reinterpret_cast<BleBox*>(pBaseHardware);
-
-			root["status"] = "OK";
-			root["title"] = "BleBoxUpdateNode";
-			int ID = atoi(nodeid.c_str());
-			pHardware->UpdateNode(ID, name, ip);
-		}
-
 		void CWebServer::Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
@@ -984,8 +1016,6 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 	if (root["uptime"].empty() == true)
 		return "unknown";
 
-	std::string result;
-
 	uint64_t msec = root["uptime"].asUInt64();
 	char timestring[32] = "";
 
@@ -1065,27 +1095,6 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 			m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str());
 	}
 	ReloadNodes();
-}
-
-bool BleBox::UpdateNode(const int id, const std::string &name, const std::string &IPAddress)
-{
-	std::string deviceApiName = IdentifyDevice(IPAddress);
-	if (deviceApiName.empty())
-		return false;
-
-	int deviceTypeID = GetDeviceTypeByApiName(deviceApiName);
-	if (deviceTypeID == -1)
-		return false;
-
-	STR_DEVICE deviceType = DevicesType[deviceTypeID];
-
-	std::string szIdx = IPToHex(IPAddress, deviceType.deviceID);
-
-	m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q', Unit='%d', Type='%d', SubType='%d', SwitchType='%d', Name='%q' WHERE (HardwareID=='%d') AND (ID=='%d')", 
-		szIdx.c_str(), deviceType.unit, deviceType.deviceID, deviceType.subType, deviceType.switchType, name.c_str(), m_HwdID, id);
-
-	ReloadNodes();
-	return true;
 }
 
 void BleBox::RemoveNode(const int id)

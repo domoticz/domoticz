@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iostream>
+#include <iosfwd>
 
 class CSBFSpot : public CDomoticzHardwareBase
 {

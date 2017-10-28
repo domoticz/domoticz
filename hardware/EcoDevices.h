@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "TeleinfoBase.h"
@@ -44,12 +44,17 @@ class CEcoDevices : public CTeleinfoBase
 			_tStatus()
 			{
 				len = sizeof(_tStatus) - 1;
+				flow1 = 0;
+				flow2 = 0;
+				index1 = 0;
+				index2 = 0;
 				pflow1 = 0;
 				pflow2 = 0;
 				pindex1 = 0;
 				pindex2 = 0;
 				time1 = 0;
 				time2 = 0;
+				voltage = 0;
 			}
 		} Status;
 

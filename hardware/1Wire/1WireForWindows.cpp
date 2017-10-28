@@ -92,7 +92,7 @@ void DisconnectFromService(SOCKET theSocket)
    closesocket(theSocket);
 }
 
-bool Send(SOCKET theSocket,std::string requestToSend)
+bool Send(SOCKET theSocket, const std::string &requestToSend)
 {
    // Send message size
    size_t requestSize = requestToSend.length();
@@ -124,7 +124,7 @@ std::string Receive(SOCKET theSocket)
    return answer;
 }
 
-std::string SendAndReceive(SOCKET theSocket,std::string requestToSend)
+std::string SendAndReceive(SOCKET theSocket,const std::string &requestToSend)
 {
    if (!Send(theSocket,requestToSend))
       return "";
@@ -132,7 +132,7 @@ std::string SendAndReceive(SOCKET theSocket,std::string requestToSend)
    return Receive(theSocket);
 }
 
-std::string C1WireForWindows::SendAndReceive(std::string requestToSend) const
+std::string C1WireForWindows::SendAndReceive(const std::string &requestToSend) const
 {
    // SendAndReceive can be called by 2 different thread contexts : writeData and GetDevices
    // So we have to set protection

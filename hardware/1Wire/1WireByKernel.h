@@ -48,7 +48,7 @@ protected:
    class DeviceState
    {
    public:
-	   explicit DeviceState(_t1WireDevice device) : m_Device(device) {}
+	   explicit DeviceState(const _t1WireDevice device) : m_Device(device) {}
       _t1WireDevice GetDevice() const {return m_Device;}
       union
       {

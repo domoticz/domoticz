@@ -261,9 +261,9 @@ void Ec3kMeterTCP::ParseData(const unsigned char *pData, int Len)
 		int ws = data[WS].asInt();
 		float w_current = data[W_CURRENT].asFloat();
 		float w_max = data[W_MAX].asFloat();
-		int s_time_on = data[TIME_ON].asInt();
-		int s_time_total = data[TIME_TOTAL].asInt();
-		int reset_count = data[RESET_COUNT].asInt();
+		//int s_time_on = data[TIME_ON].asInt();
+		//int s_time_total = data[TIME_TOTAL].asInt();
+		//int reset_count = data[RESET_COUNT].asInt();
 
 		// create suitable default names and send data
 

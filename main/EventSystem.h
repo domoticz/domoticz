@@ -18,8 +18,11 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 
+#include "dzVents.h"
+
 class CEventSystem : public CLuaCommon
 {
+	friend class CdzVents;
 	typedef struct lua_State lua_State;
 
 	struct _tEventItem
@@ -113,8 +116,8 @@ public:
 
 	void LoadEvents();
 	void ProcessDevice(const int HardwareID, const uint64_t ulDevID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, const std::string &devname, const int varId);
-	void RemoveSingleState(int ulDevID);
-	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname);
+	void RemoveSingleState(const uint64_t ulDevID, const _eReason reason);
+	void WWWUpdateSingleState(const uint64_t ulDevID, const std::string &devname, const _eReason reason);
 	void WWWUpdateSecurityState(int securityStatus);
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(const bool bEnabled);
@@ -122,13 +125,30 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
-	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string varValue, const int varType, const std::string &lastUpdate);
+	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 
+	CdzVents m_dzvents;
+
 private:
+	typedef enum
+	{
+		JTYPE_STRING = 0,	// 0
+		JTYPE_FLOAT,		// 1
+		JTYPE_INT,			// 2
+		JTYPE_BOOL			// 3
+	} _eJsonType;
+
+	struct _tJsonMap
+	{
+		const char* szOriginal;
+		const char* szNew;
+		_eJsonType eType;
+	};
+
 	struct _tEventTrigger
 	{
 		uint64_t ID;
@@ -168,6 +188,8 @@ private:
 	std::string m_dzv_Dir;
 	std::string m_szStartTime;
 
+	static const _tJsonMap JsonMap[];
+
 	//our thread
 	void Do_Work();
 	void ProcessMinute();
@@ -185,7 +207,6 @@ private:
 #endif
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t varId);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString);
-	void ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason);
 	void EvaluateLua(const std::string &reason, const std::string &filename, const std::string &LuaString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);

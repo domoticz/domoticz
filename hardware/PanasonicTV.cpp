@@ -79,6 +79,97 @@ Possible Commands:
 
 */
 
+class CPanasonicNode //: public boost::enable_shared_from_this<CPanasonicNode>
+{
+	class CPanasonicStatus
+	{
+	public:
+		CPanasonicStatus() { Clear(); };
+		_eMediaStatus	Status() { return m_nStatus; };
+		_eNotificationTypes	NotificationType();
+		std::string		StatusText() { return Media_Player_States(m_nStatus); };
+		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
+		void			Status(std::string pStatus) { m_sStatus = pStatus; };
+		void			LastOK(time_t pLastOK) { m_tLastOK = pLastOK; };
+		std::string		LastOK() { std::string sRetVal;  tm ltime; localtime_r(&m_tLastOK, &ltime); char szLastUpdate[40]; sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec); sRetVal = szLastUpdate; return sRetVal; };
+		void			Clear();
+		std::string		LogMessage();
+		std::string		StatusMessage();
+		bool			LogRequired(CPanasonicStatus&);
+		bool			UpdateRequired(CPanasonicStatus&);
+		bool			OnOffRequired(CPanasonicStatus&);
+		bool			IsOn() { return (m_nStatus != MSTAT_OFF); };
+		void			Volume(int pVolume) { m_VolumeLevel = pVolume;};
+		void			Muted(bool pMuted) { m_Muted = pMuted; };
+	private:
+		_eMediaStatus	m_nStatus;
+		std::string		m_sStatus;
+		time_t			m_tLastOK;
+		bool			m_Muted;
+		int				m_VolumeLevel;
+	};
+
+public:
+	CPanasonicNode(const int, const int, const int, const std::string&, const std::string&, const std::string&, const std::string&);
+	~CPanasonicNode(void);
+	void			Do_Work();
+	void			SendCommand(const std::string &command);
+	void			SendCommand(const std::string &command, const int iValue);
+	void			SetExecuteCommand(const std::string &command);
+	bool			SendShutdown();
+	void			StopThread();
+	bool			StartThread();
+	bool			IsBusy() { return m_Busy; };
+	bool			IsOn() { return (m_CurrentStatus.Status() == MSTAT_ON); };
+
+	int				m_ID;
+	int				m_DevID;
+	std::string		m_Name;
+
+	bool			m_stoprequested;
+	boost::shared_ptr<boost::thread> m_thread;
+protected:
+	bool			m_Busy;
+	bool			m_Stoppable;
+
+private:
+	bool			handleConnect(boost::asio::ip::tcp::socket&, boost::asio::ip::tcp::endpoint, boost::system::error_code&);
+	std::string		handleWriteAndRead(std::string);
+	int				handleMessage(std::string);
+	std::string		buildXMLStringRendCtl(std::string, std::string);
+	std::string		buildXMLStringRendCtl(std::string, std::string, std::string);
+	std::string		buildXMLStringNetCtl(std::string);
+	
+	int				m_HwdID;
+	char			m_szDevID[40];
+	std::string		m_IP;
+	std::string		m_Port;
+	bool			m_PowerOnSupported;
+
+	CPanasonicStatus		m_PreviousStatus;
+	CPanasonicStatus		m_CurrentStatus;
+	//void			UpdateStatus();
+	void			UpdateStatus(bool force = false);
+
+	std::string		m_ExecuteCommand;
+
+	std::string		m_RetainedData;
+
+	int				m_iTimeoutCnt;
+	int				m_iPollIntSec;
+	int				m_iMissedPongs;
+	std::string		m_sLastMessage;
+	inline bool isInteger(const std::string & s)
+	{
+		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+		char * p;
+		strtol(s.c_str(), &p, 10);
+
+		return (*p == 0);
+	}
+};
+
 
 void CPanasonicNode::CPanasonicStatus::Clear()
 {
@@ -333,7 +424,6 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 
 int CPanasonicNode::handleMessage(std::string pMessage)
 {
-	bool bFound = false;
 	int iPosBegin = 0;
 	int iPosEnd = 0;
 	std::string begin(">");
@@ -368,34 +458,28 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	}
 
 	// Reset for next Search
-	bFound = false;
 	iPosBegin = 0;
 	iPosEnd = 0;
 
-	while (!bFound)
+	while (1)
 	{
 		iPosBegin = pMessage.find(begin, iPosBegin);
-		if (iPosBegin != std::string::npos)
-		{
-			iPosEnd = pMessage.find(end, iPosBegin+1);
-			if (iPosEnd != std::string::npos)
-			{
-				std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
-				if (is_number(sFound))
-				{
-					return atoi(sFound.c_str());
-				}
-			}
-		}
 		if (iPosBegin == std::string::npos)
 			break;
-		else
-			iPosBegin++;
+		iPosEnd = pMessage.find(end, iPosBegin+1);
+		if (iPosEnd != std::string::npos)
+		{
+			std::string sFound = pMessage.substr(iPosBegin + 1, ((iPosEnd - iPosBegin) - 1));
+			if (is_number(sFound))
+			{
+				return atoi(sFound.c_str());
+			}
+		}
+		iPosBegin++;
 	}
 
 	// If we got here we didn't find a return string
 	return -1;
-	
 }
 
 std::string CPanasonicNode::buildXMLStringRendCtl(std::string action, std::string command)
