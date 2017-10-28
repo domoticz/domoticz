@@ -198,13 +198,11 @@ private:
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
 	void EvaluateEvent(const _tEventQueue &item);
 	void EvaluateBlockly(const _tEventQueue &item);
-//	void EvaluateBlockly(const std::string &reason, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
 #ifdef ENABLE_PYTHON
 	std::string m_python_Dir;
 	void EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString);
-//	void EvaluatePython(const _eReason reason, const std::string &filename, const std::string &PyString, const uint64_t DeviceID, const std::string &devname, const int nValue, const char* sValue, std::string nValueWording, const uint64_t varId);
 #endif
 	void EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString);
 	void luaThread(lua_State *lua_state, const std::string &filename);
