@@ -42,7 +42,9 @@
 #include "SQLHelper.h"
 #include "../push/BasePush.h"
 #include <algorithm>
-
+#ifdef ENABLE_PYTHON
+#include "../hardware/plugins/Plugins.h"
+#endif
 
 #ifndef WIN32
 #include <sys/utsname.h>
@@ -8715,9 +8717,9 @@ namespace http {
 						bHasTimers = m_sql.HasTimers(sd[0]);
 
 						bHaveTimeout = false;
-#ifdef WITH_OPENZWAVE
 						if (pHardware != NULL)
 						{
+#ifdef WITH_OPENZWAVE
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
 								COpenZWave *pZWave = (COpenZWave*)pHardware;
@@ -8728,8 +8730,15 @@ namespace http {
 								int nodeID = (ID & 0x0000FF00) >> 8;
 								bHaveTimeout = pZWave->HasNodeFailed(nodeID);
 							}
-						}
 #endif
+#ifdef ENABLE_PYTHON
+							if (pHardware->HwdType == HTYPE_PythonPlugin)
+							{
+								Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+								bHaveTimeout = pPlugin->HasNodeFailed(atoi(sd[2].c_str()));
+							}
+#endif
+						}
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						std::string lstatus = "";

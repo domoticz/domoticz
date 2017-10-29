@@ -1466,6 +1466,31 @@ namespace Plugins {
 		}
 	}
 
+	bool CPlugin::HasNodeFailed(const int Unit)
+	{
+		if (!m_DeviceDict)	return true;
+
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+		while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &value))
+		{
+			long iKey = PyLong_AsLong(key);
+			if (iKey == -1 && PyErr_Occurred())
+			{
+				PyErr_Clear();
+				return false;
+			}
+
+			if (iKey == Unit)
+			{
+				CDevice*	pDevice = (CDevice*)value;
+				return (pDevice->TimedOut != 0);
+			}
+		}
+
+		return false;
+	}
+
 
 	CPluginNotifier::CPluginNotifier(CPlugin* pPlugin, const std::string &NotifierName) : CNotificationBase(NotifierName, OPTIONS_NONE), m_pPlugin(pPlugin)
 	{
