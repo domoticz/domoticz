@@ -323,6 +323,7 @@ namespace Plugins {
 				self->Used = 0;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
+				self->TimedOut = 0;
 				self->pPlugin = NULL;
 			}
 		}
@@ -762,14 +763,15 @@ namespace Plugins {
 			int			iSignalLevel = self->SignalLevel;
 			int			iBatteryLevel = self->BatteryLevel;
 			int			iImage = self->Image;
+			int			iTimedOut = self->TimedOut;
 			PyObject*	pOptionsDict = NULL;
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", NULL };
+			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", NULL };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiO", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOi", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel', 'Options' or 'TimedOut' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -806,6 +808,12 @@ namespace Plugins {
 					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
 				}
 				m_sql.SetDeviceOptions(self->ID, mpOptions);
+			}
+
+			// TimedOut change
+			if (iTimedOut != self->TimedOut)
+			{
+				self->TimedOut = iTimedOut;
 			}
 
 			CDevice_refresh(self);
