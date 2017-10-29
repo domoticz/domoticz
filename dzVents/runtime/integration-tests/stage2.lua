@@ -557,7 +557,6 @@ local testRepeatSwitchDelta = function(expectedState, expectedDelta, state, delt
 	return res
 end
 
-
 local testRepeatSwitch = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -575,7 +574,14 @@ local testRepeatSwitch = function(name)
 
 	tstMsg('Test repeat switch', res)
 	return res
+end
 
+local testCancelledRepeatSwitch = function(name)
+	local res = true
+	local count = dz.globalData.cancelledRepeatSwitch
+	res = res and expectEql(1, count)
+	tstMsg('Cancelled repeat switch', res)
+	return res
 end
 
 local testLastUpdates = function(stage2Trigger)
@@ -619,6 +625,21 @@ local testLastUpdates = function(stage2Trigger)
 	return results
 end
 
+local testVarCancelled = function(name)
+	local res = true
+	local var = dz.variables('varCancelled')
+	res = res and expectEql(0, var.value)
+	tstMsg('Cancelled variable', res)
+	return res
+end
+
+local testCancelledScene = function(name)
+	local res = true
+	local count = dz.globalData.cancelledScene
+	res = res and expectEql(1, count)
+	tstMsg('Cancelled repeat scene', res)
+	return res
+end
 
 return {
 	active = true,
@@ -683,6 +704,9 @@ return {
 
 		res = res and testLastUpdates(stage2Trigger)
 		res = res and testRepeatSwitch('vdRepeatSwitch')
+		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
+		res = res and testVarCancelled('varCancelled')
+		res = res and testCancelledScene('scCancelledScene')
 
 		-- test a require
 		local m = require('some_module')

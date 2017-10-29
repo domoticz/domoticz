@@ -714,7 +714,6 @@ local testAPITemperature = function(name)
 	return res
 end
 
-
 local testTempHum = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -1048,6 +1047,10 @@ local testVariableString = function(name)
 	})
 
 	var.set('Zork is a dork').afterSec(3)
+
+	local varCancelled = dz.variables('varCancelled')
+	varCancelled.set(2).afterSec(5) -- this one will be cancelled in varString.lua!
+
 	tstMsg('Test variable: string', res)
 	return res
 end
@@ -1115,11 +1118,9 @@ local testSilentGroup = function(name)
 	return res
 end
 
-
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
-
 end
 
 local testLastUpdates = function()
@@ -1162,7 +1163,21 @@ local testRepeatSwitch = function(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test switch device', res)
+	tstMsg('Test reapeat switch device', res)
+	return true
+end
+
+local testCancelledRepeatSwitch = function(name)
+	local dev = dz.devices(name)
+	dev.switchOn().afterSec(8).forSec(1).repeatAfterSec(1, 5)
+	tstMsg('Test cancelled repeat switch device', res)
+	return true
+end
+
+local testCancelledScene = function(name)
+	local sc = dz.scenes(name)
+	sc.switchOn().afterSec(2).forSec(1).repeatAfterSec(1, 5)
+	tstMsg('Test cancelled repeat scene', res)
 	return true
 end
 
@@ -1233,7 +1248,9 @@ return {
 		res = res and testSilentVar('varSilent')
 		res = res and testAPITemperature('vdAPITemperature');
 		res = res and testRepeatSwitch('vdRepeatSwitch');
-
+		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
+		res = res and testCancelledScene('scCancelledScene');
+		
 		storeLastUpdates()
 
 		log('Finishing stage 1')

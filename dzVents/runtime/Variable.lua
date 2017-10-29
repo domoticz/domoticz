@@ -41,6 +41,10 @@ local function Variable(domoticz, data)
 		return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
 	end
 
+	function self.reset()
+		domoticz.sendCommand('Cancel:Variable', tostring(data.id))
+	end
+
 	return self
 end
 

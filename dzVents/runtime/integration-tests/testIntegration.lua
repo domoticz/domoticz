@@ -12,7 +12,7 @@ local jsonParser = require('JSON')
 local BASE_URL = 'http://localhost:8080'
 local API_URL = BASE_URL .. '/json.htm?'
 local DUMMY_HW = 15
-local SECPANEL_INDEX = 48
+
 local SWITCH_TYPES = {
 	BLINDS = 3,
 	BLINDS_INVERTED= 6,
@@ -79,7 +79,12 @@ local VIRTUAL_DEVICES = {
 	SILENT_SWITCH = { 6, 'vdSilentSwitch' },
 	API_TEMP = { 80, 'vdAPITemperature' },
 	REPEAT_SWITCH = { 6, 'vdRepeatSwitch' },
+	CANCELLED_REPEAT_SWITCH = { 6, 'vdCancelledRepeatSwitch' },
+	-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 }
+
+local SECPANEL_INDEX = 49
+
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
 	FLOAT = {1, 'varFloat', 42.11},
@@ -87,6 +92,7 @@ local VAR_TYPES = {
 	DATE = {3, 'varDate', '31/12/2017'},
 	TIME = {4, 'varTime', '23:59'},
 	SILENT = { 0, 'varSilent', 1 },
+	CANCELLED = { 0, 'varCancelled', 0}
 }
 
 local scriptSourcePath = './'
@@ -448,9 +454,12 @@ describe('Integration test', function ()
 		os.remove(getScriptTargetPath('silent.lua'))
 		os.remove(getScriptTargetPath('vdSwitchDimmer.lua'))
 		os.remove(getScriptTargetPath('vdRepeatSwitch.lua'))
+		os.remove(getScriptTargetPath('vdCancelledRepeatSwitch.lua'))
 		os.remove(getScriptTargetPath('secArmedAway.lua'))
 		os.remove(getScriptTargetPath('varString.lua'))
+		os.remove(getScriptTargetPath('varCancelled.lua'))
 		os.remove(getScriptTargetPath('scScene.lua'))
+		os.remove(getScriptTargetPath('scCancelledScene.lua'))
 		os.remove(getScriptTargetPath('some_module.lua'))
 		os.remove(getScriptTargetPath('global_data.lua'))
 		os.remove(dataTargetPath .. '__data_global_data.lua')
@@ -679,6 +688,12 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 		end)
 
+		it('should create an repeat device that will be canceled', function()
+			local ok, idx = createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.CANCELLED_REPEAT_SWITCH[2], VIRTUAL_DEVICES.CANCELLED_REPEAT_SWITCH[1])
+			assert.is_true(ok)
+		end)
+
+
 	end)
 
 	describe('Groups and scenes', function()
@@ -747,6 +762,21 @@ describe('Integration test', function ()
 			ok = addSceneDevice(groupIdx, switchIdx)
 			assert.is_true(ok)
 		end)
+
+
+		it('should create a scene which update will be cancelled', function()
+			local ok
+			local switchIdx
+			local sceneIdx = 4 -- api doesn't return the idx so we assume this is 1
+			ok, switchIdx = createVirtualDevice(dummyIdx, 'sceneCancelledSwitch1', 6)
+			assert.is_true(ok)
+
+			ok = createScene('scCancelledScene')
+			assert.is_true(ok)
+
+			ok = addSceneDevice(sceneIdx, switchIdx)
+			assert.is_true(ok)
+		end)
 	end)
 
 	describe('Variables', function()
@@ -779,6 +809,12 @@ describe('Integration test', function ()
 		it('should create an silent variable', function()
 			-- doesn't create an event when changed
 			local ok, idx = createVariable(VAR_TYPES.SILENT[2], VAR_TYPES.SILENT[1], VAR_TYPES.SILENT[3])
+			assert.is_true(ok)
+		end)
+
+		it('should create an variable which after-update will be cancelled', function()
+			-- doesn't create an event when changed
+			local ok, idx = createVariable(VAR_TYPES.CANCELLED[2], VAR_TYPES.CANCELLED[1], VAR_TYPES.CANCELLED[3])
 			assert.is_true(ok)
 		end)
 	end)
@@ -816,12 +852,24 @@ describe('Integration test', function ()
 			copyScript('vdRepeatSwitch.lua')
 		end)
 
+		it('Should move vdCancelledRepeatSwitch script in place', function()
+			copyScript('vdCancelledRepeatSwitch.lua')
+		end)
+
 		it('Should move varString script in place', function()
 			copyScript('varString.lua')
 		end)
 
+		it('Should move varCancelled script in place', function()
+			copyScript('varCancelled.lua')
+		end)
+
 		it('Should move scScene script in place', function()
 			copyScript('scScene.lua')
+		end)
+
+		it('Should move scCancelledScene script in place', function()
+			copyScript('scCancelledScene.lua')
 		end)
 
 		it('Should move secArmedAway script in place', function()

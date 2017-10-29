@@ -3492,7 +3492,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		else if (Type == "Variable")
 			count = m_sql.RemoveTaskItem(Idx, TITEM_SET_VARIABLE);
 		if (count)
-			_log.Log(LOG_STATUS, "EventSystem: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, Idx, Type);
+			_log.Log(LOG_STATUS, "EventSystem: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, Idx, Type.c_str());
 	}
 	else
 	{

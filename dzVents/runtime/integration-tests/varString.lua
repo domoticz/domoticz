@@ -62,5 +62,8 @@ return {
 			dz.devices('varStringResults').updateText('SUCCEEDED')
 		end
 
+		-- finally cancel the queued command for varCancelled
+		dz.variables('varCancelled').reset()
+
 	end
 }

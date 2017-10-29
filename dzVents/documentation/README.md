@@ -792,14 +792,14 @@ Note that the actual switching or changing of the device is done by Domoticz and
 ####Availability
 The options are not always available. All the options are available to device switch-like commands like `myDevice.swithOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating devices (usually dummy devices) like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
 
-| option               | state changes           | update commands | user variables |
-|----------------------|-------------------------|-----------------|----------------|
-| `afterXXX()`         |  •                      |  n/a            | •              |
-| `forXXX()`           |  •                      |  n/a            | n/a            |
-| `withinXXX()`        |  •                      |  n/a            | n/a            |
-| `silent()`           |  •                      |  •              | •              |
-| `repeatAfterXXX()`   |  •                      |  n/a            | n/a            |
-| `checkFirst()`         |  • (switch-like devices) |  n/a            | n/a            |
+| option               | state changes            | update commands | user variables |
+|----------------------|--------------------------|-----------------|----------------|
+| `afterXXX()`         |  •                       |  n/a            | •              |
+| `forXXX()`           |  •                       |  n/a            | n/a            |
+| `withinXXX()`        |  •                       |  n/a            | n/a            |
+| `silent()`           |  •                       |  •              | •              |
+| `repeatAfterXXX()`   |  •                       |  n/a            | n/a            |
+| `checkFirst()`       |  • (switch-like devices) |  n/a            | n/a            |
 
 
 #### About follow-up event triggers
@@ -1002,28 +1002,7 @@ Here is an example. Let's say you want to send a notification if some switch has
 ```
 Here you see the `data` section defining a persistent variable called `counter`. It also defines an initial value.  From then on you can read and set the variable in your script.
 
-You can define as many variables as you like and put whatever value in there that you like. It doesn't have to be just a number,  you can even put the entire device state in it:
-
-```
-    return {
-        active = true,
-        on = {
-    	    devices = { 'MySwitch' }
-    	},
-        data = {
-    	    previousState = {initial=nil}
-    	},
-        execute = function(domoticz, switchDevice)
-    	    -- set the previousState:
-    		domoticz.data.previousState = switchDevice
-
-    		-- read something from the previousState:
-    		if (domoticz.data.previousState.temperature > .... ) then
-    		end
-        end
-    }
-```
-**Note that you cannot call methods on previousState like switchOn(). Only the data is persisted.**
+You can define as many variables as you like and put whatever value in there that you like. It doesn't have to be just a number. Just don't put something in there with functions.
 
 ### Size matters and watch your speed!!
 If you decide to put tables in the persistent data (or arrays) beware to not let them grow as it will definitely slow down script execution because dzVents has to serialize and deserialize the data back and from the file system. Better is to use the historical option as described below.
