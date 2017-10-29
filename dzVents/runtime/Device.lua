@@ -21,7 +21,6 @@ local function Device(domoticz, data, dummyLogger)
 		return TimedCommand(domoticz, 'UpdateDevice', command, 'updatedevice')
 	end
 
-
 	function self.dump()
 		domoticz.logDevice(self)
 	end

@@ -82,11 +82,19 @@ return {
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = data.rawData
 			device['nValue'] = data.data._nValue
+
+			device['reset'] = function()
+				domoticz.sendCommand('Cancel:Device', tostring(data.id))
+			end
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
+			device['reset'] = function()
+				domoticz.sendCommand('Cancel:Scene', tostring(data.id))
+			end
+
 		end
 
 
