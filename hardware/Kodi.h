@@ -22,7 +22,7 @@ class CKodiNode : public boost::enable_shared_from_this<CKodiNode>
 		_eNotificationTypes	NotificationType();
 		std::string		StatusText() { return Media_Player_States(m_nStatus); };
 		void			Status(_eMediaStatus pStatus) { m_nStatus = pStatus; };
-		void			Status(std::string pStatus) { m_sStatus = pStatus; };
+		void			Status(const std::string &pStatus) { m_sStatus = pStatus; };
 		void			PlayerID(int pPlayerID) { m_iPlayerID = pPlayerID; };
 		std::string		PlayerID() { if (m_iPlayerID >= 0) return SSTR(m_iPlayerID); else return ""; };
 		void			Type(const char*	pType) { m_sType = pType; };

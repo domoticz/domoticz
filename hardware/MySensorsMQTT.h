@@ -1,7 +1,6 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "MQTT.h"
 
 class MySensorsMQTT : public MQTT

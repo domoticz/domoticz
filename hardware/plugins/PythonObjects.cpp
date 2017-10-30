@@ -30,11 +30,6 @@ namespace Plugins {
 		PyObject*	error;
 	};
 
-	void PythonObjectsInit()
-	{
-		PyDateTime_IMPORT;
-	}
-
 	void CImage_dealloc(CImage* self)
 	{
 		Py_XDECREF(self->Base);
@@ -77,9 +72,9 @@ namespace Plugins {
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -136,9 +131,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -237,7 +232,7 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM CustomImages WHERE (ID==%d)", self->ImageID);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
+					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
 					PyObject*	pKey = PyLong_FromLong(self->ImageID);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
@@ -328,12 +323,13 @@ namespace Plugins {
 				self->Used = 0;
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
+				self->TimedOut = 0;
 				self->pPlugin = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -582,9 +578,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -767,14 +763,15 @@ namespace Plugins {
 			int			iSignalLevel = self->SignalLevel;
 			int			iBatteryLevel = self->BatteryLevel;
 			int			iImage = self->Image;
+			int			iTimedOut = self->TimedOut;
 			PyObject*	pOptionsDict = NULL;
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", NULL };
+			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", NULL };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiO", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOi", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel' or 'Options' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel', 'Options' or 'TimedOut' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -813,6 +810,12 @@ namespace Plugins {
 				m_sql.SetDeviceOptions(self->ID, mpOptions);
 			}
 
+			// TimedOut change
+			if (iTimedOut != self->TimedOut)
+			{
+				self->TimedOut = iTimedOut;
+			}
+
 			CDevice_refresh(self);
 		}
 		else
@@ -840,7 +843,7 @@ namespace Plugins {
 				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (result.size() != 0)
 				{
-					result = m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 
 					PyObject*	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
@@ -955,9 +958,9 @@ namespace Plugins {
 				self->pProtocol = NULL;
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -1037,9 +1040,9 @@ namespace Plugins {
 				LogPythonException(pPlugin, __func__);
 			}
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
@@ -1213,10 +1216,10 @@ namespace Plugins {
 			time_t	tLastSeen = self->pTransport->LastSeen();
 			struct tm ltime;
 			localtime_r(&tLastSeen, &ltime);
-			PyObject* pLastSeen = PyDateTime_FromDateAndTime(ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, 0);
-//			PyType_Ready(pLastSeen->ob_type);
-			if (PyDateTime_CheckExact(pLastSeen))
-				return pLastSeen;
+			char date[32];
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+			PyObject* pLastSeen = PyUnicode_FromString(date);
+			return pLastSeen;
 		}
 
 		Py_INCREF(Py_None);
@@ -1225,10 +1228,15 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
-		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s",
+		time_t	tLastSeen = self->pTransport->LastSeen();
+		struct tm ltime;
+		localtime_r(&tLastSeen, &ltime);
+		char date[32];
+		strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
 			self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
 			(self->pTransport ? self->pTransport->TotalBytes() : -1),
-			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"));
+			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
 		return pRetVal;
 	}
 

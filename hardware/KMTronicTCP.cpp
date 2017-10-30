@@ -109,7 +109,7 @@ bool KMTronicTCP::WriteToHardware(const char *pdata, const unsigned char length)
 			szURL << "/FF0" << Relay << "01";
 		}
 		std::string sResult;
-		if (!HTTPClient::GET(szURL.str(), sResult))
+		if (!HTTPClient::GET(szURL.str(), sResult,true))
 		{
 			_log.Log(LOG_ERROR, "KMTronic: Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;

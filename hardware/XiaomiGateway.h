@@ -1,8 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 
 #include <memory>
 #include <string>
@@ -13,7 +12,7 @@
 class XiaomiGateway : public CDomoticzHardwareBase
 {
 public:
-	XiaomiGateway(const int ID);
+	explicit XiaomiGateway(const int ID);
 	~XiaomiGateway(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool SendMessageToGateway(const std::string &controlmessage);
@@ -54,7 +53,7 @@ private:
 	class xiaomi_udp_server
 	{
 	public:
-		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, const bool includeVolage, XiaomiGateway *parent);
+		xiaomi_udp_server(boost::asio::io_service & io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898, const bool outputMessage, const bool includeVolage, XiaomiGateway *parent);
 		~xiaomi_udp_server();
 
 	private:

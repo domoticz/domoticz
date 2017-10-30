@@ -9,7 +9,11 @@
 #include "../main/WebServer.h"
 #include "../webserver/cWebem.h"
 #include "../json/json.h"
+
 #include <numeric>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 
 
@@ -106,8 +110,6 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	else
 		sprintf(szDeviceID, "%08X", (unsigned int)sID);
 
-	int lastLevel = 0;
-	int nvalue = 0;
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeLimitlessLights, YeeType);
@@ -116,10 +118,10 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 		_log.Log(LOG_STATUS, "Arilux: New controller added (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(ariluxBright.c_str());
 		int cmd = light1_sOn;
-		int level = 100;
+		//int level = 100;
 		if (!bIsOn) {
 			cmd = light1_sOff;
-			level = 0;
+			//level = 0;
 		}
 		_tLimitlessLights ycmd;
 		ycmd.len = sizeof(_tLimitlessLights) - 1;
@@ -134,9 +136,9 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	}
 	else {
 
-		nvalue = atoi(result[0][0].c_str());
+		int nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
-		lastLevel = atoi(result[0][1].c_str());
+		int lastLevel = atoi(result[0][1].c_str());
 		int value = atoi(ariluxBright.c_str());
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{

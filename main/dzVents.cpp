@@ -22,7 +22,7 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const int reason)
 {
 	std::stringstream lua_DirT;
 
@@ -37,7 +37,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_reason");
-	lua_pushstring(lua_state, reason.c_str());
+	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szReason[reason].c_str());
 	lua_rawset(lua_state, -3);
 
 	char szTmp[10];
@@ -79,15 +79,10 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::string reason
 	lua_rawset(lua_state, -3);
 }
 
-void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const std::string &reason)
+void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t deviceID, const uint64_t varID, const int reason)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock3(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
-	bool timed_out = false;
-	const char* dev_type;
-	const char* sub_type;
-	std::vector<std::vector<std::string> > result;
-
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
@@ -106,13 +101,13 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 	for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin(); iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
 	{
 		CEventSystem::_tDeviceStatus sitem = iterator->second;
-		dev_type = RFX_Type_Desc(sitem.devType, 1);
-		sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
+		const char *dev_type = RFX_Type_Desc(sitem.devType, 1);
+		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
 
 		ParseSQLdatetime(checktime, ntime, sitem.lastUpdate, tm1.tm_isdst);
-		timed_out = (now - checktime >= SensorTimeOut * 60);
+		bool timed_out = (now - checktime >= SensorTimeOut * 60);
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -146,7 +141,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_pushnumber(lua_state, (lua_Number)sitem.lastLevel);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "changed");
-		if (sitem.ID == deviceID && reason == "device")
+		if (sitem.ID == deviceID && reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			lua_pushboolean(lua_state, true);
 		else
 			lua_pushboolean(lua_state, false);
@@ -320,7 +315,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "changed");
-		if (sgitem.ID == deviceID && reason == "scenegroup")
+		if (sgitem.ID == deviceID && reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 			lua_pushboolean(lua_state, true);
 		else
 			lua_pushboolean(lua_state, false);
