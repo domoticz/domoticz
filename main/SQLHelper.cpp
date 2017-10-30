@@ -6265,7 +6265,7 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
 
-	std::vector<bool> _DeviceStatusResults;
+	std::map<int, bool> _DeviceStatusResults;
 
 	for (itt=result.begin(); itt!=result.end(); ++itt)
 	{
@@ -6284,42 +6284,43 @@ void CSQLHelper::CheckSceneStatus(const uint64_t Idx)
 		int maxDimLevel=0;
 
 		GetLightStatus(dType, dSubType, switchtype,nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-		_DeviceStatusResults.push_back(IsLightSwitchOn(lstatus));
+		_DeviceStatusResults.insert(std::make_pair(atoi(sd[0].c_str()), IsLightSwitchOn(lstatus)));
 	}
 
 	//Check if all on/off
 	int totOn=0;
 	int totOff=0;
 
-	std::vector<bool>::const_iterator itt2;
-	for (itt2=_DeviceStatusResults.begin(); itt2!=_DeviceStatusResults.end(); ++itt2)
+	std::map<int, bool>::const_iterator itt2;
+	for (itt2 = _DeviceStatusResults.begin(); itt2 != _DeviceStatusResults.end(); ++itt2)
 	{
-		if (*itt2==true)
+		if (itt2->second == true)
 			totOn++;
 		else
 			totOff++;
 	}
-	if (totOn==_DeviceStatusResults.size())
+	if (totOn == _DeviceStatusResults.size())
 	{
 		//All are on
-		newValue=1;
+		newValue = 1;
 	}
-	else if (totOff==_DeviceStatusResults.size())
+	else if (totOff == _DeviceStatusResults.size())
 	{
 		//All are Off
-		newValue=0;
+		newValue = 0;
 	}
 	else
 	{
 		//Some are on, some are off
-		newValue=2;
+		newValue = 2;
 	}
-	if (newValue!=orgValue)
+	if (newValue != orgValue)
 	{
 		//Set new Scene status
 		safe_query("UPDATE Scenes SET nValue=%d WHERE (ID == %" PRIu64 ")",
 			int(newValue), Idx);
 	}
+	m_mainworker.m_eventsystem.UpdateSceneGroup(Idx, int(newValue), "", _DeviceStatusResults);
 }
 
 void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)

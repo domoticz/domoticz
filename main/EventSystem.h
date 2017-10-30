@@ -99,6 +99,7 @@ public:
 		std::string scenesgroupValue;
 		int scenesgroupType;
 		std::string lastUpdate;
+		std::map<int, bool> devices;
 	};
 
 	struct _tHardwareListInt {
@@ -125,6 +126,7 @@ public:
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
+	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate, const std::map<int, bool> devices);
 	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate);
 	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);

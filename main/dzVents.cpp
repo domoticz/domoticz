@@ -392,6 +392,23 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_pushstring(lua_state, sgitem.scenesgroupValue.c_str());
 		lua_rawset(lua_state, -3);
 
+		lua_pushstring(lua_state, "members");
+		lua_createtable(lua_state, 0, 0);
+		std::map<int, bool>::const_iterator itt2;
+		if (sgitem.devices.size() > 0)
+		{
+			for (itt2 = sgitem.devices.begin(); itt2 != sgitem.devices.end(); itt2++)
+			{
+				lua_pushstring(lua_state, "id");
+				lua_pushnumber(lua_state, (lua_Number)itt2->first);
+				lua_rawset(lua_state, -3);
+				lua_pushstring(lua_state, "_state");
+				lua_pushstring(lua_state, itt2->second ? "On" : "Off");
+				lua_rawset(lua_state, -3);
+			}
+		}
+		lua_rawset(lua_state, -3);
+
 		lua_settable(lua_state, -3); // data table
 		lua_settable(lua_state, -3); // end entry
 		index++;
