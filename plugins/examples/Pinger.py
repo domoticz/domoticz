@@ -97,7 +97,6 @@ class BasePlugin:
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
         else:
             Domoticz.Log("Failed to connect to: "+Connection.Address+", Description: "+Description)
-            Conn.Close()
         self.icmpConn = None
 
     def onMessage(self, Connection, Data):
