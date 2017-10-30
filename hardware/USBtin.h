@@ -1,11 +1,17 @@
 /*
 File : USBtin.h
-Author : Xavier PONCET BIJONNET
-Version : 1.0
-Description : This class manage the USBtin Gateway with Scheiber CanBus protocol
+Author : X.PONCET
+Version : 1.00
+Description : This class manage the USBtin CAN gateway.
+- Serial connexion management
+- CAN connexion management, with some basic command.
+- Receiving CAN Frame and switching then to appropriate CAN Layer
+- Sending CAN Frame with writeframe, writeframe is virtualized inside each CAN Layer
+Supported Layer :
+* MultiblocV8 CAN : Scheiber spécific communication
 
 History :
-- 2017-01-01 : Creation base
+- 2017-10-01 : Creation by X.PONCET
 
 */
 

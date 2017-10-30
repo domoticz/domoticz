@@ -1,13 +1,3 @@
-/*
-File : USBtin.h
-Author : Xavier PONCET BIJONNET
-Version : 1.0
-Description : This class manage the USBtin Gateway with Scheiber CanBus protocol
-
-History :
-- 2017-10-01 : Creation base
-
-*/
 #pragma once
 #include <iostream>
 #include <string>

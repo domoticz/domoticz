@@ -2,10 +2,17 @@
 File : USBtin.cpp
 Author : X.PONCET
 Version : 1.00
-Description : This class manage the USBtin gateway
+Description : This class manage the USBtin CAN gateway.
+- Serial connexion management
+- CAN connexion management, with some basic command.
+- Receiving CAN Frame and switching then to appropriate CAN Layer
+- Sending CAN Frame with writeframe, writeframe is virtualized inside each CAN Layer
+Supported Layer :
+* MultiblocV8 CAN : Scheiber spécific communication
 
 History :
-- 2017-01-01 : Creation
+- 2017-10-01 : Creation by X.PONCET
+
 */
 #include "stdafx.h"
 #include "USBtin.h"
@@ -30,13 +37,13 @@ History :
 #define USBTIN_FLOW_CONTROL      boost::asio::serial_port_base::flow_control::none
 #define USBTIN_STOP_BITS         boost::asio::serial_port_base::stop_bits::one
 
-#define	TIME_3sec				3000000
-#define	TIME_1sec				1000000
-#define	TIME_500ms				500000
-#define	TIME_200ms				200000
-#define	TIME_100ms				100000
-#define	TIME_10ms				10000
-#define	TIME_5ms				5000
+#define	TIME_3sec				3000
+#define	TIME_1sec				1000
+#define	TIME_500ms				500
+#define	TIME_200ms				200
+#define	TIME_100ms				100
+#define	TIME_10ms				10
+#define	TIME_5ms				5
 
 #define	USBTIN_CR							0x0D
 #define	USBTIN_BELSIGNAL					0x07
@@ -93,14 +100,13 @@ bool USBtin::StartHardware()
 void USBtin::Restart()
 {
 	StopHardware();
-	usleep(TIME_3sec);
+	sleep_milliseconds(TIME_3sec);
 	StartHardware();
 }
 
-bool USBtin::StopHardware() //appelé lorsque le matériel est supprimé
+bool USBtin::StopHardware()
 {
-	//ManageThreadV8(false); //arret des layers par sécu
-	m_stoprequested = true; //déclenche arrêt du while dans Do_Work
+	m_stoprequested = true; //Trigg to stop in while loop
 	if (m_thread) m_thread->join();
 	sleep_milliseconds(10);
 	terminate();
@@ -116,7 +122,7 @@ void USBtin::Do_Work()
 	
 	while (!m_stoprequested) 
 	{
-		usleep(TIME_200ms);
+		sleep_milliseconds(TIME_200ms);
 		
 		if (m_stoprequested){
 			EtapeInitCan = 0;
@@ -138,7 +144,7 @@ void USBtin::Do_Work()
 				switch(EtapeInitCan){
 					case 0 :
 						_log.Log(LOG_STATUS, "USBtin: Serial port is now open !");
-						CloseCanPort(); //more cleaner to close in first
+						CloseCanPort(); //more cleaner to close in first, sometimes the gateway maybe already open...
 						memset(&m_bufferUSBtin,0,sizeof(m_bufferUSBtin));
 						BelErrorCount = 0;
 						EtapeInitCan++;
@@ -156,7 +162,6 @@ void USBtin::Do_Work()
 						EtapeInitCan++;
 						break;
 					case 4 :
-						//Reponse = 0;
 						SetBaudRate250Kbd();
 						//_log.Log(LOG_STATUS, "USBtin: BusCantType value: %d ",Bus_CANType);
 						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ) _log.Log(LOG_STATUS, "USBtin: MultiblocV8 is Selected !");
@@ -166,15 +171,14 @@ void USBtin::Do_Work()
 						EtapeInitCan++;
 						break;
 					case 5 : //openning can port :
-						//Active le layer can
-						// + activation thread associé
+						//Activate the good CAN Layer :
 						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ ManageThreadV8(true);}
 						OpenCanPort();
 						EtapeInitCan++;
 						break;
 					
 					case 6 ://All is good !
-						//here nothing to do, the CAN is ok....
+						//here nothing to do, the CAN is ok and run....
 						break;
 						
 					
@@ -264,9 +268,9 @@ void USBtin::ParseData(const char *pData, int Len)
 	while (ii<Len)
 	{
 		m_bufferUSBtin[m_bufferpos] = pData[ii];
-		// reception "BEL" = erreur dernière commande/commande déjà active
+		// BEL signal received : appears if the command is allready active or if errors occured on CAN side...
 		if( USBTIN_BELSIGNAL == m_bufferUSBtin[m_bufferpos] ){
-			//RAZ 1er char du buffer
+			//reset first char
 			BelErrorCount++;
 			if( BelErrorCount > 3 ){ //If more than 3 BEL receive : restart the Gateway !
 				_log.Log(LOG_ERROR,"USBtin: 3x times BEL signal receive : restart gateway ");
@@ -277,7 +281,7 @@ void USBtin::ParseData(const char *pData, int Len)
 			}
 			m_bufferpos = 0;
 		}
-		//Si CR reçu on doit traiter la trame:
+		//else CR receive = good reception of a response :
 		else if( USBTIN_CR == m_bufferUSBtin[m_bufferpos] )
 		{
 			BelErrorCount = 0;
@@ -298,19 +302,19 @@ void USBtin::ParseData(const char *pData, int Len)
 				_log.Log(LOG_STATUS,"USBtin: return OK :-)");
 			}
 			else if( m_bufferUSBtin[0] == USBTIN_EXT_TRAME_RECEIVE ){ // Receive Extended Frame :
-				strncpy(value, (char*)&(m_bufferUSBtin[1]), 8); //prend la partie "ID étendue" et la colle dans le tablea de char value
+				strncpy(value, (char*)&(m_bufferUSBtin[1]), 8); //take the "Extended ID" CAN parts and paste it in the char table
 				int IDhexNumber;
-				sscanf(value, "%x", &IDhexNumber); //IDhexNumber contient la valeur numérique de l'identifiant
+				sscanf(value, "%x", &IDhexNumber); //IDhexNumber now contains the the digital value of the Ext ID
 				
 				memset(&value[0], 0, sizeof(value));
 				
-				strncpy(value, (char*)&(m_bufferUSBtin[9]), 1); //read the DLC
+				strncpy(value, (char*)&(m_bufferUSBtin[9]), 1); //read the DLC (lenght of message)
 				int DLChexNumber;
 				sscanf(value, "%x", &DLChexNumber);
 				
 				memset(&value[0], 0, sizeof(value));
 									
-				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max)
+				unsigned int Buffer_Octets[8]; //buffer of 8 bytes(max in the frame)
 				char i=0;
 				for(i=0;i<8;i++){ //Reset of 8 bytes
 					Buffer_Octets[i]=0;
@@ -321,7 +325,7 @@ void USBtin::ParseData(const char *pData, int Len)
 					for(i=0;i<=DLChexNumber;i++){
 						ValData = 0;
 						
-						strncpy(value, (char*)&(m_bufferUSBtin[10+(2*i)]), 2); //prend les octets (char) par paquet de 2 caractères pour recomposition
+						strncpy(value, (char*)&(m_bufferUSBtin[10+(2*i)]), 2); //to fill the Buffer of 8 bytes
 						sscanf(value, "%x", &ValData);
 						
 						Buffer_Octets[i]=ValData;
@@ -329,28 +333,29 @@ void USBtin::ParseData(const char *pData, int Len)
 					}
 				}
 				
-				if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ //Traitement trame multibloc V8
+				if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ //multibloc V8 Management !
 					Traitement_MultiblocV8(IDhexNumber,DLChexNumber,Buffer_Octets);
+					//So in debug mode we can check good reception after treatment :
 					if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Traitement trame multiblocV8 : #%s#",m_bufferUSBtin);
 				}
 				
-				if( Bus_CANType == 0 ){
+				if( Bus_CANType == 0 ){ //No management !
 					if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame receive not managed: #%s#",m_bufferUSBtin);
 				}
 				
 			}
-			else if( m_bufferUSBtin[0] == USBTIN_NOR_TRAME_RECEIVE ){ // Receive Normale Frame :
-				//_log.Log(LOG_NORM,"USBtin: Traitement trame normale : #%s#",m_buffer);
+			else if( m_bufferUSBtin[0] == USBTIN_NOR_TRAME_RECEIVE ){ // Receive Normale Frame (ie: ID is not extended)
+				//_log.Log(LOG_NORM,"USBtin: Normale Frame receive : #%s#",m_buffer);
 			}
 			else if( m_bufferUSBtin[0] == USBTIN_GOODSENDING_NOR_TRAME || m_bufferUSBtin[0] == USBTIN_GOODSENDING_EXT_TRAME ){
-				//envoi d'une trame normale/étendu = OK !
-				if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame Send OK !");
+				//The Gateway answers USBTIN_GOODSENDING_NOR_TRAME or USBTIN_GOODSENDING_EXT_TRAME each times a frame is sent correctly
+				if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame Send OK !"); //So in debug mode we CAN check it, convenient way to check
+				//if the CAN communication is in good life ;-)
 			}
 			else{ //over things here...
 				if( BOOL_Debug == true) _log.Log(LOG_ERROR,"USBtin: receive command not supported : #%s#", m_bufferUSBtin);
-				
 			}
-			//remis à 0 du pointeur de buffer
+			//rreset of the pointer here
 			m_bufferpos = 0;
 		}
 		else{
@@ -370,65 +375,43 @@ bool USBtin::writeFrame(const std::string & data)
 	if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: write frame to Can Gateway: #%s# ",data.c_str());
 	std::string frame;
 	frame.append(data);
-	frame.append("\x0D"); //ajout "carry return"
+	frame.append("\x0D"); //add the "carry return" at end
 	write(frame);
 	return true;
 }
 
 void USBtin::GetHWVersion()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		std::string data("V");
-		writeFrame(data);
-		usleep(TIME_200ms);
-	//}
+	std::string data("V");
+	writeFrame(data);
+	sleep_milliseconds(TIME_200ms);
+	
 }
 void USBtin::GetSerialNumber()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		std::string data("N");
-		writeFrame(data);
-		usleep(TIME_200ms);
-	//}
+	std::string data("N");
+	writeFrame(data);
 }
 void USBtin::GetFWVersion()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		std::string data("v");
-		writeFrame(data);
-		//usleep(TIME_200ms);
-	//}
+	std::string data("v");
+	writeFrame(data);
 }
 void USBtin::SetBaudRate250Kbd()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		_log.Log(LOG_STATUS,"USBtin: Setting Can speed to 250Kb/s");
-		std::string data("S5");
-		writeFrame(data);
-		//usleep(TIME_200ms);
-	//}
+	_log.Log(LOG_STATUS,"USBtin: Setting Can speed to 250Kb/s");
+	std::string data("S5");
+	writeFrame(data);
 }
 void USBtin::OpenCanPort()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		_log.Log(LOG_STATUS, "USBtin: Openning Canport...");
-		std::string data("O");
-		writeFrame(data);
-		//usleep(TIME_200ms);
-	//}
+	_log.Log(LOG_STATUS, "USBtin: Openning Canport...");
+	std::string data("O");
+	writeFrame(data);
 }
 void USBtin::CloseCanPort()
 {
-	//Reponse = 0;
-	//while(Reponse==0){
-		_log.Log(LOG_STATUS, "USBtin: Closing Canport...");
-		std::string data("C");
-		writeFrame(data);
-		//usleep(TIME_200ms);
-	//}
+	_log.Log(LOG_STATUS, "USBtin: Closing Canport...");
+	std::string data("C");
+	writeFrame(data);
 }
