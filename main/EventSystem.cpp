@@ -455,7 +455,6 @@ void CEventSystem::GetCurrentScenesGroups()
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::map<int, bool> devices;
 			std::vector<std::vector<std::string> > result2;
 
 			std::vector<std::string> sd = *itt;
@@ -473,17 +472,16 @@ void CEventSystem::GetCurrentScenesGroups()
 			sgitem.scenesgroupName = sd[1];
 			sgitem.scenesgroupType = atoi(sd[3].c_str());
 			sgitem.lastUpdate = sd[4];
-			result2 = m_sql.safe_query("SELECT A.DeviceRowID, B.nValue FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
+			result2 = m_sql.safe_query("SELECT A.DeviceRowID FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
 			if (result2.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt2;
 				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
 					std::vector<std::string> sd2 = *itt2;
-					sgitem.devices.insert(std::pair<int, bool> (atoi(sd2[0].c_str()), atoi(sd2[1].c_str()) ? true : false));
+					sgitem.memberID.push_back(atoi(sd2[0].c_str()));
 				}
 			}
-
 			m_scenesgroups[sgitem.ID] = sgitem;
 		}
 	}
@@ -1199,11 +1197,11 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 
 bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
-	std::map<int, bool> devices;
+	std::vector<uint64_t> devices;
 	UpdateSceneGroup(ulDevID, nValue, lastUpdate, devices);
 }
 
-bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate, const std::map<int, bool> devices)
+bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate, const std::vector<uint64_t> memberID)
 {
 	if (!m_bEnabled)
 		return true; // seems counterintuitive, but prevents device triggers being queued
@@ -1221,8 +1219,8 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			replaceitem.scenesgroupValue = "Mixed";
 
 		bool bEventTrigger;
-		if (devices.size() > 0)
-			replaceitem.devices = devices;
+		if (memberID.size() > 0)
+			replaceitem.memberID = memberID;
 		else
 		{
 			bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
