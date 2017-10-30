@@ -1176,7 +1176,7 @@ end
 
 local testCancelledScene = function(name)
 	local sc = dz.scenes(name)
-	sc.switchOn().afterSec(2).forSec(1).repeatAfterSec(1, 5)
+	sc.switchOn().afterSec(4).forSec(1).repeatAfterSec(1, 5)
 	tstMsg('Test cancelled repeat scene', res)
 	return true
 end
@@ -1250,7 +1250,7 @@ return {
 		res = res and testRepeatSwitch('vdRepeatSwitch');
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
-		
+
 		storeLastUpdates()
 
 		log('Finishing stage 1')
