@@ -13223,15 +13223,6 @@ namespace http {
 										long curDeliv1 = (long)(actDeliv1 - lastDeliv1);
 										long curDeliv2 = (long)(actDeliv2 - lastDeliv2);
 
-										if ((curUsage1 < 0) || (curUsage1 > 100000))
-											curUsage1 = 0;
-										if ((curUsage2 < 0) || (curUsage2 > 100000))
-											curUsage2 = 0;
-										if ((curDeliv1 < 0) || (curDeliv1 > 100000))
-											curDeliv1 = 0;
-										if ((curDeliv2 < 0) || (curDeliv2 > 100000))
-											curDeliv2 = 0;
-
 										float tdiff = static_cast<float>(difftime(atime, lastTime));
 										if (tdiff == 0)
 											tdiff = 3600; // only reason for the same time to occur twice is a DST shift, meaning the actual time difference must be an hour
@@ -13245,6 +13236,15 @@ namespace http {
 										curUsage2 *= int(tlaps);
 										curDeliv1 *= int(tlaps);
 										curDeliv2 *= int(tlaps);
+
+										if (curUsage1 > 100000)
+											curUsage1 = 0;
+										if (curUsage2 > 100000)
+											curUsage2 = 0;
+										if (curDeliv1 > 100000)
+											curDeliv1 = 0;
+										if (curDeliv2 > 100000)
+											curDeliv2 = 0;
 
 										root["result"][ii]["d"] = sd[6].substr(0, 16);
 
