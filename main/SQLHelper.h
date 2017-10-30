@@ -336,7 +336,7 @@ public:
 	bool DoesSceneByNameExits(const std::string &SceneName);
 
 	void AddTaskItem(const _tTaskItem &tItem);
-	int RemoveTaskItem(const uint64_t Idx, const _eTaskItemType ItemType);
+	void RemoveTaskItem(const uint64_t Idx, const _eTaskItemType ItemType, int &count);
 
 	void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
 
