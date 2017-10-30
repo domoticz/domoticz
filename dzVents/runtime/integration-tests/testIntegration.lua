@@ -83,7 +83,7 @@ local VIRTUAL_DEVICES = {
 	-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX = 49
+local SECPANEL_INDEX = 50
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
