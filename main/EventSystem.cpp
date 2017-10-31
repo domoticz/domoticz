@@ -475,11 +475,15 @@ void CEventSystem::GetCurrentScenesGroups()
 			result2 = m_sql.safe_query("SELECT A.DeviceRowID FROM SceneDevices AS A, DeviceStatus AS B WHERE (A.SceneRowID == %" PRIu64 ") AND (A.DeviceRowID == B.ID)", sgitem.ID);
 			if (result2.size() > 0)
 			{
+				uint64_t deviceID;
 				std::vector<std::vector<std::string> >::const_iterator itt2;
 				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
+					std::stringstream ss;
 					std::vector<std::string> sd2 = *itt2;
-					sgitem.memberID.push_back(atoi(sd2[0].c_str()));
+					ss << sd2[0];
+					ss >> deviceID;
+					sgitem.memberID.push_back(deviceID);
 				}
 			}
 			m_scenesgroups[sgitem.ID] = sgitem;
@@ -1197,12 +1201,6 @@ void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason
 
 bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate)
 {
-	std::vector<uint64_t> devices;
-	UpdateSceneGroup(ulDevID, nValue, lastUpdate, devices);
-}
-
-bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate, const std::vector<uint64_t> memberID)
-{
 	if (!m_bEnabled)
 		return true; // seems counterintuitive, but prevents device triggers being queued
 
@@ -1218,15 +1216,9 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 		else
 			replaceitem.scenesgroupValue = "Mixed";
 
-		bool bEventTrigger;
-		if (memberID.size() > 0)
-			replaceitem.memberID = memberID;
-		else
-		{
-			bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
-			if (!bEventTrigger)
-				replaceitem.lastUpdate = lastUpdate;
-		}
+		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
+		if (!bEventTrigger)
+			replaceitem.lastUpdate = lastUpdate;
 
 		itt->second = replaceitem;
 
