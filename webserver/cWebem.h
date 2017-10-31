@@ -113,9 +113,7 @@ namespace http {
 		public:
 			/// Construct with a directory containing files to be served.
 			cWebemRequestHandler( const std::string& doc_root, cWebem* webem ) :
-				request_handler( doc_root, webem ),
-				m_doc_root ( doc_root ),
-				myWebem(webem)
+				request_handler( doc_root, webem )
 				{}
 
 			/// Handle a request and produce a reply.
@@ -138,10 +136,7 @@ namespace http {
 			std::string generateAuthToken(const WebEmSession & session, const request & req);
 			bool checkAuthToken(WebEmSession & session);
 			void removeAuthToken(const std::string & sessionId);
-			std::string m_doc_root;
-			// Webem link to application code
-			cWebem* myWebem;
-		};
+	};
 		// forward declaration for friend declaration
 		class CProxyClient;
 		/**

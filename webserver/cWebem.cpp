@@ -48,6 +48,7 @@ cWebem::cWebem(
 				m_DigistRealm("Domoticz.com"),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
 				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
+				m_sessions(), // Rene, make sure we initialize m_session first, before starting a server
 				myServer(server_factory::create(settings, myRequestHandler)) {
 	m_authmethod = AUTH_LOGIN;
 	mySessionStore = NULL;
