@@ -7213,11 +7213,12 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 	if (formatError != "OK")
 		return formatError;
 
+	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	std::vector<std::vector<std::string> > result;
 	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')",
 		varname.c_str(),
 		typei,
-		CURLEncode::URLDecode(varvalue.c_str()).c_str()
+		szVarValue.c_str()
 		);
 
 	if (m_bEnableEventSystem)
@@ -7233,7 +7234,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 			uint64_t vId;
 			vId_str >> vId;
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, varvalue, typei, sd[1]);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", szVarValue, typei, sd[1]);
 		}
 	}
 	return "OK";

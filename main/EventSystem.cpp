@@ -1252,7 +1252,8 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	if (itt != m_uservariables.end())
 	{
 		_tUserVariable replaceitem = itt->second;
-		replaceitem.variableName = varName;
+		if (!varName.empty())
+			replaceitem.variableName = varName;
 		replaceitem.variableValue = varValue;
 		replaceitem.variableType = varType;
 
