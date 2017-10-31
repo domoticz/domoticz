@@ -229,19 +229,20 @@ namespace http {
 			std::map < std::string, webem_page_function > myPages;
 			/// store map between pages and application functions
 			std::map < std::string, webem_page_function > myPages_w;
+			void CleanSessions();
+			session_store_impl_ptr mySessionStore; /// session store
+			/// request handler specialized to handle webem requests
+			/// Rene: Beware: myRequestHandler should be declared BEFORE myServer
+			cWebemRequestHandler myRequestHandler;
 			/// boost::asio web server (RK: plain or secure)
 			boost::shared_ptr<server_base> myServer;
 			// root of url for reverse proxy servers
 			std::string m_webRoot;
-			/// request handler specialized to handle webem requests
-			cWebemRequestHandler myRequestHandler;
 			/// sessions management
 			boost::mutex m_sessionsMutex;
 			boost::asio::io_service m_io_service;
 			boost::asio::deadline_timer m_session_clean_timer;
 			boost::thread m_io_service_thread;
-			void CleanSessions();
-			session_store_impl_ptr mySessionStore; /// session store
 		};
 
 	}
