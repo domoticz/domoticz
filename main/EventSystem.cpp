@@ -1252,12 +1252,9 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 	if (itt != m_uservariables.end())
 	{
 		_tUserVariable replaceitem = itt->second;
-		if (!varName.empty())
-			replaceitem.variableName = varName;
-		if (!varValue.empty())
-			replaceitem.variableValue = varValue;
-		if (varType != -1)
-			replaceitem.variableType = varType;
+		replaceitem.variableName = varName;
+		replaceitem.variableValue = varValue;
+		replaceitem.variableType = varType;
 
 		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 			replaceitem.lastUpdate = lastUpdate;

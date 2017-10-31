@@ -7233,7 +7233,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 			uint64_t vId;
 			vId_str >> vId;
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", "", -1, sd[1]);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, varvalue, typei, sd[1]);
 		}
 	}
 	return "OK";
