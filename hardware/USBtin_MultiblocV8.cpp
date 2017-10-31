@@ -6,8 +6,9 @@ Description : This class manage the CAN MultiblocV8 Layer
 - Management of the receiveing Frame
 - Treatment of each Life frame receive
 - Up to 30 blocs can be manage actually !
-- Complete management of input/output of SFSP Blocs (Master and Slave) up to 8 Master and 8 slaves in one  CAN network
+- Complete management of input/output of SFSP Blocs (Master and Slave) up to 8 Master and 8 slaves in one CAN network
 - On one SFSP blocs : 6 PWM output, 1 Power Voltage reading, 4 wired input and for Master blocs : each wireless switch receive is created in the domoticz dbb.
+- Description of the SFSP bloc : http://www.scheiber.com/doc_technique/sfsp-2012-a1/
 
 History :
 - 2017-10-01 : Creation by X.PONCET
