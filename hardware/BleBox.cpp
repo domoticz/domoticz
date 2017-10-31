@@ -27,6 +27,9 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
+	m_LimitlessRGBWcHueState = 0.0;
+	m_LimitlessRGBWisWhiteState = true;
+	m_LimitlessRGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
 }
 
@@ -252,11 +255,12 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeLimitlessLights)
 	{ 
-		sprintf(szIdx, "%02X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		sprintf(szIdx, "%08X", (unsigned int)sID);
 	}
 	else
 	{
-		sprintf(szIdx, "%02x%02x%02x%02x", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		sprintf(szIdx, "%X%02X%02X%02X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
 	}
 	return szIdx;
 }
@@ -516,12 +520,74 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		std::string IPAddress = GetDeviceRevertIP(output);
 
 		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
-		int red, green, blue;
-		float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-		hue2rgb(cHue, red, green, blue);
+		int red, green, blue, white;
+		bool setColor = true;
+		
+		switch (pLed->command)
+		{
+			case Limitless_LedOn: {
+				if(m_LimitlessRGBWcHueState != 0.0 && !m_LimitlessRGBWisWhiteState)
+				{
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, m_LimitlessRGBWbrightnessState);
+					white = 0;
+				}
+				else
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = m_LimitlessRGBWbrightnessState;
+				}
+				break;
+			}
+			case Limitless_LedOff:
+				red = 0;
+				green = 0;
+				blue = 0;
+				white = 0;
+				break;
+			case Limitless_SetColorToWhite: {
+				m_LimitlessRGBWisWhiteState = true;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetRGBColour: {
+				m_LimitlessRGBWisWhiteState = false;
+				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				setColor = false;//Sending is done by SetBrightnessLevel
+				break;
+			}
+			case Limitless_SetBrightnessLevel: {
+				int BrightnessBase = (int)pLed->value;
+				int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
+
+				m_LimitlessRGBWbrightnessState = dMax_Send;
+
+				if(m_LimitlessRGBWisWhiteState)
+				{
+					red = 0;
+					green = 0;
+					blue = 0;
+					white = dMax_Send;
+				}
+				else
+				{
+					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					white = 0;
+				}
+				break;
+			}
+			default:
+				setColor = false;
+				break;
+		}
+
+		if(!setColor)
+			return false;
 
 		char level[10];
-		sprintf(level, "%02x%02x%02x%02x", red, green, blue, 255);
+		sprintf(level, "%02x%02x%02x%02x", red, green, blue, white);
 		std::string state(level);
 
 		Json::Value root = SendCommand(IPAddress, "/s/" + state);
@@ -591,7 +657,7 @@ void BleBox::SendSwitch(const int NodeID, const int ChildID, const int BatteryLe
 	unsigned char ID4 = (unsigned char)NodeID & 0xFF;
 
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+	sprintf(szIdx, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d) AND (Type==%d) AND (Subtype==%d)",
 		m_HwdID, szIdx, ChildID, int(pTypeLighting2), int(sTypeAC));
