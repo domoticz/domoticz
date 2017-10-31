@@ -393,7 +393,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const uint64_t devi
 		lua_rawset(lua_state, -3);
 		lua_rawset(lua_state, -3);
 
-		lua_pushstring(lua_state, "members");
+		lua_pushstring(lua_state, "deviceIDs");
 		lua_createtable(lua_state, 0, 0);
 		std::vector<uint64_t>::const_iterator itt2;
 		if (sgitem.memberID.size() > 0)
