@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2017
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="1.7.5">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="2.0.6">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
@@ -25,6 +25,12 @@ When remote devices are found a matching Domoticz device is created in the Devic
                 <option label="16" value="16"/>
                 <option label="18" value="18"/>
                 <option label="20" value="20"/>
+            </options>
+        </param>
+        <param field="Mode5" label="Time Out Lost Devices" width="75px">
+            <options>
+                <option label="True" value="True" default="true"/>
+                <option label="False" value="False" />
             </options>
         </param>
         <param field="Mode6" label="Debug" width="75px">
@@ -82,13 +88,15 @@ class BasePlugin:
         for destination in self.icmpList:
             Domoticz.Debug("Endpoint '"+destination+"' found.")
         Domoticz.Heartbeat(int(Parameters["Mode1"]))
+        if Parameters["Mode5"] == "True":
+            for Device in Devices:
+                UpdateDevice(Device, Devices[Device].nValue, Devices[Device].sValue, 1)
 
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
         else:
             Domoticz.Log("Failed to connect to: "+Connection.Address+", Description: "+Description)
-            Conn.Close()
         self.icmpConn = None
 
     def onMessage(self, Connection, Data):
@@ -102,14 +110,16 @@ class BasePlugin:
                 # Store the address in the option field so that users can change the device name and IP address and it can still be mapped to
                 Domoticz.Device(Name=Connection.Address, Unit=iUnit, Type=17, Subtype=0, Image=17, Options={"Address":Connection.Address}).Create()
                 Domoticz.Log("Device: '"+Connection.Address+"' created and listed in Devices Tab.")
-            UpdateDevice(iUnit, 1, "On")
+            UpdateDevice(iUnit, 1, "On", 0)
         else:
             Domoticz.Log("Device: '"+Connection.Address+"' returned '"+Data["Description"]+"'.")
             if Parameters["Mode6"] == "Verbose":
                 DumpICMPResponseToLog(Data)
+            TimedOut = 0
+            if Parameters["Mode5"] == "True": TimedOut = 1
             for Device in Devices:
                 if (Devices[Device].Options["Address"] == Connection.Address):
-                    UpdateDevice(Device, 0, "Off")
+                    UpdateDevice(Device, 0, "Off", TimedOut)
         self.icmpConn = None
 
     def onHeartbeat(self):
@@ -118,7 +128,9 @@ class BasePlugin:
             for Device in Devices:
                 if (Devices[Device].Options["Address"] == self.icmpConn.Address):
                     Domoticz.Log("Device: '"+self.icmpConn.Address+"' - No response.")
-                    UpdateDevice(Device, 0, "Off")
+                    TimedOut = 0
+                    if Parameters["Mode5"] == "True": TimedOut = 1
+                    UpdateDevice(Device, 0, "Off", TimedOut)
                     break
             self.icmpConn = None
     
@@ -147,11 +159,11 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
-def UpdateDevice(Unit, nValue, sValue):
+def UpdateDevice(Unit, nValue, sValue, TimedOut):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
-        if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
-            Devices[Unit].Update(nValue, str(sValue))
+        if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue) or (Devices[Unit].TimedOut != TimedOut):
+            Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
             Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 
