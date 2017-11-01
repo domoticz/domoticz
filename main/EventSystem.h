@@ -14,6 +14,7 @@ extern "C" {
 #include "../lua/src/lauxlib.h"
 #endif
 }
+#include "../httpclient/HTTPClient.h"
 
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
@@ -214,7 +215,7 @@ private:
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
 	void OpenURL(const std::map<std::string, std::string> &URLdata);
-	void OpenURL(const std::string &URL, const std::string &method, const std::string &callback);
+	void OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postdata, const std::string &callback, const float delayTime);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);

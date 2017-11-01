@@ -9,7 +9,6 @@
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
 #include <iostream>
-#include "../httpclient/HTTPClient.h"
 #include "../httpclient/UrlEncode.h"
 #include "localtime_r.h"
 #include "SQLHelper.h"
@@ -2397,7 +2396,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat, "", "");
+			OpenURL(doWhat, HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
 			actionsDone = true;
 			continue;
 		}
@@ -3388,7 +3387,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		else
 		{
 			std::string luaString = lua_tostring(lua_state, -1);
-			OpenURL(luaString, "", "");
+			OpenURL(luaString, HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
 		}
 		scriptTrue = true;
 	}
@@ -3672,44 +3671,60 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 {
 	std::string URL, method, postdata, callback;
 	std::map<std::string, std::string>::const_iterator itt;
+	float delayTime = 0;
+
 	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
 	{
-		if (itt->first == "URL")
+
+		if (LowerCase(itt->first) == "url")
 			URL = itt->second;
-		else if (itt->first == "method")
+		else if (LowerCase(itt->first) == "method")
 			method = itt->second;
-		else if (itt->first == "postdata")
+		else if (LowerCase(itt->first) == "postdata")
 			postdata = itt->second;
-		else if (itt->first == "callback")
+		else if (LowerCase(itt->first) == "callback")
 			callback = itt->second;
+		else if (LowerCase(itt->first) == "delay")
+		{
+			std::stringstream ss(itt->second);
+			ss >> delayTime;
+		}
 	}
-	if (!method.empty() && method != "GET" && method != "POST")
+	HTTPClient::_eHTTPmethod eMethod;
+	if (!method.empty())
 	{
-		_log.Log(LOG_ERROR, "EventSystem: Only method GET or POST supported for now.");
+		if (method == "GET")
+			eMethod = HTTPClient::HTTP_METHOD_GET;
+		else if (method == "POST")
+			eMethod = HTTPClient::HTTP_METHOD_POST;
+	}
+
+	if (!eMethod && eMethod != HTTPClient::HTTP_METHOD_GET && eMethod != HTTPClient::HTTP_METHOD_POST)
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Only method GET or POST supported for now..");
 		return;
 	}
 	if (!postdata.empty())
 	{
-		if (method.empty() || method == "GET")
+		if (!eMethod || eMethod != HTTPClient::HTTP_METHOD_POST)
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Please use method POST when setting postdata.");
+			_log.Log(LOG_ERROR, "EventSystem: You should use method POST when setting postdata, stop processing..");
 			return;
 		}
-		method = method + "|" + postdata;
 	}
 	if (URL.empty())
 	{
 		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
 		return;
 	}
-	OpenURL(URL, method, callback);
+	OpenURL(URL, eMethod, postdata, callback, delayTime);
 }
 
-void CEventSystem::OpenURL(const std::string &URL, const std::string &method, const std::string &callback)
+void CEventSystem::OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postdata, const std::string &callback, const float delayTime)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL", method, true, callback));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, "OpenURL", method, postdata, true, callback));
 	// maybe do something with sResult in the future.
 }
 

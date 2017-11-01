@@ -5,6 +5,11 @@
 class HTTPClient
 {
 public:
+	enum _eHTTPmethod
+	{
+		HTTP_METHOD_GET,
+		HTTP_METHOD_POST
+	};
 	//GET functions
 	static bool GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned = false, const bool bResponseHeaders = false);
 	static bool GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned = false, const bool bResponseHeaders = false);
