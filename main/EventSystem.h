@@ -134,7 +134,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
-	void TriggerURL(const std::string &szResult, const std::string &szHeaderData, const std::string &callback);
+	void TriggerURL(const std::string &result, const std::string &headerData, const std::string &callback);
 
 	CdzVents m_dzvents;
 
