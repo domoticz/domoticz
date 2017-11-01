@@ -2,8 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <string>
-#include <vector>
 
 class EnphaseAPI : public CDomoticzHardwareBase
 {
@@ -16,14 +14,14 @@ public:
 private:
 	std::string m_szIPAddress;
 	P1Power m_p1power;
-		
+
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-		
+
 	void getProduction();
 	void getProductionDetail();
 

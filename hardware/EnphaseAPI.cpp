@@ -11,6 +11,8 @@
 #include "../main/mainworker.h"
 #include <iostream>
 
+//https://enphase.com/en-us/products-and-services/envoy
+
 #define Enphase_request_INTERVAL 30
 
 #ifdef _DEBUG

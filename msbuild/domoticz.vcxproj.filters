@@ -480,6 +480,9 @@
     <Filter Include="Devices\USBtin">
       <UniqueIdentifier>{d75dcc54-5cb3-4fef-9f27-3ecaf1484067}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Enphase">
+      <UniqueIdentifier>{aa75f1cf-ae72-4163-96c8-8dc1ed3d29d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2095,6 +2098,9 @@
     <ClInclude Include="..\hardware\USBtin_MultiblocV8.h">
       <Filter>Devices\USBtin</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EnphaseAPI.h">
+      <Filter>Devices\Enphase</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2801,6 +2807,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp">
       <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnphaseAPI.cpp">
+      <Filter>Devices\Enphase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
