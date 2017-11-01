@@ -190,6 +190,7 @@ enum _eHardwareTypes {
 	HTYPE_DenkoviSmartdenIPInOut,	//105
 	HTYPE_EVOHOME_TCP,			//106
 	HTYPE_USBtinGateway,		//107
+	HTYPE_EnphaseAPI,			//108
 	HTYPE_END
 };
 

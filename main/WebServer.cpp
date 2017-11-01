@@ -1297,6 +1297,9 @@ namespace http {
 			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
 			}
+			else if (htype == HTYPE_EnphaseAPI) {
+				//All fine here
+			}
 			else
 				return;
 
@@ -1647,6 +1650,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
+			}
+			else if (htype == HTYPE_EnphaseAPI) {
+				//all fine here!
 			}
 			else
 				return;

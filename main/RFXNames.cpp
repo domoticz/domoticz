@@ -255,6 +255,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
 		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
 		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
+		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
