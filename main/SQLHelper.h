@@ -203,11 +203,18 @@ struct _tTaskItem
 	}
 	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &eventName)
 	{
+		GetHTTPPage(DelayTime, URL, eventName, "", false, "");
+	}
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &eventName, const std::string &method, const bool headers, const std::string &callback)
+	{
 		_tTaskItem tItem;
-		tItem._ItemType=TITEM_GETURL;
-		tItem._DelayTime=DelayTime;
-		tItem._sValue= URL;
+		tItem._ItemType = TITEM_GETURL;
+		tItem._DelayTime = DelayTime;
+		tItem._sValue = URL;
+		tItem._nValue = headers ? 1 : 0; // include headers in response
 		tItem._relatedEvent = eventName;
+		tItem._command = method;
+		tItem._ID = callback;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;

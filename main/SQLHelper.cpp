@@ -2950,8 +2950,33 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string sResult;
-				bool ret = HTTPClient::GET(itt->_sValue, sResult);
+				std::string sResult, method, postdata, callback;
+				if (!itt->_ID.empty())
+					callback = itt->_ID;
+				if (!itt->_command.empty())
+				{
+					std::vector<std::string> splitresults;
+					StringSplit(itt->_command, "|", splitresults);
+					if (splitresults.size() > 0)
+						method = splitresults[0];
+					if (splitresults.size() > 1)
+						postdata = splitresults[1];
+				}
+				else
+					method = "GET";
+
+				bool ret;
+				if (method == "GET")
+					ret = HTTPClient::GET(itt->_sValue, sResult, false, (itt->_nValue ? true : false));
+				else if (method == "POST")
+				{
+					std::vector<std::string> extraHeaders;
+					ret = HTTPClient::POST(itt->_sValue, postdata, extraHeaders, sResult, true, false, (itt->_nValue ? true : false));
+				}
+
+				if (m_bEnableEventSystem && !callback.empty())
+					m_mainworker.m_eventsystem.TriggerURL(sResult, callback);
+
 				if (!ret)
 				{
 					_log.Log(LOG_ERROR, "Error opening url: %s", itt->_sValue.c_str());

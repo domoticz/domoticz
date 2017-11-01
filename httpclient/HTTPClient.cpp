@@ -147,7 +147,7 @@ void HTTPClient::LogError(void *curlobj)
 	}
 }
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut, const bool bResponseHeaders)
 {
 	try
 	{
@@ -178,6 +178,9 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		{
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
+
+		if (bResponseHeaders)
+			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -287,7 +290,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 			curl_slist_free_all(headers); /* free the header list */
 		}
 		if (
-			(res == CURLE_WRITE_ERROR) && 
+			(res == CURLE_WRITE_ERROR) &&
 			(!response.empty())
 			)
 			res = CURLE_OK;
@@ -300,7 +303,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 	return false;
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect, const bool bResponseHeaders)
 {
 	try
 	{
@@ -316,6 +319,9 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		{
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 		}
+
+		if (bResponseHeaders)
+			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -453,12 +459,12 @@ bool HTTPClient::DeleteBinary(const std::string &url, const std::string &postdat
 	}
 }
 
-bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse))
+	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1, bResponseHeaders))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -469,11 +475,11 @@ bool HTTPClient::GET(const std::string &url, std::string &response, const bool b
 	return true;
 }
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse))
+	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1, bResponseHeaders))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -501,11 +507,11 @@ bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, co
 }
 
 
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, bFollowRedirect))
+	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, bFollowRedirect, bResponseHeaders))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
