@@ -477,6 +477,9 @@
     <Filter Include="IFTTT">
       <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\USBtin">
+      <UniqueIdentifier>{d75dcc54-5cb3-4fef-9f27-3ecaf1484067}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2086,6 +2089,12 @@
     <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
       <Filter>Devices\Denkovi</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\USBtin.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\USBtin_MultiblocV8.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2786,6 +2795,12 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
       <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin.cpp">
+      <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp">
+      <Filter>Devices\USBtin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
