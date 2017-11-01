@@ -2949,22 +2949,24 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string sResult;
-				std::string postdata = itt->_command;
+				std::string result, headerData;
+				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
+				std::vector<std::string> extraHeaders;
 				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod> (itt->_switchtype);
 
 				bool ret;
 				if (method == HTTPClient::HTTP_METHOD_GET)
-					ret = HTTPClient::GET(itt->_sValue, sResult, false, (itt->_nValue ? true : false));
+				{
+					ret = HTTPClient::GET(itt->_sValue, extraHeaders, result, headerData);
+				}
 				else if (method == HTTPClient::HTTP_METHOD_POST)
 				{
-					std::vector<std::string> extraHeaders;
-					ret = HTTPClient::POST(itt->_sValue, postdata, extraHeaders, sResult, true, false, (itt->_nValue ? true : false));
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, result, headerData);
 				}
 
 				if (m_bEnableEventSystem && !callback.empty())
-					m_mainworker.m_eventsystem.TriggerURL(sResult, callback);
+					m_mainworker.m_eventsystem.TriggerURL(result, headerData, callback);
 
 				if (!ret)
 				{

@@ -134,7 +134,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
-	void TriggerURL(const std::string &szResult, const std::string &callback);
+	void TriggerURL(const std::string &szResult, const std::string &szHeaderData, const std::string &callback);
 
 	CdzVents m_dzvents;
 
@@ -215,7 +215,7 @@ private:
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
 	void OpenURL(const std::map<std::string, std::string> &URLdata);
-	void OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postdata, const std::string &callback, const float delayTime);
+	void OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
