@@ -13,7 +13,6 @@
 #include "../sqlite/sqlite3.h"
 #endif
 #include "../hardware/hardwaretypes.h"
-#include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
@@ -2950,25 +2949,15 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string sResult, method, postdata, callback;
-				if (!itt->_ID.empty())
-					callback = itt->_ID;
-				if (!itt->_command.empty())
-				{
-					std::vector<std::string> splitresults;
-					StringSplit(itt->_command, "|", splitresults);
-					if (splitresults.size() > 0)
-						method = splitresults[0];
-					if (splitresults.size() > 1)
-						postdata = splitresults[1];
-				}
-				else
-					method = "GET";
+				std::string sResult;
+				std::string postdata = itt->_command;
+				std::string callback = itt->_ID;
+				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod> (itt->_switchtype);
 
 				bool ret;
-				if (method == "GET")
+				if (method == HTTPClient::HTTP_METHOD_GET)
 					ret = HTTPClient::GET(itt->_sValue, sResult, false, (itt->_nValue ? true : false));
-				else if (method == "POST")
+				else if (method == HTTPClient::HTTP_METHOD_POST)
 				{
 					std::vector<std::string> extraHeaders;
 					ret = HTTPClient::POST(itt->_sValue, postdata, extraHeaders, sResult, true, false, (itt->_nValue ? true : false));
