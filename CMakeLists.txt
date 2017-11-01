@@ -411,6 +411,8 @@ hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
+hardware/USBtin.cpp
+hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp
 hardware/RAVEn.cpp
 hardware/Winddelen.cpp

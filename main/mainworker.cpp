@@ -128,6 +128,8 @@
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/Rtl433.h"
 #include "../hardware/OnkyoAVTCP.h"
+#include "../hardware/USBtin.h"
+#include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/EnphaseAPI.h"
 
 // load notifications configuration
@@ -1016,9 +1018,12 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
 		break;
+	case HTYPE_USBtinGateway:
+		pHardware = new USBtin(ID, SerialPort,Mode1,Mode2);
+		break;
 	case HTYPE_EnphaseAPI:
 		pHardware = new EnphaseAPI(ID, Address, Port);
-		break;
+    break;
 	}
 
 	if (pHardware)
