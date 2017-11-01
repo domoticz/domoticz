@@ -53,6 +53,7 @@ const std::string CEventSystem::m_szReason[] =
 	"uservariable",		// 2
 	"time",				// 3
 	"security"			// 4
+	"url"				// 5
 };
 
 
@@ -1174,6 +1175,18 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 		}
 	}
 	return bEventTrigger;
+}
+
+void CEventSystem::TriggerURL(const std::string &szResult, const std::string &callback)
+{
+	_tEventQueue item;
+	item.reason = REASON_URL;
+	item.DeviceID = 0;
+	item.sValue = szResult;
+	item.nValueWording = callback;
+	item.varId = 0;
+	item.trigger = NULL;
+	m_eventqueue.push(item);
 }
 
 void CEventSystem::SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime)
@@ -2384,7 +2397,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat);
+			OpenURL(doWhat, "", "");
 			actionsDone = true;
 			continue;
 		}
@@ -3122,12 +3135,22 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
-
 	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzv_Dir + "dzVents.lua")
 		m_dzvents.SetGlobalVariables(lua_state, item.reason);
 
 	lua_setglobal(lua_state, "globalvariables");
 
+	if (item.reason == REASON_URL)
+	{
+		lua_createtable(lua_state, 0, 0);
+		lua_pushstring(lua_state, "response");
+		lua_pushstring(lua_state, item.sValue.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "callback");
+		lua_pushstring(lua_state, item.nValueWording.c_str());
+		lua_rawset(lua_state, -3);
+		lua_setglobal(lua_state, "OpenURL");
+	}
 
 	int status = 0;
 	if (LuaString.length() == 0) {
@@ -3239,13 +3262,12 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
 {
 	bool scriptTrue = false;
-
 	lua_pushnil(lua_state); // first key
 	while (lua_next(lua_state, tIndex) != 0)
 	{
-		if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1))) == "string")
+		if ((std::string(luaL_typename(lua_state, -2)) == "string") && ((std::string(luaL_typename(lua_state, -1))) == "string" || lua_istable(lua_state, -1)))
 		{
-			scriptTrue = processLuaCommand(lua_state, filename);
+			scriptTrue = processLuaCommand(lua_state, filename, tIndex);
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
@@ -3263,7 +3285,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 
 }
 
-bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
+bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex)
 {
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
@@ -3346,8 +3368,28 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand == "OpenURL")
 	{
-		std::string luaString = lua_tostring(lua_state, -1);
-		OpenURL(luaString);
+		if ((std::string(luaL_typename(lua_state, -2)) == "string") && lua_istable(lua_state, -1))
+		{
+			std::map<std::string, std::string> URLdata;
+
+			lua_pushnil(lua_state);
+			while (lua_next(lua_state, tIndex + 2) != 0)
+			{
+				if ((std::string(luaL_typename(lua_state, -2)) == "string") && ((std::string(luaL_typename(lua_state, -1))) == "string"))
+				{
+					URLdata.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
+					//std::cout << std::string(lua_tostring(lua_state, -2)) << " = " << std::string(lua_tostring(lua_state, -1)) << std::endl;
+				}
+
+				lua_pop(lua_state, 1);
+			}
+			OpenURL(URLdata);
+		}
+		else
+		{
+			std::string luaString = lua_tostring(lua_state, -1);
+			OpenURL(luaString, "", "");
+		}
 		scriptTrue = true;
 	}
 	else if (lCommand == "UpdateDevice")
@@ -3626,10 +3668,48 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 	}
 }
 
-void CEventSystem::OpenURL(const std::string &URL)
+void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 {
-	_log.Log(LOG_STATUS, "EventSystem: Fetching url...");
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
+	std::string URL, method, postdata, callback;
+	std::map<std::string, std::string>::const_iterator itt;
+	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
+	{
+		if (itt->first == "URL")
+			URL = itt->second;
+		else if (itt->first == "method")
+			method = itt->second;
+		else if (itt->first == "postdata")
+			postdata = itt->second;
+		else if (itt->first == "callback")
+			callback = itt->second;
+	}
+	if (!method.empty() && method != "GET" && method != "POST")
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Only method GET or POST supported for now.");
+		return;
+	}
+	if (!postdata.empty())
+	{
+		if (method.empty() || method == "GET")
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Please use method POST when setting postdata.");
+			return;
+		}
+		method = method + "|" + postdata;
+	}
+	if (URL.empty())
+	{
+		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
+		return;
+	}
+	OpenURL(URL, method, callback);
+}
+
+void CEventSystem::OpenURL(const std::string &URL, const std::string &method, const std::string &callback)
+{
+	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
+
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL", method, true, callback));
 	// maybe do something with sResult in the future.
 }
 

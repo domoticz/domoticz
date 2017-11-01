@@ -56,7 +56,8 @@ public:
 		REASON_SCENEGROUP,		// 1
 		REASON_USERVARIABLE,	// 2
 		REASON_TIME,			// 3
-		REASON_SECURITY			// 4
+		REASON_SECURITY,		// 4
+		REASON_URL				// 5
 	};
 
 	struct _tDeviceStatus
@@ -132,6 +133,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
+	void TriggerURL(const std::string &szResult, const std::string &callback);
 
 	CdzVents m_dzvents;
 
@@ -211,7 +213,8 @@ private:
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
-	void OpenURL(const std::string &URL);
+	void OpenURL(const std::map<std::string, std::string> &URLdata);
+	void OpenURL(const std::string &URL, const std::string &method, const std::string &callback);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
@@ -262,7 +265,7 @@ private:
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
 	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
-	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
+	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);
