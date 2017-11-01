@@ -147,7 +147,13 @@ void HTTPClient::LogError(void *curlobj)
 	}
 }
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut, const bool bResponseHeaders)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+{
+	std::vector<unsigned char> headerdata;
+	return GETBinary(url, ExtraHeaders, response, headerdata, TimeOut);
+}
+
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<unsigned char> &headerdata, const int TimeOut)
 {
 	try
 	{
@@ -179,9 +185,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
 
-		if (bResponseHeaders)
-			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
-
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&headerdata);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
@@ -303,7 +307,13 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 	return false;
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect, const bool bResponseHeaders)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
+{
+	std::vector<unsigned char> headerdata;
+	return POSTBinary(url, postdata, ExtraHeaders, response, headerdata, bFollowRedirect);
+}
+
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<unsigned char> &headerdata, const bool bFollowRedirect)
 {
 	try
 	{
@@ -320,9 +330,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 		}
 
-		if (bResponseHeaders)
-			curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
-
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&headerdata);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
@@ -459,12 +467,13 @@ bool HTTPClient::DeleteBinary(const std::string &url, const std::string &postdat
 	}
 }
 
-bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
+
+bool HTTPClient::GET(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
 	std::vector<std::string> ExtraHeaders;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1, bResponseHeaders))
+	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -475,11 +484,17 @@ bool HTTPClient::GET(const std::string &url, std::string &response, const bool b
 	return true;
 }
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
-	response = "";
-	std::vector<unsigned char> vHTTPResponse;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, -1, bResponseHeaders))
+	std::string headerdata = "";
+	return GET(url, ExtraHeaders, response, headerdata, bIgnoreNoDataReturned);
+}
+
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::string &headerdata, const bool bIgnoreNoDataReturned)
+{
+	response = "", headerdata = "";
+	std::vector<unsigned char> vHTTPResponse, vHTTPHeaderData;
+	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHTTPHeaderData, -1))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -487,6 +502,7 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 			return false;
 	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	headerdata.insert(headerdata.begin(), vHTTPHeaderData.begin(), vHTTPHeaderData.end());
 	return true;
 }
 
@@ -506,12 +522,17 @@ bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, co
 	return true;
 }
 
-
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned, const bool bResponseHeaders)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {
-	response = "";
-	std::vector<unsigned char> vHTTPResponse;
-	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, bFollowRedirect, bResponseHeaders))
+	std::string headerdata = "";
+	return POST(url, postdata, ExtraHeaders, response, headerdata, bFollowRedirect, bIgnoreNoDataReturned);
+}
+
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::string &headerdata, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
+{
+	response = "", headerdata = "";
+	std::vector<unsigned char> vHTTPResponse, vHTTPHeaderData;
+	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, vHTTPHeaderData, bFollowRedirect))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -519,6 +540,7 @@ bool HTTPClient::POST(const std::string &url, const std::string &postdata, const
 			return false;
 	}
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	headerdata.insert(headerdata.begin(), vHTTPHeaderData.begin(), vHTTPHeaderData.end());
 	return true;
 }
 

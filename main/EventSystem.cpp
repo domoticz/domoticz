@@ -1176,12 +1176,13 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-void CEventSystem::TriggerURL(const std::string &szResult, const std::string &callback)
+void CEventSystem::TriggerURL(const std::string &result, const std::string &headerData, const std::string &callback)
 {
 	_tEventQueue item;
 	item.reason = REASON_URL;
 	item.DeviceID = 0;
-	item.sValue = szResult;
+	item.devname = headerData;
+	item.sValue = result;
 	item.nValueWording = callback;
 	item.varId = 0;
 	item.trigger = NULL;
@@ -3142,7 +3143,10 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	if (item.reason == REASON_URL)
 	{
 		lua_createtable(lua_state, 0, 0);
-		lua_pushstring(lua_state, "response");
+		lua_pushstring(lua_state, "headerData");
+		lua_pushstring(lua_state, item.devname.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "bodyData");
 		lua_pushstring(lua_state, item.sValue.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "callback");
@@ -3669,7 +3673,7 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 
 void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 {
-	std::string URL, method, postdata, callback;
+	std::string URL, method, postData, callback;
 	std::map<std::string, std::string>::const_iterator itt;
 	float delayTime = 0;
 
@@ -3681,7 +3685,7 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 		else if (LowerCase(itt->first) == "method")
 			method = itt->second;
 		else if (LowerCase(itt->first) == "postdata")
-			postdata = itt->second;
+			postData = itt->second;
 		else if (LowerCase(itt->first) == "callback")
 			callback = itt->second;
 		else if (LowerCase(itt->first) == "delay")
@@ -3704,7 +3708,7 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 		_log.Log(LOG_ERROR, "EventSystem: Only method GET or POST supported for now..");
 		return;
 	}
-	if (!postdata.empty())
+	if (!postData.empty())
 	{
 		if (!eMethod || eMethod != HTTPClient::HTTP_METHOD_POST)
 		{
@@ -3717,14 +3721,14 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
 		return;
 	}
-	OpenURL(URL, eMethod, postdata, callback, delayTime);
+	OpenURL(URL, eMethod, postData, callback, delayTime);
 }
 
-void CEventSystem::OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postdata, const std::string &callback, const float delayTime)
+void CEventSystem::OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, "OpenURL", method, postdata, true, callback));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, "OpenURL", method, postData, callback));
 	// maybe do something with sResult in the future.
 }
 
