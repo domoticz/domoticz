@@ -1176,15 +1176,15 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-void CEventSystem::TriggerURL(const std::string &result, const std::string &headerData, const std::string &callback)
+void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback)
 {
 	_tEventQueue item;
 	item.reason = REASON_URL;
 	item.DeviceID = 0;
-	item.devname = headerData;
 	item.sValue = result;
 	item.nValueWording = callback;
 	item.varId = 0;
+	item.vsData = headerData;
 	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
@@ -3143,16 +3143,27 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	if (item.reason == REASON_URL)
 	{
 		lua_createtable(lua_state, 0, 0);
-		lua_pushstring(lua_state, "headerData");
-		lua_pushstring(lua_state, item.devname.c_str());
+		lua_pushstring(lua_state, "headers");
+		lua_createtable(lua_state, (int)item.vsData.size(), 0);
+		std::vector<std::string>::const_iterator itt;
+		for (itt = item.vsData.begin(); itt != item.vsData.end(); itt++)
+		{
+			size_t pos = (*itt).find(": ");
+			if (pos != std::string::npos)
+			{
+				lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
+				lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
+				lua_rawset(lua_state, -3);
+			}
+		}
 		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "bodyData");
+		lua_pushstring(lua_state, "data");
 		lua_pushstring(lua_state, item.sValue.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "callback");
 		lua_pushstring(lua_state, item.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
-		lua_setglobal(lua_state, "OpenURL");
+		lua_setglobal(lua_state, "httpresponse");
 	}
 
 	int status = 0;

@@ -134,7 +134,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const std::string &DevParams, const bool bEventTrigger = false);
-	void TriggerURL(const std::string &result, const std::string &headerData, const std::string &callback);
+	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
 
 	CdzVents m_dzvents;
 
@@ -172,6 +172,7 @@ private:
 		uint64_t varId;
 		std::string lastUpdate;
 		uint8_t lastLevel;
+		std::vector<std::string> vsData;
 		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;

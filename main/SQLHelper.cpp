@@ -2949,7 +2949,8 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string result, headerData;
+				std::string result;
+				std::vector<std::string> headerData;
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
 				std::vector<std::string> extraHeaders;
