@@ -445,6 +445,7 @@ notifications/NotificationPushover.cpp
 notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
+notifications/NotificationBrowser.cpp
 notifications/NotificationTelegram.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
@@ -461,6 +462,9 @@ webserver/request_parser.cpp
 webserver/server.cpp
 webserver/proxycommon.cpp
 webserver/proxyclient.cpp
+webserver/Websockets.cpp
+webserver/WebsocketHandler.cpp
+push/WebsocketPush.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp

@@ -53,11 +53,17 @@ public:
   
   /// The directory containing the files to be served.
   std::string doc_root_;
+
+  // expose myWebem so we can use it in websocket connections
+  cWebem* Get_myWebem();
+
+protected:
+  // Webem link to application code
+  cWebem* myWebem;
+
 private:
 	bool not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo);
-	// Webem link to application code
-	cWebem* myWebem;
-	  //zip support
+	//zip support
 #ifndef WEBSERVER_DONT_USE_ZIP
 	  zlib_filefunc_def m_ffunc;
 	  unzFile m_uf;
