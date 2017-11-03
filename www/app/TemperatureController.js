@@ -193,7 +193,7 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+            livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
 				if (typeof data == "string") {
 					data = JSON.parse(data);
 				}
@@ -525,7 +525,6 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			livesocket.Close();
 		});
 
 		ctrl.RoomPlans = [{ idx: 0, name: $.t("All") }];

@@ -170,8 +170,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		};
 	});
 		function notifyMe(title, body) {
-			if (!Notification) {
-				alert('Desktop notifications not available in your browser. Try Chromium.');
+            if (typeof Notification == "undefined") {
+                console.log("Notification: " + title + ": " + body);
+				console.log('Desktop notifications not available in your browser. Try Chromium.');
 				return;
 			}
 
@@ -199,9 +200,17 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						};
 					}
 					var use_http = !(url.substr(0, 9) == "json.htm?");
-					if (use_http) {
+                    if (use_http) {
+                        var loc = window.location, http_uri;
+                        if (loc.protocol === "https:") {
+                            http_uri = "https:";
+                        } else {
+                            http_uri = "http:";
+                        }
+                        http_uri += "//" + loc.host;
+                        http_uri += loc.pathname;
 						// get via json get
-						url = "http://localhost:8080/" + url; // todo, test
+                        url = http_uri + url;
 						$http.get(url).success(callback_fn);
 					}
 					else {
@@ -209,14 +218,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 							url: url,
 							success: callback_fn
 						};
-						settings.context = settings;
+                        settings.context = settings;
 						return this.SendAsync(settings);
 					}
 				},
 				Init: function () {
 					if (this.initialised) {
 						return;
-					}
+                    }
+                    var self = this;
 					var loc = window.location, ws_uri;
 					if (loc.protocol === "https:") {
 						ws_uri = "wss:";
@@ -235,11 +245,14 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					});
 					this.websocket.callbackqueue = [];
 					this.websocket.$on('$open', function () {
-						// alert("websocket opened");
+						console.log("websocket opened");
 					});
 					this.websocket.$on('$close', function () {
-						// alert("websocket closed");
-					});
+						console.log("websocket closed");
+                    });
+                    this.websocket.$on('$error', function () {
+                        console.log("websocket error");
+                    });
 					this.websocket.$on('$message', function (msg) {
 						if (typeof msg == "string") {
 							msg = JSON.parse(msg);
@@ -249,8 +262,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 								notifyMe(msg.Subject, msg.Text);
 								return;
 						}
-						var requestid = msg.requestid;
-						if (requestid >= 0) {
+                        var requestid = msg.requestid;
+                        if (requestid >= 0) {
 							var callback_obj = this.callbackqueue[requestid];
 							var settings = callback_obj.settings;
 							var data = msg.data || msg;
@@ -305,7 +318,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
 					var requestid = this.websocket.callbackqueue.length - 1;
 					var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
-					var content = JSON.stringify(requestobj);
+                    var content = JSON.stringify(requestobj);
 					this.Send(requestobj);
 					return defer_object.promise();
 				}

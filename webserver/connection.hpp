@@ -65,7 +65,7 @@ public:
   time_t m_lastresponse;
 
   // send packet over websocket
-  void WS_Write(long requestid, const std::string &packet_data);
+  void WS_Write(const std::string &packet_data);
   /// Add content to write buffer
   void MyWrite(const std::string &buf);
   /// Timer handlers

@@ -432,7 +432,6 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			livesocket.Close();
 		});
 	}])
 		.directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
