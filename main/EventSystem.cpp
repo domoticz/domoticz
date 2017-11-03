@@ -3699,38 +3699,31 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 			postData = itt->second;
 		else if (LowerCase(itt->first) == "callback")
 			callback = itt->second;
-		else if (LowerCase(itt->first) == "delay")
+		else if (LowerCase(itt->first) == "after")
 		{
 			std::stringstream ss(itt->second);
 			ss >> delayTime;
-		}
-	}
-	HTTPClient::_eHTTPmethod eMethod;
-	if (!method.empty())
-	{
-		if (method == "GET")
-			eMethod = HTTPClient::HTTP_METHOD_GET;
-		else if (method == "POST")
-			eMethod = HTTPClient::HTTP_METHOD_POST;
-	}
-
-	if (!eMethod && eMethod != HTTPClient::HTTP_METHOD_GET && eMethod != HTTPClient::HTTP_METHOD_POST)
-	{
-		_log.Log(LOG_ERROR, "EventSystem: Only method GET or POST supported for now..");
-		return;
-	}
-	if (!postData.empty())
-	{
-		if (!eMethod || eMethod != HTTPClient::HTTP_METHOD_POST)
-		{
-			_log.Log(LOG_ERROR, "EventSystem: You should use method POST when setting postdata, stop processing..");
-			return;
 		}
 	}
 	if (URL.empty())
 	{
 		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
 		return;
+	}
+
+	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
+	if (!method.empty())
+	{
+		if (method == "POST")
+			eMethod = HTTPClient::HTTP_METHOD_POST;
+	}
+	if (!postData.empty())
+	{
+		if (eMethod != HTTPClient::HTTP_METHOD_POST)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: You can only use postdata with method POST..");
+			return;
+		}
 	}
 	OpenURL(URL, eMethod, postData, callback, delayTime);
 }

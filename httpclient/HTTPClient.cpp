@@ -19,12 +19,20 @@ long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 
-size_t write_curl_headers(void *contents, size_t size, size_t nmemb, void *userp)
+size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	// called once for each header
 	size_t realsize = size * nmemb;
 	std::vector<std::string>* pvHTTPHeaderData = (std::vector<std::string>*)userp;
-	std::string str((unsigned char*)contents, (unsigned char*)contents + realsize);
+	size_t ii = 0;
+	while (ii < realsize)
+	{
+		unsigned char *pData = (unsigned char*)contents + ii;
+		if ((pData[0] == '\n') || (pData[0] == '\r'))
+			break;
+		ii++;
+	}
+	std::string str((unsigned char*)contents, (unsigned char*)contents + ii);
 	pvHTTPHeaderData->push_back(str);
 	return realsize;
 }
@@ -195,7 +203,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		}
 
-		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headers);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -341,7 +349,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 		}
 
-		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headers);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
