@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Websockets.hpp"
-#include <boost/lexical_cast.hpp>
 // debug
 #include "../main/Logger.h"
 #include "../json/json.h"

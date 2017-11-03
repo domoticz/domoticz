@@ -207,26 +207,7 @@ define(['app'], function (app) {
 					ctrl.temperatures = [];
 				}
 			});
-            /*
-                      // RK, this was the old ajax call. It is replaced by the getJson call above
-                      //       This makes it receive update events
-                      $.ajax({
-                         url: "json.htm?type=devices&filter=temp&used=true&order=Name&plan="+window.myglobals.LastPlanSelected,
-                         async: false,
-                         dataType: 'json',
-                         success: function(data) {
-                          if (typeof data.result != 'undefined') {
-                            if (typeof data.ActTime != 'undefined') {
-                                $.LastUpdateTime=parseInt(data.ActTime);
-                            }
-            
-                              ctrl.temperatures = data.result;
-                          } else {
-                              ctrl.temperatures = [];
-                          }
-                         }
-                      });
-            */
+
 			$('#modal').hide();
 			$('#temptophtm').show();
 			$('#temptophtm').i18n();

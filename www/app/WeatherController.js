@@ -109,42 +109,7 @@ define(['app'], function (app) {
 					});
 
 				}
-			}
-			);
-			/*
-						// note: This ajax call has been replace by the livesocket.getJson call above.
-						//       This makes it receive update events
-						$.ajax({
-							url: "json.htm?type=devices&filter=weather&used=true&order=Name&lastupdate=" + $.LastUpdateTime,
-							async: false,
-							dataType: 'json',
-							success: function (data) {
-								if (typeof data.ServerTime != 'undefined') {
-									$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-								}
-			
-								if (typeof data.result != 'undefined') {
-									if (typeof data.ActTime != 'undefined') {
-										$.LastUpdateTime = parseInt(data.ActTime);
-									}
-			
-									// Change updated items in weatherlist
-									// TODO is there a better way to do this ?
-									data.result.forEach(function (newitem) {
-										ctrl.items.forEach(function (olditem, oldindex, oldarray) {
-											if (olditem.idx == newitem.idx) {
-												oldarray[oldindex] = newitem;
-												if ($scope.config.ShowUpdatedEffect == true) {
-													$("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-												}
-											}
-										});
-									});
-			
-								}
-							}
-						});
-			*/
+			});
 			$scope.mytimer = $interval(function () {
 				RefreshWeathers();
 			}, 10000);

@@ -12,7 +12,6 @@
 #include <vector>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/thread/mutex.hpp>
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
 #include "../main/localtime_r.h"

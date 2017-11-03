@@ -780,21 +780,7 @@ namespace http {
 					m_pDomServ->StartServer(proxyclient);
 				}
 				proxyclient->SetSharedServer(m_pDomServ->GetProxiedServer());
-
-#if 1
 				io_service.run();
-#else
-				boost::optional<boost::asio::io_service::work> work(io_service);
-				boost::thread_group worker_threads;
-
-				for (int x = 0; x < 5; ++x)
-				{
-					worker_threads.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
-				}
-
-				work = boost::none;
-				worker_threads.join_all();
-#endif
 			}
 			catch (std::exception& e)
 			{

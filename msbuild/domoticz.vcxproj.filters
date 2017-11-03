@@ -483,6 +483,9 @@
     <Filter Include="Devices\Enphase">
       <UniqueIdentifier>{aa75f1cf-ae72-4163-96c8-8dc1ed3d29d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pushers\Websocket">
+      <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1364,6 +1367,8 @@
     <None Include="..\www\styles\default\show_version_number.css">
       <Filter>www\styles\default</Filter>
     </None>
+    <None Include="..\www\js\angular-websocket.js" />
+    <None Include="..\www\views\temperatures\temperatureWidget.html" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -2101,6 +2106,21 @@
     <ClInclude Include="..\hardware\EnphaseAPI.h">
       <Filter>Devices\Enphase</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\WebsocketPush.h">
+      <Filter>Pushers\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationBrowser.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2810,6 +2830,18 @@
     </ClCompile>
     <ClCompile Include="..\hardware\EnphaseAPI.cpp">
       <Filter>Devices\Enphase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\WebsocketPush.cpp">
+      <Filter>Pushers\Websocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
+      <Filter>Notifications</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
