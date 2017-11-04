@@ -94,6 +94,14 @@ define(['app'], function (app) {
 					}
 					extraparams = "PushbulletAPI=" + PushbulletAPI;
 					break;
+                                case "telegram":
+                                        var TelegramAPI = encodeURIComponent($("#telegramtable #TelegramAPI").val());
+                                        if (TelegramAPI == "") {
+                                                ShowNotify($.t('Please enter the API key!...'), 3500, true);
+                                                return;
+                                        }
+                                        extraparams = "TelegramAPI=" + TelegramAPI;
+                                        break;
 				case "pushsafer":
 					var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
 					var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
@@ -289,6 +297,15 @@ define(['app'], function (app) {
 					if (typeof data.PushbulletAPI != 'undefined') {
 						$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 					}
+                                        if (typeof data.TelegramEnabled != 'undefined') {
+                                                $("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
+                                        }
+                                        if (typeof data.TelegramAPI != 'undefined') {
+                                                $("#telegramtable #TelegramAPI").val(data.TelegramAPI);
+                                        }
+                                        if (typeof data.TelegramChat != 'undefined') {
+                                                $("#telegramtable #TelegramChat").val(data.TelegramChat);
+                                        }
 					if (typeof data.PushsaferEnabled != 'undefined') {
 						$("#pushsafertable #PushsaferEnabled").prop('checked', data.PushsaferEnabled == 1);
 					}
@@ -589,8 +606,7 @@ define(['app'], function (app) {
 						$("#eventsystemtable #EnableEventScriptSystem").prop('checked', data.EnableEventScriptSystem == 1);
 					}
                     if (typeof data.DisableDzVentsSystem != 'undefined') {
-						
-                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 1);
+                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 0);
                     }
                     if (typeof data.DzVentsLogLevel != 'undefined') {
                         $("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);

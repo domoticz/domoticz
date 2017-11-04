@@ -34,6 +34,8 @@ void sleep_milliseconds(const long milliseconds);
 int createdir(const char *szDirName, int secattr);
 int mkdir_deep(const char *szDirName, int secattr);
 
+int RemoveDir(const std::string &dirnames, std::string &errorPath);
+
 double ConvertToCelsius(const double Fahrenheit);
 double ConvertToFahrenheit(const double Celsius);
 double ConvertTemperature(const double tValue, const unsigned char tSign);

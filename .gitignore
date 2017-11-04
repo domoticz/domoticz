@@ -34,8 +34,13 @@ install_manifest.txt
 .project
 .cproject
 .settings/
-scripts/dzVents/runtime/tests/luacov.stats.out
-scripts/dzVents/runtime/tests/luacov.report.out
+/dzVents/runtime/tests/luacov.stats.out
+/dzVents/runtime/tests/luacov.report.out
+/scripts/dzVents/domoticzData.lua
+/scripts/dzVents/data/
+/scripts/dzVents/generated_scripts/
+/scripts/dzVents/scripts/
 .idea/
 /.idea_/
-
+/www/images/floorplans/*.png
+/www/images/floorplans/*.jpg

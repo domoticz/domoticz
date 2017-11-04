@@ -1,7 +1,8 @@
 define(['app'], function (app) {
-	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', 'permissions', function ($scope, $rootScope, $location, $http, $interval, $window, permissions) {
+	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', '$window', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, $window, livesocket) {
 
 		var ctrl = this;
+		ctrl.temperatures = [];
 
 		MakeFavorite = function (id, isfavorite) {
 			if (!permissions.hasPermission("Admin")) {
@@ -169,10 +170,11 @@ define(['app'], function (app) {
 					}
 				}
 			});
-
-			$scope.mytimer = $interval(function () {
-				RefreshTemps();
-			}, 10000);
+            /*
+                        $scope.mytimer = $interval(function () {
+                            RefreshTemps();
+                        }, 10000);
+            */
 		}
 
 		ShowForecast = function () {
@@ -191,22 +193,21 @@ define(['app'], function (app) {
 				return $window.myglobals.ismobile == false;
 			};
 
-			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.result != 'undefined') {
-						if (typeof data.ActTime != 'undefined') {
-							$.LastUpdateTime = parseInt(data.ActTime);
-						}
-
-						ctrl.temperatures = data.result;
-					} else {
-						ctrl.temperatures = [];
+            livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+				if (typeof data == "string") {
+					data = JSON.parse(data);
+				}
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime = parseInt(data.ActTime);
 					}
+					ctrl.temperatures = data.result;
+				}
+				else {
+					ctrl.temperatures = [];
 				}
 			});
+
 			$('#modal').hide();
 			$('#temptophtm').show();
 			$('#temptophtm').i18n();
@@ -250,11 +251,11 @@ define(['app'], function (app) {
 		init();
 
 		function init() {
-			//global var
 			$.devIdx = 0;
 			$.LastUpdateTime = parseInt(0);
-
 			$scope.MakeGlobalConfig();
+
+			livesocket.Init();
 
 			var dialog_edittempdevice_buttons = {};
 			dialog_edittempdevice_buttons[$.t("Update")] = function () {
@@ -554,7 +555,6 @@ define(['app'], function (app) {
 			window.myglobals.LastPlanSelected = idx;
 			ShowTemps();
 		};
-
 	}])
 		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
@@ -584,9 +584,36 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.nbackstyle = function () {
-						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-						return backgroundClass;
+					$scope.$on('jsonupdate', function (event, json) {
+						if (json.item) {
+							var newitem = json.item;
+							// Change updated items in temperatures list
+							// TODO is there a better way to do this ?
+							// console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx); // (debug info)
+							if (ctrl.item.idx == newitem.idx) {
+								// console.log("item found"); // (debug info)
+								ctrl.item = newitem;
+								if ($scope.$parent.config.ShowUpdatedEffect == true && $("#tempwidgets #" + newitem.idx).length > 0) {
+									$("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+								}
+							}
+						}
+					});
+					ctrl.nbackcolor = function () {
+						var nbackcolor = "#D4E1EE";
+						if (item.HaveTimeout == true) {
+							nbackcolor = "#DF2D3A";
+						}
+						else {
+							var BatteryLevel = parseInt(item.BatteryLevel);
+							if (BatteryLevel != 255) {
+								if (BatteryLevel <= 10) {
+									nbackcolor = "#DDDF2D";
+								}
+							}
+						}
+						nbackcolor = EvoSetPointColor(item, ctrl.sHeatMode(), nbackcolor);
+						return { 'background-color': nbackcolor };
 					};
 
 					// TODO use angular isDefined

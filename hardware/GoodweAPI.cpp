@@ -54,7 +54,7 @@
 
 
 #ifdef DEBUG_GoodweAPIW
-void SaveString2Disk(std::string str, std::string filename)
+void SaveString2Disk(const std::string &str, const std::string &filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
@@ -153,7 +153,7 @@ int GoodweAPI::getSunRiseSunSetMinutes(const bool bGetSunRise)
 }
 
 
-uint32_t GoodweAPI::hash(std::string str)
+uint32_t GoodweAPI::hash(const std::string &str)
 {
 	/* 
 	 * We need a way to generate the NoddeId from the stationID 
@@ -167,17 +167,16 @@ uint32_t GoodweAPI::hash(std::string str)
 
 	long hash = 5381;
 	size_t i = 0;
-	int c;
 	
 	for (i = 0; i < str.size(); i++)
 	{
-		c = str[i++];
+		int c = str[i++];
 		hash = ((hash << 5) + hash) + c;
 	}
 	return (uint32_t)hash;
 }
 
-float GoodweAPI::getPowerWatt(const std::string str)
+float GoodweAPI::getPowerWatt(const std::string &str)
 {
 	float result;
 	std::string units;
@@ -198,7 +197,7 @@ float GoodweAPI::getPowerWatt(const std::string str)
 }
 
 		
-float GoodweAPI::getEnergyWh(const std::string str)
+float GoodweAPI::getEnergyWh(const std::string &str)
 {
 	float result;
 	std::string units;
@@ -286,7 +285,7 @@ void GoodweAPI::GetMeterDetails()
 	}
 }
 
-void GoodweAPI::ParseStation(const std::string sStationId, const std::string sStationName)
+void GoodweAPI::ParseStation(const std::string &sStationId, const std::string &sStationName)
 {
 	// fetch power station details
 
@@ -356,7 +355,7 @@ void GoodweAPI::ParseStation(const std::string sStationId, const std::string sSt
 	SendTextSensor(NodeID, 2, 255, sStatus, "Station " + sStationName + " status");
 }
 
-void GoodweAPI::ParseDeviceList(const std::string sStationId, const std::string sStationName)
+void GoodweAPI::ParseDeviceList(const std::string &sStationId, const std::string &sStationName)
 {
 	// fetch interverter list
 
@@ -394,7 +393,7 @@ void GoodweAPI::ParseDeviceList(const std::string sStationId, const std::string 
 	}
 }
 
-void GoodweAPI::ParseDevice(Json::Value device, std::string sStationId, std::string sStationName)
+void GoodweAPI::ParseDevice(Json::Value device, const std::string &sStationId, const std::string &sStationName)
 {
 	if (device[DEVICE_SERIAL].empty() )
 	{

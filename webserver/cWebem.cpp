@@ -16,6 +16,7 @@
 #include "mime_types.hpp"
 #include "utf.hpp"
 #include "Base64.h"
+#include "sha1.hpp"
 #include "GZipHelper.h"
 #include <stdarg.h>
 #include <fstream>
@@ -43,13 +44,14 @@ cWebem::cWebem(
 		const std::string& doc_root) :
 				m_io_service(),
 				m_settings(settings),
+				m_authmethod(AUTH_LOGIN),
+				mySessionStore(NULL),
 				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
 				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
+				m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 				myServer(server_factory::create(settings, myRequestHandler)) {
-	m_authmethod = AUTH_LOGIN;
-	mySessionStore = NULL;
 	// associate handler to timer and schedule the first iteration
 	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 }
@@ -1181,7 +1183,8 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; HttpOnly; path=/; Expires=" << make_web_time(0);
+	// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
+	sstr << "; HttpOnly; Expires=" << make_web_time(0);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1296,6 +1299,100 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 		}
 	}
 	return false;
+}
+
+std::string cWebemRequestHandler::compute_accept_header(const std::string &websocket_key)
+{
+	// the length of an sha1 hash
+	const int sha1len = 20;
+	// the GUID as specified in RFC 6455
+	const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+	std::string combined = websocket_key + GUID;
+	unsigned char sha1result[sha1len];
+	sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
+	std::string accept = base64_encode(sha1result, sha1len);
+	return accept;
+}
+
+bool cWebemRequestHandler::is_upgrade_request(WebEmSession & session, const request& req, reply& rep)
+{
+	// request method should be GET
+	if (req.method != "GET") {
+		return false;
+	}
+	// http version should be 1.1 at least
+	if (((req.http_version_major * 10) + req.http_version_minor) < 11) {
+		return false;
+	}
+	const char *h;
+	// client MUST include Connection: Upgrade header
+	h = request::get_req_header(&req, "Connection");
+	if (!(h && boost::iequals(h, "Upgrade"))) {
+		return false;
+	};
+	// client MUST include Upgrade: websocket
+	h = request::get_req_header(&req, "Upgrade");
+	if (!(h && boost::iequals(h, "websocket"))) {
+		return false;
+	};
+	// we only have one service until now
+	if (req.uri != "/json") {
+		// todo: request uri could be an absolute URI as well!!!
+		rep = reply::stock_reply(reply::not_found);
+		return true;
+	}
+	h = request::get_req_header(&req, "Host");
+	// request MUST include a host header, even if we don't check it
+	if (!h) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Origin");
+	// request MUST include an origin header, even if we don't check it
+	// we only "allow" connections from browser clients
+	if (!h) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Version");
+	// request MUST include a version number
+	if (!h) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	int version = boost::lexical_cast<int>(h);
+	// we support versions 13 (and higher)
+	if (version < 13) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Protocol");
+	// check if a protocol is given, and it includes "domoticz".
+	std::string protocol_header = h;
+	if (!h || protocol_header.find("domoticz") == std::string::npos) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Key");
+	// request MUST include a sec-websocket-key header and we need to respond to it
+	if (!h) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	std::string websocket_key = h;
+	rep = reply::stock_reply(reply::switching_protocols);
+	reply::add_header(&rep, "Connection", "Upgrade");
+	reply::add_header(&rep, "Upgrade", "websocket");
+
+	std::string accept = compute_accept_header(websocket_key);
+	if (accept.empty()) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	reply::add_header(&rep, "Sec-Websocket-Accept", accept);
+	// we only speak the domoticz subprotocol
+	reply::add_header(&rep, "Sec-Websocket-Protocol", "domoticz");
+	return true;
 }
 
 static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
@@ -1616,9 +1713,50 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 
 	// Check authentication on each page or action, if it exists.
+	bool bCheckAuthentication = false;
+	if (isPage || isAction) {
+		bCheckAuthentication = true;
+	}
+	
+	if (isPage && (req.uri.find("dologout") != std::string::npos))
+	{
+		//Remove session id based on cookie
+		const char *cookie;
+		cookie = request::get_req_header(&req, "Cookie");
+		if (cookie != NULL)
+		{
+			std::string scookie = cookie;
+			int fpos = scookie.find("SID=");
+			int upos = scookie.find("_", fpos);
+			if ((fpos != std::string::npos) && (upos != std::string::npos))
+			{
+				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
+				_log.Log(LOG_STATUS, "Logout : remove session %s", sSID.c_str());
+				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+				if (itt != myWebem->m_sessions.end())
+				{
+					myWebem->m_sessions.erase(itt);
+				}
+				removeAuthToken(sSID);
+			}
+		}
+		session.username = "";
+		session.rights = -1;
+		session.forcelogin = true;
+		bCheckAuthentication = false; // do not authenticate the user, just logout
+	}
+
+	// Check if this is an upgrade request to a websocket connection
+	if (is_upgrade_request(session, req, rep)) {
+		return;
+	}
 	if ((isPage || isAction) && !CheckAuthentication(session, req, rep)) {
 		return;
 	}
+		// Check user authentication on each page or action, if it exists.
+		if (bCheckAuthentication && !CheckAuthentication(session, req, rep)) {
+			return;
+		}
 
 	// Copy the request to be able to fill its parameters attribute
 	request requestCopy = req;
@@ -1680,6 +1818,17 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				break;
 			}
 		}
+			// check if content is not gzipped, include won't work with non-text content
+			if (!rep.bIsGZIP) {
+				// Find and include any special cWebem strings
+				if (!myWebem->Include(rep.content)) {
+					if (mInfo.mtime_support && !mInfo.is_modified) {
+						//_log.Log(LOG_STATUS, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
+						rep = reply::stock_reply(reply::not_modified);
+						return;
+					}
+				}
+			}
 
 		if (content_type == "text/html"
 			|| content_type == "text/plain"
@@ -1688,7 +1837,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-			// check if content is not gzipped, include won't work with non-text content
+				// check if content is not gzipped, include won´t work with non-text content
 			if (!rep.bIsGZIP) {
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
@@ -1715,7 +1864,27 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-		else if (content_type.find("image/")!=std::string::npos)
+			else if (content_type.find("image/") != std::string::npos)
+			{
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+					return;
+				}
+				//Cache images
+				reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+				reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			}
+			else {
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+					return;
+				}
+			// tell browser that we are using UTF-8 encoding
+			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
+		}
+		if (content_type.find("image/")!=std::string::npos)
 		{
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
@@ -1740,6 +1909,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 	else
 	{
+		// RK todo: check this well, this else doesn't belong to is_upgrade_request()
 		if (session.reply_status != reply::ok)
 		{
 			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
@@ -1749,7 +1919,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		if (!rep.bIsGZIP) {
 			CompressWebOutput(req, rep);
 		}
-	}
+	} // if (is_upgrade_request())
 
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
@@ -1803,4 +1973,3 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 
 } //namespace server {
 } //namespace http {
-

@@ -563,9 +563,18 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
         while (bForceAddDay || (rtime < atime + 60) )
         {
                 if (tm1.tm_isdst == -1) // rtime was loaded from sunset/sunrise values; need to initialize tm1
+		{
                         localtime_r(&rtime, &tm1);
-                struct tm tm2;
+
+			//FIXME: because we are referencing the wrong date for sunset/sunrise values (i.e. today)
+			//	 we actually need to add 24 hours rather than a day and NOT correct for DST change
+			isdst = -1;
+	                tm1.tm_mday--;
+			tm1.tm_hour += 24;
+			// end of FIXME block
+		}
                 tm1.tm_mday++;
+                struct tm tm2;
                 constructTime(rtime, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec, isdst);
                 bForceAddDay = false;
         }

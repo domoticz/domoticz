@@ -17,7 +17,7 @@ _e1WireFamilyType ToFamily(const std::string& str)
    return (_e1WireFamilyType)xID;
 }
 
-void DeviceIdToByteArray(std::string deviceId,/*out*/unsigned char* byteArray)
+void DeviceIdToByteArray(const std::string &deviceId,/*out*/unsigned char* byteArray)
 {
    std::string str=deviceId;
    if (str.length()<(2*DEVICE_ID_SIZE))

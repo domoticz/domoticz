@@ -1,4 +1,4 @@
-Version 3.xxx (August xxth 2017)
+Version 3.xxx (October xxth 2017)
 - Implemented: Adjustment Value for Counter/Incremental sensors
 - Implemented: Camera, can now handle HTTPS url's
 - Implemented: Catalan language support (Big thanks to "delfisastre")
@@ -14,6 +14,7 @@ Version 3.xxx (August xxth 2017)
 - Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
 - Fixed: Blyss (manual adding to system)
 - Fixed: Floorplan door contact type
+- Implemented: dzVents 2.3.0: See dzVents/documentation/history.md
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
@@ -69,6 +70,7 @@ Version 3.8153 (July 30th 2017)
 - Implemented: Teleinfo : Added a switch indicating the current cost slot
 - Implemented: Timer Plan editor
 - Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
+- Integrated dzVents 2.0.0: See dzVents/documentation/history.md
 
 Version 3.5878 (November 10th 2016)
 - Fixes and various improvements
@@ -512,7 +514,7 @@ Version 2.2283 (February 21th 2015)
 - Implemented: OpenZWave, COMMAND_CLASS_COLOR_CONTROL (for o.a. Zipato RGBW) (needs to be accepted by openzwave yet)
 - Implemented: OpenZWave, Controller Node, option for Nightly Network Heal (disabled by default)
 - Implemented: OpenZWave, polling all multi_sensor values now (if polling enabled)
-- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE 
+- Implemented: OpenZWave, support for COMMAND_CLASS_THERMOSTAT_MODE and COMMAND_CLASS_THERMOSTAT_FAN_MODE
 - Implemented: OpenZWave, when doing an Inclusion, "allow new hardware" is enabled for 5 minutes if disabled
 - Implemented: Option for Dummy device to create Ampere Sensor
 - Implemented: Option for Dummy device to create Switch Sensor
@@ -773,7 +775,7 @@ Version 1.1680 (April 21th 2014)
 - Changed: Raspberry Pi temperature reporting intern. (Should save an extra return in the log output)
 - Changed: Temperatures are now valid till 380 degrees
 - Changed: Translation Language Loading
-- Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage 
+- Changed: ZWave, Power sensors that does not transmit usage, now used as power instead of usage
 - Fixed: custom_light_icons json request (now reporting status OK)
 - Fixed: Daylight Saving values for 29-march-2014
 - Fixed: Fibaro Wall Plug (fgwpe) config
@@ -1153,7 +1155,7 @@ Version 1.607 (May 11th 2013)
 - Fixed: Push On delayed Off was deleted from queue, and was being send
 - Fixed: PushOn button Off delay time now handles values above 255
 - Fixed: RFXtrx USB mode option in hardware settings, will now return to dashboard
-- Fixed: Scene 'Learn' code option can now be used with already known switches 
+- Fixed: Scene 'Learn' code option can now be used with already known switches
 - Fixed: Scenes with a Push On type switch will now only send the On command to this switch
 - Fixed: Switch Lights Off (Dimmer) now does not update slider position
 - Fixed: TE923 (Weather stations) hardware can now be shared
@@ -1219,7 +1221,7 @@ Version 1.412 (April 1th 2013)
 - Implemented: Sensors that are not received within xx minutes are not logged any more (one hour now, will be in the settings)
 - Implemented: SQLite faster journal/update mode on non-windows systems
 - Implemented: Started working on support for the CM180i
-- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus) 
+- Implemented: TE932Tool (USB 433Mhz Weather Station, Hideki weather station like IROX Pro X, Mebus TE923 or TFA Nexus)
 - Implemented: Temperature (large) icons now represents global temperature index
 - Implemented: Temperature/Weather sensors now display their main value in large font
 - Implemented: Unix update script
@@ -1261,7 +1263,7 @@ Version 1.0.9 (February 17th 2013)
 - Implemented: OWL113 option to display in Ampere/Usage
 - Implemented: P1 smart meter will update once a minute, or when usage difference is greater than 40 Watt
 - Implemented: P1 Smart meter, Gas value now send when changed, or every 5 minutes
-- Implemented: Serial port auto reconnect option 
+- Implemented: Serial port auto reconnect option
 - Implemented: Smoke Detector Off image
 - Implemented: temp_hum Rubicson/IW008T/TX95
 - Changed: Manual Add light switch types are now complete

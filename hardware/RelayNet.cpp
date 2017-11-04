@@ -223,19 +223,11 @@ bool RelayNet::StopHardware()
 
 bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	bool bOk = true;
-
 #if RELAYNET_USE_HTTP
-
-	bOk = WriteToHardwareHttp(pdata);
-
+	return WriteToHardwareHttp(pdata);
 #else
-
-	bOk = WriteToHardwareTcp(pdata);
-
+	return WriteToHardwareTcp(pdata);
 #endif
-
-	return bOk;
 }
 
 //===========================================================================
@@ -702,7 +694,6 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 		std::stringstream 			sLogin;
 		std::string 				sAccessToken;
 		std::stringstream			sURL;
-		std::stringstream 			szPostData;
 		std::vector<std::string>	ExtraHeaders;
 		std::string 				sResult;
 		int 						relay = pSen->LIGHTING2.unitcode;

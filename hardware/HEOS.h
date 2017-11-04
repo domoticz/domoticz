@@ -2,12 +2,12 @@
 
 #include "DomoticzHardware.h"
 
-#include <deque>
-#include <iostream>
 #include "ASyncTCP.h"
+#include "../json/json.h"
+
+#include <iosfwd>
 #include <string>
 #include <vector>
-#include "../json/json.h"
 
 class CHEOS : public CDomoticzHardwareBase, ASyncTCP
 {
