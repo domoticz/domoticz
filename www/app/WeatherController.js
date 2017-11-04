@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, permissions, livesocket) {
+	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
 
 		var ctrl = this;
 
@@ -85,29 +85,35 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			var id = "";
-			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
-				if (typeof data.ServerTime != 'undefined') {
-					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
-				}
 
-				if (typeof data.result != 'undefined') {
-					if (typeof data.ActTime != 'undefined') {
-						$.LastUpdateTime = parseInt(data.ActTime);
+			$.ajax({
+				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime,
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.ServerTime != 'undefined') {
+						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
 
-					// Change updated items in weather list
-					// TODO is there a better way to do this ?
-					data.result.forEach(function (newitem) {
-						ctrl.items.forEach(function (olditem, oldindex, oldarray) {
-							if (olditem.idx == newitem.idx) {
-								oldarray[oldindex] = newitem;
-								if ($scope.config.ShowUpdatedEffect == true) {
-									$("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-								}
-							}
-						});
-					});
+					if (typeof data.result != 'undefined') {
+						if (typeof data.ActTime != 'undefined') {
+							$.LastUpdateTime = parseInt(data.ActTime);
+						}
 
+						// Change updated items in temperatures list
+						// TODO is there a better way to do this ?
+						data.result.forEach(function (newitem) {
+							ctrl.items.forEach(function (olditem, oldindex, oldarray) {
+								if (olditem.idx == newitem.idx) {
+									oldarray[oldindex] = newitem;
+									if ($scope.config.ShowUpdatedEffect == true) {
+										$("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+									}
+								}
+							});
+						});
+
+					}
 				}
 			});
 			$scope.mytimer = $interval(function () {
@@ -126,14 +132,19 @@ define(['app'], function (app) {
 			}
 			$('#modal').show();
 
-			livesocket.getJson("json.htm?type=devices&filter=weather&used=true&order=Name", function (data) {
-				if (typeof data.result != 'undefined') {
-					if (typeof data.ActTime != 'undefined') {
-						$.LastUpdateTime = parseInt(data.ActTime);
+			$.ajax({
+				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						if (typeof data.ActTime != 'undefined') {
+							$.LastUpdateTime = parseInt(data.ActTime);
+						}
+						ctrl.items = data.result;
+					} else {
+						ctrl.items = [];
 					}
-					ctrl.items = data.result;
-				} else {
-					ctrl.items = [];
 				}
 			});
 			$('#modal').hide();
@@ -175,11 +186,10 @@ define(['app'], function (app) {
 		init();
 
 		function init() {
+			//global var
 			$.devIdx = 0;
 			$.LastUpdateTime = parseInt(0);
 			$scope.MakeGlobalConfig();
-
-			livesocket.Init();
 
 			var dialog_editweatherdevice_buttons = {};
 			dialog_editweatherdevice_buttons[$.t("Update")] = function () {
@@ -602,21 +612,6 @@ define(['app'], function (app) {
 						}
 					}
 
-					$scope.$on('jsonupdate', function (event, json) {
-						if (json.item) {
-							var newitem = json.item;
-							// Change updated items in weather list
-							// TODO is there a better way to do this ?
-							// console.log("Comparing UI item " + ctrl.item.idx + " with received item " + newitem.idx); // (debug info)
-							if (ctrl.item.idx == newitem.idx) {
-								// console.log("item found"); // (debug info)
-								ctrl.item = newitem;
-								if ($scope.$parent.config.ShowUpdatedEffect == true && $("#weatherwidgets #" + newitem.idx).length > 0) {
-									$("#weatherwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-								}
-							}
-						}
-					});
 				}
 			};
 		}]);
