@@ -253,14 +253,10 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
-<<<<<<< HEAD
-		{ HTYPE_DenkoviSmartdenIPIn, "Denkovi Smartden IP In with LAN interface" },
-		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
-=======
 		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
 		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
 		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
->>>>>>> upstream/development
+		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
