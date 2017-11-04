@@ -972,7 +972,8 @@ namespace http {
 					(ii == HTYPE_RaspberryHTU21D) ||
 					(ii == HTYPE_RaspberryTSL2561) ||
 					(ii == HTYPE_RaspberryPCF8574) ||
-					(ii == HTYPE_RaspberryBME280)
+					(ii == HTYPE_RaspberryBME280) ||
+					(ii == HTYPE_RaspberryMPC23017)
 					)
 				{
 					bDoAdd = false;
@@ -1177,6 +1178,9 @@ namespace http {
 				//all fine here!
 			}
 			else if (htype == HTYPE_RaspberryBME280) {
+				//all fine here!
+			}
+			else if (htype == HTYPE_RaspberryMCP23017) {
 				//all fine here!
 			}
 			else if (htype == HTYPE_Dummy) {
