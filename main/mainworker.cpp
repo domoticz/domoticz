@@ -10805,8 +10805,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		switchcmd = (atoi(sd[7].c_str()) == 1 ? "Off" : "On");
 	}
 
-	//when level = 0, set switch command to Off
-	if (switchcmd == "Set Level")
+	//adjust level
+	if (switchcmd=="Set Level" ||
+		switchcmd=="On")
 	{
 		if (
 			(level > 0) &&
@@ -10815,8 +10816,22 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		{
 			level -= 1;
 		}
-		if (level == 0)
-			switchcmd = "Off";
+		//when level = 0 and command is "Set Level", set switch command to Off
+		if (level==0 && switchcmd=="Set Level")
+			switchcmd="Off";
+	}
+
+	//when level = 0 and command is "On" replace level with "LastLevel"
+	if (switchcmd=="On" && level == 0 && switchtype != STYPE_Selector)
+	{
+		//Get LastLevel
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+		"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+		if (result.size() == 1)
+		{
+			level = atoi(result[0][0].c_str());
+		}
 	}
 
 	//
