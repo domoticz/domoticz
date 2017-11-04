@@ -2112,14 +2112,14 @@
     <ClInclude Include="..\webserver\WebsocketHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\push\WebsocketPush.h">
       <Filter>Pushers\Websocket</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationBrowser.h">
       <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Webserver</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2834,14 +2834,14 @@
     <ClCompile Include="..\webserver\WebsocketHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\push\WebsocketPush.cpp">
       <Filter>Pushers\Websocket</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationBrowser.cpp">
       <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

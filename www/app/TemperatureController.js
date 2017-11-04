@@ -141,40 +141,33 @@ define(['app'], function (app) {
 				$scope.mytimer = undefined;
 			}
 			var id = "";
-			$.ajax({
-				url: "json.htm?type=devices&filter=temp&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (typeof data.ServerTime != 'undefined') {
-						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+			livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
+
+				if (typeof data.result != 'undefined') {
+					if (typeof data.ActTime != 'undefined') {
+						$.LastUpdateTime = parseInt(data.ActTime);
 					}
 
-					if (typeof data.result != 'undefined') {
-						if (typeof data.ActTime != 'undefined') {
-							$.LastUpdateTime = parseInt(data.ActTime);
-						}
-
-						// Change updated items in temperatures list
-						// TODO is there a better way to do this ?
-						data.result.forEach(function (newitem) {
-							ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
-								if (olditem.idx == newitem.idx) {
-									oldarray[oldindex] = newitem;
-									if ($scope.config.ShowUpdatedEffect == true) {
-										$("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
-									}
+					// Change updated items in temperatures list
+					// TODO is there a better way to do this ?
+					data.result.forEach(function (newitem) {
+						ctrl.temperatures.forEach(function (olditem, oldindex, oldarray) {
+							if (olditem.idx == newitem.idx) {
+								oldarray[oldindex] = newitem;
+								if ($scope.config.ShowUpdatedEffect == true) {
+									$("#tempwidgets #" + newitem.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 								}
-							});
+							}
 						});
-					}
+					});
 				}
 			});
-            /*
-                        $scope.mytimer = $interval(function () {
-                            RefreshTemps();
-                        }, 10000);
-            */
+			$scope.mytimer = $interval(function () {
+				RefreshTemps();
+			}, 10000);
 		}
 
 		ShowForecast = function () {
@@ -194,6 +187,9 @@ define(['app'], function (app) {
 			};
 
             livesocket.getJson("json.htm?type=devices&filter=temp&used=true&order=Name", function (data) {
+				if (typeof data.ServerTime != 'undefined') {
+					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
+				}
 				if (typeof data == "string") {
 					data = JSON.parse(data);
 				}
