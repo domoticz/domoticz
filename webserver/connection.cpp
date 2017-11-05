@@ -280,7 +280,8 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 		// websocket variables
 		size_t bytes_consumed;
 
-		switch (connection_type) {
+		switch (connection_type)
+		{
 		case connection_http:
 			begin = boost::asio::buffer_cast<const char*>(_buf.data());
 			try
@@ -292,16 +293,6 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 			catch (...)
 			{
 				_log.Log(LOG_ERROR, "Exception parsing http request.");
-			}
-
-			request_handler_.handle_request(request_, reply_);
-
-			if (request_.keep_alive && ((reply_.status == reply::ok) || (reply_.status == reply::no_content) || (reply_.status == reply::not_modified))) {
-				// Allows request handler to override the header (but it should not)
-				reply::add_header_if_absent(&reply_, "Connection", "Keep-Alive");
-				std::stringstream ss;
-				ss << "max=" << default_max_requests_ << ", timeout=" << read_timeout_;
-				reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
 			}
 
 			if (result) {
@@ -317,6 +308,7 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					request_.host_address = request_.host_address.substr(7);
 				}
 				request_handler_.handle_request(request_, reply_);
+
 				if (reply_.status == reply::switching_protocols) {
 					// this was an upgrade request
 					connection_type = connection_websocket;
@@ -326,11 +318,21 @@ void connection::handle_read(const boost::system::error_code& error, std::size_t
 					websocket_parser.GetHandler()->store_session_id(request_, reply_);
 					// todo: check if multiple connection from the same client in CONNECTING state?
 				}
+
+				if (request_.keep_alive && ((reply_.status == reply::ok) || (reply_.status == reply::no_content) || (reply_.status == reply::not_modified))) {
+					// Allows request handler to override the header (but it should not)
+					reply::add_header_if_absent(&reply_, "Connection", "Keep-Alive");
+					std::stringstream ss;
+					ss << "max=" << default_max_requests_ << ", timeout=" << read_timeout_;
+					reply::add_header_if_absent(&reply_, "Keep-Alive", ss.str());
+				}
+
 				MyWrite(reply_.to_string(request_.method));
 				if (reply_.status == reply::switching_protocols) {
 					// this was an upgrade request, set this value after MyWrite to allow the 101 response to go out
 					connection_type = connection_websocket;
 				}
+
 				if (keepalive_) {
 					read_more();
 				}
