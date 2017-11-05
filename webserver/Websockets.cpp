@@ -15,7 +15,14 @@
 namespace http {
 	namespace server {
 
-		CWebsocketFrame::CWebsocketFrame() { };
+		CWebsocketFrame::CWebsocketFrame() {
+			fin = false;
+			rsvi1 = rsvi2 = rsvi3 = false;
+			opcode = opcode_continuation;
+			masking = false;
+			payloadlen = 0;
+			bytes_consumed = 0;
+		};
 		CWebsocketFrame::~CWebsocketFrame() {};
 
 		std::string CWebsocketFrame::unmask(const uint8_t *mask, const uint8_t *bytes, size_t payloadlen) {
@@ -29,7 +36,6 @@ namespace http {
 
 		std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload, bool domasking)
 		{
-			uint8_t masking_key[4];
 			size_t payloadlen = payload.length();
 			std::string res;
 			// byte 0
@@ -52,12 +58,13 @@ namespace http {
 					while (bits) {
 						bits -= 8;
 						uint8_t ch = (uint8_t)((size_t)(payloadlen >> bits) & 0xff);
-						res += (uint8_t)((size_t)(payloadlen >> bits) & 0xff);
+						res += ch;
 					}
 				}
 			}
 			if (domasking) {
 				// masking key
+				uint8_t masking_key[4];
 				for (uint8_t i = 0; i < 4; i++) {
 					masking_key[i] = rand();
 					res += masking_key[i];
@@ -150,12 +157,12 @@ namespace http {
 			return opcode;
 		};
 
-		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler)
+		CWebsocket::CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler):
+			OUR_PING_ID("fd")
 		{
 			start_new_packet = true;
 			MyWrite = _MyWrite;
 			handler = _handler;
-			OUR_PING_ID = "fd";
 		}
 
 		CWebsocket::~CWebsocket()

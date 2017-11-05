@@ -783,6 +783,9 @@ void cWebem::ClearUserPasswords()
 void cWebem::AddLocalNetworks(std::string network)
 {
 	_tIPNetwork ipnetwork;
+	ipnetwork.network = 0;
+	ipnetwork.mask = 0;
+	ipnetwork.hostname = "";
 
 	if (network=="")
 	{
@@ -868,12 +871,12 @@ void cWebem::ClearLocalNetworks()
 	m_localnetworks.clear();
 }
 
-void cWebem::SetDigistRealm(std::string realm)
+void cWebem::SetDigistRealm(const std::string &realm)
 {
-	m_DigistRealm=realm;
+	m_DigistRealm = realm;
 }
 
-void cWebem::SetZipPassword(std::string password)
+void cWebem::SetZipPassword(const std::string &password)
 {
 	m_zippassword = password;
 }
@@ -1343,20 +1346,20 @@ bool cWebemRequestHandler::is_upgrade_request(WebEmSession & session, const requ
 	}
 	h = request::get_req_header(&req, "Host");
 	// request MUST include a host header, even if we don't check it
-	if (!h) {
+	if (h==NULL) {
 		rep = reply::stock_reply(reply::forbidden);
 		return true;
 	}
 	h = request::get_req_header(&req, "Origin");
 	// request MUST include an origin header, even if we don't check it
 	// we only "allow" connections from browser clients
-	if (!h) {
+	if (h==NULL) {
 		rep = reply::stock_reply(reply::forbidden);
 		return true;
 	}
 	h = request::get_req_header(&req, "Sec-Websocket-Version");
 	// request MUST include a version number
-	if (!h) {
+	if (h==NULL) {
 		rep = reply::stock_reply(reply::internal_server_error);
 		return true;
 	}
@@ -1375,7 +1378,7 @@ bool cWebemRequestHandler::is_upgrade_request(WebEmSession & session, const requ
 	}
 	h = request::get_req_header(&req, "Sec-Websocket-Key");
 	// request MUST include a sec-websocket-key header and we need to respond to it
-	if (!h) {
+	if (h==NULL) {
 		rep = reply::stock_reply(reply::internal_server_error);
 		return true;
 	}

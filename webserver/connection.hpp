@@ -61,9 +61,6 @@ public:
   /// Stop all asynchronous operations associated with the connection.
   void stop();
 
-  /// Last user interaction
-  time_t m_lastresponse;
-
   // send packet over websocket
   void WS_Write(const std::string &packet_data);
   /// Add content to write buffer

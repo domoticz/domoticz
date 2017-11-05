@@ -160,7 +160,7 @@ static time_t last_write_time(const std::string &path)
 	return 0;
 }
 
-bool request_handler::not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo)
+bool request_handler::not_modified(const std::string &full_path, const request &req, reply &rep, modify_info &mInfo)
 {
 	mInfo.last_written = last_write_time(full_path);
 	if (mInfo.last_written == 0) {

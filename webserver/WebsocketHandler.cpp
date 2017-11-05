@@ -95,7 +95,6 @@ namespace http {
 				std::string sSID;
 				std::string sAuthToken;
 				std::string szTime;
-				bool expired = false;
 
 				// Parse session id and its expiration date
 				std::string scookie = cookie_header;
@@ -124,7 +123,7 @@ namespace http {
 					sstr << szTime;
 					sstr >> stime;
 
-					expired = stime < now;
+					bool expired = stime < now;
 					if (!expired) {
 						sessionid = sSID;
 					}
