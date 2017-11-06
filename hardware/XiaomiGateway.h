@@ -19,7 +19,7 @@ public:
 	void InsertUpdateSwitch(const std::string &nodeid, const std::string &Name, const bool bIsOn, const _eSwitchType switchtype, const int unittype, const int level, const std::string &messagetype, const std::string &load_power, const std::string &power_consumed, const int battery);
 	void InsertUpdateCubeText(const std::string &nodeid, const std::string &Name, const std::string &degrees);
 	void InsertUpdateVoltage(const std::string &nodeid, const std::string &Name, const int VoltageLevel);
-	void InsertUpdateLux(const std::string &nodeid, const std::string &Name, const int Illumination);
+	void InsertUpdateLux(const std::string &nodeid, const std::string &Name, const int Illumination, const int battery);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature, const int battery);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity, const int battery);
 	void InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery);

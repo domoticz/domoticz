@@ -30,13 +30,13 @@
 #include "../hardware/P1MeterTCP.h"
 #include "../hardware/YouLess.h"
 #ifdef WITH_LIBUSB
-	#include "../hardware/TE923.h"
+#include "../hardware/TE923.h"
 #include "../hardware/VolcraftCO20.h"
 #endif
 #include "../hardware/Rego6XXSerial.h"
 #include "../hardware/Razberry.h"
 #ifdef WITH_OPENZWAVE
-	#include "../hardware/OpenZWave.h"
+#include "../hardware/OpenZWave.h"
 #endif
 #include "../hardware/DavisLoggerSerial.h"
 #include "../hardware/1Wire.h"
@@ -128,13 +128,16 @@
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/Rtl433.h"
 #include "../hardware/OnkyoAVTCP.h"
+#include "../hardware/USBtin.h"
+#include "../hardware/USBtin_MultiblocV8.h"
+#include "../hardware/EnphaseAPI.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
 #ifdef WITH_GPIO
-	#include "../hardware/Gpio.h"
-	#include "../hardware/GpioPin.h"
+#include "../hardware/Gpio.h"
+#include "../hardware/GpioPin.h"
 #endif
 
 #ifdef WIN32
@@ -156,8 +159,8 @@
 #endif
 
 #ifdef PARSE_RFXCOM_DEVICE_LOG
-	#include <iostream>
-	#include <fstream>
+#include <iostream>
+#include <fstream>
 #endif
 
 #define round(a) ( int ) ( a + .5 )
@@ -177,20 +180,20 @@ CInfluxPush m_influxpush;
 
 
 namespace tcp {
-namespace server {
-	class CTCPClient;
-} //namespace server
+	namespace server {
+		class CTCPClient;
+	} //namespace server
 } //namespace tcp
 
 MainWorker::MainWorker()
 {
-	m_SecCountdown=-1;
-	m_stoprequested=false;
+	m_SecCountdown = -1;
+	m_stoprequested = false;
 	m_stopRxMessageThread = false;
-	m_verboselevel=EVBL_None;
+	m_verboselevel = EVBL_None;
 
-	m_bStartHardware=false;
-	m_hardwareStartCounter=0;
+	m_bStartHardware = false;
+	m_hardwareStartCounter = 0;
 
 	// Set default settings for web servers
 	m_webserver_settings.listening_address = "::"; // listen to all network interfaces
@@ -210,21 +213,21 @@ MainWorker::MainWorker()
 	m_secure_webserver_settings.verify_fail_if_no_peer_cert = false;
 	m_secure_webserver_settings.verify_file_path = "";
 #endif
-	m_bIgnoreUsernamePassword=false;
+	m_bIgnoreUsernamePassword = false;
 
-	time_t atime=mytime(NULL);
+	time_t atime = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&atime,&ltime);
-	m_ScheduleLastMinute=ltime.tm_min;
-	m_ScheduleLastHour=ltime.tm_hour;
+	localtime_r(&atime, &ltime);
+	m_ScheduleLastMinute = ltime.tm_min;
+	m_ScheduleLastHour = ltime.tm_hour;
 	m_ScheduleLastMinuteTime = 0;
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
-        m_LastSunriseSet = "";
+	m_LastSunriseSet = "";
 
-	m_bHaveDownloadedDomoticzUpdate=false;
-	m_bHaveDownloadedDomoticzUpdateSuccessFull=false;
-	m_bDoDownloadDomoticzUpdate=false;
+	m_bHaveDownloadedDomoticzUpdate = false;
+	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;
+	m_bDoDownloadDomoticzUpdate = false;
 	m_LastUpdateCheck = 0;
 	m_bHaveUpdate = false;
 	m_iRevision = 0;
@@ -285,7 +288,7 @@ void MainWorker::AddAllDomoticzHardware()
 void MainWorker::StartDomoticzHardware()
 {
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
 		if (!(*itt)->IsStarted())
 		{
@@ -298,7 +301,7 @@ void MainWorker::StopDomoticzHardware()
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
@@ -338,7 +341,7 @@ void MainWorker::GetAvailableWebThemes()
 
 void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 {
-	pHardware->m_bEnableReceive=false;
+	pHardware->m_bEnableReceive = false;
 
 	if (
 		(pHardware->HwdType != HTYPE_RFXtrx315) &&
@@ -354,7 +357,7 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	}
 	pHardware->m_rxbufferpos = 0;
 	//Send Reset
-	SendCommand(pHardware->m_HwdID,cmdRESET,"Reset");
+	SendCommand(pHardware->m_HwdID, cmdRESET, "Reset");
 	//wait at least 500ms
 	boost::this_thread::sleep(boost::posix_time::millisec(500));
 	pHardware->m_rxbufferpos = 0;
@@ -368,14 +371,14 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	int devidx=FindDomoticzHardware(pHardware->m_HwdID);
-	if (devidx!=-1) //it is already there!, remove it
+	int devidx = FindDomoticzHardware(pHardware->m_HwdID);
+	if (devidx != -1) //it is already there!, remove it
 	{
 		RemoveDomoticzHardware(m_hardwaredevices[devidx]);
 	}
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	pHardware->sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2, _3, _4 ) );
-	pHardware->sOnConnected.connect( boost::bind( &MainWorker::OnHardwareConnected, this, _1 ) );
+	pHardware->sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
+	pHardware->sOnConnected.connect(boost::bind(&MainWorker::OnHardwareConnected, this, _1));
 	m_hardwaredevices.push_back(pHardware);
 }
 
@@ -383,10 +386,10 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
-		CDomoticzHardwareBase *pOrgDevice=*itt;
-		if (pOrgDevice==pHardware) {
+		CDomoticzHardwareBase *pOrgDevice = *itt;
+		if (pOrgDevice == pHardware) {
 			try
 			{
 				pOrgDevice->Stop();
@@ -403,8 +406,8 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(int HwdId)
 {
-	int dpos=FindDomoticzHardware(HwdId);
-	if (dpos==-1)
+	int dpos = FindDomoticzHardware(HwdId);
+	if (dpos == -1)
 		return;
 #ifdef ENABLE_PYTHON
 	m_pluginsystem.DeregisterPlugin(HwdId);
@@ -416,11 +419,11 @@ int MainWorker::FindDomoticzHardware(int HwdId)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
-		if ((*itt)->m_HwdID==HwdId)
+		if ((*itt)->m_HwdID == HwdId)
 		{
-			return (itt-m_hardwaredevices.begin());
+			return (itt - m_hardwaredevices.begin());
 		}
 	}
 	return -1;
@@ -444,9 +447,9 @@ CDomoticzHardwareBase* MainWorker::GetHardware(int HwdId)
 {
 	boost::lock_guard<boost::mutex> l(m_devicemutex);
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt=m_hardwaredevices.begin(); itt!=m_hardwaredevices.end(); ++itt)
+	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 	{
-		if ((*itt)->m_HwdID==HwdId)
+		if ((*itt)->m_HwdID == HwdId)
 		{
 			return (*itt);
 		}
@@ -491,7 +494,7 @@ bool MainWorker::GetSunSettings()
 	int nValue;
 	std::string sValue;
 	std::vector<std::string> strarray;
-	if (m_sql.GetPreferencesVar("Location",nValue,sValue))
+	if (m_sql.GetPreferencesVar("Location", nValue, sValue))
 		StringSplit(sValue, ";", strarray);
 
 	if (strarray.size() != 2)
@@ -502,34 +505,34 @@ bool MainWorker::GetSunSettings()
 		return false;
 	}
 
-	std::string Latitude=strarray[0];
-	std::string Longitude=strarray[1];
+	std::string Latitude = strarray[0];
+	std::string Longitude = strarray[1];
 
-	time_t atime=mytime(NULL);
+	time_t atime = mytime(NULL);
 	struct tm ltime;
-	localtime_r(&atime,&ltime);
+	localtime_r(&atime, &ltime);
 
-	int year=ltime.tm_year+1900;
-	int month=ltime.tm_mon+1;
-	int day=ltime.tm_mday;
+	int year = ltime.tm_year + 1900;
+	int month = ltime.tm_mon + 1;
+	int day = ltime.tm_mday;
 
-	double dLatitude=atof(Latitude.c_str());
-	double dLongitude=atof(Longitude.c_str());
+	double dLatitude = atof(Latitude.c_str());
+	double dLongitude = atof(Longitude.c_str());
 
 	SunRiseSet::_tSubRiseSetResults sresult;
-	SunRiseSet::GetSunRiseSet(dLatitude,dLongitude,year,month,day,sresult);
+	SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
 
 	std::string sunrise;
 	std::string sunset;
 
 	char szRiseSet[30];
-	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunRiseHour,sresult.SunRiseMin);
-	sunrise=szRiseSet;
-	sprintf(szRiseSet,"%02d:%02d:00",sresult.SunSetHour,sresult.SunSetMin);
-	sunset=szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
+	sunrise = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
+	sunset = szRiseSet;
 
 	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
-	std::string riseset=sunrise.substr(0, sunrise.size()-3)+";"+sunset.substr(0, sunrise.size() - 3); //make a short version
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunrise.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
 		m_LastSunriseSet = riseset;
@@ -546,12 +549,12 @@ bool MainWorker::GetSunSettings()
 
 void MainWorker::SetVerboseLevel(eVerboseLevel Level)
 {
-	m_verboselevel=Level;
+	m_verboselevel = Level;
 }
 
 eVerboseLevel MainWorker::GetVerboseLevel()
 {
-  return m_verboselevel;
+	return m_verboselevel;
 }
 
 void MainWorker::SetWebserverSettings(const server_settings & settings)
@@ -587,22 +590,22 @@ bool MainWorker::RestartHardware(const std::string &idx)
 	result = m_sql.safe_query(
 		"SELECT Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE (ID=='%q')",
 		idx.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false;
-	std::vector<std::string> sd=result[0];
-	std::string Name=sd[0];
-	std::string senabled=(sd[1]=="1")?"true":"false";
-	_eHardwareTypes htype=(_eHardwareTypes)atoi(sd[2].c_str());
-	std::string address=sd[3];
-	unsigned short port=(unsigned short)atoi(sd[4].c_str());
+	std::vector<std::string> sd = result[0];
+	std::string Name = sd[0];
+	std::string senabled = (sd[1] == "1") ? "true" : "false";
+	_eHardwareTypes htype = (_eHardwareTypes)atoi(sd[2].c_str());
+	std::string address = sd[3];
+	unsigned short port = (unsigned short)atoi(sd[4].c_str());
 	std::string serialport = sd[5];
-	std::string username=sd[6];
-	std::string password=sd[7];
-	std::string extra=sd[8];
-	int Mode1=atoi(sd[9].c_str());
-	int Mode2=atoi(sd[10].c_str());
-	int Mode3=atoi(sd[11].c_str());
-	int Mode4=atoi(sd[12].c_str());
+	std::string username = sd[6];
+	std::string password = sd[7];
+	std::string extra = sd[8];
+	int Mode1 = atoi(sd[9].c_str());
+	int Mode2 = atoi(sd[10].c_str());
+	int Mode3 = atoi(sd[11].c_str());
+	int Mode4 = atoi(sd[12].c_str());
 	int Mode5 = atoi(sd[13].c_str());
 	int Mode6 = atoi(sd[14].c_str());
 	int DataTimeout = atoi(sd[15].c_str());
@@ -632,14 +635,14 @@ bool MainWorker::AddHardwareFromParams(
 	const int Mode6,
 	const int DataTimeout,
 	const bool bDoStart
-	)
+)
 {
 	RemoveDomoticzHardware(ID);
 
 	if (!Enabled)
 		return true;
 
-	CDomoticzHardwareBase *pHardware=NULL;
+	CDomoticzHardwareBase *pHardware = NULL;
 
 	switch (Type)
 	{
@@ -652,20 +655,20 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new P1MeterSerial(ID, SerialPort, (Mode1 == 1) ? 115200 : 9600, (Mode2 != 0), Mode3);
 		break;
 	case HTYPE_Rego6XX:
-		pHardware = new CRego6XXSerial(ID,SerialPort, Mode1);
+		pHardware = new CRego6XXSerial(ID, SerialPort, Mode1);
 		break;
 	case HTYPE_DavisVantage:
-		pHardware = new CDavisLoggerSerial(ID,SerialPort, 19200);
+		pHardware = new CDavisLoggerSerial(ID, SerialPort, 19200);
 		break;
 	case HTYPE_S0SmartMeterUSB:
-		pHardware = new S0MeterSerial(ID,SerialPort, 9600);
+		pHardware = new S0MeterSerial(ID, SerialPort, 9600);
 		break;
 	case HTYPE_S0SmartMeterTCP:
 		//LAN
 		pHardware = new S0MeterTCP(ID, Address, Port);
 		break;
 	case HTYPE_OpenThermGateway:
-		pHardware = new OTGWSerial(ID,SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		pHardware = new OTGWSerial(ID, SerialPort, 9600, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_TeleinfoMeter:
 		pHardware = new CTeleinfoSerial(ID, SerialPort, DataTimeout, Mode1, (Mode2 != 0), Mode3);
@@ -681,20 +684,20 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OpenZWave:
 #ifdef WITH_OPENZWAVE
-			pHardware = new COpenZWave(ID, SerialPort);
+		pHardware = new COpenZWave(ID, SerialPort);
 #endif
-			break;
+		break;
 	case HTYPE_EnOceanESP2:
-		pHardware = new CEnOceanESP2(ID,SerialPort, Mode1);
+		pHardware = new CEnOceanESP2(ID, SerialPort, Mode1);
 		break;
 	case HTYPE_EnOceanESP3:
-		pHardware = new CEnOceanESP3(ID,SerialPort, Mode1);
+		pHardware = new CEnOceanESP3(ID, SerialPort, Mode1);
 		break;
 	case HTYPE_Meteostick:
 		pHardware = new Meteostick(ID, SerialPort, 115200);
 		break;
 	case HTYPE_EVOHOME_SERIAL:
-		pHardware = new CEvohomeSerial(ID,SerialPort,Mode1,Filename);
+		pHardware = new CEvohomeSerial(ID, SerialPort, Mode1, Filename);
 		break;
 	case HTYPE_EVOHOME_TCP:
 		pHardware = new CEvohomeTCP(ID, Address, Port, Filename);
@@ -708,7 +711,7 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_CurrentCostMeter:
 		pHardware = new CurrentCostMeterSerial(ID, SerialPort, (Mode1 == 1) ? 57600 : 9600);
 		break;
-    case HTYPE_RAVEn:
+	case HTYPE_RAVEn:
 		pHardware = new RAVEn(ID, SerialPort);
 		break;
 	case HTYPE_Comm5Serial:
@@ -768,19 +771,19 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_LimitlessLights:
 		//LAN
-		{
-			int rmode1 = Mode1;
-			if (rmode1 == 0)
-				rmode1 = 1;
-			pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
-		}
-		break;
+	{
+		int rmode1 = Mode1;
+		if (rmode1 == 0)
+			rmode1 = 1;
+		pHardware = new CLimitLess(ID, rmode1, Mode2, Address, Port);
+	}
+	break;
 	case HTYPE_YouLess:
 		//LAN
 		pHardware = new CYouLess(ID, Address, Port, Password);
 		break;
 	case HTYPE_WINDDELEN:
-	    pHardware = new CWinddelen(ID, Address, Port, Mode1);
+		pHardware = new CWinddelen(ID, Address, Port, Mode1);
 		break;
 	case HTYPE_ETH8020:
 		//LAN
@@ -882,13 +885,13 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, 0);
 		break;
 	case HTYPE_Wunderground:
-		pHardware = new CWunderground(ID,Username,Password);
+		pHardware = new CWunderground(ID, Username, Password);
 		break;
 	case HTYPE_HTTPPOLLER:
 		pHardware = new CHttpPoller(ID, Username, Password, Address, Filename, Port);
 		break;
 	case HTYPE_DarkSky:
-		pHardware = new CDarkSky(ID,Username,Password);
+		pHardware = new CDarkSky(ID, Username, Password);
 		break;
 	case HTYPE_AccuWeather:
 		pHardware = new CAccuWeather(ID, Username, Password);
@@ -897,16 +900,16 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new SolarEdgeAPI(ID, Username);
 		break;
 	case HTYPE_Netatmo:
-		pHardware = new CNetatmo(ID,Username,Password);
+		pHardware = new CNetatmo(ID, Username, Password);
 		break;
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password);
 		break;
 	case HTYPE_SBFSpot:
-		pHardware = new CSBFSpot(ID,Username);
+		pHardware = new CSBFSpot(ID, Username);
 		break;
 	case HTYPE_ICYTHERMOSTAT:
-		pHardware = new CICYThermostat(ID,Username,Password);
+		pHardware = new CICYThermostat(ID, Username, Password);
 		break;
 	case HTYPE_TOONTHERMOSTAT:
 		pHardware = new CToonThermostat(ID, Username, Password, Mode1);
@@ -930,7 +933,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CHarmonyHub(ID, Address, Port);
 		break;
 	case HTYPE_PVOUTPUT_INPUT:
-		pHardware = new CPVOutputInput(ID,Username,Password);
+		pHardware = new CPVOutputInput(ID, Username, Password);
 		break;
 	case HTYPE_Dummy:
 		pHardware = new CDummy(ID);
@@ -993,7 +996,7 @@ bool MainWorker::AddHardwareFromParams(
 #ifdef ENABLE_PYTHON
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
 #endif
-	    break;
+		break;
 	case HTYPE_XiaomiGateway:
 		pHardware = new XiaomiGateway(ID);
 		break;
@@ -1010,17 +1013,23 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CEvohomeWeb(ID, Username, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_Rtl433:
-		pHardware = new CRtl433(ID,Filename);
+		pHardware = new CRtl433(ID, Filename);
 		break;
 	case HTYPE_OnkyoAVTCP:
 		pHardware = new OnkyoAVTCP(ID, Address, Port);
+		break;
+	case HTYPE_USBtinGateway:
+		pHardware = new USBtin(ID, SerialPort, Mode1, Mode2);
+		break;
+	case HTYPE_EnphaseAPI:
+		pHardware = new EnphaseAPI(ID, Address, Port);
 		break;
 	}
 
 	if (pHardware)
 	{
-		pHardware->HwdType=Type;
-		pHardware->Name=Name;
+		pHardware->HwdType = Type;
+		pHardware->Name = Name;
 		pHardware->m_DataTimeout = DataTimeout;
 		AddDomoticzHardware(pHardware);
 
@@ -1056,8 +1065,8 @@ bool MainWorker::Start()
 	m_influxpush.Start();
 	m_googlepubsubpush.Start();
 #ifdef PARSE_RFXCOM_DEVICE_LOG
-	if (m_bStartHardware==false)
-		m_bStartHardware=true;
+	if (m_bStartHardware == false)
+		m_bStartHardware = true;
 #endif
 	// load notifications configuration
 	m_notifications.LoadConfig();
@@ -1117,12 +1126,12 @@ bool MainWorker::StartThread()
 #endif
 		{
 #ifdef WIN32
-			MessageBox(0,"Error starting webserver(s), check if ports are not in use!", MB_OK, MB_ICONERROR);
+			MessageBox(0, "Error starting webserver(s), check if ports are not in use!", MB_OK, MB_ICONERROR);
 #endif
 			return false;
 		}
 	}
-	int nValue=0;
+	int nValue = 0;
 	if (m_sql.GetPreferencesVar("AuthenticationMethod", nValue))
 	{
 		m_webservers.SetAuthenticationMethod(nValue);
@@ -1139,14 +1148,14 @@ bool MainWorker::StartThread()
 	m_scheduler.StartScheduler();
 	m_cameras.ReloadCameras();
 
-	int rnvalue=0;
+	int rnvalue = 0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
-	if (rnvalue!=0)
+	if (rnvalue != 0)
 	{
 		char szPort[100];
-		sprintf(szPort,"%d",rnvalue);
-		m_sharedserver.sDecodeRXMessage.connect( boost::bind( &MainWorker::DecodeRXMessage, this, _1, _2, _3, _4 ) );
-		m_sharedserver.StartServer("::",szPort);
+		sprintf(szPort, "%d", rnvalue);
+		m_sharedserver.sDecodeRXMessage.connect(boost::bind(&MainWorker::DecodeRXMessage, this, _1, _2, _3, _4));
+		m_sharedserver.StartServer("::", szPort);
 
 		LoadSharedUsers();
 	}
@@ -1154,7 +1163,7 @@ bool MainWorker::StartThread()
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work, this)));
 	m_rxMessageThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&MainWorker::Do_Work_On_Rx_Messages, this)));
 
-	return (m_thread!=NULL) && (m_rxMessageThread!=NULL);
+	return (m_thread != NULL) && (m_rxMessageThread != NULL);
 }
 
 #define HEX( x ) \
@@ -1191,7 +1200,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	machine = "armv7l";
 #endif
 
-	if ((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64") && (machine!= "aarch64"))
+	if ((m_szSystemName != "windows") && (machine != "armv6l") && (machine != "armv7l") && (machine != "x86_64") && (machine != "aarch64"))
 	{
 		//Only Raspberry Pi (Wheezy)/Ubuntu/windows/osx for now!
 		return false;
@@ -1232,7 +1241,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	stdreplace(revfile, "\r\n", "\n");
 	std::vector<std::string> strarray;
 	StringSplit(revfile, "\n", strarray);
-	if (strarray.size() <1)
+	if (strarray.size() < 1)
 		return false;
 	StringSplit(strarray[0], " ", strarray);
 	if (strarray.size() != 3)
@@ -1243,7 +1252,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 #ifdef DEBUG_DOWNLOAD
 	m_bHaveUpdate = true;
 #else
-	m_bHaveUpdate = ((version != m_iRevision)&& (version < m_iRevision));
+	m_bHaveUpdate = ((version != m_iRevision) && (version < m_iRevision));
 #endif
 	return m_bHaveUpdate;
 }
@@ -1265,8 +1274,8 @@ bool MainWorker::StartDownloadUpdate()
 
 void MainWorker::HandleAutomaticBackups()
 {
-	int nValue=0;
-	if (!m_sql.GetPreferencesVar("UseAutoBackup",nValue))
+	int nValue = 0;
+	if (!m_sql.GetPreferencesVar("UseAutoBackup", nValue))
 		return;
 	if (nValue != 1)
 		return;
@@ -1295,7 +1304,7 @@ void MainWorker::HandleAutomaticBackups()
 
 	time_t now = mytime(NULL);
 	struct tm tm1;
-	localtime_r(&now,&tm1);
+	localtime_r(&now, &tm1);
 	int hour = tm1.tm_hour;
 	int day = tm1.tm_mday;
 	int month = tm1.tm_mon;
@@ -1310,63 +1319,63 @@ void MainWorker::HandleAutomaticBackups()
 
 	DIR *lDir;
 	//struct dirent *ent;
-	if ((lastHourBackup == -1)||(lastHourBackup !=hour)) {
+	if ((lastHourBackup == -1) || (lastHourBackup != hour)) {
 
 		if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
 			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << ".db";
 
-			std::string OutputFileName=sbackup_DirH + sTmp.str();
+			std::string OutputFileName = sbackup_DirH + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
 				m_sql.SetLastBackupNo("Hour", hour);
 			}
 			else {
-				_log.Log(LOG_ERROR,"Error writing automatic hourly backup file");
+				_log.Log(LOG_ERROR, "Error writing automatic hourly backup file");
 			}
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR,"Error accessing automatic backup directories");
+			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
 		}
 	}
-	if ((lastDayBackup == -1)||(lastDayBackup !=day)) {
+	if ((lastDayBackup == -1) || (lastDayBackup != day)) {
 
 		if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
 			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << ".db";
 
-			std::string OutputFileName=sbackup_DirD + sTmp.str();
+			std::string OutputFileName = sbackup_DirD + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
 				m_sql.SetLastBackupNo("Day", day);
 			}
 			else {
-				_log.Log(LOG_ERROR,"Error writing automatic daily backup file");
+				_log.Log(LOG_ERROR, "Error writing automatic daily backup file");
 			}
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR,"Error accessing automatic backup directories");
+			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
 		}
 	}
-	if ((lastMonthBackup == -1)||(lastMonthBackup !=month)) {
+	if ((lastMonthBackup == -1) || (lastMonthBackup != month)) {
 		if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month+1 << ".db";
+			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << ".db";
 
-			std::string OutputFileName=sbackup_DirM + sTmp.str();
+			std::string OutputFileName = sbackup_DirM + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
 				m_sql.SetLastBackupNo("Month", month);
 			}
 			else {
-				_log.Log(LOG_ERROR,"Error writing automatic monthly backup file");
+				_log.Log(LOG_ERROR, "Error writing automatic monthly backup file");
 			}
 			closedir(lDir);
 		}
 		else {
-			_log.Log(LOG_ERROR,"Error accessing automatic backup directories");
+			_log.Log(LOG_ERROR, "Error accessing automatic backup directories");
 		}
 	}
 	_log.Log(LOG_STATUS, "Ending automatic database backup procedure...");
@@ -1376,21 +1385,21 @@ void MainWorker::ParseRFXLogFile()
 {
 #ifdef PARSE_RFXCOM_DEVICE_LOG
 	std::vector<std::string> _lines;
-	std::ifstream myfile ("C:\\RFXtrxLog.txt");
+	std::ifstream myfile("C:\\RFXtrxLog.txt");
 	if (myfile.is_open())
 	{
-		while ( myfile.good() )
+		while (myfile.good())
 		{
 			std::string _line;
-			getline (myfile,_line);
-			size_t tpos=_line.find("=");
-			if (tpos!=std::string::npos)
+			getline(myfile, _line);
+			size_t tpos = _line.find("=");
+			if (tpos != std::string::npos)
 			{
 				_line = _line.substr(tpos + 1);
 				tpos = _line.find(" ");
 				if (tpos == 0)
 				{
-					_line=_line.substr(1);
+					_line = _line.substr(1);
 				}
 			}
 			stdreplace(_line, " ", "");
@@ -1398,10 +1407,10 @@ void MainWorker::ParseRFXLogFile()
 		}
 		myfile.close();
 	}
-	int HWID=999;
+	int HWID = 999;
 	//m_sql.DeleteHardware("999");
 
-	CDomoticzHardwareBase *pHardware=GetHardware(HWID);
+	CDomoticzHardwareBase *pHardware = GetHardware(HWID);
 	if (pHardware == NULL)
 	{
 		pHardware = new CDummy(HWID);
@@ -1411,16 +1420,16 @@ void MainWorker::ParseRFXLogFile()
 	std::vector<std::string>::iterator itt;
 	unsigned char rxbuffer[100];
 	static const char* const lut = "0123456789ABCDEF";
-	for (itt=_lines.begin(); itt!=_lines.end(); ++itt)
+	for (itt = _lines.begin(); itt != _lines.end(); ++itt)
 	{
-		std::string hexstring=*itt;
-		if (hexstring.size()%2!=0)
+		std::string hexstring = *itt;
+		if (hexstring.size() % 2 != 0)
 			continue;//illegal
-		int totbytes=hexstring.size()/2;
-		int ii=0;
-		for (ii=0; ii<totbytes; ii++)
+		int totbytes = hexstring.size() / 2;
+		int ii = 0;
+		for (ii = 0; ii < totbytes; ii++)
 		{
-			std::string hbyte=hexstring.substr((ii*2),2);
+			std::string hbyte = hexstring.substr((ii * 2), 2);
 
 			char a = hbyte[0];
 			const char* p = std::lower_bound(lut, lut + 16, a);
@@ -1430,10 +1439,10 @@ void MainWorker::ParseRFXLogFile()
 			const char* q = std::lower_bound(lut, lut + 16, b);
 			if (*q != b) throw std::invalid_argument("not a hex digit");
 
-			unsigned char uchar=((p - lut) << 4) | (q - lut);
-			rxbuffer[ii]=uchar;
+			unsigned char uchar = ((p - lut) << 4) | (q - lut);
+			rxbuffer[ii] = uchar;
 		}
-		if (ii==0)
+		if (ii == 0)
 			continue;
 		if (CRFXBase::CheckValidRFXData((const uint8_t*)&rxbuffer))
 		{
@@ -1451,7 +1460,7 @@ void MainWorker::ParseRFXLogFile()
 
 void MainWorker::Do_Work()
 {
-	int second_counter=0;
+	int second_counter = 0;
 	while (!m_stoprequested)
 	{
 		//sleep 500 milliseconds
@@ -1459,7 +1468,7 @@ void MainWorker::Do_Work()
 
 		if (m_bDoDownloadDomoticzUpdate)
 		{
-			m_bDoDownloadDomoticzUpdate=false;
+			m_bDoDownloadDomoticzUpdate = false;
 
 			_log.Log(LOG_STATUS, "Starting Upgrade progress...");
 #ifdef WIN32
@@ -1479,7 +1488,7 @@ void MainWorker::Do_Work()
 				}
 			}
 			else
-				m_UpdateStatusMessage="Problem downloading checksum file!";
+				m_UpdateStatusMessage = "Problem downloading checksum file!";
 #else
 			int nValue;
 			m_sql.GetPreferencesVar("ReleaseChannel", nValue);
@@ -1495,20 +1504,20 @@ void MainWorker::Do_Work()
 			int ret = system(lscript.c_str());
 			m_bHaveDownloadedDomoticzUpdateSuccessFull = (ret == 0);
 #endif
-			m_bHaveDownloadedDomoticzUpdate=true;
+			m_bHaveDownloadedDomoticzUpdate = true;
 		}
 
 		second_counter++;
-		if (second_counter<2)
+		if (second_counter < 2)
 			continue;
-		second_counter=0;
+		second_counter = 0;
 
 		if (m_bStartHardware)
 		{
 			m_hardwareStartCounter++;
-			if (m_hardwareStartCounter>=2)
+			if (m_hardwareStartCounter >= 2)
 			{
-				m_bStartHardware=false;
+				m_bStartHardware = false;
 				StartDomoticzHardware();
 #ifdef ENABLE_PYTHON
 				m_pluginsystem.AllPluginsStarted();
@@ -1542,22 +1551,22 @@ void MainWorker::Do_Work()
 			m_devicestorestart.clear();
 		}
 
-		if (m_SecCountdown>0)
+		if (m_SecCountdown > 0)
 		{
 			m_SecCountdown--;
-			if (m_SecCountdown==0)
+			if (m_SecCountdown == 0)
 			{
 				SetInternalSecStatus();
 			}
 		}
 
-		time_t atime=mytime(NULL);
+		time_t atime = mytime(NULL);
 		struct tm ltime;
-		localtime_r(&atime,&ltime);
+		localtime_r(&atime, &ltime);
 
-		if (ltime.tm_min!=m_ScheduleLastMinute)
+		if (ltime.tm_min != m_ScheduleLastMinute)
 		{
-			if (difftime(atime,m_ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
+			if (difftime(atime, m_ScheduleLastMinuteTime) > 30) //avoid RTC/NTP clock drifts
 			{
 				m_ScheduleLastMinuteTime = atime;
 				m_ScheduleLastMinute = ltime.tm_min;
@@ -1581,16 +1590,16 @@ void MainWorker::Do_Work()
 			}
 			if (_log.NotificationLogsEnabled())
 			{
-				if ((ltime.tm_min % 5 == 0)||(m_bForceLogNotificationCheck))
+				if ((ltime.tm_min % 5 == 0) || (m_bForceLogNotificationCheck))
 				{
 					m_bForceLogNotificationCheck = false;
 					HandleLogNotifications();
 				}
 			}
 		}
-		if (ltime.tm_hour!=m_ScheduleLastHour)
+		if (ltime.tm_hour != m_ScheduleLastHour)
 		{
-			if (difftime(atime,m_ScheduleLastHourTime) > 30 * 60) //avoid RTC/NTP clock drifts
+			if (difftime(atime, m_ScheduleLastHourTime) > 30 * 60) //avoid RTC/NTP clock drifts
 			{
 				m_ScheduleLastHourTime = atime;
 				m_ScheduleLastHour = ltime.tm_hour;
@@ -1642,12 +1651,12 @@ void MainWorker::Do_Work()
 
 void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szMessage)
 {
-	int hindex=FindDomoticzHardware(HwdID);
-	if (hindex==-1)
+	int hindex = FindDomoticzHardware(HwdID);
+	if (hindex == -1)
 		return;
 
-	if (szMessage!=NULL)
-		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SendCommand: %s", szMessage);
+	if (szMessage != NULL)
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SendCommand: %s", szMessage);
 
 
 	tRBUF cmd;
@@ -1665,18 +1674,18 @@ void MainWorker::SendCommand(const int HwdID, unsigned char Cmd, const char *szM
 	cmd.ICMND.msg7 = 0;
 	cmd.ICMND.msg8 = 0;
 	cmd.ICMND.msg9 = 0;
-	WriteToHardware(HwdID, (const char*)&cmd,sizeof(cmd.ICMND));
+	WriteToHardware(HwdID, (const char*)&cmd, sizeof(cmd.ICMND));
 }
 
 bool MainWorker::WriteToHardware(const int HwdID, const char *pdata, const unsigned char length)
 {
-	int hindex=FindDomoticzHardware(HwdID);
+	int hindex = FindDomoticzHardware(HwdID);
 
-	if (hindex==-1)
+	if (hindex == -1)
 		return false;
 
-	return m_hardwaredevices[hindex]->WriteToHardware(pdata,length);
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN WriteToHardware %s",m_hardwaredevices[hindex]->Name.c_str()  );
+	return m_hardwaredevices[hindex]->WriteToHardware(pdata, length);
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN WriteToHardware %s", m_hardwaredevices[hindex]->Name.c_str());
 
 }
 
@@ -1710,38 +1719,38 @@ void MainWorker::OnHardwareConnected(CDomoticzHardwareBase *pHardware)
 
 uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pRXCommand, CDomoticzHardwareBase **pOriginalHardware)
 {
-	*pOriginalHardware=NULL;
-	unsigned char devType=pRXCommand[1];
-	unsigned char subType=pRXCommand[2];
-	std::string ID="";
-	unsigned char Unit=0;
+	*pOriginalHardware = NULL;
+	unsigned char devType = pRXCommand[1];
+	unsigned char subType = pRXCommand[2];
+	std::string ID = "";
+	unsigned char Unit = 0;
 	const tRBUF *pResponse = reinterpret_cast<const tRBUF *>(pRXCommand);
 	char szTmp[300];
 	std::vector<std::vector<std::string> > result;
 
-	switch(devType) {
+	switch (devType) {
 	case pTypeLighting1:
-		sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
+		sprintf(szTmp, "%d", pResponse->LIGHTING1.housecode);
 		ID = szTmp;
-		Unit=pResponse->LIGHTING1.unitcode;
+		Unit = pResponse->LIGHTING1.unitcode;
 		break;
 	case pTypeLighting2:
-		sprintf(szTmp,"%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
+		sprintf(szTmp, "%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
 		ID = szTmp;
-		Unit=pResponse->LIGHTING2.unitcode;
+		Unit = pResponse->LIGHTING2.unitcode;
 		break;
 	case pTypeLighting5:
-		if (subType != 	sTypeEMW100)
-			sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+		if (subType != sTypeEMW100)
+			sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 		else
-			sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 		ID = szTmp;
-		Unit=pResponse->LIGHTING5.unitcode;
+		Unit = pResponse->LIGHTING5.unitcode;
 		break;
 	case pTypeLighting6:
-		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
+		sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2, pResponse->LIGHTING6.groupcode);
 		ID = szTmp;
-		Unit=pResponse->LIGHTING6.unitcode;
+		Unit = pResponse->LIGHTING6.unitcode;
 		break;
 	case pTypeHomeConfort:
 		sprintf(szTmp, "%02X%02X%02X%02X", pResponse->HOMECONFORT.id1, pResponse->HOMECONFORT.id2, pResponse->HOMECONFORT.id3, pResponse->HOMECONFORT.housecode);
@@ -1749,85 +1758,85 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pR
 		Unit = pResponse->HOMECONFORT.unitcode;
 		break;
 	case pTypeRadiator1:
-		if ( subType == sTypeSmartwaresSwitchRadiator )
+		if (subType == sTypeSmartwaresSwitchRadiator)
 		{
 			sprintf(szTmp, "%X%02X%02X%02X", pResponse->RADIATOR1.id1, pResponse->RADIATOR1.id2, pResponse->RADIATOR1.id3, pResponse->RADIATOR1.id4);
 			ID = szTmp;
 			Unit = pResponse->RADIATOR1.unitcode;
 		}
 		break;
-		case pTypeLimitlessLights: 
-			{
-				_tLimitlessLights *pLed=(_tLimitlessLights *)pResponse;
-				ID = "1";
-				Unit=pLed->dunit;
-			}
-			break;
-		case pTypeCurtain:
-			sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
-			ID = szTmp;
-			Unit=pResponse->CURTAIN1.unitcode;
-			break;
-		case pTypeBlinds:
-			sprintf(szTmp,"%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2,pResponse->BLINDS1.id3);
-			ID = szTmp;
-			Unit=pResponse->BLINDS1.unitcode;
-			break;
-		case pTypeRFY:
-			sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
-			ID = szTmp;
-			Unit=pResponse->RFY.unitcode;
-			break;
-		case pTypeSecurity1:
-			sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
-			ID=szTmp;
-			Unit=0;
-			break;
-		case pTypeSecurity2:
-			sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
-			ID = szTmp;
-			Unit = 0;
-			break;
-		case pTypeChime:
-			sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
-			ID = szTmp;
-			Unit=pResponse->CHIME.sound;
-			break;
-		case pTypeThermostat:
-			{
-				const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
-				sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-				ID = szTmp;
-				Unit = pMeter->dunit;
-			}
-			break;
-		case pTypeThermostat2:
-			ID = "1";
-			Unit = pResponse->THERMOSTAT2.unitcode;
-			break;
-		case pTypeThermostat3:
-			sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
-			ID = szTmp;
-			Unit=0;
-			break;
-		case pTypeThermostat4:
-			sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
-			ID = szTmp;
-			Unit = 0;
-			break;
-		case pTypeGeneralSwitch:
-			{
-				const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
-				sprintf(szTmp, "%08X", pSwitch->id);
-				ID = szTmp;
-				Unit = pSwitch->unitcode;
-			}
-			break;
-		default:
-			return -1;
+	case pTypeLimitlessLights:
+	{
+		_tLimitlessLights *pLed = (_tLimitlessLights *)pResponse;
+		ID = "1";
+		Unit = pLed->dunit;
+	}
+	break;
+	case pTypeCurtain:
+		sprintf(szTmp, "%d", pResponse->CURTAIN1.housecode);
+		ID = szTmp;
+		Unit = pResponse->CURTAIN1.unitcode;
+		break;
+	case pTypeBlinds:
+		sprintf(szTmp, "%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
+		ID = szTmp;
+		Unit = pResponse->BLINDS1.unitcode;
+		break;
+	case pTypeRFY:
+		sprintf(szTmp, "%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
+		ID = szTmp;
+		Unit = pResponse->RFY.unitcode;
+		break;
+	case pTypeSecurity1:
+		sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
+		ID = szTmp;
+		Unit = 0;
+		break;
+	case pTypeSecurity2:
+		sprintf(szTmp, "%02X%02X%02X%02X%02X%02X%02X%02X", pResponse->SECURITY2.id1, pResponse->SECURITY2.id2, pResponse->SECURITY2.id3, pResponse->SECURITY2.id4, pResponse->SECURITY2.id5, pResponse->SECURITY2.id6, pResponse->SECURITY2.id7, pResponse->SECURITY2.id8);
+		ID = szTmp;
+		Unit = 0;
+		break;
+	case pTypeChime:
+		sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+		ID = szTmp;
+		Unit = pResponse->CHIME.sound;
+		break;
+	case pTypeThermostat:
+	{
+		const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
+		sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+		ID = szTmp;
+		Unit = pMeter->dunit;
+	}
+	break;
+	case pTypeThermostat2:
+		ID = "1";
+		Unit = pResponse->THERMOSTAT2.unitcode;
+		break;
+	case pTypeThermostat3:
+		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
+		ID = szTmp;
+		Unit = 0;
+		break;
+	case pTypeThermostat4:
+		sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT4.unitcode1, pResponse->THERMOSTAT4.unitcode2, pResponse->THERMOSTAT4.unitcode3);
+		ID = szTmp;
+		Unit = 0;
+		break;
+	case pTypeGeneralSwitch:
+	{
+		const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pResponse);
+		sprintf(szTmp, "%08X", pSwitch->id);
+		ID = szTmp;
+		Unit = pSwitch->unitcode;
+	}
+	break;
+	default:
+		return -1;
 	}
 
-	if (ID!="")
+	if (ID != "")
 	{
 		// find our original hardware
 		// if it is not a domoticz type, perform the actual command
@@ -1835,17 +1844,17 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pR
 		result = m_sql.safe_query(
 			"SELECT HardwareID,ID,Name,StrParam1,StrParam2,nValue,sValue FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			ID.c_str(), Unit, devType, subType);
-		if (result.size()==1)
+		if (result.size() == 1)
 		{
-			std::vector<std::string> sd=result[0];
+			std::vector<std::string> sd = result[0];
 
-			CDomoticzHardwareBase *pHardware=GetHardware(atoi(sd[0].c_str()));
-			if (pHardware!=NULL)
+			CDomoticzHardwareBase *pHardware = GetHardware(atoi(sd[0].c_str()));
+			if (pHardware != NULL)
 			{
 				if (pHardware->HwdType != HTYPE_Domoticz)
 				{
-					*pOriginalHardware=pHardware;
-					pHardware->WriteToHardware((const char*)pRXCommand,pRXCommand[0]+1);
+					*pOriginalHardware = pHardware;
+					pHardware->WriteToHardware((const char*)pRXCommand, pRXCommand[0] + 1);
 					std::stringstream s_strid;
 					s_strid << std::dec << sd[1];
 					uint64_t ullID;
@@ -1891,15 +1900,15 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 {
 	if ((pHardware == NULL) || (pRXCommand == NULL)) {
 		_log.Log(LOG_ERROR, "RxQueue: cannot push message with undefined hardware (%s) or command (%s)",
-				(pHardware == NULL) ? "null" : "not null",
-				(pRXCommand == NULL) ? "null" : "not null");
+			(pHardware == NULL) ? "null" : "not null",
+			(pRXCommand == NULL) ? "null" : "not null");
 		return;
 	}
 	if (pHardware->m_HwdID < 1) {
 		_log.Log(LOG_ERROR, "RxQueue: cannot push message with invalid hardware id (id=%d, type=%d, name=%s)",
-				pHardware->m_HwdID,
-				pHardware->HwdType,
-				pHardware->Name.c_str());
+			pHardware->m_HwdID,
+			pHardware->HwdType,
+			pHardware->Name.c_str());
 		return;
 	}
 
@@ -1917,10 +1926,10 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	rxMessage.vrxCommand.insert(rxMessage.vrxCommand.begin(), pRXCommand, pRXCommand + pRXCommand[0] + 1);
 	rxMessage.crc = 0x0;
 #ifdef DEBUG_RXQUEUE
-		// CRC
-		boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
-		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
-		rxMessage.crc = crc_ccitt2();
+	// CRC
+	boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
+	crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + pRXCommand[0] + 1, crc_ccitt2);
+	rxMessage.crc = crc_ccitt2();
 #endif
 
 	if (m_stopRxMessageThread) {
@@ -1935,13 +1944,13 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 	}
 
 #ifdef DEBUG_RXQUEUE
-		_log.Log(LOG_STATUS, "RxQueue: push a rxMessage(%lu) (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
-				rxMessage.rxMessageIdx,
-				pHardware->m_HwdID,
-				pHardware->HwdType,
-				pHardware->Name.c_str(),
-				pRXCommand[1],
-				pRXCommand[2]);
+	_log.Log(LOG_STATUS, "RxQueue: push a rxMessage(%lu) (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
+		rxMessage.rxMessageIdx,
+		pHardware->m_HwdID,
+		pHardware->HwdType,
+		pHardware->Name.c_str(),
+		pRXCommand[1],
+		pRXCommand[2]);
 #endif
 
 	// Push item to queue
@@ -1949,11 +1958,11 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 
 	if (rxMessage.trigger != NULL) {
 #ifdef DEBUG_RXQUEUE
-			_log.Log(LOG_STATUS, "RxQueue: wait for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
+		_log.Log(LOG_STATUS, "RxQueue: wait for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
-		while(!rxMessage.trigger->timed_wait(boost::posix_time::milliseconds(1000))) {
+		while (!rxMessage.trigger->timed_wait(boost::posix_time::milliseconds(1000))) {
 #ifdef DEBUG_RXQUEUE
-				_log.Log(LOG_STATUS, "RxQueue: wait 1s for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
+			_log.Log(LOG_STATUS, "RxQueue: wait 1s for rxMessage(%lu) to be processed...", rxMessage.rxMessageIdx);
 #endif
 			if (m_stopRxMessageThread) {
 				// Server is stopping
@@ -1972,7 +1981,7 @@ void MainWorker::CheckAndPushRxMessage(const CDomoticzHardwareBase *pHardware, c
 void MainWorker::UnlockRxMessageQueue()
 {
 #ifdef DEBUG_RXQUEUE
-		_log.Log(LOG_STATUS, "RxQueue: unlock queue using dummy message");
+	_log.Log(LOG_STATUS, "RxQueue: unlock queue using dummy message");
 #endif
 	// Push dummy message to unlock queue
 	_tRxQueueItem rxMessage;
@@ -1997,7 +2006,7 @@ void MainWorker::Do_Work_On_Rx_Messages()
 		// Wait and pop next message or timeout
 		_tRxQueueItem rxQItem;
 		bool hasPopped = m_rxMessageQueue.timed_wait_and_pop<boost::posix_time::milliseconds>(rxQItem,
-				boost::posix_time::milliseconds(5000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
+			boost::posix_time::milliseconds(5000));// (if no message for 2 seconds, returns anyway to check m_stopRxMessageThread)
 
 		if (!hasPopped) {
 			// Timeout occurred : queue is empty
@@ -2009,7 +2018,7 @@ void MainWorker::Do_Work_On_Rx_Messages()
 		if (rxQItem.hardwareId == -1) {
 			// dummy message
 #ifdef DEBUG_RXQUEUE
-				_log.Log(LOG_STATUS, "RxQueue: dummy message popped");
+			_log.Log(LOG_STATUS, "RxQueue: dummy message popped");
 #endif
 			continue;
 		}
@@ -2040,23 +2049,23 @@ void MainWorker::Do_Work_On_Rx_Messages()
 		// CRC
 		boost::uint16_t crc = rxQItem.crc;
 		boost::crc_optimal<16, 0x1021, 0xFFFF, 0, false, false> crc_ccitt2;
-		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand+rxQItem.vrxCommand.size(), crc_ccitt2);
+		crc_ccitt2 = std::for_each(pRXCommand, pRXCommand + rxQItem.vrxCommand.size(), crc_ccitt2);
 		if (crc != crc_ccitt2()) {
 			_log.Log(LOG_ERROR, "RxQueue: cannot process invalid rxMessage(%lu) from hardware with id=%d (type %d)",
-					rxQItem.rxMessageIdx,
-					rxQItem.hardwareId,
-					pHardware->HwdType);
+				rxQItem.rxMessageIdx,
+				rxQItem.hardwareId,
+				pHardware->HwdType);
 			if (rxQItem.trigger != NULL) rxQItem.trigger->popped();
 			continue;
 		}
 
 		_log.Log(LOG_STATUS, "RxQueue: process a rxMessage(%lu) (hrdwId=%d, hrdwType=%d, hrdwName=%s, type=%02X, subtype=%02X)",
-				rxQItem.rxMessageIdx,
-				pHardware->m_HwdID,
-				pHardware->HwdType,
-				pHardware->Name.c_str(),
-				pRXCommand[1],
-				pRXCommand[2]);
+			rxQItem.rxMessageIdx,
+			pHardware->m_HwdID,
+			pHardware->HwdType,
+			pHardware->Name.c_str(),
+			pRXCommand[1],
+			pRXCommand[2]);
 #endif
 		ProcessRXMessage(pHardware, pRXCommand, rxQItem.Name.c_str(), rxQItem.BatteryLevel);
 		if (rxQItem.trigger != NULL)
@@ -2083,13 +2092,13 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 	tcp::server::CTCPClient *pClient2Ignore = NULL;
 
 	if (_log.isTraceEnabled()) {
-		char  mes[sizeof(tRBUF)*2+2];
+		char  mes[sizeof(tRBUF) * 2 + 2];
 		char * ptmes = mes;
 		for (size_t i = 0; i < Len; i++) {
-			sprintf(ptmes,"%02X", pRXCommand[i]);
+			sprintf(ptmes, "%02X", pRXCommand[i]);
 			ptmes += 2;
 		}
-		*ptmes = 0 ;
+		*ptmes = 0;
 
 		_log.Log(LOG_TRACE, "MAIN ProcessRX Msg %s", mes);
 	}
@@ -2336,9 +2345,9 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypeHomeConfort:
 			decode_HomeConfort(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
-      case pTypeCARTELECTRONIC:
-         decode_Cartelectronic(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
-         break;
+		case pTypeCARTELECTRONIC:
+			decode_Cartelectronic(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+			break;
 		default:
 			_log.Log(LOG_ERROR, "UNHANDLED PACKET TYPE:      FS20 %02X", pRXCommand[1]);
 			return;
@@ -2360,8 +2369,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		if (strlen(defaultName) > 0)
 		{
 			DeviceName = defaultName;
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%" PRIu64 ")", defaultName, DeviceRowIdx);
-	}
+			m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID==%" PRIu64 ")", defaultName, DeviceRowIdx);
+		}
 	}
 
 	if (pHardware->m_bOutputLog)
@@ -2394,310 +2403,310 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 	switch (pResponse->IRESPONSE.subtype)
 	{
 	case sTypeInterfaceCommand:
+	{
+		int mlen = pResponse->IRESPONSE.packetlength;
+		WriteMessage("subtype           = Interface Response");
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		WriteMessage(szTmp);
+		switch (pResponse->IRESPONSE.cmnd)
 		{
-			int mlen = pResponse->IRESPONSE.packetlength;
-			WriteMessage("subtype           = Interface Response");
-			sprintf(szTmp,"Sequence nbr      = %d",pResponse->IRESPONSE.seqnbr);
-			WriteMessage(szTmp);
+		case cmdSTATUS:
+		case cmdSETMODE:
+		case cmd310:
+		case cmd315:
+		case cmd800:
+		case cmd800F:
+		case cmd830:
+		case cmd830F:
+		case cmd835:
+		case cmd835F:
+		case cmd895:
+		{
+			WriteMessage("response on cmnd  = ", false);
 			switch (pResponse->IRESPONSE.cmnd)
 			{
 			case cmdSTATUS:
-			case cmdSETMODE:
-			case cmd310:
-			case cmd315:
-			case cmd800:
-			case cmd800F:
-			case cmd830:
-			case cmd830F:
-			case cmd835:
-			case cmd835F:
-			case cmd895:
-				{
-					WriteMessage("response on cmnd  = ", false);
-					switch (pResponse->IRESPONSE.cmnd)
-					{
-					case cmdSTATUS:
-						WriteMessage("Get Status");
-						break;
-					case cmdSETMODE:
-						WriteMessage("Set Mode");
-						break;
-					case cmd310:
-						WriteMessage("Select 310MHz");
-						break;
-					case cmd315:
-						WriteMessage("Select 315MHz");
-						break;
-					case cmd800:
-						WriteMessage("Select 868.00MHz");
-						break;
-					case cmd800F:
-						WriteMessage("Select 868.00MHz FSK");
-						break;
-					case cmd830:
-						WriteMessage("Select 868.30MHz");
-						break;
-					case cmd830F:
-						WriteMessage("Select 868.30MHz FSK");
-						break;
-					case cmd835:
-						WriteMessage("Select 868.35MHz");
-						break;
-					case cmd835F:
-						WriteMessage("Select 868.35MHz FSK");
-						break;
-					case cmd895:
-						WriteMessage("Select 868.95MHz");
-						break;
-					default:
-						WriteMessage("Error: unknown response");
-						break;
-					}
-
-					m_sql.UpdateRFXCOMHardwareDetails(HwdID, pResponse->IRESPONSE.msg1, pResponse->IRESPONSE.msg2, pResponse->ICMND.msg3, pResponse->ICMND.msg4, pResponse->ICMND.msg5, pResponse->ICMND.msg6);
-
-					switch (pResponse->IRESPONSE.msg1)
-					{
-					case recType310:
-						WriteMessage("Transceiver type  = 310MHz");
-						break;
-					case recType315:
-						WriteMessage("Receiver type     = 315MHz");
-						break;
-					case recType43392:
-						WriteMessage("Receiver type     = 433.92MHz (receive only)");
-						break;
-					case trxType43392:
-						WriteMessage("Transceiver type  = 433.92MHz");
-						break;
-					case recType86800:
-						WriteMessage("Receiver type     = 868.00MHz");
-						break;
-					case recType86800FSK:
-						WriteMessage("Receiver type     = 868.00MHz FSK");
-						break;
-					case recType86830:
-						WriteMessage("Receiver type     = 868.30MHz");
-						break;
-					case recType86830FSK:
-						WriteMessage("Receiver type     = 868.30MHz FSK");
-						break;
-					case recType86835:
-						WriteMessage("Receiver type     = 868.35MHz");
-						break;
-					case recType86835FSK:
-						WriteMessage("Receiver type     = 868.35MHz FSK");
-						break;
-					case recType86895:
-						WriteMessage("Receiver type     = 868.95MHz");
-						break;
-					default:
-						WriteMessage("Receiver type     = unknown");
-						break;
-					}
-					int FWType = 0;
-					int FWVersion = 0;
-					if (mlen > 13)
-					{
-						FWType = pResponse->IRESPONSE.msg10;
-						FWVersion = pResponse->IRESPONSE.msg2 + 1000;
-					}
-					else
-					{
-						FWVersion = pResponse->IRESPONSE.msg2;
-						if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
-							FWType = 0; //Type1 RFXrec
-						else if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
-							FWType = 1; //Type1
-						else if ((pResponse->IRESPONSE.msg1 == recType43392) && ((FWVersion > 162) && (FWVersion < 225)))
-							FWType = 2; //Type2
-						else
-							FWType = 3; //Ext
-					}
-					sprintf(szTmp,"Firmware version  = %d", FWVersion);
-					WriteMessage(szTmp);
-					WriteMessage( "Firmware type     = ",false);
-					switch (FWType)
-					{
-					case 0:
-						strcpy(szTmp, "Type1 RX");
-						break;
-					case 1:
-						strcpy(szTmp, "Type1");
-						break;
-					case 2:
-						strcpy(szTmp, "Type2");
-						break;
-					case 3:
-						strcpy(szTmp, "Ext");
-						break;
-					case 4:
-						strcpy(szTmp, "Ext2");
-						break;
-					default:
-						strcpy(szTmp, "?");
-						break;
-					}
-					WriteMessage(szTmp);
-
-					CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
-					if (pMyHardware)
-					{
-						std::stringstream sstr;
-						sstr << szTmp << "/" << FWVersion;
-						pMyHardware->m_Version = sstr.str();
-					}
-
-
-					sprintf(szTmp,"Hardware version  = %d.%d",pResponse->IRESPONSE.msg7,pResponse->IRESPONSE.msg8);
-					WriteMessage(szTmp);
-
-					if (pResponse->IRESPONSE.UNDECODEDenabled)
-						WriteMessage("Undec             on");
-					else
-						WriteMessage("Undec             off");
-
-					if (pResponse->IRESPONSE.X10enabled)
-						WriteMessage("X10               enabled");
-					else
-						WriteMessage("X10               disabled");
-
-					if (pResponse->IRESPONSE.ARCenabled)
-						WriteMessage("ARC               enabled");
-					else
-						WriteMessage("ARC               disabled");
-
-					if (pResponse->IRESPONSE.ACenabled)
-						WriteMessage("AC                enabled");
-					else
-						WriteMessage("AC                disabled");
-
-					if (pResponse->IRESPONSE.HEEUenabled)
-						WriteMessage("HomeEasy EU       enabled");
-					else
-						WriteMessage("HomeEasy EU       disabled");
-
-					if (pResponse->IRESPONSE.MEIANTECHenabled)
-						WriteMessage("Meiantech/Atlantic enabled");
-					else
-						WriteMessage("Meiantech/Atlantic disabled");
-
-					if (pResponse->IRESPONSE.OREGONenabled)
-						WriteMessage("Oregon Scientific enabled");
-					else
-						WriteMessage("Oregon Scientific disabled");
-
-					if (pResponse->IRESPONSE.ATIenabled)
-						WriteMessage("ATI/Cartelectronic enabled");
-					else
-						WriteMessage("ATI/Cartelectronic disabled");
-
-					if (pResponse->IRESPONSE.VISONICenabled)
-						WriteMessage("Visonic           enabled");
-					else
-						WriteMessage("Visonic           disabled");
-
-					if (pResponse->IRESPONSE.MERTIKenabled)
-						WriteMessage("Mertik            enabled");
-					else
-						WriteMessage("Mertik            disabled");
-
-					if (pResponse->IRESPONSE.LWRFenabled)
-						WriteMessage("AD                enabled");
-					else
-						WriteMessage("AD                disabled");
-
-					if (pResponse->IRESPONSE.HIDEKIenabled)
-						WriteMessage("Hideki            enabled");
-					else
-						WriteMessage("Hideki            disabled");
-
-					if (pResponse->IRESPONSE.LACROSSEenabled)
-						WriteMessage("La Crosse         enabled");
-					else
-						WriteMessage("La Crosse         disabled");
-
-					if (pResponse->IRESPONSE.FS20enabled)
-						WriteMessage("FS20/Legrand      enabled");
-					else
-						WriteMessage("FS20/Legrand      disabled");
-
-					if (pResponse->IRESPONSE.PROGUARDenabled)
-						WriteMessage("ProGuard          enabled");
-					else
-						WriteMessage("ProGuard          disabled");
-
-					if (pResponse->IRESPONSE.BLINDST0enabled)
-						WriteMessage("BlindsT0          enabled");
-					else
-						WriteMessage("BlindsT0          disabled");
-
-					if (pResponse->IRESPONSE.BLINDST1enabled)
-						WriteMessage("BlindsT1          enabled");
-					else
-						WriteMessage("BlindsT1          disabled");
-
-					if (pResponse->IRESPONSE.AEenabled)
-						WriteMessage("AE                enabled");
-					else
-						WriteMessage("AE                disabled");
-
-					if (pResponse->IRESPONSE.RUBICSONenabled)
-						WriteMessage("RUBiCSON          enabled");
-					else
-						WriteMessage("RUBiCSON          disabled");
-
-					if (pResponse->IRESPONSE.FINEOFFSETenabled)
-						WriteMessage("FineOffset        enabled");
-					else
-						WriteMessage("FineOffset        disabled");
-
-					if (pResponse->IRESPONSE.LIGHTING4enabled)
-						WriteMessage("Lighting4         enabled");
-					else
-						WriteMessage("Lighting4         disabled");
-
-					if (pResponse->IRESPONSE.RSLenabled)
-						WriteMessage("Conrad RSL        enabled");
-					else
-						WriteMessage("Conrad RSL        disabled");
-
-					if (pResponse->IRESPONSE.SXenabled)
-						WriteMessage("ByronSX           enabled");
-					else
-						WriteMessage("ByronSX           disabled");
-
-					if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
-						WriteMessage("IMAGINTRONIX      enabled");
-					else
-						WriteMessage("IMAGINTRONIX      disabled");
-
-					if (pResponse->IRESPONSE.KEELOQenabled)
-						WriteMessage("KEELOQ            enabled");
-					else
-						WriteMessage("KEELOQ            disabled");
-
-					if (pResponse->IRESPONSE.HCEnabled)
-						WriteMessage("Home Confort      enabled");
-					else
-						WriteMessage("Home Confort      disabled");
-				}
+				WriteMessage("Get Status");
 				break;
-			case cmdSAVE:
-				WriteMessage("response on cmnd  = Save");
+			case cmdSETMODE:
+				WriteMessage("Set Mode");
+				break;
+			case cmd310:
+				WriteMessage("Select 310MHz");
+				break;
+			case cmd315:
+				WriteMessage("Select 315MHz");
+				break;
+			case cmd800:
+				WriteMessage("Select 868.00MHz");
+				break;
+			case cmd800F:
+				WriteMessage("Select 868.00MHz FSK");
+				break;
+			case cmd830:
+				WriteMessage("Select 868.30MHz");
+				break;
+			case cmd830F:
+				WriteMessage("Select 868.30MHz FSK");
+				break;
+			case cmd835:
+				WriteMessage("Select 868.35MHz");
+				break;
+			case cmd835F:
+				WriteMessage("Select 868.35MHz FSK");
+				break;
+			case cmd895:
+				WriteMessage("Select 868.95MHz");
+				break;
+			default:
+				WriteMessage("Error: unknown response");
 				break;
 			}
+
+			m_sql.UpdateRFXCOMHardwareDetails(HwdID, pResponse->IRESPONSE.msg1, pResponse->IRESPONSE.msg2, pResponse->ICMND.msg3, pResponse->ICMND.msg4, pResponse->ICMND.msg5, pResponse->ICMND.msg6);
+
+			switch (pResponse->IRESPONSE.msg1)
+			{
+			case recType310:
+				WriteMessage("Transceiver type  = 310MHz");
+				break;
+			case recType315:
+				WriteMessage("Receiver type     = 315MHz");
+				break;
+			case recType43392:
+				WriteMessage("Receiver type     = 433.92MHz (receive only)");
+				break;
+			case trxType43392:
+				WriteMessage("Transceiver type  = 433.92MHz");
+				break;
+			case recType86800:
+				WriteMessage("Receiver type     = 868.00MHz");
+				break;
+			case recType86800FSK:
+				WriteMessage("Receiver type     = 868.00MHz FSK");
+				break;
+			case recType86830:
+				WriteMessage("Receiver type     = 868.30MHz");
+				break;
+			case recType86830FSK:
+				WriteMessage("Receiver type     = 868.30MHz FSK");
+				break;
+			case recType86835:
+				WriteMessage("Receiver type     = 868.35MHz");
+				break;
+			case recType86835FSK:
+				WriteMessage("Receiver type     = 868.35MHz FSK");
+				break;
+			case recType86895:
+				WriteMessage("Receiver type     = 868.95MHz");
+				break;
+			default:
+				WriteMessage("Receiver type     = unknown");
+				break;
+			}
+			int FWType = 0;
+			int FWVersion = 0;
+			if (mlen > 13)
+			{
+				FWType = pResponse->IRESPONSE.msg10;
+				FWVersion = pResponse->IRESPONSE.msg2 + 1000;
+			}
+			else
+			{
+				FWVersion = pResponse->IRESPONSE.msg2;
+				if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+					FWType = 0; //Type1 RFXrec
+				else if ((pResponse->IRESPONSE.msg1 == recType43392) && (FWVersion < 162))
+					FWType = 1; //Type1
+				else if ((pResponse->IRESPONSE.msg1 == recType43392) && ((FWVersion > 162) && (FWVersion < 225)))
+					FWType = 2; //Type2
+				else
+					FWType = 3; //Ext
+			}
+			sprintf(szTmp, "Firmware version  = %d", FWVersion);
+			WriteMessage(szTmp);
+			WriteMessage("Firmware type     = ", false);
+			switch (FWType)
+			{
+			case 0:
+				strcpy(szTmp, "Type1 RX");
+				break;
+			case 1:
+				strcpy(szTmp, "Type1");
+				break;
+			case 2:
+				strcpy(szTmp, "Type2");
+				break;
+			case 3:
+				strcpy(szTmp, "Ext");
+				break;
+			case 4:
+				strcpy(szTmp, "Ext2");
+				break;
+			default:
+				strcpy(szTmp, "?");
+				break;
+			}
+			WriteMessage(szTmp);
+
+			CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
+			if (pMyHardware)
+			{
+				std::stringstream sstr;
+				sstr << szTmp << "/" << FWVersion;
+				pMyHardware->m_Version = sstr.str();
+			}
+
+
+			sprintf(szTmp, "Hardware version  = %d.%d", pResponse->IRESPONSE.msg7, pResponse->IRESPONSE.msg8);
+			WriteMessage(szTmp);
+
+			if (pResponse->IRESPONSE.UNDECODEDenabled)
+				WriteMessage("Undec             on");
+			else
+				WriteMessage("Undec             off");
+
+			if (pResponse->IRESPONSE.X10enabled)
+				WriteMessage("X10               enabled");
+			else
+				WriteMessage("X10               disabled");
+
+			if (pResponse->IRESPONSE.ARCenabled)
+				WriteMessage("ARC               enabled");
+			else
+				WriteMessage("ARC               disabled");
+
+			if (pResponse->IRESPONSE.ACenabled)
+				WriteMessage("AC                enabled");
+			else
+				WriteMessage("AC                disabled");
+
+			if (pResponse->IRESPONSE.HEEUenabled)
+				WriteMessage("HomeEasy EU       enabled");
+			else
+				WriteMessage("HomeEasy EU       disabled");
+
+			if (pResponse->IRESPONSE.MEIANTECHenabled)
+				WriteMessage("Meiantech/Atlantic enabled");
+			else
+				WriteMessage("Meiantech/Atlantic disabled");
+
+			if (pResponse->IRESPONSE.OREGONenabled)
+				WriteMessage("Oregon Scientific enabled");
+			else
+				WriteMessage("Oregon Scientific disabled");
+
+			if (pResponse->IRESPONSE.ATIenabled)
+				WriteMessage("ATI/Cartelectronic enabled");
+			else
+				WriteMessage("ATI/Cartelectronic disabled");
+
+			if (pResponse->IRESPONSE.VISONICenabled)
+				WriteMessage("Visonic           enabled");
+			else
+				WriteMessage("Visonic           disabled");
+
+			if (pResponse->IRESPONSE.MERTIKenabled)
+				WriteMessage("Mertik            enabled");
+			else
+				WriteMessage("Mertik            disabled");
+
+			if (pResponse->IRESPONSE.LWRFenabled)
+				WriteMessage("AD                enabled");
+			else
+				WriteMessage("AD                disabled");
+
+			if (pResponse->IRESPONSE.HIDEKIenabled)
+				WriteMessage("Hideki            enabled");
+			else
+				WriteMessage("Hideki            disabled");
+
+			if (pResponse->IRESPONSE.LACROSSEenabled)
+				WriteMessage("La Crosse         enabled");
+			else
+				WriteMessage("La Crosse         disabled");
+
+			if (pResponse->IRESPONSE.FS20enabled)
+				WriteMessage("FS20/Legrand      enabled");
+			else
+				WriteMessage("FS20/Legrand      disabled");
+
+			if (pResponse->IRESPONSE.PROGUARDenabled)
+				WriteMessage("ProGuard          enabled");
+			else
+				WriteMessage("ProGuard          disabled");
+
+			if (pResponse->IRESPONSE.BLINDST0enabled)
+				WriteMessage("BlindsT0          enabled");
+			else
+				WriteMessage("BlindsT0          disabled");
+
+			if (pResponse->IRESPONSE.BLINDST1enabled)
+				WriteMessage("BlindsT1          enabled");
+			else
+				WriteMessage("BlindsT1          disabled");
+
+			if (pResponse->IRESPONSE.AEenabled)
+				WriteMessage("AE                enabled");
+			else
+				WriteMessage("AE                disabled");
+
+			if (pResponse->IRESPONSE.RUBICSONenabled)
+				WriteMessage("RUBiCSON          enabled");
+			else
+				WriteMessage("RUBiCSON          disabled");
+
+			if (pResponse->IRESPONSE.FINEOFFSETenabled)
+				WriteMessage("FineOffset        enabled");
+			else
+				WriteMessage("FineOffset        disabled");
+
+			if (pResponse->IRESPONSE.LIGHTING4enabled)
+				WriteMessage("Lighting4         enabled");
+			else
+				WriteMessage("Lighting4         disabled");
+
+			if (pResponse->IRESPONSE.RSLenabled)
+				WriteMessage("Conrad RSL        enabled");
+			else
+				WriteMessage("Conrad RSL        disabled");
+
+			if (pResponse->IRESPONSE.SXenabled)
+				WriteMessage("ByronSX           enabled");
+			else
+				WriteMessage("ByronSX           disabled");
+
+			if (pResponse->IRESPONSE.IMAGINTRONIXenabled)
+				WriteMessage("IMAGINTRONIX      enabled");
+			else
+				WriteMessage("IMAGINTRONIX      disabled");
+
+			if (pResponse->IRESPONSE.KEELOQenabled)
+				WriteMessage("KEELOQ            enabled");
+			else
+				WriteMessage("KEELOQ            disabled");
+
+			if (pResponse->IRESPONSE.HCEnabled)
+				WriteMessage("Home Confort      enabled");
+			else
+				WriteMessage("Home Confort      disabled");
+		}
+		break;
+		case cmdSAVE:
+			WriteMessage("response on cmnd  = Save");
 			break;
 		}
 		break;
+	}
+	break;
 	case sTypeUnknownRFYremote:
 		WriteMessage("subtype           = Unknown RFY remote! Use the Program command to create a remote in the RFXtrx433Ext");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeExtError:
 		WriteMessage("subtype           = No RFXtrx433E hardware detected");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->IRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeRFYremoteList:
@@ -2853,7 +2862,7 @@ void MainWorker::decode_BateryLevel(bool bIsInPercentage, unsigned char level)
 	}
 	else
 	{
-		if (level == 0 )
+		if (level == 0)
 		{
 			WriteMessage("Battery       = Low");
 		}
@@ -2868,23 +2877,23 @@ unsigned char MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bI
 {
 	if (HwdType == HTYPE_OpenZWave)
 	{
-		bIsInPercentage=true;
+		bIsInPercentage = true;
 	}
-	unsigned char ret=0;
+	unsigned char ret = 0;
 	if (bIsInPercentage)
-	{	
+	{
 		if (level >= 0 && level <= 9)
 			ret = (level + 1) * 10;
 	}
 	else
 	{
-		if (level == 0 )
+		if (level == 0)
 		{
-			ret=0;
+			ret = 0;
 		}
 		else
 		{
-			ret=100;
+			ret = 100;
 		}
 	}
 	return ret;
@@ -2893,19 +2902,19 @@ unsigned char MainWorker::get_BateryLevel(const _eHardwareTypes HwdType, bool bI
 void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeRAIN;
-	unsigned char subType=pResponse->RAIN.subtype;
+	unsigned char devType = pTypeRAIN;
+	unsigned char subType = pResponse->RAIN.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->RAIN.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+	sprintf(szTmp, "%d", (pResponse->RAIN.id1 * 256) + pResponse->RAIN.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->RAIN.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, pResponse->RAIN.subtype == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 
 	int Rainrate = (pResponse->RAIN.rainrateh * 256) + pResponse->RAIN.rainratel;
 
-	float TotalRain=float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
+	float TotalRain = float((pResponse->RAIN.raintotal1 * 65535) + (pResponse->RAIN.raintotal2 * 256) + pResponse->RAIN.raintotal3) / 10.0f;
 
 	if (subType != sTypeRAINWU)
 	{
@@ -2940,8 +2949,8 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 		}
 	}
 
-	sprintf(szTmp,"%d;%.1f",Rainrate,TotalRain);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%d;%.1f", Rainrate, TotalRain);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -2974,34 +2983,34 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X : %02X", pResponse->RAIN.packettype, pResponse->RAIN.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RAIN.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->RAIN.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"ID            = %s", ID.c_str());
+		sprintf(szTmp, "ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
 		if (pResponse->RAIN.subtype == sTypeRAIN1)
 		{
-			sprintf(szTmp,"Rain rate     = %d mm/h", Rainrate);
+			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
 		}
 		else if (pResponse->RAIN.subtype == sTypeRAIN2)
 		{
-			sprintf(szTmp,"Rain rate     = %d mm/h", Rainrate);
+			sprintf(szTmp, "Rain rate     = %d mm/h", Rainrate);
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"Total rain    = %.1f mm", TotalRain);
+		sprintf(szTmp, "Total rain    = %.1f mm", TotalRain);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Signal level  = %d", pResponse->RAIN.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->RAIN.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(pResponse->RAIN.subtype==sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
+		decode_BateryLevel(pResponse->RAIN.subtype == sTypeRAIN1, pResponse->RAIN.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -3010,20 +3019,20 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[300];
-	unsigned char devType=pTypeWIND;
-	unsigned char subType=pResponse->WIND.subtype;
-	unsigned short windID=(pResponse->WIND.id1*256) + pResponse->WIND.id2;
-	sprintf(szTmp,"%d", windID);
+	unsigned char devType = pTypeWIND;
+	unsigned char subType = pResponse->WIND.subtype;
+	unsigned short windID = (pResponse->WIND.id1 * 256) + pResponse->WIND.id2;
+	sprintf(szTmp, "%d", windID);
 	std::string ID = szTmp;
-	unsigned char Unit=0;
+	unsigned char Unit = 0;
 
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->WIND.rssi;
-	unsigned char BatteryLevel=get_BateryLevel(HwdType,pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->WIND.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, pResponse->WIND.subtype == sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 
 	double dDirection;
 	dDirection = (double)(pResponse->WIND.directionh * 256) + pResponse->WIND.directionl;
-	dDirection=m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
+	dDirection = m_wind_calculator[windID].AddValueAndReturnAvarage(dDirection);
 
 	std::string strDirection;
 	if (dDirection > 348.75 || dDirection < 11.26)
@@ -3061,7 +3070,7 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 	else
 		strDirection = "---";
 
-	dDirection=round(dDirection);
+	dDirection = round(dDirection);
 
 	int intSpeed = (pResponse->WIND.av_speedh * 256) + pResponse->WIND.av_speedl;
 	int intGust = (pResponse->WIND.gusth * 256) + pResponse->WIND.gustl;
@@ -3075,68 +3084,68 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 
 	m_wind_calculator[windID].SetSpeedGust(intSpeed, intGust);
 
-	float temp=0,chill=0;
+	float temp = 0, chill = 0;
 	if (pResponse->WIND.subtype == sTypeWIND4)
 	{
 		if (!pResponse->WIND.tempsign)
 		{
-			temp=float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
+			temp = float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
 		}
 		else
 		{
-			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
+			temp = -(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-200)||(temp>380))
+		if ((temp < -200) || (temp > 380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
 		}
 
-		float AddjValue=0.0f;
-		float AddjMulti=1.0f;
-		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-		temp+=AddjValue;
+		float AddjValue = 0.0f;
+		float AddjMulti = 1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
 
 		if (!pResponse->WIND.chillsign)
 		{
-			chill=float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
 		}
 		else
 		{
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
-		chill+=AddjValue;
+		chill += AddjValue;
 	}
-	else if (pResponse->WIND.subtype==sTypeWINDNoTemp)
+	else if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 	{
 		if (!pResponse->WIND.tempsign)
 		{
-			temp=float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
+			temp = float((pResponse->WIND.temperatureh * 256) + pResponse->WIND.temperaturel) / 10.0f;
 		}
 		else
 		{
-			temp=-(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
+			temp = -(float(((pResponse->WIND.temperatureh & 0x7F) * 256) + pResponse->WIND.temperaturel) / 10.0f);
 		}
-		if ((temp<-200)||(temp>380))
+		if ((temp < -200) || (temp > 380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
 		}
 
-		float AddjValue=0.0f;
-		float AddjMulti=1.0f;
-		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-		temp+=AddjValue;
+		float AddjValue = 0.0f;
+		float AddjMulti = 1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
 
 		if (!pResponse->WIND.chillsign)
 		{
-			chill=float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
+			chill = float((pResponse->WIND.chillh * 256) + pResponse->WIND.chilll) / 10.0f;
 		}
 		else
 		{
 			chill = -(float(((pResponse->WIND.chillh) & 0x7F) * 256 + pResponse->WIND.chilll) / 10.0f);
 		}
-		chill+=AddjValue;
+		chill += AddjValue;
 	}
 	if (chill == 0)
 	{
@@ -3148,12 +3157,12 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 		}
 	}
 
-	sprintf(szTmp,"%.2f;%s;%d;%d;%.1f;%.1f",dDirection,strDirection.c_str(),intSpeed,intGust,temp,chill);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.2f;%s;%d;%d;%.1f;%.1f", dDirection, strDirection.c_str(), intSpeed, intGust, temp, chill);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	float wspeedms=float(intSpeed)/10.0f;
+	float wspeedms = float(intSpeed) / 10.0f;
 	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_WIND, wspeedms);
 
 	m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, 0, true, false);
@@ -3189,47 +3198,47 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage("subtype       = Weather Station");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->WIND.packettype, pResponse->WIND.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->WIND.packettype, pResponse->WIND.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->WIND.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->WIND.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %s", ID.c_str());
+		sprintf(szTmp, "ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Direction     = %d degrees %s", int(dDirection), strDirection.c_str());
+		sprintf(szTmp, "Direction     = %d degrees %s", int(dDirection), strDirection.c_str());
 		WriteMessage(szTmp);
 
 		if (pResponse->WIND.subtype != sTypeWIND5)
 		{
-			sprintf(szTmp,"Average speed = %.1f mtr/sec, %.2f km/hr, %.2f mph",float(intSpeed) / 10.0f, (float(intSpeed) * 0.36f), (float(intSpeed) * 0.223693629f));
+			sprintf(szTmp, "Average speed = %.1f mtr/sec, %.2f km/hr, %.2f mph", float(intSpeed) / 10.0f, (float(intSpeed) * 0.36f), (float(intSpeed) * 0.223693629f));
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"Wind gust     = %.1f mtr/sec, %.2f km/hr, %.2f mph", float(intGust) / 10.0f,  (float(intGust )* 0.36f),  (float(intGust) * 0.223693629f));
+		sprintf(szTmp, "Wind gust     = %.1f mtr/sec, %.2f km/hr, %.2f mph", float(intGust) / 10.0f, (float(intGust)* 0.36f), (float(intGust) * 0.223693629f));
 		WriteMessage(szTmp);
 
 		if (pResponse->WIND.subtype == sTypeWIND4)
 		{
-			sprintf(szTmp,"Temperature   = %.1f C", temp);
+			sprintf(szTmp, "Temperature   = %.1f C", temp);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"Chill         = %.1f C", chill);
+			sprintf(szTmp, "Chill         = %.1f C", chill);
 		}
 		if (pResponse->WIND.subtype == sTypeWINDNoTemp)
 		{
-			sprintf(szTmp,"Temperature   = %.1f C", temp);
+			sprintf(szTmp, "Temperature   = %.1f C", temp);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"Chill         = %.1f C", chill);
+			sprintf(szTmp, "Chill         = %.1f C", chill);
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->WIND.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->WIND.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(pResponse->WIND.subtype==sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
+		decode_BateryLevel(pResponse->WIND.subtype == sTypeWIND3, pResponse->WIND.battery_level & 0x0F);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -3238,78 +3247,78 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeTEMP;
-	unsigned char subType=pResponse->TEMP.subtype;
-	sprintf(szTmp,"%d",(pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
-	std::string ID=szTmp;
-	unsigned char Unit=pResponse->TEMP.id2;
+	unsigned char devType = pTypeTEMP;
+	unsigned char subType = pResponse->TEMP.subtype;
+	sprintf(szTmp, "%d", (pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
+	std::string ID = szTmp;
+	unsigned char Unit = pResponse->TEMP.id2;
 
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->TEMP.rssi;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->TEMP.rssi;
 	unsigned char BatteryLevel = 0;
-	if ((pResponse->TEMP.battery_level &0x0F) == 0)
-		BatteryLevel=0;
+	if ((pResponse->TEMP.battery_level & 0x0F) == 0)
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
+		BatteryLevel = 100;
 
 	//Override battery level if hardware supports it
 	if (HwdType == HTYPE_OpenZWave)
 	{
-		BatteryLevel=pResponse->TEMP.battery_level*10;
+		BatteryLevel = pResponse->TEMP.battery_level * 10;
 	}
-	else if ((HwdType == HTYPE_EnOceanESP2)||(HwdType == HTYPE_EnOceanESP3))
+	else if ((HwdType == HTYPE_EnOceanESP2) || (HwdType == HTYPE_EnOceanESP3))
 	{
-		BatteryLevel=255;
-		SignalLevel=12;
-		Unit=(pResponse->TEMP.rssi<<4)|pResponse->TEMP.battery_level;
+		BatteryLevel = 255;
+		SignalLevel = 12;
+		Unit = (pResponse->TEMP.rssi << 4) | pResponse->TEMP.battery_level;
 	}
 
 	float temp;
 	if (!pResponse->TEMP.tempsign)
 	{
-		temp=float((pResponse->TEMP.temperatureh * 256) + pResponse->TEMP.temperaturel) / 10.0f;
+		temp = float((pResponse->TEMP.temperatureh * 256) + pResponse->TEMP.temperaturel) / 10.0f;
 	}
 	else
 	{
-		temp=-(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
+		temp = -(float(((pResponse->TEMP.temperatureh & 0x7F) * 256) + pResponse->TEMP.temperaturel) / 10.0f);
 	}
-	if ((temp<-200)||(temp>380))
+	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	temp+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	temp += AddjValue;
 
-	sprintf(szTmp,"%.1f",temp);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f", temp);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
 	bool bHandledNotification = false;
-	unsigned char humidity=0;
-	if (pResponse->TEMP.subtype==sTypeTEMP5)
+	unsigned char humidity = 0;
+	if (pResponse->TEMP.subtype == sTypeTEMP5)
 	{
 		//check if we already had a humidity for this device, if so, keep it!
 		char szTmp[300];
 		std::vector<std::vector<std::string> > result;
 
-		result=m_sql.safe_query(
+		result = m_sql.safe_query(
 			"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			HwdID, ID.c_str(),1,pTypeHUM,sTypeHUM1);
-		if (result.size()==1)
+			HwdID, ID.c_str(), 1, pTypeHUM, sTypeHUM1);
+		if (result.size() == 1)
 		{
-			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
-			temp+=AddjValue;
-			humidity=atoi(result[0][0].c_str());
-			unsigned char humidity_status=atoi(result[0][1].c_str());
-			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,humidity_status);
-			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp, procResult.DeviceName);
+			m_sql.GetAddjustment(HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, AddjValue, AddjMulti);
+			temp += AddjValue;
+			humidity = atoi(result[0][0].c_str());
+			unsigned char humidity_status = atoi(result[0][1].c_str());
+			sprintf(szTmp, "%.1f;%d;%d", temp, humidity, humidity_status);
+			DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName);
 			m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, humidity, true, true);
-			float dewpoint=(float)CalculateDewPoint(temp,humidity);
+			float dewpoint = (float)CalculateDewPoint(temp, humidity);
 			m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, procResult.DeviceName, temp, dewpoint);
 			bHandledNotification = true;
 		}
@@ -3325,12 +3334,12 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 		case sTypeTEMP1:
 			WriteMessage("subtype       = TEMP1 - THR128/138, THC138");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP2:
 			WriteMessage("subtype       = TEMP2 - THC238/268,THN132,THWR288,THRN122,THN122,AW129/131");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP3:
@@ -3338,7 +3347,7 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeTEMP4:
 			WriteMessage("subtype       = TEMP4 - RTHN318");
-			sprintf(szTmp,"                channel %d" , pResponse->TEMP.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTEMP5:
@@ -3369,23 +3378,23 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage("subtype       = System");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP.packettype, pResponse->TEMP.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP.packettype, pResponse->TEMP.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->TEMP.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		sprintf(szTmp, "ID            = %d", (pResponse->TEMP.id1 * 256) + pResponse->TEMP.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP.rssi);
+		sprintf(szTmp, "Temperature   = %.1f C", temp);
 		WriteMessage(szTmp);
 
-		if ((pResponse->TEMP.battery_level &0x0F) == 0)
+		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->TEMP.battery_level & 0x0F) == 0)
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
@@ -3397,39 +3406,39 @@ void MainWorker::decode_Temp(const int HwdID, const _eHardwareTypes HwdType, con
 void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeHUM;
-	unsigned char subType=pResponse->HUM.subtype;
-	sprintf(szTmp,"%d",(pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
-	std::string ID=szTmp;
-	unsigned char Unit=1;
+	unsigned char devType = pTypeHUM;
+	unsigned char subType = pResponse->HUM.subtype;
+	sprintf(szTmp, "%d", (pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
+	std::string ID = szTmp;
+	unsigned char Unit = 1;
 
-	unsigned char SignalLevel=pResponse->HUM.rssi;
+	unsigned char SignalLevel = pResponse->HUM.rssi;
 	unsigned char BatteryLevel = 0;
-	if ((pResponse->HUM.battery_level &0x0F) == 0)
-		BatteryLevel=0;
+	if ((pResponse->HUM.battery_level & 0x0F) == 0)
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
+		BatteryLevel = 100;
 	//Override battery level if hardware supports it
 	if (HwdType == HTYPE_OpenZWave)
 	{
-		BatteryLevel=pResponse->TEMP.battery_level;
+		BatteryLevel = pResponse->TEMP.battery_level;
 	}
 
-	unsigned char humidity=pResponse->HUM.humidity;
-	if (humidity>100)
+	unsigned char humidity = pResponse->HUM.humidity;
+	if (humidity > 100)
 	{
 		WriteMessage(" Invalid Humidity");
 		return;
 	}
 
-	sprintf(szTmp,"%d",pResponse->HUM.humidity_status);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,humidity,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%d", pResponse->HUM.humidity_status);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, humidity, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
 	bool bHandledNotification = false;
-	float temp=0;
-	if (pResponse->HUM.subtype==sTypeHUM1)
+	float temp = 0;
+	if (pResponse->HUM.subtype == sTypeHUM1)
 	{
 		//check if we already had a humidity for this device, if so, keep it!
 		char szTmp[300];
@@ -3437,18 +3446,18 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 
 		result = m_sql.safe_query(
 			"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			HwdID, ID.c_str(),0,pTypeTEMP,sTypeTEMP5);
-		if (result.size()==1)
+			HwdID, ID.c_str(), 0, pTypeTEMP, sTypeTEMP5);
+		if (result.size() == 1)
 		{
 			temp = static_cast<float>(atof(result[0][0].c_str()));
-			float AddjValue=0.0f;
-			float AddjMulti=1.0f;
-			m_sql.GetAddjustment(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,AddjValue,AddjMulti);
-			temp+=AddjValue;
-			sprintf(szTmp,"%.1f;%d;%d",temp,humidity,pResponse->HUM.humidity_status);
-			DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),2,pTypeTEMP_HUM,sTypeTH_LC_TC,SignalLevel,BatteryLevel,0,szTmp, procResult.DeviceName);
+			float AddjValue = 0.0f;
+			float AddjMulti = 1.0f;
+			m_sql.GetAddjustment(HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, AddjValue, AddjMulti);
+			temp += AddjValue;
+			sprintf(szTmp, "%.1f;%d;%d", temp, humidity, pResponse->HUM.humidity_status);
+			DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 2, pTypeTEMP_HUM, sTypeTH_LC_TC, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName);
 			m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, humidity, true, true);
-			float dewpoint=(float)CalculateDewPoint(temp,humidity);
+			float dewpoint = (float)CalculateDewPoint(temp, humidity);
 			m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, procResult.DeviceName, temp, dewpoint);
 			bHandledNotification = true;
 		}
@@ -3468,20 +3477,20 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("subtype       = HUM2 - LaCrosse WS2300");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HUM.packettype, pResponse->HUM.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->HUM.packettype, pResponse->HUM.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d" ,pResponse->HUM.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->HUM.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Humidity      = %d %%" ,pResponse->HUM.humidity);
+		sprintf(szTmp, "ID            = %d", (pResponse->HUM.id1 * 256) + pResponse->HUM.id2);
 		WriteMessage(szTmp);
 
-		switch(pResponse->HUM.humidity_status)
+		sprintf(szTmp, "Humidity      = %d %%", pResponse->HUM.humidity);
+		WriteMessage(szTmp);
+
+		switch (pResponse->HUM.humidity_status)
 		{
 		case humstat_normal:
 			WriteMessage("Status        = Normal");
@@ -3512,16 +3521,16 @@ void MainWorker::decode_Hum(const int HwdID, const _eHardwareTypes HwdType, cons
 void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeTEMP_HUM;
-	unsigned char subType=pResponse->TEMP_HUM.subtype;
+	unsigned char devType = pTypeTEMP_HUM;
+	unsigned char subType = pResponse->TEMP_HUM.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->TEMP_HUM.id1 * 256) + pResponse->TEMP_HUM.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
+	sprintf(szTmp, "%d", (pResponse->TEMP_HUM.id1 * 256) + pResponse->TEMP_HUM.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
 
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->TEMP_HUM.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->TEMP_HUM.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, pResponse->TEMP_HUM.subtype == sTypeTH8, pResponse->TEMP_HUM.battery_level);
 
 	//Get Channel(Unit)
 	switch (pResponse->TEMP_HUM.subtype)
@@ -3560,49 +3569,49 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 	float temp;
 	if (!pResponse->TEMP_HUM.tempsign)
 	{
-		temp=float((pResponse->TEMP_HUM.temperatureh * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f;
+		temp = float((pResponse->TEMP_HUM.temperatureh * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f;
 	}
 	else
 	{
-		temp=-(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
+		temp = -(float(((pResponse->TEMP_HUM.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM.temperaturel) / 10.0f);
 	}
-	if ((temp<-200)||(temp>380))
+	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	temp+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	temp += AddjValue;
 
 	int Humidity = (int)pResponse->TEMP_HUM.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM.humidity_status;
 
-	if (Humidity>100)
+	if (Humidity > 100)
 	{
 		WriteMessage(" Invalid Humidity");
 		return;
 	}
-/*
-	AddjValue=0.0f;
-	AddjMulti=1.0f;
-	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	Humidity+=int(AddjValue);
-	if (Humidity>100)
-		Humidity=100;
-	if (Humidity<0)
-		Humidity=0;
-*/
-	sprintf(szTmp,"%.1f;%d;%d",temp,Humidity,HumidityStatus);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	/*
+		AddjValue=0.0f;
+		AddjMulti=1.0f;
+		m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
+		Humidity+=int(AddjValue);
+		if (Humidity>100)
+			Humidity=100;
+		if (Humidity<0)
+			Humidity=0;
+	*/
+	sprintf(szTmp, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
 	m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, Humidity, true, true);
 
-	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
+	float dewpoint = (float)CalculateDewPoint(temp, Humidity);
 	m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, procResult.DeviceName, temp, dewpoint);
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -3612,22 +3621,22 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		{
 		case sTypeTH1:
 			WriteMessage("subtype       = TH1 - THGN122/123/132,THGR122/228/238/268");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH2:
 			WriteMessage("subtype       = TH2 - THGR810,THGN800");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH3:
 			WriteMessage("subtype       = TH3 - RTGR328");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH4:
 			WriteMessage("subtype       = TH4 - THGR328");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH5:
@@ -3635,7 +3644,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH6:
 			WriteMessage("subtype       = TH6 - THGR918/928,THGRN228,THGN500");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH7:
@@ -3655,7 +3664,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH8:
 			WriteMessage("subtype       = TH8 - WT260,WT260H,WT440H,WT450,WT450H");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH9:
@@ -3663,12 +3672,12 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeTH10:
 			WriteMessage("subtype       = TH10 - Rubicson/IW008T/TX95");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH11:
 			WriteMessage("subtype       = TH11 - Oregon EW109");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTH12:
@@ -3687,23 +3696,23 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM.packettype, pResponse->TEMP_HUM.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM.packettype, pResponse->TEMP_HUM.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->TEMP_HUM.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %s", ID.c_str());
-		WriteMessage(szTmp);
-
-		double tvalue=ConvertTemperature(temp,m_sql.m_tempsign[0]);
-		sprintf(szTmp,"Temperature   = %.1f C", tvalue);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Humidity      = %d %%" ,Humidity);
+		sprintf(szTmp, "ID            = %s", ID.c_str());
 		WriteMessage(szTmp);
 
-		switch(pResponse->TEMP_HUM.humidity_status)
+		double tvalue = ConvertTemperature(temp, m_sql.m_tempsign[0]);
+		sprintf(szTmp, "Temperature   = %.1f C", tvalue);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Humidity      = %d %%", Humidity);
+		WriteMessage(szTmp);
+
+		switch (pResponse->TEMP_HUM.humidity_status)
 		{
 		case humstat_normal:
 			WriteMessage("Status        = Normal");
@@ -3722,7 +3731,7 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM.rssi);
 		WriteMessage(szTmp);
 
-		decode_BateryLevel(pResponse->TEMP_HUM.subtype == sTypeTH8,pResponse->TEMP_HUM.battery_level);
+		decode_BateryLevel(pResponse->TEMP_HUM.subtype == sTypeTH8, pResponse->TEMP_HUM.battery_level);
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -3731,48 +3740,48 @@ void MainWorker::decode_TempHum(const int HwdID, const _eHardwareTypes HwdType, 
 void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeTEMP_HUM_BARO;
-	unsigned char subType=pResponse->TEMP_HUM_BARO.subtype;
-	sprintf(szTmp,"%d",(pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
-	std::string ID=szTmp;
-	unsigned char Unit=pResponse->TEMP_HUM_BARO.id2;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->TEMP_HUM_BARO.rssi;
+	unsigned char devType = pTypeTEMP_HUM_BARO;
+	unsigned char subType = pResponse->TEMP_HUM_BARO.subtype;
+	sprintf(szTmp, "%d", (pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
+	std::string ID = szTmp;
+	unsigned char Unit = pResponse->TEMP_HUM_BARO.id2;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->TEMP_HUM_BARO.rssi;
 	unsigned char BatteryLevel;
-	if ((pResponse->TEMP_HUM_BARO.battery_level &0x0F) == 0)
-		BatteryLevel=0;
+	if ((pResponse->TEMP_HUM_BARO.battery_level & 0x0F) == 0)
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
+		BatteryLevel = 100;
 	//Override battery level if hardware supports it
 	if (HwdType == HTYPE_OpenZWave)
 	{
-		BatteryLevel=pResponse->TEMP.battery_level;
+		BatteryLevel = pResponse->TEMP.battery_level;
 	}
 
 	float temp;
 	if (!pResponse->TEMP_HUM_BARO.tempsign)
 	{
-		temp=float((pResponse->TEMP_HUM_BARO.temperatureh * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f;
+		temp = float((pResponse->TEMP_HUM_BARO.temperatureh * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f;
 	}
 	else
 	{
-		temp=-(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
+		temp = -(float(((pResponse->TEMP_HUM_BARO.temperatureh & 0x7F) * 256) + pResponse->TEMP_HUM_BARO.temperaturel) / 10.0f);
 	}
-	if ((temp<-200)||(temp>380))
+	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	temp+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	temp += AddjValue;
 
 	unsigned char Humidity = pResponse->TEMP_HUM_BARO.humidity;
 	unsigned char HumidityStatus = pResponse->TEMP_HUM_BARO.humidity_status;
 
-	if (Humidity>100)
+	if (Humidity > 100)
 	{
 		WriteMessage(" Invalid Humidity");
 		return;
@@ -3781,32 +3790,32 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
 
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
-	float fbarometer=(float)barometer;
+	float fbarometer = (float)barometer;
 
-	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	barometer+=int(AddjValue);
+	m_sql.GetAddjustment2(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	barometer += int(AddjValue);
 
-	if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
+	if (pResponse->TEMP_HUM_BARO.subtype == sTypeTHBFloat)
 	{
-		if ((barometer<8000)||(barometer>12000))
+		if ((barometer < 8000) || (barometer > 12000))
 		{
 			WriteMessage(" Invalid Barometer");
 			return;
 		}
-		fbarometer=float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f;
-		fbarometer+=AddjValue;
-		sprintf(szTmp,"%.1f;%d;%d;%.1f;%d",temp,Humidity,HumidityStatus, fbarometer,forcast);
+		fbarometer = float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol) / 10.0f;
+		fbarometer += AddjValue;
+		sprintf(szTmp, "%.1f;%d;%d;%.1f;%d", temp, Humidity, HumidityStatus, fbarometer, forcast);
 	}
 	else
 	{
-		if ((barometer<800)||(barometer>1200))
+		if ((barometer < 800) || (barometer > 1200))
 		{
 			WriteMessage(" Invalid Barometer");
 			return;
 		}
-		sprintf(szTmp,"%.1f;%d;%d;%d;%d",temp,Humidity,HumidityStatus, barometer,forcast);
+		sprintf(szTmp, "%.1f;%d;%d;%d;%d", temp, Humidity, HumidityStatus, barometer, forcast);
 	}
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -3818,7 +3827,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 
 	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_BARO, fbarometer);
 
-	float dewpoint=(float)CalculateDewPoint(temp,Humidity);
+	float dewpoint = (float)CalculateDewPoint(temp, Humidity);
 	m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, procResult.DeviceName, temp, dewpoint);
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -3828,37 +3837,37 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 		{
 		case sTypeTHB1:
 			WriteMessage("subtype       = THB1 - BTHR918, BTHGN129");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTHB2:
 			WriteMessage("subtype       = THB2 - BTHR918N, BTHR968");
-			sprintf(szTmp,"                channel %d", pResponse->TEMP_HUM_BARO.id2);
+			sprintf(szTmp, "                channel %d", pResponse->TEMP_HUM_BARO.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeTHBFloat:
 			WriteMessage("subtype       = Weather Station");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM_BARO.packettype, pResponse->TEMP_HUM_BARO.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->TEMP_HUM_BARO.packettype, pResponse->TEMP_HUM_BARO.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_HUM_BARO.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->TEMP_HUM_BARO.seqnbr);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp, "ID            = %d", (pResponse->TEMP_HUM_BARO.id1 * 256) + pResponse->TEMP_HUM_BARO.id2);
 		WriteMessage(szTmp);
 
-		double tvalue=ConvertTemperature(temp,m_sql.m_tempsign[0]);
-		sprintf(szTmp,"Temperature   = %.1f C", tvalue);
+		double tvalue = ConvertTemperature(temp, m_sql.m_tempsign[0]);
+		sprintf(szTmp, "Temperature   = %.1f C", tvalue);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Humidity      = %d %%" ,pResponse->TEMP_HUM_BARO.humidity);
+		sprintf(szTmp, "Humidity      = %d %%", pResponse->TEMP_HUM_BARO.humidity);
 		WriteMessage(szTmp);
 
-		switch(pResponse->TEMP_HUM_BARO.humidity_status)
+		switch (pResponse->TEMP_HUM_BARO.humidity_status)
 		{
 		case humstat_normal:
 			WriteMessage("Status        = Normal");
@@ -3874,10 +3883,10 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		if (pResponse->TEMP_HUM_BARO.subtype==sTypeTHBFloat)
-			sprintf(szTmp,"Barometer     = %.1f hPa", float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol)/10.0f);
+		if (pResponse->TEMP_HUM_BARO.subtype == sTypeTHBFloat)
+			sprintf(szTmp, "Barometer     = %.1f hPa", float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol) / 10.0f);
 		else
-			sprintf(szTmp,"Barometer     = %d hPa", (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol);
+			sprintf(szTmp, "Barometer     = %d hPa", (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol);
 		WriteMessage(szTmp);
 
 		switch (pResponse->TEMP_HUM_BARO.forecast)
@@ -3902,7 +3911,7 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_HUM_BARO.rssi);
 		WriteMessage(szTmp);
 
-		if ((pResponse->TEMP_HUM_BARO.battery_level &0x0F) == 0)
+		if ((pResponse->TEMP_HUM_BARO.battery_level & 0x0F) == 0)
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
@@ -3914,37 +3923,37 @@ void MainWorker::decode_TempHumBaro(const int HwdID, const _eHardwareTypes HwdTy
 void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeTEMP_BARO;
-	unsigned char subType=sTypeBMP085;
-	_tTempBaro *pTempBaro=(_tTempBaro*)pResponse;
+	unsigned char devType = pTypeTEMP_BARO;
+	unsigned char subType = sTypeBMP085;
+	_tTempBaro *pTempBaro = (_tTempBaro*)pResponse;
 
-	sprintf(szTmp,"%d",pTempBaro->id1);
-	std::string ID=szTmp;
-	unsigned char Unit=1;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	sprintf(szTmp, "%d", pTempBaro->id1);
+	std::string ID = szTmp;
+	unsigned char Unit = 1;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel;
-	BatteryLevel=100;
+	BatteryLevel = 100;
 
-	float temp=pTempBaro->temp;
-	if ((temp<-200)||(temp>380))
+	float temp = pTempBaro->temp;
+	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	temp+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	temp += AddjValue;
 
 	float fbarometer = pTempBaro->baro;
 	int forcast = pTempBaro->forecast;
-	m_sql.GetAddjustment2(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	fbarometer+=AddjValue;
+	m_sql.GetAddjustment2(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	fbarometer += AddjValue;
 
-	sprintf(szTmp,"%.1f;%.1f;%d;%.2f",temp,fbarometer,forcast,pTempBaro->altitude);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f;%.1f;%d;%.2f", temp, fbarometer, forcast, pTempBaro->altitude);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -3958,19 +3967,19 @@ void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType,
 		{
 		case sTypeBMP085:
 			WriteMessage("subtype       = BMP085 I2C");
-			sprintf(szTmp,"                channel %d", pTempBaro->id1);
+			sprintf(szTmp, "                channel %d", pTempBaro->id1);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", devType, subType);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", devType, subType);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Temperature   = %.1f C", temp);
+		sprintf(szTmp, "Temperature   = %.1f C", temp);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Barometer     = %.1f hPa", fbarometer);
+		sprintf(szTmp, "Barometer     = %.1f hPa", fbarometer);
 		WriteMessage(szTmp);
 
 		switch (pTempBaro->forecast)
@@ -3992,9 +4001,9 @@ void MainWorker::decode_TempBaro(const int HwdID, const _eHardwareTypes HwdType,
 			break;
 		}
 
-		if (pResponse->TEMP_HUM_BARO.subtype==sTypeBMP085)
+		if (pResponse->TEMP_HUM_BARO.subtype == sTypeBMP085)
 		{
-			sprintf(szTmp,"Altitude   = %.2f meter", pTempBaro->altitude);
+			sprintf(szTmp, "Altitude   = %.2f meter", pTempBaro->altitude);
 			WriteMessage(szTmp);
 		}
 		WriteMessageEnd();
@@ -4008,54 +4017,54 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 
 	//We are (also) going to split this device into two separate sensors (temp + rain)
 
-	unsigned char devType=pTypeTEMP_RAIN;
-	unsigned char subType=pResponse->TEMP_RAIN.subtype;
+	unsigned char devType = pTypeTEMP_RAIN;
+	unsigned char subType = pResponse->TEMP_RAIN.subtype;
 
-	sprintf(szTmp,"%d",(pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
-	std::string ID=szTmp;
-	int Unit=pResponse->TEMP_RAIN.id2;
-	int cmnd=0;
+	sprintf(szTmp, "%d", (pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
+	std::string ID = szTmp;
+	int Unit = pResponse->TEMP_RAIN.id2;
+	int cmnd = 0;
 
-	unsigned char SignalLevel=pResponse->TEMP_RAIN.rssi;
+	unsigned char SignalLevel = pResponse->TEMP_RAIN.rssi;
 	unsigned char BatteryLevel = 0;
-	if ((pResponse->TEMP_RAIN.battery_level &0x0F) == 0)
-		BatteryLevel=0;
+	if ((pResponse->TEMP_RAIN.battery_level & 0x0F) == 0)
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
+		BatteryLevel = 100;
 
 	float temp;
 	if (!pResponse->TEMP_RAIN.tempsign)
 	{
-		temp=float((pResponse->TEMP_RAIN.temperatureh * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f;
+		temp = float((pResponse->TEMP_RAIN.temperatureh * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f;
 	}
 	else
 	{
-		temp=-(float(((pResponse->TEMP_RAIN.temperatureh & 0x7F) * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f);
+		temp = -(float(((pResponse->TEMP_RAIN.temperatureh & 0x7F) * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0f);
 	}
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,AddjValue,AddjMulti);
-	temp+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP3, AddjValue, AddjMulti);
+	temp += AddjValue;
 
-	if ((temp<-200)||(temp>380))
+	if ((temp < -200) || (temp > 380))
 	{
 		WriteMessage(" Invalid Temperature");
 		return;
 	}
-	float TotalRain=float((pResponse->TEMP_RAIN.raintotal1 * 256) + pResponse->TEMP_RAIN.raintotal2) / 10.0f;
+	float TotalRain = float((pResponse->TEMP_RAIN.raintotal1 * 256) + pResponse->TEMP_RAIN.raintotal2) / 10.0f;
 
-	sprintf(szTmp,"%.1f;%.1f",temp,TotalRain);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f;%.1f", temp, TotalRain);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	sprintf(szTmp,"%.1f",temp);
-	uint64_t DevRowIdxTemp=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeTEMP,sTypeTEMP3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f", temp);
+	uint64_t DevRowIdxTemp = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, 0, true, false);
 
-	sprintf(szTmp,"%d;%.1f",0,TotalRain);
-	uint64_t DevRowIdxRain=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeRAIN,sTypeRAIN3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%d;%.1f", 0, TotalRain);
+	uint64_t DevRowIdxRain = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, pTypeRAIN, sTypeRAIN3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	m_notifications.CheckAndHandleRainNotification(DevRowIdx, procResult.DeviceName, pTypeRAIN, sTypeRAIN3, NTYPE_RAIN, TotalRain);
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -4067,17 +4076,17 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 			WriteMessage("Subtype       = Alecto WS1200");
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->TEMP_RAIN.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->TEMP_RAIN.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Temperature   = %.1f C", temp);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Total Rain    = %.1f mm", TotalRain);
+		sprintf(szTmp, "ID            = %d", (pResponse->TEMP_RAIN.id1 * 256) + pResponse->TEMP_RAIN.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->TEMP_RAIN.rssi);
+		sprintf(szTmp, "Temperature   = %.1f C", temp);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Total Rain    = %.1f mm", TotalRain);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->TEMP_RAIN.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->TEMP_RAIN.battery_level & 0x0F) == 0)
@@ -4093,26 +4102,26 @@ void MainWorker::decode_TempRain(const int HwdID, const _eHardwareTypes HwdType,
 void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeUV;
-	unsigned char subType=pResponse->UV.subtype;
+	unsigned char devType = pTypeUV;
+	unsigned char subType = pResponse->UV.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->UV.id1 * 256) + pResponse->UV.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->UV.rssi;
+	sprintf(szTmp, "%d", (pResponse->UV.id1 * 256) + pResponse->UV.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->UV.rssi;
 	unsigned char BatteryLevel;
 	if ((pResponse->UV.battery_level & 0x0F) == 0)
-		BatteryLevel=0;
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
-	float Level=float(pResponse->UV.uv) / 10.0f;
-	if (Level>30)
+		BatteryLevel = 100;
+	float Level = float(pResponse->UV.uv) / 10.0f;
+	if (Level > 30)
 	{
 		WriteMessage(" Invalid UV");
 		return;
 	}
-	float temp=0;
+	float temp = 0;
 	if (pResponse->UV.subtype == sTypeUV3)
 	{
 		if (!pResponse->UV.tempsign)
@@ -4123,20 +4132,20 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 		{
 			temp = -(float(((pResponse->UV.temperatureh & 0x7F) * 256) + pResponse->UV.temperaturel) / 10.0f);
 		}
-		if ((temp<-200)||(temp>380))
+		if ((temp < -200) || (temp > 380))
 		{
 			WriteMessage(" Invalid Temperature");
 			return;
 		}
 
-		float AddjValue=0.0f;
-		float AddjMulti=1.0f;
-		m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-		temp+=AddjValue;
+		float AddjValue = 0.0f;
+		float AddjMulti = 1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
 	}
 
-	sprintf(szTmp,"%.1f;%.1f",Level,temp);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f;%.1f", Level, temp);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -4159,22 +4168,22 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 			WriteMessage("Subtype       = UV3 - TFA");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->UV.packettype, pResponse->UV.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->UV.packettype, pResponse->UV.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->UV.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->UV.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->UV.id1 * 256) + pResponse->UV.id2);
+		sprintf(szTmp, "ID            = %d", (pResponse->UV.id1 * 256) + pResponse->UV.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Level         = %.1f UVI", Level);
+		sprintf(szTmp, "Level         = %.1f UVI", Level);
 		WriteMessage(szTmp);
 
 		if (pResponse->UV.subtype == sTypeUV3)
 		{
-			sprintf(szTmp,"Temperature   = %.1f C", temp);
+			sprintf(szTmp, "Temperature   = %.1f C", temp);
 			WriteMessage(szTmp);
 		}
 
@@ -4189,7 +4198,7 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 		else
 			WriteMessage("Description = Dangerous");
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->UV.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->UV.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->UV.battery_level & 0x0F) == 0)
@@ -4204,15 +4213,15 @@ void MainWorker::decode_UV(const int HwdID, const _eHardwareTypes HwdType, const
 void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeLighting1;
-	unsigned char subType=pResponse->LIGHTING1.subtype;
-	sprintf(szTmp,"%d", pResponse->LIGHTING1.housecode);
+	unsigned char devType = pTypeLighting1;
+	unsigned char subType = pResponse->LIGHTING1.subtype;
+	sprintf(szTmp, "%d", pResponse->LIGHTING1.housecode);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->LIGHTING1.unitcode;
-	unsigned char cmnd=pResponse->LIGHTING1.cmnd;
-	unsigned char SignalLevel=pResponse->LIGHTING1.rssi;
+	unsigned char Unit = pResponse->LIGHTING1.unitcode;
+	unsigned char cmnd = pResponse->LIGHTING1.cmnd;
+	unsigned char SignalLevel = pResponse->LIGHTING1.rssi;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
@@ -4224,11 +4233,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeX10:
 			WriteMessage("subtype       = X10");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
+			sprintf(szTmp, "housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp, "unitcode      = %d", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING1.cmnd)
@@ -4258,11 +4267,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeARC:
 			WriteMessage("subtype       = ARC");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
+			sprintf(szTmp, "housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp, "unitcode      = %d", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING1.cmnd)
@@ -4328,11 +4337,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = HQ COCO-20");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
+			sprintf(szTmp, "housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp, "unitcode      = %d", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 
@@ -4353,11 +4362,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			//decoding of this type is only implemented for use by simulate and verbose
 			//this type is not received by the RFXtrx433
 			WriteMessage("subtype       = Philips SBC");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING1.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"housecode     = %c", pResponse->LIGHTING1.housecode);
+			sprintf(szTmp, "housecode     = %c", pResponse->LIGHTING1.housecode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING1.unitcode);
+			sprintf(szTmp, "unitcode      = %d", pResponse->LIGHTING1.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 
@@ -4381,11 +4390,11 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 			}
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING1.packettype, pResponse->LIGHTING1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING1.packettype, pResponse->LIGHTING1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING1.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -4395,14 +4404,14 @@ void MainWorker::decode_Lighting1(const int HwdID, const _eHardwareTypes HwdType
 void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeLighting2;
-	unsigned char subType=pResponse->LIGHTING2.subtype;
-	sprintf(szTmp,"%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
+	unsigned char devType = pTypeLighting2;
+	unsigned char subType = pResponse->LIGHTING2.subtype;
+	sprintf(szTmp, "%X%02X%02X%02X", pResponse->LIGHTING2.id1, pResponse->LIGHTING2.id2, pResponse->LIGHTING2.id3, pResponse->LIGHTING2.id4);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->LIGHTING2.unitcode;
-	unsigned char cmnd=pResponse->LIGHTING2.cmnd;
-	unsigned char level=pResponse->LIGHTING2.level;
-	unsigned char SignalLevel=pResponse->LIGHTING2.rssi;
+	unsigned char Unit = pResponse->LIGHTING2.unitcode;
+	unsigned char cmnd = pResponse->LIGHTING2.cmnd;
+	unsigned char level = pResponse->LIGHTING2.level;
+	unsigned char SignalLevel = pResponse->LIGHTING2.rssi;
 
 	sprintf(szTmp, "%d", level);
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
@@ -4447,11 +4456,11 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = ANSLUT");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING2.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING2.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %s", ID.c_str());
+			sprintf(szTmp, "ID            = %s", ID.c_str());
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", Unit);
+			sprintf(szTmp, "Unit          = %d", Unit);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING2.cmnd)
@@ -4463,7 +4472,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("On");
 				break;
 			case light2_sSetLevel:
-				sprintf(szTmp,"Set Level: %d", level);
+				sprintf(szTmp, "Set Level: %d", level);
 				WriteMessage(szTmp);
 				break;
 			case light2_sGroupOff:
@@ -4473,7 +4482,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("Group On");
 				break;
 			case light2_sSetGroupLevel:
-				sprintf(szTmp,"Set Group Level: %d", level);
+				sprintf(szTmp, "Set Group Level: %d", level);
 				WriteMessage(szTmp);
 				break;
 			default:
@@ -4482,7 +4491,7 @@ void MainWorker::decode_Lighting2(const int HwdID, const _eHardwareTypes HwdType
 			}
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING2.packettype, pResponse->LIGHTING2.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING2.packettype, pResponse->LIGHTING2.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -4503,7 +4512,7 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 	{
 	case sTypeKoppla:
 		WriteMessage("subtype       = Ikea Koppla");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING3.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING3.seqnbr);
 		WriteMessage(szTmp);
 		WriteMessage("Command       = ", false);
 		switch (pResponse->LIGHTING3.cmnd)
@@ -4515,14 +4524,14 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage("On");
 			break;
 		case 0x20:
-			sprintf(szTmp,"Set Level: %d", pResponse->LIGHTING3.channel10_9);
+			sprintf(szTmp, "Set Level: %d", pResponse->LIGHTING3.channel10_9);
 			WriteMessage(szTmp);
 			break;
 		case 0x21:
 			WriteMessage("Program");
 			break;
 		default:
-			if ((pResponse->LIGHTING3.cmnd >= 0x10) && (pResponse->LIGHTING3.cmnd <0x18))
+			if ((pResponse->LIGHTING3.cmnd >= 0x10) && (pResponse->LIGHTING3.cmnd < 0x18))
 				WriteMessage("Dim");
 			else if ((pResponse->LIGHTING3.cmnd >= 0x18) && (pResponse->LIGHTING3.cmnd < 0x20))
 				WriteMessage("Bright");
@@ -4532,11 +4541,11 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 		}
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING3.packettype, pResponse->LIGHTING3.subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING3.packettype, pResponse->LIGHTING3.subtype);
 		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING3.rssi);
+	sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING3.rssi);
 	WriteMessage(szTmp);
 	WriteMessageEnd();
 	procResult.DeviceRowIdx = -1;
@@ -4545,18 +4554,18 @@ void MainWorker::decode_Lighting3(const int HwdID, const _eHardwareTypes HwdType
 void MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeLighting4;
-	unsigned char subType=pResponse->LIGHTING4.subtype;
-	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
+	unsigned char devType = pTypeLighting4;
+	unsigned char subType = pResponse->LIGHTING4.subtype;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
 	std::string ID = szTmp;
-	int Unit=0;
-	unsigned char cmnd=1; //only 'On' supported
-	unsigned char SignalLevel=pResponse->LIGHTING4.rssi;
-	sprintf(szTmp,"%d",(pResponse->LIGHTING4.pulseHigh*256)+pResponse->LIGHTING4.pulseLow);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp, procResult.DeviceName);
+	int Unit = 0;
+	unsigned char cmnd = 1; //only 'On' supported
+	unsigned char SignalLevel = pResponse->LIGHTING4.rssi;
+	sprintf(szTmp, "%d", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -4565,146 +4574,146 @@ void MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypePT2262:
 			WriteMessage("subtype       = PT2262");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING4.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1,pResponse->LIGHTING4.cmd2,pResponse->LIGHTING4.cmd3);
+			sprintf(szTmp, "Code          = %02X%02X%02X", pResponse->LIGHTING4.cmd1, pResponse->LIGHTING4.cmd2, pResponse->LIGHTING4.cmd3);
 			WriteMessage(szTmp);
 
 			WriteMessage("S1- S24  = ", false);
-			if ((pResponse->LIGHTING4.cmd1 & 0x80)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x80) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x40)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x40) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x20)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x20) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x10)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x10) == 0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
 
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x08)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x08) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x04)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x04) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x02)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x02) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd1 & 0x01)==0)
+			if ((pResponse->LIGHTING4.cmd1 & 0x01) == 0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
 
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x80)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x80) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x40)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x40) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x20)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x20) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x10)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x10) == 0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
 
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x08)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x08) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x04)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x04) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x02)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x02) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd2 & 0x01)==0)
+			if ((pResponse->LIGHTING4.cmd2 & 0x01) == 0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
 
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x80)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x80) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x40)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x40) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x20)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x20) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x10)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x10) == 0)
 				WriteMessage("0 ", false);
 			else
 				WriteMessage("1 ", false);
 
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x08)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x08) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x04)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x04) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x02)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x02) == 0)
 				WriteMessage("0", false);
 			else
 				WriteMessage("1", false);
 
-			if ((pResponse->LIGHTING4.cmd3 & 0x01)==0)
+			if ((pResponse->LIGHTING4.cmd3 & 0x01) == 0)
 				WriteMessage("0");
 			else
 				WriteMessage("1");
 
-			sprintf(szTmp,"Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
+			sprintf(szTmp, "Pulse         = %d usec", (pResponse->LIGHTING4.pulseHigh * 256) + pResponse->LIGHTING4.pulseLow);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING4.packettype, pResponse->LIGHTING4.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING4.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING4.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -4714,15 +4723,15 @@ void MainWorker::decode_Lighting4(const int HwdID, const _eHardwareTypes HwdType
 void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeLighting5;
-	unsigned char subType=pResponse->LIGHTING5.subtype;
+	unsigned char devType = pTypeLighting5;
+	unsigned char subType = pResponse->LIGHTING5.subtype;
 	if ((subType != sTypeEMW100) && (subType != sTypeLivolo) && (subType != sTypeLivoloAppliance) && (subType != sTypeRGB432W) && (subType != sTypeKangtai))
-		sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+		sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	else
-		sprintf(szTmp,"%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+		sprintf(szTmp, "%02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->LIGHTING5.unitcode;
-	unsigned char cmnd=pResponse->LIGHTING5.cmnd;
+	unsigned char Unit = pResponse->LIGHTING5.unitcode;
+	unsigned char cmnd = pResponse->LIGHTING5.cmnd;
 	float flevel;
 	if (subType == sTypeLivolo)
 		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
@@ -4730,29 +4739,29 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 		flevel = (100.0f / 31.0f)*float(pResponse->LIGHTING5.level);
 	else
 		flevel = (100.0f / 7.0f)*float(pResponse->LIGHTING5.level);
-	unsigned char SignalLevel=pResponse->LIGHTING5.rssi;
+	unsigned char SignalLevel = pResponse->LIGHTING5.rssi;
 
-	bool bDoUpdate=true;
+	bool bDoUpdate = true;
 	if ((subType == sTypeTRC02) || (subType == sTypeTRC02_2) || (subType == sTypeAoke) || (subType == sTypeEurodomest))
 	{
 		if (
-			(pResponse->LIGHTING5.cmnd != light5_sOff)&&
-			(pResponse->LIGHTING5.cmnd != light5_sOn)&&
-			(pResponse->LIGHTING5.cmnd != light5_sGroupOff)&&
+			(pResponse->LIGHTING5.cmnd != light5_sOff) &&
+			(pResponse->LIGHTING5.cmnd != light5_sOn) &&
+			(pResponse->LIGHTING5.cmnd != light5_sGroupOff) &&
 			(pResponse->LIGHTING5.cmnd != light5_sGroupOn)
 			)
 		{
-			bDoUpdate=false;
+			bDoUpdate = false;
 		}
 	}
-	uint64_t DevRowIdx=-1;
+	uint64_t DevRowIdx = -1;
 	if (bDoUpdate)
 	{
-		sprintf(szTmp,"%d",pResponse->LIGHTING5.level);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%d", pResponse->LIGHTING5.level);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+		CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 	}
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -4762,11 +4771,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeLightwaveRF:
 			WriteMessage("subtype       = LightwaveRF");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4814,23 +4823,23 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("Open inline relay");
 				break;
 			case light5_sSetLevel:
-				sprintf(szTmp,"Set dim level to: %.2f %%" , flevel);
+				sprintf(szTmp, "Set dim level to: %.2f %%", flevel);
 				WriteMessage(szTmp);
 				break;
 			case light5_sColourPalette:
-				if (pResponse->LIGHTING5.level==0)
+				if (pResponse->LIGHTING5.level == 0)
 					WriteMessage("Color Palette (Even command)");
 				else
 					WriteMessage("Color Palette (Odd command)");
 				break;
 			case light5_sColourTone:
-				if (pResponse->LIGHTING5.level==0)
+				if (pResponse->LIGHTING5.level == 0)
 					WriteMessage("Color Tone (Even command)");
 				else
 					WriteMessage("Color Tone (Odd command)");
 				break;
 			case light5_sColourCycle:
-				if (pResponse->LIGHTING5.level==0)
+				if (pResponse->LIGHTING5.level == 0)
 					WriteMessage("Color Cycle (Even command)");
 				else
 					WriteMessage("Color Cycle (Odd command)");
@@ -4842,11 +4851,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeEMW100:
 			WriteMessage("subtype       = EMW100");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4867,11 +4876,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeBBSB:
 			WriteMessage("subtype       = BBSB new");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4895,11 +4904,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeRSL:
 			WriteMessage("subtype       = Conrad RSL");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -4923,11 +4932,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			break;
 		case sTypeLivolo:
 			WriteMessage("subtype       = Livolo Dimmer");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -5014,9 +5023,9 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("subtype       = TRC02_2 (RGB)");
 			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING5.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
+			sprintf(szTmp, "ID            = %02X%02X%02X", pResponse->LIGHTING5.id1, pResponse->LIGHTING5.id2, pResponse->LIGHTING5.id3);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"Unit          = %d", pResponse->LIGHTING5.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->LIGHTING5.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING5.cmnd)
@@ -5040,7 +5049,7 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("Color-");
 				break;
 			default:
-				sprintf(szTmp,"Color = %d",pResponse->LIGHTING5.cmnd);
+				sprintf(szTmp, "Color = %d", pResponse->LIGHTING5.cmnd);
 				WriteMessage(szTmp);
 				break;
 			}
@@ -5192,11 +5201,11 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 			}
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING5.packettype, pResponse->LIGHTING5.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING5.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING5.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5206,20 +5215,20 @@ void MainWorker::decode_Lighting5(const int HwdID, const _eHardwareTypes HwdType
 void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeLighting6;
-	unsigned char subType=pResponse->LIGHTING6.subtype;
-	sprintf(szTmp,"%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2,pResponse->LIGHTING6.groupcode);
+	unsigned char devType = pTypeLighting6;
+	unsigned char subType = pResponse->LIGHTING6.subtype;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2, pResponse->LIGHTING6.groupcode);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->LIGHTING6.unitcode;
-	unsigned char cmnd=pResponse->LIGHTING6.cmnd;
-	unsigned char rfu=pResponse->LIGHTING6.seqnbr2;
-	unsigned char SignalLevel=pResponse->LIGHTING6.rssi;
+	unsigned char Unit = pResponse->LIGHTING6.unitcode;
+	unsigned char cmnd = pResponse->LIGHTING6.cmnd;
+	unsigned char rfu = pResponse->LIGHTING6.seqnbr2;
+	unsigned char SignalLevel = pResponse->LIGHTING6.rssi;
 
-	sprintf(szTmp,"%d",rfu);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%d", rfu);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -5228,13 +5237,13 @@ void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeBlyss:
 			WriteMessage("subtype       = Blyss");
-			sprintf(szTmp,"Sequence nbr  = %d",  pResponse->LIGHTING6.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->LIGHTING6.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->LIGHTING6.id1, pResponse->LIGHTING6.id2);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"groupcode     = %d", pResponse->LIGHTING6.groupcode);
+			sprintf(szTmp, "groupcode     = %d", pResponse->LIGHTING6.groupcode);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"unitcode      = %d", pResponse->LIGHTING6.unitcode);
+			sprintf(szTmp, "unitcode      = %d", pResponse->LIGHTING6.unitcode);
 			WriteMessage(szTmp);
 			WriteMessage("Command       = ", false);
 			switch (pResponse->LIGHTING6.cmnd)
@@ -5255,17 +5264,17 @@ void MainWorker::decode_Lighting6(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("UNKNOWN");
 				break;
 			}
-			sprintf(szTmp,"Command seqnbr= %d", pResponse->LIGHTING6.cmndseqnbr);
+			sprintf(szTmp, "Command seqnbr= %d", pResponse->LIGHTING6.cmndseqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"seqnbr2       = %d", pResponse->LIGHTING6.seqnbr2);
+			sprintf(szTmp, "seqnbr2       = %d", pResponse->LIGHTING6.seqnbr2);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->LIGHTING6.packettype, pResponse->LIGHTING6.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->LIGHTING6.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->LIGHTING6.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5456,26 +5465,26 @@ void MainWorker::decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdTy
 void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[300];
-	_tLimitlessLights *pLed=(_tLimitlessLights*)pResponse;
+	_tLimitlessLights *pLed = (_tLimitlessLights*)pResponse;
 
-	unsigned char devType=pTypeLimitlessLights;
-	unsigned char subType=pLed->subtype;
-	if (pLed->id==1)
-		sprintf(szTmp,"%d", 1);
+	unsigned char devType = pTypeLimitlessLights;
+	unsigned char subType = pLed->subtype;
+	if (pLed->id == 1)
+		sprintf(szTmp, "%d", 1);
 	else
 		sprintf(szTmp, "%08X", (unsigned int)pLed->id);
 	std::string ID = szTmp;
-	unsigned char Unit=pLed->dunit;
-	unsigned char cmnd=pLed->command;
-	unsigned char value=pLed->value;
+	unsigned char Unit = pLed->dunit;
+	unsigned char cmnd = pLed->command;
+	unsigned char value = pLed->value;
 
 	char szValueTmp[100];
 	sprintf(szValueTmp, "%d", value);
 	std::string sValue = szValueTmp;
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,12,-1,cmnd, sValue.c_str(), procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, 12, -1, cmnd, sValue.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	if (cmnd == Limitless_SetBrightnessLevel)
 	{
@@ -5504,18 +5513,18 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeChime;
-	unsigned char subType=pResponse->CHIME.subtype;
-	sprintf(szTmp,"%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+	unsigned char devType = pTypeChime;
+	unsigned char subType = pResponse->CHIME.subtype;
+	sprintf(szTmp, "%02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->CHIME.sound;
-	unsigned char cmnd=pResponse->CHIME.sound;
-	unsigned char SignalLevel=pResponse->CHIME.rssi;
+	unsigned char Unit = pResponse->CHIME.sound;
+	unsigned char cmnd = pResponse->CHIME.sound;
+	unsigned char SignalLevel = pResponse->CHIME.rssi;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -5524,9 +5533,9 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 		{
 		case sTypeByronSX:
 			WriteMessage("subtype       = Byron SX");
-			sprintf(szTmp,"Sequence nbr  = %d",  pResponse->CHIME.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->CHIME.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
+			sprintf(szTmp, "ID            = %02X%02X", pResponse->CHIME.id1, pResponse->CHIME.id2);
 			WriteMessage(szTmp);
 			WriteMessage("Sound          = ", false);
 			switch (pResponse->CHIME.sound)
@@ -5613,11 +5622,11 @@ void MainWorker::decode_Chime(const int HwdID, const _eHardwareTypes HwdType, co
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CHIME.packettype, pResponse->CHIME.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->CHIME.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->CHIME.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5694,13 +5703,13 @@ void MainWorker::decode_UNDECODED(const int HwdID, const _eHardwareTypes HwdType
 		WriteMessage("RFY:", false);
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->UNDECODED.packettype, pResponse->UNDECODED.subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->UNDECODED.packettype, pResponse->UNDECODED.subtype);
 		WriteMessage(szTmp);
 		break;
 	}
 	std::stringstream sHexDump;
-	unsigned char *pRXBytes=(unsigned char*)&pResponse->UNDECODED.msg1;
-	for (int i = 0; i< pResponse->UNDECODED.packetlength - 3; i++)
+	unsigned char *pRXBytes = (unsigned char*)&pResponse->UNDECODED.msg1;
+	for (int i = 0; i < pResponse->UNDECODED.packetlength - 3; i++)
 	{
 		sHexDump << HEX(pRXBytes[i]);
 	}
@@ -5717,12 +5726,12 @@ void MainWorker::decode_RecXmitMessage(const int HwdID, const _eHardwareTypes Hw
 	{
 	case sTypeReceiverLockError:
 		WriteMessage("subtype           = Receiver lock error");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 		break;
 	case sTypeTransmitterResponse:
 		WriteMessage("subtype           = Transmitter Response");
-		sprintf(szTmp,"Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
+		sprintf(szTmp, "Sequence nbr      = %d", pResponse->RXRESPONSE.seqnbr);
 		WriteMessage(szTmp);
 
 		switch (pResponse->RXRESPONSE.msg)
@@ -5740,13 +5749,13 @@ void MainWorker::decode_RecXmitMessage(const int HwdID, const _eHardwareTypes Hw
 			WriteMessage("response          = NAK, AC address zero in id1-id4 not allowed");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unexpected message type= %02X", pResponse->RXRESPONSE.msg);
+			sprintf(szTmp, "ERROR: Unexpected message type= %02X", pResponse->RXRESPONSE.msg);
 			WriteMessage(szTmp);
 			break;
 		}
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RXRESPONSE.packettype, pResponse->RXRESPONSE.subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RXRESPONSE.packettype, pResponse->RXRESPONSE.subtype);
 		WriteMessage(szTmp);
 		break;
 	}
@@ -5756,15 +5765,15 @@ void MainWorker::decode_RecXmitMessage(const int HwdID, const _eHardwareTypes Hw
 void MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeCurtain;
-	unsigned char subType=pResponse->CURTAIN1.subtype;
-	sprintf(szTmp,"%d", pResponse->CURTAIN1.housecode);
+	unsigned char devType = pTypeCurtain;
+	unsigned char subType = pResponse->CURTAIN1.subtype;
+	sprintf(szTmp, "%d", pResponse->CURTAIN1.housecode);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->CURTAIN1.unitcode;
-	unsigned char cmnd=pResponse->CURTAIN1.cmnd;
-	unsigned char SignalLevel=9;
+	unsigned char Unit = pResponse->CURTAIN1.unitcode;
+	unsigned char cmnd = pResponse->CURTAIN1.cmnd;
+	unsigned char SignalLevel = 9;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -5779,17 +5788,17 @@ void MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("subtype       = Harrison");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->CURTAIN1.packettype, pResponse->CURTAIN1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->CURTAIN1.packettype, pResponse->CURTAIN1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURTAIN1.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->CURTAIN1.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Housecode         = %d", pResponse->CURTAIN1.housecode);
+		sprintf(szTmp, "Housecode         = %d", pResponse->CURTAIN1.housecode);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Unit          = %d", pResponse->CURTAIN1.unitcode);
+		sprintf(szTmp, "Unit          = %d", pResponse->CURTAIN1.unitcode);
 		WriteMessage(szTmp);
 
 		WriteMessage("Command       = ", false);
@@ -5817,20 +5826,20 @@ void MainWorker::decode_Curtain(const int HwdID, const _eHardwareTypes HwdType, 
 void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeBlinds;
-	unsigned char subType=pResponse->BLINDS1.subtype;
+	unsigned char devType = pTypeBlinds;
+	unsigned char subType = pResponse->BLINDS1.subtype;
 
 	sprintf(szTmp, "%02X%02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3, pResponse->BLINDS1.id4);
 
 	std::string ID = szTmp;
 	unsigned char Unit = pResponse->BLINDS1.unitcode;
 	unsigned char cmnd = pResponse->BLINDS1.cmnd;
-	unsigned char SignalLevel=pResponse->BLINDS1.rssi;
+	unsigned char SignalLevel = pResponse->BLINDS1.rssi;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -5882,19 +5891,19 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("subtype       = Screenline");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->BLINDS1.packettype, pResponse->BLINDS1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BLINDS1.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->BLINDS1.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
+		sprintf(szTmp, "id1-3         = %02X%02X%02X", pResponse->BLINDS1.id1, pResponse->BLINDS1.id2, pResponse->BLINDS1.id3);
 		WriteMessage(szTmp);
 
-		if ((subType == sTypeBlindsT6)||(subType==sTypeBlindsT7))
+		if ((subType == sTypeBlindsT6) || (subType == sTypeBlindsT7))
 		{
-			sprintf(szTmp,"id4         = %02X", pResponse->BLINDS1.id4);
+			sprintf(szTmp, "id4         = %02X", pResponse->BLINDS1.id4);
 			WriteMessage(szTmp);
 		}
 
@@ -5902,7 +5911,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("Unit          = All");
 		else
 		{
-			sprintf(szTmp,"Unit          = %d", pResponse->BLINDS1.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->BLINDS1.unitcode);
 			WriteMessage(szTmp);
 		}
 
@@ -5948,7 +5957,7 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("UNKNOWN");
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->BLINDS1.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->BLINDS1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -5958,18 +5967,18 @@ void MainWorker::decode_BLINDS1(const int HwdID, const _eHardwareTypes HwdType, 
 void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeRFY;
-	unsigned char subType=pResponse->RFY.subtype;
-	sprintf(szTmp,"%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2,pResponse->RFY.id3);
+	unsigned char devType = pTypeRFY;
+	unsigned char subType = pResponse->RFY.subtype;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->RFY.unitcode;
-	unsigned char cmnd=pResponse->RFY.cmnd;
-	unsigned char SignalLevel=pResponse->RFY.rssi;
+	unsigned char Unit = pResponse->RFY.unitcode;
+	unsigned char cmnd = pResponse->RFY.cmnd;
+	unsigned char SignalLevel = pResponse->RFY.rssi;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,szTmp);
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -5991,29 +6000,29 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("subtype       = ASA");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->RFY.packettype, pResponse->RFY.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X:", pResponse->RFY.packettype, pResponse->RFY.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFY.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFY.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"id1-3         = %02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
+		sprintf(szTmp, "id1-3         = %02X%02X%02X", pResponse->RFY.id1, pResponse->RFY.id2, pResponse->RFY.id3);
 		WriteMessage(szTmp);
 
 		if (pResponse->RFY.unitcode == 0)
 			WriteMessage("Unit          = All");
 		else
 		{
-			sprintf(szTmp,"Unit          = %d", pResponse->RFY.unitcode);
+			sprintf(szTmp, "Unit          = %d", pResponse->RFY.unitcode);
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"rfu1         = %02X",pResponse->RFY.rfu1);
+		sprintf(szTmp, "rfu1         = %02X", pResponse->RFY.rfu1);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"rfu2         = %02X",pResponse->RFY.rfu2);
+		sprintf(szTmp, "rfu2         = %02X", pResponse->RFY.rfu2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"rfu3         = %02X",pResponse->RFY.rfu3);
+		sprintf(szTmp, "rfu3         = %02X", pResponse->RFY.rfu3);
 		WriteMessage(szTmp);
 
 		WriteMessage("Command       = ", false);
@@ -6080,7 +6089,7 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("UNKNOWN");
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFY.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->RFY.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -6090,9 +6099,9 @@ void MainWorker::decode_RFY(const int HwdID, const _eHardwareTypes HwdType, cons
 void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=255;//Unknown
+	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
 	//Get Device details
@@ -6116,118 +6125,118 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 		result = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%x') AND (Type==%d)",
-			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1,pEvo->EVOHOME2.id2,pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
+			HwdID, (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3), (int)pEvo->EVOHOME2.type);
 	}
-	if (result.size()<1 && !pEvo->EVOHOME2.zone)
+	if (result.size() < 1 && !pEvo->EVOHOME2.zone)
 		return;
 
 	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
-	bool bNewDev=false;
-	std::string name,szDevID;
+	bool bNewDev = false;
+	std::string name, szDevID;
 	std::stringstream szID;
 	unsigned char Unit;
 	unsigned char dType;
 	unsigned char dSubType;
 	std::string szUpdateStat;
-	if (result.size()>0)
+	if (result.size() > 0)
 	{
-		std::vector<std::string> sd=result[0];
-		szDevID=sd[1];
-		Unit=atoi(sd[2].c_str());
-		dType=atoi(sd[3].c_str());
-		dSubType=atoi(sd[4].c_str());
-		szUpdateStat=sd[5];
-		BatteryLevel=atoi(sd[6].c_str());
+		std::vector<std::string> sd = result[0];
+		szDevID = sd[1];
+		Unit = atoi(sd[2].c_str());
+		dType = atoi(sd[3].c_str());
+		dSubType = atoi(sd[4].c_str());
+		szUpdateStat = sd[5];
+		BatteryLevel = atoi(sd[6].c_str());
 	}
 	else
 	{
-		bNewDev=true;
-		Unit=pEvo->EVOHOME2.zone;//should always be non zero
-		dType=pEvo->EVOHOME2.type;
-		dSubType=pEvo->EVOHOME2.subtype;
+		bNewDev = true;
+		Unit = pEvo->EVOHOME2.zone;//should always be non zero
+		dType = pEvo->EVOHOME2.type;
+		dSubType = pEvo->EVOHOME2.subtype;
 
 		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME2.id1, pEvo->EVOHOME2.id2, pEvo->EVOHOME2.id3);
 		szDevID = szID.str();
 
-		if(!pEvoHW)
+		if (!pEvoHW)
 			return;
-		if(dType==pTypeEvohomeWater)
-			name="Hot Water";
+		if (dType == pTypeEvohomeWater)
+			name = "Hot Water";
 		else if (dType == pTypeEvohomeZone && !szDevID.empty())
 			name = "Zone Temp";
 		else
-			name=pEvoHW->GetZoneName(Unit-1);
-		if(name.empty())
+			name = pEvoHW->GetZoneName(Unit - 1);
+		if (name.empty())
 			return;
-		szUpdateStat="0.0;0.0;Auto";
+		szUpdateStat = "0.0;0.0;Auto";
 	}
 
-	if(pEvo->EVOHOME2.updatetype==CEvohomeBase::updBattery)
-		BatteryLevel=pEvo->EVOHOME2.battery_level;
+	if (pEvo->EVOHOME2.updatetype == CEvohomeBase::updBattery)
+		BatteryLevel = pEvo->EVOHOME2.battery_level;
 	else
 	{
-		if(dType==pTypeEvohomeWater && pEvo->EVOHOME2.updatetype==pEvoHW->updSetPoint)
-			sprintf(szTmp,"%s",pEvo->EVOHOME2.temperature?"On":"Off");
+		if (dType == pTypeEvohomeWater && pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)
+			sprintf(szTmp, "%s", pEvo->EVOHOME2.temperature ? "On" : "Off");
 		else
-			sprintf(szTmp,"%.2f",pEvo->EVOHOME2.temperature/100.0f);
+			sprintf(szTmp, "%.2f", pEvo->EVOHOME2.temperature / 100.0f);
 
 		std::vector<std::string> strarray;
 		StringSplit(szUpdateStat, ";", strarray);
 		if (strarray.size() >= 3)
 		{
-			if(pEvo->EVOHOME2.updatetype==pEvoHW->updSetPoint)//SetPoint
+			if (pEvo->EVOHOME2.updatetype == pEvoHW->updSetPoint)//SetPoint
 			{
-				strarray[1]=szTmp;
-				if(pEvo->EVOHOME2.mode<=pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
+				strarray[1] = szTmp;
+				if (pEvo->EVOHOME2.mode <= pEvoHW->zmTmp)//for the moment only update this if we get a valid setpoint mode as we can now send setpoint on its own
 				{
-					int nControllerMode=pEvo->EVOHOME2.controllermode;
-					if(dType==pTypeEvohomeWater && (nControllerMode==pEvoHW->cmEvoHeatingOff || nControllerMode==pEvoHW->cmEvoAutoWithEco || nControllerMode==pEvoHW->cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
-						nControllerMode=pEvoHW->cmEvoAuto;
-					if(pEvo->EVOHOME2.mode==pEvoHW->zmAuto || nControllerMode==pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
-						strarray[2]=pEvoHW->GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
+					int nControllerMode = pEvo->EVOHOME2.controllermode;
+					if (dType == pTypeEvohomeWater && (nControllerMode == pEvoHW->cmEvoHeatingOff || nControllerMode == pEvoHW->cmEvoAutoWithEco || nControllerMode == pEvoHW->cmEvoCustom))//dhw has no economy mode and does not turn off for heating off also appears custom does not support the dhw zone
+						nControllerMode = pEvoHW->cmEvoAuto;
+					if (pEvo->EVOHOME2.mode == pEvoHW->zmAuto || nControllerMode == pEvoHW->cmEvoHeatingOff)//if zonemode is auto (followschedule) or controllermode is heatingoff
+						strarray[2] = pEvoHW->GetWebAPIModeName(nControllerMode);//the web front end ultimately uses these names for images etc.
 					else
-						strarray[2]=pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
-					if(pEvo->EVOHOME2.mode==pEvoHW->zmTmp)
+						strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
+					if (pEvo->EVOHOME2.mode == pEvoHW->zmTmp)
 					{
 						std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
-						if(strarray.size()<4) //add or set until
+						if (strarray.size() < 4) //add or set until
 							strarray.push_back(szISODate);
 						else
-							strarray[3]=szISODate;
+							strarray[3] = szISODate;
 					}
-					else if ((pEvo->EVOHOME2.mode==pEvoHW->zmAuto) && (HwdType==HTYPE_EVOHOME_WEB) )
+					else if ((pEvo->EVOHOME2.mode == pEvoHW->zmAuto) && (HwdType == HTYPE_EVOHOME_WEB))
 					{
-						strarray[2]="FollowSchedule";
-						if( (pEvo->EVOHOME2.year!=0) && (pEvo->EVOHOME2.year!=0xFFFF) )
+						strarray[2] = "FollowSchedule";
+						if ((pEvo->EVOHOME2.year != 0) && (pEvo->EVOHOME2.year != 0xFFFF))
 						{
 							std::string szISODate(CEvohomeDateTime::GetISODate(pEvo->EVOHOME2));
-							if(strarray.size()<4) //add or set until
+							if (strarray.size() < 4) //add or set until
 								strarray.push_back(szISODate);
 							else
-								strarray[3]=szISODate;
+								strarray[3] = szISODate;
 						}
 
 					}
 					else
-						if(strarray.size()>=4) //remove until
+						if (strarray.size() >= 4) //remove until
 							strarray.resize(3);
 				}
 			}
-			else if(pEvo->EVOHOME2.updatetype==pEvoHW->updOverride)
+			else if (pEvo->EVOHOME2.updatetype == pEvoHW->updOverride)
 			{
-				strarray[2]=pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
-				if(strarray.size()>=4) //remove until
+				strarray[2] = pEvoHW->GetZoneModeName(pEvo->EVOHOME2.mode);
+				if (strarray.size() >= 4) //remove until
 					strarray.resize(3);
 			}
 			else
-				strarray[0]=szTmp;
-			szUpdateStat=boost::algorithm::join(strarray, ";");
+				strarray[0] = szTmp;
+			szUpdateStat = boost::algorithm::join(strarray, ";");
 		}
 	}
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, szDevID.c_str(),Unit,dType,dSubType,SignalLevel,BatteryLevel,cmnd,szUpdateStat.c_str(), procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, szDevID.c_str(), Unit, dType, dSubType, SignalLevel, BatteryLevel, cmnd, szUpdateStat.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	if(bNewDev)
+	if (bNewDev)
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
@@ -6239,23 +6248,23 @@ void MainWorker::decode_evohome2(const int HwdID, const _eHardwareTypes HwdType,
 void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
-	unsigned char devType=pTypeEvohome;
-	unsigned char subType=pEvo->EVOHOME1.subtype;
+	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char devType = pTypeEvohome;
+	unsigned char subType = pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
-		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+	if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
+		szID << std::hex << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 	else //GB3: web based evohome uses decimal device ID's
-		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3);
+		szID << std::dec << (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 	std::string ID(szID.str());
-	unsigned char Unit=0;
-	unsigned char cmnd=pEvo->EVOHOME1.status;
-	unsigned char SignalLevel=255;//Unknown
+	unsigned char Unit = 0;
+	unsigned char cmnd = pEvo->EVOHOME1.status;
+	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
 	std::string szUntilDate;
-	if(pEvo->EVOHOME1.mode==CEvohomeBase::cmTmp)//temporary
-		szUntilDate=CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
+	if (pEvo->EVOHOME1.mode == CEvohomeBase::cmTmp)//temporary
+		szUntilDate = CEvohomeDateTime::GetISODate(pEvo->EVOHOME1);
 
 	CEvohomeBase *pEvoHW = reinterpret_cast<CEvohomeBase*>(GetHardware(HwdID));
 
@@ -6264,35 +6273,35 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 	result = m_sql.safe_query(
 		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
 		HwdID, ID.c_str());
-	bool bNewDev=false;
+	bool bNewDev = false;
 	std::string name;
-	if (result.size()>0)
+	if (result.size() > 0)
 	{
-		std::vector<std::string> sd=result[0];
-		if(atoi(sd[7].c_str())==cmnd && sd[8]==szUntilDate)
+		std::vector<std::string> sd = result[0];
+		if (atoi(sd[7].c_str()) == cmnd && sd[8] == szUntilDate)
 			return;
 	}
 	else
 	{
-		bNewDev=true;
-		if(!pEvoHW)
+		bNewDev = true;
+		if (!pEvoHW)
 			return;
-		name=pEvoHW->GetControllerName();
-		if(name.empty())
+		name = pEvoHW->GetControllerName();
+		if (name.empty())
 			return;
 	}
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szUntilDate.c_str(), procResult.DeviceName,pEvo->EVOHOME1.action!=0);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szUntilDate.c_str(), procResult.DeviceName, pEvo->EVOHOME1.action != 0);
 	if (DevRowIdx == -1)
 		return;
-	if(bNewDev)
+	if (bNewDev)
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q' WHERE (ID == %" PRIu64 ")",
 			name.c_str(), DevRowIdx);
 		procResult.DeviceName = name;
 	}
 
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 	if (m_verboselevel >= EVBL_ALL)
 	{
 		WriteMessageStart();
@@ -6302,15 +6311,15 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 			WriteMessage("subtype       = Evohome");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->EVOHOME1.type, pEvo->EVOHOME1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pEvo->EVOHOME1.type, pEvo->EVOHOME1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		if (HwdType==HTYPE_EVOHOME_SERIAL || HwdType==HTYPE_EVOHOME_TCP)
+		if (HwdType == HTYPE_EVOHOME_SERIAL || HwdType == HTYPE_EVOHOME_TCP)
 			sprintf(szTmp, "id            = %02X:%02X:%02X", pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3);
 		else //GB3: web based evohome uses decimal device ID's
-			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1,pEvo->EVOHOME1.id2,pEvo->EVOHOME1.id3));
+			sprintf(szTmp, "id            = %u", (int)RFX_GETID3(pEvo->EVOHOME1.id1, pEvo->EVOHOME1.id2, pEvo->EVOHOME1.id3));
 		WriteMessage(szTmp);
 		sprintf(szTmp, "action        = %d", (int)pEvo->EVOHOME1.action);
 		WriteMessage(szTmp);
@@ -6325,26 +6334,26 @@ void MainWorker::decode_evohome1(const int HwdID, const _eHardwareTypes HwdType,
 void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	const REVOBUF *pEvo=reinterpret_cast<const REVOBUF*>(pResponse);
-	unsigned char devType=pTypeEvohomeRelay;
-	unsigned char subType=pEvo->EVOHOME1.subtype;
+	const REVOBUF *pEvo = reinterpret_cast<const REVOBUF*>(pResponse);
+	unsigned char devType = pTypeEvohomeRelay;
+	unsigned char subType = pEvo->EVOHOME1.subtype;
 	std::stringstream szID;
-	int nDevID=(int)RFX_GETID3(pEvo->EVOHOME3.id1,pEvo->EVOHOME3.id2,pEvo->EVOHOME3.id3);
+	int nDevID = (int)RFX_GETID3(pEvo->EVOHOME3.id1, pEvo->EVOHOME3.id2, pEvo->EVOHOME3.id3);
 	szID << std::hex << nDevID;
 	std::string ID(szID.str());
-	unsigned char Unit=pEvo->EVOHOME3.devno;
-	unsigned char cmnd=(pEvo->EVOHOME3.demand>0)?light1_sOn:light1_sOff;
+	unsigned char Unit = pEvo->EVOHOME3.devno;
+	unsigned char cmnd = (pEvo->EVOHOME3.demand > 0) ? light1_sOn : light1_sOff;
 	sprintf(szTmp, "%d", pEvo->EVOHOME3.demand);
 	std::string szDemand(szTmp);
 	unsigned char SignalLevel = 255;//Unknown
 	unsigned char BatteryLevel = 255;//Unknown
 
-	if(Unit==0xFF && nDevID==0)
+	if (Unit == 0xFF && nDevID == 0)
 		return;
 	//Get Device details (devno or devid not available)
-	bool bNewDev=false;
+	bool bNewDev = false;
 	std::vector<std::vector<std::string> > result;
-	if(Unit==0xFF)
+	if (Unit == 0xFF)
 		result = m_sql.safe_query(
 			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q')",
@@ -6353,56 +6362,56 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 		result = m_sql.safe_query(
 			"SELECT HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,BatteryLevel "
 			"FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit == '%d') AND (Type==%d) AND (DeviceID == '%q')",
-			HwdID, (int) Unit, (int) pEvo->EVOHOME3.type, ID.c_str());
-	if (result.size()>0)
+			HwdID, (int)Unit, (int)pEvo->EVOHOME3.type, ID.c_str());
+	if (result.size() > 0)
 	{
-		if(pEvo->EVOHOME3.demand==0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
+		if (pEvo->EVOHOME3.demand == 0xFF)//we sometimes get a 0418 message after the initial device creation but it will mess up the logging as we don't have a demand
 			return;
-		unsigned char cur_cmnd=atoi(result[0][5].c_str());
+		unsigned char cur_cmnd = atoi(result[0][5].c_str());
 		BatteryLevel = atoi(result[0][7].c_str());
 
 		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
 		{
 			BatteryLevel = pEvo->EVOHOME3.battery_level;
 			szDemand = result[0][6];
-			cmnd=(atoi(szDemand.c_str())>0)?light1_sOn:light1_sOff;
+			cmnd = (atoi(szDemand.c_str()) > 0) ? light1_sOn : light1_sOff;
 		}
-		if(Unit==0xFF)
+		if (Unit == 0xFF)
 		{
-			Unit=atoi(result[0][2].c_str());
-			szDemand=result[0][6];
-			if(cmnd==cur_cmnd)
+			Unit = atoi(result[0][2].c_str());
+			szDemand = result[0][6];
+			if (cmnd == cur_cmnd)
 				return;
 		}
-		else if(nDevID==0)
+		else if (nDevID == 0)
 		{
-			ID=result[0][1];
+			ID = result[0][1];
 		}
 	}
 	else
 	{
-		if(Unit==0xFF || (nDevID==0 && Unit > 12))
+		if (Unit == 0xFF || (nDevID == 0 && Unit > 12))
 			return;
-		bNewDev=true;
-		if(pEvo->EVOHOME3.demand==0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
-			szDemand="0";
+		bNewDev = true;
+		if (pEvo->EVOHOME3.demand == 0xFF)//0418 allows us to associate unit and deviceid but no state information other messages only contain one or the other
+			szDemand = "0";
 		if (pEvo->EVOHOME3.updatetype == CEvohomeBase::updBattery)
 			BatteryLevel = pEvo->EVOHOME3.battery_level;
 	}
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szDemand.c_str(), procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szDemand.c_str(), procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	if(bNewDev && (Unit==0xF9 || Unit==0xFA || Unit==0xFC || Unit <=12))
+	if (bNewDev && (Unit == 0xF9 || Unit == 0xFA || Unit == 0xFC || Unit <= 12))
 	{
-		if(Unit==0xF9)
+		if (Unit == 0xF9)
 			procResult.DeviceName = "CH Valve";
-		else if(Unit==0xFA)
+		else if (Unit == 0xFA)
 			procResult.DeviceName = "DHW Valve";
-		else if(Unit==0xFC)
+		else if (Unit == 0xFC)
 		{
-			if(pEvo->EVOHOME3.id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
+			if (pEvo->EVOHOME3.id1 >> 2 == CEvohomeID::devBridge) // Evohome OT Bridge
 				procResult.DeviceName = "Boiler (OT Bridge)";
 			else
 				procResult.DeviceName = "Boiler";
@@ -6415,22 +6424,22 @@ void MainWorker::decode_evohome3(const int HwdID, const _eHardwareTypes HwdType,
 			procResult.DeviceName.c_str(), DevRowIdx);
 	}
 
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
 void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeSecurity1;
-	unsigned char subType=pResponse->SECURITY1.subtype;
+	unsigned char devType = pTypeSecurity1;
+	unsigned char subType = pResponse->SECURITY1.subtype;
 	std::string ID;
 	sprintf(szTmp, "%02X%02X%02X", pResponse->SECURITY1.id1, pResponse->SECURITY1.id2, pResponse->SECURITY1.id3);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=pResponse->SECURITY1.status;
-	unsigned char SignalLevel=pResponse->SECURITY1.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->SECURITY1.battery_level & 0x0F);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = pResponse->SECURITY1.status;
+	unsigned char SignalLevel = pResponse->SECURITY1.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->SECURITY1.battery_level & 0x0F);
 	if (
 		(pResponse->SECURITY1.subtype == sTypeKD101) ||
 		(pResponse->SECURITY1.subtype == sTypeSA30) ||
@@ -6441,10 +6450,10 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 		BatteryLevel = 255;
 	}
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -6485,7 +6494,7 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 			WriteMessage("subtype       = Security Panel");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->SECURITY1.packettype, pResponse->SECURITY1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -6589,16 +6598,16 @@ void MainWorker::decode_Security1(const int HwdID, const _eHardwareTypes HwdType
 		}
 
 		if (
-			(pResponse->SECURITY1.subtype != sTypeKD101)&&		//KD101 & SA30 does not support battery low indication
+			(pResponse->SECURITY1.subtype != sTypeKD101) &&		//KD101 & SA30 does not support battery low indication
 			(pResponse->SECURITY1.subtype != sTypeSA30)
 			)
 		{
-			if ((pResponse->SECURITY1.battery_level &0xF) == 0)
+			if ((pResponse->SECURITY1.battery_level & 0xF) == 0)
 				WriteMessage("battery level = Low");
 			else
 				WriteMessage("battery level = OK");
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->SECURITY1.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->SECURITY1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -6742,1079 +6751,1079 @@ void MainWorker::decode_Camera1(const int HwdID, const _eHardwareTypes HwdType, 
 void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeRemote;
-	unsigned char subType=pResponse->REMOTE.subtype;
-	sprintf(szTmp,"%d", pResponse->REMOTE.id);
+	unsigned char devType = pTypeRemote;
+	unsigned char subType = pResponse->REMOTE.subtype;
+	sprintf(szTmp, "%d", pResponse->REMOTE.id);
 	std::string ID = szTmp;
-	unsigned char Unit=pResponse->REMOTE.cmnd;
-	unsigned char cmnd=light2_sOn;
-	unsigned char SignalLevel=pResponse->REMOTE.rssi;
+	unsigned char Unit = pResponse->REMOTE.cmnd;
+	unsigned char cmnd = light2_sOn;
+	unsigned char SignalLevel = pResponse->REMOTE.rssi;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,-1,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, -1, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
-	CheckSceneCode(DevRowIdx,devType,subType,cmnd,"");
+	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
 		WriteMessageStart();
 		switch (pResponse->REMOTE.subtype)
 		{
-			case sTypeATI:
-				WriteMessage("subtype       = ATI Remote Wonder");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-				WriteMessage(szTmp);
-				switch (pResponse->REMOTE.cmnd)
-				{
-				case 0x0:
-					WriteMessage("Command       = A");
-					break;
-				case 0x1:
-					WriteMessage("Command       = B");
-					break;
-				case 0x2:
-					WriteMessage("Command       = power");
-					break;
-				case 0x3:
-					WriteMessage("Command       = TV");
-					break;
-				case 0x4:
-					WriteMessage("Command       = DVD");
-					break;
-				case 0x5:
-					WriteMessage("Command       = ?");
-					break;
-				case 0x6:
-					WriteMessage("Command       = Guide");
-					break;
-				case 0x7:
-					WriteMessage("Command       = Drag");
-					break;
-				case 0x8:
-					WriteMessage("Command       = VOL+");
-					break;
-				case 0x9:
-					WriteMessage("Command       = VOL-");
-					break;
-				case 0xA:
-					WriteMessage("Command       = MUTE");
-					break;
-				case 0xB:
-					WriteMessage("Command       = CHAN+");
-					break;
-				case 0xC:
-					WriteMessage("Command       = CHAN-");
-					break;
-				case 0xD:
-					WriteMessage("Command       = 1");
-					break;
-				case 0xE:
-					WriteMessage("Command       = 2");
-					break;
-				case 0xF:
-					WriteMessage("Command       = 3");
-					break;
-				case 0x10:
-					WriteMessage("Command       = 4");
-					break;
-				case 0x11:
-					WriteMessage("Command       = 5");
-					break;
-				case 0x12:
-					WriteMessage("Command       = 6");
-					break;
-				case 0x13:
-					WriteMessage("Command       = 7");
-					break;
-				case 0x14:
-					WriteMessage("Command       = 8");
-					break;
-				case 0x15:
-					WriteMessage("Command       = 9");
-					break;
-				case 0x16:
-					WriteMessage("Command       = txt");
-					break;
-				case 0x17:
-					WriteMessage("Command       = 0");
-					break;
-				case 0x18:
-					WriteMessage("Command       = snapshot ESC");
-					break;
-				case 0x19:
-					WriteMessage("Command       = C");
-					break;
-				case 0x1A:
-					WriteMessage("Command       = ^");
-					break;
-				case 0x1B:
-					WriteMessage("Command       = D");
-					break;
-				case 0x1C:
-					WriteMessage("Command       = TV/RADIO");
-					break;
-				case 0x1D:
-					WriteMessage("Command       = <");
-					break;
-				case 0x1E:
-					WriteMessage("Command       = OK");
-					break;
-				case 0x1F:
-					WriteMessage("Command       = >");
-					break;
-				case 0x20:
-					WriteMessage("Command       = <-");
-					break;
-				case 0x21:
-					WriteMessage("Command       = E");
-					break;
-				case 0x22:
-					WriteMessage("Command       = v");
-					break;
-				case 0x23:
-					WriteMessage("Command       = F");
-					break;
-				case 0x24:
-					WriteMessage("Command       = Rewind");
-					break;
-				case 0x25:
-					WriteMessage("Command       = Play");
-					break;
-				case 0x26:
-					WriteMessage("Command       = Fast forward");
-					break;
-				case 0x27:
-					WriteMessage("Command       = Record");
-					break;
-				case 0x28:
-					WriteMessage("Command       = Stop");
-					break;
-				case 0x29:
-					WriteMessage("Command       = Pause");
-					break;
-				case 0x2C:
-					WriteMessage("Command       = TV");
-					break;
-				case 0x2D:
-					WriteMessage("Command       = VCR");
-					break;
-				case 0x2E:
-					WriteMessage("Command       = RADIO");
-					break;
-				case 0x2F:
-					WriteMessage("Command       = TV Preview");
-					break;
-				case 0x30:
-					WriteMessage("Command       = Channel list");
-					break;
-				case 0x31:
-					WriteMessage("Command       = Video Desktop");
-					break;
-				case 0x32:
-					WriteMessage("Command       = red");
-					break;
-				case 0x33:
-					WriteMessage("Command       = green");
-					break;
-				case 0x34:
-					WriteMessage("Command       = yellow");
-					break;
-				case 0x35:
-					WriteMessage("Command       = blue");
-					break;
-				case 0x36:
-					WriteMessage("Command       = rename TAB");
-					break;
-				case 0x37:
-					WriteMessage("Command       = Acquire image");
-					break;
-				case 0x38:
-					WriteMessage("Command       = edit image");
-					break;
-				case 0x39:
-					WriteMessage("Command       = Full screen");
-					break;
-				case 0x3A:
-					WriteMessage("Command       = DVD Audio");
-					break;
-				case 0x70:
-					WriteMessage("Command       = Cursor-left");
-					break;
-				case 0x71:
-					WriteMessage("Command       = Cursor-right");
-					break;
-				case 0x72:
-					WriteMessage("Command       = Cursor-up");
-					break;
-				case 0x73:
-					WriteMessage("Command       = Cursor-down");
-					break;
-				case 0x74:
-					WriteMessage("Command       = Cursor-up-left");
-					break;
-				case 0x75:
-					WriteMessage("Command       = Cursor-up-right");
-					break;
-				case 0x76:
-					WriteMessage("Command       = Cursor-down-right");
-					break;
-				case 0x77:
-					WriteMessage("Command       = Cursor-down-left");
-					break;
-				case 0x78:
-					WriteMessage("Command       = V");
-					break;
-				case 0x79:
-					WriteMessage("Command       = V-End");
-					break;
-				case 0x7C:
-					WriteMessage("Command       = X");
-					break;
-				case 0x7D:
-					WriteMessage("Command       = X-End");
-					break;
-				default:
-					WriteMessage("Command       = unknown");
-					break;
-				}
+		case sTypeATI:
+			WriteMessage("subtype       = ATI Remote Wonder");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %d", pResponse->REMOTE.id);
+			WriteMessage(szTmp);
+			switch (pResponse->REMOTE.cmnd)
+			{
+			case 0x0:
+				WriteMessage("Command       = A");
 				break;
-			case sTypeATIplus:
-				WriteMessage("subtype       = ATI Remote Wonder Plus");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-				WriteMessage(szTmp);
-
-				WriteMessage("Command       = ", false);
-				switch (pResponse->REMOTE.cmnd)
-				{
-				case 0x0:
-					WriteMessage("A", false);
-					break;
-				case 0x1:
-					WriteMessage("B", false);
-					break;
-				case 0x2:
-					WriteMessage("power", false);
-					break;
-				case 0x3:
-					WriteMessage("TV", false);
-					break;
-				case 0x4:
-					WriteMessage("DVD", false);
-					break;
-				case 0x5:
-					WriteMessage("?", false);
-					break;
-				case 0x6:
-					WriteMessage("Guide", false);
-					break;
-				case 0x7:
-					WriteMessage("Drag", false);
-					break;
-				case 0x8:
-					WriteMessage("VOL+", false);
-					break;
-				case 0x9:
-					WriteMessage("VOL-", false);
-					break;
-				case 0xA:
-					WriteMessage("MUTE", false);
-					break;
-				case 0xB:
-					WriteMessage("CHAN+", false);
-					break;
-				case 0xC:
-					WriteMessage("CHAN-", false);
-					break;
-				case 0xD:
-					WriteMessage("1", false);
-					break;
-				case 0xE:
-					WriteMessage("2", false);
-					break;
-				case 0xF:
-					WriteMessage("3", false);
-					break;
-				case 0x10:
-					WriteMessage("4", false);
-					break;
-				case 0x11:
-					WriteMessage("5", false);
-					break;
-				case 0x12:
-					WriteMessage("6", false);
-					break;
-				case 0x13:
-					WriteMessage("7", false);
-					break;
-				case 0x14:
-					WriteMessage("8", false);
-					break;
-				case 0x15:
-					WriteMessage("9", false);
-					break;
-				case 0x16:
-					WriteMessage("txt", false);
-					break;
-				case 0x17:
-					WriteMessage("0", false);
-					break;
-				case 0x18:
-					WriteMessage("Open Setup Menu", false);
-					break;
-				case 0x19:
-					WriteMessage("C", false);
-					break;
-				case 0x1A:
-					WriteMessage("^", false);
-					break;
-				case 0x1B:
-					WriteMessage("D", false);
-					break;
-				case 0x1C:
-					WriteMessage("FM", false);
-					break;
-				case 0x1D:
-					WriteMessage("<", false);
-					break;
-				case 0x1E:
-					WriteMessage("OK", false);
-					break;
-				case 0x1F:
-					WriteMessage(">", false);
-					break;
-				case 0x20:
-					WriteMessage("Max/Restore window", false);
-					break;
-				case 0x21:
-					WriteMessage("E", false);
-					break;
-				case 0x22:
-					WriteMessage("v", false);
-					break;
-				case 0x23:
-					WriteMessage("F", false);
-					break;
-				case 0x24:
-					WriteMessage("Rewind", false);
-					break;
-				case 0x25:
-					WriteMessage("Play", false);
-					break;
-				case 0x26:
-					WriteMessage("Fast forward", false);
-					break;
-				case 0x27:
-					WriteMessage("Record", false);
-					break;
-				case 0x28:
-					WriteMessage("Stop", false);
-					break;
-				case 0x29:
-					WriteMessage("Pause", false);
-					break;
-				case 0x2A:
-					WriteMessage("TV2", false);
-					break;
-				case 0x2B:
-					WriteMessage("Clock", false);
-					break;
-				case 0x2C:
-					WriteMessage("i", false);
-					break;
-				case 0x2D:
-					WriteMessage("ATI", false);
-					break;
-				case 0x2E:
-					WriteMessage("RADIO", false);
-					break;
-				case 0x2F:
-					WriteMessage("TV Preview", false);
-					break;
-				case 0x30:
-					WriteMessage("Channel list", false);
-					break;
-				case 0x31:
-					WriteMessage("Video Desktop", false);
-					break;
-				case 0x32:
-					WriteMessage("red", false);
-					break;
-				case 0x33:
-					WriteMessage("green", false);
-					break;
-				case 0x34:
-					WriteMessage("yellow", false);
-					break;
-				case 0x35:
-					WriteMessage("blue", false);
-					break;
-				case 0x36:
-					WriteMessage("rename TAB", false);
-					break;
-				case 0x37:
-					WriteMessage("Acquire image", false);
-					break;
-				case 0x38:
-					WriteMessage("edit image", false);
-					break;
-				case 0x39:
-					WriteMessage("Full screen", false);
-					break;
-				case 0x3A:
-					WriteMessage("DVD Audio", false);
-					break;
-				case 0x70:
-					WriteMessage("Cursor-left", false);
-					break;
-				case 0x71:
-					WriteMessage("Cursor-right", false);
-					break;
-				case 0x72:
-					WriteMessage("Cursor-up", false);
-					break;
-				case 0x73:
-					WriteMessage("Cursor-down", false);
-					break;
-				case 0x74:
-					WriteMessage("Cursor-up-left", false);
-					break;
-				case 0x75:
-					WriteMessage("Cursor-up-right", false);
-					break;
-				case 0x76:
-					WriteMessage("Cursor-down-right", false);
-					break;
-				case 0x77:
-					WriteMessage("Cursor-down-left", false);
-					break;
-				case 0x78:
-					WriteMessage("Left Mouse Button", false);
-					break;
-				case 0x79:
-					WriteMessage("V-End", false);
-					break;
-				case 0x7C:
-					WriteMessage("Right Mouse Button", false);
-					break;
-				case 0x7D:
-					WriteMessage("X-End", false);
-					break;
-				default:
-					WriteMessage("unknown", false);
-					break;
-				}
-				if ((pResponse->REMOTE.toggle & 1) == 1)
-					WriteMessage("  (button press = odd)");
-				else
-					WriteMessage("  (button press = even)");
+			case 0x1:
+				WriteMessage("Command       = B");
 				break;
-			case sTypeATIrw2:
-				WriteMessage("subtype       = ATI Remote Wonder II");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-				WriteMessage(szTmp);
-				WriteMessage("Command type  = ", false);
-
-				switch (pResponse->REMOTE.cmndtype & 0x0E)
-				{
-				case 0x0:
-					WriteMessage("PC");
-					break;
-				case 0x2:
-					WriteMessage("AUX1");
-					break;
-				case 0x4:
-					WriteMessage("AUX2");
-					break;
-				case 0x6:
-					WriteMessage("AUX3");
-					break;
-				case 0x8:
-					WriteMessage("AUX4");
-					break;
-				default:
-					WriteMessage("unknown");
-					break;
-				}
-				WriteMessage("Command       = ", false);
-				switch (pResponse->REMOTE.cmnd)
-				{
-				case 0x0:
-					WriteMessage("A", false);
-					break;
-				case 0x1:
-					WriteMessage("B", false);
-					break;
-				case 0x2:
-					WriteMessage("power", false);
-					break;
-				case 0x3:
-					WriteMessage("TV", false);
-					break;
-				case 0x4:
-					WriteMessage("DVD", false);
-					break;
-				case 0x5:
-					WriteMessage("?", false);
-					break;
-				case 0x7:
-					WriteMessage("Drag", false);
-					break;
-				case 0x8:
-					WriteMessage("VOL+", false);
-					break;
-				case 0x9:
-					WriteMessage("VOL-", false);
-					break;
-				case 0xA:
-					WriteMessage("MUTE", false);
-					break;
-				case 0xB:
-					WriteMessage("CHAN+", false);
-					break;
-				case 0xC:
-					WriteMessage("CHAN-", false);
-					break;
-				case 0xD:
-					WriteMessage("1", false);
-					break;
-				case 0xE:
-					WriteMessage("2", false);
-					break;
-				case 0xF:
-					WriteMessage("3", false);
-					break;
-				case 0x10:
-					WriteMessage("4", false);
-					break;
-				case 0x11:
-					WriteMessage("5", false);
-					break;
-				case 0x12:
-					WriteMessage("6", false);
-					break;
-				case 0x13:
-					WriteMessage("7", false);
-					break;
-				case 0x14:
-					WriteMessage("8", false);
-					break;
-				case 0x15:
-					WriteMessage("9", false);
-					break;
-				case 0x16:
-					WriteMessage("txt", false);
-					break;
-				case 0x17:
-					WriteMessage("0", false);
-					break;
-				case 0x18:
-					WriteMessage("Open Setup Menu", false);
-					break;
-				case 0x19:
-					WriteMessage("C", false);
-					break;
-				case 0x1A:
-					WriteMessage("^", false);
-					break;
-				case 0x1B:
-					WriteMessage("D", false);
-					break;
-				case 0x1C:
-					WriteMessage("TV/RADIO", false);
-					break;
-				case 0x1D:
-					WriteMessage("<", false);
-					break;
-				case 0x1E:
-					WriteMessage("OK", false);
-					break;
-				case 0x1F:
-					WriteMessage(">", false);
-					break;
-				case 0x20:
-					WriteMessage("Max/Restore window", false);
-					break;
-				case 0x21:
-					WriteMessage("E", false);
-					break;
-				case 0x22:
-					WriteMessage("v", false);
-					break;
-				case 0x23:
-					WriteMessage("F", false);
-					break;
-				case 0x24:
-					WriteMessage("Rewind", false);
-					break;
-				case 0x25:
-					WriteMessage("Play", false);
-					break;
-				case 0x26:
-					WriteMessage("Fast forward", false);
-					break;
-				case 0x27:
-					WriteMessage("Record", false);
-					break;
-				case 0x28:
-					WriteMessage("Stop", false);
-					break;
-				case 0x29:
-					WriteMessage("Pause", false);
-					break;
-				case 0x2C:
-					WriteMessage("i", false);
-					break;
-				case 0x2D:
-					WriteMessage("ATI", false);
-					break;
-				case 0x3B:
-					WriteMessage("PC", false);
-					break;
-				case 0x3C:
-					WriteMessage("AUX1", false);
-					break;
-				case 0x3D:
-					WriteMessage("AUX2", false);
-					break;
-				case 0x3E:
-					WriteMessage("AUX3", false);
-					break;
-				case 0x3F:
-					WriteMessage("AUX4", false);
-					break;
-				case 0x70:
-					WriteMessage("Cursor-left", false);
-					break;
-				case 0x71:
-					WriteMessage("Cursor-right", false);
-					break;
-				case 0x72:
-					WriteMessage("Cursor-up", false);
-					break;
-				case 0x73:
-					WriteMessage("Cursor-down", false);
-					break;
-				case 0x74:
-					WriteMessage("Cursor-up-left", false);
-					break;
-				case 0x75:
-					WriteMessage("Cursor-up-right", false);
-					break;
-				case 0x76:
-					WriteMessage("Cursor-down-right", false);
-					break;
-				case 0x77:
-					WriteMessage("Cursor-down-left", false);
-					break;
-				case 0x78:
-					WriteMessage("Left Mouse Button", false);
-					break;
-				case 0x7C:
-					WriteMessage("Right Mouse Button", false);
-					break;
-				default:
-					WriteMessage("unknown", false);
-					break;
-				}
-				if ((pResponse->REMOTE.toggle & 1) == 1)
-					WriteMessage("  (button press = odd)");
-				else
-					WriteMessage("  (button press = even)");
+			case 0x2:
+				WriteMessage("Command       = power");
 				break;
-			case sTypeMedion:
-				WriteMessage("subtype       = Medion Remote");
-				sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-				WriteMessage(szTmp);
-
-				WriteMessage("Command       = ", false);
-
-				switch (pResponse->REMOTE.cmnd)
-				{
-				case 0x0:
-					WriteMessage("Mute");
-					break;
-				case 0x1:
-					WriteMessage("B");
-					break;
-				case 0x2:
-					WriteMessage("power");
-					break;
-				case 0x3:
-					WriteMessage("TV");
-					break;
-				case 0x4:
-					WriteMessage("DVD");
-					break;
-				case 0x5:
-					WriteMessage("Photo");
-					break;
-				case 0x6:
-					WriteMessage("Music");
-					break;
-				case 0x7:
-					WriteMessage("Drag");
-					break;
-				case 0x8:
-					WriteMessage("VOL-");
-					break;
-				case 0x9:
-					WriteMessage("VOL+");
-					break;
-				case 0xA:
-					WriteMessage("MUTE");
-					break;
-				case 0xB:
-					WriteMessage("CHAN+");
-					break;
-				case 0xC:
-					WriteMessage("CHAN-");
-					break;
-				case 0xD:
-					WriteMessage("1");
-					break;
-				case 0xE:
-					WriteMessage("2");
-					break;
-				case 0xF:
-					WriteMessage("3");
-					break;
-				case 0x10:
-					WriteMessage("4");
-					break;
-				case 0x11:
-					WriteMessage("5");
-					break;
-				case 0x12:
-					WriteMessage("6");
-					break;
-				case 0x13:
-					WriteMessage("7");
-					break;
-				case 0x14:
-					WriteMessage("8");
-					break;
-				case 0x15:
-					WriteMessage("9");
-					break;
-				case 0x16:
-					WriteMessage("txt");
-					break;
-				case 0x17:
-					WriteMessage("0");
-					break;
-				case 0x18:
-					WriteMessage("snapshot ESC");
-					break;
-				case 0x19:
-					WriteMessage("DVD MENU");
-					break;
-				case 0x1A:
-					WriteMessage("^");
-					break;
-				case 0x1B:
-					WriteMessage("Setup");
-					break;
-				case 0x1C:
-					WriteMessage("TV/RADIO");
-					break;
-				case 0x1D:
-					WriteMessage("<");
-					break;
-				case 0x1E:
-					WriteMessage("OK");
-					break;
-				case 0x1F:
-					WriteMessage(">");
-					break;
-				case 0x20:
-					WriteMessage("<-");
-					break;
-				case 0x21:
-					WriteMessage("E");
-					break;
-				case 0x22:
-					WriteMessage("v");
-					break;
-				case 0x23:
-					WriteMessage("F");
-					break;
-				case 0x24:
-					WriteMessage("Rewind");
-					break;
-				case 0x25:
-					WriteMessage("Play");
-					break;
-				case 0x26:
-					WriteMessage("Fast forward");
-					break;
-				case 0x27:
-					WriteMessage("Record");
-					break;
-				case 0x28:
-					WriteMessage("Stop");
-					break;
-				case 0x29:
-					WriteMessage("Pause");
-					break;
-				case 0x2C:
-					WriteMessage("TV");
-					break;
-				case 0x2D:
-					WriteMessage("VCR");
-					break;
-				case 0x2E:
-					WriteMessage("RADIO");
-					break;
-				case 0x2F:
-					WriteMessage("TV Preview");
-					break;
-				case 0x30:
-					WriteMessage("Channel list");
-					break;
-				case 0x31:
-					WriteMessage("Video Desktop");
-					break;
-				case 0x32:
-					WriteMessage("red");
-					break;
-				case 0x33:
-					WriteMessage("green");
-					break;
-				case 0x34:
-					WriteMessage("yellow");
-					break;
-				case 0x35:
-					WriteMessage("blue");
-					break;
-				case 0x36:
-					WriteMessage("rename TAB");
-					break;
-				case 0x37:
-					WriteMessage("Acquire image");
-					break;
-				case 0x38:
-					WriteMessage("edit image");
-					break;
-				case 0x39:
-					WriteMessage("Full screen");
-					break;
-				case 0x3A:
-					WriteMessage("DVD Audio");
-					break;
-				case 0x70:
-					WriteMessage("Cursor-left");
-					break;
-				case 0x71:
-					WriteMessage("Cursor-right");
-					break;
-				case 0x72:
-					WriteMessage("Cursor-up");
-					break;
-				case 0x73:
-					WriteMessage("Cursor-down");
-					break;
-				case 0x74:
-					WriteMessage("Cursor-up-left");
-					break;
-				case 0x75:
-					WriteMessage("Cursor-up-right");
-					break;
-				case 0x76:
-					WriteMessage("Cursor-down-right");
-					break;
-				case 0x77:
-					WriteMessage("Cursor-down-left");
-					break;
-				case 0x78:
-					WriteMessage("V");
-					break;
-				case 0x79:
-					WriteMessage("V-End");
-					break;
-				case 0x7C:
-					WriteMessage("X");
-					break;
-				case 0x7D:
-					WriteMessage("X-End");
-					break;
-				default:
-					WriteMessage("unknown");
-					break;
-				}
+			case 0x3:
+				WriteMessage("Command       = TV");
 				break;
-			case sTypePCremote:
-				WriteMessage("subtype       = PC Remote");
-				sprintf(szTmp,"Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
-				WriteMessage(szTmp);
-				sprintf(szTmp,"ID            = %d", pResponse->REMOTE.id);
-				WriteMessage(szTmp);
-				WriteMessage("Command       = ", false);
-				switch (pResponse->REMOTE.cmnd)
-				{
-				case 0x2:
-					WriteMessage("0");
-					break;
-				case 0x82:
-					WriteMessage("1");
-					break;
-				case 0xD1:
-					WriteMessage("MP3");
-					break;
-				case 0x42:
-					WriteMessage("2");
-					break;
-				case 0xD2:
-					WriteMessage("DVD");
-					break;
-				case 0xC2:
-					WriteMessage("3");
-					break;
-				case 0xD3:
-					WriteMessage("CD");
-					break;
-				case 0x22:
-					WriteMessage("4");
-					break;
-				case 0xD4:
-					WriteMessage("PC or SHIFT-4");
-					break;
-				case 0xA2:
-					WriteMessage("5");
-					break;
-				case 0xD5:
-					WriteMessage("SHIFT-5");
-					break;
-				case 0x62:
-					WriteMessage("6");
-					break;
-				case 0xE2:
-					WriteMessage("7");
-					break;
-				case 0x12:
-					WriteMessage("8");
-					break;
-				case 0x92:
-					WriteMessage("9");
-					break;
-				case 0xC0:
-					WriteMessage("CH-");
-					break;
-				case 0x40:
-					WriteMessage("CH+");
-					break;
-				case 0xE0:
-					WriteMessage("VOL-");
-					break;
-				case 0x60:
-					WriteMessage("VOL+");
-					break;
-				case 0xA0:
-					WriteMessage("MUTE");
-					break;
-				case 0x3A:
-					WriteMessage("INFO");
-					break;
-				case 0x38:
-					WriteMessage("REW");
-					break;
-				case 0xB8:
-					WriteMessage("FF");
-					break;
-				case 0xB0:
-					WriteMessage("PLAY");
-					break;
-				case 0x64:
-					WriteMessage("PAUSE");
-					break;
-				case 0x63:
-					WriteMessage("STOP");
-					break;
-				case 0xB6:
-					WriteMessage("MENU");
-					break;
-				case 0xFF:
-					WriteMessage("REC");
-					break;
-				case 0xC9:
-					WriteMessage("EXIT");
-					break;
-				case 0xD8:
-					WriteMessage("TEXT");
-					break;
-				case 0xD9:
-					WriteMessage("SHIFT-TEXT");
-					break;
-				case 0xF2:
-					WriteMessage("TELETEXT");
-					break;
-				case 0xD7:
-					WriteMessage("SHIFT-TELETEXT");
-					break;
-				case 0xBA:
-					WriteMessage("A+B");
-					break;
-				case 0x52:
-					WriteMessage("ENT");
-					break;
-				case 0xD6:
-					WriteMessage("SHIFT-ENT");
-					break;
-				case 0x70:
-					WriteMessage("Cursor-left");
-					break;
-				case 0x71:
-					WriteMessage("Cursor-right");
-					break;
-				case 0x72:
-					WriteMessage("Cursor-up");
-					break;
-				case 0x73:
-					WriteMessage("Cursor-down");
-					break;
-				case 0x74:
-					WriteMessage("Cursor-up-left");
-					break;
-				case 0x75:
-					WriteMessage("Cursor-up-right");
-					break;
-				case 0x76:
-					WriteMessage("Cursor-down-right");
-					break;
-				case 0x77:
-					WriteMessage("Cursor-down-left");
-					break;
-				case 0x78:
-					WriteMessage("Left mouse");
-					break;
-				case 0x79:
-					WriteMessage("Left mouse-End");
-					break;
-				case 0x7B:
-					WriteMessage("Drag");
-					break;
-				case 0x7C:
-					WriteMessage("Right mouse");
-					break;
-				case 0x7D:
-					WriteMessage("Right mouse-End");
-					break;
-				default:
-					WriteMessage("unknown");
-					break;
-				}
+			case 0x4:
+				WriteMessage("Command       = DVD");
+				break;
+			case 0x5:
+				WriteMessage("Command       = ?");
+				break;
+			case 0x6:
+				WriteMessage("Command       = Guide");
+				break;
+			case 0x7:
+				WriteMessage("Command       = Drag");
+				break;
+			case 0x8:
+				WriteMessage("Command       = VOL+");
+				break;
+			case 0x9:
+				WriteMessage("Command       = VOL-");
+				break;
+			case 0xA:
+				WriteMessage("Command       = MUTE");
+				break;
+			case 0xB:
+				WriteMessage("Command       = CHAN+");
+				break;
+			case 0xC:
+				WriteMessage("Command       = CHAN-");
+				break;
+			case 0xD:
+				WriteMessage("Command       = 1");
+				break;
+			case 0xE:
+				WriteMessage("Command       = 2");
+				break;
+			case 0xF:
+				WriteMessage("Command       = 3");
+				break;
+			case 0x10:
+				WriteMessage("Command       = 4");
+				break;
+			case 0x11:
+				WriteMessage("Command       = 5");
+				break;
+			case 0x12:
+				WriteMessage("Command       = 6");
+				break;
+			case 0x13:
+				WriteMessage("Command       = 7");
+				break;
+			case 0x14:
+				WriteMessage("Command       = 8");
+				break;
+			case 0x15:
+				WriteMessage("Command       = 9");
+				break;
+			case 0x16:
+				WriteMessage("Command       = txt");
+				break;
+			case 0x17:
+				WriteMessage("Command       = 0");
+				break;
+			case 0x18:
+				WriteMessage("Command       = snapshot ESC");
+				break;
+			case 0x19:
+				WriteMessage("Command       = C");
+				break;
+			case 0x1A:
+				WriteMessage("Command       = ^");
+				break;
+			case 0x1B:
+				WriteMessage("Command       = D");
+				break;
+			case 0x1C:
+				WriteMessage("Command       = TV/RADIO");
+				break;
+			case 0x1D:
+				WriteMessage("Command       = <");
+				break;
+			case 0x1E:
+				WriteMessage("Command       = OK");
+				break;
+			case 0x1F:
+				WriteMessage("Command       = >");
+				break;
+			case 0x20:
+				WriteMessage("Command       = <-");
+				break;
+			case 0x21:
+				WriteMessage("Command       = E");
+				break;
+			case 0x22:
+				WriteMessage("Command       = v");
+				break;
+			case 0x23:
+				WriteMessage("Command       = F");
+				break;
+			case 0x24:
+				WriteMessage("Command       = Rewind");
+				break;
+			case 0x25:
+				WriteMessage("Command       = Play");
+				break;
+			case 0x26:
+				WriteMessage("Command       = Fast forward");
+				break;
+			case 0x27:
+				WriteMessage("Command       = Record");
+				break;
+			case 0x28:
+				WriteMessage("Command       = Stop");
+				break;
+			case 0x29:
+				WriteMessage("Command       = Pause");
+				break;
+			case 0x2C:
+				WriteMessage("Command       = TV");
+				break;
+			case 0x2D:
+				WriteMessage("Command       = VCR");
+				break;
+			case 0x2E:
+				WriteMessage("Command       = RADIO");
+				break;
+			case 0x2F:
+				WriteMessage("Command       = TV Preview");
+				break;
+			case 0x30:
+				WriteMessage("Command       = Channel list");
+				break;
+			case 0x31:
+				WriteMessage("Command       = Video Desktop");
+				break;
+			case 0x32:
+				WriteMessage("Command       = red");
+				break;
+			case 0x33:
+				WriteMessage("Command       = green");
+				break;
+			case 0x34:
+				WriteMessage("Command       = yellow");
+				break;
+			case 0x35:
+				WriteMessage("Command       = blue");
+				break;
+			case 0x36:
+				WriteMessage("Command       = rename TAB");
+				break;
+			case 0x37:
+				WriteMessage("Command       = Acquire image");
+				break;
+			case 0x38:
+				WriteMessage("Command       = edit image");
+				break;
+			case 0x39:
+				WriteMessage("Command       = Full screen");
+				break;
+			case 0x3A:
+				WriteMessage("Command       = DVD Audio");
+				break;
+			case 0x70:
+				WriteMessage("Command       = Cursor-left");
+				break;
+			case 0x71:
+				WriteMessage("Command       = Cursor-right");
+				break;
+			case 0x72:
+				WriteMessage("Command       = Cursor-up");
+				break;
+			case 0x73:
+				WriteMessage("Command       = Cursor-down");
+				break;
+			case 0x74:
+				WriteMessage("Command       = Cursor-up-left");
+				break;
+			case 0x75:
+				WriteMessage("Command       = Cursor-up-right");
+				break;
+			case 0x76:
+				WriteMessage("Command       = Cursor-down-right");
+				break;
+			case 0x77:
+				WriteMessage("Command       = Cursor-down-left");
+				break;
+			case 0x78:
+				WriteMessage("Command       = V");
+				break;
+			case 0x79:
+				WriteMessage("Command       = V-End");
+				break;
+			case 0x7C:
+				WriteMessage("Command       = X");
+				break;
+			case 0x7D:
+				WriteMessage("Command       = X-End");
 				break;
 			default:
-				sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->REMOTE.packettype, pResponse->REMOTE.subtype);
-				WriteMessage(szTmp);
+				WriteMessage("Command       = unknown");
 				break;
+			}
+			break;
+		case sTypeATIplus:
+			WriteMessage("subtype       = ATI Remote Wonder Plus");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %d", pResponse->REMOTE.id);
+			WriteMessage(szTmp);
+
+			WriteMessage("Command       = ", false);
+			switch (pResponse->REMOTE.cmnd)
+			{
+			case 0x0:
+				WriteMessage("A", false);
+				break;
+			case 0x1:
+				WriteMessage("B", false);
+				break;
+			case 0x2:
+				WriteMessage("power", false);
+				break;
+			case 0x3:
+				WriteMessage("TV", false);
+				break;
+			case 0x4:
+				WriteMessage("DVD", false);
+				break;
+			case 0x5:
+				WriteMessage("?", false);
+				break;
+			case 0x6:
+				WriteMessage("Guide", false);
+				break;
+			case 0x7:
+				WriteMessage("Drag", false);
+				break;
+			case 0x8:
+				WriteMessage("VOL+", false);
+				break;
+			case 0x9:
+				WriteMessage("VOL-", false);
+				break;
+			case 0xA:
+				WriteMessage("MUTE", false);
+				break;
+			case 0xB:
+				WriteMessage("CHAN+", false);
+				break;
+			case 0xC:
+				WriteMessage("CHAN-", false);
+				break;
+			case 0xD:
+				WriteMessage("1", false);
+				break;
+			case 0xE:
+				WriteMessage("2", false);
+				break;
+			case 0xF:
+				WriteMessage("3", false);
+				break;
+			case 0x10:
+				WriteMessage("4", false);
+				break;
+			case 0x11:
+				WriteMessage("5", false);
+				break;
+			case 0x12:
+				WriteMessage("6", false);
+				break;
+			case 0x13:
+				WriteMessage("7", false);
+				break;
+			case 0x14:
+				WriteMessage("8", false);
+				break;
+			case 0x15:
+				WriteMessage("9", false);
+				break;
+			case 0x16:
+				WriteMessage("txt", false);
+				break;
+			case 0x17:
+				WriteMessage("0", false);
+				break;
+			case 0x18:
+				WriteMessage("Open Setup Menu", false);
+				break;
+			case 0x19:
+				WriteMessage("C", false);
+				break;
+			case 0x1A:
+				WriteMessage("^", false);
+				break;
+			case 0x1B:
+				WriteMessage("D", false);
+				break;
+			case 0x1C:
+				WriteMessage("FM", false);
+				break;
+			case 0x1D:
+				WriteMessage("<", false);
+				break;
+			case 0x1E:
+				WriteMessage("OK", false);
+				break;
+			case 0x1F:
+				WriteMessage(">", false);
+				break;
+			case 0x20:
+				WriteMessage("Max/Restore window", false);
+				break;
+			case 0x21:
+				WriteMessage("E", false);
+				break;
+			case 0x22:
+				WriteMessage("v", false);
+				break;
+			case 0x23:
+				WriteMessage("F", false);
+				break;
+			case 0x24:
+				WriteMessage("Rewind", false);
+				break;
+			case 0x25:
+				WriteMessage("Play", false);
+				break;
+			case 0x26:
+				WriteMessage("Fast forward", false);
+				break;
+			case 0x27:
+				WriteMessage("Record", false);
+				break;
+			case 0x28:
+				WriteMessage("Stop", false);
+				break;
+			case 0x29:
+				WriteMessage("Pause", false);
+				break;
+			case 0x2A:
+				WriteMessage("TV2", false);
+				break;
+			case 0x2B:
+				WriteMessage("Clock", false);
+				break;
+			case 0x2C:
+				WriteMessage("i", false);
+				break;
+			case 0x2D:
+				WriteMessage("ATI", false);
+				break;
+			case 0x2E:
+				WriteMessage("RADIO", false);
+				break;
+			case 0x2F:
+				WriteMessage("TV Preview", false);
+				break;
+			case 0x30:
+				WriteMessage("Channel list", false);
+				break;
+			case 0x31:
+				WriteMessage("Video Desktop", false);
+				break;
+			case 0x32:
+				WriteMessage("red", false);
+				break;
+			case 0x33:
+				WriteMessage("green", false);
+				break;
+			case 0x34:
+				WriteMessage("yellow", false);
+				break;
+			case 0x35:
+				WriteMessage("blue", false);
+				break;
+			case 0x36:
+				WriteMessage("rename TAB", false);
+				break;
+			case 0x37:
+				WriteMessage("Acquire image", false);
+				break;
+			case 0x38:
+				WriteMessage("edit image", false);
+				break;
+			case 0x39:
+				WriteMessage("Full screen", false);
+				break;
+			case 0x3A:
+				WriteMessage("DVD Audio", false);
+				break;
+			case 0x70:
+				WriteMessage("Cursor-left", false);
+				break;
+			case 0x71:
+				WriteMessage("Cursor-right", false);
+				break;
+			case 0x72:
+				WriteMessage("Cursor-up", false);
+				break;
+			case 0x73:
+				WriteMessage("Cursor-down", false);
+				break;
+			case 0x74:
+				WriteMessage("Cursor-up-left", false);
+				break;
+			case 0x75:
+				WriteMessage("Cursor-up-right", false);
+				break;
+			case 0x76:
+				WriteMessage("Cursor-down-right", false);
+				break;
+			case 0x77:
+				WriteMessage("Cursor-down-left", false);
+				break;
+			case 0x78:
+				WriteMessage("Left Mouse Button", false);
+				break;
+			case 0x79:
+				WriteMessage("V-End", false);
+				break;
+			case 0x7C:
+				WriteMessage("Right Mouse Button", false);
+				break;
+			case 0x7D:
+				WriteMessage("X-End", false);
+				break;
+			default:
+				WriteMessage("unknown", false);
+				break;
+			}
+			if ((pResponse->REMOTE.toggle & 1) == 1)
+				WriteMessage("  (button press = odd)");
+			else
+				WriteMessage("  (button press = even)");
+			break;
+		case sTypeATIrw2:
+			WriteMessage("subtype       = ATI Remote Wonder II");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %d", pResponse->REMOTE.id);
+			WriteMessage(szTmp);
+			WriteMessage("Command type  = ", false);
+
+			switch (pResponse->REMOTE.cmndtype & 0x0E)
+			{
+			case 0x0:
+				WriteMessage("PC");
+				break;
+			case 0x2:
+				WriteMessage("AUX1");
+				break;
+			case 0x4:
+				WriteMessage("AUX2");
+				break;
+			case 0x6:
+				WriteMessage("AUX3");
+				break;
+			case 0x8:
+				WriteMessage("AUX4");
+				break;
+			default:
+				WriteMessage("unknown");
+				break;
+			}
+			WriteMessage("Command       = ", false);
+			switch (pResponse->REMOTE.cmnd)
+			{
+			case 0x0:
+				WriteMessage("A", false);
+				break;
+			case 0x1:
+				WriteMessage("B", false);
+				break;
+			case 0x2:
+				WriteMessage("power", false);
+				break;
+			case 0x3:
+				WriteMessage("TV", false);
+				break;
+			case 0x4:
+				WriteMessage("DVD", false);
+				break;
+			case 0x5:
+				WriteMessage("?", false);
+				break;
+			case 0x7:
+				WriteMessage("Drag", false);
+				break;
+			case 0x8:
+				WriteMessage("VOL+", false);
+				break;
+			case 0x9:
+				WriteMessage("VOL-", false);
+				break;
+			case 0xA:
+				WriteMessage("MUTE", false);
+				break;
+			case 0xB:
+				WriteMessage("CHAN+", false);
+				break;
+			case 0xC:
+				WriteMessage("CHAN-", false);
+				break;
+			case 0xD:
+				WriteMessage("1", false);
+				break;
+			case 0xE:
+				WriteMessage("2", false);
+				break;
+			case 0xF:
+				WriteMessage("3", false);
+				break;
+			case 0x10:
+				WriteMessage("4", false);
+				break;
+			case 0x11:
+				WriteMessage("5", false);
+				break;
+			case 0x12:
+				WriteMessage("6", false);
+				break;
+			case 0x13:
+				WriteMessage("7", false);
+				break;
+			case 0x14:
+				WriteMessage("8", false);
+				break;
+			case 0x15:
+				WriteMessage("9", false);
+				break;
+			case 0x16:
+				WriteMessage("txt", false);
+				break;
+			case 0x17:
+				WriteMessage("0", false);
+				break;
+			case 0x18:
+				WriteMessage("Open Setup Menu", false);
+				break;
+			case 0x19:
+				WriteMessage("C", false);
+				break;
+			case 0x1A:
+				WriteMessage("^", false);
+				break;
+			case 0x1B:
+				WriteMessage("D", false);
+				break;
+			case 0x1C:
+				WriteMessage("TV/RADIO", false);
+				break;
+			case 0x1D:
+				WriteMessage("<", false);
+				break;
+			case 0x1E:
+				WriteMessage("OK", false);
+				break;
+			case 0x1F:
+				WriteMessage(">", false);
+				break;
+			case 0x20:
+				WriteMessage("Max/Restore window", false);
+				break;
+			case 0x21:
+				WriteMessage("E", false);
+				break;
+			case 0x22:
+				WriteMessage("v", false);
+				break;
+			case 0x23:
+				WriteMessage("F", false);
+				break;
+			case 0x24:
+				WriteMessage("Rewind", false);
+				break;
+			case 0x25:
+				WriteMessage("Play", false);
+				break;
+			case 0x26:
+				WriteMessage("Fast forward", false);
+				break;
+			case 0x27:
+				WriteMessage("Record", false);
+				break;
+			case 0x28:
+				WriteMessage("Stop", false);
+				break;
+			case 0x29:
+				WriteMessage("Pause", false);
+				break;
+			case 0x2C:
+				WriteMessage("i", false);
+				break;
+			case 0x2D:
+				WriteMessage("ATI", false);
+				break;
+			case 0x3B:
+				WriteMessage("PC", false);
+				break;
+			case 0x3C:
+				WriteMessage("AUX1", false);
+				break;
+			case 0x3D:
+				WriteMessage("AUX2", false);
+				break;
+			case 0x3E:
+				WriteMessage("AUX3", false);
+				break;
+			case 0x3F:
+				WriteMessage("AUX4", false);
+				break;
+			case 0x70:
+				WriteMessage("Cursor-left", false);
+				break;
+			case 0x71:
+				WriteMessage("Cursor-right", false);
+				break;
+			case 0x72:
+				WriteMessage("Cursor-up", false);
+				break;
+			case 0x73:
+				WriteMessage("Cursor-down", false);
+				break;
+			case 0x74:
+				WriteMessage("Cursor-up-left", false);
+				break;
+			case 0x75:
+				WriteMessage("Cursor-up-right", false);
+				break;
+			case 0x76:
+				WriteMessage("Cursor-down-right", false);
+				break;
+			case 0x77:
+				WriteMessage("Cursor-down-left", false);
+				break;
+			case 0x78:
+				WriteMessage("Left Mouse Button", false);
+				break;
+			case 0x7C:
+				WriteMessage("Right Mouse Button", false);
+				break;
+			default:
+				WriteMessage("unknown", false);
+				break;
+			}
+			if ((pResponse->REMOTE.toggle & 1) == 1)
+				WriteMessage("  (button press = odd)");
+			else
+				WriteMessage("  (button press = even)");
+			break;
+		case sTypeMedion:
+			WriteMessage("subtype       = Medion Remote");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %d", pResponse->REMOTE.id);
+			WriteMessage(szTmp);
+
+			WriteMessage("Command       = ", false);
+
+			switch (pResponse->REMOTE.cmnd)
+			{
+			case 0x0:
+				WriteMessage("Mute");
+				break;
+			case 0x1:
+				WriteMessage("B");
+				break;
+			case 0x2:
+				WriteMessage("power");
+				break;
+			case 0x3:
+				WriteMessage("TV");
+				break;
+			case 0x4:
+				WriteMessage("DVD");
+				break;
+			case 0x5:
+				WriteMessage("Photo");
+				break;
+			case 0x6:
+				WriteMessage("Music");
+				break;
+			case 0x7:
+				WriteMessage("Drag");
+				break;
+			case 0x8:
+				WriteMessage("VOL-");
+				break;
+			case 0x9:
+				WriteMessage("VOL+");
+				break;
+			case 0xA:
+				WriteMessage("MUTE");
+				break;
+			case 0xB:
+				WriteMessage("CHAN+");
+				break;
+			case 0xC:
+				WriteMessage("CHAN-");
+				break;
+			case 0xD:
+				WriteMessage("1");
+				break;
+			case 0xE:
+				WriteMessage("2");
+				break;
+			case 0xF:
+				WriteMessage("3");
+				break;
+			case 0x10:
+				WriteMessage("4");
+				break;
+			case 0x11:
+				WriteMessage("5");
+				break;
+			case 0x12:
+				WriteMessage("6");
+				break;
+			case 0x13:
+				WriteMessage("7");
+				break;
+			case 0x14:
+				WriteMessage("8");
+				break;
+			case 0x15:
+				WriteMessage("9");
+				break;
+			case 0x16:
+				WriteMessage("txt");
+				break;
+			case 0x17:
+				WriteMessage("0");
+				break;
+			case 0x18:
+				WriteMessage("snapshot ESC");
+				break;
+			case 0x19:
+				WriteMessage("DVD MENU");
+				break;
+			case 0x1A:
+				WriteMessage("^");
+				break;
+			case 0x1B:
+				WriteMessage("Setup");
+				break;
+			case 0x1C:
+				WriteMessage("TV/RADIO");
+				break;
+			case 0x1D:
+				WriteMessage("<");
+				break;
+			case 0x1E:
+				WriteMessage("OK");
+				break;
+			case 0x1F:
+				WriteMessage(">");
+				break;
+			case 0x20:
+				WriteMessage("<-");
+				break;
+			case 0x21:
+				WriteMessage("E");
+				break;
+			case 0x22:
+				WriteMessage("v");
+				break;
+			case 0x23:
+				WriteMessage("F");
+				break;
+			case 0x24:
+				WriteMessage("Rewind");
+				break;
+			case 0x25:
+				WriteMessage("Play");
+				break;
+			case 0x26:
+				WriteMessage("Fast forward");
+				break;
+			case 0x27:
+				WriteMessage("Record");
+				break;
+			case 0x28:
+				WriteMessage("Stop");
+				break;
+			case 0x29:
+				WriteMessage("Pause");
+				break;
+			case 0x2C:
+				WriteMessage("TV");
+				break;
+			case 0x2D:
+				WriteMessage("VCR");
+				break;
+			case 0x2E:
+				WriteMessage("RADIO");
+				break;
+			case 0x2F:
+				WriteMessage("TV Preview");
+				break;
+			case 0x30:
+				WriteMessage("Channel list");
+				break;
+			case 0x31:
+				WriteMessage("Video Desktop");
+				break;
+			case 0x32:
+				WriteMessage("red");
+				break;
+			case 0x33:
+				WriteMessage("green");
+				break;
+			case 0x34:
+				WriteMessage("yellow");
+				break;
+			case 0x35:
+				WriteMessage("blue");
+				break;
+			case 0x36:
+				WriteMessage("rename TAB");
+				break;
+			case 0x37:
+				WriteMessage("Acquire image");
+				break;
+			case 0x38:
+				WriteMessage("edit image");
+				break;
+			case 0x39:
+				WriteMessage("Full screen");
+				break;
+			case 0x3A:
+				WriteMessage("DVD Audio");
+				break;
+			case 0x70:
+				WriteMessage("Cursor-left");
+				break;
+			case 0x71:
+				WriteMessage("Cursor-right");
+				break;
+			case 0x72:
+				WriteMessage("Cursor-up");
+				break;
+			case 0x73:
+				WriteMessage("Cursor-down");
+				break;
+			case 0x74:
+				WriteMessage("Cursor-up-left");
+				break;
+			case 0x75:
+				WriteMessage("Cursor-up-right");
+				break;
+			case 0x76:
+				WriteMessage("Cursor-down-right");
+				break;
+			case 0x77:
+				WriteMessage("Cursor-down-left");
+				break;
+			case 0x78:
+				WriteMessage("V");
+				break;
+			case 0x79:
+				WriteMessage("V-End");
+				break;
+			case 0x7C:
+				WriteMessage("X");
+				break;
+			case 0x7D:
+				WriteMessage("X-End");
+				break;
+			default:
+				WriteMessage("unknown");
+				break;
+			}
+			break;
+		case sTypePCremote:
+			WriteMessage("subtype       = PC Remote");
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->REMOTE.seqnbr);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "ID            = %d", pResponse->REMOTE.id);
+			WriteMessage(szTmp);
+			WriteMessage("Command       = ", false);
+			switch (pResponse->REMOTE.cmnd)
+			{
+			case 0x2:
+				WriteMessage("0");
+				break;
+			case 0x82:
+				WriteMessage("1");
+				break;
+			case 0xD1:
+				WriteMessage("MP3");
+				break;
+			case 0x42:
+				WriteMessage("2");
+				break;
+			case 0xD2:
+				WriteMessage("DVD");
+				break;
+			case 0xC2:
+				WriteMessage("3");
+				break;
+			case 0xD3:
+				WriteMessage("CD");
+				break;
+			case 0x22:
+				WriteMessage("4");
+				break;
+			case 0xD4:
+				WriteMessage("PC or SHIFT-4");
+				break;
+			case 0xA2:
+				WriteMessage("5");
+				break;
+			case 0xD5:
+				WriteMessage("SHIFT-5");
+				break;
+			case 0x62:
+				WriteMessage("6");
+				break;
+			case 0xE2:
+				WriteMessage("7");
+				break;
+			case 0x12:
+				WriteMessage("8");
+				break;
+			case 0x92:
+				WriteMessage("9");
+				break;
+			case 0xC0:
+				WriteMessage("CH-");
+				break;
+			case 0x40:
+				WriteMessage("CH+");
+				break;
+			case 0xE0:
+				WriteMessage("VOL-");
+				break;
+			case 0x60:
+				WriteMessage("VOL+");
+				break;
+			case 0xA0:
+				WriteMessage("MUTE");
+				break;
+			case 0x3A:
+				WriteMessage("INFO");
+				break;
+			case 0x38:
+				WriteMessage("REW");
+				break;
+			case 0xB8:
+				WriteMessage("FF");
+				break;
+			case 0xB0:
+				WriteMessage("PLAY");
+				break;
+			case 0x64:
+				WriteMessage("PAUSE");
+				break;
+			case 0x63:
+				WriteMessage("STOP");
+				break;
+			case 0xB6:
+				WriteMessage("MENU");
+				break;
+			case 0xFF:
+				WriteMessage("REC");
+				break;
+			case 0xC9:
+				WriteMessage("EXIT");
+				break;
+			case 0xD8:
+				WriteMessage("TEXT");
+				break;
+			case 0xD9:
+				WriteMessage("SHIFT-TEXT");
+				break;
+			case 0xF2:
+				WriteMessage("TELETEXT");
+				break;
+			case 0xD7:
+				WriteMessage("SHIFT-TELETEXT");
+				break;
+			case 0xBA:
+				WriteMessage("A+B");
+				break;
+			case 0x52:
+				WriteMessage("ENT");
+				break;
+			case 0xD6:
+				WriteMessage("SHIFT-ENT");
+				break;
+			case 0x70:
+				WriteMessage("Cursor-left");
+				break;
+			case 0x71:
+				WriteMessage("Cursor-right");
+				break;
+			case 0x72:
+				WriteMessage("Cursor-up");
+				break;
+			case 0x73:
+				WriteMessage("Cursor-down");
+				break;
+			case 0x74:
+				WriteMessage("Cursor-up-left");
+				break;
+			case 0x75:
+				WriteMessage("Cursor-up-right");
+				break;
+			case 0x76:
+				WriteMessage("Cursor-down-right");
+				break;
+			case 0x77:
+				WriteMessage("Cursor-down-left");
+				break;
+			case 0x78:
+				WriteMessage("Left mouse");
+				break;
+			case 0x79:
+				WriteMessage("Left mouse-End");
+				break;
+			case 0x7B:
+				WriteMessage("Drag");
+				break;
+			case 0x7C:
+				WriteMessage("Right mouse");
+				break;
+			case 0x7D:
+				WriteMessage("Right mouse-End");
+				break;
+			default:
+				WriteMessage("unknown");
+				break;
+			}
+			break;
+		default:
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->REMOTE.packettype, pResponse->REMOTE.subtype);
+			WriteMessage(szTmp);
+			break;
 		}
 		sprintf(szTmp, "Signal level  = %d", pResponse->REMOTE.rssi);
 		WriteMessage(szTmp);
@@ -7826,23 +7835,23 @@ void MainWorker::decode_Remote(const int HwdID, const _eHardwareTypes HwdType, c
 void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeThermostat1;
-	unsigned char subType=pResponse->THERMOSTAT1.subtype;
+	unsigned char devType = pTypeThermostat1;
+	unsigned char subType = pResponse->THERMOSTAT1.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->THERMOSTAT1.rssi;
+	sprintf(szTmp, "%d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->THERMOSTAT1.rssi;
 	unsigned char BatteryLevel = 255;
 
-	unsigned char temp=pResponse->THERMOSTAT1.temperature;
-	unsigned char set_point=pResponse->THERMOSTAT1.set_point;
-	unsigned char mode=(pResponse->THERMOSTAT1.mode & 0x80);
-	unsigned char status=(pResponse->THERMOSTAT1.status & 0x03);
+	unsigned char temp = pResponse->THERMOSTAT1.temperature;
+	unsigned char set_point = pResponse->THERMOSTAT1.set_point;
+	unsigned char mode = (pResponse->THERMOSTAT1.mode & 0x80);
+	unsigned char status = (pResponse->THERMOSTAT1.status & 0x03);
 
-	sprintf(szTmp,"%d;%d;%d;%d",temp,set_point,mode,status);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%d;%d;%d;%d", temp, set_point, mode, status);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -7858,21 +7867,21 @@ void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdTy
 			WriteMessage("subtype       = Digimax with short format");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT1.packettype, pResponse->THERMOSTAT1.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT1.packettype, pResponse->THERMOSTAT1.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT1.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT1.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
+		sprintf(szTmp, "ID            = %d", (pResponse->THERMOSTAT1.id1 * 256) + pResponse->THERMOSTAT1.id2);
 		WriteMessage(szTmp);
 		sprintf(szTmp, "Temperature   = %d C", pResponse->THERMOSTAT1.temperature);
 		WriteMessage(szTmp);
 
 		if (pResponse->THERMOSTAT1.subtype == sTypeDigimax)
 		{
-			sprintf(szTmp,"Set           = %d C", pResponse->THERMOSTAT1.set_point);
+			sprintf(szTmp, "Set           = %d C", pResponse->THERMOSTAT1.set_point);
 			WriteMessage(szTmp);
 
 			if ((pResponse->THERMOSTAT1.mode & 0x80) == 0)
@@ -7897,7 +7906,7 @@ void MainWorker::decode_Thermostat1(const int HwdID, const _eHardwareTypes HwdTy
 			}
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT1.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->THERMOSTAT1.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -7967,17 +7976,17 @@ void MainWorker::decode_Thermostat2(const int HwdID, const _eHardwareTypes HwdTy
 void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeThermostat3;
-	unsigned char subType=pResponse->THERMOSTAT3.subtype;
+	unsigned char devType = pTypeThermostat3;
+	unsigned char subType = pResponse->THERMOSTAT3.subtype;
 	std::string ID;
-	sprintf(szTmp,"%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=pResponse->THERMOSTAT3.cmnd;
-	unsigned char SignalLevel=pResponse->THERMOSTAT3.rssi;
+	sprintf(szTmp, "%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = pResponse->THERMOSTAT3.cmnd;
+	unsigned char SignalLevel = pResponse->THERMOSTAT3.rssi;
 	unsigned char BatteryLevel = 255;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 	CheckSceneCode(DevRowIdx, devType, subType, cmnd, "");
@@ -8000,15 +8009,15 @@ void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdTy
 			WriteMessage("subtype       = Mertik G6R-H4S");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->THERMOSTAT3.packettype, pResponse->THERMOSTAT3.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->THERMOSTAT3.seqnbr);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1,pResponse->THERMOSTAT3.unitcode2,pResponse->THERMOSTAT3.unitcode3);
+		sprintf(szTmp, "ID            = 0x%02X%02X%02X", pResponse->THERMOSTAT3.unitcode1, pResponse->THERMOSTAT3.unitcode2, pResponse->THERMOSTAT3.unitcode3);
 		WriteMessage(szTmp);
 
 		switch (pResponse->THERMOSTAT3.cmnd)
@@ -8047,7 +8056,7 @@ void MainWorker::decode_Thermostat3(const int HwdID, const _eHardwareTypes HwdTy
 			break;
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->THERMOSTAT3.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->THERMOSTAT3.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8251,13 +8260,13 @@ void MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType,
 		WriteMessage("Subtype       = DT1 - RTGR328N");
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->DT.packettype, pResponse->DT.subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->DT.packettype, pResponse->DT.subtype);
 		WriteMessage(szTmp);
 		break;
 	}
-	sprintf(szTmp,"Sequence nbr  = %d", pResponse->DT.seqnbr);
+	sprintf(szTmp, "Sequence nbr  = %d", pResponse->DT.seqnbr);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"ID            = %d", (pResponse->DT.id1 * 256) + pResponse->DT.id2);
+	sprintf(szTmp, "ID            = %d", (pResponse->DT.id1 * 256) + pResponse->DT.id2);
 	WriteMessage(szTmp);
 
 	WriteMessage("Day of week   = ", false);
@@ -8286,13 +8295,13 @@ void MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType,
 		WriteMessage(" Saturday");
 		break;
 	}
-	sprintf(szTmp,"Date yy/mm/dd = %02d/%02d/%02d", pResponse->DT.yy, pResponse->DT.mm, pResponse->DT.dd);
+	sprintf(szTmp, "Date yy/mm/dd = %02d/%02d/%02d", pResponse->DT.yy, pResponse->DT.mm, pResponse->DT.dd);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"Time          = %02d:%02d:%02d", pResponse->DT.hr, pResponse->DT.min, pResponse->DT.sec);
+	sprintf(szTmp, "Time          = %02d:%02d:%02d", pResponse->DT.hr, pResponse->DT.min, pResponse->DT.sec);
 	WriteMessage(szTmp);
-	sprintf(szTmp,"Signal level  = %d", pResponse->DT.rssi);
+	sprintf(szTmp, "Signal level  = %d", pResponse->DT.rssi);
 	WriteMessage(szTmp);
-	if ((pResponse->DT.battery_level & 0x0F)==0)
+	if ((pResponse->DT.battery_level & 0x0F) == 0)
 		WriteMessage("Battery       = Low");
 	else
 		WriteMessage("Battery       = OK");
@@ -8302,21 +8311,21 @@ void MainWorker::decode_DateTime(const int HwdID, const _eHardwareTypes HwdType,
 void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeCURRENT;
-	unsigned char subType=pResponse->CURRENT.subtype;
+	unsigned char devType = pTypeCURRENT;
+	unsigned char subType = pResponse->CURRENT.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->CURRENT.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->CURRENT.battery_level & 0x0F);
+	sprintf(szTmp, "%d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->CURRENT.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->CURRENT.battery_level & 0x0F);
 
-	float CurrentChannel1= float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0f;
-	float CurrentChannel2= float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f;
-	float CurrentChannel3= float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0f;
-	sprintf(szTmp,"%.1f;%.1f;%.1f",CurrentChannel1,CurrentChannel2,CurrentChannel3);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	float CurrentChannel1 = float((pResponse->CURRENT.ch1h * 256) + pResponse->CURRENT.ch1l) / 10.0f;
+	float CurrentChannel2 = float((pResponse->CURRENT.ch2h * 256) + pResponse->CURRENT.ch2l) / 10.0f;
+	float CurrentChannel3 = float((pResponse->CURRENT.ch3h * 256) + pResponse->CURRENT.ch3l) / 10.0f;
+	sprintf(szTmp, "%.1f;%.1f;%.1f", CurrentChannel1, CurrentChannel2, CurrentChannel3);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -8331,22 +8340,22 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("subtype       = ELEC1 - OWL CM113, Electrisave, cent-a-meter");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT.packettype, pResponse->CURRENT.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT.packettype, pResponse->CURRENT.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->CURRENT.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
+		sprintf(szTmp, "ID            = %d", (pResponse->CURRENT.id1 * 256) + pResponse->CURRENT.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
+		sprintf(szTmp, "Count         = %d", pResponse->CURRENT.id2);//m_rxbuffer[5]);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Channel 1     = %.1f ampere", CurrentChannel1);
+		sprintf(szTmp, "Channel 1     = %.1f ampere", CurrentChannel1);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Channel 2     = %.1f ampere", CurrentChannel2);
+		sprintf(szTmp, "Channel 2     = %.1f ampere", CurrentChannel2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Channel 3     = %.1f ampere", CurrentChannel3);
+		sprintf(szTmp, "Channel 3     = %.1f ampere", CurrentChannel3);
 		WriteMessage(szTmp);
 
 		sprintf(szTmp, "Signal level  = %d", pResponse->CURRENT.rssi);
@@ -8364,28 +8373,28 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeENERGY;
-	unsigned char subType=pResponse->ENERGY.subtype;
+	unsigned char devType = pTypeENERGY;
+	unsigned char subType = pResponse->ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->ENERGY.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->ENERGY.battery_level & 0x0F);
+	sprintf(szTmp, "%d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->ENERGY.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->ENERGY.battery_level & 0x0F);
 
 	long instant;
 
 	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
 
 	double total = (
-				double(pResponse->ENERGY.total1) * 0x10000000000ULL +
-				double(pResponse->ENERGY.total2) * 0x100000000ULL +
-				double(pResponse->ENERGY.total3) * 0x1000000 +
-				double(pResponse->ENERGY.total4) * 0x10000 +
-				double(pResponse->ENERGY.total5) * 0x100 +
-				double(pResponse->ENERGY.total6)
-			) / 223.666;
+		double(pResponse->ENERGY.total1) * 0x10000000000ULL +
+		double(pResponse->ENERGY.total2) * 0x100000000ULL +
+		double(pResponse->ENERGY.total3) * 0x1000000 +
+		double(pResponse->ENERGY.total4) * 0x10000 +
+		double(pResponse->ENERGY.total5) * 0x100 +
+		double(pResponse->ENERGY.total6)
+		) / 223.666;
 
 	if (pResponse->ENERGY.subtype == sTypeELEC3)
 	{
@@ -8428,25 +8437,25 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypePOWER;
-	unsigned char subType=pResponse->POWER.subtype;
+	unsigned char devType = pTypePOWER;
+	unsigned char subType = pResponse->POWER.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->POWER.rssi;
+	sprintf(szTmp, "%d", (pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->POWER.rssi;
 	unsigned char BatteryLevel = 255;
 
-	int Voltage=pResponse->POWER.voltage;
-	double current= ((pResponse->POWER.currentH * 256) + pResponse->POWER.currentL) / 100.0;
-	double instant= ((pResponse->POWER.powerH * 256) + pResponse->POWER.powerL) / 10.0;// Watt
-	double usage= ((pResponse->POWER.energyH * 256) + pResponse->POWER.energyL) / 100.0; //kWh
+	int Voltage = pResponse->POWER.voltage;
+	double current = ((pResponse->POWER.currentH * 256) + pResponse->POWER.currentL) / 100.0;
+	double instant = ((pResponse->POWER.powerH * 256) + pResponse->POWER.powerL) / 10.0;// Watt
+	double usage = ((pResponse->POWER.energyH * 256) + pResponse->POWER.energyL) / 100.0; //kWh
 	double powerfactor = pResponse->POWER.pf / 100.0;
 	int frequency = pResponse->POWER.freq; //Hz
 
-	sprintf(szTmp,"%ld;%.2f",long(round(instant)),usage*1000.0);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%ld;%.2f", long(round(instant)), usage*1000.0);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -8484,27 +8493,27 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->POWER.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->POWER.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Voltage       = %d Volt", Voltage);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Current       = %.2f Ampere",current);
+		sprintf(szTmp, "ID            = %d", (pResponse->POWER.id1 * 256) + pResponse->POWER.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Instant usage = %.2f Watt", instant);
+		sprintf(szTmp, "Voltage       = %d Volt", Voltage);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"total usage   = %.2f kWh", usage);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Power factor  = %.2f", powerfactor);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Frequency     = %d Hz", frequency);
+		sprintf(szTmp, "Current       = %.2f Ampere", current);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->POWER.rssi);
+		sprintf(szTmp, "Instant usage = %.2f Watt", instant);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "total usage   = %.2f kWh", usage);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Power factor  = %.2f", powerfactor);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Frequency     = %d Hz", frequency);
+		WriteMessage(szTmp);
+
+		sprintf(szTmp, "Signal level  = %d", pResponse->POWER.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8514,34 +8523,34 @@ void MainWorker::decode_Power(const int HwdID, const _eHardwareTypes HwdType, co
 void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeCURRENTENERGY;
-	unsigned char subType=pResponse->CURRENT_ENERGY.subtype;
+	unsigned char devType = pTypeCURRENTENERGY;
+	unsigned char subType = pResponse->CURRENT_ENERGY.subtype;
 	std::string ID;
-	sprintf(szTmp,"%d",(pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->CURRENT_ENERGY.rssi;
-	unsigned char BatteryLevel = get_BateryLevel(HwdType,false, pResponse->CURRENT_ENERGY.battery_level & 0x0F);
+	sprintf(szTmp, "%d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->CURRENT_ENERGY.rssi;
+	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->CURRENT_ENERGY.battery_level & 0x0F);
 
-	float CurrentChannel1= float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
-	float CurrentChannel2= float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
-	float CurrentChannel3= float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
+	float CurrentChannel1 = float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
+	float CurrentChannel2 = float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
+	float CurrentChannel3 = float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
 
-	double usage=0;
+	double usage = 0;
 
-	if (pResponse->CURRENT_ENERGY.count!=0)
+	if (pResponse->CURRENT_ENERGY.count != 0)
 	{
 		//no usage provided, get the last usage
 		std::vector<std::vector<std::string> > result2;
 		result2 = m_sql.safe_query(
 			"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HwdID, ID.c_str(), int(Unit), int(devType), int(subType));
-		if (result2.size()>0)
+		if (result2.size() > 0)
 		{
 			std::vector<std::string> strarray;
 			StringSplit(result2[0][1], ";", strarray);
-			if (strarray.size()==4)
+			if (strarray.size() == 4)
 			{
 				usage = atof(strarray[3].c_str());
 			}
@@ -8558,7 +8567,7 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 			pResponse->CURRENT_ENERGY.total6
 			) / 223.666;
 
-		if (usage==0)
+		if (usage == 0)
 		{
 			//That should not be, let's get the previous value
 			//no usage provided, get the last usage
@@ -8566,25 +8575,25 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 			result2 = m_sql.safe_query(
 				"SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 				HwdID, ID.c_str(), int(Unit), int(devType), int(subType));
-			if (result2.size()>0)
+			if (result2.size() > 0)
 			{
 				std::vector<std::string> strarray;
 				StringSplit(result2[0][1], ";", strarray);
-				if (strarray.size()==4)
+				if (strarray.size() == 4)
 				{
 					usage = atof(strarray[3].c_str());
 				}
 			}
 		}
 
-		int voltage=230;
+		int voltage = 230;
 		m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
-		sprintf(szTmp,"%ld;%.2f",(long)round((CurrentChannel1+CurrentChannel2+CurrentChannel3)*voltage),usage);
-		m_sql.UpdateValue(HwdID, ID.c_str(),Unit,pTypeENERGY,sTypeELEC3,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%ld;%.2f", (long)round((CurrentChannel1 + CurrentChannel2 + CurrentChannel3)*voltage), usage);
+		m_sql.UpdateValue(HwdID, ID.c_str(), Unit, pTypeENERGY, sTypeELEC3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	}
-	sprintf(szTmp,"%.1f;%.1f;%.1f;%.3f",CurrentChannel1,CurrentChannel2,CurrentChannel3,usage);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f;%.1f;%.1f;%.3f", CurrentChannel1, CurrentChannel2, CurrentChannel3, usage);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -8599,35 +8608,35 @@ void MainWorker::decode_Current_Energy(const int HwdID, const _eHardwareTypes Hw
 			WriteMessage("subtype       = ELEC4 - OWL CM180i");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT_ENERGY.packettype, pResponse->CURRENT_ENERGY.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->CURRENT_ENERGY.packettype, pResponse->CURRENT_ENERGY.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->CURRENT_ENERGY.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->CURRENT_ENERGY.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
+		sprintf(szTmp, "ID            = %d", (pResponse->CURRENT_ENERGY.id1 * 256) + pResponse->CURRENT_ENERGY.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Count         = %d", pResponse->CURRENT_ENERGY.count);
+		sprintf(szTmp, "Count         = %d", pResponse->CURRENT_ENERGY.count);
 		WriteMessage(szTmp);
-		float ampereChannel1,ampereChannel2,ampereChannel3;
-		ampereChannel1=float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
-		ampereChannel2=float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
-		ampereChannel3=float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
-		sprintf(szTmp,"Channel 1     = %.1f ampere", ampereChannel1);
+		float ampereChannel1, ampereChannel2, ampereChannel3;
+		ampereChannel1 = float((pResponse->CURRENT_ENERGY.ch1h * 256) + pResponse->CURRENT_ENERGY.ch1l) / 10.0f;
+		ampereChannel2 = float((pResponse->CURRENT_ENERGY.ch2h * 256) + pResponse->CURRENT_ENERGY.ch2l) / 10.0f;
+		ampereChannel3 = float((pResponse->CURRENT_ENERGY.ch3h * 256) + pResponse->CURRENT_ENERGY.ch3l) / 10.0f;
+		sprintf(szTmp, "Channel 1     = %.1f ampere", ampereChannel1);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Channel 2     = %.1f ampere", ampereChannel2);
+		sprintf(szTmp, "Channel 2     = %.1f ampere", ampereChannel2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Channel 3     = %.1f ampere", ampereChannel3);
+		sprintf(szTmp, "Channel 3     = %.1f ampere", ampereChannel3);
 		WriteMessage(szTmp);
 
 		if (pResponse->CURRENT_ENERGY.count == 0)
 		{
-			sprintf(szTmp,"total usage   = %.3f Wh", usage);
+			sprintf(szTmp, "total usage   = %.3f Wh", usage);
 			WriteMessage(szTmp);
 		}
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->CURRENT_ENERGY.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->CURRENT_ENERGY.rssi);
 		WriteMessage(szTmp);
 
 		if ((pResponse->CURRENT_ENERGY.battery_level & 0xF) == 0)
@@ -8666,25 +8675,25 @@ void MainWorker::decode_Water(const int HwdID, const _eHardwareTypes HwdType, co
 void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeWEIGHT;
-	unsigned char subType=pResponse->WEIGHT.subtype;
-	unsigned short weightID=(pResponse->WEIGHT.id1*256) + pResponse->WEIGHT.id2;
+	unsigned char devType = pTypeWEIGHT;
+	unsigned char subType = pResponse->WEIGHT.subtype;
+	unsigned short weightID = (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2;
 	std::string ID;
 	sprintf(szTmp, "%d", weightID);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->WEIGHT.rssi;
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->WEIGHT.rssi;
 	unsigned char BatteryLevel = 255;
-	float weight=(float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10.0f);
+	float weight = (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10.0f);
 
-	float AddjValue=0.0f;
-	float AddjMulti=1.0f;
-	m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-	weight+=AddjValue;
+	float AddjValue = 0.0f;
+	float AddjMulti = 1.0f;
+	m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	weight += AddjValue;
 
-	sprintf(szTmp,"%.1f",weight);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.1f", weight);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -8700,16 +8709,16 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 			WriteMessage("subtype       = GR101");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type = %02X:%02X", pResponse->WEIGHT.packettype, pResponse->WEIGHT.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type = %02X:%02X", pResponse->WEIGHT.packettype, pResponse->WEIGHT.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->WEIGHT.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->WEIGHT.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2);
+		sprintf(szTmp, "ID            = %d", (pResponse->WEIGHT.id1 * 256) + pResponse->WEIGHT.id2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Weight        = %.1f kg", (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10));
+		sprintf(szTmp, "Weight        = %.1f kg", (float(pResponse->WEIGHT.weighthigh) * 25.6f) + (float(pResponse->WEIGHT.weightlow) / 10));
 		WriteMessage(szTmp);
 		sprintf(szTmp, "Signal level  = %d", pResponse->WEIGHT.rssi);
 		WriteMessage(szTmp);
@@ -8721,74 +8730,74 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeRFXSensor;
-	unsigned char subType=pResponse->RFXSENSOR.subtype;
+	unsigned char devType = pTypeRFXSensor;
+	unsigned char subType = pResponse->RFXSENSOR.subtype;
 	std::string ID;
 	sprintf(szTmp, "%d", pResponse->RFXSENSOR.id);
-	ID=szTmp;
-	unsigned char Unit=0;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->RFXSENSOR.rssi;
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->RFXSENSOR.rssi;
 	unsigned char BatteryLevel = 255;
 
-	if ((HwdType == HTYPE_EnOceanESP2)||(HwdType == HTYPE_EnOceanESP3))
+	if ((HwdType == HTYPE_EnOceanESP2) || (HwdType == HTYPE_EnOceanESP3))
 	{
-		BatteryLevel=255;
-		SignalLevel=12;
-		Unit=(pResponse->RFXSENSOR.rssi<<4)|pResponse->RFXSENSOR.filler;
+		BatteryLevel = 255;
+		SignalLevel = 12;
+		Unit = (pResponse->RFXSENSOR.rssi << 4) | pResponse->RFXSENSOR.filler;
 	}
 
 	float temp;
-	int volt=0;
+	int volt = 0;
 	switch (pResponse->RFXSENSOR.subtype)
 	{
 	case sTypeRFXSensorTemp:
-		{
-			if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
-				temp = float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f;
-			else
-				temp=-(float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
-			float AddjValue=0.0f;
-			float AddjMulti=1.0f;
-			m_sql.GetAddjustment(HwdID, ID.c_str(),Unit,devType,subType,AddjValue,AddjMulti);
-			temp+=AddjValue;
-			sprintf(szTmp,"%.1f",temp);
-		}
-		break;
+	{
+		if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
+			temp = float((pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f;
+		else
+			temp = -(float(((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+		float AddjValue = 0.0f;
+		float AddjMulti = 1.0f;
+		m_sql.GetAddjustment(HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		temp += AddjValue;
+		sprintf(szTmp, "%.1f", temp);
+	}
+	break;
 	case sTypeRFXSensorAD:
 	case sTypeRFXSensorVolt:
+	{
+		volt = (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
+		if (
+			(HwdType == HTYPE_RFXLAN) ||
+			(HwdType == HTYPE_RFXtrx315) ||
+			(HwdType == HTYPE_RFXtrx433) ||
+			(HwdType == HTYPE_RFXtrx868)
+			)
 		{
-			volt=(pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2;
-			if (
-				(HwdType == HTYPE_RFXLAN) ||
-				(HwdType == HTYPE_RFXtrx315) ||
-				(HwdType == HTYPE_RFXtrx433) ||
-				(HwdType == HTYPE_RFXtrx868)
-				)
-			{
-				volt *= 10;
-			}
-			sprintf(szTmp, "%d", volt);
+			volt *= 10;
 		}
-		break;
+		sprintf(szTmp, "%d", volt);
 	}
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	break;
+	}
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
 	switch (pResponse->RFXSENSOR.subtype)
 	{
-		case sTypeRFXSensorTemp:
-		{
-			m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, 0, true, false);
-		}
-		break;
-		case sTypeRFXSensorAD:
-		case sTypeRFXSensorVolt:
-		{
-			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, float(volt));
-		}
-		break;
+	case sTypeRFXSensorTemp:
+	{
+		m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, temp, 0, true, false);
+	}
+	break;
+	case sTypeRFXSensorAD:
+	case sTypeRFXSensorVolt:
+	{
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, float(volt));
+	}
+	break;
 	}
 
 	if (m_verboselevel >= EVBL_ALL)
@@ -8798,45 +8807,45 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 		{
 		case sTypeRFXSensorTemp:
 			WriteMessage("subtype       = Temperature");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp, "ID            = %d", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 
 			if ((pResponse->RFXSENSOR.msg1 & 0x80) == 0) //positive temperature?
 			{
-				sprintf(szTmp,"Temperature   = %.2f C", float( (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+				sprintf(szTmp, "Temperature   = %.2f C", float((pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
 				WriteMessage(szTmp);
 			}
 			else
 			{
-				sprintf(szTmp,"Temperature   = -%.2f C", float( ((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
+				sprintf(szTmp, "Temperature   = -%.2f C", float(((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0f);
 				WriteMessage(szTmp);
 			}
 			break;
 		case sTypeRFXSensorAD:
 			WriteMessage("subtype       = A/D");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp, "ID            = %d", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			sprintf(szTmp, "volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXSensorVolt:
 			WriteMessage("subtype       = Voltage");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp, "ID            = %d", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			sprintf(szTmp, "volt          = %d mV", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXSensorMessage:
 			WriteMessage("subtype       = Message");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXSENSOR.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", pResponse->RFXSENSOR.id);
+			sprintf(szTmp, "ID            = %d", pResponse->RFXSENSOR.id);
 			WriteMessage(szTmp);
 			switch (pResponse->RFXSENSOR.msg2)
 			{
@@ -8865,15 +8874,15 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 				WriteMessage("ERROR: unknown message");
 				break;
 			}
-			sprintf(szTmp,"msg           = %d", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
+			sprintf(szTmp, "msg           = %d", (pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXSENSOR.packettype, pResponse->RFXSENSOR.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXSENSOR.packettype, pResponse->RFXSENSOR.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFXSENSOR.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->RFXSENSOR.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -8882,25 +8891,25 @@ void MainWorker::decode_RFXSensor(const int HwdID, const _eHardwareTypes HwdType
 
 void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-	uint64_t DevRowIdx=-1;
+	uint64_t DevRowIdx = -1;
 	char szTmp[100];
-	unsigned char devType=pTypeRFXMeter;
-	unsigned char subType=pResponse->RFXMETER.subtype;
-	if (subType==sTypeRFXMeterCount)
+	unsigned char devType = pTypeRFXMeter;
+	unsigned char subType = pResponse->RFXMETER.subtype;
+	if (subType == sTypeRFXMeterCount)
 	{
 		std::string ID;
-		sprintf(szTmp,"%d",(pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
-		ID=szTmp;
-		unsigned char Unit=0;
-		unsigned char cmnd=0;
-		unsigned char SignalLevel=pResponse->RFXMETER.rssi;
+		sprintf(szTmp, "%d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+		ID = szTmp;
+		unsigned char Unit = 0;
+		unsigned char cmnd = 0;
+		unsigned char SignalLevel = pResponse->RFXMETER.rssi;
 		unsigned char BatteryLevel = 255;
 
 		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
 		//float RFXPwr = float(counter) / 1000.0f;
 
-		sprintf(szTmp,"%lu",counter);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%lu", counter);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
 	}
@@ -8914,25 +8923,25 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 		{
 		case sTypeRFXMeterCount:
 			WriteMessage("subtype       = RFXMeter counter");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp,"Counter       = %lu", counter);
+			sprintf(szTmp, "Counter       = %lu", counter);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"if RFXPwr     = %.3f kWh", float(counter) / 1000.0f);
+			sprintf(szTmp, "if RFXPwr     = %.3f kWh", float(counter) / 1000.0f);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterInterval:
 			WriteMessage("subtype       = RFXMeter new interval time set");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			WriteMessage("Interval time = ", false);
 
-			switch(pResponse->RFXMETER.count3)
+			switch (pResponse->RFXMETER.count3)
 			{
 			case 0x1:
 				WriteMessage("30 seconds");
@@ -8973,20 +8982,20 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Calibrate mode for channel 3");
 				break;
 			}
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter = ( ((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4 ) / 1000;
-			sprintf(szTmp,"Calibrate cnt = %lu msec", counter);
+			counter = (((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4) / 1000;
+			sprintf(szTmp, "Calibrate cnt = %lu msec", counter);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"RFXPwr        = %.3f kW", 1.0f / ( float(16 * counter) / (3600000.0f / 62.5f)) );
+			sprintf(szTmp, "RFXPwr        = %.3f kW", 1.0f / (float(16 * counter) / (3600000.0f / 62.5f)));
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterAddr:
 			WriteMessage("subtype       = New address set, push button for next address");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterCounterReset:
@@ -9002,9 +9011,9 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else RESET COUNTER channel 3 will be executed");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterCounterSet:
@@ -9020,19 +9029,19 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Counter channel 3 is reset to zero");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter =  (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp,"Counter       = %lu", counter);
+			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+			sprintf(szTmp, "Counter       = %lu", counter);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetInterval:
 			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET INTERVAL MODE will be entered");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetCalib:
@@ -9048,25 +9057,25 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 				WriteMessage("subtype       = Push the button for next mode within 5 seconds or else CALIBRATION mode for channel 3 will be executed");
 				break;
 			}
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetAddr:
 			WriteMessage("subtype       = Push the button for next mode within 5 seconds or else SET ADDRESS MODE will be entered");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterIdent:
 			WriteMessage("subtype       = RFXMeter identification");
-			sprintf(szTmp,"Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
+			sprintf(szTmp, "Sequence nbr  = %d", pResponse->RFXMETER.seqnbr);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
+			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"FW version    = %02X", pResponse->RFXMETER.count3);
+			sprintf(szTmp, "FW version    = %02X", pResponse->RFXMETER.count3);
 			WriteMessage(szTmp);
 			WriteMessage("Interval time = ", false);
 
@@ -9099,11 +9108,11 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 			}
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXMETER.packettype, pResponse->RFXMETER.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->RFXMETER.packettype, pResponse->RFXMETER.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
-		sprintf(szTmp,"Signal level  = %d", pResponse->RFXMETER.rssi);
+		sprintf(szTmp, "Signal level  = %d", pResponse->RFXMETER.rssi);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -9113,31 +9122,31 @@ void MainWorker::decode_RFXMeter(const int HwdID, const _eHardwareTypes HwdType,
 void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[200];
-	const _tP1Power *p1Power=reinterpret_cast<const _tP1Power*>(pResponse);
+	const _tP1Power *p1Power = reinterpret_cast<const _tP1Power*>(pResponse);
 
 	if (p1Power->len != sizeof(_tP1Power) - 1)
 		return;
 
-	unsigned char devType=p1Power->type;
-	unsigned char subType=p1Power->subtype;
+	unsigned char devType = p1Power->type;
+	unsigned char subType = p1Power->subtype;
 	std::string ID;
 	sprintf(szTmp, "%d", p1Power->ID);
 	ID = szTmp;
 
-	unsigned char Unit=subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char Unit = subType;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%u;%u;%u;%u;%u;%u",
+	sprintf(szTmp, "%u;%u;%u;%u;%u;%u",
 		p1Power->powerusage1,
 		p1Power->powerusage2,
 		p1Power->powerdeliv1,
 		p1Power->powerdeliv2,
 		p1Power->usagecurrent,
 		p1Power->delivcurrent
-		);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -9151,23 +9160,23 @@ void MainWorker::decode_P1MeterPower(const int HwdID, const _eHardwareTypes HwdT
 		case sTypeP1Power:
 			WriteMessage("subtype       = P1 Smart Meter Power");
 
-			sprintf(szTmp,"powerusage1 = %.3f kWh", float(p1Power->powerusage1) / 1000.0f);
+			sprintf(szTmp, "powerusage1 = %.3f kWh", float(p1Power->powerusage1) / 1000.0f);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"powerusage2 = %.3f kWh", float(p1Power->powerusage2) / 1000.0f);
-			WriteMessage(szTmp);
-
-			sprintf(szTmp,"powerdeliv1 = %.3f kWh", float(p1Power->powerdeliv1) / 1000.0f);
-			WriteMessage(szTmp);
-			sprintf(szTmp,"powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
+			sprintf(szTmp, "powerusage2 = %.3f kWh", float(p1Power->powerusage2) / 1000.0f);
 			WriteMessage(szTmp);
 
-			sprintf(szTmp,"current usage = %03u Watt", p1Power->usagecurrent);
+			sprintf(szTmp, "powerdeliv1 = %.3f kWh", float(p1Power->powerdeliv1) / 1000.0f);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current deliv = %03u Watt", p1Power->delivcurrent);
+			sprintf(szTmp, "powerdeliv2 = %.3f kWh", float(p1Power->powerdeliv2) / 1000.0f);
+			WriteMessage(szTmp);
+
+			sprintf(szTmp, "current usage = %03u Watt", p1Power->usagecurrent);
+			WriteMessage(szTmp);
+			sprintf(szTmp, "current deliv = %03u Watt", p1Power->delivcurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Power->type, p1Power->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Power->type, p1Power->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9183,18 +9192,18 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdTyp
 	if (p1Gas->len != sizeof(_tP1Gas) - 1)
 		return;
 
-	unsigned char devType=p1Gas->type;
-	unsigned char subType=p1Gas->subtype;
+	unsigned char devType = p1Gas->type;
+	unsigned char subType = p1Gas->subtype;
 	std::string ID;
 	sprintf(szTmp, "%d", p1Gas->ID);
 	ID = szTmp;
 	unsigned char Unit = subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%u",p1Gas->gasusage);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%u", p1Gas->gasusage);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -9206,11 +9215,11 @@ void MainWorker::decode_P1MeterGas(const int HwdID, const _eHardwareTypes HwdTyp
 		case sTypeP1Gas:
 			WriteMessage("subtype       = P1 Smart Meter Gas");
 
-			sprintf(szTmp,"gasusage = %.3f m3", float(p1Gas->gasusage) / 1000.0f);
+			sprintf(szTmp, "gasusage = %.3f m3", float(p1Gas->gasusage) / 1000.0f);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Gas->type, p1Gas->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", p1Gas->type, p1Gas->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9223,20 +9232,20 @@ void MainWorker::decode_YouLessMeter(const int HwdID, const _eHardwareTypes HwdT
 {
 	char szTmp[200];
 	const _tYouLessMeter *pMeter = reinterpret_cast<const _tYouLessMeter*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d",pMeter->ID1);
-	std::string ID=szTmp;
-	unsigned char Unit=subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
+	sprintf(szTmp, "%d", pMeter->ID1);
+	std::string ID = szTmp;
+	unsigned char Unit = subType;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%lu;%lu",
+	sprintf(szTmp, "%lu;%lu",
 		pMeter->powerusage,
 		pMeter->usagecurrent
-		);
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -9250,13 +9259,13 @@ void MainWorker::decode_YouLessMeter(const int HwdID, const _eHardwareTypes HwdT
 		case sTypeYouLess:
 			WriteMessage("subtype       = YouLess Meter");
 
-			sprintf(szTmp,"powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
+			sprintf(szTmp, "powerusage = %.3f kWh", float(pMeter->powerusage) / 1000.0f);
 			WriteMessage(szTmp);
-			sprintf(szTmp,"current usage = %03lu Watt", pMeter->usagecurrent);
+			sprintf(szTmp, "current usage = %03lu Watt", pMeter->usagecurrent);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9269,15 +9278,15 @@ void MainWorker::decode_Rego6XXTemp(const int HwdID, const _eHardwareTypes HwdTy
 {
 	char szTmp[200];
 	const _tRego6XXTemp *pRego = reinterpret_cast<const _tRego6XXTemp*>(pResponse);
-	unsigned char devType=pRego->type;
-	unsigned char subType=pRego->subtype;
-	std::string ID=pRego->ID;
-	unsigned char Unit=subType;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char devType = pRego->type;
+	unsigned char subType = pRego->subtype;
+	std::string ID = pRego->ID;
+	unsigned char Unit = subType;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-    sprintf(szTmp,"%.1f",
+	sprintf(szTmp, "%.1f",
 		pRego->temperature
 	);
 	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
@@ -9290,7 +9299,7 @@ void MainWorker::decode_Rego6XXTemp(const int HwdID, const _eHardwareTypes HwdTy
 		WriteMessageStart();
 		WriteMessage("subtype       = Rego6XX Temp");
 
-		sprintf(szTmp,"Temp = %.1f", pRego->temperature);
+		sprintf(szTmp, "Temp = %.1f", pRego->temperature);
 		WriteMessage(szTmp);
 		WriteMessageEnd();
 	}
@@ -9301,19 +9310,19 @@ void MainWorker::decode_Rego6XXValue(const int HwdID, const _eHardwareTypes HwdT
 {
 	char szTmp[200];
 	const _tRego6XXStatus *pRego = reinterpret_cast<const _tRego6XXStatus*>(pResponse);
-	unsigned char devType=pRego->type;
-	unsigned char subType=pRego->subtype;
-	std::string ID=pRego->ID;
+	unsigned char devType = pRego->type;
+	unsigned char subType = pRego->subtype;
+	std::string ID = pRego->ID;
 	unsigned char Unit = subType;
 	int numValue = pRego->value;
-	unsigned char SignalLevel=12;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-    sprintf(szTmp,"%d",
+	sprintf(szTmp, "%d",
 		pRego->value
 	);
 
-    uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,numValue,szTmp, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, numValue, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
@@ -9323,16 +9332,16 @@ void MainWorker::decode_Rego6XXValue(const int HwdID, const _eHardwareTypes HwdT
 		switch (pRego->subtype)
 		{
 		case sTypeRego6XXStatus:
-    		WriteMessage("subtype       = Rego6XX Status");
-            sprintf(szTmp,"Status = %d", pRego->value);
-		    WriteMessage(szTmp);
-            break;
+			WriteMessage("subtype       = Rego6XX Status");
+			sprintf(szTmp, "Status = %d", pRego->value);
+			WriteMessage(szTmp);
+			break;
 		case sTypeRego6XXCounter:
-    		WriteMessage("subtype       = Rego6XX Counter");
-            sprintf(szTmp,"Counter = %d", pRego->value);
-		    WriteMessage(szTmp);
-            break;
-        }
+			WriteMessage("subtype       = Rego6XX Counter");
+			sprintf(szTmp, "Counter = %d", pRego->value);
+			WriteMessage(szTmp);
+			break;
+		}
 		WriteMessageEnd();
 	}
 	procResult.DeviceRowIdx = DevRowIdx;
@@ -9342,20 +9351,20 @@ void MainWorker::decode_AirQuality(const int HwdID, const _eHardwareTypes HwdTyp
 {
 	char szTmp[200];
 	const _tAirQualityMeter *pMeter = reinterpret_cast<const _tAirQualityMeter*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%d",pMeter->id1);
-	std::string ID=szTmp;
-	unsigned char Unit=pMeter->id2;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
+	sprintf(szTmp, "%d", pMeter->id1);
+	std::string ID = szTmp;
+	unsigned char Unit = pMeter->id2;
 	//unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->airquality, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->airquality, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, (const float)pMeter->airquality);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9365,22 +9374,22 @@ void MainWorker::decode_AirQuality(const int HwdID, const _eHardwareTypes HwdTyp
 		case sTypeVoltcraft:
 			WriteMessage("subtype       = Voltcraft CO-20");
 
-			sprintf(szTmp,"CO2 = %d ppm", pMeter->airquality);
+			sprintf(szTmp, "CO2 = %d ppm", pMeter->airquality);
 			WriteMessage(szTmp);
-			if (pMeter->airquality<700)
-				strcpy(szTmp,"Quality = Excellent");
-			else if (pMeter->airquality<900)
-				strcpy(szTmp,"Quality = Good");
-			else if (pMeter->airquality<1100)
-				strcpy(szTmp,"Quality = Fair");
-			else if (pMeter->airquality<1600)
-				strcpy(szTmp,"Quality = Mediocre");
+			if (pMeter->airquality < 700)
+				strcpy(szTmp, "Quality = Excellent");
+			else if (pMeter->airquality < 900)
+				strcpy(szTmp, "Quality = Good");
+			else if (pMeter->airquality < 1100)
+				strcpy(szTmp, "Quality = Fair");
+			else if (pMeter->airquality < 1600)
+				strcpy(szTmp, "Quality = Mediocre");
 			else
-				strcpy(szTmp,"Quality = Bad");
+				strcpy(szTmp, "Quality = Bad");
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9393,22 +9402,22 @@ void MainWorker::decode_Usage(const int HwdID, const _eHardwareTypes HwdType, co
 {
 	char szTmp[200];
 	const _tUsageMeter *pMeter = reinterpret_cast<const _tUsageMeter*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-	std::string ID=szTmp;
-	unsigned char Unit=pMeter->dunit;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
+	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID = szTmp;
+	unsigned char Unit = pMeter->dunit;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = 255;
 
-	sprintf(szTmp,"%.1f",pMeter->fusage);
+	sprintf(szTmp, "%.1f", pMeter->fusage);
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->fusage);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->fusage);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9418,11 +9427,11 @@ void MainWorker::decode_Usage(const int HwdID, const _eHardwareTypes HwdType, co
 		case sTypeElectric:
 			WriteMessage("subtype       = Electric");
 
-			sprintf(szTmp,"Usage = %.1f W", pMeter->fusage);
+			sprintf(szTmp, "Usage = %.1f W", pMeter->fusage);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9435,22 +9444,22 @@ void MainWorker::decode_Lux(const int HwdID, const _eHardwareTypes HwdType, cons
 {
 	char szTmp[200];
 	const _tLightMeter *pMeter = reinterpret_cast<const _tLightMeter*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-	std::string ID=szTmp;
-	unsigned char Unit=pMeter->dunit;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
+	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID = szTmp;
+	unsigned char Unit = pMeter->dunit;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = pMeter->battery_level;
 
-	sprintf(szTmp,"%.0f",pMeter->fLux);
+	sprintf(szTmp, "%.0f", pMeter->fLux);
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->fLux);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->fLux);
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -9460,11 +9469,11 @@ void MainWorker::decode_Lux(const int HwdID, const _eHardwareTypes HwdType, cons
 		case sTypeLux:
 			WriteMessage("subtype       = Lux");
 
-			sprintf(szTmp,"Lux = %.1f W", pMeter->fLux);
+			sprintf(szTmp, "Lux = %.1f W", pMeter->fLux);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9477,31 +9486,31 @@ void MainWorker::decode_Thermostat(const int HwdID, const _eHardwareTypes HwdTyp
 {
 	char szTmp[200];
 	const _tThermostat *pMeter = reinterpret_cast<const _tThermostat*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
-	sprintf(szTmp,"%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
-	std::string ID=szTmp;
-	unsigned char Unit=pMeter->dunit;
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=12;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
+	sprintf(szTmp, "%X%02X%02X%02X", pMeter->id1, pMeter->id2, pMeter->id3, pMeter->id4);
+	std::string ID = szTmp;
+	unsigned char Unit = pMeter->dunit;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = 12;
 	unsigned char BatteryLevel = pMeter->battery_level;
 
 	switch (pMeter->subtype)
 	{
 	case sTypeThermSetpoint:
-		sprintf(szTmp,"%.2f",pMeter->temp);
+		sprintf(szTmp, "%.2f", pMeter->temp);
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 		WriteMessage(szTmp);
 		return;
 	}
 
-	uint64_t DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 
-	if (pMeter->subtype==sTypeThermSetpoint)
+	if (pMeter->subtype == sTypeThermSetpoint)
 	{
 		m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, procResult.DeviceName, pMeter->temp, 0, true, false);
 	}
@@ -9516,11 +9525,11 @@ void MainWorker::decode_Thermostat(const int HwdID, const _eHardwareTypes HwdTyp
 		{
 		case sTypeThermSetpoint:
 			WriteMessage("subtype       = SetPoint");
-			sprintf(szTmp,"Temp = %.2f", tvalue);
+			sprintf(szTmp, "Temp = %.2f", tvalue);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9533,8 +9542,8 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 {
 	char szTmp[200];
 	const _tGeneralDevice *pMeter = reinterpret_cast<const _tGeneralDevice*>(pResponse);
-	unsigned char devType=pMeter->type;
-	unsigned char subType=pMeter->subtype;
+	unsigned char devType = pMeter->type;
+	unsigned char subType = pMeter->subtype;
 
 	if (
 		(subType == sTypeVoltage) ||
@@ -9560,30 +9569,30 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else
 	{
-		sprintf(szTmp,"%d", pMeter->id);
+		sprintf(szTmp, "%d", pMeter->id);
 
 	}
-	std::string ID=szTmp;
-	unsigned char Unit=1;
-	unsigned char cmnd=0;
+	std::string ID = szTmp;
+	unsigned char Unit = 1;
+	unsigned char cmnd = 0;
 
-	uint64_t DevRowIdx=-1;
+	uint64_t DevRowIdx = -1;
 
 	if (subType == sTypeVisibility)
 	{
-		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%.1f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		int meterType=0;
-		m_sql.GetMeterType(HwdID, ID.c_str(),Unit,devType,subType,meterType);
-		float fValue=pMeter->floatval1;
-		if (meterType==1)
+		int meterType = 0;
+		m_sql.GetMeterType(HwdID, ID.c_str(), Unit, devType, subType, meterType);
+		float fValue = pMeter->floatval1;
+		if (meterType == 1)
 		{
 			//miles
-			fValue*=0.6214f;
+			fValue *= 0.6214f;
 		}
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, fValue);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, fValue);
 	}
 	else if (subType == sTypeDistance)
 	{
@@ -9599,37 +9608,37 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			//inches
 			fValue *= 0.393701f;
 		}
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, fValue);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, fValue);
 	}
 	else if (subType == sTypeSolarRadiation)
 	{
-		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%.1f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
-	else if (subType==sTypeSoilMoisture)
+	else if (subType == sTypeSoilMoisture)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval2, procResult.DeviceName);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval2, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval2);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, (float)pMeter->intval2);
 	}
-	else if (subType==sTypeLeafWetness)
+	else if (subType == sTypeLeafWetness)
 	{
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,pMeter->intval1, procResult.DeviceName);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, pMeter->intval1, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, (float)pMeter->intval1);
 	}
-	else if (subType==sTypeVoltage)
+	else if (subType == sTypeVoltage)
 	{
-		sprintf(szTmp,"%.3f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%.3f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeCurrent)
 	{
@@ -9637,31 +9646,31 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeBaro)
 	{
-		sprintf(szTmp, "%.02f;%d", pMeter->floatval1,pMeter->intval2);
+		sprintf(szTmp, "%.02f;%d", pMeter->floatval1, pMeter->intval2);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypePressure)
 	{
-		sprintf(szTmp,"%.1f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%.1f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, pMeter->floatval1);
 	}
-	else if (subType==sTypePercentage)
+	else if (subType == sTypePercentage)
 	{
-		sprintf(szTmp,"%.2f",pMeter->floatval1);
-		DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%.2f", pMeter->floatval1);
+		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_PERCENTAGE, pMeter->floatval1);
 	}
 	else if (subType == sTypeWaterflow)
 	{
@@ -9677,7 +9686,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_RPM, (float)pMeter->intval2);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_RPM, (float)pMeter->intval2);
 	}
 	else if (subType == sTypeSoundLevel)
 	{
@@ -9685,13 +9694,13 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 		if (DevRowIdx == -1)
 			return;
-		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName,devType, subType, NTYPE_USAGE, (float)pMeter->intval2);
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_USAGE, (float)pMeter->intval2);
 	}
 	else if (subType == sTypeZWaveClock)
 	{
 		int tintval = pMeter->intval2;
-		int day = tintval / (24 * 60); tintval -= (day*24 * 60);
-		int hour = tintval / (60); tintval -= (hour*60);
+		int day = tintval / (24 * 60); tintval -= (day * 24 * 60);
+		int hour = tintval / (60); tintval -= (hour * 60);
 		int minute = tintval;
 		sprintf(szTmp, "%d;%d;%d", day, hour, minute);
 		DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
@@ -9709,7 +9718,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 	}
 	else if (subType == sTypeAlert)
 	{
-		if (strcmp(pMeter->text,  ""))
+		if (strcmp(pMeter->text, ""))
 			sprintf(szTmp, "(%d) %s", pMeter->intval1, pMeter->text);
 		else
 			sprintf(szTmp, "%d", pMeter->intval1);
@@ -9746,7 +9755,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 		{
 		case sTypeVisibility:
 			WriteMessage("subtype       = Visibility");
-			sprintf(szTmp,"Visibility = %.1f km", pMeter->floatval1);
+			sprintf(szTmp, "Visibility = %.1f km", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeDistance:
@@ -9756,22 +9765,22 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypeSolarRadiation:
 			WriteMessage("subtype       = Solar Radiation");
-			sprintf(szTmp,"Radiation = %.1f Watt/m2", pMeter->floatval1);
+			sprintf(szTmp, "Radiation = %.1f Watt/m2", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeSoilMoisture:
 			WriteMessage("subtype       = Soil Moisture");
-			sprintf(szTmp,"Moisture = %d cb", pMeter->intval2);
+			sprintf(szTmp, "Moisture = %d cb", pMeter->intval2);
 			WriteMessage(szTmp);
 			break;
 		case sTypeLeafWetness:
 			WriteMessage("subtype       = Leaf Wetness");
-			sprintf(szTmp,"Wetness = %d", pMeter->intval1);
+			sprintf(szTmp, "Wetness = %d", pMeter->intval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeVoltage:
 			WriteMessage("subtype       = Voltage");
-			sprintf(szTmp,"Voltage = %.3f V", pMeter->floatval1);
+			sprintf(szTmp, "Voltage = %.3f V", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeCurrent:
@@ -9781,7 +9790,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypePressure:
 			WriteMessage("subtype       = Pressure");
-			sprintf(szTmp,"Pressure = %.1f bar", pMeter->floatval1);
+			sprintf(szTmp, "Pressure = %.1f bar", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeBaro:
@@ -9800,16 +9809,16 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(szTmp);
 			break;
 		case sTypeZWaveClock:
-			{
-				int tintval = pMeter->intval2;
-				int day = tintval / (24 * 60); tintval -= (day * 24 * 60);
-				int hour = tintval / (60); tintval -= (hour * 60);
-				int minute = tintval;
-				WriteMessage("subtype       = Thermostat Clock");
-				sprintf(szTmp, "Clock = %s %02d:%02d", ZWave_Clock_Days(day),hour, minute);
-				WriteMessage(szTmp);
-			}
-			break;
+		{
+			int tintval = pMeter->intval2;
+			int day = tintval / (24 * 60); tintval -= (day * 24 * 60);
+			int hour = tintval / (60); tintval -= (hour * 60);
+			int minute = tintval;
+			WriteMessage("subtype       = Thermostat Clock");
+			sprintf(szTmp, "Clock = %s %02d:%02d", ZWave_Clock_Days(day), hour, minute);
+			WriteMessage(szTmp);
+		}
+		break;
 		case sTypeZWaveThermostatMode:
 			WriteMessage("subtype       = Thermostat Mode");
 			//sprintf(szTmp, "Mode = %d (%s)", pMeter->intval2, ZWave_Thermostat_Modes[pMeter->intval2]);
@@ -9823,7 +9832,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			break;
 		case sTypePercentage:
 			WriteMessage("subtype       = Percentage");
-			sprintf(szTmp, "Percentage = %.2f",pMeter->floatval1);
+			sprintf(szTmp, "Percentage = %.2f", pMeter->floatval1);
 			WriteMessage(szTmp);
 			break;
 		case sTypeWaterflow:
@@ -9835,7 +9844,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage("subtype       = kWh");
 			sprintf(szTmp, "Instant = %.3f", pMeter->floatval1);
 			WriteMessage(szTmp);
-			sprintf(szTmp, "Counter = %.3f", pMeter->floatval2/1000.0f);
+			sprintf(szTmp, "Counter = %.3f", pMeter->floatval2 / 1000.0f);
 			WriteMessage(szTmp);
 			break;
 		case sTypeAlert:
@@ -9859,7 +9868,7 @@ void MainWorker::decode_General(const int HwdID, const _eHardwareTypes HwdType, 
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pMeter->type, pMeter->subtype);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -9904,30 +9913,30 @@ void MainWorker::decode_GeneralSwitch(const int HwdID, const _eHardwareTypes Hwd
 void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[100];
-	unsigned char devType=pTypeBBQ;
-	unsigned char subType=pResponse->BBQ.subtype;
+	unsigned char devType = pTypeBBQ;
+	unsigned char subType = pResponse->BBQ.subtype;
 
-	sprintf(szTmp,"%d",1);//(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
-	std::string ID=szTmp;
+	sprintf(szTmp, "%d", 1);//(pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2); //this because every time you turn the device on, you get a new ID
+	std::string ID = szTmp;
 
-	unsigned char Unit=pResponse->BBQ.id2;
+	unsigned char Unit = pResponse->BBQ.id2;
 
-	unsigned char cmnd=0;
-	unsigned char SignalLevel=pResponse->BBQ.rssi;
+	unsigned char cmnd = 0;
+	unsigned char SignalLevel = pResponse->BBQ.rssi;
 	unsigned char BatteryLevel = 0;
-	if ((pResponse->BBQ.battery_level &0x0F) == 0)
-		BatteryLevel=0;
+	if ((pResponse->BBQ.battery_level & 0x0F) == 0)
+		BatteryLevel = 0;
 	else
-		BatteryLevel=100;
+		BatteryLevel = 100;
 
-	uint64_t DevRowIdx=0;
+	uint64_t DevRowIdx = 0;
 
-	float temp1,temp2;
-	temp1=float((pResponse->BBQ.sensor1h * 256) + pResponse->BBQ.sensor1l);// / 10.0f;
-	temp2=float((pResponse->BBQ.sensor2h * 256) + pResponse->BBQ.sensor2l);// / 10.0f;
+	float temp1, temp2;
+	temp1 = float((pResponse->BBQ.sensor1h * 256) + pResponse->BBQ.sensor1l);// / 10.0f;
+	temp2 = float((pResponse->BBQ.sensor2h * 256) + pResponse->BBQ.sensor2l);// / 10.0f;
 
-	sprintf(szTmp,"%.0f;%.0f",temp1,temp2);
-	DevRowIdx=m_sql.UpdateValue(HwdID, ID.c_str(),Unit,devType,subType,SignalLevel,BatteryLevel,cmnd,szTmp, procResult.DeviceName);
+	sprintf(szTmp, "%.0f;%.0f", temp1, temp2);
+	DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 	if (DevRowIdx == -1)
 		return;
 	if (m_verboselevel >= EVBL_ALL)
@@ -9939,25 +9948,25 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 			WriteMessage("subtype       = Maverick ET-732");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->BBQ.packettype, pResponse->BBQ.subtype);
+			sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->BBQ.packettype, pResponse->BBQ.subtype);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->BBQ.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->BBQ.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"ID            = %d", (pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
-		WriteMessage(szTmp);
-
-		sprintf(szTmp,"Sensor1 Temp  = %.1f C", temp1);
-		WriteMessage(szTmp);
-		sprintf(szTmp,"Sensor2 Temp  = %.1f C", temp2);
+		sprintf(szTmp, "ID            = %d", (pResponse->BBQ.id1 * 256) + pResponse->BBQ.id2);
 		WriteMessage(szTmp);
 
-		sprintf(szTmp,"Signal level  = %d", pResponse->BBQ.rssi);
+		sprintf(szTmp, "Sensor1 Temp  = %.1f C", temp1);
+		WriteMessage(szTmp);
+		sprintf(szTmp, "Sensor2 Temp  = %.1f C", temp2);
 		WriteMessage(szTmp);
 
-		if ((pResponse->BBQ.battery_level &0x0F) == 0)
+		sprintf(szTmp, "Signal level  = %d", pResponse->BBQ.rssi);
+		WriteMessage(szTmp);
+
+		if ((pResponse->BBQ.battery_level & 0x0F) == 0)
 			WriteMessage("Battery       = Low");
 		else
 			WriteMessage("Battery       = OK");
@@ -9968,33 +9977,33 @@ void MainWorker::decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, cons
 
 	//Temp
 	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-	tsen.TEMP.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.TEMP.packettype=pTypeTEMP;
-	tsen.TEMP.subtype=sTypeTEMP6;
-	tsen.TEMP.battery_level=9;
-	tsen.TEMP.rssi=SignalLevel;
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=1;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.TEMP.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.TEMP.packettype = pTypeTEMP;
+	tsen.TEMP.subtype = sTypeTEMP6;
+	tsen.TEMP.battery_level = 9;
+	tsen.TEMP.rssi = SignalLevel;
+	tsen.TEMP.id1 = 0;
+	tsen.TEMP.id2 = 1;
 
-	tsen.TEMP.tempsign=(temp1>=0)?0:1;
-	int at10=round(std::abs(temp1*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
+	tsen.TEMP.tempsign = (temp1 >= 0) ? 0 : 1;
+	int at10 = round(std::abs(temp1*10.0f));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
 	_tRxMessageProcessingResult tmpProcResult1;
 	tmpProcResult1.DeviceName = "";
 	tmpProcResult1.DeviceRowIdx = -1;
 	decode_Temp(HwdID, HwdType, (const tRBUF*)&tsen.TEMP, tmpProcResult1);
 
-	tsen.TEMP.id1=0;
-	tsen.TEMP.id2=2;
+	tsen.TEMP.id1 = 0;
+	tsen.TEMP.id2 = 2;
 
-	tsen.TEMP.tempsign=(temp2>=0)?0:1;
-	at10=round(std::abs(temp2*10.0f));
-	tsen.TEMP.temperatureh=(BYTE)(at10/256);
-	at10-=(tsen.TEMP.temperatureh*256);
-	tsen.TEMP.temperaturel=(BYTE)(at10);
+	tsen.TEMP.tempsign = (temp2 >= 0) ? 0 : 1;
+	at10 = round(std::abs(temp2*10.0f));
+	tsen.TEMP.temperatureh = (BYTE)(at10 / 256);
+	at10 -= (tsen.TEMP.temperatureh * 256);
+	tsen.TEMP.temperaturel = (BYTE)(at10);
 	_tRxMessageProcessingResult tmpProcResult2;
 	tmpProcResult2.DeviceName = "";
 	tmpProcResult2.DeviceRowIdx = -1;
@@ -10014,11 +10023,11 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 	{
 	case sTypeFS20:
 		WriteMessage("subtype       = FS20");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
+		sprintf(szTmp, "House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Address       = %02X", pResponse->FS20.addr);
+		sprintf(szTmp, "Address       = %02X", pResponse->FS20.addr);
 		WriteMessage(szTmp);
 
 		WriteMessage("Cmd1          = ", false);
@@ -10110,7 +10119,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage("Reset");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
+			sprintf(szTmp, "ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
 			WriteMessage(szTmp);
 			break;
 		}
@@ -10130,25 +10139,25 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 		else
 			WriteMessage("                additional cmd2 byte present");
 
-		if ((pResponse->FS20.cmd1 & 0x20) !=0)
+		if ((pResponse->FS20.cmd1 & 0x20) != 0)
 		{
-			sprintf(szTmp,"Cmd2          = %02X", pResponse->FS20.cmd2);
+			sprintf(szTmp, "Cmd2          = %02X", pResponse->FS20.cmd2);
 			WriteMessage(szTmp);
 		}
 		break;
 	case sTypeFHT8V:
 		WriteMessage("subtype       = FHT 8V valve");
 
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
+		sprintf(szTmp, "House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Address       = %02X", pResponse->FS20.addr);
+		sprintf(szTmp, "Address       = %02X", pResponse->FS20.addr);
 		WriteMessage(szTmp);
 
 		WriteMessage("Cmd1          = ", false);
 
-		if ((pResponse->FS20.cmd1 &0x80) == 0)
+		if ((pResponse->FS20.cmd1 & 0x80) == 0)
 			WriteMessage("new command");
 		else
 			WriteMessage("repeated command");
@@ -10172,7 +10181,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 		{
 		case 0x0:
 			WriteMessage("                Synchronize now");
-			sprintf(szTmp,"Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
+			sprintf(szTmp, "Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
 			WriteMessage(szTmp);
 			break;
 		case 0x1:
@@ -10183,7 +10192,7 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case 0x6:
 			WriteMessage("                open valve at percentage level");
-			sprintf(szTmp,"Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
+			sprintf(szTmp, "Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
 			WriteMessage(szTmp);
 			break;
 		case 0x8:
@@ -10191,12 +10200,12 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case 0xA:
 			WriteMessage("                decalcification cycle");
-			sprintf(szTmp,"Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
+			sprintf(szTmp, "Cmd2          = valve position: %02X is %.2f %%", pResponse->FS20.cmd2, float(pResponse->FS20.cmd2) / 2.55f);
 			WriteMessage(szTmp);
 			break;
 		case 0xC:
 			WriteMessage("                synchronization active");
-			sprintf(szTmp,"Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
+			sprintf(szTmp, "Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
 			WriteMessage(szTmp);
 			break;
 		case 0xE:
@@ -10204,22 +10213,22 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case 0xF:
 			WriteMessage("                pair valve (cmd2 bit 7-1 is count down in seconds, bit 0=1)");
-			sprintf(szTmp,"Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
+			sprintf(szTmp, "Cmd2          = count down is %d seconds", pResponse->FS20.cmd2 >> 1);
 			WriteMessage(szTmp);
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
+			sprintf(szTmp, "ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
 			WriteMessage(szTmp);
 			break;
 		}
 		break;
 	case sTypeFHT80:
 		WriteMessage("subtype       = FHT80 door/window sensor");
-		sprintf(szTmp,"Sequence nbr  = %d", pResponse->FS20.seqnbr);
+		sprintf(szTmp, "Sequence nbr  = %d", pResponse->FS20.seqnbr);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
+		sprintf(szTmp, "House code    = %02X%02X", pResponse->FS20.hc1, pResponse->FS20.hc2);
 		WriteMessage(szTmp);
-		sprintf(szTmp,"Address       = %02X", pResponse->FS20.addr);
+		sprintf(szTmp, "Address       = %02X", pResponse->FS20.addr);
 		WriteMessage(szTmp);
 
 		WriteMessage("Cmd1          = ", false);
@@ -10236,315 +10245,315 @@ void MainWorker::decode_FS20(const int HwdID, const _eHardwareTypes HwdType, con
 			WriteMessage("synchronization active");
 			break;
 		default:
-			sprintf(szTmp,"ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
+			sprintf(szTmp, "ERROR: Unknown command = %02X", pResponse->FS20.cmd1);
 			WriteMessage(szTmp);
 			break;
 		}
 
-		if ((pResponse->FS20.cmd1 &0x80) == 0)
+		if ((pResponse->FS20.cmd1 & 0x80) == 0)
 			WriteMessage("                new command");
 		else
 			WriteMessage("                repeated command");
 		break;
 	default:
-		sprintf(szTmp,"ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->FS20.packettype, pResponse->FS20.subtype);
+		sprintf(szTmp, "ERROR: Unknown Sub type for Packet type= %02X:%02X", pResponse->FS20.packettype, pResponse->FS20.subtype);
 		WriteMessage(szTmp);
 		break;
 	}
 
-	sprintf(szTmp,"Signal level  = %d", pResponse->FS20.rssi);
+	sprintf(szTmp, "Signal level  = %d", pResponse->FS20.rssi);
 	WriteMessage(szTmp);
 	procResult.DeviceRowIdx = -1;
 }
 
 void MainWorker::decode_Cartelectronic(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-   char szTmp[100];
-   std::string ID;
+	char szTmp[100];
+	std::string ID;
 
-   sprintf(szTmp, "%llu", ((unsigned long long)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
-   ID = szTmp;
-   unsigned char Unit = 0;
-   unsigned char cmnd = 0;
+	sprintf(szTmp, "%llu", ((unsigned long long)(pResponse->TIC.id1) << 32) + (pResponse->TIC.id2 << 24) + (pResponse->TIC.id3 << 16) + (pResponse->TIC.id4 << 8) + (pResponse->TIC.id5));
+	ID = szTmp;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
 
-   unsigned char subType = pResponse->TIC.subtype;
+	unsigned char subType = pResponse->TIC.subtype;
 
-   switch (subType)
-   {
-   case sTypeTIC:
-      decode_CartelectronicTIC(HwdID, pResponse, procResult);
-      WriteMessage("Cartelectronic TIC received");
-      break;
-   case sTypeCEencoder:
-      decode_CartelectronicEncoder(HwdID, pResponse, procResult);
-      WriteMessage("Cartelectronic Encoder received");
-      break;
-   default:
-      WriteMessage("Cartelectronic protocol not supported");
-      break;
-   }
+	switch (subType)
+	{
+	case sTypeTIC:
+		decode_CartelectronicTIC(HwdID, pResponse, procResult);
+		WriteMessage("Cartelectronic TIC received");
+		break;
+	case sTypeCEencoder:
+		decode_CartelectronicEncoder(HwdID, pResponse, procResult);
+		WriteMessage("Cartelectronic Encoder received");
+		break;
+	default:
+		WriteMessage("Cartelectronic protocol not supported");
+		break;
+	}
 }
 
 void MainWorker::decode_CartelectronicTIC(const int HwdID,
-                                          const tRBUF *pResponse,
-                                          _tRxMessageProcessingResult & procResult)
+	const tRBUF *pResponse,
+	_tRxMessageProcessingResult & procResult)
 {
-   //Contract Options
-   typedef enum {
-      OP_NOT_DEFINED,
-      OP_BASE,
-      OP_CREUSE,
-      OP_EJP,
-      OP_TEMPO
-   } Contract;
+	//Contract Options
+	typedef enum {
+		OP_NOT_DEFINED,
+		OP_BASE,
+		OP_CREUSE,
+		OP_EJP,
+		OP_TEMPO
+	} Contract;
 
-   //Running time
-   typedef enum {
-      PER_NOT_DEFINED,
-      PER_ALL_HOURS,             //TH..
-      PER_LOWCOST_HOURS,         //HC..
-      PER_HIGHCOST_HOURS,        //HP..
-      PER_NORMAL_HOURS,          //HN..
-      PER_MOBILE_PEAK_HOURS,     //PM..
-      PER_BLUE_LOWCOST_HOURS,    //HCJB
-      PER_WHITE_LOWCOST_HOURS,   //HCJW
-      PER_RED_LOWCOST_HOURS,     //HCJR
-      PER_BLUE_HIGHCOST_HOURS,   //HPJB
-      PER_WHITE_HIGHCOST_HOURS,  //HPJW
-      PER_RED_HIGHCOST_HOURS     //HPJR
-   } PeriodTime;
+	//Running time
+	typedef enum {
+		PER_NOT_DEFINED,
+		PER_ALL_HOURS,             //TH..
+		PER_LOWCOST_HOURS,         //HC..
+		PER_HIGHCOST_HOURS,        //HP..
+		PER_NORMAL_HOURS,          //HN..
+		PER_MOBILE_PEAK_HOURS,     //PM..
+		PER_BLUE_LOWCOST_HOURS,    //HCJB
+		PER_WHITE_LOWCOST_HOURS,   //HCJW
+		PER_RED_LOWCOST_HOURS,     //HCJR
+		PER_BLUE_HIGHCOST_HOURS,   //HPJB
+		PER_WHITE_HIGHCOST_HOURS,  //HPJW
+		PER_RED_HIGHCOST_HOURS     //HPJR
+	} PeriodTime;
 
-   char szTmp[100];
-   uint32_t counter1 = 0;
-   uint32_t counter2 = 0;
-   unsigned int apparentPower = 0;
-   unsigned int counter1ApparentPower = 0;
-   unsigned int counter2ApparentPower = 0;
-   unsigned char unitCounter1 = 0;
-   unsigned char unitCounter2 = 1;
-   unsigned char cmnd = 0;
-   std::string ID;
+	char szTmp[100];
+	uint32_t counter1 = 0;
+	uint32_t counter2 = 0;
+	unsigned int apparentPower = 0;
+	unsigned int counter1ApparentPower = 0;
+	unsigned int counter2ApparentPower = 0;
+	unsigned char unitCounter1 = 0;
+	unsigned char unitCounter2 = 1;
+	unsigned char cmnd = 0;
+	std::string ID;
 
-   unsigned char devType = pTypeGeneral;
-   unsigned char subType = sTypeKwh;
-   unsigned char SignalLevel = pResponse->TIC.rssi;
+	unsigned char devType = pTypeGeneral;
+	unsigned char subType = sTypeKwh;
+	unsigned char SignalLevel = pResponse->TIC.rssi;
 
-   unsigned char BatteryLevel = (pResponse->TIC.battery_level + 1) * 10;
+	unsigned char BatteryLevel = (pResponse->TIC.battery_level + 1) * 10;
 
-   // If no error
-   if ((pResponse->TIC.state & 0x04) == 0)
-   {
-      // Id of the counter
-      uint64_t uint64ID = ((uint64_t)pResponse->TIC.id1 << 32) +
-         ((uint64_t)pResponse->TIC.id2 << 24) +
-         ((uint64_t)pResponse->TIC.id3 << 16) +
-         ((uint64_t)pResponse->TIC.id4 << 8) +
-         (uint64_t)(pResponse->TIC.id5);
+	// If no error
+	if ((pResponse->TIC.state & 0x04) == 0)
+	{
+		// Id of the counter
+		uint64_t uint64ID = ((uint64_t)pResponse->TIC.id1 << 32) +
+			((uint64_t)pResponse->TIC.id2 << 24) +
+			((uint64_t)pResponse->TIC.id3 << 16) +
+			((uint64_t)pResponse->TIC.id4 << 8) +
+			(uint64_t)(pResponse->TIC.id5);
 
-      sprintf(szTmp, "%.12" PRIu64, uint64ID);
-      ID = szTmp;
+		sprintf(szTmp, "%.12" PRIu64, uint64ID);
+		ID = szTmp;
 
-      // Contract Type
-      Contract contractType = (Contract)(pResponse->TIC.contract_type >> 4);
+		// Contract Type
+		Contract contractType = (Contract)(pResponse->TIC.contract_type >> 4);
 
-      // Period
-      PeriodTime period = (PeriodTime)(pResponse->TIC.contract_type & 0x0f);
+		// Period
+		PeriodTime period = (PeriodTime)(pResponse->TIC.contract_type & 0x0f);
 
-      // Apparent Power
-      if ((pResponse->TIC.state & 0x02) != 0) // Only if this one is present
-      {
-         apparentPower = (pResponse->TIC.power_H << 8) + pResponse->TIC.power_L;
+		// Apparent Power
+		if ((pResponse->TIC.state & 0x02) != 0) // Only if this one is present
+		{
+			apparentPower = (pResponse->TIC.power_H << 8) + pResponse->TIC.power_L;
 
-         sprintf(szTmp, "%u", apparentPower);
-         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, pTypeUsage, sTypeElectric, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+			sprintf(szTmp, "%u", apparentPower);
+			uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, pTypeUsage, sTypeElectric, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
-         if (DevRowIdx == -1)
-            return;
+			if (DevRowIdx == -1)
+				return;
 
-         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, pTypeUsage, sTypeElectric, NTYPE_ENERGYINSTANT, (const float)apparentPower);
-      }
+			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, pTypeUsage, sTypeElectric, NTYPE_ENERGYINSTANT, (const float)apparentPower);
+		}
 
-      switch (contractType)
-      {
-         // BASE CONTRACT
-      case OP_BASE:
-      {
-         unitCounter1 = 0;
-         counter1ApparentPower = apparentPower;
-      }
-      break;
+		switch (contractType)
+		{
+			// BASE CONTRACT
+		case OP_BASE:
+		{
+			unitCounter1 = 0;
+			counter1ApparentPower = apparentPower;
+		}
+		break;
 
-      // LOW/HIGH PERIOD
-      case OP_CREUSE:
-      {
-         unitCounter1 = 0;
+		// LOW/HIGH PERIOD
+		case OP_CREUSE:
+		{
+			unitCounter1 = 0;
 
-         if (period == PER_LOWCOST_HOURS)
-         {
-            counter1ApparentPower = apparentPower;
-            counter2ApparentPower = 0;
-         }
-         if (period == PER_HIGHCOST_HOURS)
-         {
-            counter1ApparentPower = 0;
-            counter2ApparentPower = apparentPower;
-         }
+			if (period == PER_LOWCOST_HOURS)
+			{
+				counter1ApparentPower = apparentPower;
+				counter2ApparentPower = 0;
+			}
+			if (period == PER_HIGHCOST_HOURS)
+			{
+				counter1ApparentPower = 0;
+				counter2ApparentPower = apparentPower;
+			}
 
-         // Counter 2
-         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
-         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+			// Counter 2
+			counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+			sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
 
-         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+			uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
-         if (DevRowIdx == -1)
-            return;
+			if (DevRowIdx == -1)
+				return;
 
-         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
-         //----------------------------
-      }
-      break;
+			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+			//----------------------------
+		}
+		break;
 
-      // EJP
-      case OP_EJP:
-      {
-         unitCounter1 = 0;
-         // Counter 2
-         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+		// EJP
+		case OP_EJP:
+		{
+			unitCounter1 = 0;
+			// Counter 2
+			counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
-         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+			sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+			uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
-         if (DevRowIdx == -1)
-            return;
+			if (DevRowIdx == -1)
+				return;
 
-         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
-         //----------------------------
-      }
-      break;
+			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+			//----------------------------
+		}
+		break;
 
-      // TEMPO Contracts
-      // Total of 6 counters. Theses counters depends of the time period received. For each period time, only 2 counters are sended.
-      case OP_TEMPO:
-      {
-         switch (period)
-         {
-         case PER_BLUE_LOWCOST_HOURS:
-            counter1ApparentPower = apparentPower;
-            counter2ApparentPower = 0;
-            unitCounter1 = 0;
-            unitCounter2 = 1;
-            break;
-         case PER_BLUE_HIGHCOST_HOURS:
-            counter1ApparentPower = 0;
-            counter2ApparentPower = apparentPower;
-            unitCounter1 = 0;
-            unitCounter2 = 1;
-            break;
-         case PER_WHITE_LOWCOST_HOURS:
-            counter1ApparentPower = apparentPower;
-            counter2ApparentPower = 0;
-            unitCounter1 = 2;
-            unitCounter2 = 3;
-            break;
-         case PER_WHITE_HIGHCOST_HOURS:
-            counter1ApparentPower = 0;
-            counter2ApparentPower = apparentPower;
-            unitCounter1 = 2;
-            unitCounter2 = 3;
-            break;
-         case PER_RED_LOWCOST_HOURS:
-            counter1ApparentPower = apparentPower;
-            counter2ApparentPower = 0;
-            unitCounter1 = 4;
-            unitCounter2 = 5;
-            break;
-         case PER_RED_HIGHCOST_HOURS:
-            counter1ApparentPower = 0;
-            counter2ApparentPower = apparentPower;
-            unitCounter1 = 4;
-            unitCounter2 = 5;
-            break;
-         default:
-            break;
-         }
+		// TEMPO Contracts
+		// Total of 6 counters. Theses counters depends of the time period received. For each period time, only 2 counters are sended.
+		case OP_TEMPO:
+		{
+			switch (period)
+			{
+			case PER_BLUE_LOWCOST_HOURS:
+				counter1ApparentPower = apparentPower;
+				counter2ApparentPower = 0;
+				unitCounter1 = 0;
+				unitCounter2 = 1;
+				break;
+			case PER_BLUE_HIGHCOST_HOURS:
+				counter1ApparentPower = 0;
+				counter2ApparentPower = apparentPower;
+				unitCounter1 = 0;
+				unitCounter2 = 1;
+				break;
+			case PER_WHITE_LOWCOST_HOURS:
+				counter1ApparentPower = apparentPower;
+				counter2ApparentPower = 0;
+				unitCounter1 = 2;
+				unitCounter2 = 3;
+				break;
+			case PER_WHITE_HIGHCOST_HOURS:
+				counter1ApparentPower = 0;
+				counter2ApparentPower = apparentPower;
+				unitCounter1 = 2;
+				unitCounter2 = 3;
+				break;
+			case PER_RED_LOWCOST_HOURS:
+				counter1ApparentPower = apparentPower;
+				counter2ApparentPower = 0;
+				unitCounter1 = 4;
+				unitCounter2 = 5;
+				break;
+			case PER_RED_HIGHCOST_HOURS:
+				counter1ApparentPower = 0;
+				counter2ApparentPower = apparentPower;
+				unitCounter1 = 4;
+				unitCounter2 = 5;
+				break;
+			default:
+				break;
+			}
 
-         // Counter 2
-         counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
+			// Counter 2
+			counter2 = (pResponse->TIC.counter2_0 << 24) + (pResponse->TIC.counter2_1 << 16) + (pResponse->TIC.counter2_2 << 8) + (pResponse->TIC.counter2_3);
 
-         sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
-         uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter2, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+			sprintf(szTmp, "%u;%d", counter2ApparentPower, counter2);
+			uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter2, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
-         if (DevRowIdx == -1)
-            return;
+			if (DevRowIdx == -1)
+				return;
 
-         m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
-         //----------------------------
-      }
-      break;
-      default:
-         break;
-   }
+			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter2);
+			//----------------------------
+		}
+		break;
+		default:
+			break;
+		}
 
-   // Counter 1
-   counter1 = (pResponse->TIC.counter1_0 << 24) + (pResponse->TIC.counter1_1 << 16) + (pResponse->TIC.counter1_2 << 8) + (pResponse->TIC.counter1_3);
+		// Counter 1
+		counter1 = (pResponse->TIC.counter1_0 << 24) + (pResponse->TIC.counter1_1 << 16) + (pResponse->TIC.counter1_2 << 8) + (pResponse->TIC.counter1_3);
 
-   sprintf(szTmp, "%u;%d", counter1ApparentPower, counter1);
-   uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+		sprintf(szTmp, "%u;%d", counter1ApparentPower, counter1);
+		uint64_t DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), unitCounter1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
 
-   if (DevRowIdx == -1)
-      return;
+		if (DevRowIdx == -1)
+			return;
 
-   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter1);
-   //----------------------------
-   }
-   else
-   {
-      WriteMessage("TeleInfo not connected");
-   }
+		m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYENERGY, (const float)counter1);
+		//----------------------------
+	}
+	else
+	{
+		WriteMessage("TeleInfo not connected");
+	}
 }
 
 void MainWorker::decode_CartelectronicEncoder(const int HwdID,
-                                              const tRBUF *pResponse,
-                                              _tRxMessageProcessingResult & procResult)
+	const tRBUF *pResponse,
+	_tRxMessageProcessingResult & procResult)
 {
-   char szTmp[100];
-   uint32_t counter1 = 0;
-   uint32_t counter2 = 0;
-   int apparentPower = 0;
-   unsigned char Unit = 0;
-   unsigned char cmnd = 0;
-   uint64_t DevRowIdx = 0;
-   std::string ID;
+	char szTmp[100];
+	uint32_t counter1 = 0;
+	uint32_t counter2 = 0;
+	int apparentPower = 0;
+	unsigned char Unit = 0;
+	unsigned char cmnd = 0;
+	uint64_t DevRowIdx = 0;
+	std::string ID;
 
-   unsigned char devType = pTypeRFXMeter;
-   unsigned char subType = sTypeRFXMeterCount;
-   unsigned char SignalLevel = pResponse->CEENCODER.rssi;
+	unsigned char devType = pTypeRFXMeter;
+	unsigned char subType = sTypeRFXMeterCount;
+	unsigned char SignalLevel = pResponse->CEENCODER.rssi;
 
-   unsigned char BatteryLevel = (pResponse->CEENCODER.battery_level + 1) * 10;
+	unsigned char BatteryLevel = (pResponse->CEENCODER.battery_level + 1) * 10;
 
-   // Id of the module
-   sprintf(szTmp, "%d", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
-   ID = szTmp;
+	// Id of the module
+	sprintf(szTmp, "%d", ((uint32_t)(pResponse->CEENCODER.id1 << 24) + (pResponse->CEENCODER.id2 << 16) + (pResponse->CEENCODER.id3 << 8) + pResponse->CEENCODER.id4));
+	ID = szTmp;
 
-   // Counter 1
-   counter1 = (pResponse->CEENCODER.counter1_0 << 24) + (pResponse->CEENCODER.counter1_1 << 16) + (pResponse->CEENCODER.counter1_2 << 8) + (pResponse->CEENCODER.counter1_3);
+	// Counter 1
+	counter1 = (pResponse->CEENCODER.counter1_0 << 24) + (pResponse->CEENCODER.counter1_1 << 16) + (pResponse->CEENCODER.counter1_2 << 8) + (pResponse->CEENCODER.counter1_3);
 
-   sprintf(szTmp, "%d", counter1);
-   DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
-   if (DevRowIdx == -1)
-      return;
+	sprintf(szTmp, "%d", counter1);
+	DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+	if (DevRowIdx == -1)
+		return;
 
-   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter1);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter1);
 
-   // Counter 2
-   counter2 = (pResponse->CEENCODER.counter2_0 << 24) + (pResponse->CEENCODER.counter2_1 << 16) + (pResponse->CEENCODER.counter2_2 << 8) + (pResponse->CEENCODER.counter2_3);
+	// Counter 2
+	counter2 = (pResponse->CEENCODER.counter2_0 << 24) + (pResponse->CEENCODER.counter2_1 << 16) + (pResponse->CEENCODER.counter2_2 << 8) + (pResponse->CEENCODER.counter2_3);
 
-   sprintf(szTmp, "%d", counter2);
-   DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
-   if (DevRowIdx == -1)
-      return;
+	sprintf(szTmp, "%d", counter2);
+	DevRowIdx = m_sql.UpdateValue(HwdID, ID.c_str(), 1, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName);
+	if (DevRowIdx == -1)
+		return;
 
-   m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter2);
+	m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, devType, subType, NTYPE_TODAYCOUNTER, (const float)counter2);
 }
 
 bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sValue)
@@ -10698,11 +10707,11 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 			case MTYPE_COUNTER:
 				sprintf(szTmp, "%llu", total_real);
 				break;
-/*
-			default:
-				strcpy(szTmp, "?");
-				break;
-*/
+				/*
+							default:
+								strcpy(szTmp, "?");
+								break;
+				*/
 			}
 		}
 		nValue = 0;
@@ -10713,29 +10722,29 @@ bool MainWorker::GetSensorData(const uint64_t idx, int &nValue, std::string &sVa
 
 bool MainWorker::SetRFXCOMHardwaremodes(const int HardwareID, const unsigned char Mode1, const unsigned char Mode2, const unsigned char Mode3, const unsigned char Mode4, const unsigned char Mode5, const unsigned char Mode6)
 {
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
 		return false;
-	m_hardwaredevices[hindex]->m_rxbufferpos=0;
+	m_hardwaredevices[hindex]->m_rxbufferpos = 0;
 	tRBUF Response;
-	Response.ICMND.packetlength = sizeof(Response.ICMND)-1;
+	Response.ICMND.packetlength = sizeof(Response.ICMND) - 1;
 	Response.ICMND.packettype = pTypeInterfaceControl;
 	Response.ICMND.subtype = sTypeInterfaceCommand;
 	Response.ICMND.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 	Response.ICMND.cmnd = cmdSETMODE;
-	Response.ICMND.freqsel =Mode1;
-	Response.ICMND.xmitpwr =Mode2;
-	Response.ICMND.msg3=Mode3;
-	Response.ICMND.msg4=Mode4;
-	Response.ICMND.msg5=Mode5;
-	Response.ICMND.msg6=Mode6;
+	Response.ICMND.freqsel = Mode1;
+	Response.ICMND.xmitpwr = Mode2;
+	Response.ICMND.msg3 = Mode3;
+	Response.ICMND.msg4 = Mode4;
+	Response.ICMND.msg5 = Mode5;
+	Response.ICMND.msg6 = Mode6;
 	if (!WriteToHardware(HardwareID, (const char*)&Response, sizeof(Response.ICMND)))
 		return false;
-	PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&Response, NULL, -1);
+	PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&Response, NULL, -1);
 	//Save it also
-	SendCommand(HardwareID,cmdSAVE,"Save Settings");
+	SendCommand(HardwareID, cmdSAVE, "Save Settings");
 
-	m_hardwaredevices[hindex]->m_rxbufferpos=0;
+	m_hardwaredevices[hindex]->m_rxbufferpos = 0;
 
 	return true;
 }
@@ -10746,38 +10755,38 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
 	s_strid >> ID;
-	unsigned char ID1=(unsigned char)((ID&0xFF000000)>>24);
-	unsigned char ID2=(unsigned char)((ID&0x00FF0000)>>16);
-	unsigned char ID3=(unsigned char)((ID&0x0000FF00)>>8);
-	unsigned char ID4=(unsigned char)((ID&0x000000FF));
+	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+	unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
 
 	int HardwareID = atoi(sd[0].c_str());
 
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SwitchLightInt : switchcmd:%s level:%d HWid:%d  sd:%s %s %s %s %s %s", switchcmd.c_str(),level,HardwareID ,
-	 sd[0].c_str(), sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str() );
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLightInt : switchcmd:%s level:%d HWid:%d  sd:%s %s %s %s %s %s", switchcmd.c_str(), level, HardwareID,
+		sd[0].c_str(), sd[1].c_str(), sd[2].c_str(), sd[3].c_str(), sd[4].c_str(), sd[5].c_str());
 
-	int hindex=FindDomoticzHardware(HardwareID);
+	int hindex = FindDomoticzHardware(HardwareID);
 	if (hindex == -1)
 	{
 		_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
 		return false;
 	}
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
 		return false;
 
 	if (pHardware->HwdType == HTYPE_DomoticzInternal)
 	{
 		//Special cases
-		if (ID==0x00148702)
+		if (ID == 0x00148702)
 		{
-			int iSecStatus=2;
-			if (switchcmd=="Disarm")
-				iSecStatus=0;
-			else if (switchcmd=="Arm Home")
-				iSecStatus=1;
-			else if (switchcmd=="Arm Away")
-				iSecStatus=2;
+			int iSecStatus = 2;
+			if (switchcmd == "Disarm")
+				iSecStatus = 0;
+			else if (switchcmd == "Arm Home")
+				iSecStatus = 1;
+			else if (switchcmd == "Arm Away")
+				iSecStatus = 2;
 			else
 				return false;
 			UpdateDomoticzSecurityStatus(iSecStatus);
@@ -10785,19 +10794,20 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 	}
 
-	unsigned char Unit=atoi(sd[2].c_str());
-	unsigned char dType=atoi(sd[3].c_str());
-	unsigned char dSubType=atoi(sd[4].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+	unsigned char Unit = atoi(sd[2].c_str());
+	unsigned char dType = atoi(sd[3].c_str());
+	unsigned char dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10].c_str());
 
 	//when asking for Toggle, just switch to the opposite value
-	if (switchcmd=="Toggle") {
-		switchcmd=(atoi(sd[7].c_str())==1?"Off":"On");
+	if (switchcmd == "Toggle") {
+		switchcmd = (atoi(sd[7].c_str()) == 1 ? "Off" : "On");
 	}
 
-	//when level = 0, set switch command to Off
-	if (switchcmd=="Set Level")
+	//adjust level
+	if (switchcmd=="Set Level" ||
+		switchcmd=="On")
 	{
 		if (
 			(level > 0) &&
@@ -10806,8 +10816,22 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		{
 			level -= 1;
 		}
-		if (level==0)
+		//when level = 0 and command is "Set Level", set switch command to Off
+		if (level==0 && switchcmd=="Set Level")
 			switchcmd="Off";
+	}
+
+	//when level = 0 and command is "On" replace level with "LastLevel"
+	if (switchcmd=="On" && level == 0 && switchtype != STYPE_Selector)
+	{
+		//Get LastLevel
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+		"SELECT LastLevel FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+		if (result.size() == 1)
+		{
+			level = atoi(result[0][0].c_str());
+		}
 	}
 
 	//
@@ -10825,320 +10849,145 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	switch (dType)
 	{
 	case pTypeLighting1:
+	{
+		tRBUF lcmd;
+		lcmd.LIGHTING1.packetlength = sizeof(lcmd.LIGHTING1) - 1;
+		lcmd.LIGHTING1.packettype = dType;
+		lcmd.LIGHTING1.subtype = dSubType;
+		lcmd.LIGHTING1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.LIGHTING1.housecode = atoi(sd[1].c_str());
+		lcmd.LIGHTING1.unitcode = Unit;
+		lcmd.LIGHTING1.filler = 0;
+		lcmd.LIGHTING1.rssi = 12;
+
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING1.cmnd, options))
+			return false;
+		if (switchtype == STYPE_Doorbell)
 		{
-			tRBUF lcmd;
-			lcmd.LIGHTING1.packetlength=sizeof(lcmd.LIGHTING1)-1;
-			lcmd.LIGHTING1.packettype=dType;
-			lcmd.LIGHTING1.subtype=dSubType;
-			lcmd.LIGHTING1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING1.housecode=atoi(sd[1].c_str());
-			lcmd.LIGHTING1.unitcode=Unit;
-			lcmd.LIGHTING1.filler = 0;
-			lcmd.LIGHTING1.rssi = 12;
-
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING1.cmnd, options))
-				return false;
-			if (switchtype==STYPE_Doorbell)
-			{
-				int rnvalue=0;
-				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
-				if (rnvalue==0)
-					lcmd.LIGHTING1.cmnd=light1_sChime;
-				else
-					lcmd.LIGHTING1.cmnd=light1_sOn;
-			}
-
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING1)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+			if (rnvalue == 0)
+				lcmd.LIGHTING1.cmnd = light1_sChime;
+			else
+				lcmd.LIGHTING1.cmnd = light1_sOn;
 		}
-		break;
+
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING1)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
 	case pTypeLighting2:
-		{
-			tRBUF lcmd;
-			lcmd.LIGHTING2.packetlength=sizeof(lcmd.LIGHTING2)-1;
-			lcmd.LIGHTING2.packettype=dType;
-			lcmd.LIGHTING2.subtype=dSubType;
-			lcmd.LIGHTING2.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING2.id1=ID1;
-			lcmd.LIGHTING2.id2=ID2;
-			lcmd.LIGHTING2.id3=ID3;
-			lcmd.LIGHTING2.id4=ID4;
-			lcmd.LIGHTING2.unitcode=Unit;
-			lcmd.LIGHTING2.filler = 0;
-			lcmd.LIGHTING2.rssi = 12;
+	{
+		tRBUF lcmd;
+		lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+		lcmd.LIGHTING2.packettype = dType;
+		lcmd.LIGHTING2.subtype = dSubType;
+		lcmd.LIGHTING2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.LIGHTING2.id1 = ID1;
+		lcmd.LIGHTING2.id2 = ID2;
+		lcmd.LIGHTING2.id3 = ID3;
+		lcmd.LIGHTING2.id4 = ID4;
+		lcmd.LIGHTING2.unitcode = Unit;
+		lcmd.LIGHTING2.filler = 0;
+		lcmd.LIGHTING2.rssi = 12;
 
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING2.cmnd, options))
-				return false;
-			if (switchtype==STYPE_Doorbell) {
-				int rnvalue=0;
-				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
-				if (rnvalue==0)
-					lcmd.LIGHTING2.cmnd=light2_sGroupOn;
-				else
-					lcmd.LIGHTING2.cmnd=light2_sOn;
-				level=15;
-			}
-			else if (switchtype==STYPE_X10Siren) {
-				level=15;
-			}
-			else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
-				if (lcmd.LIGHTING2.cmnd==light2_sSetLevel)
-				{
-					if (level==15)
-					{
-						lcmd.LIGHTING2.cmnd=light2_sOn;
-					}
-					else if (level==0)
-					{
-						lcmd.LIGHTING2.cmnd=light2_sOff;
-					}
-				}
-			}
-			else if (switchtype == STYPE_Media)
-			{
-				if (switchcmd == "Set Volume") {
-					level = (level < 0) ? 0 : level;
-					level = (level > 100) ? 100 : level;
-				}
-			}
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING2.cmnd, options))
+			return false;
+		if (switchtype == STYPE_Doorbell) {
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+			if (rnvalue == 0)
+				lcmd.LIGHTING2.cmnd = light2_sGroupOn;
 			else
-				level = (level > 15) ? 15 : level;
-
-			lcmd.LIGHTING2.level=(unsigned char)level;
-			//Special Teach-In for EnOcean Dimmers
-			if ((pHardware->HwdType == HTYPE_EnOceanESP2)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
-			{
-				CEnOceanESP2 *pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
-				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
-			}
-			else if ((pHardware->HwdType == HTYPE_EnOceanESP3)&&(IsTesting)&&(switchtype==STYPE_Dimmer))
-			{
-				CEnOceanESP3 *pEnocean = reinterpret_cast<CEnOceanESP3*>(pHardware);
-				pEnocean->SendDimmerTeachIn((const char*)&lcmd,sizeof(lcmd.LIGHTING1));
-			}
-			else
-			{
-				if (switchtype != STYPE_Motion) //dont send actual motion off command
-				{
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
-						return false;
-				}
-			}
-
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+				lcmd.LIGHTING2.cmnd = light2_sOn;
+			level = 15;
 		}
-		break;
+		else if (switchtype == STYPE_X10Siren) {
+			level = 15;
+		}
+		else if ((switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted)) {
+			if (lcmd.LIGHTING2.cmnd == light2_sSetLevel)
+			{
+				if (level == 15)
+				{
+					lcmd.LIGHTING2.cmnd = light2_sOn;
+				}
+				else if (level == 0)
+				{
+					lcmd.LIGHTING2.cmnd = light2_sOff;
+				}
+			}
+		}
+		else if (switchtype == STYPE_Media)
+		{
+			if (switchcmd == "Set Volume") {
+				level = (level < 0) ? 0 : level;
+				level = (level > 100) ? 100 : level;
+			}
+		}
+		else
+			level = (level > 15) ? 15 : level;
+
+		lcmd.LIGHTING2.level = (unsigned char)level;
+		//Special Teach-In for EnOcean Dimmers
+		if ((pHardware->HwdType == HTYPE_EnOceanESP2) && (IsTesting) && (switchtype == STYPE_Dimmer))
+		{
+			CEnOceanESP2 *pEnocean = reinterpret_cast<CEnOceanESP2*>(pHardware);
+			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
+		}
+		else if ((pHardware->HwdType == HTYPE_EnOceanESP3) && (IsTesting) && (switchtype == STYPE_Dimmer))
+		{
+			CEnOceanESP3 *pEnocean = reinterpret_cast<CEnOceanESP3*>(pHardware);
+			pEnocean->SendDimmerTeachIn((const char*)&lcmd, sizeof(lcmd.LIGHTING1));
+		}
+		else
+		{
+			if (switchtype != STYPE_Motion) //dont send actual motion off command
+			{
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING2)))
+					return false;
+			}
+		}
+
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
 	case pTypeLighting3:
-		if (level>9)
-			level=9;
+		if (level > 9)
+			level = 9;
 		break;
 	case pTypeLighting4:
+	{
+		tRBUF lcmd;
+		lcmd.LIGHTING4.packetlength = sizeof(lcmd.LIGHTING4) - 1;
+		lcmd.LIGHTING4.packettype = dType;
+		lcmd.LIGHTING4.subtype = dSubType;
+		lcmd.LIGHTING4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.LIGHTING4.cmd1 = ID2;
+		lcmd.LIGHTING4.cmd2 = ID3;
+		lcmd.LIGHTING4.cmd3 = ID4;
+		lcmd.LIGHTING4.filler = 0;
+		lcmd.LIGHTING4.rssi = 12;
+
+		//Get Pulse timing
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query(
+			"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, sd[1].c_str(), Unit, int(dType), int(dSubType));
+		if (result.size() == 1)
 		{
-			tRBUF lcmd;
-			lcmd.LIGHTING4.packetlength=sizeof(lcmd.LIGHTING4)-1;
-			lcmd.LIGHTING4.packettype=dType;
-			lcmd.LIGHTING4.subtype=dSubType;
-			lcmd.LIGHTING4.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING4.cmd1=ID2;
-			lcmd.LIGHTING4.cmd2=ID3;
-			lcmd.LIGHTING4.cmd3=ID4;
-			lcmd.LIGHTING4.filler = 0;
-			lcmd.LIGHTING4.rssi = 12;
-
-			//Get Pulse timing
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query(
-				"SELECT sValue FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, sd[1].c_str(),Unit,int(dType),int(dSubType));
-			if (result.size()==1)
-			{
-				int pulsetimeing=atoi(result[0][0].c_str());
-				lcmd.LIGHTING4.pulseHigh=pulsetimeing/256;
-				lcmd.LIGHTING4.pulseLow=pulsetimeing&0xFF;
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
-					return false;
-				if (!IsTesting) {
-					//send to internal for now (later we use the ACK)
-					PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-				}
-				return true;
-			}
-			return false;
-		}
-		break;
-	case pTypeLighting5:
-		{
-			int oldlevel=level;
-			tRBUF lcmd;
-			lcmd.LIGHTING5.packetlength=sizeof(lcmd.LIGHTING5)-1;
-			lcmd.LIGHTING5.packettype=dType;
-			lcmd.LIGHTING5.subtype=dSubType;
-			lcmd.LIGHTING5.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING5.id1=ID2;
-			lcmd.LIGHTING5.id2=ID3;
-			lcmd.LIGHTING5.id3=ID4;
-			lcmd.LIGHTING5.unitcode=Unit;
-			lcmd.LIGHTING5.filler = 0;
-			lcmd.LIGHTING5.rssi = 12;
-
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd, options))
-				return false;
-			if (switchtype==STYPE_Doorbell)
-			{
-				int rnvalue=0;
-				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
-				if (rnvalue==0)
-					lcmd.LIGHTING5.cmnd=light5_sGroupOn;
-				else
-					lcmd.LIGHTING5.cmnd=light5_sOn;
-				level=31;
-			}
-			else if (switchtype==STYPE_X10Siren)
-			{
-				level=31;
-			}
-			if (level>31)
-				level=31;
-			lcmd.LIGHTING5.level=(unsigned char)level;
-			if (dSubType==sTypeLivolo)
-			{
-				if ((switchcmd=="Set Level")&&(level==0))
-				{
-					switchcmd="Off";
-					GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING5.cmnd, options);
-				}
-				if (switchcmd!="Off")
-				{
-					//Special Case, turn off first
-					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
-					lcmd.LIGHTING5.cmnd=light5_sLivoloAllOff;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-						return false;
-					lcmd.LIGHTING5.cmnd=oldCmd;
-				}
-				if (switchcmd=="Set Level")
-				{
-					//dim value we have to send multiple times
-					for (int iDim = 0; iDim < level; iDim++)
-					{
-						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-							return false;
-					}
-				}
-				else
-				{
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-						return false;
-				}
-			}
-			else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
-			{
-				if (switchcmd!="Off")
-				{
-					if ((hue!=-1)&&(hue!=1000))
-					{
-						double dval;
-						dval=(255.0/360.0)*float(hue);
-						oldlevel=round(dval);
-						switchcmd="Set Color";
-					}
-				}
-				if (((switchcmd=="Off")||(switchcmd=="On"))&&(switchcmd!="Set Color"))
-				{
-					//Special Case, turn off first
-					unsigned char oldCmd=lcmd.LIGHTING5.cmnd;
-					lcmd.LIGHTING5.cmnd=light5_sRGBoff;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-						return false;
-					lcmd.LIGHTING5.cmnd=oldCmd;
-					sleep_milliseconds(100);
-				}
-				if ((switchcmd=="On")||(switchcmd=="Set Color"))
-				{
-					//turn on
-					lcmd.LIGHTING5.cmnd=light5_sRGBon;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-						return false;
-					sleep_milliseconds(100);
-
-					if (switchcmd=="Set Color")
-					{
-						if ((oldlevel!=-1)&&(oldlevel!=1000))
-						{
-							double dval;
-							dval=(78.0/255.0)*float(oldlevel);
-							lcmd.LIGHTING5.cmnd=light5_sRGBcolormin+1+round(dval);
-							if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-								return false;
-						}
-					}
-				}
-			}
-			else
-			{
-				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
-					return false;
-			}
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
-		}
-		break;
-	case pTypeLighting6:
-		{
-			tRBUF lcmd;
-			lcmd.LIGHTING6.packetlength=sizeof(lcmd.LIGHTING6)-1;
-			lcmd.LIGHTING6.packettype=dType;
-			lcmd.LIGHTING6.subtype=dSubType;
-			lcmd.LIGHTING6.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.LIGHTING6.seqnbr2=0;
-			lcmd.LIGHTING6.id1=ID2;
-			lcmd.LIGHTING6.id2=ID3;
-			lcmd.LIGHTING6.groupcode=ID4;
-			lcmd.LIGHTING6.unitcode=Unit;
-			lcmd.LIGHTING6.cmndseqnbr=m_hardwaredevices[hindex]->m_SeqNr%4;
-			lcmd.LIGHTING6.filler = 0;
-			lcmd.LIGHTING6.rssi = 12;
-
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.LIGHTING6.cmnd, options))
-				return false;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING6)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
-		}
-		break;
-	case pTypeHomeConfort:
-		{
-			tRBUF lcmd;
-			lcmd.HOMECONFORT.packetlength = sizeof(lcmd.HOMECONFORT) - 1;
-			lcmd.HOMECONFORT.packettype = dType;
-			lcmd.HOMECONFORT.subtype = dSubType;
-			lcmd.HOMECONFORT.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.HOMECONFORT.id1 = ID1;
-			lcmd.HOMECONFORT.id2 = ID2;
-			lcmd.HOMECONFORT.id3 = ID3;
-			lcmd.HOMECONFORT.housecode = ID4;
-			lcmd.HOMECONFORT.unitcode = Unit;
-			lcmd.HOMECONFORT.filler = 0;
-			lcmd.HOMECONFORT.rssi = 12;
-
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd, options))
-				return false;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HOMECONFORT)))
+			int pulsetimeing = atoi(result[0][0].c_str());
+			lcmd.LIGHTING4.pulseHigh = pulsetimeing / 256;
+			lcmd.LIGHTING4.pulseLow = pulsetimeing & 0xFF;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING4)))
 				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
@@ -11146,7 +10995,182 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			}
 			return true;
 		}
-		break;
+		return false;
+	}
+	break;
+	case pTypeLighting5:
+	{
+		int oldlevel = level;
+		tRBUF lcmd;
+		lcmd.LIGHTING5.packetlength = sizeof(lcmd.LIGHTING5) - 1;
+		lcmd.LIGHTING5.packettype = dType;
+		lcmd.LIGHTING5.subtype = dSubType;
+		lcmd.LIGHTING5.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.LIGHTING5.id1 = ID2;
+		lcmd.LIGHTING5.id2 = ID3;
+		lcmd.LIGHTING5.id3 = ID4;
+		lcmd.LIGHTING5.unitcode = Unit;
+		lcmd.LIGHTING5.filler = 0;
+		lcmd.LIGHTING5.rssi = 12;
+
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING5.cmnd, options))
+			return false;
+		if (switchtype == STYPE_Doorbell)
+		{
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+			if (rnvalue == 0)
+				lcmd.LIGHTING5.cmnd = light5_sGroupOn;
+			else
+				lcmd.LIGHTING5.cmnd = light5_sOn;
+			level = 31;
+		}
+		else if (switchtype == STYPE_X10Siren)
+		{
+			level = 31;
+		}
+		if (level > 31)
+			level = 31;
+		lcmd.LIGHTING5.level = (unsigned char)level;
+		if (dSubType == sTypeLivolo)
+		{
+			if ((switchcmd == "Set Level") && (level == 0))
+			{
+				switchcmd = "Off";
+				GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING5.cmnd, options);
+			}
+			if (switchcmd != "Off")
+			{
+				//Special Case, turn off first
+				unsigned char oldCmd = lcmd.LIGHTING5.cmnd;
+				lcmd.LIGHTING5.cmnd = light5_sLivoloAllOff;
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+					return false;
+				lcmd.LIGHTING5.cmnd = oldCmd;
+			}
+			if (switchcmd == "Set Level")
+			{
+				//dim value we have to send multiple times
+				for (int iDim = 0; iDim < level; iDim++)
+				{
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+						return false;
+				}
+			}
+			else
+			{
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+					return false;
+			}
+		}
+		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
+		{
+			if (switchcmd != "Off")
+			{
+				if ((hue != -1) && (hue != 1000))
+				{
+					double dval;
+					dval = (255.0 / 360.0)*float(hue);
+					oldlevel = round(dval);
+					switchcmd = "Set Color";
+				}
+			}
+			if (((switchcmd == "Off") || (switchcmd == "On")) && (switchcmd != "Set Color"))
+			{
+				//Special Case, turn off first
+				unsigned char oldCmd = lcmd.LIGHTING5.cmnd;
+				lcmd.LIGHTING5.cmnd = light5_sRGBoff;
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+					return false;
+				lcmd.LIGHTING5.cmnd = oldCmd;
+				sleep_milliseconds(100);
+			}
+			if ((switchcmd == "On") || (switchcmd == "Set Color"))
+			{
+				//turn on
+				lcmd.LIGHTING5.cmnd = light5_sRGBon;
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+					return false;
+				sleep_milliseconds(100);
+
+				if (switchcmd == "Set Color")
+				{
+					if ((oldlevel != -1) && (oldlevel != 1000))
+					{
+						double dval;
+						dval = (78.0 / 255.0)*float(oldlevel);
+						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
+						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+							return false;
+					}
+				}
+			}
+		}
+		else
+		{
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
+				return false;
+		}
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
+	case pTypeLighting6:
+	{
+		tRBUF lcmd;
+		lcmd.LIGHTING6.packetlength = sizeof(lcmd.LIGHTING6) - 1;
+		lcmd.LIGHTING6.packettype = dType;
+		lcmd.LIGHTING6.subtype = dSubType;
+		lcmd.LIGHTING6.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.LIGHTING6.seqnbr2 = 0;
+		lcmd.LIGHTING6.id1 = ID2;
+		lcmd.LIGHTING6.id2 = ID3;
+		lcmd.LIGHTING6.groupcode = ID4;
+		lcmd.LIGHTING6.unitcode = Unit;
+		lcmd.LIGHTING6.cmndseqnbr = m_hardwaredevices[hindex]->m_SeqNr % 4;
+		lcmd.LIGHTING6.filler = 0;
+		lcmd.LIGHTING6.rssi = 12;
+
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.LIGHTING6.cmnd, options))
+			return false;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING6)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
+	case pTypeHomeConfort:
+	{
+		tRBUF lcmd;
+		lcmd.HOMECONFORT.packetlength = sizeof(lcmd.HOMECONFORT) - 1;
+		lcmd.HOMECONFORT.packettype = dType;
+		lcmd.HOMECONFORT.subtype = dSubType;
+		lcmd.HOMECONFORT.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.HOMECONFORT.id1 = ID1;
+		lcmd.HOMECONFORT.id2 = ID2;
+		lcmd.HOMECONFORT.id3 = ID3;
+		lcmd.HOMECONFORT.housecode = ID4;
+		lcmd.HOMECONFORT.unitcode = Unit;
+		lcmd.HOMECONFORT.filler = 0;
+		lcmd.HOMECONFORT.rssi = 12;
+
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.HOMECONFORT.cmnd, options))
+			return false;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.HOMECONFORT)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
 	case pTypeFan:
 	{
 		tRBUF lcmd;
@@ -11172,105 +11196,105 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	}
 	break;
 	case pTypeLimitlessLights:
+	{
+		_tLimitlessLights lcmd;
+		lcmd.len = sizeof(_tLimitlessLights) - 1;
+		lcmd.type = dType;
+		lcmd.subtype = dSubType;
+		lcmd.id = ID;
+		lcmd.dunit = Unit;
+
+		if ((switchcmd == "On") || (switchcmd == "Set Level"))
 		{
-			_tLimitlessLights lcmd;
-			lcmd.len=sizeof(_tLimitlessLights)-1;
-			lcmd.type=dType;
-			lcmd.subtype=dSubType;
-			lcmd.id = ID;
-			lcmd.dunit = Unit;
-
-			if ((switchcmd=="On")||(switchcmd=="Set Level"))
+			if (hue != -1)
 			{
-				if (hue!=-1)
+				_tLimitlessLights lcmd2;
+				lcmd2.len = sizeof(_tLimitlessLights) - 1;
+				lcmd2.type = dType;
+				lcmd2.subtype = dSubType;
+				lcmd2.id = ID;
+				lcmd2.dunit = Unit;
+				if (hue != 1000)
 				{
-					_tLimitlessLights lcmd2;
-					lcmd2.len=sizeof(_tLimitlessLights)-1;
-					lcmd2.type=dType;
-					lcmd2.subtype=dSubType;
-					lcmd2.id = ID;
-					lcmd2.dunit = Unit;
-					if (hue!=1000)
-					{
-						double dval;
-						dval=(255.0/360.0)*float(hue);
-						int ival;
-						ival=round(dval);
-						lcmd2.value=ival;
-						lcmd2.command=Limitless_SetRGBColour;
-					}
-					else
-					{
-						lcmd2.command=Limitless_SetColorToWhite;
-					}
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd2, sizeof(_tLimitlessLights)))
-						return false;
-					sleep_milliseconds(100);
+					double dval;
+					dval = (255.0 / 360.0)*float(hue);
+					int ival;
+					ival = round(dval);
+					lcmd2.value = ival;
+					lcmd2.command = Limitless_SetRGBColour;
 				}
+				else
+				{
+					lcmd2.command = Limitless_SetColorToWhite;
+				}
+				if (!WriteToHardware(HardwareID, (const char*)&lcmd2, sizeof(_tLimitlessLights)))
+					return false;
+				sleep_milliseconds(100);
 			}
+		}
 
-			lcmd.value=level;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.command, options))
+		lcmd.value = level;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.command, options))
+			return false;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tLimitlessLights)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
+	case pTypeSecurity1:
+	{
+		tRBUF lcmd;
+		lcmd.SECURITY1.packetlength = sizeof(lcmd.SECURITY1) - 1;
+		lcmd.SECURITY1.packettype = dType;
+		lcmd.SECURITY1.subtype = dSubType;
+		lcmd.SECURITY1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.SECURITY1.battery_level = 9;
+		lcmd.SECURITY1.id1 = ID2;
+		lcmd.SECURITY1.id2 = ID3;
+		lcmd.SECURITY1.id3 = ID4;
+		lcmd.SECURITY1.rssi = 12;
+		switch (dSubType)
+		{
+		case sTypeKD101:
+		case sTypeSA30:
+		{
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.SECURITY1.status, options))
 				return false;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tLimitlessLights)))
+			//send it twice
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
+				return false;
+			sleep_milliseconds(500);
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
 				return false;
 			if (!IsTesting) {
 				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
+				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 			}
-			return true;
 		}
 		break;
-	case pTypeSecurity1:
+		case sTypeSecX10M:
+		case sTypeSecX10R:
+		case sTypeSecX10:
+		case sTypeMeiantech:
 		{
-			tRBUF lcmd;
-			lcmd.SECURITY1.packetlength=sizeof(lcmd.SECURITY1)-1;
-			lcmd.SECURITY1.packettype=dType;
-			lcmd.SECURITY1.subtype=dSubType;
-			lcmd.SECURITY1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.SECURITY1.battery_level = 9;
-			lcmd.SECURITY1.id1=ID2;
-			lcmd.SECURITY1.id2=ID3;
-			lcmd.SECURITY1.id3=ID4;
-			lcmd.SECURITY1.rssi = 12;
-			switch (dSubType)
-			{
-			case sTypeKD101:
-			case sTypeSA30:
-				{
-					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status, options))
-						return false;
-					//send it twice
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-						return false;
-					sleep_milliseconds(500);
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-						return false;
-					if (!IsTesting) {
-						//send to internal for now (later we use the ACK)
-						PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-					}
-				}
-				break;
-			case sTypeSecX10M:
-			case sTypeSecX10R:
-			case sTypeSecX10:
-			case sTypeMeiantech:
-				{
-					if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.SECURITY1.status, options))
-						return false;
-					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
-						return false;
-					if (!IsTesting) {
-						//send to internal for now (later we use the ACK)
-						PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-					}
-				}
-				break;
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.SECURITY1.status, options))
+				return false;
+			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.SECURITY1)))
+				return false;
+			if (!IsTesting) {
+				//send to internal for now (later we use the ACK)
+				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 			}
-			return true;
 		}
 		break;
+		}
+		return true;
+	}
+	break;
 	case pTypeSecurity2:
 	{
 		BYTE kCodes[9];
@@ -11285,7 +11309,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			int iHex = 0;
 			s_strid << std::hex << sHex;
 			s_strid >> iHex;
-			kCodes[ii]=(BYTE)iHex;
+			kCodes[ii] = (BYTE)iHex;
 
 		}
 		tRBUF lcmd;
@@ -11316,250 +11340,250 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	}
 	break;
 	case pTypeCurtain:
-		{
-			tRBUF lcmd;
-			lcmd.CURTAIN1.packetlength=sizeof(lcmd.CURTAIN1)-1;
-			lcmd.CURTAIN1.packettype=dType;
-			lcmd.CURTAIN1.subtype=dSubType;
-			lcmd.CURTAIN1.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.CURTAIN1.housecode=atoi(sd[1].c_str());
-			lcmd.CURTAIN1.unitcode=Unit;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.CURTAIN1.cmnd, options))
-				return false;
-			lcmd.CURTAIN1.filler=0;
+	{
+		tRBUF lcmd;
+		lcmd.CURTAIN1.packetlength = sizeof(lcmd.CURTAIN1) - 1;
+		lcmd.CURTAIN1.packettype = dType;
+		lcmd.CURTAIN1.subtype = dSubType;
+		lcmd.CURTAIN1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.CURTAIN1.housecode = atoi(sd[1].c_str());
+		lcmd.CURTAIN1.unitcode = Unit;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.CURTAIN1.cmnd, options))
+			return false;
+		lcmd.CURTAIN1.filler = 0;
 
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CURTAIN1)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CURTAIN1)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeBlinds:
+	{
+		tRBUF lcmd;
+		lcmd.BLINDS1.packetlength = sizeof(lcmd.BLINDS1) - 1;
+		lcmd.BLINDS1.packettype = dType;
+		lcmd.BLINDS1.subtype = dSubType;
+		lcmd.BLINDS1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.BLINDS1.id1 = ID1;
+		lcmd.BLINDS1.id2 = ID2;
+		lcmd.BLINDS1.id3 = ID3;
+		lcmd.BLINDS1.id4 = 0;
+		if ((dSubType == sTypeBlindsT0) || (dSubType == sTypeBlindsT1) || (dSubType == sTypeBlindsT3) || (dSubType == sTypeBlindsT8) || (dSubType == sTypeBlindsT12) || (dSubType == sTypeBlindsT13))
 		{
-			tRBUF lcmd;
-			lcmd.BLINDS1.packetlength=sizeof(lcmd.BLINDS1)-1;
-			lcmd.BLINDS1.packettype=dType;
-			lcmd.BLINDS1.subtype=dSubType;
-			lcmd.BLINDS1.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.BLINDS1.id1 = ID1;
-			lcmd.BLINDS1.id2 = ID2;
-			lcmd.BLINDS1.id3 = ID3;
-			lcmd.BLINDS1.id4 = 0;
-			if ((dSubType == sTypeBlindsT0) || (dSubType == sTypeBlindsT1) || (dSubType == sTypeBlindsT3) || (dSubType == sTypeBlindsT8) || (dSubType == sTypeBlindsT12) || (dSubType == sTypeBlindsT13))
-			{
-				lcmd.BLINDS1.unitcode = Unit;
-			}
-			else if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9))
-			{
-				lcmd.BLINDS1.unitcode = Unit;
-				lcmd.BLINDS1.id4 = ID4;
-			}
-			else
-			{
-				lcmd.BLINDS1.unitcode = 0;
-			}
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.BLINDS1.cmnd, options))
-				return false;
-			level=15;
-			lcmd.BLINDS1.filler=0;
-			lcmd.BLINDS1.rssi=12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.BLINDS1)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+			lcmd.BLINDS1.unitcode = Unit;
 		}
-		break;
+		else if ((dSubType == sTypeBlindsT6) || (dSubType == sTypeBlindsT7) || (dSubType == sTypeBlindsT9))
+		{
+			lcmd.BLINDS1.unitcode = Unit;
+			lcmd.BLINDS1.id4 = ID4;
+		}
+		else
+		{
+			lcmd.BLINDS1.unitcode = 0;
+		}
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.BLINDS1.cmnd, options))
+			return false;
+		level = 15;
+		lcmd.BLINDS1.filler = 0;
+		lcmd.BLINDS1.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.BLINDS1)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
 	case pTypeRFY:
+	{
+		tRBUF lcmd;
+		lcmd.BLINDS1.packetlength = sizeof(lcmd.RFY) - 1;
+		lcmd.BLINDS1.packettype = dType;
+		lcmd.BLINDS1.subtype = dSubType;
+		lcmd.RFY.id1 = ID2;
+		lcmd.RFY.id2 = ID3;
+		lcmd.RFY.id3 = ID4;
+		lcmd.RFY.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.RFY.unitcode = Unit;
+
+		if (IsTesting)
 		{
-			tRBUF lcmd;
-			lcmd.BLINDS1.packetlength=sizeof(lcmd.RFY)-1;
-			lcmd.BLINDS1.packettype=dType;
-			lcmd.BLINDS1.subtype=dSubType;
-			lcmd.RFY.id1=ID2;
-			lcmd.RFY.id2=ID3;
-			lcmd.RFY.id3=ID4;
-			lcmd.RFY.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.RFY.unitcode=Unit;
-
-			if (IsTesting)
-			{
-				lcmd.RFY.cmnd = rfy_sProgram;
-			}
-			else
-			{
-				if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
-					return false;
-			}
-
-			if (lcmd.BLINDS1.subtype == sTypeRFY2)
-			{
-				//Special case for protocol version 2
-				lcmd.BLINDS1.subtype = sTypeRFY;
-				if (lcmd.RFY.cmnd == rfy_sUp)
-					lcmd.RFY.cmnd = rfy_s2SecUp;
-				else if (lcmd.RFY.cmnd == rfy_sDown)
-					lcmd.RFY.cmnd = rfy_s2SecDown;
-			}
-
-			level=15;
-			lcmd.RFY.filler=0;
-			lcmd.RFY.rssi=12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+			lcmd.RFY.cmnd = rfy_sProgram;
 		}
-		break;
+		else
+		{
+			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.RFY.cmnd, options))
+				return false;
+		}
+
+		if (lcmd.BLINDS1.subtype == sTypeRFY2)
+		{
+			//Special case for protocol version 2
+			lcmd.BLINDS1.subtype = sTypeRFY;
+			if (lcmd.RFY.cmnd == rfy_sUp)
+				lcmd.RFY.cmnd = rfy_s2SecUp;
+			else if (lcmd.RFY.cmnd == rfy_sDown)
+				lcmd.RFY.cmnd = rfy_s2SecDown;
+		}
+
+		level = 15;
+		lcmd.RFY.filler = 0;
+		lcmd.RFY.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.RFY)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+		}
+		return true;
+	}
+	break;
 	case pTypeChime:
-		{
-			tRBUF lcmd;
-			lcmd.CHIME.packetlength=sizeof(lcmd.CHIME)-1;
-			lcmd.CHIME.packettype=dType;
-			lcmd.CHIME.subtype=dSubType;
-			lcmd.CHIME.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.CHIME.id1=ID3;
-			lcmd.CHIME.id2=ID4;
-			level=15;
-			lcmd.CHIME.sound=Unit;
-			lcmd.CHIME.filler=0;
-			lcmd.CHIME.rssi=12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+	{
+		tRBUF lcmd;
+		lcmd.CHIME.packetlength = sizeof(lcmd.CHIME) - 1;
+		lcmd.CHIME.packettype = dType;
+		lcmd.CHIME.subtype = dSubType;
+		lcmd.CHIME.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.CHIME.id1 = ID3;
+		lcmd.CHIME.id2 = ID4;
+		level = 15;
+		lcmd.CHIME.sound = Unit;
+		lcmd.CHIME.filler = 0;
+		lcmd.CHIME.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.CHIME)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeThermostat2:
-		{
-			tRBUF lcmd;
-			lcmd.THERMOSTAT2.packetlength = sizeof(lcmd.REMOTE) - 1;
-			lcmd.THERMOSTAT2.packettype = dType;
-			lcmd.THERMOSTAT2.subtype = dSubType;
-			lcmd.THERMOSTAT2.unitcode = Unit;
-			lcmd.THERMOSTAT2.cmnd = Unit;
-			lcmd.THERMOSTAT2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+	{
+		tRBUF lcmd;
+		lcmd.THERMOSTAT2.packetlength = sizeof(lcmd.REMOTE) - 1;
+		lcmd.THERMOSTAT2.packettype = dType;
+		lcmd.THERMOSTAT2.subtype = dSubType;
+		lcmd.THERMOSTAT2.unitcode = Unit;
+		lcmd.THERMOSTAT2.cmnd = Unit;
+		lcmd.THERMOSTAT2.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
 
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd, options))
-				return false;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT2.cmnd, options))
+			return false;
 
-			lcmd.THERMOSTAT2.filler = 0;
-			lcmd.THERMOSTAT2.rssi = 12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+		lcmd.THERMOSTAT2.filler = 0;
+		lcmd.THERMOSTAT2.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT2)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeThermostat3:
-		{
-			tRBUF lcmd;
-			lcmd.THERMOSTAT3.packetlength=sizeof(lcmd.THERMOSTAT3)-1;
-			lcmd.THERMOSTAT3.packettype=dType;
-			lcmd.THERMOSTAT3.subtype=dSubType;
-			lcmd.THERMOSTAT3.unitcode1=ID2;
-			lcmd.THERMOSTAT3.unitcode2=ID3;
-			lcmd.THERMOSTAT3.unitcode3=ID4;
-			lcmd.THERMOSTAT3.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			if (!GetLightCommand(dType,dSubType,switchtype,switchcmd,lcmd.THERMOSTAT3.cmnd, options))
-				return false;
-			level=15;
-			lcmd.THERMOSTAT3.filler=0;
-			lcmd.THERMOSTAT3.rssi=12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT3)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+	{
+		tRBUF lcmd;
+		lcmd.THERMOSTAT3.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
+		lcmd.THERMOSTAT3.packettype = dType;
+		lcmd.THERMOSTAT3.subtype = dSubType;
+		lcmd.THERMOSTAT3.unitcode1 = ID2;
+		lcmd.THERMOSTAT3.unitcode2 = ID3;
+		lcmd.THERMOSTAT3.unitcode3 = ID4;
+		lcmd.THERMOSTAT3.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT3.cmnd, options))
+			return false;
+		level = 15;
+		lcmd.THERMOSTAT3.filler = 0;
+		lcmd.THERMOSTAT3.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT3)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeThermostat4:
-		{
-			_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
-/*
-			tRBUF lcmd;
-			lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
-			lcmd.THERMOSTAT4.packettype = dType;
-			lcmd.THERMOSTAT4.subtype = dSubType;
-			lcmd.THERMOSTAT4.unitcode1 = ID2;
-			lcmd.THERMOSTAT4.unitcode2 = ID3;
-			lcmd.THERMOSTAT4.unitcode3 = ID4;
-			lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
-				return false;
-			level = 15;
-			lcmd.THERMOSTAT4.filler = 0;
-			lcmd.THERMOSTAT4.rssi = 12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
-			}
-*/
-			return true;
-		}
-		break;
+	{
+		_log.Log(LOG_ERROR, "Thermostat 4 not implemented yet!");
+		/*
+					tRBUF lcmd;
+					lcmd.THERMOSTAT4.packetlength = sizeof(lcmd.THERMOSTAT3) - 1;
+					lcmd.THERMOSTAT4.packettype = dType;
+					lcmd.THERMOSTAT4.subtype = dSubType;
+					lcmd.THERMOSTAT4.unitcode1 = ID2;
+					lcmd.THERMOSTAT4.unitcode2 = ID3;
+					lcmd.THERMOSTAT4.unitcode3 = ID4;
+					lcmd.THERMOSTAT4.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+					if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.THERMOSTAT4.mode, options))
+						return false;
+					level = 15;
+					lcmd.THERMOSTAT4.filler = 0;
+					lcmd.THERMOSTAT4.rssi = 12;
+					if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.THERMOSTAT4)))
+						return false;
+					if (!IsTesting) {
+						//send to internal for now (later we use the ACK)
+						PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
+					}
+		*/
+		return true;
+	}
+	break;
 	case pTypeRemote:
-		{
-			tRBUF lcmd;
-			lcmd.REMOTE.packetlength=sizeof(lcmd.REMOTE)-1;
-			lcmd.REMOTE.packettype=dType;
-			lcmd.REMOTE.subtype=dSubType;
-			lcmd.REMOTE.id=ID4;
-			lcmd.REMOTE.cmnd=Unit;
-			lcmd.REMOTE.cmndtype=0;
-			lcmd.REMOTE.seqnbr=m_hardwaredevices[hindex]->m_SeqNr++;
-			lcmd.REMOTE.toggle=0;
-			lcmd.REMOTE.rssi=12;
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.REMOTE)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+	{
+		tRBUF lcmd;
+		lcmd.REMOTE.packetlength = sizeof(lcmd.REMOTE) - 1;
+		lcmd.REMOTE.packettype = dType;
+		lcmd.REMOTE.subtype = dSubType;
+		lcmd.REMOTE.id = ID4;
+		lcmd.REMOTE.cmnd = Unit;
+		lcmd.REMOTE.cmndtype = 0;
+		lcmd.REMOTE.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		lcmd.REMOTE.toggle = 0;
+		lcmd.REMOTE.rssi = 12;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.REMOTE)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeEvohomeRelay:
-		{
-			REVOBUF lcmd;
-			memset(&lcmd,0,sizeof(REVOBUF));
-			lcmd.EVOHOME3.len=sizeof(lcmd.EVOHOME3)-1;
-			lcmd.EVOHOME3.type=pTypeEvohomeRelay;
-			lcmd.EVOHOME3.subtype=sTypeEvohomeRelay;
-			RFX_SETID3(ID,lcmd.EVOHOME3.id1,lcmd.EVOHOME3.id2,lcmd.EVOHOME3.id3)
-			lcmd.EVOHOME3.devno=Unit;
-			if(switchcmd=="On")
-				lcmd.EVOHOME3.demand=200;
-			else
-				lcmd.EVOHOME3.demand=level;
+	{
+		REVOBUF lcmd;
+		memset(&lcmd, 0, sizeof(REVOBUF));
+		lcmd.EVOHOME3.len = sizeof(lcmd.EVOHOME3) - 1;
+		lcmd.EVOHOME3.type = pTypeEvohomeRelay;
+		lcmd.EVOHOME3.subtype = sTypeEvohomeRelay;
+		RFX_SETID3(ID, lcmd.EVOHOME3.id1, lcmd.EVOHOME3.id2, lcmd.EVOHOME3.id3)
+			lcmd.EVOHOME3.devno = Unit;
+		if (switchcmd == "On")
+			lcmd.EVOHOME3.demand = 200;
+		else
+			lcmd.EVOHOME3.demand = level;
 
-			if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.EVOHOME3)))
-				return false;
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex],(const unsigned char *)&lcmd, NULL, -1);
-			}
-			return true;
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.EVOHOME3)))
+			return false;
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&lcmd, NULL, -1);
 		}
-		break;
+		return true;
+	}
+	break;
 	case pTypeRadiator1:
 		tRBUF lcmd;
 		lcmd.RADIATOR1.packetlength = sizeof(lcmd.RADIATOR1) - 1;
@@ -11575,7 +11599,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			return false;
 		if (level > 15)
 			level = 15;
-		lcmd.RADIATOR1.temperature=0;
+		lcmd.RADIATOR1.temperature = 0;
 		lcmd.RADIATOR1.tempPoint5 = 0;
 		lcmd.RADIATOR1.filler = 0;
 		lcmd.RADIATOR1.rssi = 12;
@@ -11589,67 +11613,67 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		return true;
 	case pTypeGeneralSwitch:
+	{
+
+		_tGeneralSwitch gswitch;
+		gswitch.type = dType;
+		gswitch.subtype = dSubType;
+		gswitch.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
+		gswitch.id = ID;
+		gswitch.unitcode = Unit;
+
+		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
+			return false;
+
+		if ((switchtype != STYPE_Selector) && (dSubType != sSwitchGeneralSwitch))
 		{
+			level = (level > 99) ? 99 : level;
+		}
 
-			_tGeneralSwitch gswitch;
-			gswitch.type = dType;
-			gswitch.subtype = dSubType;
-			gswitch.seqnbr = m_hardwaredevices[hindex]->m_SeqNr++;
-			gswitch.id = ID;
-			gswitch.unitcode = Unit;
+		if (switchtype == STYPE_Doorbell) {
+			int rnvalue = 0;
+			m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
+			if (rnvalue == 0)
+				lcmd.LIGHTING2.cmnd = gswitch_sGroupOn;
+			else
+				lcmd.LIGHTING2.cmnd = gswitch_sOn;
+			level = 15;
+		}
+		else if (switchtype == STYPE_Selector)
+		{
+			if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
+				std::map<std::string, std::string> statuses;
+				GetSelectorSwitchStatuses(options, statuses);
+				int maxLevel = statuses.size() * 10;
 
-			if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, gswitch.cmnd, options))
-				return false;
+				level = (level < 0) ? 0 : level;
+				level = (level > maxLevel) ? maxLevel : level;
 
-			if ((switchtype != STYPE_Selector) && (dSubType != sSwitchGeneralSwitch))
-			{
-				level = (level > 99) ? 99 : level;
-			}
-
-			if (switchtype == STYPE_Doorbell) {
-				int rnvalue = 0;
-				m_sql.GetPreferencesVar("DoorbellCommand", rnvalue);
-				if (rnvalue == 0)
-					lcmd.LIGHTING2.cmnd = gswitch_sGroupOn;
-				else
-					lcmd.LIGHTING2.cmnd = gswitch_sOn;
-				level = 15;
-			}
-			else if (switchtype == STYPE_Selector)
-			{
-				if ((switchcmd == "Set Level") || (switchcmd == "Set Group Level")) {
-					std::map<std::string, std::string> statuses;
-					GetSelectorSwitchStatuses(options, statuses);
-					int maxLevel = statuses.size() * 10;
-
-					level = (level < 0) ? 0 : level;
-					level = (level > maxLevel) ? maxLevel : level;
-
-					std::stringstream sslevel;
-					sslevel << level;
-					if (statuses[sslevel.str()].empty()) {
-						_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %" PRIu64 "", level, ID);
-					}
+				std::stringstream sslevel;
+				sslevel << level;
+				if (statuses[sslevel.str()].empty()) {
+					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %" PRIu64 "", level, ID);
 				}
 			}
-			else if (((switchtype == STYPE_BlindsPercentage) ||
-					(switchtype == STYPE_BlindsPercentageInverted)) &&
-					(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
-						gswitch.cmnd = gswitch_sOn;
-
-			gswitch.level = (unsigned char)level;
-			gswitch.rssi = 12;
-			if (switchtype != STYPE_Motion) //dont send actual motion off command
-			{
-				if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
-					return false;
-			}
-			if (!IsTesting) {
-				//send to internal for now (later we use the ACK)
-				PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch, NULL, -1);
-			}
 		}
-		return true;
+		else if (((switchtype == STYPE_BlindsPercentage) ||
+			(switchtype == STYPE_BlindsPercentageInverted)) &&
+			(gswitch.cmnd == gswitch_sSetLevel) && (level == 100))
+			gswitch.cmnd = gswitch_sOn;
+
+		gswitch.level = (unsigned char)level;
+		gswitch.rssi = 12;
+		if (switchtype != STYPE_Motion) //dont send actual motion off command
+		{
+			if (!WriteToHardware(HardwareID, (const char*)&gswitch, sizeof(_tGeneralSwitch)))
+				return false;
+		}
+		if (!IsTesting) {
+			//send to internal for now (later we use the ACK)
+			PushAndWaitRxMessage(m_hardwaredevices[hindex], (const unsigned char *)&gswitch, NULL, -1);
+		}
+	}
+	return true;
 	}
 	return false;
 }
@@ -11661,46 +11685,46 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 	result = m_sql.safe_query(
 		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,nValue FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false;
-	std::vector<std::string> sd=result[0];
+	std::vector<std::string> sd = result[0];
 
-	int nStatus=0;
-	if(status=="Away")
-		nStatus=CEvohomeBase::cmEvoAway;
-	else if(status=="AutoWithEco")
-		nStatus=CEvohomeBase::cmEvoAutoWithEco;
-	else if(status=="DayOff")
-		nStatus=CEvohomeBase::cmEvoDayOff;
-	else if(status=="Custom")
-		nStatus=CEvohomeBase::cmEvoCustom;
-	else if(status=="Auto")
-		nStatus=CEvohomeBase::cmEvoAuto;
-	else if(status=="HeatingOff")
-		nStatus=CEvohomeBase::cmEvoHeatingOff;
+	int nStatus = 0;
+	if (status == "Away")
+		nStatus = CEvohomeBase::cmEvoAway;
+	else if (status == "AutoWithEco")
+		nStatus = CEvohomeBase::cmEvoAutoWithEco;
+	else if (status == "DayOff")
+		nStatus = CEvohomeBase::cmEvoDayOff;
+	else if (status == "Custom")
+		nStatus = CEvohomeBase::cmEvoCustom;
+	else if (status == "Auto")
+		nStatus = CEvohomeBase::cmEvoAuto;
+	else if (status == "HeatingOff")
+		nStatus = CEvohomeBase::cmEvoHeatingOff;
 
-	int nValue=atoi(sd[7].c_str());
-	if(ooc=="1" && nValue==nStatus)
+	int nValue = atoi(sd[7].c_str());
+	if (ooc == "1" && nValue == nStatus)
 		return false;//FIXME not an error ... status = (already set)
 
 	int HardwareID = atoi(sd[0].c_str());
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
 		return false;
 
-	unsigned char Unit=atoi(sd[2].c_str());
-	unsigned char dType=atoi(sd[3].c_str());
-	unsigned char dSubType=atoi(sd[4].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+	unsigned char Unit = atoi(sd[2].c_str());
+	unsigned char dType = atoi(sd[3].c_str());
+	unsigned char dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
 		return false;
 
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else  //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
@@ -11708,18 +11732,18 @@ bool MainWorker::SwitchModal(const std::string &idx, const std::string &status, 
 
 	//Update Domoticz evohome Device
 	REVOBUF tsen;
-	memset(&tsen,0,sizeof(REVOBUF));
-	tsen.EVOHOME1.len=sizeof(tsen.EVOHOME1)-1;
-	tsen.EVOHOME1.type=pTypeEvohome;
-	tsen.EVOHOME1.subtype=sTypeEvohome;
-	RFX_SETID3(ID,tsen.EVOHOME1.id1,tsen.EVOHOME1.id2,tsen.EVOHOME1.id3)
-	tsen.EVOHOME1.action=(action=="1")?1:0;
-	tsen.EVOHOME1.status=nStatus;
+	memset(&tsen, 0, sizeof(REVOBUF));
+	tsen.EVOHOME1.len = sizeof(tsen.EVOHOME1) - 1;
+	tsen.EVOHOME1.type = pTypeEvohome;
+	tsen.EVOHOME1.subtype = sTypeEvohome;
+	RFX_SETID3(ID, tsen.EVOHOME1.id1, tsen.EVOHOME1.id2, tsen.EVOHOME1.id3)
+		tsen.EVOHOME1.action = (action == "1") ? 1 : 0;
+	tsen.EVOHOME1.status = nStatus;
 
-	tsen.EVOHOME1.mode=until.empty()?CEvohomeBase::cmPerm:CEvohomeBase::cmTmp;
-	if(tsen.EVOHOME1.mode==CEvohomeBase::cmTmp)
-		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1,until.c_str());
-	WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME1));
+	tsen.EVOHOME1.mode = until.empty() ? CEvohomeBase::cmPerm : CEvohomeBase::cmTmp;
+	if (tsen.EVOHOME1.mode == CEvohomeBase::cmTmp)
+		CEvohomeDateTime::DecodeISODate(tsen.EVOHOME1, until.c_str());
+	WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME1));
 
 	//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 	PushRxMessage(pHardware, (const unsigned char *)&tsen, NULL, 255);
@@ -11732,13 +11756,13 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 	std::stringstream s_str(idx);
 	s_str >> ID;
 
-	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str())!=0, ExtraDelay);
+	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str()) != 0, ExtraDelay);
 }
 
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
-    if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"MAIN SwitchLight idx:%d cmd:%s lvl:%d " ,(long)idx,switchcmd.c_str(),level );
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLight idx:%d cmd:%s lvl:%d ", (long)idx, switchcmd.c_str(), level);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
@@ -11786,34 +11810,34 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
-	result=m_sql.safe_query(
+	result = m_sql.safe_query(
 		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false;
 
-	std::vector<std::string> sd=result[0];
+	std::vector<std::string> sd = result[0];
 	int HardwareID = atoi(sd[0].c_str());
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
 		return false;
 
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
 		return false;
 
 	unsigned long ID;
 	std::stringstream s_strid;
-	if (pHardware->HwdType==HTYPE_EVOHOME_SERIAL || pHardware->HwdType==HTYPE_EVOHOME_TCP)
+	if (pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		s_strid << std::hex << sd[1];
 	else //GB3: web based evohome uses decimal device ID's. We need to convert those to hex here to fit the 3-byte ID defined in the message struct
 		s_strid << std::hex << std::dec << sd[1];
 	s_strid >> ID;
 
 
-	unsigned char Unit=atoi(sd[2].c_str());
-	unsigned char dType=atoi(sd[3].c_str());
-	unsigned char dSubType=atoi(sd[4].c_str());
+	unsigned char Unit = atoi(sd[2].c_str());
+	unsigned char dType = atoi(sd[3].c_str());
+	unsigned char dSubType = atoi(sd[4].c_str());
 	//_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
 
 	if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
@@ -11821,17 +11845,17 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 		REVOBUF tsen;
 		memset(&tsen, 0, sizeof(tsen.EVOHOME2));
 		tsen.EVOHOME2.len = sizeof(tsen.EVOHOME2) - 1;
-		tsen.EVOHOME2.type=dType;
-		tsen.EVOHOME2.subtype=dSubType;
-		RFX_SETID3(ID,tsen.EVOHOME2.id1,tsen.EVOHOME2.id2,tsen.EVOHOME2.id3)
+		tsen.EVOHOME2.type = dType;
+		tsen.EVOHOME2.subtype = dSubType;
+		RFX_SETID3(ID, tsen.EVOHOME2.id1, tsen.EVOHOME2.id2, tsen.EVOHOME2.id3)
 
-		tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
+			tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
 		tsen.EVOHOME2.updatetype = CEvohomeBase::updSetPoint;//setpoint
-		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType==pTypeEvohomeWater)?TempValue:TempValue*100.0f);
-		tsen.EVOHOME2.mode=newMode;
-		if(newMode==CEvohomeBase::zmTmp)
-			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2,until.c_str());
-		WriteToHardware(HardwareID,(const char*)&tsen,sizeof(tsen.EVOHOME2));
+		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
+		tsen.EVOHOME2.mode = newMode;
+		if (newMode == CEvohomeBase::zmTmp)
+			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2, until.c_str());
+		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME2));
 
 		//Pass across the current controller mode if we're going to update as per the hw device
 		result = m_sql.safe_query(
@@ -11839,8 +11863,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 			HardwareID);
 		if (result.size() > 0)
 		{
-			sd=result[0];
-			tsen.EVOHOME2.controllermode=atoi(sd[2].c_str());
+			sd = result[0];
+			tsen.EVOHOME2.controllermode = atoi(sd[2].c_str());
 		}
 		//the latency on the scripted solution is quite bad so it's good to see the update happening...ideally this would go to an 'updating' status (also useful to update database if we ever use this as a pure virtual device)
 		PushAndWaitRxMessage(pHardware, (const unsigned char*)&tsen, NULL, -1);
@@ -11851,26 +11875,26 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float TempValue)
 {
 	int HardwareID = atoi(sd[0].c_str());
-	int hindex=FindDomoticzHardware(HardwareID);
-	if (hindex==-1)
+	int hindex = FindDomoticzHardware(HardwareID);
+	if (hindex == -1)
 		return false;
 
 	unsigned long ID;
 	std::stringstream s_strid;
 	s_strid << std::hex << sd[1];
 	s_strid >> ID;
-	unsigned char ID1=(unsigned char)((ID&0xFF000000)>>24);
-	unsigned char ID2=(unsigned char)((ID&0x00FF0000)>>16);
-	unsigned char ID3=(unsigned char)((ID&0x0000FF00)>>8);
-	unsigned char ID4=(unsigned char)((ID&0x000000FF));
+	unsigned char ID1 = (unsigned char)((ID & 0xFF000000) >> 24);
+	unsigned char ID2 = (unsigned char)((ID & 0x00FF0000) >> 16);
+	unsigned char ID3 = (unsigned char)((ID & 0x0000FF00) >> 8);
+	unsigned char ID4 = (unsigned char)((ID & 0x000000FF));
 
-	unsigned char Unit=atoi(sd[2].c_str());
-	unsigned char dType=atoi(sd[3].c_str());
-	unsigned char dSubType=atoi(sd[4].c_str());
-	_eSwitchType switchtype=(_eSwitchType)atoi(sd[5].c_str());
+	unsigned char Unit = atoi(sd[2].c_str());
+	unsigned char dType = atoi(sd[3].c_str());
+	unsigned char dSubType = atoi(sd[4].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 
-	CDomoticzHardwareBase *pHardware=GetHardware(HardwareID);
-	if (pHardware==NULL)
+	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
+	if (pHardware == NULL)
 		return false;
 	//
 	//	For plugins all the specific logic below is irrelevent
@@ -11897,7 +11921,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_EVOHOME_WEB) ||
 		(pHardware->HwdType == HTYPE_Netatmo) ||
 		(pHardware->HwdType == HTYPE_NefitEastLAN) ||
-		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) || 
+		(pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF) ||
 		(pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		)
 	{
@@ -12017,7 +12041,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 			if (pHardware->HwdType == HTYPE_Dummy)
 			{
 				//Also set it in the database, ad this devices does not send updates
-				_log.Log(LOG_TRACE, "MAIN SetPoint command Idx=%s : Temp=%f",sd[7].c_str(),TempValue);
+				_log.Log(LOG_TRACE, "MAIN SetPoint command Idx=%s : Temp=%f", sd[7].c_str(), TempValue);
 				PushAndWaitRxMessage(pHardware, (const unsigned char*)&tmeter, NULL, -1);
 			}
 		}
@@ -12032,11 +12056,11 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue)
 	result = m_sql.safe_query(
 		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false;
 
-	std::vector<std::string> sd=result[0];
-	return SetSetPointInt(sd,TempValue);
+	std::vector<std::string> sd = result[0];
+	return SetSetPointInt(sd, TempValue);
 }
 
 bool MainWorker::SetClockInt(const std::vector<std::string> &sd, const std::string &clockstr)
@@ -12240,10 +12264,10 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 bool MainWorker::SwitchScene(const std::string &idx, const std::string &switchcmd)
 {
 	uint64_t ID;
-	std::stringstream s_str( idx );
+	std::stringstream s_str(idx);
 	s_str >> ID;
 
-	return SwitchScene(ID,switchcmd);
+	return SwitchScene(ID, switchcmd);
 }
 
 //returns if a device activates a scene
@@ -12301,33 +12325,33 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 {
 	//Get Scene details
 	std::vector<std::vector<std::string> > result;
-	int nValue=(switchcmd=="On")?1:0;
+	int nValue = (switchcmd == "On") ? 1 : 0;
 
 	//first set actual scene status
-	std::string Name="Unknown?";
+	std::string Name = "Unknown?";
 	_eSceneGroupType scenetype = SGTYPE_SCENE;
-	std::string onaction="";
-	std::string offaction="";
-	std::string status="";
+	std::string onaction = "";
+	std::string offaction = "";
+	std::string status = "";
 
 	//Get Scene Name
-	result=m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT Name, SceneType, OnAction, OffAction, nValue FROM Scenes WHERE (ID == %" PRIu64 ")", idx);
+	if (result.size() > 0)
 	{
-		std::vector<std::string> sds=result[0];
-		Name=sds[0];
-		scenetype=(_eSceneGroupType)atoi(sds[1].c_str());
-		onaction=sds[2];
-		offaction=sds[3];
-		status=sds[4];
+		std::vector<std::string> sds = result[0];
+		Name = sds[0];
+		scenetype = (_eSceneGroupType)atoi(sds[1].c_str());
+		onaction = sds[2];
+		offaction = sds[3];
+		status = sds[4];
 
 		//when asking for Toggle, just switch to the opposite value
-		if (switchcmd=="Toggle") {
-			nValue=(atoi(status.c_str())==0?1:0);
-			switchcmd=(nValue==1?"On":"Off");
+		if (switchcmd == "Toggle") {
+			nValue = (atoi(status.c_str()) == 0 ? 1 : 0);
+			switchcmd = (nValue == 1 ? "On" : "Off");
 		}
 
-		m_sql.HandleOnOffAction((nValue==1),onaction,offaction);
+		m_sql.HandleOnOffAction((nValue == 1), onaction, offaction);
 	}
 
 	m_sql.safe_query("INSERT INTO SceneLog (SceneRowID, nValue) VALUES ('%" PRIu64 "', '%d')", idx, nValue);
@@ -12341,28 +12365,28 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 	//Check if we need to email a snapshot of a Camera
 	std::string emailserver;
 	int n2Value;
-	if (m_sql.GetPreferencesVar("EmailServer",n2Value,emailserver))
+	if (m_sql.GetPreferencesVar("EmailServer", n2Value, emailserver))
 	{
-		if (emailserver!="")
+		if (emailserver != "")
 		{
-			result=m_sql.safe_query(
+			result = m_sql.safe_query(
 				"SELECT CameraRowID, DevSceneDelay FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID==%" PRIu64 ") AND (DevSceneWhen==%d)",
 				idx,
 				!nValue
-				);
-			if (result.size()>0)
+			);
+			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator ittCam;
-				for (ittCam=result.begin(); ittCam!=result.end(); ++ittCam)
+				for (ittCam = result.begin(); ittCam != result.end(); ++ittCam)
 				{
-					std::vector<std::string> sd=*ittCam;
-					std::string camidx=sd[0];
-					int delay=atoi(sd[1].c_str());
+					std::vector<std::string> sd = *ittCam;
+					std::string camidx = sd[0];
+					int delay = atoi(sd[1].c_str());
 					std::string subject;
 					if (scenetype == SGTYPE_SCENE)
-						subject=Name + " Activated";
+						subject = Name + " Activated";
 					else
-						subject=Name + " Status: " + switchcmd;
+						subject = Name + " Status: " + switchcmd;
 					m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(static_cast<float>(delay + 1), camidx, subject));
 				}
 			}
@@ -12378,32 +12402,32 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
 		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %" PRIu64 ") ORDER BY [Order] ASC", idx);
-	if (result.size()<1)
+	if (result.size() < 1)
 		return true; //no devices in the scene
 
 	std::vector<std::vector<std::string> >::const_iterator itt;
-	for (itt=result.begin(); itt!=result.end(); ++itt)
+	for (itt = result.begin(); itt != result.end(); ++itt)
 	{
-		std::vector<std::string> sd=*itt;
+		std::vector<std::string> sd = *itt;
 
-		int cmd=atoi(sd[1].c_str());
-		int level=atoi(sd[2].c_str());
-		int hue=atoi(sd[3].c_str());
+		int cmd = atoi(sd[1].c_str());
+		int level = atoi(sd[2].c_str());
+		int hue = atoi(sd[3].c_str());
 		int ondelay = atoi(sd[4].c_str());
 		int offdelay = atoi(sd[5].c_str());
 		std::vector<std::vector<std::string> > result2;
 		result2 = m_sql.safe_query(
 			"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType, nValue, sValue, Name FROM DeviceStatus WHERE (ID == '%q')", sd[0].c_str());
-		if (result2.size()>0)
+		if (result2.size() > 0)
 		{
-			std::vector<std::string> sd2=result2[0];
-			unsigned char rnValue=atoi(sd2[6].c_str());
-			std::string sValue=sd2[7];
-			unsigned char Unit=atoi(sd2[2].c_str());
-			unsigned char dType=atoi(sd2[3].c_str());
-			unsigned char dSubType=atoi(sd2[4].c_str());
+			std::vector<std::string> sd2 = result2[0];
+			unsigned char rnValue = atoi(sd2[6].c_str());
+			std::string sValue = sd2[7];
+			unsigned char Unit = atoi(sd2[2].c_str());
+			unsigned char dType = atoi(sd2[3].c_str());
+			unsigned char dSubType = atoi(sd2[4].c_str());
 			std::string DeviceName = sd2[8];
-			_eSwitchType switchtype=(_eSwitchType)atoi(sd2[5].c_str());
+			_eSwitchType switchtype = (_eSwitchType)atoi(sd2[5].c_str());
 
 			//Check if this device will not activate a scene
 			uint64_t dID;
@@ -12417,10 +12441,10 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			}
 
 			std::string lstatus = switchcmd;
-			int llevel=0;
-			bool bHaveDimmer=false;
-			bool bHaveGroupCmd=false;
-			int maxDimLevel=0;
+			int llevel = 0;
+			bool bHaveDimmer = false;
+			bool bHaveGroupCmd = false;
+			int maxDimLevel = 0;
 
 			GetLightStatus(dType, dSubType, switchtype, cmd, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 
@@ -12431,30 +12455,30 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
 
-			int ilevel=maxDimLevel-1;
+			int ilevel = maxDimLevel - 1;
 
 			if (
 				((switchtype == STYPE_Dimmer) ||
 				(switchtype == STYPE_BlindsPercentage) ||
-				(switchtype == STYPE_BlindsPercentageInverted) ||
-				(switchtype == STYPE_Selector)
-				) && (maxDimLevel != 0))
+					(switchtype == STYPE_BlindsPercentageInverted) ||
+					(switchtype == STYPE_Selector)
+					) && (maxDimLevel != 0))
 			{
 				if (lstatus == "On")
 				{
-					lstatus ="Set Level";
-					float fLevel=(maxDimLevel/100.0f)*level;
-					if (fLevel>100)
-						fLevel=100;
-					ilevel=round(fLevel)+1;
+					lstatus = "Set Level";
+					float fLevel = (maxDimLevel / 100.0f)*level;
+					if (fLevel > 100)
+						fLevel = 100;
+					ilevel = round(fLevel) + 1;
 				}
 				if (switchtype == STYPE_Selector) {
 					if (lstatus != "Set Level") {
 						ilevel = 0;
 					}
-					ilevel = round(ilevel/10.0f)*10; // select only multiples of 10
+					ilevel = round(ilevel / 10.0f) * 10; // select only multiples of 10
 					if (ilevel == 0) {
-						lstatus ="Off";
+						lstatus = "Off";
 					}
 				}
 			}
@@ -12563,26 +12587,26 @@ void MainWorker::LoadSharedUsers()
 	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::vector<std::vector<std::string> >::const_iterator itt2;
 
-	result=m_sql.safe_query("SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))");
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT ID, Username, Password FROM USERS WHERE ((RemoteSharing==1) AND (Active==1))");
+	if (result.size() > 0)
 	{
-		for (itt=result.begin(); itt!=result.end(); ++itt)
+		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
-			std::vector<std::string> sd=*itt;
+			std::vector<std::string> sd = *itt;
 			tcp::server::_tRemoteShareUser suser;
-			suser.Username=base64_decode(sd[1]);
-			suser.Password=sd[2];
+			suser.Username = base64_decode(sd[1]);
+			suser.Password = sd[2];
 
 			//Get User Devices
-			result2=m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')",
+			result2 = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')",
 				sd[0].c_str());
-			if (result2.size()>0)
+			if (result2.size() > 0)
 			{
-				for (itt2=result2.begin(); itt2!=result2.end(); ++itt2)
+				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
 				{
-					std::vector<std::string> sd2=*itt2;
+					std::vector<std::string> sd2 = *itt2;
 					uint64_t ID;
-					std::stringstream s_str( sd2[0] );
+					std::stringstream s_str(sd2[0]);
 					s_str >> ID;
 					suser.Devices.push_back(ID);
 				}
@@ -12600,22 +12624,22 @@ void MainWorker::SetInternalSecStatus()
 
 	//Update Domoticz Security Device
 	RBUF tsen;
-	memset(&tsen,0,sizeof(RBUF));
-	tsen.SECURITY1.packetlength=sizeof(tsen.TEMP)-1;
-	tsen.SECURITY1.packettype=pTypeSecurity1;
-	tsen.SECURITY1.subtype=sTypeDomoticzSecurity;
-	tsen.SECURITY1.battery_level=9;
-	tsen.SECURITY1.rssi=12;
-	tsen.SECURITY1.id1=0x14;
-	tsen.SECURITY1.id2=0x87;
-	tsen.SECURITY1.id3=0x02;
-	tsen.SECURITY1.seqnbr=1;
-	if (m_SecStatus==SECSTATUS_DISARMED)
-		tsen.SECURITY1.status=sStatusNormal;
-	else if (m_SecStatus==SECSTATUS_ARMEDHOME)
-		tsen.SECURITY1.status=sStatusArmHome;
+	memset(&tsen, 0, sizeof(RBUF));
+	tsen.SECURITY1.packetlength = sizeof(tsen.TEMP) - 1;
+	tsen.SECURITY1.packettype = pTypeSecurity1;
+	tsen.SECURITY1.subtype = sTypeDomoticzSecurity;
+	tsen.SECURITY1.battery_level = 9;
+	tsen.SECURITY1.rssi = 12;
+	tsen.SECURITY1.id1 = 0x14;
+	tsen.SECURITY1.id2 = 0x87;
+	tsen.SECURITY1.id3 = 0x02;
+	tsen.SECURITY1.seqnbr = 1;
+	if (m_SecStatus == SECSTATUS_DISARMED)
+		tsen.SECURITY1.status = sStatusNormal;
+	else if (m_SecStatus == SECSTATUS_ARMEDHOME)
+		tsen.SECURITY1.status = sStatusArmHome;
 	else
-		tsen.SECURITY1.status=sStatusArmAway;
+		tsen.SECURITY1.status = sStatusArmAway;
 
 	if (m_verboselevel >= EVBL_ALL)
 	{
@@ -12628,15 +12652,15 @@ void MainWorker::SetInternalSecStatus()
 
 void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 {
-	m_SecCountdown=-1; //cancel possible previous delay
-	m_SecStatus=iSecStatus;
+	m_SecCountdown = -1; //cancel possible previous delay
+	m_SecStatus = iSecStatus;
 
 	m_sql.UpdatePreferencesVar("SecStatus", iSecStatus);
 
-	int nValue=0;
+	int nValue = 0;
 	m_sql.GetPreferencesVar("SecOnDelay", nValue);
 
-	if ((nValue==0)||(iSecStatus==SECSTATUS_DISARMED))
+	if ((nValue == 0) || (iSecStatus == SECSTATUS_DISARMED))
 	{
 		//Do it Directly
 		SetInternalSecStatus();
@@ -12644,7 +12668,7 @@ void MainWorker::UpdateDomoticzSecurityStatus(const int iSecStatus)
 	else
 	{
 		//Schedule It
-		m_SecCountdown=nValue;
+		m_SecCountdown = nValue;
 	}
 }
 
@@ -13025,22 +13049,22 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				}
 			}
 		}
-/*
-		else if (devType == pTypeGeneralSwitch)
-		{
-			_tGeneralSwitch gswitch;
-			gswitch.subtype = subType;
-			gswitch.id = ID;
-			gswitch.unitcode = unit;
-			gswitch.cmnd = nValue;
-			gswitch.level = (unsigned char)atoi(sValue.c_str());;
-			gswitch.battery_level = batterylevel;
-			gswitch.rssi = signallevel;
-			gswitch.seqnbr = 0;
-			DecodeRXMessage(pHardware, (const unsigned char *)&gswitch, NULL, batterylevel);
-			return true;
-		}
-*/
+		/*
+				else if (devType == pTypeGeneralSwitch)
+				{
+					_tGeneralSwitch gswitch;
+					gswitch.subtype = subType;
+					gswitch.id = ID;
+					gswitch.unitcode = unit;
+					gswitch.cmnd = nValue;
+					gswitch.level = (unsigned char)atoi(sValue.c_str());;
+					gswitch.battery_level = batterylevel;
+					gswitch.rssi = signallevel;
+					gswitch.seqnbr = 0;
+					DecodeRXMessage(pHardware, (const unsigned char *)&gswitch, NULL, batterylevel);
+					return true;
+				}
+		*/
 	}
 
 	std::string devname = "Unknown";

@@ -1209,6 +1209,9 @@ namespace http {
 			else if (htype == HTYPE_Arilux) {
 				//all fine here!
 			}
+			else if (htype == HTYPE_USBtinGateway) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1292,6 +1295,9 @@ namespace http {
 				//All fine here
 			}
 			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
+				//All fine here
+			}
+			else if (htype == HTYPE_EnphaseAPI) {
 				//All fine here
 			}
 			else
@@ -1555,6 +1561,9 @@ namespace http {
 			else if (htype == HTYPE_Arilux) {
 				//All fine here
 			}
+			else if (htype == HTYPE_USBtinGateway) {
+				//All fine here
+			}
 			else if (
 				(htype == HTYPE_Wunderground) ||
 				(htype == HTYPE_DarkSky) ||
@@ -1641,6 +1650,9 @@ namespace http {
 			}
 			else if (htype == HTYPE_IntergasInComfortLAN2RF) {
 				//All fine here
+			}
+			else if (htype == HTYPE_EnphaseAPI) {
+				//all fine here!
 			}
 			else
 				return;

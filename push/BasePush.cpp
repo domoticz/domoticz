@@ -99,7 +99,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
 		{ pTypeLighting2, sTypeKambrook, "Status" },
-
+		
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
 		{ pTypeLighting4, sTypePT2262, "Status" },
