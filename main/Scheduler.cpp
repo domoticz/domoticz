@@ -771,7 +771,7 @@ void CScheduler::CheckSchedules()
 									float fLevel = (maxDimLevel / 100.0f)*itt->Level;
 									if (fLevel > 100)
 										fLevel = 100;
-									ilevel = int(fLevel) + 1;
+									ilevel = int(fLevel);
 								}
 								else if (itt->timerCmd == TCMD_OFF)
 									ilevel = 0;
