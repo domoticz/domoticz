@@ -257,13 +257,13 @@ void USBtin::ParseData(const char *pData, int Len)
 {
 	char value[30] = "";
 	std::string vString;
-	unsigned long ulValue;
+//	unsigned long ulValue;
 	
-	unsigned long IdValue;
-	unsigned int DlcValue;
-	unsigned int Data[8];
+//	unsigned long IdValue;
+//	unsigned int DlcValue;
+//	unsigned int Data[8];
 	
-	int i,j;
+//	int i,j;
 	int ii = 0;
 	while (ii<Len)
 	{

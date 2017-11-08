@@ -705,7 +705,7 @@ define(['app'], function (app) {
 					ctrl.ShowLog = function () {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
 						$('#temptophtm').hide();
-						return ShowTempLog('#tempcontent', "ShowTemps", item.idx, escape(item.Name));
+						return ShowTempLog('#tempcontent', "ShowTemps", item.idx, escape(item.Name), escape(item.Type));
 					};
 
 					ctrl.ShowNotifications = function () {
