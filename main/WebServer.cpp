@@ -973,7 +973,7 @@ namespace http {
 					(ii == HTYPE_RaspberryTSL2561) ||
 					(ii == HTYPE_RaspberryPCF8574) ||
 					(ii == HTYPE_RaspberryBME280) ||
-					(ii == HTYPE_RaspberryMPC23017)
+					(ii == HTYPE_RaspberryMCP23017)
 					)
 				{
 					bDoAdd = false;
