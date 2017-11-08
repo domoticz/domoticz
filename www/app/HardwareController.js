@@ -135,6 +135,10 @@ define(['app'], function (app) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
+					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					var port = "&port=" + encodeURIComponent(i2caddress);
+				}
 				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 					var gpiodebounce = $("#hardwareparamsgpio #gpiodebounce").val();
 					var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -1188,6 +1192,10 @@ define(['app'], function (app) {
 				var port = "";
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					var port = "&port=" + encodeURIComponent(i2caddress);
+				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
@@ -4776,7 +4784,7 @@ define(['app'], function (app) {
 								SerialName = item.SerialPort;
 								intport = jQuery.inArray(item.SerialPort, $scope.SerialPortStr);
 							}
-							if (item.Type == 93) {
+							if (item.Type == 93 || item.Type == 109) {
 								SerialName = "I2C-" + SerialName;
 							}
 
@@ -5019,6 +5027,9 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("I2C ") >= 0) {
 							$("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
 							if (data["Type"].indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
+							}
+							else if (data["Type"].indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
 							}
 						}
@@ -5395,6 +5406,9 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divi2caddress").hide();
 				var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
+					$("#hardwarecontent #divi2caddress").show();
+				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					$("#hardwarecontent #divi2caddress").show();
 				}
 			}
