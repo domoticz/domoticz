@@ -44,6 +44,8 @@ Authors:
 
 #define round(a) ( int ) ( a + .5 )
 
+//#define INVERT_PCF8574_MCP23017
+
 #define I2C_READ_INTERVAL 30
 #define I2C_SENSOR_READ_INTERVAL 30
 #define I2C_IO_EXPANDER_READ_INTERVAL 1
@@ -196,8 +198,7 @@ bool I2C::StopHardware()
 
 bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	int rc=0;
-	//Giz: Could the author of this function please check his/her spelling!
+	int rc = 0;
 	if (m_dev_type != I2CTYPE_PCF8574 && m_dev_type != I2CTYPE_MCP23017)
 		return false;
 
@@ -205,17 +206,21 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
 		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" is used for identify pin number
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-		value=~value&0x01; // inversion value: domoticz have on=1, off=0, but in PCF8574/MCP23017 I have on=0, off=1
+#ifdef INVERT_PCF8574_MCP23017
+		value = ~value & 0x01; // Invert Status
+#endif
 		if (m_dev_type == I2CTYPE_PCF8574) {
-			if (PCF8574_WritePin( pin_number, value)<0) return false;
-			else return true;
+			if (PCF8574_WritePin(pin_number, value) < 0)
+				return false;
+			return true;
 		}
 		else if (m_dev_type == I2CTYPE_MCP23017) {
-			if (MCP23017_WritePin( pin_number, value)<0) return false;
-			else return true;
+			if (MCP23017_WritePin(pin_number, value) < 0)
+				return false;
+			return true;
 		}
 	}
-	else return false;
+	return false;
 }
 
 void I2C::Do_Work()
@@ -329,7 +334,9 @@ void I2C::PCF8574_ReadChipDetails()
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
-	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz use (1=on, 0=off)
+#ifdef INVERT_PCF8574_MCP23017
+	buf=~buf; // Invert Status
+#endif
 	for (char pin_number=0; pin_number<8; pin_number++){
 		int DeviceID = (i2c_addr << 8) + pin_number; // DeviceID from i2c_address and pin_number
 		unsigned char Unit = pin_number;

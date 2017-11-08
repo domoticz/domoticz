@@ -512,7 +512,9 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,int 
 	double rlevel = (15.0 / 255)*Level;
 	int level = int(rlevel);
 	//Extract the RefBloc Type
-	char RefBloc = (sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE;
+	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
+	if (RefBloc >= 45)
+		return;
 	
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));

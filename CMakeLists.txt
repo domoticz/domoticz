@@ -291,6 +291,7 @@ push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
 push/HttpPush.cpp
 push/InfluxPush.cpp
+push/WebsocketPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -418,13 +419,13 @@ hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
+hardware/XiaomiGateway.cpp
+hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
 hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
-hardware/Yeelight.cpp
-hardware/XiaomiGateway.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
@@ -432,6 +433,7 @@ hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
+notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
 notifications/NotificationHelper.cpp
@@ -445,7 +447,6 @@ notifications/NotificationPushover.cpp
 notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
-notifications/NotificationBrowser.cpp
 notifications/NotificationTelegram.cpp
 smtpclient/SMTPClient.cpp
 tcpserver/TCPClient.cpp
@@ -456,15 +457,14 @@ webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/fastcgi.cpp
 webserver/mime_types.cpp
+webserver/proxycommon.cpp
+webserver/proxyclient.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
 webserver/server.cpp
-webserver/proxycommon.cpp
-webserver/proxyclient.cpp
 webserver/Websockets.cpp
 webserver/WebsocketHandler.cpp
-push/WebsocketPush.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
