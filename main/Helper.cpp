@@ -186,91 +186,84 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	d=opendir("/dev");
 	if (d != NULL)
 	{
+		bool bArmbian = file_exist("/etc/armbian-release");
 		struct dirent *de=NULL;
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
 			// Only consider character devices and symbolic links
-                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
-                        {
-			std::string fname = de->d_name;
-			if (fname.find("ttyUSB")!=std::string::npos)
+			if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
 			{
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("tty.usbserial")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("ttyACM")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("ttySAC") != std::string::npos)
-			{
-				bUseDirectPath = true;
-				ret.push_back("/dev/" + fname);
-			}
-#if defined (__FreeBSD__) || defined (__OpenBSD__)
-			else if (fname.find("ttyU")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-			else if (fname.find("cuaU")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-#endif
-#ifdef __APPLE__
-			else if (fname.find("cu.")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/" + fname);
-			}
-#endif
-			if (bHaveTtyAMAfree)
-			{
-				if (fname.find("ttyAMA0")!=std::string::npos)
+				std::string fname = de->d_name;
+				if (fname.find("ttyUSB")!=std::string::npos)
 				{
 					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("tty.usbserial")!=std::string::npos)
+				{
 					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
 				}
-				// By default, this is the "small UART" on Rasberry 3 boards
-                                        if (fname.find("ttyS0")!=std::string::npos)
-                                        {
-                                                ret.push_back("/dev/" + fname);
-                                                bUseDirectPath=true;
-                                        }
-                                        // serial0 and serial1 are new with Rasbian Jessie
-                                        // Avoids confusion between Raspberry 2 and 3 boards
-                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
-                                        if (fname.find("serial")!=std::string::npos)
-                                        {
-                                                ret.push_back("/dev/" + fname);
-                                                bUseDirectPath=true;
-                                        }
+				else if (fname.find("ttyACM")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
 				}
-			}
-		}
-		closedir(d);
-	}
-	//also scan in /dev/usb
-	d=opendir("/dev/usb");
-	if (d != NULL)
-	{
-		struct dirent *de=NULL;
-		// Loop while not NULL
-		while ((de = readdir(d)))
-		{
-			std::string fname = de->d_name;
-			if (fname.find("ttyUSB")!=std::string::npos)
-			{
-				bUseDirectPath=true;
-				ret.push_back("/dev/usb/" + fname);
+				else if (fname.find("ttySAC") != std::string::npos)
+				{
+					bUseDirectPath = true;
+					ret.push_back("/dev/" + fname);
+				}
+#if defined (__FreeBSD__) || defined (__OpenBSD__)
+				else if (fname.find("ttyU")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+				else if (fname.find("cuaU")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+#endif
+#ifdef __APPLE__
+				else if (fname.find("cu.")!=std::string::npos)
+				{
+					bUseDirectPath=true;
+					ret.push_back("/dev/" + fname);
+				}
+#endif
+				if (bHaveTtyAMAfree)
+				{
+					if (fname.find("ttyAMA0")!=std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath=true;
+					}
+					// By default, this is the "small UART" on Rasberry 3 boards
+					if (fname.find("ttyS0")!=std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath=true;
+					}
+					// serial0 and serial1 are new with Rasbian Jessie
+					// Avoids confusion between Raspberry 2 and 3 boards
+					// More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+					if (fname.find("serial")!=std::string::npos)
+					{
+						ret.push_back("/dev/" + fname);
+						bUseDirectPath=true;
+					}
+				}
+				if (bArmbian)
+				{
+					// Armbian uses ttyS* for UART
+					if (fname.find("ttyS") != std::string::npos)
+					{
+						bUseDirectPath = true;
+						ret.push_back("/dev/" + fname);
+					}
+				}
 			}
 		}
 		closedir(d);
