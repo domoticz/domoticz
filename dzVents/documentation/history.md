@@ -1,3 +1,7 @@
+[2.4.0]
+- Added .cancelQueuedCommands() to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance .afterMin(10) or .repeatAfterMin(1, 4)
+
+
 [2.3.0]
 
  - Added `active` attribute to devices (more logical naming than the attribute 'bState'). `myDevice.active` is true or false depending on a set of known state values (like On, Off, Open, Closed etc). Use like `if mySwitch.active then .. end`
