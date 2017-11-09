@@ -3882,10 +3882,10 @@ define(['app'], function (app) {
 			if (htmlcontent == "") {
 				htmlcontent = '<h2>' +
 					$.t('No favorite devices defined ... (Or communication Lost!)') +
-					'</h2><p>\n' +
+					'</h2><p><br>' +
 					$.t('If this is your first time here, please setup your') + ' <a href="javascript:SwitchLayout(\'Hardware\')" data-i18n="Hardware">Hardware</a>, ' +
-					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-i18n="Devices">Devices</a></p><p>.' +
-					$.t('Visit the Getting Started page at the') + ' <a href="https://www.domoticz.com/wiki/Getting_started">Domoticz Wiki</a>.';
+					$.t('and add some') + ' <a href="javascript:SwitchLayout(\'Devices\')" data-i18n="Devices">Devices</a>.</p><p>' +
+					$.t('Visit the Getting Started page at the') + ' <a href="https://www.domoticz.com/wiki/Getting_started">Domoticz Wiki</a>.</p>';
 
 			}
 			else {
