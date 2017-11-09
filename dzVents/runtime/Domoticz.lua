@@ -259,7 +259,7 @@ local function Domoticz(settings)
 	self.__groups = {}
 	self.__variables = {}
 
-	function getItemFromData(baseType, id)
+	function self._getItemFromData(baseType, id)
 
 		local res
 
@@ -278,7 +278,7 @@ local function Domoticz(settings)
 		return res
 	end
 
-	function getObject(baseType, id, data)
+	function self._getObject(baseType, id, data)
 		local cache
 		local constructor
 
@@ -305,7 +305,7 @@ local function Domoticz(settings)
 		end
 
 		if (data == nil) then
-			data = getItemFromData(baseType, id)
+			data = self._getItemFromData(baseType, id)
 		end
 
 		if (data ~= nil) then
@@ -329,12 +329,16 @@ local function Domoticz(settings)
 	end
 
 
-	local function setIterators(collection, initial, baseType, filterForChanged)
+	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
 
 		local _collection
 
 		if (initial) then
-			_collection = _G.domoticzData
+			if (initalCollection == nil) then
+				_collection = _G.domoticzData
+			else
+				_collection = initalCollection
+			end
 		else
 			_collection = collection
 		end
@@ -347,7 +351,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -372,7 +376,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -395,7 +399,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -416,7 +420,7 @@ local function Domoticz(settings)
 
 				if (initial) then
 					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
-						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+						_item = self._getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
 				else
 					_item = item
@@ -428,7 +432,7 @@ local function Domoticz(settings)
 					end
 				end
 			end
-			setIterators(res, false, baseType)
+			self._setIterators(res, false, baseType)
 			return res
 		end
 
@@ -438,65 +442,65 @@ local function Domoticz(settings)
 
 	function self.devices(id)
 		if (id ~= nil) then
-			return getObject('device', id)
+			return self._getObject('device', id)
 		else
-			return setIterators({}, true, 'device', false)
+			return self._setIterators({}, true, 'device', false)
 		end
 	end
 
 	function self.groups(id)
 		if (id ~= nil) then
-			return getObject('group', id)
+			return self._getObject('group', id)
 		else
-			return setIterators({}, true, 'group', false)
+			return self._setIterators({}, true, 'group', false)
 		end
 	end
 
 	function self.scenes(id)
 		if (id ~= nil) then
-			return getObject('scene', id)
+			return self._getObject('scene', id)
 		else
-			return setIterators({}, true, 'scene', false)
+			return self._setIterators({}, true, 'scene', false)
 		end
 	end
 
 	function self.variables(id)
 		if (id ~= nil) then
-			return getObject('uservariable', id)
+			return self._getObject('uservariable', id)
 		else
-			return setIterators({}, true, 'uservariable', false)
+			return self._setIterators({}, true, 'uservariable', false)
 		end
 	end
 
 	function self.changedDevices(id)
 		if (id ~= nil) then
-			return getObject('device', id)
+			return self._getObject('device', id)
 		else
-			return setIterators({}, true, 'device', true)
+			return self._setIterators({}, true, 'device', true)
 		end
 	end
 
 	function self.changedScenes(id)
 		if (id ~= nil) then
-			return getObject('scene', id)
+			return self._getObject('scene', id)
 		else
-			return setIterators({}, true, 'scene', true)
+			return self._setIterators({}, true, 'scene', true)
 		end
 	end
 
 	function self.changedGroups(id)
 		if (id ~= nil) then
-			return getObject('group', id)
+			return self._getObject('group', id)
 		else
-			return setIterators({}, true, 'group', true)
+			return self._setIterators({}, true, 'group', true)
 		end
 	end
 
 	function self.changedVariables(id)
 		if (id ~= nil) then
-			return getObject('uservariable', id)
+			return self._getObject('uservariable', id)
 		else
-			return setIterators({}, true, 'uservariable', true)
+			return self._setIterators({}, true, 'uservariable', true)
 		end
 	end
 

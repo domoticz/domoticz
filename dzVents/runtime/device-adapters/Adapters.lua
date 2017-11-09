@@ -57,9 +57,7 @@ end
 
 local function DeviceAdapters(dummyLogger)
 
-
 	local self = {}
-
 
 	self.name = 'Adapter manager'
 
@@ -128,7 +126,6 @@ local function DeviceAdapters(dummyLogger)
 				utils.LOG_ERROR)
 		end
 	end
-
 
 	function self.addDummyMethod(device, name)
 		if (device[name] == nil) then

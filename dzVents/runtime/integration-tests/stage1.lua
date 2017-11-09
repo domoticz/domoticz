@@ -988,7 +988,14 @@ local testScene = function(name)
 		['baseType'] = 'scene'
 	})
 
+	names = scene.devices().reduce(function(acc, device)
+		return acc .. device.name
+	end, '')
+
+	res = res and expectEql('sceneSwitch1', names, 'Scene iterators')
+
 	scene.switchOn()
+
 	tstMsg('Test scene', res)
 	return res
 end

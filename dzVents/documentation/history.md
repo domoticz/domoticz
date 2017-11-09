@@ -1,5 +1,6 @@
 [2.4.0]
 - Added .cancelQueuedCommands() to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance .afterMin(10) or .repeatAfterMin(1, 4)
+- Added .devices() collection to scenes and groups to iterate (forEach, filter, reduce, find) over the associated devices.
 
 
 [2.3.0]

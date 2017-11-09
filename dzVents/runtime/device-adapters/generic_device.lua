@@ -89,14 +89,15 @@ return {
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then
+			device['description'] = data.description
 			device['lastUpdate'] = Time(data.lastUpdate)
 			device['rawData'] = { [1] = data.data._state }
+			device['changed'] = data.changed
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel:Scene', tostring(data.id))
 			end
 
 		end
-
 
 		setStateAttribute(data.data._state, device, _states)
 

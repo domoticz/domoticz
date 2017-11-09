@@ -395,7 +395,6 @@ describe('device', function()
 			device.updateP1(1, 2, 3, 4, 5, 6)
 			assert.is_same({ { ["UpdateDevice"] = '1|0|1;2;3;4;5;6 TRIGGER' } }, commandArray)
 
-
 		end)
 
 		it('should detect a thermostat setpoint device', function()
@@ -1056,23 +1055,57 @@ describe('device', function()
 
 		end)
 
-		it('should detect a scene', function()
-			local scene = getDevice(domoticz, {
-				['baseType'] = 'scene',
-				['name'] = 'myScene',
-			})
+		describe('Scenes/Groups', function()
 
-			scene.switchOn()
-			assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
+			it('should detect a scene', function()
+				local scene = getDevice(domoticz, {
+					['baseType'] = 'scene',
+					['name'] = 'myScene',
+				})
 
-			commandArray = {}
+				assert.is_same('Description 1', scene.description)
 
-			scene.cancelQueuedCommands()
+				scene.switchOn()
+				assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
 
-			assert.is_same({
-				{ ['Cancel:Scene'] = '1' }
-			}, commandArray)
+				commandArray = {}
 
+				scene.switchOff()
+				assert.is_same({ { ['Scene:myScene'] = 'Off' } }, commandArray)
+
+				commandArray = {}
+
+				scene.cancelQueuedCommands()
+
+				assert.is_same({
+					{ ['Cancel:Scene'] = '1' }
+				}, commandArray)
+			end)
+
+			-- subdevices are tested in testDomoticz
+
+			it('should detect a group', function()
+				local group = getDevice(domoticz, {
+					['baseType'] = 'group',
+					['name'] = 'myGroup',
+					['state'] = 'On'
+				})
+
+				assert.is_same('Description 1', group.description)
+
+				group.switchOn()
+				assert.is_same({ { ['Group:myGroup'] = 'On' } }, commandArray)
+
+				commandArray = {}
+
+				group.switchOff()
+				assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
+
+				commandArray = {}
+				group.toggleGroup()
+				assert.is_same({ { ['Group:myGroup'] = 'Off' } }, commandArray)
+
+			end)
 		end)
 
 		it('should detect a huelight', function()
@@ -1095,14 +1128,6 @@ describe('device', function()
 			commandArray = {}
 			device.switchOff()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
-		end)
-
-		it('should detect a group', function()
-			local group = getDevice(domoticz, {
-				['baseType'] = 'group',
-				['name'] = 'myGroup',
-				['state'] = 'On'
-			})
 		end)
 
 		describe('Kodi', function()

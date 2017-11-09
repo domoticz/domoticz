@@ -234,7 +234,7 @@ describe('Domoticz', function()
 			assert.is_table(res)
 			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
 		end)
-		
+
 	end)
 
 	describe('Interacting with the collections', function()
@@ -679,6 +679,78 @@ describe('Domoticz', function()
 			domoticz.__groups[3].id = 1111
 			assert.is_same(1111, domoticz.groups(3).id)
 		end)
+	end)
+
+	describe('scene/group subdevice iterators', function()
+
+		it('scene subdevices', function()
+
+			local scene1 = domoticz.scenes('Scene1')
+
+			local names = ''
+
+			scene1.devices().forEach(function(device)
+				names = names .. tostring(device.name)
+			end)
+
+			assert.is_same('device1device2', names)
+
+			names = ''
+			scene1.devices().filter(function(device)
+				return device.name == 'device2'
+			end).forEach(function(device)
+				names = names .. device.name
+			end)
+			assert.is_same('device2', names)
+
+			names = scene1.devices().reduce(function(acc, device)
+				return acc .. device.name
+			end, '')
+
+			assert.is_same('device1device2', names)
+
+			local found = scene1.devices().find(function(device)
+				return device.name == 'device2'
+			end).name
+			assert.is_same('device2', found)
+
+		end)
+
+		it('group subdevices', function()
+
+			local group1 = domoticz.groups('Group1')
+
+			local names = ''
+
+			group1.devices().forEach(function(device)
+				names = names .. tostring(device.name)
+			end)
+
+			assert.is_same('device3device4', names)
+
+			names = ''
+			group1.devices().filter(function(device)
+				return device.name == 'device3'
+			end).forEach(function(device)
+				names = names .. device.name
+			end)
+			assert.is_same('device3', names)
+
+			names = group1.devices().reduce(function(acc, device)
+				return acc .. device.name
+			end, '')
+
+			assert.is_same('device3device4', names)
+
+			local found = group1.devices().find(function(device)
+				return device.name == 'device4'
+			end).name
+			assert.is_same('device4', found)
+
+		end)
+
+
+
 	end)
 
 	describe('devices', function()
