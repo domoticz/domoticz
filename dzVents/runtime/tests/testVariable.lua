@@ -143,4 +143,13 @@ describe('variables', function()
 		assert.is_same({ ['Variable:z'] = 'dzVents AFTER 5 SECONDS TRIGGER' }, commandArray[1])
 	end)
 
+	it('should have a cancelQueuedCommands method', function()
+		local var = Variable(domoticz, testData.domoticzData[zVar])
+
+		var.cancelQueuedCommands()
+		assert.is_same({
+			{ ['Cancel:Variable'] = '3' }
+		}, commandArray)
+	end)
+
 end)

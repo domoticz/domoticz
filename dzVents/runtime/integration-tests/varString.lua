@@ -63,7 +63,7 @@ return {
 		end
 
 		-- finally cancel the queued command for varCancelled
-		dz.variables('varCancelled').reset()
+		dz.variables('varCancelled').cancelQueuedCommands()
 
 	end
 }

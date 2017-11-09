@@ -51,7 +51,7 @@ const std::string CEventSystem::m_szReason[] =
 	"scenegroup",		// 1
 	"uservariable",		// 2
 	"time",				// 3
-	"security"			// 4
+	"security",			// 4
 	"url"				// 5
 };
 

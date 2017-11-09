@@ -223,6 +223,23 @@ describe('device', function()
 
 		end)
 
+		it('should have a cancelQueuedCommands method', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				changed = true,
+				type = 'sometype',
+				subType = 'sub',
+				hardwareType = 'hwtype',
+				hardwareTypeValue = 'hvalue',
+				state = 'bla'
+			})
+
+			device.cancelQueuedCommands()
+			assert.is_same({
+				{ ['Cancel:Device'] = '1' } }, commandArray)
+
+		end)
+
 		it('should deal with percentages', function()
 
 			local device = getDevice(domoticz, {
@@ -762,7 +779,6 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = '1|0|10;1000;4 TRIGGER' } }, commandArray)
 		end)
 
-
 		it('should detect a counter device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -941,7 +957,6 @@ describe('device', function()
 			assert.is_same({ { ["UpdateDevice"] = "1|0|33 TRIGGER" } }, commandArray)
 		end)
 
-
 		it('should detect a soil moisture device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
@@ -953,7 +968,6 @@ describe('device', function()
 			device.updateSoilMoisture(12)
 			assert.is_same({ { ["UpdateDevice"] = "1|12|0 TRIGGER" } }, commandArray)
 		end)
-
 
 		describe('Switch', function()
 
@@ -1050,6 +1064,14 @@ describe('device', function()
 
 			scene.switchOn()
 			assert.is_same({ { ['Scene:myScene'] = 'On' } }, commandArray)
+
+			commandArray = {}
+
+			scene.cancelQueuedCommands()
+
+			assert.is_same({
+				{ ['Cancel:Scene'] = '1' }
+			}, commandArray)
 
 		end)
 

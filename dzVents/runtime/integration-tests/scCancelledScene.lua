@@ -6,6 +6,6 @@ return {
 	},
 	execute = function(domoticz, scene)
 		domoticz.globalData.cancelledScene = domoticz.globalData.cancelledScene + 1
-		scene.reset()
+		scene.cancelQueuedCommands()
 	end
 }
