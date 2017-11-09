@@ -1,0 +1,187 @@
+// Origin:
+//
+// security panel by GizMoCuz
+// css by DewGew
+
+body{
+    position: fixed; 
+    overflow-y: scroll;
+    width: 100%;
+	top: -20px;
+	left: -20px;
+	right: -40px;
+	bottom: -40px;
+	width: auto;
+	height: auto;
+	background-image: url(../secbackground.jpg);
+	background-size: cover;
+	-webkit-filter: blur(0px);
+	
+}
+#main:-webkit-full-screen { // created for 240x320
+	margin: auto;
+	position: absolute;
+	top: 0; left: 0; bottom: 0; right: 0;
+	background-color: rgba(0, 0, 0, 0.3);
+		#keypad {
+			.keypad-header {
+				.title { 
+					font-size: 27px;
+				}
+				.title2{
+					font-size: 27px;
+				}
+			}
+			input[type="text"] { // digit display
+				width: 250px;
+				height: 30px;
+				font-size: 22px;
+				padding: 6px;
+			}
+			.keypad-keys {
+				li {
+					width: 11px;
+					&:hover {
+						opacity: 0.5;
+					}
+				}
+				
+				li.disarm {
+					width: 68px;
+					font-size: 17px;
+				}
+				
+				li.disabled {
+					width: 68px;
+					font-size: 17px;
+				}
+					
+				li.arm {
+					width: 68px;
+					font-size: 17px;
+				}
+				
+				li.btnclear {
+					width: 68px;
+					font-size: 17px;
+				}
+			}
+		}
+	
+}
+#main {
+	margin: auto;
+	position: absolute;
+	top: 0; left: 0; bottom: 0; right: 0;
+	height: 600px;
+	width: 550px;
+	padding: 10px;
+		#keypad {
+			position: relative; left: -50%;
+			top: calc(50% - 130px);
+			left: calc(50% - 50px);
+			height: 150px;
+			width: 550px;
+			padding: 10px;
+			.keypad-header {
+				position: relative; left: -50%;
+				top: 0px;
+				left: 30px;
+				.title { 
+					color: #FFF !important;
+					font-family: 'Exo', sans-serif;
+					font-size: 40px;
+					font-weight: 200;
+					span {
+						color: #F29E20 !important;
+					}
+				}							 
+			}
+			input[type="text"] { // digit display
+				width: 375px;
+				height: 40px;
+				background: transparent;
+				text-align: center;
+				border: 1px solid rgba(255,255,255,0.6);
+				border-radius: 2px;
+				color: #F29E20 !important;
+				font-family: 'Exo', sans-serif;
+				font-size: 32px;
+				font-weight: 400;
+				padding: 6px;
+				margin-top: 5px;
+				margin-left: 40px;
+			}
+			.keypad-keys {
+				overflow: hidden;
+				li {
+					display: block;
+					float: left;
+					cursor: pointer;
+					width: 30px;
+					height: 20px;
+					white-space: nowrap;
+					background: #757575;
+					text-align: center;
+					background: #fff;
+					margin-top: 10px;
+					border: 1px solid transparent;
+					border-color: #000;
+					font-family: 'Exo', sans-serif;
+					font-size: 18px;
+					color: #a18d6c;
+					padding: 20px;
+					
+					
+					&:hover {
+						opacity: 0.5;
+						color: #000;
+					}
+				}
+				
+				li.disarm {
+					width: 137px;
+					font-size: 24px;
+					color: #000;
+					background: #1ea803;
+					opacity: 0.8;
+					&:hover {
+						opacity: 0.5;
+						
+					}
+				}
+				
+				li.disabled {
+					width: 137px;
+					font-size: 24px;
+					background: #cedce7;
+					}
+					
+				li.arm {
+					width: 137px;
+					font-size: 24px;
+					color: #000;
+					background: #E50000;
+					opacity: 0.8;
+					&:hover {
+						opacity: 0.5;
+						
+					}
+				}
+				
+				li.btnclear {
+					width: 137px;
+					font-size: 24px;
+					color: #000;
+					background: #00b7ea;
+					opacity: 0.8;
+					&:hover {
+						opacity: 0.5;
+						
+					}
+				}
+			}
+		}
+	
+}
+

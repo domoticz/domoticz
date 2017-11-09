@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="mobile-web-app-capable" content="yes">
 	<title>Domoticz Security Panel</title>
-	<link href="css/secpanel.less" rel="stylesheet/less" />
+	<link href="css/style.less" rel="stylesheet/less" />
 	<script src="js/less.js"></script>
 	<script src="js/ion.sound.min.js"></script>
 	<script src="../js/jquery-1.12.0.min.js"></script>
@@ -24,7 +24,7 @@
 			path: "media/",
 			preload: true,
 			multiplay: true,
-			volume: 0.4
+			volume: 0.9
 		});
 	
 		function ShowError(error) {
@@ -59,7 +59,7 @@
 						else if (data.secstatus==1) displaytext="ARM HOME";
 						else if (data.secstatus==2) displaytext="ARM AWAY";
 						else displaytext="UNKNOWN";
-						$('#digitdisplay').val(" "+displaytext+" ");
+						$('#digitdisplay').val("* "+displaytext+" *");
 					}
 				},
 				error: function(data){
@@ -350,7 +350,7 @@
 		
 		function SetLanguageEx(lng) {
 			$.i18n.init({
-				resGetPath: "/i18n/domoticz-__lng__.json",
+				resGetPath: '/i18n/domoticz-__lng__.json',
 				fallbackLng: false,
 				getAsync: false,
 				debug: false,
@@ -359,7 +359,7 @@
 				keyseparator: 'bbcc',
 				lng: lng
 			});
-			$("#main").i18n();
+			$(".nav").i18n();
 			MakeDatatableTranslations();
 		}
 		$(document).ready(function() {
@@ -388,7 +388,7 @@
 		<div class="main-border">
 			<div id="keypad">
 				<div class="keypad-header">
-					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz<span>SecurityPanel</span></p></div>
+					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz Security Panel</p></div>
 				</div>
 				<form name="keypadinput">
 					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled"/>
@@ -397,26 +397,26 @@
 						<li class="digit" onClick="javascript:AddDigit('1');">1</li>
 						<li class="digit" onClick="javascript:AddDigit('2');">2</li>
 						<li class="digit" onClick="javascript:AddDigit('3');">3</li>
-						<li data-i18n="Disarm" class="disarm" onClick="javascript:SetSecStatus(0);">Disarm</li>
+						<li class="disarm" onClick="javascript:SetSecStatus(0);">Disarm</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="digit" onClick="javascript:AddDigit('4');">4</li>
 						<li class="digit" onClick="javascript:AddDigit('5');">5</li>
 						<li class="digit" onClick="javascript:AddDigit('6');">6</li>
-						<li data-i18n="Arm Home" class="arm" onClick="javascript:SetSecStatus(1, zones);">Arm Home</li>
+						<li class="arm" onClick="javascript:SetSecStatus(1, zones);">Arm Home</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="digit" onClick="javascript:AddDigit('7');">7</li>
 						<li class="digit" onClick="javascript:AddDigit('8');">8</li>
 						<li class="digit" onClick="javascript:AddDigit('9');">9</li>
-						<li data-i18n="Arm Away" class="arm" onClick="javascript:SetSecStatus(2, zones);">Arm Away</li>
+						<li class="arm" onClick="javascript:SetSecStatus(2, zones);">Arm Away</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li style="visibility: hidden;"></li>
 						<li class="digit" onClick="javascript:AddDigit('0');">0</li>
-						<!-- <li id="setall" onClick="javascript:beep();">All</li> -->
+						<!--<li id="setall" onClick="javascript:beep();">All</li>-->
 						<li style="visibility: hidden;"></li>
-						<li data-i18n="Cancel" class="btnclear" onClick="javascript:beep(); ShowStatus();">Cancel</li>
+						<li class="btnclear" onClick="javascript:beep(); ShowStatus();">Cancel</li>
 					</ul>
 				</form>
 			</div>
