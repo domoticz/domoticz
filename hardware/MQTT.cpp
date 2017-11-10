@@ -267,13 +267,10 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			if (root["level"].empty())
 				goto mqttinvaliddata;
+			if (root["level"].isString())
+				level = atoi(root["level"].asString().c_str());
 			else
-			{
-				if (root["level"].isString())
-					level = atoi(root["level"].asString().c_str());
-				else
-					level = root["level"].asInt();
-			}
+				level = root["level"].asInt();
 		}
 		if (!m_mainworker.SwitchLight(idx, switchcmd, level, -1, false, 0) == true)
 		{
@@ -298,13 +295,10 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			if (root["level"].empty())
 				goto mqttinvaliddata;
+			if (root["level"].isString())
+				level = atoi(root["level"].asString().c_str());
 			else
-			{
-				if (root["level"].isString())
-					level = atoi(root["level"].asString().c_str());
-				else
-					level = root["level"].asInt();
-			}
+				level = root["level"].asInt();
 		}
 
 		int hue = 0;
