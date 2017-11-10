@@ -918,7 +918,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + Pollseconds +
 					"&Mode2=" + UseFlags +
-					"&Mode5=" + evo_installation,
+					"&Mode3=" + evo_installation,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1782,7 +1782,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + Pollseconds +
 					"&Mode2=" + UseFlags +
-					"&Mode5=" + evo_installation,
+					"&Mode3=" + evo_installation,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5224,7 +5224,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
 							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
 
-							var Location = parseInt(data["Mode5"]);
+							var Location = parseInt(data["Mode3"]);
 							for (var i=1;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
