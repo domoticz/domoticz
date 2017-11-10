@@ -2825,6 +2825,15 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
+
+			if (!IsIdxForUser(&session, atoi(idx.c_str())))
+			{
+				_log.Log(LOG_ERROR, "User: %s tried to update an Unauthorized device!", session.username.c_str());
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+
 			std::string hid = request::findValue(&req, "hid");
 			std::string did = request::findValue(&req, "did");
 			std::string dunit = request::findValue(&req, "dunit");
@@ -2881,8 +2890,7 @@ namespace http {
 			sstr << idx;
 			sstr >> ulIdx;
 
-			int invalue = (!nvalue.empty()) ? atoi(nvalue.c_str()) : 0;
-
+			int invalue = atoi(nvalue.c_str());
 
 			std::string sSignalLevel = request::findValue(&req, "rssi");
 			if (sSignalLevel != "")
