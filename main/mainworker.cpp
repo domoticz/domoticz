@@ -12602,8 +12602,7 @@ void MainWorker::LoadSharedUsers()
 			suser.Password = sd[2];
 
 			//Get User Devices
-			result2 = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')",
-				sd[0].c_str());
+			result2 = m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%q')", sd[0].c_str());
 			if (result2.size() > 0)
 			{
 				for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)

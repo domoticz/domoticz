@@ -24,8 +24,8 @@ namespace http {
 			unsigned long ID;
 			std::string Username;
 			std::string Password;
-
 			_eUserRights userrights;
+			int TotSensors;
 			int ActiveTabs;
 		} WebUserPassword;
 
