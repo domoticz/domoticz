@@ -135,6 +135,10 @@ define(['app'], function (app) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
+					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					var port = "&port=" + encodeURIComponent(i2caddress);
+				}
 				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 					var gpiodebounce = $("#hardwareparamsgpio #gpiodebounce").val();
 					var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
@@ -248,6 +252,17 @@ define(['app'], function (app) {
 					extra = $.devExtra;
 				}
 
+				if (text.indexOf("USBtin") >= 0) { 
+					//var Typecan = $("#hardwarecontent #divusbtin #combotypecanusbtin option:selected").val();
+					var ActivateMultiblocV8 = $("#hardwarecontent #divusbtin #activateMultiblocV8").prop("checked") ? 1 : 0;
+					var ActivateCanFree = $("#hardwarecontent #divusbtin #activateCanFree").prop("checked") ? 1 : 0;
+					var DebugActiv = $("#hardwarecontent #divusbtin #combodebugusbtin option:selected").val();
+					Mode1 = (ActivateCanFree&0x01);
+					Mode1 <<= 1;
+					Mode1 += (ActivateMultiblocV8&0x01);
+					Mode2 = DebugActiv;
+				}
+				
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&port=" + encodeURIComponent(serialport) +
@@ -280,7 +295,8 @@ define(['app'], function (app) {
 					text.indexOf("KMTronic") == -1 &&
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Razberry") == -1 &&
-					text.indexOf("MyHome OpenWebNet with LAN interface") == -1
+                    text.indexOf("MyHome OpenWebNet with LAN interface") == -1 &&
+                    text.indexof("EnphaseAPI") == -1
 				)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
@@ -902,7 +918,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + Pollseconds +
 					"&Mode2=" + UseFlags +
-					"&Mode5=" + evo_installation,
+					"&Mode3=" + evo_installation,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1179,6 +1195,10 @@ define(['app'], function (app) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
+					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					var port = "&port=" + encodeURIComponent(i2caddress);
+				}
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + port,
@@ -1257,6 +1277,17 @@ define(['app'], function (app) {
 					Mode3 = ratelimitp1;
 				}
 
+				if (text.indexOf("USBtin") >= 0) {
+					//Mode1 = $("#hardwarecontent #divusbtin #combotypecanusbtin option:selected").val();
+					var ActivateMultiblocV8 = $("#hardwarecontent #divusbtin #activateMultiblocV8").prop("checked") ? 1 : 0;
+					var ActivateCanFree = $("#hardwarecontent #divusbtin #activateCanFree").prop("checked") ? 1 : 0;
+					var DebugActiv = $("#hardwarecontent #divusbtin #combodebugusbtin option:selected").val();
+					Mode1 = (ActivateCanFree&0x01);
+					Mode1 <<= 1;
+					Mode1 += (ActivateMultiblocV8&0x01);
+					Mode2 = DebugActiv;
+				}
+				
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&port=" + encodeURIComponent(serialport) + "&extra=" + extra + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + Mode1,
@@ -1751,7 +1782,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + Pollseconds +
 					"&Mode2=" + UseFlags +
-					"&Mode5=" + evo_installation,
+					"&Mode3=" + evo_installation,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4753,7 +4784,7 @@ define(['app'], function (app) {
 								SerialName = item.SerialPort;
 								intport = jQuery.inArray(item.SerialPort, $scope.SerialPortStr);
 							}
-							if (item.Type == 93) {
+							if (item.Type == 93 || item.Type == 109) {
 								SerialName = "I2C-" + SerialName;
 							}
 
@@ -4998,6 +5029,9 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
 							}
+							else if (data["Type"].indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
+								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
+							}
 						}
 						else if ((data["Type"].indexOf("GPIO") >= 0) && (data["Type"].indexOf("sysfs GPIO") == -1)) {
 							$("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
@@ -5038,6 +5072,13 @@ define(['app'], function (app) {
 								else {
 									$("#hardwarecontent #divcrcp1").show();
 								}
+							}
+							else if (data["Type"].indexOf("USBtin") >= 0) {
+								//$("#hardwarecontent #divusbtin #combotypecanusbtin").val( data["Mode1"] );
+								$("#hardwarecontent #divusbtin #activateMultiblocV8").prop("checked", (data["Mode1"] &0x01) > 0 );	
+								$("#hardwarecontent #divusbtin #activateCanFree").prop("checked", (data["Mode1"] &0x02) > 0 );	
+								$("#hardwarecontent #divusbtin #combodebugusbtin").val( data["Mode2"] );
+								
 							}
 						}
 						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
@@ -5183,7 +5224,7 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
 							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
 
-							var Location = parseInt(data["Mode5"]);
+							var Location = parseInt(data["Mode3"]);
 							for (var i=1;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
@@ -5316,6 +5357,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divevohome").hide();
 			$("#hardwarecontent #divevohometcp").hide();
 			$("#hardwarecontent #divevohomeweb").hide();
+			$("#hardwarecontent #divusbtin").hide();
 			$("#hardwarecontent #divbaudratemysensors").hide();
 			$("#hardwarecontent #divbaudratep1").hide();
 			$("#hardwarecontent #divbaudrateteleinfo").hide();
@@ -5366,6 +5408,9 @@ define(['app'], function (app) {
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 					$("#hardwarecontent #divi2caddress").show();
 				}
+				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
+					$("#hardwarecontent #divi2caddress").show();
+				}
 			}
 			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				$("#hardwarecontent #divgpio").show();
@@ -5400,7 +5445,9 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divratelimitp1").show();
 					$("#hardwarecontent #divcrcp1").show();
 				}
-
+				if (text.indexOf("USBtin") >= 0){
+					$("#hardwarecontent #divusbtin").show();
+				}
 				$("#hardwarecontent #divserial").show();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
