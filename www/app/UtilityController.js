@@ -987,7 +987,7 @@ define(['app'], function (app) {
 									status = item.Data;
 								}
 								else if (item.SubType == "Alert") {
-									status = item.Data;
+									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									var aLevel = item.Level;
 									if (aLevel > 4) aLevel = 4;
 									img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
@@ -1308,7 +1308,7 @@ define(['app'], function (app) {
 							}
 							else if (item.SubType == "Alert") {
 								xhtm += 'Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Pressure") {
 								xhtm += 'gauge48.png" height="48" width="48"></td>\n';
