@@ -98,7 +98,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	}
 	else
 	{
-		if (_apiuser != '')
+		if (std::to_string(_apiuser) != '')
 		{
 			if (HTTPClient::GETBinary(CURLEncode::URLDecode(_apiuser.c_str()), ExtraHeadersBinary, camimage, 10))
 			{
