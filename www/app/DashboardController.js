@@ -1472,7 +1472,6 @@ define(['app'], function (app) {
 											(item.SubType == "Voltage") ||
 											(item.SubType == "Distance") ||
 											(item.SubType == "Current") ||
-											(item.SubType == "Text") ||
 											(item.SubType == "Pressure") ||
 											(item.SubType == "A/D") ||
 											(item.SubType == "Waterflow") ||
@@ -1490,6 +1489,9 @@ define(['app'], function (app) {
 											var aLevel = item.Level;
 											if (aLevel > 4) aLevel = 4;
 											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2') + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+										}
+										else if (item.SubType == "Text") {
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
 										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1587,7 +1589,7 @@ define(['app'], function (app) {
 											bigtext = item.Data;
 										}
 										else if (item.SubType == "Text") {
-											status = item.Data;
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
 										else if (item.SubType == "Alert") {
 											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
@@ -3525,7 +3527,6 @@ define(['app'], function (app) {
 										(item.SubType == "Voltage") ||
 										(item.SubType == "Distance") ||
 										(item.SubType == "Current") ||
-										(item.SubType == "Text") ||
 										(item.SubType == "Pressure") ||
 										(item.SubType == "A/D") ||
 										(item.SubType == "Waterflow") ||
@@ -3543,6 +3544,9 @@ define(['app'], function (app) {
 										var aLevel = item.Level;
 										if (aLevel > 4) aLevel = 4;
 										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2') + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+									}
+									else if (item.SubType == "Text") {
+										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
@@ -3671,13 +3675,6 @@ define(['app'], function (app) {
 									else if (item.SubType == "Smartwares") {
 										bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
 									}
-									else if (item.SubType == "Text") {
-										if (item.Data.length > 12) {
-											bigtexthtml += '' + item.Data.substr(0, 11) + '..';
-										} else {
-											bigtexthtml += item.Data;
-										}
-									}
 									bigtexthtml += '</span>';
 
 									/*  generate image and status html  */
@@ -3785,7 +3782,7 @@ define(['app'], function (app) {
 									}
 									else if (item.SubType == "Text") {
 										imagehtml += 'text48.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-										statushtml = item.Data;
+										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Alert") {
 										imagehtml += 'Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';

@@ -984,7 +984,7 @@ define(['app'], function (app) {
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Text") {
-									status = item.Data;
+									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 								}
 								else if (item.SubType == "Alert") {
 									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
@@ -1304,7 +1304,7 @@ define(['app'], function (app) {
 							}
 							else if (item.SubType == "Text") {
 								xhtm += 'text48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 							}
 							else if (item.SubType == "Alert") {
 								xhtm += 'Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
