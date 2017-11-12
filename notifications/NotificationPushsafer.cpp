@@ -77,31 +77,43 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			PS_t = cSubject;
 		}
 
-		if (HTTPClient::GETBinary(CURLEncode::URLDecode(PS_p), ExtraHeadersBinary, camimage, 10))
+		if (PS_p.length() >= 10)
 		{
-			std::string base64ImageString(camimage.begin(), camimage.end());
-			base64ImageString = base64_encode((const unsigned char*)base64ImageString.c_str(), base64ImageString.size());
-			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+			if (HTTPClient::GETBinary(CURLEncode::URLDecode(PS_p), ExtraHeadersBinary, camimage, 10))
+			{
+				std::string base64ImageString(camimage.begin(), camimage.end());
+				base64ImageString = base64_encode((const unsigned char*)base64ImageString.c_str(), base64ImageString.size());
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&p=data:image/jpeg;base64," << base64ImageString << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
+				sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
+			}
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
 			sPostData << "&k=" << _apikey << "&d=" << PS_d << "&i=" << PS_i << "&s=" << PS_s << "&v=" << PS_v << "&t=" << PS_t << "&m=" << PS_m << "&u=" << PS_u << "&ut=" << PS_ut << "&l=" << PS_l;
 		}
-
 	}
 	else
 	{
-
-		if (HTTPClient::GETBinary(CURLEncode::URLDecode(_apiuser.c_str()), ExtraHeadersBinary, camimage, 10))
+		if (_apiuser.c_str().length() >= 10)
 		{
-			std::string base64ImageString(camimage.begin(), camimage.end());
-			base64ImageString = base64_encode((const unsigned char*)base64ImageString.c_str(), base64ImageString.size());
-			sPostData << "i=12&k=" << _apikey << "&t=" << cSubject << "&m=" << Text << "&p=data:image/jpeg;base64," << base64ImageString;
+			if (HTTPClient::GETBinary(CURLEncode::URLDecode(_apiuser.c_str()), ExtraHeadersBinary, camimage, 10))
+			{
+				std::string base64ImageString(camimage.begin(), camimage.end());
+				base64ImageString = base64_encode((const unsigned char*)base64ImageString.c_str(), base64ImageString.size());
+				sPostData << "i=12&k=" << _apikey << "&t=" << cSubject << "&m=" << Text << "&p=data:image/jpeg;base64," << base64ImageString;
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
+				sPostData << "i=12&k=" << _apikey << "&t=" << cSubject << "&m=" << Text;
+			}
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
 			sPostData << "i=12&k=" << _apikey << "&t=" << cSubject << "&m=" << Text;
 		}
 	}
