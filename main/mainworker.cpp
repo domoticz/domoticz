@@ -10806,7 +10806,19 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 	//when asking for Toggle, just switch to the opposite value
 	if (switchcmd == "Toggle") {
-		switchcmd = (atoi(sd[7].c_str()) == 1 ? "Off" : "On");
+		//Request current state of switch
+		std::string lstatus = "";
+		int llevel = 0;
+		bool bHaveDimmer = false;
+		bool bHaveGroupCmd = false;
+		int maxDimLevel = 0;
+
+		int nValue = atoi(sd[7].c_str());
+		std::string sValue = sd[8];
+
+		GetLightStatus(dType, dSubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		//Flip the status
+		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
 	}
 
 	//adjust level

@@ -2833,7 +2833,6 @@ namespace http {
 				return;
 			}
 
-
 			std::string hid = request::findValue(&req, "hid");
 			std::string did = request::findValue(&req, "did");
 			std::string dunit = request::findValue(&req, "dunit");
@@ -6494,27 +6493,6 @@ namespace http {
 
 				_log.Log(LOG_STATUS, "User: %s initiated a switch command (%s/%s/%s)", Username.c_str(), idx.c_str(), sSwitchName.c_str(), switchcmd.c_str());
 
-				if (switchcmd == "Toggle") {
-					//Request current state of switch
-					result = m_sql.safe_query(
-						"SELECT [Type],[SubType],SwitchType,nValue,sValue FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());
-					if (result.size() > 0)
-					{
-						std::vector<std::string> sd = result[0];
-						unsigned char devType = (unsigned char)atoi(sd[0].c_str());
-						unsigned char subType = (unsigned char)atoi(sd[1].c_str());
-						_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
-						int nValue = atoi(sd[3].c_str());
-						std::string sValue = sd[4];
-						std::string lstatus = "";
-						int llevel = 0;
-						bool bHaveDimmer = false;
-						bool bHaveGroupCmd = false;
-						int maxDimLevel = 0;
-						GetLightStatus(devType, subType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-						switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
-					}
-				}
 				root["title"] = "SwitchLight";
 				if (m_mainworker.SwitchLight(idx, switchcmd, level, "-1", onlyonchange, 0) == true)
 				{
