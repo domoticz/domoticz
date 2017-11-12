@@ -10821,24 +10821,12 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		switchcmd = (IsLightSwitchOn(lstatus) == true) ? "Off" : "On";
 	}
 
-	//adjust level
-	if (switchcmd=="Set Level" ||
-		switchcmd=="On")
-	{
-		if (
-			(level > 0) &&
-			(switchtype != STYPE_Selector)
-			)
-		{
-			level -= 1;
-		}
-		//when level = 0 and command is "Set Level", set switch command to Off
-		if (level==0 && switchcmd=="Set Level")
-			switchcmd="Off";
-	}
+	// If dimlevel is 0 or no dimlevel, turn switch off
+	if (level <= 0 && switchcmd == "Set Level")
+		switchcmd="Off";
 
-	//when level = 0 and command is "On" replace level with "LastLevel"
-	if (switchcmd=="On" && level == 0 && switchtype != STYPE_Selector)
+	//when level is invalid or command is "On", replace level with "LastLevel"
+	if (switchcmd=="On" || level < 0)
 	{
 		//Get LastLevel
 		std::vector<std::vector<std::string> > result;
@@ -10849,6 +10837,8 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 			level = atoi(result[0][0].c_str());
 		}
 	}
+	// TODO: Something smarter if level is not valid?
+	level = max(level,0);
 
 	//
 	//	For plugins all the specific logic below is irrelevent
@@ -11771,8 +11761,11 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 	uint64_t ID;
 	std::stringstream s_str(idx);
 	s_str >> ID;
+	int ilevel = -1;
+	if (level != "")
+		ilevel = atoi(level.c_str());
 
-	return SwitchLight(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()), atoi(ooc.c_str()) != 0, ExtraDelay);
+	return SwitchLight(ID, switchcmd, ilevel, atoi(hue.c_str()), atoi(ooc.c_str()) != 0, ExtraDelay);
 }
 
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
@@ -12471,7 +12464,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 			_log.Log(LOG_NORM, "Activating Scene/Group Device: %s (%s)", DeviceName.c_str(), lstatus.c_str());
 
 
-			int ilevel = maxDimLevel - 1;
+			int ilevel = maxDimLevel - 1; // Why -1?
 
 			if (
 				((switchtype == STYPE_Dimmer) ||
@@ -12486,7 +12479,7 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 					float fLevel = (maxDimLevel / 100.0f)*level;
 					if (fLevel > 100)
 						fLevel = 100;
-					ilevel = round(fLevel) + 1;
+					ilevel = round(fLevel);
 				}
 				if (switchtype == STYPE_Selector) {
 					if (lstatus != "Set Level") {
