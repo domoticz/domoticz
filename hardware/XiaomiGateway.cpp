@@ -295,7 +295,7 @@ void XiaomiGateway::InsertUpdateTemperature(const std::string &nodeid, const std
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTempSensor(sID, battery, Temperature, Name.c_str());
+		SendTempSensor(sID, battery, Temperature, Name);
 	}
 }
 
@@ -303,7 +303,7 @@ void XiaomiGateway::InsertUpdateHumidity(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendHumiditySensor(sID, battery, Humidity, Name.c_str());
+		SendHumiditySensor(sID, battery, Humidity, Name);
 	}
 }
 
@@ -311,7 +311,7 @@ void XiaomiGateway::InsertUpdatePressure(const std::string &nodeid, const std::s
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name.c_str());
+		SendPressureSensor(sID, 1, battery, static_cast<float>(Pressure), Name);
 	}
 }
 
@@ -536,7 +536,7 @@ void XiaomiGateway::InsertUpdateCubeText(const std::string & nodeid, const std::
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
-		SendTextSensor(sID, sID, 255, degrees.c_str(), Name.c_str());
+		SendTextSensor(sID, sID, 255, degrees.c_str(), Name);
 	}
 }
 
@@ -552,12 +552,12 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	}
 }
 
-void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
+void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination, const int battery)
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
 		float lux = (float)Illumination;
-		SendLuxSensor(sID, sID, 100, lux, Name);
+		SendLuxSensor(sID, sID, battery, lux, Name);
 	}
 }
 
@@ -743,7 +743,7 @@ unsigned int XiaomiGateway::GetShortID(const std::string & nodeid)
 	return sID;
 }
 
-XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string gatewayIp, const std::string localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
+XiaomiGateway::xiaomi_udp_server::xiaomi_udp_server(boost::asio::io_service& io_service, int m_HwdID, const std::string &gatewayIp, const std::string &localIp, const bool listenPort9898, const bool outputMessage, const bool includeVoltage, XiaomiGateway *parent)
 	: socket_(io_service, boost::asio::ip::udp::v4())
 {
 	m_HardwareID = m_HwdID;
@@ -1010,7 +1010,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 								}
 								if (lux != "") {
-									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
+									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()), battery);
 								}
 								if (voltage != "" && m_IncludeVoltage) {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
@@ -1086,7 +1086,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									on = true;
 								}
 								m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + m_gatewayip + ")", on, brightness, 0);
-								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()));
+								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()), 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 3, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 4, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 5, 0, cmd, "", "", 255);

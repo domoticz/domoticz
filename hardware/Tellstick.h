@@ -4,7 +4,7 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition_variable.hpp>

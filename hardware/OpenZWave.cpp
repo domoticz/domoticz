@@ -1196,6 +1196,14 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		}
 	}
 	if (!pDevice)
+	{
+		//Try to find Binary type
+		if ((value == 0) || (value == 255))
+		{
+			pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
+		}
+	}
+	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
 	{

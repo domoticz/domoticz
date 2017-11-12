@@ -107,6 +107,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyUnicode_GetLength, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyType_IsSubtype, PyTypeObject* COMMA PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyByteArray_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyErr_Occurred, );
+		DECLARE_PYTHON_SYMBOL(long, PyLong_AsLong, PyObject*);
 
 #ifdef _DEBUG
 		// In a debug build dealloc is a function but for release builds its a macro
@@ -211,6 +213,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_GetLength);
 					RESOLVE_PYTHON_SYMBOL(PyType_IsSubtype);
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_Size);
+					RESOLVE_PYTHON_SYMBOL(PyErr_Occurred);
+					RESOLVE_PYTHON_SYMBOL(PyLong_AsLong);
 				}
 			}
 			_Py_NoneStruct.ob_refcnt = 1;
@@ -221,7 +225,7 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const std::string sLibrary, bool bSimple = false)
+			void FindLibrary(const std::string &sLibrary, bool bSimple = false)
 			{
 				std::string library;
 				if (bSimple)
@@ -375,4 +379,6 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyUnicode_GetLength		pythonLib->PyUnicode_GetLength
 #define PyType_IsSubtype		pythonLib->PyType_IsSubtype
 #define PyByteArray_Size		pythonLib->PyByteArray_Size
+#define PyErr_Occurred			pythonLib->PyErr_Occurred
+#define PyLong_AsLong			pythonLib->PyLong_AsLong
 }

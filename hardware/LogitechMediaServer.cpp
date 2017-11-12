@@ -53,7 +53,7 @@ CLogitechMediaServer::~CLogitechMediaServer(void)
 	m_bIsStarted = false;
 }
 
-Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string sPostdata)
+Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort, const std::string &sPostdata)
 {
 	Json::Value root;
 	std::vector<std::string> ExtraHeaders;

@@ -1,19 +1,12 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <deque>
-#include <iostream>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-
-using boost::asio::ip::udp;
-
+#include <iosfwd>
 
 class Arilux : public CDomoticzHardwareBase
 {
 public:
-	Arilux(const int ID);
+	explicit Arilux(const int ID);
 	~Arilux(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &ariluxBright, const std::string &ariluxHue);	

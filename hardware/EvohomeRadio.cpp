@@ -928,7 +928,6 @@ bool CEvohomeRadio::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 		if (AllSensors)
 		{
 			std::vector<std::vector<std::string> > result;
-			char zstrname[40];
 			std::string zstrid(CEvohomeID::GetHexID(msg.GetID(0)));
 
 			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID == '%q') AND (Type == %d)", m_HwdID, zstrid.c_str(), (int)pTypeEvohomeZone);
@@ -944,6 +943,7 @@ bool CEvohomeRadio::DecodeZoneTemp(CEvohomeMsg &msg)//0x30C9
 				if (!result.empty())
 				{
 					tsen.EVOHOME2.zone = atoi(result[0][0].c_str()) + 12;
+					char zstrname[40];
 					sprintf(zstrname, "Zone %d", atoi(result[0][0].c_str()));
 					Log(true, LOG_STATUS, "evohome: %s: Zone sensor msg: 0x%x: %d: %d", tag, msg.GetID(0), tsen.EVOHOME2.zone, tsen.EVOHOME2.temperature);
 					sDecodeRXMessage(this, (const unsigned char *)&tsen.EVOHOME2, zstrname, -1);

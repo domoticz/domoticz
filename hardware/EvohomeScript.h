@@ -28,7 +28,7 @@
 class CEvohomeScript : public CEvohomeBase
 {
 public:
-	CEvohomeScript(const int ID);
+	explicit CEvohomeScript(const int ID);
 	~CEvohomeScript(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 

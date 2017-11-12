@@ -69,6 +69,8 @@ namespace Plugins {
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
+			
+		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
 		std::string			m_Username;

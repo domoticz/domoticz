@@ -1,7 +1,6 @@
 #pragma once
 
-#include <deque>
-#include <iostream>
+#include <iosfwd>
 #include "DomoticzHardware.h"
 #if defined WIN32
 #include "ws2tcpip.h"

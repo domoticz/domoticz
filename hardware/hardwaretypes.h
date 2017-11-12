@@ -448,6 +448,7 @@ typedef struct _tGeneralSwitch {
 		level = 0;
 		battery_level = 255;
 		rssi = 12;
+		cmnd = 0;
 	}
 } GeneralSwitch;
 
@@ -489,6 +490,7 @@ typedef struct _tP1Gas {
 		type = pTypeP1Gas;
 		subtype = sTypeP1Gas;
 		ID = 1;
+		gasusage = 0;
 	}
 } P1Gas;
 

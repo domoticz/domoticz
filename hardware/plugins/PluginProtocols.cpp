@@ -734,17 +734,25 @@ namespace Plugins {
 					PyDict_SetItemString(pIcmpDict, "Type", pObj);
 					Py_DECREF(pObj);
 
-					if (pICMP->type() == icmp_header::echo_reply)
-						pObj = Py_BuildValue("b", pICMP->type());
-					else
-						pObj = Py_BuildValue("b", -1);
+					pObj = Py_BuildValue("b", pICMP->type());
 					PyDict_SetItemString(pDataDict, "Status", pObj);
 					Py_DECREF(pObj);
 
-					if (pICMP->type() == icmp_header::echo_reply)
-						pObj = Py_BuildValue("s", "Successful Response");
-					else
-						pObj = Py_BuildValue("s", "Unsuccessful Response");
+					switch (pICMP->type())
+					{
+					case icmp_header::echo_reply:
+						pObj = Py_BuildValue("s", "echo_reply");
+						break;
+					case icmp_header::destination_unreachable:
+						pObj = Py_BuildValue("s", "destination_unreachable");
+						break;
+					case icmp_header::time_exceeded:
+						pObj = Py_BuildValue("s", "time_exceeded");
+						break;
+					default:
+						pObj = Py_BuildValue("s", "unknown");
+					}
+
 					PyDict_SetItemString(pDataDict, "Description", pObj);
 					Py_DECREF(pObj);
 
@@ -776,11 +784,11 @@ namespace Plugins {
 		}
 		else
 		{
-			pObj = Py_BuildValue("b", -1);
+			pObj = Py_BuildValue("b", icmp_header::time_exceeded);
 			PyDict_SetItemString(pDataDict, "Status", pObj);
 			Py_DECREF(pObj);
 
-			pObj = Py_BuildValue("s", "No Response");
+			pObj = Py_BuildValue("s", "time_exceeded");
 			PyDict_SetItemString(pDataDict, "Description", pObj);
 			Py_DECREF(pObj);
 		}
