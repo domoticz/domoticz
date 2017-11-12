@@ -552,12 +552,12 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	}
 }
 
-void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination, const int battery)
+void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
 		float lux = (float)Illumination;
-		SendLuxSensor(sID, sID, battery, lux, Name);
+		SendLuxSensor(sID, sID, 100, lux, Name);
 	}
 }
 
@@ -1010,7 +1010,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 								}
 								if (lux != "") {
-									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()), battery);
+									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
 								}
 								if (voltage != "" && m_IncludeVoltage) {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
@@ -1086,7 +1086,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									on = true;
 								}
 								m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + m_gatewayip + ")", on, brightness, 0);
-								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()), 255);
+								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()));
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 3, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 4, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 5, 0, cmd, "", "", 255);
