@@ -2506,7 +2506,7 @@ define(['app'], function (app) {
 								if (isdimmer == true) {
 									var dslider = $(id + " #slider");
 									if (typeof dslider != 'undefined') {
-										dslider.slider("value", item.LevelInt + 1);
+										dslider.slider("value", item.LevelInt);
 									}
 								}
 								if (item.SwitchType === "Selector") {
