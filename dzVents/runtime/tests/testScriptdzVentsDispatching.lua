@@ -3,7 +3,7 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 --package.path = package.path .. ";../?.lua"
-package.path = package.path .. ";../../?.lua" -- two folders up
+package.path = package.path .. ";../../?.lua;../../../scripts/lua/?.lua;"
 package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 
@@ -182,5 +182,19 @@ describe('Event dispatching', function()
 			{ ['Variable:myVar1'] =  '10 TRIGGER' }
 		}, main)
 	end)
+
+	it("should dispatch httpResponse events", function()
+		_G.commandArray = {}
+		_G.httpresponse = {
+			callback='trigger1'
+		}
+		_G.globalvariables['script_reason'] = 'url'
+
+		local main = require('dzVents')
+		assert.is_same({
+			{ ['OpenURL'] =  'test' }
+		}, main)
+	end)
+
 
 end)

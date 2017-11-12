@@ -43,6 +43,8 @@ elseif triggerReason == 'security' then
 	commandArray = helpers.dispatchSecurityEventsToScripts()
 elseif triggerReason == 'scenegroup' then
 	commandArray = helpers.dispatchSceneGroupEventsToScripts()
+elseif triggerReason == 'url' then
+	commandArray = helpers.dispatchHTTPResponseEventsToScripts()
 else
 	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_ERROR)
 end

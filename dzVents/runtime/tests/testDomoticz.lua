@@ -4,7 +4,7 @@ _G._ = _
 local scriptPath = ''
 
 --package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;../../../scripts/lua/?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local testData = require('tstData')
 local function values(t)
@@ -218,9 +218,30 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
-		it('should open a url', function()
-			domoticz.openURL('some url')
-			assert.is_same({ { ['OpenURL'] = 'some url' } }, domoticz.commandArray)
+		describe('openURL', function()
+
+			it('should open a simple url', function()
+				domoticz.openURL('some url')
+				assert.is_same({ { ['OpenURL'] = 'some url' } }, domoticz.commandArray)
+			end)
+
+			it('should open a url with options', function()
+				domoticz.openURL({
+					url = 'some url',
+					callback = 'trigger1'
+				})
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'GET',
+							callback = 'trigger1',
+      						postdata = ''
+						}
+					}
+				}, domoticz.commandArray)
+			end)
+
 		end)
 
 		it('should set a scene', function()

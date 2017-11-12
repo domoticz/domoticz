@@ -5,6 +5,7 @@ local Variable = require('Variable')
 local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
+local _ = require('lodash')
 
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
@@ -112,6 +113,7 @@ local function Domoticz(settings)
 		['EVENT_TYPE_SECURITY'] = 'security',
 		['EVENT_TYPE_SCENE'] = 'scene',
 		['EVENT_TYPE_GROUP'] = 'group',
+		['EVENT_TYPE_HTTPRESPONSE'] = 'httpResponse',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
 		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
@@ -187,9 +189,67 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz open a url
-	function self.openURL(url)
-		utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
-		self.sendCommand('OpenURL', url)
+	function self.openURL(options)
+
+		if (type(options) == 'string') then
+
+			local url = options
+			utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
+			self.sendCommand('OpenURL', url)
+
+		elseif (type(options) == 'table') then
+
+			local url = options.url
+			local method = string.upper(options.method or 'GET')
+			local callback = options.callback
+
+			-- process body data
+			local body = ''
+			if (options.body ~= nil) then
+				if (type(options.body) == 'table') then
+					body = utils.toJSON(options.body)
+
+					if (options.headers == nil) then
+						options.headers = { ['Content-Type'] = 'application/json' }
+					end
+				else
+					body = options.body
+				end
+			end
+
+			-- create a headers block
+			local requestData = ''
+
+			if (options.headers and type(options.headers) == 'table') then
+				for header, value in pairs(options.headers) do
+					requestData = requestData ..  tostring(header) .. ': ' .. tostring(value)  .. '\n'
+				end
+				if (requestData ~= '') then
+					requestData = requestData .. '\n'
+				end
+			end
+
+			local requestData = requestData .. body
+
+			local request = {
+				URL = url,
+				method = method,
+				postdata = requestData,
+				callback = callback,
+			}
+
+			utils.log('OpenURL: url = ' .. _.str(request.URL), utils.LOG_DEBUG)
+			utils.log('OpenURL: method = ' .. _.str(request.method), utils.LOG_DEBUG)
+			utils.log('OpenURL: post data = ' .. _.str(request.postdata), utils.LOG_DEBUG)
+			utils.log('OpenURL: headers = ' .. _.str(request.headers), utils.LOG_DEBUG)
+			utils.log('OpenURL: callback = ' .. _.str(request.callback), utils.LOG_DEBUG)
+
+			self.sendCommand('OpenURL', request)
+
+		else
+			utils.log('OpenURL: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)
+		end
+
 	end
 
 	-- send a scene switch command
@@ -238,7 +298,7 @@ local function Domoticz(settings)
 		return utils.urlEncode(s, strSub)
 	end
 
-	function self.round(x, n)
+		function self.round(x, n)
 		n = math.pow(10, n or 0)
 		x = x * n
 		if x >= 0 then
@@ -325,9 +385,7 @@ local function Domoticz(settings)
 		else
 			utils.log('There is no ' .. baseType .. ' with that name or id: ' .. tostring(id), utils.LOG_ERROR)
 		end
-
 	end
-
 
 	function self._setIterators(collection, initial, baseType, filterForChanged, initalCollection)
 
@@ -438,7 +496,6 @@ local function Domoticz(settings)
 
 		return collection
 	end
-
 
 	function self.devices(id)
 		if (id ~= nil) then

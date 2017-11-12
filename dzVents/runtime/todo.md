@@ -11,3 +11,6 @@ tests for reset()
 lastUpdate errors
 globalData error?
 documentation.md
+http://www.domoticz.com/forum/viewtopic.php?f=6&t=19250
+require json? (path)
+domoticz.utils?

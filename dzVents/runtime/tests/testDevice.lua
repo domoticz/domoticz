@@ -2,7 +2,7 @@ _G._ = require 'lodash'
 
 local scriptPath = ''
 
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../../../scripts/lua/?.lua;'
 
 local testData = require('tstData')
 

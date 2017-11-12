@@ -7,6 +7,7 @@ local GLOBAL_DATA = 'globalData'
 
 local utils = require('Utils')
 local persistence = require('persistence')
+local HTTPResponse = require('HTTPResponse')
 
 local HistoricalStorage = require('HistoricalStorage')
 
@@ -140,7 +141,7 @@ local function EventHelpers(domoticz, mainMethod)
 		utils.log(msg, utils.LOG_ERROR)
 	end
 
-	function self.callEventHandler(eventHandler, device, variable, security, scenegroup)
+	function self.callEventHandler(eventHandler, device, variable, security, scenegroup, httpResponse)
 
 		local useStorage = false
 
@@ -189,6 +190,11 @@ local function EventHelpers(domoticz, mainMethod)
 					info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_GROUP)
 				end
 				ok, res = pcall(eventHandler['execute'], self.domoticz, scenegroup, info)
+			elseif (httpResponse ~= nil) then
+				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_HTTPRESPONSE)
+				info.trigger = httpResponse.callback
+				local response = HTTPResponse(httpResponse)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, response, info)
 			else
 				-- timer
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
@@ -283,10 +289,9 @@ local function EventHelpers(domoticz, mainMethod)
 			return false
 		end
 		return res
-
 	end
 
-	function self.handleEvents(events, device, variable, security, scenegroup)
+	function self.handleEvents(events, device, variable, security, scenegroup, httpResponse)
 
 		local originalLogLevel = _G.logLevel -- a script can override the level
 
@@ -328,12 +333,14 @@ local function EventHelpers(domoticz, mainMethod)
 				moduleLabelInfo = ' Security: "' .. security .. '"'
 			elseif (scenegroup) then
 				moduleLabelInfo = (scenegroup.baseType == 'scene' and ' Scene' or ' Group') .. ': "' .. scenegroup.name .. '", Index: ' .. tostring(scenegroup.id)
+			elseif (httpResponse) then
+				moduleLabelInfo = ' HTTPResponse: "' .. httpResponse.callback ..'"'
 			end
 
 			triggerInfo = eventHandler.trigger and ', trigger: ' .. eventHandler.trigger or ''
 
 			utils.log('------ Start ' ..  scriptType ..  moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
-			self.callEventHandler(eventHandler, device, variable, security, scenegroup)
+			self.callEventHandler(eventHandler, device, variable, security, scenegroup, httpResponse)
 			utils.log('------ Finished ' .. moduleLabel, utils.LOG_MODULE_EXEC_INFO)
 
 			restoreLogging()
@@ -554,7 +561,7 @@ local function EventHelpers(domoticz, mainMethod)
 									elseif (mode == 'variable') then
 										if (type(j) == 'string' and j == 'variables' and type(event) == 'table') then
 											-- { ['variables'] = { 'varA', 'varB' }
-											for devIdx, varName in pairs(event) do
+											for varIdx, varName in pairs(event) do
 												addBindingEvent(bindings, varName, module)
 											end
 										end
@@ -567,6 +574,13 @@ local function EventHelpers(domoticz, mainMethod)
 												module.trigger = def
 											end
 
+										end
+									elseif (mode == 'httpResponse') then
+										if (type(j) == 'string' and j == 'httpResponses' and type(event) == 'table') then
+											-- { ['httpResponses'] = { 'callbackA', 'callbackB' }
+											for i, callbackName in pairs(event) do
+												addBindingEvent(bindings, callbackName, module)
+											end
 										end
 									end
 								end
@@ -597,6 +611,10 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('variable')
 	end
 
+	function self.getHTTPResponseHandlers()
+		return self.getEventBindings('httpResponse')
+	end
+
 	function self.getSecurityHandlers()
 		return self.getEventBindings('security')
 	end
@@ -604,6 +622,7 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.dumpCommandArray(commandArray, force)
 		local printed = false
 		local level = utils.LOG_DEBUG
+		local _ = require('lodash')
 
 		if (force == true and force ~= nil) then
 			level = utils.LOG_INFO
@@ -612,7 +631,7 @@ local function EventHelpers(domoticz, mainMethod)
 		for k, v in pairs(commandArray) do
 			if (type(v) == 'table') then
 				for kk, vv in pairs(v) do
-					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. vv, level)
+					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. _.str(vv), level)
 				end
 			else
 				utils.log(k .. ': ' .. v, level)
@@ -622,10 +641,10 @@ local function EventHelpers(domoticz, mainMethod)
 		if (printed) then utils.log('=====================================================', level) end
 	end
 
-	function self.findScriptForChangedItem(changedItemName, allEventScripts)
+	function self.findScriptForTarget(target, allEventScripts)
 		-- event could be like: myPIRLivingRoom
 		-- or myPir(.*)
-		utils.log('Searching for scripts for changed item: ' .. changedItemName, utils.LOG_DEBUG)
+		utils.log('Searching for scripts for changed item: ' .. target, utils.LOG_DEBUG)
 
 		--[[
 
@@ -660,8 +679,8 @@ local function EventHelpers(domoticz, mainMethod)
 				-- turn it into a valid regexp
 				scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
 
-				if (string.match(changedItemName, scriptTrigger)) then
-					-- there is trigger for this changedItemName
+				if (string.match(target, scriptTrigger)) then
+					-- there is trigger for this target
 
 					if modules == nil then modules = {} end
 
@@ -672,8 +691,8 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 
 			else
-				if (scriptTrigger == changedItemName) then
-					-- there is trigger for this changedItemName
+				if (scriptTrigger == target) then
+					-- there is trigger for this target
 
 					if modules == nil then modules = {} end
 
@@ -699,7 +718,7 @@ local function EventHelpers(domoticz, mainMethod)
 		domoticz.changedDevices().forEach( function(device)
 			utils.log('Device-event for: ' .. device.name .. ' value: ' .. tostring(device.state), utils.LOG_DEBUG)
 
-			local scriptsToExecute = self.findScriptForChangedItem(device.name, allEventScripts)
+			local scriptsToExecute = self.findScriptForTarget(device.name, allEventScripts)
 			local idScripts = allEventScripts[device.id]
 
 			if (idScripts ~= nil) then
@@ -734,7 +753,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local processItem = function(item, loglabel)
 			utils.log(loglabel .. '-event for: ' .. item.name .. ' value: ' .. tostring(item.state), utils.LOG_DEBUG)
 
-			local scriptsToExecute = self.findScriptForChangedItem(item.name, allEventScripts)
+			local scriptsToExecute = self.findScriptForTarget(item.name, allEventScripts)
 			local idScripts = allEventScripts[item.id]
 
 			if (idScripts ~= nil) then
@@ -772,7 +791,6 @@ local function EventHelpers(domoticz, mainMethod)
 		self.dumpCommandArray(self.domoticz.commandArray)
 
 		return self.domoticz.commandArray
-
 	end
 
 	function self.dispatchSecurityEventsToScripts()
@@ -798,7 +816,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			-- first search by name
 
-			scriptsToExecute = self.findScriptForChangedItem(variable.name, allEventScripts)
+			scriptsToExecute = self.findScriptForTarget(variable.name, allEventScripts)
 			if (scriptsToExecute == nil) then
 				-- search by id
 				scriptsToExecute = allEventScripts[variable.id]
@@ -813,6 +831,29 @@ local function EventHelpers(domoticz, mainMethod)
 
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
+	end
+
+	function self.dispatchHTTPResponseEventsToScripts(domoticz)
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		local httpResponseScripts = self.getHTTPResponseHandlers()
+
+		local response =_G.httpresponse
+		local callback = response.callback
+
+		local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
+
+		if (scriptsToExecute ~= nil) then
+			utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+			self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+		end
+
+
+		self.dumpCommandArray(self.domoticz.commandArray)
+		return self.domoticz.commandArray
+
 	end
 
 	return self

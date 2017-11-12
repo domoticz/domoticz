@@ -1,3 +1,5 @@
+local jsonParser = require('JSON')
+
 local self = {
 	LOG_ERROR = 1,
 	LOG_FORCE = 0.5,
@@ -42,6 +44,41 @@ function self.urlEncode(str, strSub)
 	end
 	return str
 end
+
+function self.fromJSON(json)
+
+	local parse = function(j)
+		return jsonParser:decode(j)
+	end
+
+	ok, results = pcall(parse, json)
+
+	if (ok) then
+		return results
+	end
+
+	self.log('Error parsing json to LUA table: ' .. results, self.LOG_ERROR)
+	return nil
+
+end
+
+function self.toJSON(luaTable)
+
+	local toJSON = function(j)
+		return jsonParser:encode(j)
+	end
+
+	ok, results = pcall(toJSON, luaTable)
+
+	if (ok) then
+		return results
+	end
+
+	self.log('Error converting LUA table to json: ' .. results, self.LOG_ERROR)
+	return nil
+
+end
+
 
 function self.log(msg, level)
 
