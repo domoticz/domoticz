@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/signals2.hpp>
-
 #include "BasePush.h"
 
 class CGooglePubSubPush : public CBasePush

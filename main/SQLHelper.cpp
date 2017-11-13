@@ -32,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 120
+#define DB_VERSION 121
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2318,6 +2318,24 @@ bool CSQLHelper::OpenDatabase()
 				if (int returncode = RemoveDir(dzv_rm_Dir1 + "|" + dzv_rm_Dir2, errorPath))
 					_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath.c_str());
 			}
+		}
+		if (dbversion < 121)
+		{
+			// incorrect call to hardware class from mainworker: move Evohome installation parameters from Mode5 to unused Mode3
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					safe_query("UPDATE Hardware SET Mode3='%q', Mode5='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
+				}
+			}
+			
 		}
 	}
 	else if (bNewInstall)
