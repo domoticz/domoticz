@@ -3746,7 +3746,6 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, co
 			return;
 		}
 	}
-	std::cout << extraHeaders << std::endl;
 	OpenURL(URL, extraHeaders, eMethod, postData, callback, delayTime);
 }
 
