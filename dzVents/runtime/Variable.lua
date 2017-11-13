@@ -9,7 +9,8 @@ local function Variable(domoticz, data)
 		['type'] = data.variableType,
 		['changed'] = data.changed,
 		['id'] = data.id,
-		['lastUpdate'] = Time(data.lastUpdate)
+		['lastUpdate'] = Time(data.lastUpdate),
+		['baseType'] = domoticz.BASETYPE_VARIABLE
 	}
 
 	if (data.variableType == 'float' or data.variableType == 'integer') then

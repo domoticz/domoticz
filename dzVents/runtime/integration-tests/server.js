@@ -8,6 +8,8 @@ app.use(bodyParser.json());
 
 app.get('/testget', (request, response) => {
     console.log('/testget');
+    console.log(request.query)
+
     const p = request.query.p || '';
     response.send({
         title: 'GET',
@@ -18,11 +20,10 @@ app.get('/testget', (request, response) => {
 
 app.post('/testpost', (request, response) => {
     console.log('/testpost');
-    // console.log(request.body.toString('utf8'));
+    console.log(request.body);
+    console.log(request.headers);
 
-    console.log(request.query);
-    console.log(request.rawHeaders);
-    const p = request.query.p || '';
+    const p = request.body.p || '';
 
     response.send({
         title: 'POST',

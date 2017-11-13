@@ -386,7 +386,6 @@ describe('event helpers', function()
 
 			local bindings = helpers.getEventBindings()
 
-
 			local internal = _.find(bindings['onscript1'], function(module)
 				return module.name == 'internal2'
 			end)

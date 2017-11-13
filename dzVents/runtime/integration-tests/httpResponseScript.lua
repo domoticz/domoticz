@@ -34,9 +34,9 @@ return {
 		log = dz.log
         local res = true
 
-        if (info.type == domoticz.EVENT_TYPE_HTTPRESPONSE) then
+        if (triggerItem.baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 
-            if (info.trigger == 'trigger1') then
+            if (triggerItem.triggerRule == 'trigger1') then
 
                 res = res and expectEql(triggerItem.json.p, '1', 'p == 1')
 
@@ -53,12 +53,12 @@ return {
 
                 end
 
-            elseif (info.trigger == 'trigger2') then
-                res = res and expectEql(triggerItem.json.p, '2', 'p == 2')
-                domoticz.globalData.httpTrigger = 'trigger2'
+            elseif (triggerItem.triggerRule == 'trigger2') then
+                res = res and expectEql(triggerItem.json.p, 2, 'p == 2')
+                if (res) then domoticz.globalData.httpTrigger = 'trigger2' end
             end
 
-        else
+        elseif (triggerItem.baseType == domoticz.BASETYPE_DEVICE) then
             domoticz.openURL({
                 url = 'http://localhost:3000/testget?p=1',
                 method = 'GET',

@@ -1,11 +1,12 @@
 local _  = require('lodash')
 local utils = require('Utils')
 
-local function HTTPResponce(responseData)
+local function HTTPResponce(domoticz, responseData)
 
     local self = {}
 
     self.headers = responseData.headers or {}
+    self.baseType = domoticz.BASETYPE_HTTP_RESPONSE
 
     self.data = responseData.data or nil
 
@@ -14,6 +15,7 @@ local function HTTPResponce(responseData)
     self.isJSON = false
 
     self.callback = responseData.callback
+    self.triggerRule = responseData.callback
 
     if (string.match(self._contentType, 'application/json') and self.data) then
         local json = utils.fromJSON(self.data)

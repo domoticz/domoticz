@@ -12,6 +12,8 @@ describe('HTTPResponse', function()
 	it('should instantiate', function()
 
 		local r = HTTPResponse({
+			BASETYPE_HTTP_RESPONSE = 'httpResponse'
+		}, {
 			headers = {['Content-Type'] = 'application/json'},
 			data  = '{"a":1}',
 			callback = 'trigger1'
