@@ -77,7 +77,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			PS_t = cSubject;
 		}
 
-		is (!PS_p.empty())
+		if (!PS_p.empty())
 		{
 			if (HTTPClient::GETBinary(CURLEncode::URLDecode(PS_p), ExtraHeadersBinary, camimage, 10))
 			{
@@ -98,7 +98,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 	}
 	else
 	{
-		is (!_apiuser.empty())
+		if (!_apiuser.empty())
 		{
 			if (HTTPClient::GETBinary(CURLEncode::URLDecode(_apiuser.c_str()), ExtraHeadersBinary, camimage, 10))
 			{
