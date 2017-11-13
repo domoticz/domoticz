@@ -1,0 +1,8 @@
+/* This is an experimental feature that enables datavisualisation inside highlighted elements.  
+
+ * Make sure you also enable highlighted dashboard elements.
+
+ */
+
+/* This acts as a signal to javascript that this feature has been enabled. Javascript does the rest.*/
+#appnavbar{z-index:1031}
