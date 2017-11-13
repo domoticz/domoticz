@@ -4293,7 +4293,6 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 				if (fLevel > 100)
 					fLevel = 100;
 				ilevel = int(fLevel);
-				if (ilevel > 0) { ilevel++; }
 			} else if (switchtype == STYPE_Selector) {
 				// llevel cannot be get without sValue so level is getting from percentageLevel
 				ilevel = percentageLevel;

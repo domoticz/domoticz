@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1442
+# ref 1460
 
 CACHE:
 # CSS
@@ -501,6 +501,7 @@ js/angular-route.min.js
 js/angular-sanitize.min.js
 js/angular-scrollglue.js
 js/angular-tree-control.js
+js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
 js/blockly_compressed.js

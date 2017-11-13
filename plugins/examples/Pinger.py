@@ -3,14 +3,14 @@
 #           Author:     Dnpwwo, 2017
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="2.0.6">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="2.0.7">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
 When remote devices are found a matching Domoticz device is created in the Devices tab.
     </description>
     <params>
-        <param field="Address" label="Address(es)" width="300px" required="true" default="127.0.0.1"/>
+        <param field="Address" label="Address(es) comma separated" width="300px" required="true" default="127.0.0.1"/>
         <param field="Mode1" label="Ping Frequency" width="40px">
             <options>
                 <option label="2" value="2"/>
@@ -84,7 +84,7 @@ class BasePlugin:
         if Parameters["Mode6"] != "Normal":
             DumpConfigToLog()
             #Domoticz.Debugging(1)
-        self.icmpList = Parameters["Address"].split(",")
+        self.icmpList = Parameters["Address"].replace(" ", "").split(",")
         for destination in self.icmpList:
             Domoticz.Debug("Endpoint '"+destination+"' found.")
         Domoticz.Heartbeat(int(Parameters["Mode1"]))
@@ -97,7 +97,6 @@ class BasePlugin:
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
         else:
             Domoticz.Log("Failed to connect to: "+Connection.Address+", Description: "+Description)
-            Conn.Close()
         self.icmpConn = None
 
     def onMessage(self, Connection, Data):

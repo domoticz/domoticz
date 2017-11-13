@@ -255,7 +255,8 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeLimitlessLights)
 	{ 
-		sprintf(szIdx, "%08X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		sprintf(szIdx, "%08X", (unsigned int)sID);
 	}
 	else
 	{

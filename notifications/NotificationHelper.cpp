@@ -19,6 +19,7 @@
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
 
+#include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -51,6 +52,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
 	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationBrowser());
 }
 
 CNotificationHelper::~CNotificationHelper()
@@ -233,7 +235,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 	std::string msg = "";
 
-	std::string ltemp = Notification_Type_Label(NTYPE_TEMPERATURE);
+	std::string label = Notification_Type_Label(NTYPE_TEMPERATURE);
 	std::string signtemp = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
 	std::string signhum = Notification_Type_Desc(NTYPE_HUMIDITY, 1);
 
@@ -280,7 +282,7 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				bSendNotification = ApplyRule(splitresults[1], (temp == svalue), (temp < svalue));
 				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					sprintf(szTmp, "%s temperature is %.1f %s [%s %.1f %s]", devicename.c_str(), temp, ltemp.c_str(), splitresults[1].c_str(), svalue, ltemp.c_str());
+					sprintf(szTmp, "%s temperature is %.1f %s [%s %.1f %s]", devicename.c_str(), temp, label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
 					msg = szTmp;
 					sprintf(szTmp, "%.1f", temp);
 					notValue = szTmp;
