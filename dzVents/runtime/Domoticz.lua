@@ -131,7 +131,14 @@ local function Domoticz(settings)
 		['NSS_PUSHALOT'] = 'pushalot',
 		['NSS_PUSHBULLET'] = 'pushbullet',
 		['NSS_PUSHOVER'] = 'pushover',
-		['NSS_PUSHSAFER'] = 'pushsafer'
+		['NSS_PUSHSAFER'] = 'pushsafer',
+		['BASETYPE_DEVICE'] = 'device',
+		['BASETYPE_SCENE'] = 'scene',
+		['BASETYPE_GROUP'] = 'group',
+		['BASETYPE_VARIABLE'] = 'variable',
+		['BASETYPE_SECURITY'] = 'security',
+		['BASETYPE_TIMER'] = 'timer',
+		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse'
 	}
 
 	-- add domoticz commands to the commandArray
@@ -217,24 +224,11 @@ local function Domoticz(settings)
 				end
 			end
 
-			-- create a headers block
-			local requestData = ''
-
-			if (options.headers and type(options.headers) == 'table') then
-				for header, value in pairs(options.headers) do
-					requestData = requestData ..  tostring(header) .. ': ' .. tostring(value)  .. '\n'
-				end
-				if (requestData ~= '') then
-					requestData = requestData .. '\n'
-				end
-			end
-
-			local requestData = requestData .. body
-
 			local request = {
 				URL = url,
 				method = method,
-				postdata = requestData,
+				headers = options.headers,
+				postdata = body,
 				callback = callback,
 			}
 

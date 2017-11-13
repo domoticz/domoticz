@@ -14,3 +14,5 @@ documentation.md
 http://www.domoticz.com/forum/viewtopic.php?f=6&t=19250
 require json? (path)
 domoticz.utils?
+maybe have the second param to execute always available, also with timer events, in the latter case pass a TimerObject with the trigger rule in there. That would make the triggerinfo unnecessary more or less
+make scene/group subdevices unique when received (joost?)

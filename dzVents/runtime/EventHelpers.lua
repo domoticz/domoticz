@@ -8,6 +8,7 @@ local GLOBAL_DATA = 'globalData'
 local utils = require('Utils')
 local persistence = require('persistence')
 local HTTPResponse = require('HTTPResponse')
+local Timer = require('Timer')
 
 local HistoricalStorage = require('HistoricalStorage')
 
@@ -193,12 +194,13 @@ local function EventHelpers(domoticz, mainMethod)
 			elseif (httpResponse ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_HTTPRESPONSE)
 				info.trigger = httpResponse.callback
-				local response = HTTPResponse(httpResponse)
+				local response = HTTPResponse(self.domoticz, httpResponse)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, response, info)
 			else
 				-- timer
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_TIMER)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
+				local timer = Timer(self.domoticz, info.trigger)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, timer, info)
 			end
 
 			if (ok) then
