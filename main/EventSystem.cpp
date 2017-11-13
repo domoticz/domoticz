@@ -2397,7 +2397,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat, HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
+			OpenURL(doWhat, "", HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
 			actionsDone = true;
 			continue;
 		}
@@ -3382,27 +3382,41 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand == "OpenURL")
 	{
-		if ((std::string(luaL_typename(lua_state, -2)) == "string") && lua_istable(lua_state, -1))
+		if (lua_istable(lua_state, -1))
 		{
 			std::map<std::string, std::string> URLdata;
+			std::map<std::string, std::string> URLheaders;
 
 			lua_pushnil(lua_state);
 			while (lua_next(lua_state, tIndex + 2) != 0)
 			{
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && ((std::string(luaL_typename(lua_state, -1))) == "string"))
+				if (lua_istable(lua_state, -1) && (std::string(lua_tostring(lua_state, -2)) == "headers"))
+				{
+					lua_pushnil(lua_state);
+					while (lua_next(lua_state, tIndex + 4) != 0)
+					{
+						if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
+						{
+							URLheaders.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
+							//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
+						}
+						lua_pop(lua_state, 1);
+					}
+				}
+				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
 				{
 					URLdata.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-					//std::cout << std::string(lua_tostring(lua_state, -2)) << " = " << std::string(lua_tostring(lua_state, -1)) << std::endl;
+					//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
 				}
 
 				lua_pop(lua_state, 1);
 			}
-			OpenURL(URLdata);
+			OpenURL(URLdata, URLheaders);
 		}
 		else
 		{
 			std::string luaString = lua_tostring(lua_state, -1);
-			OpenURL(luaString, HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
+			OpenURL(luaString, "", HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
 		}
 		scriptTrue = true;
 	}
@@ -3682,11 +3696,18 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 	}
 }
 
-void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
+void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders)
 {
-	std::string URL, method, postData, callback;
+	std::string URL, extraHeaders, method, postData, callback;
 	std::map<std::string, std::string>::const_iterator itt;
 	float delayTime = 0;
+
+	if (URLheaders.size() > 0)
+	{
+		std::map<std::string, std::string>::const_iterator itt;
+		for (itt = URLheaders.begin(); itt != URLheaders.end(); itt++)
+			extraHeaders.append("!#").append(itt->first).append(": ").append(itt->second);
+	}
 
 	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
 	{
@@ -3725,14 +3746,15 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata)
 			return;
 		}
 	}
-	OpenURL(URL, eMethod, postData, callback, delayTime);
+	std::cout << extraHeaders << std::endl;
+	OpenURL(URL, extraHeaders, eMethod, postData, callback, delayTime);
 }
 
-void CEventSystem::OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime)
+void CEventSystem::OpenURL(const std::string &URL, const std::string extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, "OpenURL", method, postData, callback));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, method, postData, callback));
 	// maybe do something with sResult in the future.
 }
 

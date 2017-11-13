@@ -2954,6 +2954,9 @@ void CSQLHelper::Do_Work()
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
 				std::vector<std::string> extraHeaders;
+
+				StringSplit(itt->_relatedEvent, "!#", extraHeaders);
+
 				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod> (itt->_switchtype);
 
 				bool ret;

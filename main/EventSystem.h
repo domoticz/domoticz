@@ -215,8 +215,8 @@ private:
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
-	void OpenURL(const std::map<std::string, std::string> &URLdata);
-	void OpenURL(const std::string &URL, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime);
+	void OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders);
+	void OpenURL(const std::string &URL, const std::string extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime);
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
