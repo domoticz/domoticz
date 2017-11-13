@@ -1188,6 +1188,13 @@ local testCancelledScene = function(name)
 	return true
 end
 
+local testHTTPSwitch = function(name)
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Test http trigger switch device', res)
+	return true
+end
+
 return {
 	active = true,
 	on = {
@@ -1257,6 +1264,7 @@ return {
 		res = res and testRepeatSwitch('vdRepeatSwitch');
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
 		res = res and testCancelledScene('scCancelledScene');
+		res = res and testHTTPSwitch('vdHTTPSwitch');
 
 		storeLastUpdates()
 

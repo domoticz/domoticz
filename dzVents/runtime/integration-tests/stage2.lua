@@ -641,6 +641,14 @@ local testCancelledScene = function(name)
 	return res
 end
 
+local testHTTPSwitch = function(name)
+	local res = true
+	local trigger = dz.globalData.httpTrigger
+	res = res and expectEql('trigger2', trigger)
+	tstMsg('Test http trigger switch device', res)
+	return res
+end
+
 return {
 	active = true,
 	on = {
@@ -707,6 +715,7 @@ return {
 		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch')
 		res = res and testVarCancelled('varCancelled')
 		res = res and testCancelledScene('scCancelledScene')
+		res = res and testHTTPSwitch('vdHTTPSwitch');
 
 		-- test a require
 		local m = require('some_module')

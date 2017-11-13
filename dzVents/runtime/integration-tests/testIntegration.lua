@@ -80,10 +80,11 @@ local VIRTUAL_DEVICES = {
 	API_TEMP = { 80, 'vdAPITemperature' },
 	REPEAT_SWITCH = { 6, 'vdRepeatSwitch' },
 	CANCELLED_REPEAT_SWITCH = { 6, 'vdCancelledRepeatSwitch' },
+	HTTP_SWITCH = { 6, 'vdHTTPSwitch' },
 	-- increment SECPANEL_INDEX when adding a new one !!!!!!!!!!
 }
 
-local SECPANEL_INDEX = 50
+local SECPANEL_INDEX = 51
 
 local VAR_TYPES = {
 	INT = {0, 'varInteger', 42},
@@ -462,6 +463,7 @@ describe('Integration test', function ()
 		os.remove(getScriptTargetPath('scCancelledScene.lua'))
 		os.remove(getScriptTargetPath('some_module.lua'))
 		os.remove(getScriptTargetPath('global_data.lua'))
+		os.remove(getScriptTargetPath('httpResponseScript.lua'))
 		os.remove(dataTargetPath .. '__data_global_data.lua')
 		os.remove(dataTargetPath .. '__data_secArmedAway.lua')
 	end)
@@ -693,6 +695,10 @@ describe('Integration test', function ()
 			assert.is_true(ok)
 		end)
 
+		it('should create a http switch to trigger http requests', function()
+			local ok, idx = createVirtualDevice(dummyIdx, VIRTUAL_DEVICES.HTTP_SWITCH[2], VIRTUAL_DEVICES.HTTP_SWITCH[1])
+			assert.is_true(ok)
+		end)
 
 	end)
 
@@ -886,6 +892,10 @@ describe('Integration test', function ()
 
 		it('Should move a module in place', function()
 			copyScript('some_module.lua')
+		end)
+
+		it('Should move a httpResponse event script in place', function()
+			copyScript('httpResponseScript.lua')
 		end)
 
 		it('Should create the stage1 trigger switch', function()

@@ -8,9 +8,11 @@ app.use(bodyParser.json());
 
 app.get('/testget', (request, response) => {
     console.log('/testget');
+    const p = request.query.p || '';
     response.send({
         title: 'GET',
-        body: 'This is a GET test'
+        body: 'This is a GET test',
+        p: p
     });
 });
 
@@ -20,11 +22,12 @@ app.post('/testpost', (request, response) => {
 
     console.log(request.query);
     console.log(request.rawHeaders);
+    const p = request.query.p || '';
 
     response.send({
         title: 'POST',
         body: 'This is a POST test',
-        params: request.query.testData
+        p: p
     });
 });
 
