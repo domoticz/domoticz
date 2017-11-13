@@ -108,7 +108,7 @@ bool CNotificationPushsafer::SendMessageImplementation(
 			}
 			else
 			{
-				_log.Log(LOG_STATUS, "Pushsafer: can't download image > wrong url");
+				_log.Log(LOG_ERROR, "Pushsafer: can't download image > wrong url");
 				sPostData << "i=12&k=" << _apikey << "&t=" << cSubject << "&m=" << Text;
 			}
 		} else {
