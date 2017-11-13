@@ -1,6 +1,8 @@
 [2.4.0]
 - Added .cancelQueuedCommands() to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance .afterMin(10) or .repeatAfterMin(1, 4)
 - Added .devices() collection to scenes and groups to iterate (forEach, filter, reduce, find) over the associated devices.
+- Added http response event triggers to be used in combination with openURL. You can now do GET and POST request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex curl shizzle.
+- Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
 
 
 [2.3.0]
