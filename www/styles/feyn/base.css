@@ -1,0 +1,2555 @@
+/*  BASE THEME 
+
+Welcome to the base theme.
+
+This theme tries to 'reset' the core css of domoticz into a version that is a bit more in line with current 
+throughts on interaction design. If you want to create your own theme based on this theme, my advice is to 
+create another CSS file that is loaded after this one, and then work in that. That will be the 'subtheme'.
+
+
+COLOURS
+
+This theme generally tries not to set any colours, and leaves that to the sub-theme. THe exceptions are:
+- link styling. It's important for users that all links are the same colour.
+- Data tables. This theme aims to create a 'middle of the road' design of all data tables.
+- Mobile view. The mobile design follows the standard Apple design.
+- Widgets, like sliders, are partially themed. 
+
+
+*/
+
+
+/* setting the stage, based on the part of the style.css code this I now concider 'legacy'. */
+
+body .ui-draggable:not(.ui-dialog) table,
+body .ui-draggable:not(.ui-dialog) table tbody,
+body .ui-draggable:not(.ui-dialog) table tbody tr,
+body .ui-draggable:not(.ui-dialog) table  tbody tr > td{
+    display:block;
+    width:100%;
+	padding: 0;
+	margin: 0;    
+}
+
+#img,
+#img1,
+#img2,
+#img3{
+    width:auto;
+}
+
+
+/*  RESETS THAT CAN HOPEFULLY BE REMOVED SOON  */
+
+
+body table#itemtable tr td:first-child + td{
+    font-size:115%;
+}
+
+/*#utilitycontent table:first-of-type{
+    margin-bottom:20px;
+}*/
+
+
+/*
+body table#itemtablesmall tr td:first-child,
+body table#itemtablesmalldoubleicon tr td:first-child,
+body table#itemtablesmalltrippleicon tr td:first-child,
+body table#itemtablesmall tr td:first-child,
+body table#itemtablenotype tr td:first-child,*/
+body table[id^="itemtable"] tr td:first-child
+body table[id^="itemtable"] tr td#name{
+    border-radius:0px;
+    height:40px;
+    border:none;
+}
+
+body table#itemtablenostatus tr td:first-child
+
+body table#itemtablesmall tr td:first-child + td,
+body table#itemtablesmalldoubleicon tr td:first-child + td,
+body table#itemtablesmalltrippleicon tr td:first-child + td{
+    font-weight: normal;
+}
+
+
+body table[id^="itemtable"] tr td:first-child + td + td + td + td + td + td,
+body table#itemtablenotype tr td:first-child + td + td + td + td + td{
+    margin:0;
+    padding:0;
+}
+
+/*  seriously.. */
+body table#itemtable tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td,
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td,
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td{
+    padding:0;
+}
+
+body #dashcontent table[id^="itemtable"] tr td:first-child + td + td + td + td +td:before,
+body table[id^="itemtable"] tr #lastupdate:before{content:none!important}
+
+
+
+
+
+/* GENERAL STYLING AND RESETS */
+
+* {box-sizing: border-box}
+
+html, body {height:100%}
+#main-view{padding-top:0px}
+
+
+#holder .container-fluid {
+    margin-top:20px;
+    padding-bottom: 20px;
+}
+
+.row-fluid .span12,
+.row-fluid .span6{
+    padding: 20px;
+    margin-bottom:15px;
+    margin-top:5px
+}
+
+div.divider .span3,
+div.divider .span4{
+    margin-bottom:1em;
+    padding:0;
+}
+
+td{
+    box-sizing: border-box;
+}
+
+td:before {
+    font-style: normal;
+}
+
+.row {
+    clear: both;
+}
+
+button{
+    background-color:#999;
+    padding:5px;
+    color:#fff;
+    border-radius:5px;
+    border:none;
+}
+
+label{white-space:nowrap;cursor:auto}
+
+textarea{width:100%}
+
+select{padding:0;border-radius:3px;}
+
+textarea, input {
+    box-sizing: border-box;
+    padding:5px;
+}
+
+textarea{width:100%}
+
+input{margin-right:3px}
+
+.span6 textarea, .span6 input.text, .span6 select{
+   /* width:100%!important; */
+}
+
+.span12 > label,
+.span6 > label{padding:5px;}
+
+.span6 table td:nth-child(2) > span{width:100%;}
+
+#settingscontent select{
+    min-width: 120px;
+}
+
+#settingscontent input.text{
+    min-width: 120px;
+    width:calc(100% - 75px)!important;
+}
+
+#settingscontent .ui-widget-content,
+#settingscontent input.text{
+    padding:3px;
+}
+
+#settingscontent td:not(:first-of-type){width:auto!important;}
+
+br{   content: "A" !important;
+    display: block !important;
+    margin-bottom: 0 !important;
+}
+
+#zwavenodesqueried ~ #configuration br{   
+    content: "A" !important;
+    display: block !important;
+    margin-bottom: 1.5em !important;
+}
+
+p {margin:5px 0!important}
+
+p.tip{
+    /* margin-left: 25px!important; */
+    position: relative;
+    padding-left: 30px;
+    margin-top: 15px!important;
+    padding: 7px 5px 7px 40px;
+    border-top: 1px dotted #666;
+    border-bottom: 1px dotted #666;
+}
+
+p.tip.warning{
+    border-top: 1px dotted #f55;
+    border-bottom: 1px dotted #f55;
+}
+
+p.tip::before{
+    content: "i";
+    font-family: serif;
+    font-weight: bolder;
+    color: white;
+    position: absolute;
+    font-size: 14px;
+    /*background-color: rgba(200,200,255,0.2);*/
+    background-color:#0077c0;
+    border-radius: 50%;
+    padding: 2px 8px;
+    top: -2px;
+    line-height: 1.0em;
+    left: 10px;
+    top: 8px;
+}
+p.tip.warning::before{
+    content: "!";
+    background-color:rgba(223, 45, 58, 0.8);
+    padding: 2px 7px;
+}
+
+#IMain{
+    background-color:#ccc;
+    width:100%!important;
+    border-bottom: 39px solid #ccc;
+    border-top: 10px solid #ccc;
+    margin-top: -35px!important;
+}
+
+tr.odd{
+    background-color:#f2f4FF;
+}
+
+.row_selected{
+    text-decoration: underline;
+    color:white;
+}
+
+.row_selected td{
+    box-shadow: 1px 1px 3px rgba(50,50,50,0.2);
+}
+
+#active_systems input:not(:first-of-type){
+    margin-left:10px;
+}
+
+div.container {
+    border-style: none;
+}
+
+div.navbar-inner {
+    border-style: none;
+}
+
+p.ng-binding {
+    color: #ccc;
+    font-size: 12px;
+    padding-top: 2px
+}
+
+.selectorlevels .ui-button:not(.ui-state-active){
+    background-color:#D4E1EE;
+}
+
+
+/* HEADER CONTENT*/
+
+#temptophtm .bannav{
+    /*position:relative; 
+    top:-20px*/
+    width:auto;
+    margin-bottom:1em;
+}
+
+#temptophtm td:last-of-type select{width:100px!important;}
+
+#dashcontent > section {margin-bottom:20px;}
+
+.prebannav, #prebannav{margin-bottom:10px;}
+#prebannav #timesun + td{padding:0}
+#prebannav #timesun + td > span {color:#ddd;padding:0}
+#timesun + td {color:#ddd!important;}
+#prebannav td{display:inline-block}
+#prebannav div,
+#prebannav span{display:inline;height:auto!important}
+
+#prebannav tr{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: space-between;
+    line-height: 1.2em;
+    height: 20px;
+}
+
+
+/*  LOGO & MAIN NAVIGATION  */
+
+.brand img {
+    height: 30px;
+    width: 30px;
+}
+
+.navbar a.brand{
+	height: 30px;
+	width: auto;
+    padding:0;
+    text-decoration: none;
+}
+
+.brand img{
+   vertical-align: top;
+}
+
+
+.brand h1 {
+    display:inline;
+	/*float: left;
+	margin-left: 32px;
+	margin-top: -48px;*/
+    position:relative;
+    top:6px;
+    margin-left:5px;
+    /* OMG I'm changing the logo font :-D */
+    font-size: 20px;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+.brand h2 {
+    display:inline;
+    font-size:10px;
+    position:relative;
+    top: -10px;
+    left: -20px;
+    color: rgba(50,50,50,0.65);
+    visibility: hidden;
+}
+
+
+.navbar-inverse .nav li.dropdown.open > .dropdown-toggle{
+    background-color:#ccc;
+}
+
+#appnavbar a:hover,
+#appnavbar li:hover{
+    background-color:#ccc;
+    background-image:none;
+    color:#666
+}
+
+.dropdown-submenu > a:after {
+    border-left-color: #0066cc;
+    margin-right: 0px;
+}
+
+.navbar .nav .current_page_item{
+    background-color: #73b6ca;
+}
+.navbar .nav .current_page_item > a {
+    color: #eee;
+    background-color:transparent!important;
+    background-image:none!important;
+    border:none!important;
+    font-weight: normal;
+}
+
+.navbar .nav .dropdown-menu {
+    background-color: #eee;
+    background-image: none;
+    border-color: #ddd;
+}
+
+.navbar .nav .dropdown-menu li a {
+    background-color: #eee;
+}
+
+.navbar .nav li a {
+    background-color: #ddd;
+    background-image: none;
+    border: none;
+    color: #555;
+    font-weight: normal;
+}
+
+.navbar .nav li a:hover{
+    background-color: #ccc;
+    background-image:none;
+    border: none!important;
+    text-shadow: none;
+    -webkit-transition: .2s; /* Safari */
+    transition: .2s;
+}
+
+#appnavbar > li > a {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.navbar-fixed-top .navbar-inner, .navbar-static-top .navbar-inner {
+    box-shadow: none;
+    padding: 10px 0 0 0;
+}
+
+.navbar-inverse .brand, .navbar-inverse .nav > li > a{
+    text-shadow: none;
+}
+
+.navbar .brand{ 
+    margin-left:0;
+}
+
+.navbar .nav{
+    margin:0;
+}
+
+
+/*  SUB-NAVIGATION  */
+
+#timesun{
+    /*display:block;*/
+    height:auto;
+}
+
+#timesun + td {
+    /*display: block;
+    text-align: left;*/
+    /*margin-bottom: 1em;*/
+}
+
+#bannav, .bannav {
+    width: auto;
+    margin-bottom:1em;
+}
+
+#bannav td{
+    width:auto!important;
+}
+
+#bannav td a{
+    margin-right:10px;
+}
+
+#bannav td:last-of-type a{
+    margin-right:0;
+}
+
+.nav-tabs > li{margin-bottom:0}
+
+.sub-tabs-apply {
+/*    position:absolute;
+    bottom:60px;
+    left:10%;*/
+    border-radius:5px!important;
+    border:none!important;
+}
+
+.sub-tabs > li > a{
+    cursor:pointer;
+}
+
+.sub-tabs .active a{
+    background-color:#fff;
+}
+
+
+/*  FLOORPLAN */
+
+#BulletGroup{
+    background-color: rgba(0,0,0,0.5)!important; 
+    transition: all 1s ease-out;
+}
+#BulletGroup:hover{
+    background-color: rgba(0,0,0,1)!important;
+}
+
+#floorplancontent #BulletGroup .bullet, 
+#floorplancontent #BulletGroup .bulletSelected{
+    width:30px;
+    height:30px;
+}
+
+#floorplancontent #BulletGroup .bullet:hover, 
+#floorplancontent #BulletGroup .bulletSelected:hover{
+    background-color:#43A4D3;
+}
+
+#floorplancontent #BulletGroup:hover #BulletImages{
+    padding-top:10px;
+}
+
+
+/*  HEADERS  */
+
+h1,h2,h3{
+    clear: both;
+    margin-top:10px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.container > h1:first-of-type,
+.container > h2:first-of-type,
+.container > h3:first-of-type{
+    margin-top:20px;
+}
+
+#dashcontent h1, 
+#dashcontent h2, 
+#dashcontent h3 {
+    clear: both;
+    padding-bottom:10px;
+    margin: 20px 0 10px 0;
+}
+
+#dashcontent h2:first-of-type{
+    margin-top:0!important;
+}
+
+
+/*  ITEMS */
+
+body .item table{width:100%;}
+
+body .span3  table > tbody > tr,
+body .span4  table > tbody > tr{
+    padding:0!important;
+    margin:0 0 0 0!important;
+    width:100%!important;
+    /*position: relative!important;*/
+    border-style: none;
+    box-sizing: border-box;
+    top:0;
+    left:0;
+}
+
+.divider > .span3  table > tbody > tr,
+.divider > .span4  table > tbody > tr{
+    height: 130px;
+    overflow:hidden;
+}
+
+#dashcontent table > tbody > tr{
+    margin-bottom:40px;
+    overflow:visible;
+}
+
+body #dashcontent table > tbody > tr{
+    height: 100%;
+}
+
+#dashcontent div.beforebannav,
+table.prebannav,
+table#prebannav{margin-bottom:10px}
+
+table#prebannav select {width:auto!important}
+
+/* ITEM CONTENT */
+
+#img, #img1, #img2, #img3{
+    float:right!important;
+    margin: 0!important;
+    position: relative;
+    height:0;
+    overflow:visible;
+}
+
+#img, #img1 {
+
+    top:-35px;
+    right:7px;
+    z-index:1;
+    height:0;
+    overflow:visible;
+}
+
+#img2 {
+    top:-35px;
+    right: 37px;
+    z-index:1;
+    height:0;
+    overflow:visible;
+}
+
+#img3 {
+    top:-35px;
+    right: 67px;
+    height:0;
+    overflow:visible;
+}
+
+
+#dashcontent #img, 
+#dashcontent #img1 {
+    top:-35px;
+    right:7px;
+}
+
+#dashcontent .span3 #img2 {right: 40px;}
+#dashcontent .span4 #img2 {right: 45px;}
+
+#dashcontent #img3 {
+    top:-35px;
+    right: 77px;
+    height:0;
+    overflow:visible;
+}
+
+
+
+#img img, 
+#img1 img, 
+#img2 img, 
+#img3 img{
+    height:30px;
+    width:auto;
+}
+
+#dashcontent #img, 
+#dashcontent #img1, 
+#dashcontent #img2, 
+#dashcontent #img3{
+    top: -48px;
+}    
+    
+#dashcontent .span4 #img img, 
+#dashcontent .span4 #img1 img, 
+#dashcontent .span4 #img2 img, 
+#dashcontent .span4 #img3 img{
+    height:40px;
+    width:40px;
+}
+
+#dashcontent .span3 #img img, 
+#dashcontent .span3 #img1 img, 
+#dashcontent .span3 #img2 img, 
+#dashcontent .span3 #img3 img{
+    height:30px;
+    width:30px;
+    margin-top:5px;
+}
+
+#itemtablesmalltrippleicon #img2(right: 37px);
+
+/*  this transforms the triple-image items into items with buttons at the bottom. Using just CSS.. */
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon{
+    min-height:80px;
+    white-space: nowrap;
+    /*overflow:hidden;*/
+}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext{right:0px;}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #bigtext span{padding-right:10px;}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1{padding-left:0px}
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3{
+    display:inline-block;
+    /*float:none!important;*/
+    height:25px;
+    position:initial;
+    width:33.3%;
+    overflow:hidden;
+    box-shadow: -2px -1px 20px -1px rgba(50, 50, 50, 0.1);
+    border-radius:3px;
+    background-color: #D4E1EE;
+}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover{
+    background-color:#43A4D3;
+    color:#fff;
+}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2:hover:after,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3:hover:after{
+    color:#fff;
+}
+
+
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img{
+    height:20px;
+    width: 20px;
+    border:none;
+    position: relative;
+    z-index: 2;
+    box-sizing: content-box;
+    border-right: 300px solid transparent!important;
+    padding:2px 0 0 5px;
+    border-radius:0;
+    margin-top:0;
+}
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img1 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img2 img:hover,
+#dashcontent div[class^="span"] #itemtablesmalltrippleicon #img3 img:hover{
+    background-color:transparent;
+}
+
+#dashcontent #itemtablesmalltrippleicon #img2:hover{
+    background-color:#fff;
+}
+#dashcontent #itemtablesmalltrippleicon #img:after,
+#dashcontent #itemtablesmalltrippleicon #img1:after {
+    content: "Open";
+    left: 33px;
+    position: relative;
+    top: -21px;
+    font-size: 14px;
+    color:#333;
+}
+#dashcontent #itemtablesmalltrippleicon #img2:after {
+    content: "Stop";
+    left: 33px;
+    position: relative;
+    top: -21px;
+    font-size: 14px;
+    color:#333;
+}
+#dashcontent #itemtablesmalltrippleicon #img3:after {
+    content: "Close";
+    left: 33px;
+    position: relative;
+    top: -21px;
+    font-size: 14px;
+    color:#333;
+}
+
+.item .options img.favorite, /* the future version */
+.span3 td:last-of-type .lcursor,
+.span4 td:last-of-type .lcursor{
+    position: relative;
+    top: -29px;
+    left: 13px;
+    border-radius: 5px;
+}
+
+#dashcontent #lastupdate,
+#dashcontent #type{
+    display: none;
+}
+
+
+#dashcontent td > div.dimslider{
+    position: relative;
+    margin:0 0 0 0!important;
+    overflow: visible;
+    box-sizing: border-box;
+}
+
+
+body .item tr > #name {
+    display:inline-block;
+    width: 100%;
+    height: 40px;
+    border-style: none!important;
+    border-width:0!important;
+    white-space: nowrap;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 14px 5px 9px 35px;
+    text-transform: uppercase;
+    margin:0!important;
+    cursor: move;
+}
+
+#dashcontent #name {
+    align-items: center;
+    padding: 21px 0 0 10px;
+    height:55px;
+}
+
+#bigtext{
+    float:right;
+    color:#222;
+    line-height: 100%;
+    text-align: right;
+    overflow: visible;
+    position: relative;
+    /*top: -27px;
+    right: 40px;*/
+    top:6px;
+    right:10px;
+    margin:0!important;
+    height:0;
+    max-width:50%;
+}
+#bigtext span{
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+#bigtext > span{
+    padding: 3px;
+    display:inline-block;
+    overflow:hidden;
+    width:auto;
+    height:auto;
+}
+
+
+@media all and (min-width: 981px){
+    #bigtext{
+    top: -29px;
+    right: 38px;
+    }
+    
+    #itemtabledoubleicon #bigtext{right: 70px;}
+    #itemtablesmalldoubleicon #bigtext{right: 90px;}
+
+    #itemtabletrippleicon #bigtext{right: 100px;}
+    #itemtablesmalltrippleicon #bigtext{right: 105px;}
+    
+    
+    .span3 #bigtext span{
+        font-size: 15px;
+    }
+    .span4 #bigtext span{
+        font-size: 17px;
+    }
+    
+}  
+
+#dashcontent .span4 #bigtext{
+    top: -38px;
+    right: 50px;
+}
+
+#dashcontent .span3 #bigtext{
+    top: -36px;
+    right: 40px;
+}
+
+
+#dashcontent #bigtext > span{
+    padding:3px;
+    width:auto;
+}
+
+#dashcontent .span3 #itemtabledoubleicon #bigtext{right: 80px;}
+#dashcontent .span3 #itemtablesmalldoubleicon #bigtext{right: 70px;}
+
+#dashcontent .span4 #itemtabledoubleicon #bigtext{right: 90px;}
+#dashcontent .span4 #itemtablesmalldoubleicon #bigtext{right: 90px;}
+/*#dashcontent #itemtablesmalldoubleicon #bigtext{right:55px}*/
+
+#dashcontent #itemtabletrippleicon #bigtext{right: 100px;}
+#dashcontent #itemtablesmalltrippleicon #bigtext{right: 105px;}
+/*#dashcontent #itemtablesmalltrippleicon #bigtext{right: 55px;}*/
+
+
+#lastupdate {
+    color: #777;
+    font-size:11.5px;
+    font-style: normal;
+    white-space: nowrap;
+    position: relative;
+    top: 35px;
+    left:20px;
+    width: 45%;
+    margin:0!important;
+    height:0;
+}
+
+#lastupdate:before {
+    font-style: normal!important;
+}
+
+#status {
+    overflow: visible;
+    position: relative;
+    top: 52px;
+    left: 20px;
+    width: 100%;
+    width: calc(100% - 30px);    
+    margin:0!important;
+    font-style: normal!important;
+    font-size:12.5px;
+    line-height: 1.4em;
+    height:0;
+    white-space: normal;
+}
+
+#dashcontent td#status {
+    display:none;
+    height:0;
+    white-space: nowrap;
+    width:100%;
+}
+
+
+/* New display of status elements*/
+
+#dashcontent .item.withstatus #status{
+    /*display:none;*/
+    display:block;
+    left:0;
+    color:#555;
+    position:initial;
+    height:108px;
+}
+
+#dashcontent .item.withstatus #status .wrapper{
+    height:0;
+    width:100%;
+    overflow:visible;
+    display:flex;
+    flex-direction: row;
+    flex-wrap:wrap;
+    align-items: center;
+    margin:0;
+    padding:0;
+}
+
+body:not(.dashboard) td#status > span > span.separator{padding-right:3px;}
+/*body:not(.dashboard) td#status > span > span.separator{padding:0!important};*/
+
+#dashcontent .item.withstatus.statuscount1 tr{min-height:85px}
+#dashcontent .item.withstatus.statuscount2 tr{min-height:115px}
+#dashcontent .item.withstatus.statuscount3 tr{min-height:145px}
+#dashcontent .item.withstatus.statuscount4 tr{min-height:175px}
+#dashcontent .item.withstatus.statuscount5 tr{min-height:205px}
+#dashcontent .item.withstatus.statuscount6 tr{min-height:235px}
+#dashcontent .item.withstatus.statuscount7 tr{min-height:265px}
+#dashcontent .item.withstatus.statuscount8 tr{min-height:295px}
+#dashcontent .item.withstatus.statuscount9 tr{min-height:325px}
+
+#dashcontent .item.withstatus #status > .wrapper > span{
+    display:flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    width:100%;
+    padding:13px 10px 10px 15px;
+    flex: 1 1 auto;
+    height:30px;
+    box-shadow: inset 0 -1px 0 0 rgba(100, 100, 100, 0.2);
+    /*box-shadow: inset 0 0 15px 0px rgba(100, 100, 100, 0.2);*/
+}
+
+
+/*  mini options menu */
+.item .options{
+    position:relative;
+    padding:0;
+    margin:0!important;
+    white-space: nowrap;
+}
+
+div[class^="span"] div.item .options a,
+.span3 table > tbody> tr > td:last-of-type a, /* these 'last-of-type'things should be removed after the theme becomes the new default. They were a hack to target the options td. */
+.span4 table > tbody> tr > td:last-of-type a{
+    position:relative;
+    left:-16px;  
+}
+
+div[class^="span"] table#itemtable > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabledoubleicon > tbody> tr > td:first-of-type a,
+div[class^="span"] table#itemtabletrippleicon > tbody> tr > td:first-of-type a{
+    margin-left:5px;
+}
+
+
+
+
+/*   TYPE  */
+
+
+#type:before {
+    font-style: normal!important;
+}
+
+#type {
+    color: #777;
+    white-space: nowrap;
+    text-indent: 144px;
+    position: relative;
+    top: 35px;
+    left: 0px;
+    width: 100%;
+    height:0;
+    overflow:visible;
+    font-size: 11.5px;
+}
+
+/*.widget{height:0}*/
+
+
+
+/*  status updates indicators (icons for timeout, protected, low battery) */
+
+/*  reset fix for older themes  */
+div.item.statusNormal td#name,
+div.item.statusProtected td#name,
+div.item.statusTimeout td#name,
+div.item.statusLowBattery td#name{
+    background-color: transparent;
+}
+
+div.item.statusProtected td#name > span::before{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: 1px;
+    left:-2px;
+    background: url(/images/lock_closed.png) no-repeat center center; 
+    -webkit-background-size: 12px;
+    -moz-background-size: 12px
+    -o-background-size: 12px;
+    background-size: 12px;
+    width: 12px;
+    height: 12px;
+    opacity : 0.7;
+    margin-right:1px;
+}
+
+
+/* show little icon if there is a timeout problem */
+div.item.statusTimeout td#status span,
+div.item.statusTimeout td#bigtext span,
+div.item.statusTimeout td#lastupdate > span{
+    color:rgba(223, 45, 58, 0.8)!important;
+}
+
+
+/*rgb(223, 45, 58)*/
+
+div.item.statusTimeout td#lastupdate > span::before{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: -1px;
+    background: url(/images/Alert48_4.png) no-repeat center center; 
+    -webkit-background-size: 12px;
+    -moz-background-size: 12px
+    -o-background-size: 12px;
+    background-size: 12px;
+    width: 12px;
+    height: 12px;
+    opacity : 0.7;
+    margin-right:5px;
+    vertical-align: top;
+}
+
+body:not(.dashboard) div.item.statusTimeout #type {text-indent:154px}
+
+
+
+div.item.statusLowBattery{
+    opacity:0.6;
+}
+
+
+
+/* buttons: sub tabs */
+
+#settingscontent .sub-tabs {
+    border-bottom:1px solid #fff;
+}
+
+.sub-tabs > li > a{border:0;}
+
+.sub-tabs a:not(.sub-tabs-apply) {
+    background-color:#ddd;
+    margin-top:2px;
+}
+
+#settingscontent .sub-tabs li.active a {
+    background-color: #73b6ca;
+    color:#fff;
+    border:none;
+    border-bottom:4px solid #73b6ca;
+}
+
+#settingscontent .sub-tabs li:not(.active){
+    margin-bottom:1px;
+}
+#settingscontent .sub-tabs li:not(.active) a {
+    border-bottom:2px solid transparent;
+    margin-bottom: 1px;
+}
+
+.sub-tabs > li:hover a{background-color:white;}
+
+
+
+/* buttons: general  */
+
+
+a.btnstyle, a.btnstylerev, a.btnsmall-sel, a.btnsmall-dis {
+    margin-right: 10px;
+    background-image:none;
+    padding: 0px 10px 0 10px;
+    background: #46b1d9;
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );  
+}
+
+a.btnsmall {
+    margin-bottom: 10px;
+    padding:7px;
+}
+.options a.btnsmall {
+    margin-bottom: 0;
+    padding:2px 5px;
+}
+
+/*
+.options a.btnsmall-sel{
+    font-weight: bold;
+}*/
+
+#settingscontent .sub-tabs > li > a.btn-succes,
+.sub-tabs-apply,
+.btn-succes{
+    color:#fff!important;
+    text-shadow: none;
+}
+
+.btn-primary{
+    text-shadow:none;
+    text-decoration: none
+}
+
+.btn-info{
+    text-shadow: none;
+    text-decoration: none;
+}
+
+
+a.btnstyle:last-of-type, a.btnstylerev:last-of-type{
+    margin-right:0;
+}
+
+.options a.btnstyle, 
+.options a.btnstylerev, 
+.options a.btnsmall-sel{
+    font-size:12.5px;
+}
+.options a{
+    margin-right: 3px;
+}
+.options a:last-of-type{
+    margin-right: 0;
+}
+
+.btnstyle3{
+    background: #46b1d9;
+    background: -moz-linear-gradient(top, #46b1d9 0%, #3d9bc9 50%, #2e8cbc 51%, #2571ab 100%);
+    background: -webkit-linear-gradient(top, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    background: linear-gradient(to bottom, #46b1d9 0%,#3d9bc9 50%,#2e8cbc 51%,#2571ab 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#46b1d9', endColorstr='#2571ab',GradientType=0 );
+}
+
+.btn img{height:16px;width:16px;}
+
+.btn-success,
+.btn-danger,
+.btn-primary,
+.btn-info{
+    text-shadow: none;
+    text-decoration: none;
+}
+
+#settingscontent .span6 .btn-info{line-height:12px};
+
+
+a.btnsmall-sel{
+    color:#952ebc;
+    }
+
+a.btnsmall-dis{color: rgba(255,50,50,1)!important; border-bottom:2px solid rgba(255,50,50,1);}
+
+
+
+/*  HOVER STATES  */
+
+.fg-button:hover,
+body div.selectorlevels .ui-buttonset label.ui-button:hover,
+.btn-danger:hover,
+.btn-primary:hover,
+.btn-success:hover,
+.btn-info:hover,
+a.btnsmall:hover,
+a.btnstyle:hover, 
+a.btnstylerev:hover, 
+a.btnsmall-sel:hover{
+    box-shadow:inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4)!important;
+    color:#fff;
+    transition: all 0.2s linear;
+}
+
+body div.selectorlevels .ui-buttonset label.ui-button:hover span{
+    color:#fff;
+    transition: color 0.2s linear;
+}
+
+.ui-state-hover{
+    background-color:#43A4D3;
+}
+
+.selectorlevels label:hover{
+    color:#fff;
+    background-color:#43A4D3;
+}
+
+#dashcontent #itemtablesmalltrippleicon [id^="img"]:hover,
+#dashcontent div[class^="span"] .selectorlevels .ui-buttonset .ui-button:hover,
+#dashcontent .selectorlevels .ui-selectmenu-text:hover{
+    background-color:#43A4D3;
+    /*box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.4);*/
+}
+
+
+
+
+/*a.btnsmall-dis::after{
+    content: "!";
+    font-weight: bolder;
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    background-color: rgba(255,50,50,1);
+    border-radius: 50%;
+    padding: 5px 9px 3px 9.5px;
+    top: -2px;
+    line-height: 1.0em;
+    margin-left: 2px;
+    }*/
+
+
+
+/* this is a (hopefully temperary) fix for a lack of proper span tags */
+#protectiontable, 
+#loghistory table, 
+#notifications>table, 
+#metercounters table, 
+#othersettings table, 
+#floorplans table{
+    padding-left: 20px;
+    margin-bottom:10px;
+}
+#settingscontent #ActiveTabs{
+    padding-left: 20px;
+}
+
+#hardwarecontent #configuration{ padding:20px;}
+
+#restoredatabase center {
+    text-align: left;
+}
+
+
+
+/*  FOOTER  */
+
+
+#copyright {
+    background-color: #f1f1f1;
+    margin-top: 10px;
+    border: none;
+    height:auto;
+    left: -2px;
+    right: -22px;  
+}
+
+#copyright p {
+    color: #ccc;
+    font-size:90%;
+    margin: 0 10px 0 0;
+    text-align: right;
+    margin:0!important;
+    padding-right:20px;
+}
+
+#copyright a, #copyright a:visited {
+    color: #ccc;
+}
+
+.page-header-small {border:none!important; margin-top:0!important}
+
+/*   EDIT  SWITCH  */
+
+#LedColor .display td > div{
+    margin-top:10px;
+}
+#LedColor .display td > div > button{
+    margin-right:5px;
+}
+#LedColor .display td > div.radio{
+    margin-right:10px;
+}
+#LedColor .display td > div.radio label{margin-right:10px; display:inline-block; padding:5px;background-color:#1c2b46;border-radius:5px}
+
+
+
+/*  SETTINGS  */
+
+#settingscontent {
+    margin-bottom:80px;
+}
+
+.tab-content{overflow:visible}
+
+#metercounters #rfxmetertable input.text{width:60px!important;min-width:60px!important;}
+#metercounters #rfxmetertable td:nth-child(odd){text-align: right;}
+#metercounters #rfxmetertable td:nth-child(even){text-align: left;}
+#metercounters #rfxmetertable td:first-of-type{min-width:40px;padding-right:10px;text-align:left!important}
+
+input#AcceptNewHardware:checked ~ button {
+    display:none
+}
+
+/* SETTINGS */
+
+#settingscontent .span6 tr:first-of-type{
+    border-top: none;
+}
+
+#settingscontent .span6 td{
+    padding:5px;
+    vertical-align: top; 
+}
+
+#settingscontent .span6 td:first-of-type{
+    min-width:80px; 
+    text-align:left!important;
+    padding-top:7px;
+}
+
+#settingscontent .span6 td span{
+    padding-top:0;
+}
+
+/* temporary fix for use of tables in odd places */
+#fibaromain > table > tbody > tr > td {display:block;}
+#fibaromain > table > tbody > tr > td > table {margin-bottom:20px}
+#influxmain > table > tbody > tr > td {display:block;}
+#influxmain > table > tbody > tr > td > table {margin-bottom:20px}
+#googlepubsubmain > table > tbody > tr > td {display:block;}
+#googlepubsubmain > table > tbody > tr > td > table {margin-bottom:20px}
+#httpmain > table > tbody > tr > td {display:block;}
+#httpmain > table > tbody > tr > td > table {margin-bottom:20px}
+
+#fibaromain #uservariablesedittable td{
+    display:table-cell;
+}
+
+#divprogress span{
+    font-size:130%;
+    display:block;
+    background-color:#c00;
+    padding:20px;
+    color:#fff;
+}
+
+#settingscontent div.row-fluid.related{
+    display:flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+}
+#settingscontent div.row-fluid.related .span2{
+    width:auto;
+}
+#settingscontent div.row-fluid.related .span2 img{
+    margin-right: 3px;
+}
+
+#settingscontent input{
+    background-image:none;
+}
+
+#settingscontent select{
+    min-width:120px; 
+    padding:5px 0;
+}
+
+
+#settingscontent td > span{
+    /*display:inline-block;*/
+    padding-top:5px;
+    padding-bottom:5px;
+}
+
+
+/*
+#settingscontent #ActiveTabs h2{
+    color: #666;
+}*/
+
+#savetable{
+    background-color:#ccc;
+}
+
+#acceptnewhardwaretable td:first-of-type{
+    position:relative;
+}
+
+#acceptnewhardwaretable td:first-child button{
+    width:50%;
+    margin: 10px 50% 10px 0;
+}
+
+/*#protectiontable, 
+#loghistory table, 
+#notifications>table, 
+#metercounters table, 
+#othersettings table,
+#floorplans table, 
+#settingscontent #ActiveTabs,*/ 
+#emailtable,
+#hardwarecontent > div:not(.page-header-small):not(.bannav):not(#bannav), 
+#hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent #ipnodeparamstable,
+#nodeparamstable,
+#utilitycontent #notificationparamstable,
+#plancontent #activeparamstable,
+#usercontent #userparamstable, #cameracontent #activeparamstable, #hardwarecontent #hardwareparamstable, 
+#lightcontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)), 
+#scenecontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)), 
+#weathercontent #notificationparamstable ,#lightcontent #timerparamstable, 
+#tempnotifications #notificationparamstable, #lightcontent #notificationparamstable, 
+#scenecontent #timerparamstable,
+#notificationtable:not(.dataTable),
+#notifications>table, 
+#paramstable,#fibaromain #uservariablesedittable,
+#customlog, #timerparamstable,
+#linkparamstable, #influxremote,
+#linkhttpparamstable, #httpremote,
+#linkgooglepubsubparamstable, #googlepubsubremote,
+#fibaromain #linkparamstable, #fibaromain #fibaroremote,
+#userparamstable,#activeparamstable, #lightcontent paramstable, 
+#scenecontent #paramstable, 
+#notificationparamstable, #hardwareparamstable
+{
+    background-color:#eee;
+    border-top: 20px solid #eee;
+    border-bottom:20px solid #eee;
+}
+
+
+#updelclr, #delclractive, #delclr, #delclractive, #delclract {
+    box-sizing: border-box;
+    padding:10px;
+}
+
+#devicescontent .bannav td{width:auto!important}
+    
+#hardwarecontent #s0metertype {background-color:#eee}
+#hardwarecontent #s0metertype h2{color:#555;background-color:#ddd;width:50%;padding:10px}
+#hardwarecontent #s0metertype button{margin:20px}
+
+#hardwarecontent #limitform {background-color:#eee;padding:20px}
+    
+#scenecontent > table:first-of-type{
+    width:auto;
+    margin-bottom:1em;
+}
+
+#scenecontent #combodevice a{
+/*    position:relative;
+    left:-394px;
+    top: 140px;*/
+}
+
+
+/* ICONS PAGE */
+#iconsman > h3{
+    font-size:2em
+}
+
+#iconsmain > div.row{
+    margin-left:0!important;
+}
+
+
+/*  SLIDERS */
+
+.span3 #type > .dimslider,
+.span4 #type > .dimslider {
+    position: relative;
+    margin: 0!important;
+    top: 15px;
+    left: 20px;
+    width: 90%!important;
+    width: calc(100% - 40px)!important;
+}
+
+#dashcontent #type > .dimslider {
+    position: relative;
+    margin: 10px 0 0 0!important;
+    top: 0px;
+    left: 20px;
+    width: 90%!important;
+    width: calc(100% - 40px)!important;
+}
+
+
+.dimslider,
+.ui-slider-range{
+    z-index:0!important;
+}
+
+.dimslider .ui-slider-range{
+    background-color: rgba(115,182,202,0.7);
+    background-image:none;
+    /* background: linear-gradient(top, rgba(115,182,202,0.7) 0%,rgba(115,182,202,0.7) 100%);
+    background: -moz-linear-gradient(top, #73b6ca 0%, #73b6ca 100%);
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#73b6ca), color-stop(100%,#73b6ca));
+    background: -webkit-linear-gradient(top, #73b6ca 0%,#73b6ca 100%);
+    background: -o-linear-gradient(top, #73b6ca 0%,#73b6ca 100%);
+    background: -ms-linear-gradient(top, #73b6ca 0%,#73b6ca 100%);
+    background: linear-gradient(top, #73b6ca 0%,#73b6ca 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#73b6ca', endColorstr='#73b6ca',GradientType=0 );*/
+}
+
+.dimslider .ui-slider-handle{
+    width:40px;
+    height:40px;
+    top:-15px;
+    margin-left:-20px;
+}
+
+
+/*  USER VARIABLES */
+
+#uservariablesedittable{
+    background-color:#eee;
+    border-top:10px solid #eee;
+    margin-bottom:60px
+}
+
+
+/*  DATA TABLE  */
+
+table.dataTable{
+    background-color: #666;
+    color: #fff!important;
+    border: none!important;
+    border-left:none!important;
+    border-right:none!important;
+}
+
+table.display td{padding:4px; box-sizing: initial;}
+
+table.dataTable thead th{
+    padding: 5px;
+    text-align:left;
+}
+
+table.dataTable thead th img{
+    /*background-color: rgba(250,250,250,0.5);*/
+    margin-top:2px;
+    padding:3px;
+    box-sizing: content-box;
+    border-radius:3px;
+    vertical-align: top;
+}
+table.dataTable thead th img:hover{
+    background-color: #999;
+    box-shadow: 1px 1px 1px rgba(250,250,250,0.1);
+}
+
+table.display thead th div.DataTables_sort_wrapper{
+    padding-right:0;
+    /*text-align:left;*/
+    white-space: nowrap;   
+    font-weight: normal;
+}
+
+table.display thead th div.DataTables_sort_wrapper .ui-icon{
+    border-radius:50%;
+    background-color:#777;
+    padding:2px 2px 2px 0;
+}
+
+table.display thead th div.DataTables_sort_wrapper span{
+    display:inline-block;
+    margin: 0 0 0 5px;
+    position:relative;
+    top:3px;
+}
+table.display thead th div.DataTables_sort_wrapper span:hover{background-color:rgba(0,0,0,0.4)}
+
+table.dataTable tbody img{
+    vertical-align: middle;
+    width:16px;
+    height:16px;
+}
+
+.dataTables_wrapper .ui-toolbar{
+    padding: 10px 10px 5px 10px;
+}
+
+.dataTables_paginate{
+    margin-right:0!important
+}
+
+.dataTables_filter input{
+    height:10px;
+    margin-left:10px;
+}
+
+
+div.dataTables_wrapper .ui-toolbar, /* new */
+div.dataTables_wrapper .ui-widget-header{
+    color:#666;
+    background-color:#ccc;
+}
+
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter{
+    color:#999;
+}
+
+.ui-toolbar {
+    background-color:#ccc;
+    background-image:none;
+    border:none;
+}
+
+.dataTables_wrapper .ui-state-default{ /* new */
+    /*background-color:#ddd;
+    color:#444;*/
+    border:none;
+    /*border-right: 2px solid #ccc;*/
+    border-top:none;
+    border-bottom:none;
+    text-shadow: none!important;
+    background-color: rgba(100,100,100,0.5);
+
+}
+.dataTables_wrapper .dataTables_paginate{margin-top: -3px;}
+.dataTables_wrapper .dataTables_paginate .fg-button{
+    background-image: none; 
+    background-color: rgba(250,250,250,0.1);
+    font-weight: normal;
+}
+.dataTables_info{padding-top:0}
+
+table.dataTable th:first-of-type,
+table.dataTable td:first-of-type{padding-left:10px;}
+
+/*  some datatable tweaks  */
+
+#lighttable_wrapper > .dataTable.no-footer#lighttable td:first-of-type thead th{width:150px!important}
+
+/*  devices table: keep icons horizontal*/
+.table3icons{width:70px!important}
+
+
+
+/*  POPUP  */
+
+
+.ui-popup{
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.1) 30px, rgba(255,255,255,0) 31px);
+    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.5);
+    padding:30px 10px 10px 10px;
+}
+
+#rgbw_popup td,
+#setpoint_popup td{
+    width:auto!important;
+    padding:10px
+}
+
+#rgbw_popup table#ledtable #popup_picker{
+    width:200px!important;
+    height:220px!important;
+}
+#rgbw_popup table#ledtable td:last-of-type{
+    display:flex;
+    flex-direction:column;
+    padding-top:50px;
+    justify-content: center;
+}
+
+#setpoint_popup tr{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+}
+#setpoint_popup td{
+    display:flex;
+    flex-direction: column;    
+    justify-content: center;
+}
+#setpoint_popup td:first-of-type{
+    flex-direction: row;
+    align-items: center;
+}
+#setpoint_popup td:first-of-type span {padding:5px;}
+
+#setpoint_popup input#popup_setpoint{width:80px!important}
+
+
+
+/*  SELECTORLEVELS  */
+
+.selectorlevels{
+    font-style:normal;
+    margin: 0!important;
+    text-indent:0!important;
+}    
+
+/*
+body:not(.dashboard) .divider .span4 .selectorlevels{
+    border-top:7px solid transparent;
+}*/
+
+.selectorlevels{
+    margin-top:0!important;
+    border-top:none;
+    font-size:12.5px;
+}
+
+.selectorlevels .ui-buttonset{
+    margin-right:0;
+    position:relative;
+    display:flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+body:not(.dashboard) div.item div.selectorlevels .ui-buttonset{
+    margin-top:7px;
+}
+
+
+.divider .selectorlevels .ui-buttonset{
+    height:36px;
+}
+
+.selectorlevels .ui-buttonset .ui-button{
+    border: none;
+    overflow:hidden;
+    margin:0;
+    border-radius: 0;
+    text-shadow:none;
+    font-style: normal;
+    background-image:none;
+    border-color:transparent!important;
+    font-weight:normal;
+    margin-right:0; /* newly added */
+    /*flex: 1 1 25%;*/
+    flex-grow:1;
+    height:auto;
+    align-self:stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1);
+}
+
+.selectorlevels .ui-button span.ui-button-text{
+    padding:1px 5px;
+    color:#333;
+}
+
+.selectorlevels .ui-button.ui-state-active{box-shadow: inset 0px 0px 20px 2px rgba(250, 250, 250, 0.1);}
+.selectorlevels .ui-button.ui-state-active .ui-button-text{
+    color:#ddd;
+}
+
+.selectorlevels .ui-selectmenu-button span.ui-icon{
+    filter: contrast(0);
+}
+
+.span3 .selectorlevels .ui-selectmenu-button,
+.span4 .selectorlevels .ui-selectmenu-button{
+    display:block;
+    left:20px;
+    top:5px;
+    width:calc(100% - 40px)!important;
+}
+
+#dashcontent .selectorlevels .ui-selectmenu-button{
+    left:0px;
+    top:0;
+    width:100%!important;
+    border:0;
+    color:#333;
+    background-color:transparent;
+    box-shadow: 1px -0.5px 2px 0.5px rgba(50, 50, 50, 0.1), inset -2px -1px 20px -1px rgba(50, 50, 50, 0.2);
+}
+
+.selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
+    text-shadow:none;
+    display:flex;
+    align-items: center;
+    justify-content: center;    
+}
+
+#dashcontent .selectorlevels .ui-selectmenu-button span.ui-selectmenu-text{
+    padding: 3px!important;
+    width:100%;
+    height:100%;
+    font-weight: normal;
+    text-align: center;
+    background-color:transparent;
+    padding:0;
+}
+
+#dashcontent .selectorlevels .ui-buttonset .ui-button{
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+body.dashboard div.item.SelectorSwitch #bigtext{display:none}
+
+
+/* UI & BOOTSTRAP & dataTable */
+
+#dashcontent .selectorlevels .state-default{
+    color:#666;
+}
+
+.ui-widget-content {
+    background-color: transparent;
+    background-image: none!important;
+    border-color: #999;
+    color: #333;
+    margin-left:0!important;
+}
+/*
+.ui-widget-content td{display:table-cell;}
+body .ui-draggable table  tbody tr > td
+*/
+
+/*#settingscontent .ui-widget-content,*/
+#settingscontent input.text{
+    min-width:140px;
+    width:calc(100% - 75px);
+}
+
+.ui-slider-handle{
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.ui-draggable-dragging > div.item{
+    -webkit-box-shadow: 7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    -moz-box-shadow:    7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    box-shadow:         7px 7px 25px 5px rgba(50, 50, 50, 0.48);
+    width:100%;
+    /*z-index:5;*/
+}
+
+.ui-dialog-titlebar{
+    color:#fff;
+}
+
+.ui-dialog{
+    height:auto;
+    /*transition:visibility 0.5s linear 0.5s, opacity 0.5s linear;*/
+    /*opacity: 0;
+    transition: all 0.2s ease-in-out; 
+    transform: scale(0.8); */
+    /*transition: all 2s ease-in-out;*/
+    text-align:left;
+}
+.ui-dialog-content{
+    height:auto!important;
+}
+
+/* .ui-dialog div:not(#dialog-add-edit-camera) td*/
+.ui-dialog td label{display:inline;text-align:left;}
+
+
+.ui-dialog tr{margin-bottom:5px}
+.ui-dialog input, .ui-dialog textarea{margin-bottom:5px}
+
+div.ui-dialog table tr td{text-align: left};
+
+center{margin-top: 10px;}
+div.ui-dialog center{padding:5px 0; margin:10px 0;border-top:1px solid rgba(250,250,250,0.1); border-bottom:1px solid rgba(250,250,250,0.1);}
+
+
+/* BACKSTAGE HARDWARE PAGES */
+
+#holder #notification{
+    background-color:#333;
+    padding:20px    
+}
+
+
+/* LOG */
+
+#customlog #devicecontainer{
+    background-color:#ccc;
+}
+
+#logcontent table td:last-of-type{
+    vertical-align: middle;
+    background-color: #fff;
+    float: right;
+    padding: 5px 12px;
+}
+
+#logcontent div.log {
+    background-color:#f9f9f9;
+    border:5px solid #fff;
+}
+
+#logcontent .filterExplanation{color:#666}
+#logcontent .filterX{display:none}
+#logcontent .filterX > span{    
+    margin-left: 3px;
+    display: inline-block;
+    background-color: #DF2D3A;
+    color: #fff;
+    font-weight: bolder;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+#logcontent td.filter input:focus + a.filterX{
+    display:inline-block;
+}
+
+
+
+
+
+/*  PAGE SPECIFIC OVERRIDES  */
+
+body section.dashSwitches div.item{margin-bottom:25px}
+
+body.dashboard item.utility td#status{
+    font-size:15px;
+    white-space: normal;
+    color:#333;
+}
+
+div#mysensorsnodestable_wrapper + #updelclr,
+div#hardwaretable_wrapper + #updelclr{border-top:0!important;border-bottom:10px!important;padding-top:0;}
+
+#aboutcontent{color:#fff;}
+
+body.temperature #tempwidgets .img1 img:hover,
+body.weather #weatherwidgets .img1 img:hover,
+#utilitycontent .img1 img:hover{
+    background-color:transparent!important;
+    cursor:move!important;
+}
+#utilitycontent div.item.SetPoint .img1 img:hover{background-color:background-color:#43A4D3!important;cursor:pointer!important;}
+
+/*  embelishments  */
+#lightcontent #ProtectionDiv input[type=checkbox]:checked::after{
+    content : "";
+    display: inline-block;
+    position: relative;
+    top: -3px;
+    left:15px;
+    background: url(/images/lock_closed.png) no-repeat center center; 
+    -webkit-background-size: 16px;
+    -moz-background-size: 16px
+    -o-background-size: 16px;
+    background-size: 16px;
+    width: 16px;
+    height: 16px;
+    opacity : 0.7;
+    margin-right:1px;
+}
+
+
+/*  new features, hide by default  */
+
+body.dashboard .item td.dataviz{height:0;overflow:hidden}
+.item td.overlay{display:none}
+.item td.overlay > div{width:0}
+
+
+/* experimental features */
+
+.divider{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+/* merging items */
+#dashcontent div.item.bandleader.withstatus tr td#bigtext{right:10px;}
+#dashcontent div.item.bandleader.withstatus tr td#status .wrapper{padding-left:5px}
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > img{height:24px;width:24px;position: relative;top: 3px;/*box-shadow:inset 0 0 18px 0px rgba(100, 100, 100, 0.2);*/}
+
+#dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > span {padding-left:5px;width:calc(100% - 26px);line-height: 1em;white-space:initial;}
+@media all and (min-width: 1200px){
+    #dashcontent div.item.bandleader.withstatus tr td#status > .wrapper > span {width:calc(50% - 26px);}
+}
+
+
+
+/* MOBILE */
+
+body.dashMobile #dashcontent {width:100%}
+
+table.mobileitem{
+    width: 100%;
+    padding: 0;
+    margin-top:20px;
+    border-bottom-right-radius: 0;
+}
+
+table.mobileitem > thead{
+    display: flex;
+}
+
+table.mobileitem > thead > tr {
+    background-color:#dce9f9;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    display:flex;
+}
+table.mobileitem > thead > tr > th:first-of-type{
+    flex-grow:1;
+}
+
+.mobileitem .btn-mini{
+/*    height: 80%;
+    margin-left: 2px;
+    margin-top:10%;
+    margin-bottom:10%;*/
+    position:initial;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.mobileitem th{
+    display:inline;
+    background-color: transparent;
+}
+
+.mobileitem tr{
+    margin: 0!important;
+    padding: 0!important;
+    box-sizing: border-box;
+    height: auto;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+/* First content row of each item */
+
+.mobileitem td{
+    height: auto!important;
+    margin-right: 0!important;
+    /*word-break: break-word;*/
+    color: #333!important;
+    background-color: white!important;
+    background-image: none!important;
+    display: inline-flex;
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    align-items: center; 
+    padding:5px!important;
+}
+
+.mobileitem td:last-child{
+    flex-wrap:wrap;
+}
+
+.mobileitem td label{
+    white-space: nowrap;
+    height:50%;
+}
+body.dashMobile table.mobileitem td#name{
+    font-size: 100%;
+    position: inherit;
+    padding:0 0 0 10px!important;
+    height:auto;
+    min-height:30px;
+}
+
+body.dashMobile table.mobileitem td#status > span{
+    white-space: normal;
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end; 
+}
+body.dashMobile table.mobileitem td#status > span > span{
+    margin-right:8px;
+    padding: 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-shadow: 0px 1px 1px rgba(100,100,100,0.1);
+}
+body.dashMobile table.mobileitem td#status > span > span:only-child{box-shadow: none};
+
+
+.mobileitem #name img {
+    margin-right: 5px;
+    vertical-align: text-bottom;
+    position: initial;
+    height:auto;
+}
+
+#dashcontent .mobileitem td#status{
+    display: flex;
+    position:initial;
+    flex-direction: row;
+    white-space: normal;
+    width: auto;
+    max-width:60%;
+    justify-content: flex-end;
+    padding: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+    text-align: end;
+}
+
+#dashcontent .mobileitem td#status #img,
+#dashcontent .mobileitem td#status #img1,
+#dashcontent .mobileitem td#status #img2,
+#dashcontent .mobileitem td#status #img3{
+    height:50%;
+    position:initial;
+}
+
+
+/* and now for the second mobile row (with colspan=2) */
+
+td[colspan]:not([colspan="1"]){
+    padding:10px;
+}
+
+td[colspan]:not([colspan="1"])
+
+.mobileitem #type{
+    text-indent:0!important;
+    font-size:0;
+}
+
+.mobileitem .selectorlevels{
+    font-size:80%;
+    text-indent:0!important;
+    height:auto;
+    display:initial!important;
+    width: 100%;
+    padding:5px 10px 5px 10px;
+    margin: 0 0 0 0px!important;
+}
+
+#dashcontent .mobileitem .selectorlevels  .ui-buttonset{
+    height:auto;
+}
+
+.mobileitem #type .selectorlevels label,
+.mobileitem #type .selectorlevels span{
+    font-size:80%;
+    text-indent:0!important;
+}
+
+
+#dashcontent .mobileitem .selectorlevels .ui-buttonset .ui-button{
+    min-height:30px;
+}
+
+.mobileitem #type .selectorlevels .ui-buttonset{height:50px;}
+
+#dashcontent .mobileitem td > div.dimslider{
+    top: 0!important;
+    height: 20px;
+    left:0; 
+    width:95%;
+    margin-right:10px;
+    border: 5px solid white;
+}
+
+#dashcontent .mobileitem .ui-slider-range{
+    height: 10px!important;
+    top:0!important;
+}
+
+#dashcontent .mobileitem .ui-slider-handle{
+    top:-7px;
+    width:20px;
+    height:20px;
+    margin-left: -10px;
+}
+
+
+
+
+/* Media queries */
+
+@media all and (max-device-width: 361px){ /* for mobile phones, makes popups work better */
+    
+    
+    .ui-dialog{
+        width:90%!important;
+        margin-left:4%!important;
+    }
+    
+    .ui-dialog td{
+        display:block;
+        text-align:left;
+    }
+    
+    .ui-dialog td textarea,
+    .ui-dialog td input{
+        max-width: 80%!important;
+        /*color:#333!important;*/
+    }
+    
+    input[type=checkbox] {
+        /*transform: scale(1.5);*/
+    }
+    
+    .beforebannav{margin-bottom:10px;}
+    
+    
+    /*  better options buttons (which are somehow reaching back to style.css a lot.. */
+    
+}
+
+
+@media all and (max-device-width: 600px){ /* for mobile phones, makes popups work better */
+ 
+    /*.navbar {padding-right:20px;}*/
+    
+    .item tr{background-color:#eee;width:100%}
+    
+    .dimslider{width:100%!important}
+    
+    #name, .item .name{
+        color: black;
+    }
+    
+    #settingscontent td {display:block;}
+    
+    .options a.btnsmall{
+        display:inline-block;
+        margin-top:4px;
+        line-height: 1.1em;
+        height:1.6em;
+        
+    }
+    
+    #appnavbar > li > a{
+        padding: 2px 4px;
+    }
+    
+    .navbar .nav > li > a> img,  
+    #appnavbar > li > a > img{
+        width:32px;
+        height:32px;
+    }
+    
+    .navbar .nav li a {text-align:left}
+    
+    
+}
+
+
+@media all and (min-device-width: 600px){
+    .withstatus #status{border-left: 3px solid rgba(250,250,250,0.1);border-right: 3px solid rgba(250,250,250,0.1)}
+}
+
+
+/*  Makes the name and value slide above each other on small displays.  */
+
+@media all and (max-width: 767px){
+    
+    .row-fluid{
+        display:block;
+    }
+    
+    #dashcontent div.item.withstatus{
+        margin-bottom:30px;
+    } 
+    
+    #bigtext{float:right;}
+    
+    #dashcontent .item.withstatus #status{
+        height:auto;
+        position:initial;
+    }
+    
+    #dashcontent .item.withstatus #status > .wrapper > span{padding-left:10px}
+    
+    #dashcontent #lastupdate{
+        box-shadow:2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        padding-top:3px;
+    }
+    
+    /*  some mobile fixes  */
+    
+    #bigtext
+    #img, #img1,
+    #img2,
+    #img3,{
+        
+        float:right;
+        clear:both
+    }
+    
+    #status,
+
+    #lastupdate,
+    #type,
+    .options{
+        float:left;
+        clear:both
+    }
+    
+    #copyright{
+        left: -22px;
+        right: -42px;
+    }
+    
+}
+
+
+@media all and (min-width: 768px) {
+    .row-fluid{
+        display:flex;
+        /*flex-wrap: wrap;*/
+        /*align-items: stretch;*/
+    }
+}
+
+
+/*  A lot of optimising data-outputon smaller screens, to avoid things overlapping */
+@media all and (min-width: 768px) and (max-width: 980px){
+    
+    #name,
+    #dashcontent #name{
+        padding-top:7px!important;
+        padding-left:10px;
+    }
+    
+    div.item:not(.bandleader):not(.withstatus) #bigtext{
+        float:left;
+        text-align: left;
+        top: -20px;
+        left: 32px; /* was 35px, but bigtext now has apdding of 3 default, to deal with overlapping situations. */
+    }
+    #dashcontent .span4 .item:not(.bandleader):not(.withstatus) #bigtext{
+        top: -28px;
+        left: 10px;
+    }
+    #dashcontent .span3 .item:not(.bandleader):not(.withstatus) #bigtext{
+        top: -24px;
+        left: 10px;
+    }
+    
+    #dashcontent .span4 .withstatus:not(.bandleader) #bigtext{top:-18px}
+    #dashcontent .span3 .withstatus:not(.bandleader) #bigtext{top:-18px}
+    
+    #bigtext > span{
+        font-size:13px;
+        font-weight:bold;
+        color:#444;
+    }
+    #dashcontent #bigtext > span{
+        padding:0 0 3px 0;
+    } 
+    
+    #dashcontent .item.withstatus #status{
+        top:20px;
+        position:relative;
+    }
+    
+    #dashcontent .item.withstatus #status > .wrapper > span{
+        padding-left:10px;
+    }
+    
+    .navbar .navbar-inner{
+        padding-left:20px;
+        padding-right:20px;
+    }
+
+}
+
+
+@media all and (min-width: 981px){
+
+    #bigtext{float:right;}
+}
+    
+
+@media all  and (min-width: 600px) and (max-width: 1200px){
+    
+    .navbar-static-top .container, 
+    .navbar-fixed-top .container, 
+    .navbar-fixed-bottom .container {width:100%!important}
+}
+
+
+@media all and (min-width: 1200px){
+
+    /* let's keep items with lots of data outputs from getting too tall */
+    #dashcontent div.item.withstatus tr td#status > .wrapper {
+        display:flex; 
+        flex-wrap: wrap;
+        align-items: center;
+    } 
+    
+    #dashcontent div.item.withstatus td#status > .wrapper > span{
+        width:50%;
+        box-shadow: inset 0 -1px 0px 0px rgba(100, 100, 100, 0.2);
+    }
+    
+    #dashcontent div.item.withstatus.statuscount1 tr,    
+    #dashcontent div.item.withstatus.statuscount2 tr{min-height:85px}
+    #dashcontent div.item.withstatus.statuscount3 tr,
+    #dashcontent div.item.withstatus.statuscount4 tr{min-height:115px}
+    #dashcontent div.item.withstatus.statuscount5 tr,
+    #dashcontent div.item.withstatus.statuscount6 tr{min-height:145px}
+    #dashcontent div.item.withstatus.statuscount7 tr,
+    #dashcontent div.item.withstatus.statuscount8 tr{min-height:175px}
+    #dashcontent div.item.withstatus.statuscount9 tr,
+    #dashcontent div.item.withstatus.statuscount10 tr{min-height:205px}    
+}
+
+
+/*  on medium-sized screens a lot of space is wasted by bootstrap (which is designed for document display and not interface dashbards). Let's override that. */
+@media all and (min-width: 768px) and (max-width: 1300px){
+
+    body.dashboard #main-view > .container {width:100%!important}
+    
+    body.dashboard .span4{
+        width:calc(100% / 3 - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
+    body.dashboard .span3{
+        width:calc(100% / 4 - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+        
+}
+/*  On CSS3 browsers, if the new divider-free display has been enabled (IF..), then be more flexible about displaying items, and override the above general rule.*/
+@media all and (min-width: 768px) and (max-width: 900px){
+    body.dashboard .span4{width:calc(100% / 2 - 20px)!important;}
+    body.dashboard .span3{width:calc(100% / 3 - 20px)!important;}
+}
+/* A 4-columns display could also be added here for wider screens. */
+
+
+
+
+/* Poor man's columns on the mobile option. Great for people who want a lot of info on their display. */
+
+@media all and (min-width: 1100px){
+
+    
+    body.dashMobile #dashcontent{margin-top:30px;}
+    body.dashMobile .beforebannav{position:absolute;top:0px;width: calc(100% - 42px);}
+    
+    body.dashMobile #dashcontent{
+        -moz-column-count: 3;
+        -webkit-column-count: 3;
+        column-count: 3;
+        -moz-column-gap: 1em;
+        -webkit-column-gap: 1em;
+        column-gap: 1em;
+    }
+    
+    body.dashMobile #dashcontent section:not(last-of-type) {
+        display: inline-block;
+        width:100%;
+        -webkit-column-width: 250px; /* Chrome, Safari, Opera */
+        -moz-column-width: 250px; /* Firefox */
+        column-width: 250px;
+    }
+    
+    body.dashMobile #dashcontent .mobileitem{
+        width:100%;
+        margin-top:0;
+    }
+    
+    body.dashMobile #dashcontent .dimslider{
+        width:100%!important;
+    }
+    
+}
+
+/* larger main menu icon size */
+@media all and (max-width: 980px){
+    .navbar .nav > li > a{padding: 2px 10px 2px 10px!important; }
+    .navbar .nav > li > a > img{height:32px;width:32px }
+}
+
+@media all and (max-width: 480px){
+    .navbar .nav > li > a{padding: 2px!important; }
+}
+
+
+/*  WORKSPACE  */
+
+.test {background-color:purple!important;}
+
+
+#dashcontent .withstatus #status,
+#dashcontent .withstatus #status .wrapper{height:auto!important;top:0!important}
+#dashcontent .withstatus #lastupdate{height:auto!important;top:0!important}
+
+
+#dashcontent .withstatus #name{height: 35px}
+
+#dashcontent .withstatus #name{padding: 10px 0 0 10px;}
+#dashcontent .withstatus #bigtext {top: -28px;right:40px}
+#dashcontent .withstatus #img{top: -32px;width:32px;}
+#dashcontent .withstatus #img img{width:32px;height:32px;}
+
+#dashcontent .span3 .withstatus #img img{margin-top:0!important;}
+
+.bandleader .overlay{display:none!important}
+
+

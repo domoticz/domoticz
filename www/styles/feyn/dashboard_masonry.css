@@ -1,0 +1,59 @@
+
+/*  Uses CSS to create columns on the dashboard (currently utilities only). 
+
+It saves space, but creates some unpredictability in the display, as the algorithm 
+takes over how things are finally placed.
+
+Another (future) advantage of this is that the number of columns cna flexilbly change depending on the screen size.
+
+*/
+
+body.columns3 #dashcontent section.CSS3 .divider {
+    -moz-column-count: 7;
+    -moz-column-gap: 15px;
+    -webkit-column-count: 7;
+    -webkit-column-gap: 15px;
+    column-count: 7;
+    column-gap: 15px;
+    vertical-align: top;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding-left:15px;
+    -webkit-column-width: 300px;
+    -moz-column-width: 300px;
+    column-width: 300px;
+}
+body.columns3 #dashcontent section.CSS3 .divider .span4 {
+    display: inline-block!important;
+    width: 100%!important;
+    vertical-align: top;
+    margin-left:0;
+    float:none;
+}
+
+body.columns4 #dashcontent section.CSS3 .divider {
+    -moz-column-count: 7;
+    -moz-column-gap: 15px;
+    -webkit-column-count: 7;
+    -webkit-column-gap: 15px;
+    column-count: 7;
+    column-gap: 15px;
+    vertical-align: top;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding-left:15px;
+    -webkit-column-width: 230px;
+    -moz-column-width: 230px;
+    column-width: 230px;
+}
+}
+body.columns4 #dashcontent section.CSS3 .divider .span3 {
+    display: inline-block!important;
+    width: 100%!important;
+    vertical-align: top;
+    margin-left:0;
+    float:none;
+    
+}
