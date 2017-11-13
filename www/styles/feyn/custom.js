@@ -33,9 +33,267 @@ if ($("section#"+ section + " #"+theid).is($("#dashcontent h2 + div.divider .spa
 
 
 
+$( document ).ready(function() {
+    console.log( "THEME JS body ready" );  
+    
+    //Place you JS here. It may be smart to run your code with a small delay, or let it respond to a finished ajax call. See the code below for examples of this.
+    
+    
+    
+    // Making changes to Domoticz html in order for the theme to function better. Many changes to the Domoticz HTML output have been proposed, but few made it in. This add those changes via JS.
+    window.setTimeout(updateMainPage,3500);    
+    window.setTimeout(addSpans,3000);
+    
+    $( "#appnavbar > li" ).click(function() {
+        window.setTimeout(updateMainPage,500);
+    });
+    
+    $( document ).ajaxSuccess(function( event, xhr, settings ) {
+        console.log( "THEME JS - domoticz received ajax" );
+        
+        if ( settings.url.startsWith("json.htm?type=command&param=switchdeviceorder") ) {
+            window.setTimeout(updateMainPage,500);
+        }else{
+            window.setTimeout(addSpans,200);
+        }
+        
+    });
+    
+
+    
+});
 
 
-/*
+
+// adds extra html to make theming work better.
+function addSpans()
+{
+    $('td[id="name"]:not(:has(span))').each(function(index) {
+        $(this).wrapInner('<span><\/span>');
+    });
+
+    $('td[id="bigtext"]:not(:has(span))').each(function(index) {
+        $(this).wrapInner('<span><\/span>');
+    });
+}
+
+// makes changes to HTML on each new loaded page.
+function updateMainPage()
+{
+    
+    // simply the dashboard
+    
+    //$('.dashCategory section').each(function(index) {
+    //    $(this).find(".span4").wrapAll( "<div class='row divider' />"); 
+    //});
+    if($('section.dashCategory').length > 0){
+        // on the dashboard
+        $('section.dashCategory').each(function(index) {
+            console.log( "IN SECTION" );
+            $(this).find('div.divider > div.span4').unwrap();
+            $(this).find('div.span4').wrapAll( "<div class='row divider' />");
+        });
+        
+        addDataviz();
+        
+    }else{
+        // not on the dashboard
+        $('div.divider:not(div[id="weatherwidgets"]) > div.item').unwrap();
+        $( ".container > div.item" ).wrapAll( "<div class='row divider' />");
+    }
+
+    addSpans();
+
+}
+
+
+
+/* Adds Data Visualisations to the first three items of each section. They will only be shown if highlights are enabled.  A feature like this could also be inside a theme folder, perhaps as a custom.js file that gets loaded per theme. I tried loading this form an external file, but couldn't get that to work. */
+addDataviz = function () {
+    //if ($scope.config.DashboardType == 0) { // Only do all this on normal display.
+        console.log("Dataviz is enabled");
+        setTimeout(function () { // small delay to make sure the main html has been generated, and to lower the burden on the system.
+
+            /* temperature */
+            $('#dashTemperature .item').each(function () {
+                var theid = '' + $(this).parent().attr('id');
+                generateDataviz("dashTemperature", "graph", "temp", "te", theid, "day");
+            });
+
+            /*  general */
+            $('#dashUtility .item').each(function () {
+                var theid = '' + $(this).parent().attr('id');
+                generateDataviz("dashUtility", "graph", "Percentage", "any", theid, "day");
+            });
+
+            /*  Lux */
+            $('body.columns3 section#dashUtility > .divider:first-of-type .Lux').each(function () {
+                var theid = '' + $(this).parent().attr('id');
+                generateDataviz("dashUtility", "graph", "counter", "lux", theid, "day");
+            });
+
+            /*  Co2 */
+            $('body.columns3 section#dashUtility > .divider:first-of-type .AirQuality').each(function () {
+                var theid = '' + $(this).parent().attr('id');
+                generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
+            });
+
+            /*  Energy */
+            $('body.columns3 section#dashUtility > .divider:first-of-type .Energy').each(function () {
+                var theid = '' + $(this).parent().attr('id');
+                generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
+            });
+
+        }, 3250);
+        // Create new  timer if it does not already exist
+
+        if (typeof datavizTimer === 'undefined' || datavizTimer === null) {
+            console.log("Creating new Dataviz timer"); // <-- just for debugging
+            datavizTimer = setInterval(addDataviz, 600000); // updates the dataviz every 10 minutes.
+        }else{console.log("interval timer already existed");}
+    //}
+}
+
+generateDataviz = function (section, type, sensor, thekey, theid, range) {
+    console.log('generate dataviz has been called');
+    var agent = '' + theid;
+    var n = agent.lastIndexOf('_');
+    var idx = agent.substring(n + 1);
+    if ($("section#" + section + " #" + theid).is($("#dashcontent h2 + div.divider .span4:nth-child(-n+3)")) && !$("section#" + section + " #" + theid + " div").hasClass('bandleader')) {  // avoid doing this for grouped items
+        console.log('making dataviz for item: ' + agent);
+        var urltoload = 'json.htm?type=' + type + '&sensor=' + sensor + '&idx=' + idx + '&range=' + range;
+        $('<td class="dataviz"><div></div></td>').insertBefore("#" + theid + " .status");
+        var showData = $('section#' + section + ' #' + theid).find('.dataviz > div');
+        var datavizArray = [];
+        $.getJSON(urltoload, function (data) {
+            //console.log( "Dataviz - JSON load success" );
+            if (typeof data.result != "undefined") {
+                var modulo = 1
+                if (data.result.length > 100) { modulo = 2; }
+                if (data.result.length > 200) { modulo = 4; }
+                if (data.result.length > 300) { modulo = 6; }
+                if (data.result.length > 400) { modulo = 8; }
+                if (data.result.length > 500) { modulo = 10; }
+                if (data.result.length > 600) { modulo = 16; }
+                for (var i in data.result) {
+                    var key = i;
+                    var val = data.result[i];
+                    if ((i % modulo) == 0) { // this prunes and this limits the amount of datapoints, to make it all less heavy on the browser.
+                        for (var j in val) {
+                            var readytobreak = 0;
+                            var key2 = j;
+                            var val2 = val[j];
+                            if (thekey != 'any') {
+                                if (key2 == thekey) {
+                                    //console.log("adding data");
+                                    var addme = Math.round(val2 * 10) / 10;
+                                    datavizArray.push(addme);
+                                }
+                            } else if (key2 != 'd') {
+                                var addme = Math.round(val2 * 10) / 10;
+                                datavizArray.push(addme);
+                                readytobreak = 0
+                            }
+                            if (readytobreak == 1) { break; } // if grabbing "any" value, then break after the first one.
+                        }
+                    }
+                }
+                // Attach the datavizualisation
+                if (datavizArray.length > 0) {
+                    showData.highcharts({
+                        chart: {
+                            type: 'line',
+                            backgroundColor: 'transparent',
+                            plotBorderWidth: null,
+                            marginTop: 0,
+                            height: 40,
+                            marginBottom: 0,
+                            marginLeft: 0,
+                            plotShadow: false,
+                            borderWidth: 0,
+                            plotBorderWidth: 0,
+                            marginRight: 0
+                        },
+                        tooltip: {
+                            userHTML: true,
+                            style: {
+                                padding: 5,
+                                width: 100,
+                                height: 30,
+                                backgroundColor: '#FCFFC5',
+                                borderColor: 'black',
+                                borderRadius: 10,
+                                borderWidth: 3,
+                            },
+                            formatter: function () {
+                                return '<b>' + this.y + '</b> (' + range + ')';// 
+                            },
+                            height: 30,
+                            width: 30
+                        },
+                        title: {
+                            text: ''
+                        },
+                        xAxis: {
+                            gridLineWidth: 0,
+                            minorGridLineWidth: 0,
+                            enabled: false,
+                            showEmpty: false,
+                        },
+                        yAxis: {
+                            gridLineWidth: 0,
+                            minorGridLineWidth: 0,
+                            title: {
+                                text: ''
+                            },
+                            showEmpty: true,
+                            enabled: true
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            line: {
+                                lineWidth: 1.5,
+                                lineColor: '#cccccc',
+                            },
+                            showInLegend: true,
+                            tooltip: {
+                            }
+                        },
+                        exporting: {
+                            buttons: {
+                                contextButton: {
+                                    enabled: false
+                                }
+                            }
+                        },
+                        series: [{
+                            marker: {
+                                enabled: false
+                            },
+                            animation: true,
+                            name: '24h',
+                            data: datavizArray //[19.5,20,17]  
+                        }]
+                    });
+                }
+            }
+        });
+    }else{console.log("dataviz not triggered")}
+};
+
+
+
+
+
+
+
+/* This is currently unused code to allow users to change the theme through settings in the interface.
+
 $( document ).ready(function() {
     console.log( "THEME JS body ready" );  
     
