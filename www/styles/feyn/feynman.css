@@ -88,10 +88,35 @@ body.fronStage .span4 {
     margin-bottom:20px;
 }
 
-.item .options a.btnsmall{
+.item .btn-group{
+    margin-left:15px;
+    display:flex;
+}
+
+.item a.btnsmall{
     /*color: #53b4e3;*/
     color:#8cd9ff;
+    height: 30px;
 }
+
+.span4 td:last-of-type .lcursor{
+    top:-33px;
+}
+
+
+#settingscontent .span4{
+    padding: 20px;
+    margin-bottom:15px;
+}
+
+#settingscontent .span4 label{
+    white-space: normal;
+}
+
+#settingscontent .span6 textarea{
+    width:100%!important;
+}
+
 
 #holder h1, #holder h2, #holder h3{
     font-family: "LatoLight", sans-serif;
