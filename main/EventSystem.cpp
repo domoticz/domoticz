@@ -1176,11 +1176,8 @@ bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason
 	return bEventTrigger;
 }
 
-void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const long &statusCode, const std::string &callback)
+void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback)
 {
-	std::stringstream ss;
-	ss << statusCode;
-
 	_tEventQueue item;
 	item.reason = REASON_URL;
 	item.DeviceID = 0;
@@ -1188,7 +1185,6 @@ void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::
 	item.nValueWording = callback;
 	item.varId = 0;
 	item.vsData = headerData;
-	item.vsData.push_back(ss.str());
 	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
@@ -3169,9 +3165,6 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "statusCode");
 		lua_pushstring(lua_state, statusCode.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "data");
-		lua_pushstring(lua_state, item.sValue.c_str());
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "data");
 		lua_pushstring(lua_state, item.sValue.c_str());

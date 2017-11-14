@@ -167,12 +167,11 @@ void HTTPClient::LogError(void *curlobj)
 
 bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
-	std::vector<std::string> headerdata;
-	long statusCode;
-	return GETBinary(url, ExtraHeaders, response, headerdata, statusCode, TimeOut);
+	std::vector<std::string> vHeaderData;
+	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut);
 }
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &headerdata, long &statusCode, const int TimeOut)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const int TimeOut)
 {
 	try
 	{
@@ -205,12 +204,18 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		}
 
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
-		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
+
+		// Push response code to end of vHeaderData vector
+		long responseCode;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+		std::stringstream ss;
+		ss << responseCode;
+		vHeaderData.push_back(ss.str());
 
 		if (res == CURLE_HTTP_RETURNED_ERROR)
 		{
@@ -330,12 +335,11 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 
 bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
 {
-	std::vector<std::string> headerdata;
-	long statusCode;
-	return POSTBinary(url, postdata, ExtraHeaders, response, headerdata, statusCode, bFollowRedirect);
+	std::vector<std::string> vHeaderData;
+	return POSTBinary(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect);
 }
 
-bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &headerdata, long &statusCode, const bool bFollowRedirect)
+bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect)
 {
 	try
 	{
@@ -353,7 +357,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		}
 
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
-		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
@@ -375,7 +379,14 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
 		res = curl_easy_perform(curl);
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
+
+		// Push status code to end of vHeaderData vector
+		long responseCode;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+		std::stringstream ss;
+		ss << responseCode;
+		vHeaderData.push_back(ss.str());
+
 		curl_easy_cleanup(curl);
 
 		if (headers != NULL)
@@ -510,16 +521,15 @@ bool HTTPClient::GET(const std::string &url, std::string &response, const bool b
 
 bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bIgnoreNoDataReturned)
 {
-	std::vector<std::string> vHTTPHeaderData;
-	long statusCode;
-	return GET(url, ExtraHeaders, response, vHTTPHeaderData, statusCode, bIgnoreNoDataReturned);
+	std::vector<std::string> vHeaderData;
+	return GET(url, ExtraHeaders, response, vHeaderData, bIgnoreNoDataReturned);
 }
 
-bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHTTPHeaderData, long &statusCode, const bool bIgnoreNoDataReturned)
+bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHTTPHeaderData, statusCode, -1))
+	if (!GETBinary(url, ExtraHeaders, vHTTPResponse, vHeaderData, -1))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
@@ -548,16 +558,15 @@ bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, co
 
 bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {
-	std::vector<std::string> vHTTPHeaderData;
-	long statusCode;
-	return POST(url, postdata, ExtraHeaders, response, vHTTPHeaderData, statusCode, bFollowRedirect, bIgnoreNoDataReturned);
+	std::vector<std::string> vHeaderData;
+	return POST(url, postdata, ExtraHeaders, response, vHeaderData, bFollowRedirect, bIgnoreNoDataReturned);
 }
 
-bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHTTPHeaderData, long &statusCode, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
+bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, std::vector<std::string> &vHeaderData, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {
 	response = "";
 	std::vector<unsigned char> vHTTPResponse;
-	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, vHTTPHeaderData, statusCode, bFollowRedirect))
+	if (!POSTBinary(url, postdata, ExtraHeaders, vHTTPResponse, vHeaderData, bFollowRedirect))
 		return false;
 	if (!bIgnoreNoDataReturned)
 	{
