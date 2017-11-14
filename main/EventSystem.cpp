@@ -3142,7 +3142,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	if (item.reason == REASON_URL)
 	{
-		std::string statusCode;
+		int statusCode;
 		lua_createtable(lua_state, 0, 0);
 		lua_pushstring(lua_state, "headers");
 		lua_createtable(lua_state, (int)item.vsData.size() - 1, 0);
@@ -3151,7 +3151,8 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		{
 			if (itt == item.vsData.end() - 1)
 			{
-				statusCode = *itt;
+				std::stringstream ss(*itt);
+				ss >> statusCode;
 				break;
 			}
 			size_t pos = (*itt).find(": ");
@@ -3164,7 +3165,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		}
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "statusCode");
-		lua_pushstring(lua_state, statusCode.c_str());
+		lua_pushnumber(lua_state, (lua_Number)statusCode);
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "data");
 		lua_pushstring(lua_state, item.sValue.c_str());
