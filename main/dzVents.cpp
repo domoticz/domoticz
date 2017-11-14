@@ -10,7 +10,7 @@ extern http::server::CWebServerHelper m_webservers;
 
 CdzVents::CdzVents(void)
 {
-	m_version = "2.3.0";
+	m_version = "2.4.0";
 }
 
 CdzVents::~CdzVents(void)
