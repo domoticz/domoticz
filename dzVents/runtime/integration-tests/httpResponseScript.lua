@@ -39,6 +39,7 @@ return {
             if (triggerItem.triggerRule == 'trigger1') then
 
                 res = res and expectEql(triggerItem.json.p, '1', 'p == 1')
+                res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
 
                 if (res) then
                     domoticz.globalData.httpTrigger = 'trigger1'
@@ -54,6 +55,7 @@ return {
                 end
 
             elseif (triggerItem.triggerRule == 'trigger2') then
+                res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
                 res = res and expectEql(triggerItem.json.p, 2, 'p == 2')
                 if (res) then domoticz.globalData.httpTrigger = 'trigger2' end
             end
