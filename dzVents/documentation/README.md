@@ -559,9 +559,9 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateSetPoint(setPoint, mode, until)**: *Function*. Update set point. Mode can be domoticz.EVOHOME_MODE_AUTO, EVOHOME_MODE_TEMPORARY_OVERRIDE or EVOHOME_MODE_PERMANENT_OVERRIDE. You can provide an until date (in ISO 8601 format e.g.: `os.date("!%Y-%m-%dT%TZ")`).
 
 #### Gas
- - **counter**: *Number*
- - **counterToday**: *Number*.
- - **updateGas(usage)**: *Function*.
+ - **counter**: *Number*. Value in m<sup>3</sup>
+ - **counterToday**: *Number*. Value in m<sup>3</sup>
+ - **updateGas(usage)**: *Function*. Usage in **dm<sup>3</sup>** (liters).
 
 #### Group
  - **devices()**: *Function*. Returns the collection of associated devices. Supports the same iterators as for `domoticz.devices()`: `forEach()`, `filter()`, `find()`, `reduce()`. See [Looping through the collections: iterators](#Looping_through_the_collections:_iterators). Note that the function doesn't allow you to get a device by its name or id. Use `domoticz.devices()` for that.

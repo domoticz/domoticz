@@ -157,6 +157,8 @@ local function DeviceAdapters(dummyLogger)
 		motion = { b = true },
 		off = { b = false, inv = 'On' },
 		closed = { b = false, inv = 'On' },
+		unlocked = { b = false, inv = 'On' },
+		locked = { b = true, inv = 'Off' },
 		['group off'] = { b = false },
 		['panic end'] = { b = false },
 		['no motion'] = { b = false, inv = 'Off' },

@@ -18,6 +18,8 @@ return {
 
 	process = function (group, data, domoticz, utils, adapterManager)
 
+		group.isGroup = true
+
 		function group.toggleGroup()
 			local current, inv
 			if (group.state ~= nil) then

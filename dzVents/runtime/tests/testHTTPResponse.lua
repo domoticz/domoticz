@@ -16,12 +16,21 @@ describe('HTTPResponse', function()
 		}, {
 			headers = {['Content-Type'] = 'application/json'},
 			data  = '{"a":1}',
-			callback = 'trigger1'
+			callback = 'trigger1',
+			statusCode = 404
 		})
 
 		assert.is_same({a = 1}, r.json)
 		assert.is_true(r.isJSON)
 		assert.is_same('{"a":1}', r.data)
+
+		assert.is_true(r.isHTTPResponse)
+		assert.is_false(r.isVariable)
+		assert.is_false(r.isTimer)
+		assert.is_false(r.isScene)
+		assert.is_false(r.isDevice)
+		assert.is_false(r.isGroup)
+		assert.is_same(404, r.statusCode)
 	end)
 
 end)

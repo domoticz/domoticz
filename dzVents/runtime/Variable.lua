@@ -10,7 +10,13 @@ local function Variable(domoticz, data)
 		['changed'] = data.changed,
 		['id'] = data.id,
 		['lastUpdate'] = Time(data.lastUpdate),
-		['baseType'] = domoticz.BASETYPE_VARIABLE
+		['baseType'] = domoticz.BASETYPE_VARIABLE,
+		isVariable = true,
+		isHTTPResponse = false,
+	    isDevice = false,
+	    isScene = false,
+	    isGroup = false,
+	    isTimer = false,
 	}
 
 	if (data.variableType == 'float' or data.variableType == 'integer') then

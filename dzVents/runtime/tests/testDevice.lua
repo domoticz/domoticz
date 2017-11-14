@@ -221,6 +221,13 @@ describe('device', function()
 			assert.is_not_nil(device.setState)
 			assert.is_same('bla', device.state)
 
+			assert.is_false(device.isHTTPResponse)
+			assert.is_false(device.isVariable)
+			assert.is_false(device.isTimer)
+			assert.is_false(device.isScene)
+			assert.is_true(device.isDevice)
+			assert.is_false(device.isGroup)
+
 		end)
 
 		it('should have a cancelQueuedCommands method', function()
@@ -1080,6 +1087,13 @@ describe('device', function()
 				assert.is_same({
 					{ ['Cancel:Scene'] = '1' }
 				}, commandArray)
+
+				assert.is_false(scene.isHTTPResponse)
+				assert.is_false(scene.isVariable)
+				assert.is_false(scene.isTimer)
+				assert.is_true(scene.isScene)
+				assert.is_false(scene.isDevice)
+				assert.is_false(scene.isGroup)
 			end)
 
 			-- subdevices are tested in testDomoticz
@@ -1090,6 +1104,13 @@ describe('device', function()
 					['name'] = 'myGroup',
 					['state'] = 'On'
 				})
+
+				assert.is_false(group.isHTTPResponse)
+				assert.is_false(group.isVariable)
+				assert.is_false(group.isTimer)
+				assert.is_false(group.isScene)
+				assert.is_false(group.isDevice)
+				assert.is_true(group.isGroup)
 
 				assert.is_same('Description 1', group.description)
 

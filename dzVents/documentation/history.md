@@ -3,6 +3,8 @@
 - Added .devices() collection to scenes and groups to iterate (forEach, filter, reduce, find) over the associated devices.
 - Added http response event triggers to be used in combination with openURL. You can now do GET and POST request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex curl shizzle.
 - Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
+- Added locked/unlocked support for door-locks (locked == active).
+- Added isDevice, isGroup, isTimer, isScene, isHTTPResponse, isVariable to the objects passed as the second parameter to the execute function for even easier detection of object type.
 
 
 [2.3.0]

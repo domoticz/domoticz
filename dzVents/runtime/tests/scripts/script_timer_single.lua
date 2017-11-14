@@ -5,7 +5,9 @@ return {
 		['timer'] = {'every ' .. min}
 	},
 	execute = function(domoticz, timer, triggerInfo)
-		domoticz.notify('Me', timer.triggerRule .. ' ' .. triggerInfo.type .. ' ' .. triggerInfo.trigger)
+		if (timer.isTimer) then
+			domoticz.notify('Me', timer.triggerRule .. ' ' .. triggerInfo.type .. ' ' .. triggerInfo.trigger)
+		end
 		return 'script_timer_table'
 	end
 }
