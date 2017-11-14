@@ -6,6 +6,6 @@ lastUpdate errors
 
 globalData error? github
 
-domoticz.utils?
+domoticz.utils? (lodash ook)
 
-basetype omcatten naar isDevice etc
+basetype omcatten naar isDevice etc > docs

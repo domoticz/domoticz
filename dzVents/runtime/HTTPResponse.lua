@@ -14,7 +14,7 @@ local function HTTPResponce(domoticz, responseData)
 
     self.isJSON = false
 
-    self.statusCode = responseData.statusCode or 200 -- todo
+    self.statusCode = responseData.statusCode
 
     self.isHTTPResponse = true
     self.isDevice = false
