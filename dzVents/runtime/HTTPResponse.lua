@@ -14,7 +14,7 @@ local function HTTPResponce(domoticz, responseData)
 
     self.isJSON = false
 
-    self.statusCode = tonumber(responseData.statusCode)
+    self.statusCode = responseData.statusCode
 
     self.isHTTPResponse = true
     self.isDevice = false
@@ -22,6 +22,7 @@ local function HTTPResponce(domoticz, responseData)
     self.isGroup = false
     self.isTimer = false
     self.isVariable = false
+    self.isSecurity = false
 
     self.callback = responseData.callback
     self.triggerRule = responseData.callback

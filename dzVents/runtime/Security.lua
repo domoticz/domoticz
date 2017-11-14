@@ -1,19 +1,20 @@
-local function Timer(domoticz, rule)
+local function Security(domoticz, rule)
 
     local self = {
-        baseType = domoticz.BASETYPE_TIMER,
+        baseType = domoticz.BASETYPE_SECURITY,
         triggerRule = rule,
         isVariable = false,
 		isHTTPResponse = false,
 	    isDevice = false,
 	    isScene = false,
 	    isGroup = false,
-	    isTimer = true,
-        isSecurity = false
+	    isTimer = false,
+        isSecurity = true,
+        state = domoticz.security
     }
 
     return self
 
 end
 
-return Timer
+return Security

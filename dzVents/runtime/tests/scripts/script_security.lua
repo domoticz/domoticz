@@ -3,7 +3,7 @@ return {
 	on = {
 		['security'] = {domoticz.SECURITY_ARMEDAWAY}
 	},
-	execute = function(domoticz, dummy, info)
-		return 'script_security: ' .. tostring(dummy) ..' ' .. tostring(info['trigger'])
+	execute = function(domoticz, security, info)
+		return 'script_security: ' .. tostring(security.isSecurity) ..' ' .. tostring(info['trigger'])
 	end
 }

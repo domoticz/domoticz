@@ -5,6 +5,9 @@
 - Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
 - Added locked/unlocked support for door-locks (locked == active).
 - Added isDevice, isGroup, isTimer, isScene, isHTTPResponse, isVariable to the objects passed as the second parameter to the execute function for even easier detection of object type.
+- Moved utility function from the domoticz object to domoticz.utils object.
+- Added lodash as a method to domoticz.utils: domoticz.utils._
+- Added toJSON and fromJSON methods to domoticz.utils.
 
 
 [2.3.0]

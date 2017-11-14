@@ -468,7 +468,7 @@ describe('event helpers', function()
 				'Armed Away')
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
-			assert.is_same('script_security: nil Armed Away', res)
+			assert.is_same('script_security: true Armed Away', res)
 
 			local res = helpers.callEventHandler(scriptSecurityGrouped,
 				nil,
@@ -476,7 +476,7 @@ describe('event helpers', function()
 				'Armed Home')
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function
-			assert.is_same('script_security: nil Armed Away', res)
+			assert.is_same('script_security: Armed Away Armed Away', res)
 
 		end)
 

@@ -64,6 +64,7 @@ describe('variables', function()
 		assert.is_false(var.isScene)
 		assert.is_false(var.isDevice)
 		assert.is_false(var.isGroup)
+		assert.is_false(var.isSecurity)
 	end)
 
 	it('should have properties', function()

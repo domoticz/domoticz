@@ -227,6 +227,7 @@ describe('device', function()
 			assert.is_false(device.isScene)
 			assert.is_true(device.isDevice)
 			assert.is_false(device.isGroup)
+			assert.is_false(device.isSecurity)
 
 		end)
 
@@ -1094,6 +1095,7 @@ describe('device', function()
 				assert.is_true(scene.isScene)
 				assert.is_false(scene.isDevice)
 				assert.is_false(scene.isGroup)
+				assert.is_false(scene.isSecurity)
 			end)
 
 			-- subdevices are tested in testDomoticz
@@ -1111,6 +1113,7 @@ describe('device', function()
 				assert.is_false(group.isScene)
 				assert.is_false(group.isDevice)
 				assert.is_true(group.isGroup)
+				assert.is_false(group.isSecurity)
 
 				assert.is_same('Description 1', group.description)
 

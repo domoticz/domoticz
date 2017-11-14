@@ -832,27 +832,27 @@ describe('Domoticz', function()
 	end)
 
 	it('should convert to Celsius', function()
-		assert.is_same(35, domoticz.toCelsius(95))
-		assert.is_same(10, domoticz.toCelsius(18, true))
+		assert.is_same(35, domoticz.utils.toCelsius(95))
+		assert.is_same(10, domoticz.utils.toCelsius(18, true))
 	end)
 
 	it('should url encode', function()
 
 		local s = 'a b c'
-		assert.is_same('a+b+c', domoticz.urlEncode(s))
+		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
 
 	end)
 
 	it('should round', function()
-		assert.is_same(10, domoticz.round(10.4, 0))
-		assert.is_same(10.0, domoticz.round(10, 1))
-		assert.is_same(10.00, domoticz.round(10, 2))
-		assert.is_same(10.10, domoticz.round(10.1, 2))
-		assert.is_same(10.1, domoticz.round(10.05, 1))
-		assert.is_same(10.14, domoticz.round(10.144, 2))
-		assert.is_same(10.144, domoticz.round(10.144, 3))
-		assert.is_same(-10.144, domoticz.round(-10.144, 3))
-		assert.is_same(-10.001, domoticz.round(-10.0009, 3))
+		assert.is_same(10, domoticz.utils.round(10.4, 0))
+		assert.is_same(10.0, domoticz.utils.round(10, 1))
+		assert.is_same(10.00, domoticz.utils.round(10, 2))
+		assert.is_same(10.10, domoticz.utils.round(10.1, 2))
+		assert.is_same(10.1, domoticz.utils.round(10.05, 1))
+		assert.is_same(10.14, domoticz.utils.round(10.144, 2))
+		assert.is_same(10.144, domoticz.utils.round(10.144, 3))
+		assert.is_same(-10.144, domoticz.utils.round(-10.144, 3))
+		assert.is_same(-10.001, domoticz.utils.round(-10.0009, 3))
 	end)
 
 	it('should log', function()
@@ -866,6 +866,23 @@ describe('Domoticz', function()
 		domoticz.log('boeh', 1)
 		assert.is_true(logged)
 	end)
+
+	it('should convert to json', function()
+		local t = {
+			a = 10,
+			b = 20
+		}
+		assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
+	end)
+
+	it('should convert from json', function()
+		local json = '{"a":10,"b":20}'
+		assert.is_same({
+			a = 10,
+			b = 20
+		}, domoticz.utils.fromJSON(json))
+	end)
+
 
 
 end)

@@ -138,8 +138,52 @@ local function Domoticz(settings)
 		['BASETYPE_VARIABLE'] = 'variable',
 		['BASETYPE_SECURITY'] = 'security',
 		['BASETYPE_TIMER'] = 'timer',
-		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse'
+		['BASETYPE_HTTP_RESPONSE'] = 'httpResponse',
+
+		utils = {
+			_ = _,
+
+			toCelsius = function(f, relative)
+				if (relative) then
+					return f*(1/1.8)
+				end
+				return ((f-32) / 1.8)
+			end,
+
+			urlEncode = function(s, strSub)
+				return utils.urlEncode(s, strSub)
+			end,
+
+			round = function(x, n)
+				n = math.pow(10, n or 0)
+				x = x * n
+				if x >= 0 then
+					x = math.floor(x + 0.5)
+				else
+					x = math.ceil(x - 0.5)
+				end
+				return x / n
+			end,
+
+			osExecute = function(cmd)
+				utils.osExecute(cmd)
+			end,
+
+			fileExists = function(path)
+				return utils.fileExists(path)
+			end,
+
+			fromJSON = function(json)
+				return utils.fromJSON(json)
+			end,
+
+			toJSON = function(luaTable)
+				return utils.toJSON(luaTable)
+			end
+
+		}
 	}
+
 
 	-- add domoticz commands to the commandArray
 	function self.sendCommand(command, value)
@@ -248,11 +292,13 @@ local function Domoticz(settings)
 
 	-- send a scene switch command
 	function self.setScene(scene, value)
+		utils.log('setScene is deprecated. Please use the scene object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Scene:' .. scene, value, 'device', scene.state)
 	end
 
 	-- send a group switch command
 	function self.switchGroup(group, value)
+		utils.log('switchGroup is deprecated. Please use the group object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
 	end
 
@@ -282,25 +328,18 @@ local function Domoticz(settings)
 	end
 
 	function self.toCelsius(f, relative)
-		if (relative) then
-			return f*(1/1.8)
-		end
-		return ((f-32) / 1.8)
+		utils.log('domoticz.toCelsius deprecated. Please use domoticz.utils.toCelsius.', utils.LOG_INFO)
+		return self.utils.toCelsius(f, relative)
 	end
 
 	function self.urlEncode(s, strSub)
-		return utils.urlEncode(s, strSub)
+		utils.log('domoticz.urlEncode deprecated. Please use domoticz.utils.urlEncode.', utils.LOG_INFO)
+		return self.utils.urlEncode(s, strSub)
 	end
 
-		function self.round(x, n)
-		n = math.pow(10, n or 0)
-		x = x * n
-		if x >= 0 then
-			x = math.floor(x + 0.5)
-		else
-			x = math.ceil(x - 0.5)
-		end
-		return x / n
+	function self.round(x, n)
+		utils.log('domoticz.round deprecated. Please use domoticz.utils.round.', utils.LOG_INFO)
+		return self.utils.round(x, n)
 	end
 
 	-- doesn't seem to work well for some weird reasone

@@ -17,6 +17,7 @@ local function Variable(domoticz, data)
 	    isScene = false,
 	    isGroup = false,
 	    isTimer = false,
+		isSecurity = false
 	}
 
 	if (data.variableType == 'float' or data.variableType == 'integer') then

@@ -30,6 +30,7 @@ describe('HTTPResponse', function()
 		assert.is_false(r.isScene)
 		assert.is_false(r.isDevice)
 		assert.is_false(r.isGroup)
+		assert.is_false(r.isSecurity)
 		assert.is_same(404, r.statusCode)
 	end)
 

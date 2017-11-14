@@ -1,4 +1,4 @@
-local GLOBAL_DATA_MODULE = 'global_data'
+	local GLOBAL_DATA_MODULE = 'global_data'
 local GLOBAL = false
 local LOCAL = true
 
@@ -9,6 +9,7 @@ local utils = require('Utils')
 local persistence = require('persistence')
 local HTTPResponse = require('HTTPResponse')
 local Timer = require('Timer')
+local Security = require('Security')
 
 local HistoricalStorage = require('HistoricalStorage')
 
@@ -183,7 +184,8 @@ local function EventHelpers(domoticz, mainMethod)
 				ok, res = pcall(eventHandler['execute'], self.domoticz, variable, info)
 			elseif (security ~= nil) then
 				info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SECURITY)
-				ok, res = pcall(eventHandler['execute'], self.domoticz, nil, info)
+				local security = Security(self.domoticz, info.trigger)
+				ok, res = pcall(eventHandler['execute'], self.domoticz, security, info)
 			elseif (scenegroup ~= nil) then
 				if (scenegroup.baseType == 'scene') then
 					info = getEventInfo(eventHandler, self.domoticz.EVENT_TYPE_SCENE)

@@ -61,6 +61,7 @@ return {
 		device.isTimer = false
 		device.isVariable = false
 		device.isHTTPResponse = false
+		device.isSecurity = false
 
 
 		if (data.baseType == 'device') then
