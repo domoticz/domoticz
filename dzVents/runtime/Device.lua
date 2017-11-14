@@ -32,7 +32,6 @@ local function Device(domoticz, data, dummyLogger)
 	self['_data'] = data
 	self['baseType'] = data.baseType
 
-
 	if (_G.TESTMODE) then
 		function self.getAdapterManager()
 			return adapterManager

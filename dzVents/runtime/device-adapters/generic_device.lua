@@ -55,6 +55,14 @@ return {
 			return nil
 		end
 
+		device.isDevice = false
+		device.isScene = false
+		device.isGroup = false
+		device.isTimer = false
+		device.isVariable = false
+		device.isHTTPResponse = false
+
+
 		if (data.baseType == 'device') then
 
 			local bat
@@ -86,6 +94,8 @@ return {
 			device['cancelQueuedCommands'] = function()
 				domoticz.sendCommand('Cancel:Device', tostring(data.id))
 			end
+
+			device.isDevice = true
 		end
 
 		if (data.baseType == 'group' or data.baseType == 'scene') then

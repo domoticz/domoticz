@@ -7,3 +7,5 @@ lastUpdate errors
 globalData error? github
 
 domoticz.utils?
+
+basetype omcatten naar isDevice etc

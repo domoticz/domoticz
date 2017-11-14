@@ -17,6 +17,8 @@ return {
 
 	process = function(scene, data, domoticz, utils, adapterManager)
 
+		scene.isScene = true
+
 		function scene.setState(newState)
 			-- generic state update method
 			return domoticz.setScene(scene.name, newState)
