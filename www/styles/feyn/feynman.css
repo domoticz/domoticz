@@ -28,7 +28,7 @@ body{
     linear-gradient(225deg, hsla(140, 90%, 50%, 1) 10%, hsla(140, 90%, 50%, 0) 80%),
     linear-gradient(315deg, hsla(135, 95%, 55%, 1) 100%, hsla(35, 95%, 55%, 0) 70%);
 
-background-attachment: fixed;
+    background-attachment: fixed;
 }
 
 
@@ -37,11 +37,11 @@ background-attachment: fixed;
    
 }
 
-/*
+
 body table#itemtabledoubleicon tbody tr, body table#itemtable tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenostatus tbody tr, body table#itemtablenotype tbody tr {
     background-color:transparent;
 }
-    */
+
 
 .navbar{
     background-color:#f1f1f1;
@@ -150,6 +150,7 @@ body table#itemtablenotype tr td:first-child{
     border-radius:2px!important;
 }
 
+/*
 .ui-draggable:not(.ui-dialog) table > tbody > tr{
     background-color:transparent!important;
     background: -moz-linear-gradient(to bottom, rgba(212,225,238,1) 0% ,rgba(212,225,238,1) 40px, rgba(255,255,255,1) 40px,rgba(255,255,255,0.95) 69px,rgba(255,255,255,1) 69px,rgba(255,255,255,1) 100%);
@@ -158,10 +159,11 @@ body table#itemtablenotype tr td:first-child{
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e1ee', endColorstr='#cccccccc',GradientType=0 );
     border-radius:2px!important;
 }
+
 #dashcontent .ui-draggable:not(.ui-dialog) table > tbody > tr{
     background-color:#D4E1EE;
     border-radius:2px!important;
-}
+}*/
 
 .ui-draggable:not(.ui-dialog) table{
     box-shadow: 2px 2px 18px 0px rgba(50, 50, 50, 0.2);
@@ -635,10 +637,73 @@ body:hover .ui-dialog {
     
     div.item .options {
     background-image: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.02) 80%,rgba(0,0,0,0.0) 80%)!important;
-    
+    }
     
 
 }
 
 
+/* PRAGMATIC - MAKING THE THEME WORK WITHOUT OTHER PROPOSED CHANGES TO DOMOTICZ */    
+
+.item #bigtext{color:#fff}
+
+.item a..btnsmall-sel,
+.item a.btnsmall{
+    /*color: #53b4e3;*/
+    display:inline;
+    padding:0 7px;
+}
+
+.item .btn-group{
+    margin-left:15px;
+    display:flex;
+}
+
+.item a.btnsmall-sel{
+    margin-right:0;
+    background: linear-gradient(to bottom, #d946d4 0%,#ad3dc9 50%,#9c2ebc 51%,#9e36ca 100%);
+    }
+
+#settingscontent .span4{
+    padding: 20px;
+    margin-bottom:15px;
+}
+
+#settingscontent .span4 label{
+    white-space: normal;
+}
+
+#settingscontent .span6 textarea{
+    width:100%!important;
+}
+
+/* JS mods make this unnecessary
+#bigtext {
+    color: rgba(255,255,255,0.8);
+    background-image: none;
+    background-color: transparent;
+    font-size: 17px;
+}
+*/
+#bigtext > span{color: rgba(255,255,255,0.8);}
+
+#weathertophtm td{display:block; text-align:left}
+
+/* doesnt work with log
+#main-view > .container > table,
+#main-view > .container > div > table{margin-bottom:10px}  
+*/
+#lightcontent #timesun,
+#temptophtm #timesun,
+#weathertophtm #timesun,
+#utilitycontent > table{padding-bottom:10px}
+
+.ui-draggable:not(.ui-dialog) tr{
+    background-color: transparent;
+    background-image:none;
+    background: -moz-linear-gradient(top, rgba(125,185,232,0.2) 0%, rgba(89,203,234,0.1) 99%, rgba(89,203,234,0.1) 100%)!important; 
+    background: -webkit-linear-gradient(top, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important;
+    background: linear-gradient(to bottom, rgba(125,185,232,0.2) 0%,rgba(89,203,234,0.1) 99%,rgba(89,203,234,0.1) 100%)!important; 
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#337db9e8', endColorstr='#1a59cbea',GradientType=1 );
+}
 

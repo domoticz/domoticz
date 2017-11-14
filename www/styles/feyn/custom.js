@@ -68,11 +68,7 @@ $( document ).ready(function() {
 // adds extra html to make theming work better.
 function addSpans()
 {
-    $('td[id="name"]:not(:has(span))').each(function(index) {
-        $(this).wrapInner('<span><\/span>');
-    });
-
-    $('td[id="bigtext"]:not(:has(span))').each(function(index) {
+    $('td[id="name"]:not(:has(span)),td[id="bigtext"]:not(:has(span)),td[id="status"]:not(:has(span)),td[id="type"]:not(:has(span)),td[id="lastupdate"]:not(:has(span))').each(function(index) {
         $(this).wrapInner('<span><\/span>');
     });
 }
@@ -82,10 +78,6 @@ function updateMainPage()
 {
     
     // simply the dashboard
-    
-    //$('.dashCategory section').each(function(index) {
-    //    $(this).find(".span4").wrapAll( "<div class='row divider' />"); 
-    //});
     if($('section.dashCategory').length > 0){
         // on the dashboard
         $('section.dashCategory').each(function(index) {
@@ -126,23 +118,25 @@ addDataviz = function () {
                 generateDataviz("dashUtility", "graph", "Percentage", "any", theid, "day");
             });
 
-            /*  Lux */
+            /*
+            //  Lux 
             $('body.columns3 section#dashUtility > .divider:first-of-type .Lux').each(function () {
                 var theid = '' + $(this).parent().attr('id');
                 generateDataviz("dashUtility", "graph", "counter", "lux", theid, "day");
             });
 
-            /*  Co2 */
+            //  Co2 
             $('body.columns3 section#dashUtility > .divider:first-of-type .AirQuality').each(function () {
                 var theid = '' + $(this).parent().attr('id');
                 generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
             });
 
-            /*  Energy */
+            //  Energy 
             $('body.columns3 section#dashUtility > .divider:first-of-type .Energy').each(function () {
                 var theid = '' + $(this).parent().attr('id');
                 generateDataviz("dashUtility", "graph", "counter", "any", theid, "day");
             });
+            */
 
         }, 3250);
         // Create new  timer if it does not already exist
