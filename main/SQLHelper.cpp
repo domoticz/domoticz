@@ -2335,7 +2335,7 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Hardware SET Mode3='%q', Mode5='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
 				}
 			}
-			
+
 		}
 	}
 	else if (bNewInstall)
@@ -2972,6 +2972,7 @@ void CSQLHelper::Do_Work()
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
 				std::vector<std::string> extraHeaders;
+				long statusCode;
 
 				StringSplit(itt->_relatedEvent, "!#", extraHeaders);
 
@@ -2980,15 +2981,15 @@ void CSQLHelper::Do_Work()
 				bool ret;
 				if (method == HTTPClient::HTTP_METHOD_GET)
 				{
-					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData);
+					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData, statusCode);
 				}
 				else if (method == HTTPClient::HTTP_METHOD_POST)
 				{
-					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData);
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData, statusCode);
 				}
 
 				if (m_bEnableEventSystem && !callback.empty())
-					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
+					m_mainworker.m_eventsystem.TriggerURL(response, headerData, statusCode, callback);
 
 				if (!ret)
 				{
