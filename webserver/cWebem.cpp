@@ -1821,17 +1821,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 				break;
 			}
 		}
-			// check if content is not gzipped, include won't work with non-text content
-			if (!rep.bIsGZIP) {
-				// Find and include any special cWebem strings
-				if (!myWebem->Include(rep.content)) {
-					if (mInfo.mtime_support && !mInfo.is_modified) {
-						//_log.Log(LOG_STATUS, "[web:%s] %s not modified (1).", myWebem->GetPort().c_str(), req.uri.c_str());
-						rep = reply::stock_reply(reply::not_modified);
-						return;
-					}
-				}
-			}
 
 		if (content_type == "text/html"
 			|| content_type == "text/plain"
