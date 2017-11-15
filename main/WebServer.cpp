@@ -3429,6 +3429,8 @@ namespace http {
 							offdelay
 						);
 					}
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 				}
 			}
 			else if (cparam == "updatescenedevice")
@@ -3488,6 +3490,8 @@ namespace http {
 				root["title"] = "DeleteSceneDevice";
 				m_sql.safe_query("DELETE FROM SceneDevices WHERE (ID == '%q')", idx.c_str());
 				m_sql.safe_query("DELETE FROM CamerasActiveDevices WHERE (DevSceneType==1) AND (DevSceneRowID == '%q')", idx.c_str());
+				if (m_sql.m_bEnableEventSystem)
+					m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 			}
 			else if (cparam == "getsubdevices")
 			{
@@ -7746,7 +7750,6 @@ namespace http {
 			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
 			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
 			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
-
 			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
 
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
@@ -11723,6 +11726,9 @@ namespace http {
 			root["status"] = "OK";
 			root["title"] = "SetUnused";
 			m_sql.safe_query("UPDATE DeviceStatus SET Used=0 WHERE (ID == %d)", idx);
+			if (m_sql.m_bEnableEventSystem)
+				m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
+
 		}
 
 		void CWebServer::Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root)
@@ -12133,11 +12139,6 @@ namespace http {
 			//Strip trailing spaces in 'description'
 			description = stdstring_trim(description);
 
-			std::stringstream sstridx(idx);
-			uint64_t ullidx;
-			sstridx >> ullidx;
-			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_DEVICE);
-
 			std::vector<std::vector<std::string> > result;
 
 			result = m_sql.safe_query("SELECT Type,SubType,HardwareID FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
@@ -12332,6 +12333,9 @@ namespace http {
 			// Save device options
 			if (!sOptions.empty())
 			{
+				std::stringstream sstridx(idx);
+				uint64_t ullidx;
+				sstridx >> ullidx;
 				m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(sOptions, false));
 			}
 
@@ -12364,6 +12368,8 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetUsed";
 			}
+			if (m_sql.m_bEnableEventSystem)
+				m_mainworker.m_eventsystem.GetCurrentStates();
 		}
 
 		void CWebServer::RType_Settings(WebEmSession & session, const request& req, Json::Value &root)
