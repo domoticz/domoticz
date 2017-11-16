@@ -55,7 +55,7 @@ return {
 			if (data.name ~= nil and data.name ~= '') then
 				level = utils.LOG_ERROR
 			else
-				level = utils.LOG_DEBUG
+				level = utils.LOG_ERROR
 			end
 			utils.log('Discarding device. No last update info found: ' .. domoticz.utils._.str(data), level)
 			return nil
