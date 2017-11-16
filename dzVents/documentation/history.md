@@ -1,4 +1,5 @@
 [2.4.0]
+- **BREAKING CHANGE**: The second parameter passed to the execute function is no longer nil when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. execute = function(domoticz, item) .. end. You can inspect item using: item.isDevice, item.isTimer, item.isVariable, item.isScene, item.isGroup, item.isSecurity, item.isHTTPResponse. Please read the documentation about the execute function.
 - Added .cancelQueuedCommands() to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance .afterMin(10) or .repeatAfterMin(1, 4)
 - Added .devices() collection to scenes and groups to iterate (forEach, filter, reduce, find) over the associated devices.
 - Added http response event triggers to be used in combination with openURL. You can now do GET and POST request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex curl shizzle.
@@ -8,6 +9,7 @@
 - Moved utility function from the domoticz object to domoticz.utils object.
 - Added lodash as a method to domoticz.utils: domoticz.utils._
 - Added toJSON and fromJSON methods to domoticz.utils.
+- Added afterXXX() and withinXXX() support for device-update commands. E.g.: myTextDevice.updateText('Zork').afterMin(2).
 
 
 [2.3.0]

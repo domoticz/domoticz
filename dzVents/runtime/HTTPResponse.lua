@@ -25,7 +25,7 @@ local function HTTPResponce(domoticz, responseData)
     self.isSecurity = false
 
     self.callback = responseData.callback
-    self.triggerRule = responseData.callback
+    self.trigger = responseData.callback
 
     if (string.match(self._contentType, 'application/json') and self.data) then
         local json = utils.fromJSON(self.data)

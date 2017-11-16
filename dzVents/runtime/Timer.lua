@@ -2,7 +2,7 @@ local function Timer(domoticz, rule)
 
     local self = {
         baseType = domoticz.BASETYPE_TIMER,
-        triggerRule = rule,
+        trigger = rule,
         isVariable = false,
 		isHTTPResponse = false,
 	    isDevice = false,

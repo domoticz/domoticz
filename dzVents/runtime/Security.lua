@@ -2,7 +2,7 @@ local function Security(domoticz, rule)
 
     local self = {
         baseType = domoticz.BASETYPE_SECURITY,
-        triggerRule = rule,
+        trigger = rule,
         isVariable = false,
 		isHTTPResponse = false,
 	    isDevice = false,

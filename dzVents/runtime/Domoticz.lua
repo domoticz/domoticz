@@ -243,28 +243,32 @@ local function Domoticz(settings)
 	function self.openURL(options)
 
 		if (type(options) == 'string') then
+			options = {
+				url = options,
+				method = 'GET'
+			}
+		end
 
-			local url = options
-			utils.log('OpenURL: ' .. tostring(url), utils.LOG_DEBUG)
-			self.sendCommand('OpenURL', url)
-
-		elseif (type(options) == 'table') then
+		if (type(options) == 'table') then
 
 			local url = options.url
 			local method = string.upper(options.method or 'GET')
 			local callback = options.callback
+			local postData
 
 			-- process body data
-			local body = ''
-			if (options.body ~= nil) then
-				if (type(options.body) == 'table') then
-					body = utils.toJSON(options.body)
+			if (method == 'POST') then
+				postData = ''
+				if (options.postData ~= nil) then
+					if (type(options.postData) == 'table') then
+						postData = utils.toJSON(options.postData)
 
-					if (options.headers == nil) then
-						options.headers = { ['Content-Type'] = 'application/json' }
+						if (options.headers == nil) then
+							options.headers = { ['Content-Type'] = 'application/json' }
+						end
+					else
+						postData = options.postData
 					end
-				else
-					body = options.body
 				end
 			end
 
@@ -272,7 +276,7 @@ local function Domoticz(settings)
 				URL = url,
 				method = method,
 				headers = options.headers,
-				postdata = body,
+				postdata = postData,
 				callback = callback,
 			}
 
@@ -282,7 +286,7 @@ local function Domoticz(settings)
 			utils.log('OpenURL: headers = ' .. _.str(request.headers), utils.LOG_DEBUG)
 			utils.log('OpenURL: callback = ' .. _.str(request.callback), utils.LOG_DEBUG)
 
-			self.sendCommand('OpenURL', request)
+			return TimedCommand(self, 'OpenURL', request, 'updatedevice')
 
 		else
 			utils.log('OpenURL: Invalid arguments, use either a string or a table with options', utils.LOG_ERROR)

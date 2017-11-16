@@ -3,14 +3,17 @@ package.path    = package.path .. ';' .. scriptPath .. '?.lua'
 
 local utils = require('Utils')
 
-local function TimedCommand(domoticz, name, value, mode, currentState)
+local function TimedCommand(domoticz, commandName, value, mode, currentState)
+
+	math.randomseed(os.time())
+
+	-- mode can be 'device', 'updatedevice' or 'variable'
 
 	local valueValue = value
 	local afterValue, forValue, randomValue, silentValue, repeatValue, repeatIntervalValue, checkValue
 	local _for, _after, _within, _rpt, _silent, _repeatAfter
 
 	local constructCommand = function()
-
 
 		local command = {} -- array of command parts
 
@@ -56,12 +59,46 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 		utils.log('Constructed timed-command: ' .. sCommand, utils.LOG_DEBUG)
 
 		return sCommand
-
 	end
+
+	local constructCommandForTable = function()
+
+		if (randomValue ~= nil) then
+			value._after = math.random(randomValue)
+		end
+
+		if (afterValue ~= nil) then
+			value._after = afterValue
+		end
+
+		-- if (forValue ~= nil) then
+		-- 	value._for = forValue
+		-- end
+
+		if (silentValue == true) then
+			value.callback = nil
+		end
+
+		-- if (repeatValue ~= nil) then
+		-- 	value._repeat = repeatValue
+		-- end
+        --
+		-- if (repeatIntervalValue ~= nil) then
+		-- 	value._repeatInterval = repeatIntervalValue
+		-- end
+
+		return value
+	end
+
+	local latest, command, sValue
 
 	-- get a reference to the latest entry in the commandArray so we can
 	-- keep modifying it here.
-	local latest, command, sValue = domoticz.sendCommand(name, constructCommand())
+	if (type(value) == 'table') then
+		latest, command, sValue = domoticz.sendCommand(commandName, value)
+	else
+		latest, command, sValue = domoticz.sendCommand(commandName, constructCommand())
+	end
 
 	local function factory()
 
@@ -85,7 +122,7 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 			end
 		end
 
-		if (afterValue == nil and randomValue == nil and mode ~= 'updatedevice') then
+		if (afterValue == nil and randomValue == nil) then
 			res.afterSec = _after(1)
 			res.afterMin = _after(60)
 			res.afterHour = _after(3600)
@@ -104,7 +141,11 @@ local function TimedCommand(domoticz, name, value, mode, currentState)
 	end
 
 	local function updateCommand()
-		latest[command] = constructCommand()
+		if (type(value) == 'table') then
+			latest[command] = constructCommandForTable()
+		else
+			latest[command] = constructCommand()
+		end
 	end
 
 	_checkValue = function(value, msg)

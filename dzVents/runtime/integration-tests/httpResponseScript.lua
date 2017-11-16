@@ -36,7 +36,7 @@ return {
 
         if (triggerItem.baseType == domoticz.BASETYPE_HTTP_RESPONSE) then
 
-            if (triggerItem.triggerRule == 'trigger1') then
+            if (triggerItem.trigger == 'trigger1') then
 
                 res = res and expectEql(triggerItem.json.p, '1', 'p == 1')
                 res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
@@ -47,14 +47,14 @@ return {
                        url = 'http://localhost:3000/testpost',
                        method = 'POST',
                        callback = 'trigger2',
-                       body = {
+                       postData = {
                            p = 2
                        }
                    })
 
                 end
 
-            elseif (triggerItem.triggerRule == 'trigger2') then
+            elseif (triggerItem.trigger == 'trigger2') then
                 res = res and expectEql(triggerItem.statusCode, 200, 'statusCode')
                 res = res and expectEql(triggerItem.json.p, 2, 'p == 2')
                 if (res) then domoticz.globalData.httpTrigger = 'trigger2' end

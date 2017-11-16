@@ -751,6 +751,10 @@
 				eventName == 'Time' ||
 				eventName == 'TimedCommand' ||
 				eventName == 'Utils' ||
+                eventName == 'Timer' ||
+                eventName == 'Security' ||
+                eventName == 'lodash' ||
+                eventName == 'JSON' ||
 				eventName == 'Variable') {
 				bootbox.alert('You cannot use these names for your scripts: Device, Domoticz, dzVents, EventHelpers, HistoricalStorage, persistence, Time, TimedCommand, Utils or Variable. It interferes with the dzVents subsystem. Please rename your script.');
 				return;
@@ -1171,6 +1175,7 @@
 						<option value="Scene">Scene</option>
 						<option value="Timer">Timer</option>
 						<option value="UserVariable">User variable</option>
+                        <option value="HTTPRequest">HTTP request</option>
 					</select>
 					<p>
 						<input type="checkbox" id="eventActive" name="eventActive" /><label for="eventActive"><span data-i18n="Event active">Event active</span></label>

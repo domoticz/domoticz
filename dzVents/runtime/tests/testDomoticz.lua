@@ -222,24 +222,63 @@ describe('Domoticz', function()
 
 			it('should open a simple url', function()
 				domoticz.openURL('some url')
-				assert.is_same({ { ['OpenURL'] = 'some url' } }, domoticz.commandArray)
+				assert.is_same({
+					{
+						['OpenURL'] = { URL = 'some url', method = 'GET' }
+					}
+				}, domoticz.commandArray)
 			end)
 
 			it('should open a url with options', function()
-				domoticz.openURL({
+				local cmd = domoticz.openURL({
 					url = 'some url',
-					callback = 'trigger1'
+					method = 'POST',
+					callback = 'trigger1',
+					postData = {
+						a = 1, b = 2
+					}
 				})
 				assert.is_same({
 					{
 						['OpenURL'] = {
      						URL = 'some url',
-      						method = 'GET',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
 							callback = 'trigger1',
-      						postdata = ''
+      						postdata = '{"a":1,"b":2}'
 						}
 					}
 				}, domoticz.commandArray)
+
+				cmd = cmd.afterMin(1)
+
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
+							callback = 'trigger1',
+      						postdata = '{"a":1,"b":2}',
+							_after = 60
+						}
+					}
+				}, domoticz.commandArray)
+
+				cmd.silent()
+
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
+      						postdata = '{"a":1,"b":2}',
+							_after = 60
+						}
+					}
+				}, domoticz.commandArray)
+
 			end)
 
 		end)

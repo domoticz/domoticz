@@ -3730,7 +3730,7 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, co
 			postData = itt->second;
 		else if (LowerCase(itt->first) == "callback")
 			callback = itt->second;
-		else if (LowerCase(itt->first) == "after")
+		else if (LowerCase(itt->first) == "_after")
 		{
 			std::stringstream ss(itt->second);
 			ss >> delayTime;

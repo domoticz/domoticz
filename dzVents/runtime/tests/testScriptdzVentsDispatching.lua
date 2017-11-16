@@ -192,7 +192,10 @@ describe('Event dispatching', function()
 
 		local main = require('dzVents')
 		assert.is_same({
-			{ ['OpenURL'] =  'test' }
+			{ ['OpenURL'] = {
+		      URL = 'test',
+		      method = 'GET'
+		  	} }
 		}, main)
 	end)
 
