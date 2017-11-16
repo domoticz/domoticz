@@ -51,6 +51,7 @@ return {
 		local _states = adapterManager.states
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
+			domoticz.utils._.print(data)
 			utils.log('There is no last update info for ' .. data.name, utils.LOG_ERROR)
 			return nil
 		end
