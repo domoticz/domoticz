@@ -1,4 +1,5 @@
-local jsonParser = require('JSON')
+local jsonParser
+local _ = require('lodash')
 
 local self = {
 	LOG_ERROR = 1,
@@ -51,6 +52,10 @@ function self.fromJSON(json)
 		return jsonParser:decode(j)
 	end
 
+	if (jsonParser == nil) then
+		jsonParser = require('JSON')
+	end
+
 	ok, results = pcall(parse, json)
 
 	if (ok) then
@@ -66,6 +71,10 @@ function self.toJSON(luaTable)
 
 	local toJSON = function(j)
 		return jsonParser:encode(j)
+	end
+
+	if (jsonParser == nil) then
+		jsonParser = require('JSON')
 	end
 
 	ok, results = pcall(toJSON, luaTable)
@@ -108,7 +117,7 @@ function self.log(msg, level)
 	end
 
 	if (level <= lLevel) then
-		self.print(tostring(marker) .. msg)
+		self.print(tostring(marker) .. _.str(msg))
 	end
 end
 
