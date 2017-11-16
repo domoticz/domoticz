@@ -52,7 +52,7 @@ return {
 
 		if (data.lastUpdate == '' or data.lastUpdate == nil) then
 			local level
-			if (data.name ~= nil) then
+			if (data.name ~= nil and data.name ~= '') then
 				level = utils.LOG_ERROR
 			else
 				level = utils.LOG_DEBUG
