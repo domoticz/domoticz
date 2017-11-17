@@ -106,7 +106,7 @@ If you made sure that dzVents system is active, we can do a quick test if everyt
  - In Domoticz  GUI (perhaps in another browser tab) press the switch.
  - You can watch the log in Domoticz and it should show you that indeed it triggered your script and you should see the log messages.
 
-See the examples folder `/path/to/domoticz/scripts/dzVents/examples` for more examples.
+See the examples folder `/path/to/domoticz/scripts/dzVents/examples` for more examples. This folder includes templates you can use to get started as well. And, if you use the GUI web editor to write your script, you will find boilerplate examples in the drop-down below the script type setting.
 
 # Writing scripts
 In order for your scripts to work with dzVents, they have to be turned into a Lua module with a specific structure. Basically you make sure it returns a Lua table (object) with predefined keys like `on` and `execute`. Here is an example:
