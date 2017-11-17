@@ -16,6 +16,7 @@ local deviceAdapters = {
 	'humidity_device',
 	'kwh_device',
 	'leafwetness_device',
+	'logitech_media_server_device',
 	'lux_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',

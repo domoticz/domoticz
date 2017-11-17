@@ -10,7 +10,7 @@
 - Added lodash as a method to domoticz.utils: domoticz.utils._
 - Added toJSON and fromJSON methods to domoticz.utils.
 - Added afterXXX() and withinXXX() support for device-update commands. E.g.: myTextDevice.updateText('Zork').afterMin(2).
-
+- Added support for Logitech Media Server devices (thanks to Eoreh).
 
 [2.3.0]
 

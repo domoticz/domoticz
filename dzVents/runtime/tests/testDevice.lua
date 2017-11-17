@@ -228,7 +228,6 @@ describe('device', function()
 			assert.is_true(device.isDevice)
 			assert.is_false(device.isGroup)
 			assert.is_false(device.isSecurity)
-
 		end)
 
 		it('should have a cancelQueuedCommands method', function()
@@ -245,7 +244,6 @@ describe('device', function()
 			device.cancelQueuedCommands()
 			assert.is_same({
 				{ ['Cancel:Device'] = '1' } }, commandArray)
-
 		end)
 
 		it('should deal with percentages', function()
@@ -302,7 +300,6 @@ describe('device', function()
 
 			device.updateLux(333)
 			assert.is_same({ { ["UpdateDevice"] = "1|0|333 TRIGGER" } }, commandArray)
-
 		end)
 
 		it('should detect a zone heating device', function()
@@ -314,7 +311,6 @@ describe('device', function()
 			local device = getDevice_(domoticz, 'myDevice', nil, true, 'Heating', 'Zone', rawData)
 			assert.is_same(12.5, device.setPoint)
 			assert.is_same('Cozy', device.heatingMode)
-
 		end)
 
 		it('should detect a kwh device', function()
@@ -402,7 +398,6 @@ describe('device', function()
 
 			device.updateP1(1, 2, 3, 4, 5, 6)
 			assert.is_same({ { ["UpdateDevice"] = '1|0|1;2;3;4;5;6 TRIGGER' } }, commandArray)
-
 		end)
 
 		it('should detect a thermostat setpoint device', function()
@@ -426,7 +421,6 @@ describe('device', function()
 			device.updateSetPoint(14)
 
 			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=setsetpoint&idx=1&setpoint=14', res)
-
 		end)
 
 		it('should detect a text device', function()
@@ -441,7 +435,6 @@ describe('device', function()
 			assert.is_same('dzVents rocks', device.text)
 			device.updateText('foo')
 			assert.is_same({ { ["UpdateDevice"] = "1|0|foo TRIGGER" } }, commandArray)
-
 		end)
 
 		it('should detect a rain device', function()
@@ -565,6 +558,11 @@ describe('device', function()
 					"kodiStop",
 					"kodiSwitchOff",
 					"open",
+					"pause",
+					"play",
+					"playFavorites",
+					"setVolume",
+					"startPlaylist",
 					"stop",
 					"switchOff",
 					"switchOn",
@@ -975,6 +973,31 @@ describe('device', function()
 			device.updateSoilMoisture(12)
 			assert.is_same({ { ["UpdateDevice"] = "1|12|0 TRIGGER" } }, commandArray)
 		end)
+
+		it('should detect a Logitech Media Server device', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['hardwareType'] = 'Logitech Media Server',
+			})
+
+			device.switchOff()
+			device.stop()
+			device.play()
+			device.pause()
+			device.setVolume(10)
+			device.startPlaylist('myList')
+			device.playFavorites('30')
+			assert.is_same({
+				{ ["myDevice"] = "Off" },
+				{ ["myDevice"] = "Stop" },
+				{ ["myDevice"] = "Play" },
+				{ ["myDevice"] = "Pause" },
+				{ ["myDevice"] = "Set Volume 10" },
+				{ ["myDevice"] = "Play Playlist myList TRIGGER" },
+				{ ["myDevice"] = "Play Favorites 30 TRIGGER" },
+			}, commandArray)
+		end)
+
 
 		describe('Switch', function()
 

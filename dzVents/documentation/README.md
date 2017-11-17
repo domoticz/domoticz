@@ -424,6 +424,7 @@ There are several options for time triggers. It is important to know that Domoti
 	        'at 12:45-21:15',            -- between 12:45 and 21:15. You cannot use '*'!
 	        'at 19:30-08:20',            -- between 19:30 and 8:20 then next day
 	        'at 13:45 on mon,tue',       -- at 13:45 only on Mondays and Tuesdays (english)
+	        'on mon,tue',                -- on Mondays and Tuesdays
 	        'every hour on sat',         -- you guessed it correctly
 	        'at sunset',                 -- uses sunset/sunrise info from Domoticz
 	        'at sunrise',
