@@ -64,28 +64,31 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 	local constructCommandForTable = function()
 
 		if (randomValue ~= nil) then
-			value._after = math.random(randomValue)
+			-- value._after = tostring(math.random(randomValue))
+			value._random = tostring(randomValue)
 		end
 
 		if (afterValue ~= nil) then
-			value._after = afterValue
+			value._after = tostring(afterValue)
 		end
 
-		-- if (forValue ~= nil) then
-		-- 	value._for = forValue
-		-- end
+		if (forValue ~= nil) then
+			value._for = tostring(forValue)
+		end
 
 		if (silentValue == true) then
-			value.callback = nil
+			value._trigger = nil
+		else
+			value_trigger = true
 		end
 
-		-- if (repeatValue ~= nil) then
-		-- 	value._repeat = repeatValue
-		-- end
-        --
-		-- if (repeatIntervalValue ~= nil) then
-		-- 	value._repeatInterval = repeatIntervalValue
-		-- end
+		if (repeatValue ~= nil) then
+			value._repeat = tostring(repeatValue)
+		end
+
+		if (repeatIntervalValue ~= nil) then
+			value._repeatInterval = tostring(repeatIntervalValue)
+		end
 
 		return value
 	end

@@ -9,16 +9,27 @@ local function Device(domoticz, data, dummyLogger)
 	local adapterManager = Adapters(dummyLogger)
 
 
-	function self.update(...)
-		-- generic update method for non-switching devices
-		-- each part of the update data can be passed as a separate argument e.g.
-		-- device.update(12,34,54) will result in a command like
-		-- ['UpdateDevice'] = '<id>|12|34|54'
-		local command = self.id
-		for i, v in ipairs({ ... }) do
-			command = command .. '|' .. tostring(v)
-		end
-		return TimedCommand(domoticz, 'UpdateDevice', command, 'updatedevice')
+	-- function self.update(...)
+	-- 	-- generic update method for non-switching devices
+	-- 	-- each part of the update data can be passed as a separate argument e.g.
+	-- 	-- device.update(12,34,54) will result in a command like
+	-- 	-- ['UpdateDevice'] = '<id>|12|34|54'
+	-- 	local command = self.id
+	-- 	for i, v in ipairs({ ... }) do
+	-- 		command = command .. '|' .. tostring(v)
+	-- 	end
+	-- 	return TimedCommand(domoticz, 'UpdateDevice', command, 'updatedevice')
+	-- end
+
+	function self.update(nValue, sValue, protected)
+		local params = {
+			idx = tostring(self.id),
+			nValue = (nValue ~= nil and nValue ~= '')  and tostring(nValue) or nil,
+			sValue = (sValue ~= nil and sValue ~= '')  and tostring(sValue) or nil,
+			_trigger = 'true',
+			protected = protected ~= nil and tostring(protected) or nil
+		}
+		return TimedCommand(domoticz, 'UpdateDevice', params, 'updatedevice')
 	end
 
 	function self.dump()

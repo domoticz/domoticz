@@ -946,6 +946,8 @@ describe('Integration test', function ()
 
 		it('Should all just work fine', function()
 
+			socket.sleep(1)
+			
 			local ok = switch(stage1TriggerIdx, 'On')
 
 			assert.is_true(ok)

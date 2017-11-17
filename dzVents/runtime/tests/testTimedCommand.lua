@@ -336,7 +336,7 @@ describe('timed commands', function()
 			assert.is_nil(res.withinMin)
 			assert.is_nil(res.withinHour)
 
-			assert.is_same(1, commandArray[1]['OpenURL']['_after'])
+			assert.is_same('1', commandArray[1]['OpenURL']['_after'])
 
 		end)
 
@@ -358,9 +358,8 @@ describe('timed commands', function()
 			assert.is_nil(res.withinMin)
 			assert.is_nil(res.withinHour)
 
-			local random = commandArray[1]['OpenURL']['_after']
-			assert.is_true(random >=1)
-			assert.is_true(random <= 600)
+			local random = commandArray[1]['OpenURL']['_random']
+			assert.is_same('600', random)
 
 		end)
 
@@ -382,7 +381,7 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
 
-			assert.is_nil(commandArray[1]['OpenURL']['callback'])
+			assert.is_nil(commandArray[1]['OpenURL']['_trigger'])
 		end)
 
 

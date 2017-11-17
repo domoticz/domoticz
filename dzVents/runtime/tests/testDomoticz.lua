@@ -244,7 +244,7 @@ describe('Domoticz', function()
      						URL = 'some url',
       						method = 'POST',
 							headers = { ['Content-Type'] = 'application/json' },
-							callback = 'trigger1',
+							_trigger = 'trigger1',
       						postdata = '{"a":1,"b":2}'
 						}
 					}
@@ -258,9 +258,9 @@ describe('Domoticz', function()
      						URL = 'some url',
       						method = 'POST',
 							headers = { ['Content-Type'] = 'application/json' },
-							callback = 'trigger1',
+							_trigger = 'trigger1',
       						postdata = '{"a":1,"b":2}',
-							_after = 60
+							_after = '60'
 						}
 					}
 				}, domoticz.commandArray)
@@ -274,7 +274,7 @@ describe('Domoticz', function()
       						method = 'POST',
 							headers = { ['Content-Type'] = 'application/json' },
       						postdata = '{"a":1,"b":2}',
-							_after = 60
+							_after = '60'
 						}
 					}
 				}, domoticz.commandArray)

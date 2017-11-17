@@ -839,7 +839,7 @@ local testText = function(name)
 		["timedOut"] = false;
 	})
 
-	dev.updateText("Oh my Darwin, what a lot of tests!")
+	dev.updateText("Oh my Darwin, what a lot of tests!").afterSec(3)
 	tstMsg('Test text device', res)
 	return res
 end

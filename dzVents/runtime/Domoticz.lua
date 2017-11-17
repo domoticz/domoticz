@@ -277,14 +277,14 @@ local function Domoticz(settings)
 				method = method,
 				headers = options.headers,
 				postdata = postData,
-				callback = callback,
+				_trigger = callback,
 			}
 
 			utils.log('OpenURL: url = ' .. _.str(request.URL), utils.LOG_DEBUG)
 			utils.log('OpenURL: method = ' .. _.str(request.method), utils.LOG_DEBUG)
 			utils.log('OpenURL: post data = ' .. _.str(request.postdata), utils.LOG_DEBUG)
 			utils.log('OpenURL: headers = ' .. _.str(request.headers), utils.LOG_DEBUG)
-			utils.log('OpenURL: callback = ' .. _.str(request.callback), utils.LOG_DEBUG)
+			utils.log('OpenURL: callback = ' .. _.str(request._trigger), utils.LOG_DEBUG)
 
 			return TimedCommand(self, 'OpenURL', request, 'updatedevice')
 

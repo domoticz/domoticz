@@ -380,6 +380,17 @@ local testText = function(name)
 	res = res and checkAttributes(dev, {
 		["text"] = "Oh my Darwin, what a lot of tests!"
 	})
+
+	local Time = require('Time')
+
+	local stage1Time = Time(dz.globalData.stage1Time)
+
+	local diff = dev.lastUpdate.compare(stage1Time).secs
+
+	res = res and (diff >= 3)
+
+	res = expectEql(true, res, 'Text device should have been delayed with 3 seconds.')
+
 	tstMsg('Test text device', res)
 	return res
 end
@@ -605,6 +616,7 @@ local testLastUpdates = function(stage2Trigger)
 			if (device.name ~= 'endResult' and
 				device.name ~= 'stage1Trigger' and
 				device.name ~= 'vdRepeatSwitch' and
+				device.anme ~= 'vdText' and
 				device.name ~= 'stage2Trigger') then
 				local delta = stage1SecsAgo - device.lastUpdate.secondsAgo
 
