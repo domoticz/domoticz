@@ -1267,8 +1267,10 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		_tUserVariable replaceitem = itt->second;
 		if (!varName.empty())
 			replaceitem.variableName = varName;
-		replaceitem.variableValue = varValue;
-		replaceitem.variableType = varType;
+		if (!varValue.empty())
+			replaceitem.variableValue = varValue;
+		if (varType != -1)
+			replaceitem.variableType = varType;
 
 		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 			replaceitem.lastUpdate = lastUpdate;
@@ -3145,23 +3147,24 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		int statusCode;
 		lua_createtable(lua_state, 0, 0);
 		lua_pushstring(lua_state, "headers");
-		lua_createtable(lua_state, (int)item.vsData.size() - 1, 0);
-		std::vector<std::string>::const_iterator itt;
-		for (itt = item.vsData.begin(); itt != item.vsData.end(); itt++)
+		lua_createtable(lua_state, (int)item.vsData.size(), 0);
+		if (item.vsData.size() > 0)
 		{
-			if (itt == item.vsData.end() - 1)
+			std::vector<std::string>::const_iterator itt;
+			for (itt = item.vsData.begin(); itt != item.vsData.end() - 1; itt++)
 			{
-				std::stringstream ss(*itt);
-				ss >> statusCode;
-				break;
+				size_t pos = (*itt).find(": ");
+				if (pos != std::string::npos)
+				{
+					lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
+					lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
+					lua_rawset(lua_state, -3);
+				}
 			}
-			size_t pos = (*itt).find(": ");
-			if (pos != std::string::npos)
-			{
-				lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
-				lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
-				lua_rawset(lua_state, -3);
-			}
+			// last item in vector is always the status code
+			itt = item.vsData.end() - 1;
+			std::stringstream ss(*itt);
+			ss >> statusCode;
 		}
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "statusCode");
@@ -3432,42 +3435,85 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand == "UpdateDevice")
 	{
-		std::string luaString = lua_tostring(lua_state, -1);
-
-		float afterTimerSeconds = 0;
-		size_t aFind = luaString.find(" AFTER ");
-		size_t bFind = luaString.find(" TRIGGER");
+		std::string luaString;
+		float delayTime = 0;
 		bool bEventTrigger = false;
-		if ((aFind > 0) && (aFind != std::string::npos))
+
+		if (lua_istable(lua_state, -1))
 		{
-			std::string delayString;
-			if (bFind != std::string::npos)
+			std::map<std::string, std::string> updateDeviceData;
+
+			lua_pushnil(lua_state);
+			while (lua_next(lua_state, tIndex + 2) != 0)
 			{
-				delayString = luaString.substr(aFind + 7, bFind - aFind - 7);
-				bEventTrigger = true;
+				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
+				{
+					updateDeviceData.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
+					//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
+				}
+				lua_pop(lua_state, 1);
 			}
+			uint64_t ulIdx;
+			float randomTime = 0;
+			std::string szIdx, nValue, sValue, Protected;
+			std::map<std::string, std::string>::const_iterator itt;
+			for (itt = updateDeviceData.begin(); itt != updateDeviceData.end(); itt++)
+			{
+				if (LowerCase(itt->first) == "idx")
+				{
+					std::stringstream ss(itt->second);
+					ss >> ulIdx;
+					szIdx = itt->second;
+				}
+				else if (LowerCase(itt->first) == "nvalue")
+					nValue = itt->second;
+				else if (LowerCase(itt->first) == "svalue")
+					sValue = itt->second;
+				else if (LowerCase(itt->first) == "protected")
+					Protected = itt->second;
+				else if (LowerCase(itt->first) == "_trigger")
+					bEventTrigger = true;
+				else if (LowerCase(itt->first) == "_after")
+				{
+					std::stringstream ss(itt->second);
+					ss >> delayTime;
+				}
+				else if (LowerCase(itt->first) == "_random")
+				{
+					float randomSec;
+					std::stringstream ss(itt->second);
+					ss >> randomSec;
+					srand((unsigned int)mytime(NULL));
+					randomTime = (float)rand() / (float)(RAND_MAX / randomSec);
+				}
+			}
+			if (!szIdx.empty())
+				luaString = szIdx;
 			else
-				delayString = luaString.substr(aFind + 7);
+				return false;
 
-			std::string newAction = luaString.substr(0, aFind);
-			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			luaString = newAction;
+			luaString.append("|");
+			if (!nValue.empty())
+				luaString.append(nValue);
+
+			luaString.append("|");
+			if (!sValue.empty())
+				luaString.append(sValue);
+
+			luaString.append("|");
+			if (!Protected.empty())
+				luaString.append(Protected);
+
+			if (randomTime)
+				delayTime = randomTime;
+
+			m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
 		}
-		else if (bFind != std::string::npos)
+		else
 		{
-			bEventTrigger = true;
-			std::string newAction = luaString.substr(0, bFind);
-			luaString = newAction;
+			luaString = lua_tostring(lua_state, -1);
+			UpdateDevice(luaString, bEventTrigger);
 		}
-
-		std::vector<std::string> strarray;
-		StringSplit(luaString, "|", strarray);
-		if (strarray.size() < 2 || strarray.size() > 4)
-			return false; //Invalid!
-		uint64_t idx = atoi(strarray[0].c_str());
-
-		float DelayTime = afterTimerSeconds;
-		m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, idx, luaString, bEventTrigger));
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3708,9 +3754,9 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 
 void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders)
 {
-	std::string URL, extraHeaders, method, postData, callback;
+	std::string URL, extraHeaders, method, postData, trigger;
 	std::map<std::string, std::string>::const_iterator itt;
-	float delayTime = 0;
+	float delayTime = 0, randomTime = 0;
 
 	if (URLheaders.size() > 0)
 	{
@@ -3721,19 +3767,26 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, co
 
 	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
 	{
-
 		if (LowerCase(itt->first) == "url")
 			URL = itt->second;
 		else if (LowerCase(itt->first) == "method")
 			method = itt->second;
 		else if (LowerCase(itt->first) == "postdata")
 			postData = itt->second;
-		else if (LowerCase(itt->first) == "callback")
-			callback = itt->second;
+		else if (LowerCase(itt->first) == "_trigger")
+			trigger = itt->second;
 		else if (LowerCase(itt->first) == "_after")
 		{
 			std::stringstream ss(itt->second);
 			ss >> delayTime;
+		}
+		else if (LowerCase(itt->first) == "_random")
+		{
+			float randomSec;
+			std::stringstream ss(itt->second);
+			ss >> randomSec;
+			srand((unsigned int)mytime(NULL));
+			randomTime = (float)rand() / (float)(RAND_MAX / randomSec);
 		}
 	}
 	if (URL.empty())
@@ -3756,7 +3809,10 @@ void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, co
 			return;
 		}
 	}
-	OpenURL(URL, extraHeaders, eMethod, postData, callback, delayTime);
+	if (randomTime)
+		delayTime = randomTime;
+
+	OpenURL(URL, extraHeaders, eMethod, postData, trigger, delayTime);
 }
 
 void CEventSystem::OpenURL(const std::string &URL, const std::string extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime)

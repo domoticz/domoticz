@@ -23,7 +23,7 @@ size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *us
 {
 	// called once for each header
 	size_t realsize = size * nmemb;
-	std::vector<std::string>* pvHTTPHeaderData = (std::vector<std::string>*)userp;
+	std::vector<std::string>* pvHeaderData = (std::vector<std::string>*)userp;
 	size_t ii = 0;
 	while (ii < realsize)
 	{
@@ -33,7 +33,7 @@ size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *us
 		ii++;
 	}
 	std::string str((unsigned char*)contents, (unsigned char*)contents + ii);
-	pvHTTPHeaderData->push_back(str);
+	pvHeaderData->push_back(str);
 	return realsize;
 }
 
