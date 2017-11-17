@@ -706,6 +706,15 @@ Note that if you do not find your specific device type here you can always inspe
  - **wetness**: *Number*. Wetness value
  - **updateWetness(wetness)**: *Function*.
 
+#### Logitech Media Server
+ - **switchOff()**: *Function*.  todo.
+ - **stop()**: *Function*.  todo.
+ - **play()**: *Function*.  todo.
+ - **pause()**: *Function*.  todo.
+ - **setVolume()**: *Function*.  todo.
+ - **startPlaylist()**: *Function*.  todo.
+ - **playFavorites()**: *Function*.  todo.
+
 #### Lux sensor
  - **lux**: *Number*. Lux level for light sensors.
  - **updateLux(lux)**: *Function*.
