@@ -1096,7 +1096,7 @@ local testVariableString = function(name)
 		['value'] = 'Somestring'
 	})
 
-	var.set('Zork is a dork').afterSec(3)
+	var.set('Zork is a dork').withinSec(3)
 
 	local varCancelled = dz.variables('varCancelled')
 	varCancelled.set(2).afterSec(5) -- this one will be cancelled in varString.lua!

@@ -54,7 +54,7 @@ return {
 
 		res = res and testLastUpdate(variable)
 
-		if (not variable.value == 'Zork is a dork' or not res) then
+		if (variable.value ~= 'Zork is a dork' or not res) then
 			dz.log('varString: Test variable: FAILED', dz.LOG_ERROR)
 			dz.devices('varStringResults').updateText('FAILED')
 		else
