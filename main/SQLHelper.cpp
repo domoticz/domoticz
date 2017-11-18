@@ -2336,7 +2336,7 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Hardware SET Mode3='%q', Mode5='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
 				}
 			}
-			
+
 		}
 	}
 	else if (bNewInstall)
@@ -7288,7 +7288,7 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 	{
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, -1, szLastUpdate);
 	}
 	return true;
 }
