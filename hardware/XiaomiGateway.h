@@ -17,6 +17,7 @@ public:
 	void InsertUpdateLux(const std::string &nodeid, const std::string &Name, const int Illumination);
 	void InsertUpdateTemperature(const std::string &nodeid, const std::string &Name, const float Temperature, const int battery);
 	void InsertUpdateHumidity(const std::string &nodeid, const std::string &Name, const int Humidity, const int battery);
+	void InsertUpdatePressure(const std::string &nodeid, const std::string &Name, const int Pressure, const int battery);
 	void InsertUpdateRGBGateway(const std::string &nodeid, const std::string &Name, const bool bIsOn, const int brightness, const int hue);
 	void UpdateToken(const std::string &value);
 

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <CommandClass id="67" name="COMMAND_CLASS_THERMOSTAT_SETPOINT" version="1" request_flags="4" create_vars="true" base="0">
+    <Instance index="1" />
+    <Value type="decimal" genre="user" instance="1" index="1" label="Heating 1" read_only="false" write_only="false" />
+    <Value type="decimal" genre="user" instance="1" index="2" label="Cooling 1" read_only="false" write_only="false" />
+  </CommandClass>
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="System Type" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = Standard, 1 = Heat Pump
+      </Help>
+      <Item label="Standard" value="0" />
+      <Item label="Heat Pump" value="1" />
+    </Value>
+    <Value type="list" index="2" genre="config" label="Fan Type" units="fahrenheit" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = Gas (no fan w/Heat), 1 = Electric (Fan w/Heat)
+      </Help>
+      <Item label="Gas" value="0" />
+      <Item label="Electric" value="1" />
+    </Value>
+    <Value type="list" index="3" genre="config" label="Change Over Type" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = w/Cool, 1 = w/Heat
+      </Help>
+      <Item label="w/Cool" value="0" />
+      <Item label="w/Heat" value="1" />
+    </Value>
+    <Value type="list" index="4" genre="config" label="2nd Stage Heat Enable" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = no 2nd stage heat, 1 = 2nd stage heat
+      </Help>
+      <Item label="w/Cool" value="0" />
+      <Item label="w/Heat" value="1" />
+    </Value>
+    <Value type="list" index="5" genre="config" label="Aux Heat Enable" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = no aux heat, 1 = aux heat enabled
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+    <Value type="list" index="6" genre="config" label="2nd Stage Cool Enable" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = no 2nd stage cool, 1 = 2nd stage cool
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+    <Value type="list" index="7" genre="config" label="Temperature Unit" units="" min="0" max="1" value="1" size="1">
+      <Help>
+        0 = Celsius, 1 = Fahrenheit
+      </Help>
+      <Item label="Celsius" value="0" />
+      <Item label="Fahrenheit" value="1" />
+    </Value>
+    <Value type="byte" index="8" genre="config" label="Minimum Off Time" units="minutes" min="5" max="9" value="5" size="1">
+      <Help>
+        Sets the Minimum Off Time (MOT) delay before another heating/cooling cycle can begin
+      </Help>
+    </Value>
+    <Value type="byte" index="9" genre="config" label="Minimum Run Time" units="minutes" min="3" max="9" value="3" size="1">
+      <Help>
+        Sets the Minimum Run Time (MRT) delay before a heating/cooling cycle can turn of
+      </Help>
+    </Value>
+    <Value type="byte" index="10" genre="config" label="Setpoint H/C Delta" units="fahrenheit" min="3" max="15" value="3" size="1">
+      <Help>
+        Sets the minimum separation between heating and cooling setpoints
+      </Help>
+    </Value>
+    <Value type="byte" index="11" genre="config" label="H Delta Stage 1 ON" units="fahrenheit" min="1" max="6" value="1" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 1 heating starts
+      </Help>
+    </Value>
+    <Value type="byte" index="12" genre="config" label="H Delta Stage 1 OFF" units="fahrenheit" min="0" max="5" value="0" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 1 heating stops
+      </Help>
+    </Value>
+    <Value type="byte" index="13" genre="config" label="H Delta Stage 2 ON" units="fahrenheit" min="2" max="7" value="2" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 2 heating starts
+      </Help>
+    </Value>
+    <Value type="byte" index="14" genre="config" label="H Delta Stage 2 OFF" units="fahrenheit" min="0" max="6" value="0" size="1">
+      <Help>
+        Sets the delay from setpoint that stage 2 heating stops
+      </Help>
+    </Value>
+    <Value type="byte" index="15" genre="config" label="H Delta Aux ON" units="fahrenheit" min="3" max="8" value="3" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 3 heating starts
+      </Help>
+    </Value>
+    <Value type="byte" index="16" genre="config" label="H Delta Stage 2 OFF" units="fahrenheit" min="0" max="7" value="0" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 3 heating stops
+      </Help>
+    </Value>
+    <Value type="byte" index="17" genre="config" label="C Delta Stage 1 ON" units="fahrenheit" min="1" max="6" value="1" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 1 cooling starts
+      </Help>
+    </Value>
+    <Value type="byte" index="18" genre="config" label="C Delta Stage 1 OFF" units="fahrenheit" min="0" max="5" value="0" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 1 cooling stops
+      </Help>
+    </Value>
+    <Value type="byte" index="19" genre="config" label="C Delta Stage 2 ON" units="fahrenheit" min="2" max="7" value="2" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 2 cooling starts
+      </Help>
+    </Value>
+    <Value type="byte" index="20" genre="config" label="C Delta Stage 2 OFF" units="fahrenheit" min="0" max="6" value="0" size="1">
+      <Help>
+        Sets the delta from setpoint that stage 2 cooling stops
+      </Help>
+    </Value>
+    <Value type="list" index="21" genre="config" label="Mechanical Status" units="" min="1" max="256" size="2">
+      <Help>
+        Mechanical Status
+      </Help>
+      <Item label="MECH_H1" value="1" />
+      <Item label="MECH_H2" value="2" />
+      <Item label="MECH_H3" value="4" />
+      <Item label="MECH_C1" value="8" />
+      <Item label="MECH_C2" value="16" />
+      <Item label="PHANTOM_F" value="32" />
+      <Item label="MECH_F" value="64" />
+      <Item label="MANUAL_F" value="128" />
+      <Item label="reserved" value="256" />
+    </Value>
+    <Value type="list" index="22" genre="config" label="SCP Status" units="" min="1" max="128" size="1">
+      <Help>
+        SCP Status
+      </Help>
+      <Item label="STATE_HEAT" value="1" />
+      <Item label="STATE_COOL" value="2" />
+      <Item label="STATE_2ND" value="4" />
+      <Item label="STATE_3RD" value="8" />
+      <Item label="STATE_FAN" value="16" />
+      <Item label="STATE_LAST" value="32" />
+      <Item label="STATE_MOT" value="64" />
+      <Item label="STATE_MRT" value="128" />
+    </Value>
+    <Value type="list" index="23" genre="config" label="Autosend Enable Bits" units="" min="1" max="32768" size="2">
+      <Help>
+        Autosend Enable Bits
+      </Help>
+      <Item label="Temperature" value="1" />
+      <Item label="Setpoint H" value="2" />
+      <Item label="Setpoint C" value="4" />
+      <Item label="Mode" value="8" />
+      <Item label="Fan Mode" value="16" />
+      <Item label="Fan State" value="32" />
+      <Item label="Operating State" value="64" />
+      <Item label="Schedule Enable" value="128" />
+      <Item label="Setback" value="256" />
+      <Item label="Runhold" value="512" />
+      <Item label="Display Lock" value="1024" />
+      <Item label="Battery" value="8192" />
+      <Item label="Mechanical Status" value="16384" />
+      <Item label="SCP Status" value="32768" />
+    </Value>
+    <Value type="list" index="24" genre="config" label="Display Lock" units="" min="1" max="1" value="0" size="1">
+      <Help>
+        Display Lock
+      </Help>
+      <Item label="Unlocked" value="0" />
+      <Item label="Locked" value="1" />
+    </Value>
+    <Value type="byte" index="26" genre="config" label="Backlight Timer" units="seconds" min="10" max="30" value="20" size="1">
+      <Help>
+        Sets the time from last button press that the backlight will turn OFF
+      </Help>
+    </Value>
+    <Value type="byte" index="33" genre="config" label="Max Heat Setpoint" units="degrees" min="30" max="109" value="90" size="1">
+      <Help>
+        Sets the maximum heating setpoint value
+      </Help>
+    </Value>
+    <Value type="byte" index="34" genre="config" label="Min Cool Setpoint" units="degrees" min="33" max="112" value="60" size="1">
+      <Help>
+        Sets the minimum cooling setpoint value
+      </Help>
+    </Value>
+    <Value type="list" index="38" genre="config" label="Schedule Enable" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        Enable or disable thermostat's local scheduler
+      </Help>
+      <Item label="Disabled" value="0" />
+      <Item label="Enabled" value="1" />
+    </Value>
+    <Value type="list" index="39" genre="config" label="Run/Hold Mode" units="" min="0" max="1" value="0" size="1">
+      <Help>
+        0 = Hold, 1 = Run
+      </Help>
+      <Item label="Hold" value="0" />
+      <Item label="Run" value="1" />
+    </Value>
+    <Value type="list" index="40" genre="config" label="Setback Mode" units="" min="0" max="2" value="0" size="1">
+      <Help>
+        0 = No setback, 2 = Un-occupied mode
+      </Help>
+      <Item label="No Setback" value="0" />
+      <Item label="Unoccupied Mode" value="2" />
+    </Value>
+    <Value type="byte" index="41" genre="config" label="Un-Occupied HSP" units="degrees" min="30" max="109" value="70" size="1">
+      <Help>
+        Heat Setpoint for Unoccupied mode
+      </Help>
+    </Value>
+    <Value type="byte" index="42" genre="config" label="Un-Occupied CSP" units="degrees" min="33" max="112" value="80" size="1">
+      <Help>
+        Cool Setpoint for Unoccupied mode
+      </Help>
+    </Value>
+    <Value type="byte" index="43" genre="config" label="Remote Sensor 1 Node Number" units="" min="0" max="252" size="1">
+      <Help>
+        Node number for Remote Sensor 1
+      </Help>
+    </Value>
+    <Value type="byte" index="46" genre="config" label="Remote Sensor 1 Temperature" units="degrees" min="0" max="112" size="1">
+      <Help>
+        Temperature of Remote Sensor 1
+      </Help>
+    </Value>
+    <Value type="byte" index="48" genre="config" label="Internal Sensor Temp Offset" units="degrees" min="-7" max="7" value="0" size="1">
+      <Help>
+        Internal Sensor Temperature Offset
+      </Help>
+    </Value>
+    <Value type="byte" index="49" genre="config" label="R1 Sensor Temp Offset" units="degrees" min="-7" max="7" value="0" size="1">
+      <Help>
+        R1 Sensor Temperature Offset
+      </Help>
+    </Value>
+    <Value type="short" index="52" genre="config" label="Filter Timer" units="hours" min="0" max="4000" value="4000" size="2">
+      <Help>
+        Timer to let know when to change or clean the filter
+      </Help>
+    </Value>
+    <Value type="short" index="53" genre="config" label="Max Filter Timer" units="hours" min="0" max="4000" value="44" size="2">
+      <Help>
+        Maximum allowed value for filter timer
+      </Help>
+    </Value>
+    <Value type="short" index="54" genre="config" label="Heat Timer" units="hours" min="0" max="4000" value="0" size="2">
+      <Help>
+        Heat Timer in hours
+      </Help>
+    </Value>
+    <Value type="short" index="55" genre="config" label="Cool Timer" units="hours" min="0" max="4000" value="0" size="2">
+      <Help>
+        Cool Timer in hours
+      </Help>
+    </Value>
+    <Value type="byte" index="61" genre="config" label="Fan Purge Heat" units="seconds" min="0" max="90" value="0" size="1">
+      <Help>
+        Fan purge period for Heat mode
+      </Help>
+    </Value>
+    <Value type="byte" index="62" genre="config" label="Fan Purge Cool" units="hours" min="0" max="90" value="0" size="1">
+      <Help>
+        Fan purge period for Cool mode
+      </Help>
+    </Value>
+
+  </CommandClass>
+</Product>

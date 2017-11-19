@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GE(Jasco) 26931 Z-Wave Plus Smart Motion Switch -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters - per http://products.z-wavealliance.org/products/2035 -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Timeout Duration" min="0" max="255" value="5" size="1">
+			<Help>Amount of time the light stays on after motion stops</Help>
+			<Item label="5 seconds" value="0" />
+			<Item label="1 minute" value="1" />
+			<Item label="5 minutes" value="5" />
+			<Item label="15 minutes" value="15" />
+			<Item label="30 minutes" value="30" />
+			<Item label="Disable timeout" value="255" />
+		</Value>
+		<Value type="byte" index="2" genre="config" label="Brightness" min="0" max="255" value="255">
+			<Help>Valid values are 0-99 or 255 for last dimming level</Help>
+		</Value>
+		<Value type="list" index="3" genre="config" label="Operation Mode" min="1" max="3" size="1" value="3">
+			<Help>Motion-sensing mode of operation.</Help>
+			<Item label="Manual" value="1" />
+			<Item label="Vacancy" value="2" />
+			<Item label="Occupancy" value="3" />
+		</Value>
+		<Value type="list" index="5" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
+			<Help>In a three-way configuration, change the top of the add-on switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="list" index="6" genre="config" label="Motion Sensor" min="0" max="1" size="1" value="1">
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" />
+		</Value>
+		<Value type="list" index="13" genre="config" label="Motion sensing sensitivity" min="1" max="3" size="1" value="3">
+			<Item label="High" value="1" />
+			<Item label="Medium" value="2" />
+			<Item label="Low" value="3" />
+		</Value>
+		<Value type="list" index="14" genre="config" label="Light Sensing" min="0" max="1" size="1" value="1">
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" />
+		</Value>
+		<Value type="byte" index="15" genre="config" label="Reset cycle" units="" min="1" max="110" size="1" value="2">
+			<Help>0 = disable
+				1 = 10 seconds
+				2 = 20 seconds
+				3 = 30 seconds
+				4 = 45 seconds
+				...
+				110 = 27 minutes 15 seconds
+		  	</Help>
+		</Value>
+		<Value type="list" index="19" genre="config" label="Exclusion Mode" min="0" max="1" size="1" value="0">
+			<Item label="Press any button" value="0" />
+			<Item label="Press X then press ON" value="1" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Lifeline" />
+			<Group index="2" max_associations="5" label="Basic Set local load" />
+			<Group index="3" max_associations="5" label="Basic Set buttons" />
+		</Associations>
+	</CommandClass>
+</Product>

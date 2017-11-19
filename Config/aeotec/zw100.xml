@@ -12,23 +12,23 @@ version 1.07 (4.11.2016)
 			<Item label="No" value="0" />
 			<Item label="Yes" value="1" />
 		</Value>
-		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="1" max="15300" value="240">
+		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="10" max="3600" value="240">
 			<Help>Duration that the motion sensor must observe no motion before it will return to the no-motion state.
 			If value greater than 255, effective value is rounded up to the nearest minute (255 -> 255 seconds, 256 -> 300 seconds)</Help>
 		</Value>
 		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="5" size="1">
-			<Help>Enable Motion Sensor</Help>
+			<Help>Enable Motion Sensor, (1 minimum, 5 maximum sensitivity level)</Help>
 			<Item label="Disabled" value="0" />
-			<Item label="Enabled level 1 (minimum sensitivity)" value="1" />
+			<Item label="Enabled level 1" value="1" />
 			<Item label="Enabled level 2" value="2" />
 			<Item label="Enabled level 3" value="3" />
 			<Item label="Enabled level 4" value="4" />
-			<Item label="Enabled level 5 (maximum sensitivity)" value="5" />
+			<Item label="Enabled level 5" value="5" />
 		</Value>
 		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">		
 			<Help>Which commands to send when PIR motion sensor triggered
 			OZW Ideal Value is Binary Sensor Report</Help>
-			<Item label="Basic Set (default) " value="1" />
+			<Item label="Basic Set" value="1" />
 			<Item label="Binary Sensor Report" value="2" />
 		</Value>
 		<Value type="byte" index="8" genre="config" label="Awake timeout" min="8" max="255" value="30" size="1">
@@ -37,13 +37,12 @@ version 1.07 (4.11.2016)
 			Available rang: 8 to 255 seconds.
 			</Help>
 		</Value>
-		<Value type="short" index="9" genre="config" label="Current power mode" value="0" read_only="true">
-			<Help>
-			Report the current power mode and the product state for battery power mode.
-			Value1 (MSB): 0x00=USB power mode, 0x01=Battery power mode.
-			Value2 (LSB): 0x00= keep sleep state for Battery power mode, 0x01=keep awake for 10 minutes for battery power mode.
-			Note: this parameter cannot be used as Set usage.
-			</Help>
+		<Value type="list" genre="config" instance="1" index="9" label="Current power mode" min="0" max="257" size="2" value="0" read_only="true">
+			<Help>Report the current power mode and the product state for battery power mode</Help>
+			<Item label="USB power, sleeping mode after re-power on" value="0"/>
+			<Item label="USB power, keep awake for 10 minutes after re-power on" value="1"/>
+			<Item label="Battery power, sleeping mode after re-power on" value="256"/>
+			<Item label="Battery power, keep awake for 10 minutes after re-power on" value="257"/>
 		</Value>
 		<Value type="byte" index="39" genre="config" label="Low Battery" min="10" max="50" value="20" size="1">
 			<Help>Configure low battery value
@@ -147,14 +146,14 @@ version 1.07 (4.11.2016)
 			E.g. The default lower limit is 50%, when the measurement is less than 50%, it will be triggered to send out a humidity sensor report. 
 			</Help>
 		</Value>
-		<Value type="short" index="53" genre="config" label="Set the upper limit value of Lighting sensor" units="lux" min="0" max="100" value="1000" >
+		<Value type="short" index="53" genre="config" label="Set the upper limit value of Lighting sensor" units="lux" min="0" max="30000" value="1000" >
 			<Help>
 			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
 			Upper limit range: 0 to 30000 Lux.
 			E.g. The default upper limit is 1000Lux, when the measurement is more than 1000Lux, it will be triggered to send out a Lighting sensor report. 
 			</Help>
 		</Value>
-		<Value type="short" index="54" genre="config" label="Set the lower limit value of Lighting sensor" units="lux" min="0" max="100" value="50" >
+		<Value type="short" index="54" genre="config" label="Set the lower limit value of Lighting sensor" units="lux" min="0" max="30000" value="100" >
 			<Help>
 			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
 			Lower limit range: 0 to 30000 Lux.
@@ -198,7 +197,7 @@ version 1.07 (4.11.2016)
 			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
 			</Help>			
 		</Value>
-		<Value type="byte" index="59" genre="config" label="Set the recover limit value of Lighting sensor" units="lux" min="1" max="50" value="100" >
+		<Value type="byte" index="59" genre="config" label="Set the recover limit value of Lighting sensor" units="10xlux" min="1" max="255" value="10" >
 			<Help>
 			Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
@@ -210,7 +209,7 @@ version 1.07 (4.11.2016)
 			E.g. The default recover limit value is 100 Lux, when the measurement is less than (Upper limit - 100), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 100), the lower limit report would be enabled one time.
 			</Help>
 		</Value>
-		<Value type="byte" index="60" genre="config" label="Set the recover limit value of Ultraviolet sensor" units="UV" min="1" max="50" value="5" >
+		<Value type="byte" index="60" genre="config" label="Set the recover limit value of Ultraviolet sensor" units="UV" min="1" max="5" value="2" >
 			<Help>
 			 Note:
 			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 

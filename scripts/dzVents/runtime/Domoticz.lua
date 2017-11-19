@@ -1,13 +1,10 @@
-local scriptPath = debug.getinfo(1).source:match("@?(.*/)")
+local scriptPath = globalvariables['script_path']
 package.path = package.path .. ';' .. scriptPath .. '?.lua'
-
-local EventHelpers = require('EventHelpers')
 local Device = require('Device')
 local Variable = require('Variable')
 local Time = require('Time')
 local TimedCommand = require('TimedCommand')
 local utils = require('Utils')
-
 
 -- simple string splitting method
 -- coz crappy LUA doesn't have this natively... *sigh*
@@ -21,9 +18,22 @@ end
 -- main class
 local function Domoticz(settings)
 
-	local now = os.date('*t')
-	local sNow = now.year .. '-' .. now.month .. '-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec
+	local sNow, now
+	if (_G.TESTMODE and _G.TESTTIME) then
+		sNow = 2017 .. '-' .. 6 .. '-' .. 13 .. ' ' .. 12 .. ':' .. 5 .. ':' .. 0
+	else
+		now = os.date('*t')
+		sNow = now.year .. '-' .. now.month .. '-' .. now.day .. ' ' .. now.hour .. ':' .. now.min .. ':' .. now.sec
+	end
+
 	local nowTime = Time(sNow)
+
+	-- check if the user set a lat/lng
+	-- if not, then daytime, nighttime is incorrect
+	if (_G.timeofday['SunriseInMinutes'] == 0 and _G.timeofday['SunsetInMinutes'] == 0) then
+		utils.log('No information about sunrise and sunset available. Please set lat/lng information in settings.', utils.LOG_ERROR)
+	end
+
 	nowTime['isDayTime'] = timeofday['Daytime']
 	nowTime['isNightTime'] = timeofday['Nighttime']
 	nowTime['sunriseInMinutes'] = timeofday['SunriseInMinutes']
@@ -37,7 +47,9 @@ local function Domoticz(settings)
 		['scenes'] = {},
 		['groups'] = {},
 		['changedDevices'] = {},
-		['security'] = globalvariables["Security"],
+		['changedVariables'] = {},
+		['security'] = globalvariables['Security'],
+		['radixSeparator'] = globalvariables['radix_separator'],
 		['time'] = nowTime,
 		['variables'] = {},
 		['PRIORITY_LOW'] = -2,
@@ -71,13 +83,16 @@ local function Domoticz(settings)
 		['HUM_COMFORTABLE'] = 1,
 		['HUM_DRY'] = 2,
 		['HUM_WET'] = 3,
-		['BARO_STABLE'] = 0,
-		['BARO_SUNNY'] = 1,
-		['BARO_CLOUDY'] = 2,
-		['BARO_UNSTABLE'] = 3,
-		['BARO_THUNDERSTORM'] = 4,
-		['BARO_UNKNOWN'] = 5,
-		['BARO_CLOUDY_RAIN'] = 6,
+		-- true mapping to numbers is done in the device adapters for
+		-- baro and temphumbaro devices
+		['BARO_STABLE'] = 'stable',
+		['BARO_SUNNY'] = 'sunny',
+		['BARO_CLOUDY'] = 'cloudy',
+		['BARO_UNSTABLE'] = 'unstable',
+		['BARO_THUNDERSTORM'] = 'thunderstorm',
+		['BARO_NOINFO'] = 'noinfo',
+		['BARO_PARTLYCLOUDY'] = 'partlycloudy',
+		['BARO_RAIN'] = 'rain',
 		['ALERTLEVEL_GREY'] = 0,
 		['ALERTLEVEL_GREEN'] = 1,
 		['ALERTLEVEL_YELLOW'] = 2,
@@ -90,40 +105,30 @@ local function Domoticz(settings)
 		['LOG_MODULE_EXEC_INFO'] = utils.LOG_MODULE_EXEC_INFO,
 		['LOG_DEBUG'] = utils.LOG_DEBUG,
 		['LOG_ERROR'] = utils.LOG_ERROR,
+		['LOG_FORCE'] = utils.LOG_FORCE,
 		['EVENT_TYPE_TIMER'] = 'timer',
 		['EVENT_TYPE_DEVICE'] = 'device',
+		['EVENT_TYPE_VARIABLE'] = 'variable',
+		['EVENT_TYPE_SECURITY'] = 'security',
 		['EVOHOME_MODE_AUTO'] = 'Auto',
 		['EVOHOME_MODE_TEMPORARY_OVERRIDE'] = 'TemporaryOverride',
-		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride'
+		['EVOHOME_MODE_PERMANENT_OVERRIDE'] = 'PermanentOverride',
+		['INTEGER'] = 'integer',
+		['FLOAT'] = 'float',
+		['STRING'] = 'string',
+		['DATE'] = 'date',
+		['TIME'] = 'time',
+		['NSS_GOOGLE_CLOUD_MESSAGING'] = 'gcm',
+		['NSS_HTTP'] = 'http',
+		['NSS_KODI'] = 'kodi',
+		['NSS_LOGITECH_MEDIASERVER'] = 'lms',
+		['NSS_NMA'] = 'nma',
+		['NSS_PROWL'] = 'prowl',
+		['NSS_PUSHALOT'] = 'pushalot',
+		['NSS_PUSHBULLET'] = 'pushbullet',
+		['NSS_PUSHOVER'] = 'pushover',
+		['NSS_PUSHSAFER'] = 'pushsafer'
 	}
-
-	local function setIterators(collection)
-
-		collection['forEach'] = function(func)
-			local res
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					res = func(item, i, collection)
-					if (res == false) then -- abort
-					return
-					end
-				end
-			end
-		end
-
-		collection['filter'] = function(filter)
-			local res = {}
-			for i, item in pairs(collection) do
-				if (type(item) ~= 'function' and type(i) ~= 'number') then
-					if (filter(item)) then
-						res[i] = item
-					end
-				end
-			end
-			setIterators(res)
-			return res
-		end
-	end
 
 	-- add domoticz commands to the commandArray
 	function self.sendCommand(command, value)
@@ -134,19 +139,39 @@ local function Domoticz(settings)
 	end
 
 	-- have domoticz send a push notification
-	function self.notify(subject, message, priority, sound)
+	function self.notify(subject, message, priority, sound, extra, subSystems)
 		-- set defaults
 		if (priority == nil) then priority = self.PRIORITY_NORMAL end
 		if (message == nil) then message = '' end
 		if (sound == nil) then sound = self.SOUND_DEFAULT end
+		if (extra == nil) then extra = '' end
 
-		self.sendCommand('SendNotification', subject .. '#' .. message .. '#' .. tostring(priority) .. '#' .. tostring(sound))
+		local _subSystem
+
+		if (subSystems == nil) then
+			_subSystem = ''
+		else
+			-- combine
+			if (type(subSystems) == 'table') then
+				_subSystem = table.concat(subSystems, ";")
+			elseif (type(subSystems) == 'string') then
+				_subSystem = subSystems
+			else
+				_subSystem = ''
+			end
+		end
+		self.sendCommand('SendNotification', subject
+				.. '#' .. message
+				.. '#' .. tostring(priority)
+				.. '#' .. tostring(sound)
+				.. '#' .. tostring(extra)
+				.. '#' .. tostring(_subSystem))
 	end
 
 	-- have domoticz send an email
 	function self.email(subject, message, mailTo)
 		if (mailTo == nil) then
-			utils.log('No mail to is provide', utils.LOG_DEBUG)
+			utils.log('No mail-to is provided', utils.LOG_ERROR)
 		else
 			if (subject == nil) then subject = '' end
 			if (message == nil) then message = '' end
@@ -180,72 +205,8 @@ local function Domoticz(settings)
 		end
 	end
 
-	function self.fetchHttpDomoticzData()
-		utils.requestDomoticzData(self.settings['Domoticz ip'],
-			self.settings['Domoticz port'])
-	end
-
 	function self.log(message, level)
 		utils.log(message, level)
-	end
-
-	-- bootstrap the variables section
-	local function createVariables()
-		for name, value in pairs(uservariables) do
-			local var = Variable(self, name, value)
-			self.variables[name] = var
-		end
-	end
-
-	-- process a otherdevices table for a given attribute and
-	-- set the attribute on the appropriate device object
-	local function setDeviceAttribute(otherdevicesTable, attribute, tableName)
-		for name, value in pairs(otherdevicesTable) do
-			-- utils.log('otherdevices table :' .. name .. ' value: ' .. value, utils.LOG_DEBUG)
-			if (name ~= nil and name ~= '') then -- sometimes domoticz seems to do this!! ignore...
-
-			-- get the device
-			local device = self.devices[name]
-
-			if (device == nil) then
-				utils.log('Cannot find the device. Skipping:  ' .. name .. ' ' .. value, utils.LOG_ERROR)
-			else
-				if (attribute == 'lastUpdate') then
-					device.addAttribute(attribute, Time(value))
-				elseif (attribute == 'rawData') then
-					device._sValues = value
-					device.addAttribute(attribute, string.split(value, ';'))
-				elseif (attribute == 'id') then
-					device.addAttribute(attribute, value)
-
-					-- create lookup by id
-					self.devices[value] = device
-
-					-- create the changedDevices entry when changed
-					-- we do it at this moment because at this stage
-					-- the device just got his id
-					if (device.changed) then
-						self.changedDevices[device.name] = device
-						self.changedDevices[value] = device -- id lookup
-					end
-				else
-					device.addAttribute(attribute, value)
-				end
-
-				if (tableName ~= nil) then
-					local deviceAttributeName = name .. '_' ..
-							string.upper(string.sub(tableName, 1, 1)) ..
-							string.sub(tableName, 2)
-
-					-- now we have to transfer the changed information for attributes
-					-- if that is availabel
-					if (devicechanged and devicechanged[deviceAttributeName] ~= nil) then
-						device.setAttributeChanged(attribute)
-					end
-				end
-			end
-			end
-		end
 	end
 
 	local function dumpTable(t, level)
@@ -257,8 +218,17 @@ local function Domoticz(settings)
 				else
 					print(level .. attr .. ': ' .. tostring(value))
 				end
+			else
+				print(level .. attr .. '()')
 			end
 		end
+	end
+
+	function self.toCelsius(f, relative)
+		if (relative) then
+			return f*(1/1.8)
+		end
+		return ((f-32) / 1.8)
 	end
 
 	-- doesn't seem to work well for some weird reasone
@@ -266,269 +236,235 @@ local function Domoticz(settings)
 		dumpTable(device, '> ')
 	end
 
-	local function readHttpDomoticzData()
-		local httpData = {
-			['result'] = {}
-		}
+	self.__devices = {}
+	self.__scenes = {}
+	self.__groups = {}
+	self.__variables = {}
 
-		-- figure out what os this is
-		local sep = string.sub(package.config, 1, 1)
-		if (sep ~= '/') then return httpData end -- only on linux
+	function getItemFromData(baseType, id)
 
-		if utils.fileExists(utils.getDevicesPath()) then
-			local ok, module
+		local res
 
-			ok, module = pcall(require, 'devices')
-			if (ok) then
-				if (type(module) == 'table') then
-					httpData = module
+		for index, item in pairs(_G.domoticzData) do
+			if (item.baseType == baseType) then
+				if (item.id == id or item.name == id) then
+					if (res == nil) then
+						res = item
+					else
+						utils.log('Multiple items found for ' .. tostring(id) .. ' (' .. tostring(baseType) .. '). Please make sure your names are unique or use ids instead.', utils.LOG_ERROR)
+					end
 				end
-			else
-				-- cannot be loaded
-				utils.log('devices.lua cannot be loaded', utils.LOG_ERROR)
-				utils.log(module, utils.LOG_ERROR)
 			end
+		end
+
+		return res
+	end
+
+	function getObject(baseType, id, data)
+		local cache
+		local constructor
+
+		if (baseType == 'device') then
+			cache = self.__devices
+			constructor = Device
+		elseif (baseType == 'group') then
+			cache = self.__groups
+			constructor = Device
+		elseif (baseType == 'scene') then
+			cache = self.__scenes
+			constructor = Device
+		elseif (baseType == 'uservariable') then
+			cache = self.__variables
+			constructor = Variable
 		else
-			if (self.settings['Enable http fetch']) then
-				self.fetchHttpDomoticzData()
-			end
-		end
-		return httpData
-	end
-
-	if (_G.TESTMODE) then
-		self._readHttpDomoticzData = readHttpDomoticzData
-	end
-
-	local function createDevices()
-		-- first create the device objects
-		for name, state in pairs(otherdevices) do
-			local wasChanged = (devicechanged ~= nil and devicechanged[name] ~= nil)
-			self.devices[name] = Device(self, name, state, wasChanged)
+			-- ehhhh
 		end
 
-		-- then fill them with attributes from the
-		-- global tables handed over by Domoticz
-		for tableName, tableData in pairs(_G) do
+		local item = cache[id]
 
-			-- only deal with global <otherdevices_*> tables
-			if (string.find(tableName, 'otherdevices_') ~= nil and tableName ~= 'otherdevices_scenesgroups') then
-				utils.log('Found ' .. tableName .. ' adding this as a possible attribute', utils.LOG_DEBUG)
-				-- extract the part after 'otherdevices_'
-				-- That is the unprocesses attribute name
-				local oriAttribute = string.sub(tableName, 14)
-				local attribute = oriAttribute
-
-				-- now process some specials
-				if (attribute) == 'idx' then
-					attribute = 'id'
-				end
-				if (attribute == 'lastupdate') then
-					attribute = 'lastUpdate'
-				end
-				if (attribute == 'svalues') then
-					attribute = 'rawData'
-				end
-				if (attribute == 'rain_lasthour') then
-					attribute = 'rainLastHour'
-				end
-
-				-- now let's get and store the stuff
-				setDeviceAttribute(tableData, attribute, oriAttribute)
-			end
+		if (item ~= nil) then
+			return item
 		end
+
+		if (data == nil) then
+			data = getItemFromData(baseType, id)
+		end
+
+		if (data ~= nil) then
+			local newItem = constructor(self, data)
+			cache[data.id] = newItem
+			cache[data.name] = newItem
+
+			return newItem
+		end
+
+		-- special case for scenes and groups
+		-- as they may not be in the collection if Domoticz wasn't restarted after creating the scene or group.
+		if (baseType == 'scene' or baseType == 'group') then
+			utils.log('There is no group or scene with that name or id: ' ..
+					tostring(id) ..
+					'. If you just created the scene or group you may have to restart Domoticz to make it become visible to dzVents.', utils.LOG_ERROR)
+		else
+			utils.log('There is no ' .. baseType .. ' with that name or id: ' .. tostring(id), utils.LOG_ERROR)
+		end
+
 	end
 
-	local function createScenesAndGroups()
-		local httpData = readHttpDomoticzData()
-		if (httpData) then
-			for i, httpDevice in pairs(httpData.result) do
 
-				if (httpDevice.Type == 'Scene' or httpDevice.Type == 'Group') then
-					local name = httpDevice.Name
-					local state = httpDevice.Status -- can be nil
-					local id = tonumber(httpDevice.idx)
-					local raw = httpDevice.Data
-					local device = Device(self, name, state, false)
-					device.addAttribute('id', id)
-					device.addAttribute('lastUpdate', Time(httpDevice.LastUpdate))
-					device.addAttribute('rawData', string.split(raw, ';'))
+	local function setIterators(collection, initial, baseType, filterForChanged)
 
-					if (httpDevice.Type == 'Scene') then
-						if (self.scenes[name] ~= nil) then
-							utils.log('Scene found with a duplicate name. This scene will be ignored. Please rename: ' .. name, utils.LOG_ERROR)
-						else
-							self.scenes[name] = device
-							self.scenes[id] = device
-						end
-					else
-						if (self.groups[name] ~= nil) then
-							utils.log('Group found with a duplicate name. This group will be ignored. Please rename: ' .. name, utils.LOG_ERROR)
-						else
-							self.groups[name] = device
-							self.groups[id] = device
-						end
+		local _collection
+
+		if (initial) then
+			_collection = _G.domoticzData
+		else
+			_collection = collection
+		end
+
+		collection['forEach'] = function(func)
+			local res
+			for i, item in pairs(_collection) do
+
+				local _item
+
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
+
+
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					res = func(_item)
+					if (res == false) then -- abort
+						return
 					end
 				end
 			end
 		end
-	end
 
-	local function updateGroupAndScenes()
-		-- assume that the groups and scenes have been created using the http data first
-		if (_G.otherdevices_scenesandgroups) then
+		collection['find'] = function(func)
+			local res
+			local ret
+			for i, item in pairs(_collection) do
 
-			for name, state in pairs(_G.otherdevices_scenesandgroups) do
+				local _item
 
-				-- name is either a scene or a group
-				local device = (self.scenes and self.scenes[name]) or (self.groups and self.groups[name])
-
-				if (device) then
-					device._setStateAttribute(state)
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
 				end
-			end
-		end
-	end
 
-	local function createMissingHTTPDevices()
-		local httpData = readHttpDomoticzData()
 
-		if (httpData) then
-			for i, httpDevice in pairs(httpData.result) do
-				local id = tonumber(httpDevice.idx)
-				if (httpData.Type ~= 'Group' and httpData.Type ~= 'Scene') then
-					if (self.devices[id] == nil) then
-						-- we have a device that is not passed by Domoticz to the scripts
-						local name = httpDevice.Name
-						local state = httpDevice.Status -- can be nil
-						local raw = httpDevice.Data
-						local device = Device(self, name, state, false)
-
-						self.devices[name] = device
-						self.devices[id] = device
-
-						device.addAttribute('id', id)
-						device.addAttribute('lastUpdate', Time(httpDevice.LastUpdate))
-						device.addAttribute('rawData', string.split(raw, ';'))
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					ret = func(_item)
+					if (ret == true) then
+						return _item
 					end
 				end
 			end
 		end
-	end
 
-	local function getValueFromFormatted(value, unit)
-		--local s = string.gsub(value, '%.', '')
-		local s = string.gsub(value, '%,', '') -- remove , (assume it is NOT a decimal separator)
-		s = string.gsub(s, ' ' .. unit, '')
-		return tonumber(s)
-	end
+		collection['reduce'] = function(func, accumulator)
+			for i, item in pairs(_collection) do
 
-	local function extendDevicesWithHTTPData()
-		local httpData = readHttpDomoticzData()
+				local _item
 
-		if (httpData) then
-			for i, httpDevice in pairs(httpData.result) do
-				if (self.devices[tonumber(httpDevice['idx'])]) then
-
-					local device
-					local id = tonumber(httpDevice.idx)
-
-					if (httpDevice.Type == 'Scene' or httpDevice.Type == 'Group') then
-						if (httpDevice.Type == 'Scene') then
-							device = self.scenes[id]
-						else
-							device = self.groups[id]
-						end
-					else
-						device = self.devices[id]
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
 					end
+				else
+					_item = item
+				end
 
-					if (device == nil) then
-						-- oops
-						-- something is wrong
-						utils.log('Cannot find a device with this id: ' .. tostring(id), utils.LOG_ERROR)
-						self.logDevice(httpDevice)
-					else
+				if (_item and type(_item) ~= 'function' and ((initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					accumulator = func(accumulator, _item)
+				end
+			end
+			return accumulator
+		end
 
-						device.addAttribute('description', httpDevice.Description)
-						device.addAttribute('batteryLevel', httpDevice.BatteryLevel)
-						device.addAttribute('signalLevel', httpDevice.SignalLevel)
-						device.addAttribute('deviceSubType', httpDevice.SubType)
+		collection['filter'] = function(filter)
+			local res = {}
+			for i, item in pairs(_collection) do
 
-						if (device.level == nil) then
-							-- for those non-dimmer-like devices that do have a level
-							device.addAttribute('level', httpDevice.Level)
-						end
+				local _item
 
-						device.addAttribute('deviceType', httpDevice.Type)
-						device.addAttribute('hardwareName', httpDevice.HardwareName)
-						device.addAttribute('hardwareType', httpDevice.HardwareType)
-						device.addAttribute('hardwareId', httpDevice.HardwareID)
-						device.addAttribute('hardwareTypeValue', httpDevice.HardwareTypeVal)
-						device.addAttribute('hardwareTypeVal', httpDevice.HardwareTypeVal)
-						device.addAttribute('switchType', httpDevice.SwitchType)
-						device.addAttribute('switchTypeValue', httpDevice.SwitchTypeVal)
-						device.addAttribute('timedOut', httpDevice.HaveTimeout)
-						device.addAttribute('counterToday', httpDevice.CounterToday or '')
-						device.addAttribute('counterTotal', httpDevice.Counter or '')
+				if (initial) then
+					if (item.baseType == baseType) and (filterForChanged == true and item.changed == true or filterForChanged == false) then
+						_item = getObject(baseType, item.id, item) -- create the device object or get it from the cache
+					end
+				else
+					_item = item
+				end
 
-
-						if (device.deviceType == 'Heating' and device.deviceSubType == 'Zone') then
-							device.addAttribute('setPoint', tonumber(device.rawData[2]))
-							device.addAttribute('heatingMode', device.rawData[3])
-						end
-
-						if (device.deviceType == 'Lux' and device.deviceSubType == 'Lux') then
-							device.addAttribute('lux', tonumber(device.rawData[1]))
-						end
-
-						if (device.deviceType == 'General' and device.deviceSubType == 'kWh') then
-							device.addAttribute('WhTotal', tonumber(device.rawData[2]))
-							device.addAttribute('WActual', tonumber(device.rawData[1]))
-							local todayFormatted = httpDevice.CounterToday or ''
-							-- risky business, we assume no decimals, just thousands separators
-							-- there is no raw value available for today
-							local s = string.gsub(todayFormatted, '%,', '')
-							--s = string.gsub(s, '%,', '')
-							s = string.gsub(s, ' kWh', '')
-							device.addAttribute('WhToday', tonumber(s))
-						end
-
-						if (device.deviceType == 'Usage' and device.deviceSubType == 'Electric') then
-							device.addAttribute('WActual', tonumber(device.rawData[1]))
-						end
-
-
-						if (device.deviceType == 'P1 Smart Meter' and device.deviceSubType == 'Energy') then
-							device.addAttribute('WActual', tonumber(device.rawData[5]))
-						end
-
-						if (device.deviceType == 'Thermostat' and device.deviceSubType == 'SetPoint') then
-							device.addAttribute('setPoint', tonumber(device.rawData[1]))
-						end
-
-						if (device.deviceSubType == 'Text') then
-							device.addAttribute('text', httpDevice.Data) -- could be old because it may not be fetched
-						end
+				if (_item and type(_item) ~= 'function' and ( (initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
+					if (filter(_item)) then
+						res[i] = _item
 					end
 				end
 			end
+			setIterators(res, false, baseType)
+			return res
+		end
+
+		return collection
+	end
+
+
+	function self.devices(id)
+		if (id ~= nil) then
+			return getObject('device', id)
+		else
+			return setIterators({}, true, 'device', false)
 		end
 	end
 
-	createVariables()
-	createDevices()
-	createScenesAndGroups()
-	updateGroupAndScenes()
-	createMissingHTTPDevices()
-	extendDevicesWithHTTPData()
+	function self.groups(id)
+		if (id ~= nil) then
+			return getObject('group', id)
+		else
+			return setIterators({}, true, 'group', false)
+		end
+	end
 
-	setIterators(self.devices)
-	setIterators(self.changedDevices)
-	setIterators(self.variables)
-	setIterators(self.scenes)
-	setIterators(self.groups)
+	function self.scenes(id)
+		if (id ~= nil) then
+			return getObject('scene', id)
+		else
+			return setIterators({}, true, 'scene', false)
+		end
+	end
 
+	function self.variables(id)
+		if (id ~= nil) then
+			return getObject('uservariable', id)
+		else
+			return setIterators({}, true, 'uservariable', false)
+		end
+	end
+
+	function self.changedDevices(id)
+		if (id ~= nil) then
+			return getObject('device', id)
+		else
+			return setIterators({}, true, 'device', true)
+		end
+	end
+
+	function self.changedVariables(id)
+		if (id ~= nil) then
+			return getObject('uservariable', id)
+		else
+			return setIterators({}, true, 'uservariable', true)
+		end
+	end
 
 	return self
 end

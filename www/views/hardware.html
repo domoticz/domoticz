@@ -1193,6 +1193,29 @@
                     <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
                     <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
                 </tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
+					<td><select id="sysfsdebounce" style="width:110" class="combobox ui-corner-all">
+						<option data-i18n="Default" value="50">default</option>
+						<option data-i18n="1 msec" value="1">1 msec</option>						
+						<option data-i18n="2 msec" value="2">2 msec</option>						
+						<option data-i18n="5 msec" value="5">5 msec</option>						
+						<option data-i18n="10 msec" value="10">10 msec</option>
+						<option data-i18n="25 msec" value="25">25 msec</option>
+						<option data-i18n="50 msec" value="50">50 msec</option>
+						<option data-i18n="75 msec" value="75">75 msec</option>						
+						<option data-i18n="100 msec" value="100">100 msec</option>
+						<option data-i18n="150 msec" value="150">150 msec</option>
+						<option data-i18n="200 msec" value="200">200 msec</option>
+						<option data-i18n="250 msec" value="250">250 msec</option>
+						<option data-i18n="300 msec" value="300">300 msec</option>					
+						<option data-i18n="350 msec" value="350">350 msec</option>					
+						<option data-i18n="400 msec" value="400">400 msec</option>					
+						<option data-i18n="450 msec" value="450">450 msec</option>					
+						<option data-i18n="500 msec" value="500">500 msec</option>										
+					</select>
+					</td>
+				</tr>				
             </table>
         </div>
         <div id="divevohome">
@@ -1653,6 +1676,7 @@
 					<option value="80" data-i18n="Temperature">Temperature</option>
 					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
 					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="247" data-i18n="Temp+Baro">Temp+Baro</option>
 					<option value="5" data-i18n="Text">Text</option>
 					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
 					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>

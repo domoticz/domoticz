@@ -1,7 +1,7 @@
 return {
 	active = true,
 	on = {
-		'onscript1'
+		devices = {'onscript1'}
 	},
 	execute = function(domoticz, device)
 		device.dimTo(10)

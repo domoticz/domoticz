@@ -228,7 +228,7 @@
 		<Product type="0020" id="0001" name="Energy Switch plus" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0021" id="0001" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 		<Product type="0021" id="0100" name="Heating Control" config="BeNext/HeatingControl.xml"/>
-		<Product type="002f" id="0100" name="P1 Dongle"/>
+		<Product type="002f" id="0100" name="P1 Dongle" config="BeNext/P1dongle.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002c" name="BeSafer">
 	</Manufacturer>
@@ -314,16 +314,16 @@
 		<Product type="4c42" id="3134" name="Smart LED Retrofit Kit ZE27EU" config="domitech/ze27eu.xml"/>
 		<Product type="4c42" id="3135" name="Smart LED Light Bulb ZB22UK" config="domitech/zb22uk.xml"/>
 	</Manufacturer>
-	<Manufacturer id="0260" name="Domux">
-		<Product type="0168" id="0168" name="Door Sensor DX1DS-Z" config="domux/dx1dsz.xml"/>
-		<Product type="8001" id="1000" name="Motion Sensor DX1MS-Z" config="domux/dx1msz.xml"/>
-		<Product type="8002" id="1000" name="Smart Smoke Sensor DX1SA-Z" config="domux/dx1saz.xml"/>
-		<Product type="8003" id="1000" name="Gaz Sensor DX1CG-Z" config="domux/dx1cgz.xml"/>
-		<Product type="8004" id="1000" name="Flood Sensor DX1WL-Z" config="domux/dx1wlz.xml"/>
-		<Product type="8005" id="1000" name="CO Sensor DX1CA-Z" config="domux/dx1caz.xml"/>
-		<Product type="8006" id="1000" name="Smart Metering Plug DX2SK-Z" config="domux/dx2skz.xml"/>
-		<Product type="8007" id="1000" name="Temperature Humidity Sensor DX1HT-Z" config="domux/dx1htz.xml"/>
-		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="domux/dx2skz.xml"/>
+	<Manufacturer id="021c" name="Domux">
+		<Product type="0168" id="0168" name="Door Sensor DX1DS-Z" config="domux/DX1DS-Z.xml"/>
+		<Product type="8001" id="1000" name="Motion Sensor DX1MS-Z" config="domux/DX1MS-Z.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor DX1SA-Z" config="domux/DX1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor DX1CG-Z" config="domux/DX1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor DX1WL-Z" config="domux/DX1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor DX1CA-Z" config="domux/DX1CA-Z.xml"/>
+		<Product type="8006" id="1000" name="Smart Metering Plug DX2SK-Z" config="domux/DX2SK-Z.xml"/>
+		<Product type="8007" id="1000" name="Temperature Humidity Sensor DX1HT-Z" config="domux/DX1HT-Z.xml"/>
+		<Product type="8008" id="1000" name="Smart Plug DX2SK-Z" config="domux/DX2SK-Z.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0184" name="Dragon Tech">
 		<Product type="4447" id="3034" name="In Wall Dimmer" config="dragontech/wd-100.xml" />
@@ -334,6 +334,7 @@
 	<Manufacturer id="014a" name="Ecolink">
 		<Product type="0001" id="0001" name="Motion Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
+		<Product type="0004" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
 		<Product type="0001" id="0003" name="Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0004" id="0001" name="Motion Detector" config="ecolink/motion.xml"/>
 		<Product type="0004" id="0003" name="Garage Door Tilt Sensor" config="ecolink/sensor.xml"/>
@@ -412,6 +413,7 @@
 	<Manufacturer id="0085" name="Fakro">
 		<Product type="0001" id="0001" name="ZWP10 Remote Controller" config="fakro/zwp10.xml"/>
 		<Product type="0002" id="0002" name="ARZ Roof Window Roller Shutter" />
+		<Product type="0002" id="0005" name="ZWS230 Chain actuator 230VAC" config="fakro/zws230.xml" />
 		<Product type="0003" id="0001" name="ZWS12 Chain actuator 12VDC" config="fakro/zws12.xml" />
 		<Product type="0003" id="0002" name="ZWS230 Chain actuator 230VAC" config="fakro/zws230.xml" />
 		<Product type="0016" id="0001" name="ZWRS Roller Shutter FLiRS module" config="fakro/zwrs.xml"/>
@@ -494,10 +496,12 @@
 		<Product type="0c00" id="1000" name="FGSS101 Smoke Sensor" config="fibaro/fgss101.xml" />
 		<Product type="0c02" id="1002" name="FGSD002 Smoke Sensor" config="fibaro/fgsd002.xml" />
 		<Product type="0d01" id="1000" name="FGGC001 Swipe" config="fibaro/fggc001.xml" />
+		<Product type="0d01" id="2000" name="FGGC001 Swipe" config="fibaro/fggc001.xml"/>
 		<Product type="0f01" id="1000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="0f01" id="2000" name="FGPB101 Button" config="fibaro/fgpb101.xml" />
 		<Product type="1001" id="1000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
 		<Product type="1001" id="2000" name="FGKF601 Keyfob" config="fibaro/fgkf601.xml" />
+		<Product type="1201" id="1000" name="FGSD001 CO Sensor" config="fibaro/fgcd001.xml" />
 	</Manufacturer>
 	<Manufacturer id="0138" name="First Alert">
 		<Product type="0001" id="0002" name="ZCombo Smoke and Carbon Monoxide Detector"  config="firstalert/zcombo.xml"/>
@@ -535,7 +539,9 @@
 		<Product type="4944" id="3031" name="12724 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
+		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
 		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
 		<Product type="4952" id="3036" name="14291 In-Wall Smart Switch" config="ge/14291-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
@@ -563,8 +569,20 @@
 		<Product type="0100" id="000a" name="HKZW-SO05 Smart Plug" config="hank/hkzw-so05-smartplug.xml"/>
 		<Product type="0200" id="0006" name="HKZW-MS01 Multisensor" config="hank/hkzw-ms01.xml"/>
 		<Product type="0200" id="0008" name="HKZW-DWS01 Door/Window Sensor" config="hank/hkzw-dws01.xml"/>
+		<Product type="0201" id="0008" name="HKZW-DWS01 Door/Window Sensor" config="hank/hkzw-dws01.xml"/>
 		<Product type="0200" id="0009" name="HKZW-SCN01 Scene Controller" config="hank/scenecontroller1.xml"/>
 		<Product type="0200" id="000b" name="HKZW-SCN04 Scene Controller" config="hank/scenecontroller4.xml"/>
+	</Manufacturer>
+	<Manufacturer id="0260" name="Heiman">
+		<Product type="0168" id="0168" name="Door Sensor HS1DS-Z" config="heiman/HS1DS-Z.xml"/>
+		<Product type="8001" id="1000" name="Motion Sensor HS1MS-Z" config="heiman/HS1MS-Z.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor HS1CG-Z" config="heiman/HS1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor HS1CA-Z" config="heiman/HS1CA-Z.xml"/>
+		<Product type="8006" id="1000" name="Smart Metering Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
+		<Product type="8007" id="1000" name="Temperature Humidity Sensor HS1HT-Z" config="heiman/HS1HT-Z.xml"/>
+		<Product type="8008" id="1000" name="Smart Plug HS2SK-Z" config="heiman/HS2SK-Z.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0017" name="HiTech Automation">
 	</Manufacturer>
@@ -670,6 +688,8 @@
 		<Product type="0202" id="030b" name="VRP03-1LW Lamp Module"/>
 		<Product type="0301" id="0206" name="RZS15-1LX Binary Scene Switch"/>
 		<Product type="0301" id="0209" name="VRS15-1LZ Binary Scene Switch"/>
+		<Product type="0301" id="0209" name="VRS15-1LZ Switch"/>
+		<Product type="0301" id="0334" name="VRS15-1LZ Switch"/>
 		<Product type="0401" id="0206" name="RZI10-1LX Multilevel Scene Switch" config="leviton/rzi10.xml"/>
 		<Product type="0401" id="0209" name="VRI06-1LX Multilevel Scene Switch" config="leviton/vri06.xml"/>
 		<Product type="0501" id="0206" name="VRI10-1LX Multilevel Scene Switch" config="leviton/vri10.xml"/>
@@ -680,17 +700,26 @@
 		<Product type="0702" id="0261" name="VRCZ4-M0Z 4-Button Zone Controller"/>
 		<Product type="0b02" id="030b" name="VRC0P-1LW Plug-in Serial Interface Module"/>
 		<Product type="0c01" id="0206" name="VRCPG-SG RF Handheld Remote Controller" config="leviton/vrcpg.xml"/>
+		<Product type="1001" id="0209" name="VRF01-1LZ Quiet Fan Speed Control" config="leviton/vrf01.xml"/>
+		<Product type="1001" id="0334" name="VRF01-1LZ Quiet Fan Speed Control" config="leviton/vrf01.xml"/>
 		<Product type="1001" id="0209" name="VRF01-1LZ Multilevel Scene Switch - 1.5A Fan" config="leviton/vrf01.xml"/>
 		<Product type="1102" id="0243" name="VRCS2-MRZ 2-Button Scene Controller with Switches"/>
 		<Product type="1902" id="0334" name="DZPD3-1LW Plug-In Dimming Lamp Module"/>
 		<Product type="1a02" id="0334" name="DZPA1-1LW Plug-In Appliance Module"/>
+		<Product type="1b03" id="0334" name="DZMX1-1LZ Dimmer"/>
+		<Product type="1c02" id="0334" name="DZS15-1LZ Switch"/>
+		<Product type="1d04" id="0334" name="DZR15-1LZ Receptacle"/>
 		<Product type="3201" id="0001" name="DZ6HD-1BZ Decora 600W Smart Dimmer" config="leviton/dz6hd.xml"/>
 		<Product type="3301" id="0001" name="DZ1KD-1BZ Decora 1000W Smart Dimmer" config="leviton/dz6hd.xml"/>
 		<Product type="3401" id="0001" name="DZ15S-1BZ Decora Smart Switch" config="leviton/dz15s.xml"/>
 		<Product type="3501" id="0001" name="DZPD3-2BW Decora 300W Plug-In Smart Dimmer" config="leviton/dzpd3.xml"/>
+		<Product type="3601" id="0001" name="Leviton DZPA1 Plugin Outlet" config="leviton/dz15s.xml"/>
+		<Product type="3601" id="0001" name="Leviton DZPA1 Plug-In Outlet" config="leviton/dz15s.xml"/>
 	</Manufacturer>
 	<Manufacturer id="014f" name="Linear">
+		<Product type="2001" id="0102" name="WADWAZ-1 Door/Window Sensor" config="linear/WADWAZ-1.xml"/>
 		<Product type="2002" id="0203" name="WAPIRZ-1 Motion Sensor" config="linear/WAPIRZ-1.xml"/>
+		<Product type="2009" id="0903" name="WA105DBZ-1 Main Operated Siren" config="linear/WA105DBZ-1.xml"/>
 		<Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
 		<Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
 		<Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
@@ -821,6 +850,7 @@
 		<Product type="0004" id="000a" name="PH-PSE02.eu Zipato Indoor Siren" config="philio/pse02.xml"/>
 		<Product type="0006" id="001a" name="PH-PAB01.eu Micromodule Energy Meter" config="philio/phpab01.xml"/>
 		<Product type="0009" id="0022" name="PSR04 Smart Color Button" config="philio/psr04.xml"/>
+		<Product type="0001" id="0029" name="PAN16 Smart energy plug in switch" config="philio/pan16.xml"/>
 	</Manufacturer>
 	<Manufacturer id="010e" name="Polycontrol">
 		<Product type="0002" id="0001" name="Danalock Keypad" config="polycontrol/keypad.xml"/>
@@ -933,8 +963,8 @@
 	</Manufacturer>
 	<Manufacturer id="003b" name="Schlage">
 		<Product type="634b" id="504c" name="FE599GR Wireless Door Lock"/>
-		<Product type="6341" id="5044" name="BE469NXCEN Touchscreen DeadBolt" config="schlage/BE469NXCEN.xml"/>
-		<Product type="6349" id="5044" name="BE468CAM619 Touchscreen DeadBolt" config="schlage/BE468CAM619.xml"/>
+		<Product type="6341" id="5044" name="BE469 Touchscreen Deadbolt" config="schlage/BE469.xml"/>
+		<Product type="6349" id="5044" name="BE468 Touchscreen Deadbolt" config="schlage/BE468.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0097" name="Schlage Link">
 		<Product type="1182" id="4501" name="iTemp Dual Sensor" config="schlagelink/itemp.xml" />
@@ -1079,6 +1109,7 @@
 		<Product type="0003" id="0003" name="TZ56 Wall Switch On/Off" config="wenzhou/tz56.xml"/>
 		<Product type="0003" id="0004" name="TZ55 Wall Switch Dimmer" config="wenzhou/tz55.xml"/>
 		<Product type="0004" id="0002" name="TZ69 Smart energy plug in switch" config="wenzhou/tz69.xml"/>
+		<Product type="0311" id="0103" name="TZ69E Smart energy plug in switch" config="wenzhou/tz69.xml"/>
 		<Product type="0116" id="3119" name="TZ69F Smart energy plug in switch" config="wenzhou/tz69.xml"/>
 		<Product type="000b" id="0001" name="ST812 Flood Detector" config="everspring/st812.xml"/>
 		<Product type="0808" id="0808" name="TZ65 Dual Wall Dimmer" config="wenzhou/tz65d.xml"/>
@@ -1136,9 +1167,14 @@
 	</Manufacturer>
 	<Manufacturer id="0131" name="Zipato">
 		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
+		<Product type="0002" id="0003" name="Bulb 2" config="zipato/RGBBulb2.xml"/>
 		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
 		<Product type="2001" id="0106" name="VS-ZD2102 Door/Window Sensor" config="zipato/vszd2102.xml" />
 		<Product type="2002" id="0205" name="ZP3102-EU Multisensor Duo" config="zipato/zp3102.xml"/>
+		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
+		<Product type="8003" id="1000" name="Combustible Gas Sensor HS1CG-Z" config="heiman/HS1CG-Z.xml"/>
+		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
+		<Product type="8005" id="1000" name="CO Sensor HS1CA-Z" config="heiman/HS1CA-Z.xml"/>
 	</Manufacturer>
 	<Manufacturer id="027a" name="Zooz">
 		<Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />
@@ -1148,7 +1184,9 @@
 		<Product type="0003" id="0088" name="ZSE33 Smart Chime" config="zooz/zse33.xml" />
 	</Manufacturer>
 	<Manufacturer id="015d" name="Zooz">
-		<Product type="0651" id="f51c" name="ZEN20 Power Strip" />
+		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />
+		<Product type="1111" id="1e1c" name="ZEN23 Toggle Switch" config="zooz/zen23.xml" />
+		<Product type="0111" id="1f1c" name="ZEN24 Dimmer Switch" config="zooz/zen24.xml" />
 	</Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">
 	</Manufacturer>

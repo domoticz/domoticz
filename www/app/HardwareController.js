@@ -154,6 +154,7 @@ define(['app'], function (app) {
 				}
 				if (text.indexOf("sysfs GPIO") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+					Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -1127,13 +1128,15 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("sysfs GPIO") >= 0) {
 				Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+				Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype="
 					+ hardwaretype
 					+ "&name=" + encodeURIComponent(name)
 					+ "&enabled=" + bEnabled
 					+ "&datatimeout=" + datatimeout
-					+ "&Mode1=" + Mode1,
+					+ "&Mode1=" + Mode1
+					+ "&Mode2=" + Mode2,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -5008,6 +5011,7 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("sysfs GPIO") >= 0) {
 							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure").prop("checked", data["Mode1"] == 1);
+							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("USB") >= 0 || data["Type"].indexOf("Teleinfo EDF") >= 0) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);

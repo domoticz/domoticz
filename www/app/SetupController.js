@@ -177,7 +177,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (data.status != "OK") {
 						HideNotify();
-						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms")) {
+						if ((subsystem == "http") || (subsystem == "kodi") || (subsystem == "lms") || (subsystem == "gcm")) {
 							ShowNotify($.t('Problem Sending Notification'), 3000, true);
 						}
 						else if (subsystem == "email") {
@@ -585,6 +585,13 @@ define(['app'], function (app) {
 					if (typeof data.DisableEventScriptSystem != 'undefined') {
 						$("#eventsystemtable #DisableEventScriptSystem").prop('checked', data.DisableEventScriptSystem == 1);
 					}
+                    if (typeof data.DisableDzVentsSystem != 'undefined') {
+						
+                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 1);
+                    }
+                    if (typeof data.DzVentsLogLevel != 'undefined') {
+                        $("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);
+                    }
 					if (typeof data.LogEventScriptTrigger != 'undefined') {
 						$("#eventsystemtable #LogEventScriptTrigger").prop('checked', data.LogEventScriptTrigger == 1);
 					}
