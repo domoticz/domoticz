@@ -842,6 +842,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
 		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
 		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome DryContact/IRdetec" },
+		{ pTypeGeneralSwitch, sSwitchContactT2, "Legrand MyHome Termo Valve" },
+		{ pTypeGeneralSwitch, sSwitchContactT3, "Legrand MyHome Termo Actuator" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
