@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html manifest="html5.appcache">
 <head>
 		<meta charset="utf-8">
@@ -110,7 +110,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/domoticzdevices.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
-
+		<script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script>
 		<script data-main="app/main" src="js/require.js"></script>
 <script type="text/javascript" charset="utf-8" id="init-code">
 
@@ -447,6 +447,13 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+	<script type="text/ng-template" id="timesuntemplate">
+		<table><tbody>
+			<tr>
+				<td align="left" valign="top" id="timesun"><div><span ng-bind="data.ServerTime"></span> <font color="yellow">☀</font>▲<span ng-bind="data.Sunrise"></span> ▼<span ng-bind="data.Sunset"></span></div></td>
+			</tr>
+		</tbody></table>
+	</script>
 	<div id="thermostat3_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" style="width: 176px;">
 		<div class="ui-close" onclick="CloseTherm3Popup()"></div>
 		<table class="display" border="0" cellpadding="0" cellspacing="0">
@@ -1508,113 +1515,112 @@ $(document).ready(function() {
 		<div id="usagegraph" style="height: 240px;"></div>
 	</div>
 	<div id="editnotifications" style="display:none;">
-			<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
-					<thead>
-							<tr>
-									<th width="120" align="left" data-i18n="Type">Type</th>
-									<th width="160" align="left" data-i18n="When">When</th>
-									<th align="left" data-i18n="Active Systems">Active Systems</th>
-									<th align="left" data-i18n="Custom Message">Custom Message</th>
-									<th width="120" align="left" data-i18n="Priority">Priority</th>
-									<th width="120" align="left" data-i18n="Ignore Interval">Ignore Interval</th>
-									<th width="80" align="left" data-i18n="Recovery">Recovery</th>
-							</tr>
-					</thead>
-			</table>
-			<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<tr>
-					<td>
-						<a class="btnstyle3-dis" id="notificationupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-						<a class="btnstyle3-dis" id="notificationdelete" data-i18n="Delete">Delete</a>
-					</td>
-					<td align="right">
-						<a class="btnstyle3" onclick="ClearNotifications();" data-i18n="Clear">Clear</a>
-					</td>
-				</tr>
-			</table>
-			<br>
-			<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
-				<tr>
-					<td align="right" style="width:160px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
-					<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
-				</tr>
-				<tr id="notilevel">
-					<td align="right" style="width:160px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
-					<td>
-						<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
-						<option value="5">5%</option>
-						<option value="10">10%</option>
-						<option value="15">15%</option>
-						<option value="20">20%</option>
-						<option value="25">25%</option>
-						<option value="30">30%</option>
-						<option value="35">35%</option>
-						<option value="40">40%</option>
-						<option value="45">45%</option>
-						<option value="50">50%</option>
-						<option value="55">55%</option>
-						<option value="60">60%</option>
-						<option value="65">65%</option>
-						<option value="70">70%</option>
-						<option value="75">75%</option>
-						<option value="80">80%</option>
-						<option value="85">85%</option>
-						<option value="90">90%</option>
-						<option value="95">95%</option>
-						<option value="100">100%</option>
+		<table class="display" id="notificationtable" border="0" cellpadding="0" cellspacing="0" width="100%">
+				<thead>
+						<tr>
+								<th width="120" align="left" data-i18n="Type">Type</th>
+								<th width="160" align="left" data-i18n="When">When</th>
+								<th align="left" data-i18n="Active Systems">Active Systems</th>
+								<th align="left" data-i18n="Custom Message">Custom Message</th>
+								<th width="120" align="left" data-i18n="Priority">Priority</th>
+								<th width="120" align="left" data-i18n="Ignore Interval">Ignore Interval</th>
+								<th width="80" align="left" data-i18n="Recovery">Recovery</th>
+						</tr>
+				</thead>
+		</table>
+		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<a class="btnstyle3-dis" id="notificationupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+					<a class="btnstyle3-dis" id="notificationdelete" data-i18n="Delete">Delete</a>
+				</td>
+				<td align="right">
+					<a class="btnstyle3" onclick="ClearNotifications();" data-i18n="Clear">Clear</a>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<table class="display" id="notificationparamstable" border="0" cellpadding="0" cellspacing="20">
+			<tr>
+				<td align="right" style="width:160px"><label for="combotype"><span data-i18n="Type"></span>:</label></td>
+				<td><select id="combotype" style="width:120px" class="combobox ui-corner-all"></select></td>
+			</tr>
+			<tr id="notilevel">
+				<td align="right" style="width:160px"><label for="combolevel"><span data-i18n="Level"></span>:</label></td>
+				<td>
+					<select id="combolevel" style="width:70px" class="combobox ui-corner-all">
+					<option value="5">5%</option>
+					<option value="10">10%</option>
+					<option value="15">15%</option>
+					<option value="20">20%</option>
+					<option value="25">25%</option>
+					<option value="30">30%</option>
+					<option value="35">35%</option>
+					<option value="40">40%</option>
+					<option value="45">45%</option>
+					<option value="50">50%</option>
+					<option value="55">55%</option>
+					<option value="60">60%</option>
+					<option value="65">65%</option>
+					<option value="70">70%</option>
+					<option value="75">75%</option>
+					<option value="80">80%</option>
+					<option value="85">85%</option>
+					<option value="90">90%</option>
+					<option value="95">95%</option>
+					<option value="100">100%</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="notiwhen">
+				<td align="right"><label for="combowhen"><span data-i18n="When"></span>:</label></td>
+				<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
+							<option value="0" data-i18n="Greater">Greater</option>
+							<option value="1" data-i18n="Greater or Equal">Greater or Equal</option>
+							<option value="2" data-i18n="Equal">Equal</option>
+							<option value="3" data-i18n="Not Equal">Not Equal</option>
+							<option value="4" data-i18n="Less or Equal">Less or Equal</option>
+							<option value="5" data-i18n="Less">Less</option>
 						</select>
-					</td>
-				</tr>
-				<tr id="notiwhen">
-					<td align="right"><label for="combowhen"><span data-i18n="When"></span>:</label></td>
-					<td><select id="combowhen" style="width:120px" class="combobox ui-corner-all">
-								<option value="0" data-i18n="Greater">Greater</option>
-								<option value="1" data-i18n="Greater or Equal">Greater or Equal</option>
-								<option value="2" data-i18n="Equal">Equal</option>
-								<option value="3" data-i18n="Not Equal">Not Equal</option>
-								<option value="4" data-i18n="Less or Equal">Less or Equal</option>
-								<option value="5" data-i18n="Less">Less</option>
-							</select>
-					</td>
-				</tr>
-				<tr id="notival">
-					<td align="right"><label for="value"><span data-i18n="Value"></span>:</label></td>
-					<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
-				</tr>
-				<tr>
-					<td align="right"><label for="combopriority"><span data-i18n="Priority">Priority</span>:</label></td>
-					<td><select id="combopriority" style="width:120px" class="combobox ui-corner-all">
-						<option value="-2" data-i18n="Very Low">Very Low</option>
-						<option value="-1" data-i18n="Moderate">Moderate</option>
-						<option value="0" data-i18n="Normal" selected="selected">Normal</option>
-						<option value="1" data-i18n="High">High</option>
-						<option value="2" data-i18n="Emergency">Emergency</option>
-					</select></td>
-				</tr>
-				<tr>
-					<td align="right"><label for="checkalways"><span data-i18n="Ignore Interval">Ignore Interval</span>:</label></td>
-					<td><input type="checkbox" id="checkalways">&nbsp;(<span data-i18n="If enabled, it will bypass the Notification interval specified in the Settings page">If enabled, it will bypass the Notification interval specified in the Settings page</span>)</td>
-				</tr>
-				<tr id="notirecovery">
-					<td align="right"><label for="checkrecovery"><span data-i18n="Recovery Notification">Recovery Notification</span>:</label></td>
-					<td><input type="checkbox" id="checkrecovery">&nbsp;(<span data-i18n="If enabled, a notification will be send when given condition has been recovered">If enabled, a notification will be send when given condition has been recovered</span>)</td>
-				</tr>
-				<tr>
-					<td align="right"><label for="custommessage"><span data-i18n="Custom Message"></span>:</label></td>
-					<td><input type="text" id="custommessage" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
-					<span data-i18n="(Optional)"></span>
-					</td>
-				</tr>
-				<tr>
-					<td align="right"><label><span data-i18n="Active Systems"></span>:</label></td>
-					<td><div id="active_systems"></div></td>
-				</tr>
-				<tr>
-					<td></td>
-					<td><a class="btnstyle3" onclick="AddNotification();" data-i18n="Add">Add</a></td>
-				</tr>
-			</table>
-			<br>
+				</td>
+			</tr>
+			<tr id="notival">
+				<td align="right"><label for="value"><span data-i18n="Value"></span>:</label></td>
+				<td><input type="text" id="value" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /><label id="valuetype">&nbsp;&deg; C</label></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="combopriority"><span data-i18n="Priority">Priority</span>:</label></td>
+				<td><select id="combopriority" style="width:120px" class="combobox ui-corner-all">
+					<option value="-2" data-i18n="Very Low">Very Low</option>
+					<option value="-1" data-i18n="Moderate">Moderate</option>
+					<option value="0" data-i18n="Normal" selected="selected">Normal</option>
+					<option value="1" data-i18n="High">High</option>
+					<option value="2" data-i18n="Emergency">Emergency</option>
+				</select></td>
+			</tr>
+			<tr>
+				<td align="right"><span data-i18n="Ignore Interval">Ignore Interval</span>:</td>
+				<td><div id="id_checkalways"></div></td>
+			</tr>
+			<tr id="notirecovery">
+				<td align="right"><span data-i18n="Recovery Notification">Recovery Notification</span>:</td>
+				<td><div id="id_checkrecovery"></div></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="custommessage"><span data-i18n="Custom Message"></span>:</label></td>
+				<td><input type="text" id="custommessage" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;
+				<span data-i18n="(Optional)"></span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><label><span data-i18n="Active Systems"></span>:</label></td>
+				<td><div id="active_systems"></div></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><a class="btnstyle3" onclick="AddNotification();" data-i18n="Add">Add</a></td>
+			</tr>
+		</table>
 	</div>
 	<div id="dialog-replacedevice" title="Replace Device">
 		<form>
@@ -1634,7 +1640,7 @@ $(document).ready(function() {
 							<li ng-show="config.EnableTabFloorplans" class="divider-vertical clFloorplans"></li>
 							<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
 							<li ng-show="config.EnableTabLights" class="divider-vertical clLightSwitches"></li>
-							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
+							<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/Light48_On.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
 							<li ng-show="config.EnableTabScenes" class="divider-vertical clScenes"></li>
 							<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>
 							<li ng-show="config.EnableTabTemp" class="divider-vertical clTemperature"></li>
@@ -1656,8 +1662,8 @@ $(document).ready(function() {
 									<li ng-class="{'current_page_item':getClass('/Devices')}" id="mDevices"><a id="cDevices" href="#Devices"><img src="images/devices.png"> <span data-i18n="Devices">Devices</span></a></li>
 									<li ng-class="{'current_page_item':getClass('/Setup')}" id="mSetup"><a id="cSetup" href="#Setup"><img src="images/setup.png"> <span data-i18n="Settings">Settings</span></a></li>
 									<li id="dUpdate" class="divider"></li>
-									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/utility.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
-									<li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/utility.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
+									<li ng-show="config.HaveUpdate"><a href="#Update"><img src="images/update.png"> <span data-i18n="Update Domoticz">Update Domoticz</span></a></li>
+									<li ng-hide="config.HaveUpdate"><a class="lcursor" onclick="javascript:CheckForUpdate(true)"><img src="images/update.png"> <span data-i18n="Check for Update">Check for Update</span></a></li>
 									<li class="dropdown-submenu">
 										<a id="cMoreOptions" tabindex="-1" data-i18n="More options">More options</a>
 										<ul class="dropdown-menu pull-left">

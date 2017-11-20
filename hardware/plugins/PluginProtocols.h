@@ -37,7 +37,7 @@ namespace Plugins {
 	class CPluginProtocolHTTP : CPluginProtocol
 	{
 	private:
-		int				m_Status;
+		std::string		m_Status;
 		int				m_ContentLength;
 		void*			m_Headers;
 		std::string		m_Username;
@@ -47,14 +47,19 @@ namespace Plugins {
 
 		void			ExtractHeaders(std::string*	pData);
 	public:
-		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
+		CPluginProtocolHTTP() : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
-		void						AuthenticationDetails(std::string Username, std::string Password)
+		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
 		{
 			m_Username = Username;
 			m_Password = Password;
 		};
+	};
+
+	class CPluginProtocolICMP : CPluginProtocol
+	{
+		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
 	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?

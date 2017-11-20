@@ -1,5 +1,4 @@
 return {
-	active = false,
 	on = {
 		variables = {
 			'myUserVariable'

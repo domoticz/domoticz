@@ -28,7 +28,7 @@ return {
 			end
 		end
 
-		if (message) then
+		if (message ~= "") then
 			domoticz.email('Dead devices', message, 'me@address.nl')
 			domoticz.log('Dead devices found: ' .. message, domoticz.LOG_ERROR)
 		end
