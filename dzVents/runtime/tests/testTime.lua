@@ -162,6 +162,15 @@ describe('Time', function()
 			assert.is_same(342, localT.milliSeconds)
 		end)
 
+		it('should have week number', function()
+			local t = Time('2017-06-05 02:04:00')
+			assert.is_same(23, t.week)
+			t = Time('2017-01-01 02:04:00')
+			assert.is_same(52, t.week)
+			t = Time('2016-01-01 02:04:00') 
+			assert.is_same(53, t.week)
+		end)
+
 		it('should have daysAgo', function()
 			local p = os.date('*t', os.time() - 190800)
 			local raw = tostring(p.year) .. '-' ..
@@ -917,6 +926,61 @@ describe('Time', function()
 				it('should detect the rule within random text', function()
 					local t = Time('2017-06-05 02:04:00')
 					assert.is_true(t.ruleIsOnDay('something balbalba on sun, mon ,tue, fri boebhebalb'))
+				end)
+
+			end)
+
+			describe('in week', function()
+
+				it('should return true when matches simple list of weeks', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_true(t.ruleIsInWeek('in week 23'))
+					assert.is_true(t.ruleIsInWeek('in week 1,43,33,0,23'))
+				end)
+
+				it('should return nil if rule is not there', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_nil(t.ruleIsInWeek('iek 23'))
+				end)
+
+				it('should return true when matches odd weeks', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_true(t.ruleIsInWeek('every odd week'))
+					assert.is_nil(t.ruleIsInWeek('every even week'))
+				end)
+
+				it('should return true when matches even weeks', function()
+					local t = Time('2017-06-13 02:04:00') -- week 24
+					assert.is_nil(t.ruleIsInWeek('every odd week'))
+					assert.is_true(t.ruleIsInWeek('every even week'))
+				end)
+
+				it('should return nil if week is not in rule', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_nil(t.ruleIsInWeek('in week 2,4,5'))
+				end)
+
+				it('should return nil when no weeks are provided', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_nil(t.ruleIsInWeek('in week'))
+				end)
+
+				it('should return true when week is in range', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_true(t.ruleIsInWeek('in week -23'))
+					assert.is_true(t.ruleIsInWeek('in week 23-'))
+					assert.is_true(t.ruleIsInWeek('in week 3,55,-23,6,53'))
+					assert.is_true(t.ruleIsInWeek('in week 6,7,8,23-,22,66'))
+
+					assert.is_true(t.ruleIsInWeek('in week 12-25'))
+					assert.is_true(t.ruleIsInWeek('in week 12-25,55,6-11'))
+
+				end)
+
+				it('should return nil when not in range', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_nil(t.ruleIsInWeek('in week 25-'))
+					assert.is_nil(t.ruleIsInWeek('in week 25-66'))
 				end)
 
 			end)

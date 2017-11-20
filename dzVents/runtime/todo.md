@@ -15,4 +15,3 @@ timer rules for weeknumbers, date(ranges), seasons?:
 device adapter lms > docs en timedcommand checks?
 
 RANDOM bij updatedevice/variables
-s
