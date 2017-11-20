@@ -11,6 +11,7 @@
 - Added toJSON and fromJSON methods to domoticz.utils.
 - Added afterXXX() and withinXXX() support for device-update commands. E.g.: myTextDevice.updateText('Zork').afterMin(2).
 - Added support for Logitech Media Server devices (thanks to Eoreh).
+- Added new time rules: on dd/mm, on */mm, on dd/*, on dd1/mm1-dd2/mm2, on -dd/mm; on dd/mm-, in week aa,bb,cc-dd,-ee, ff-, every even week, every odd week
 
 [2.3.0]
 

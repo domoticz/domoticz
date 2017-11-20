@@ -1,6 +1,10 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
 
+local isEmpty = function(v)
+	return (v == nil or v == '')
+end
+
 local function getTimezone()
 	local now = os.time()
 	local dnow = os.date('*t', now)
@@ -281,6 +285,23 @@ local function Time(sDate, isUTC, _testMS)
 	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
 		local days = string.match(rule, 'on% (.+)$')
+		if (isEmpty(days)) then
+			return nil
+		end
+
+		local isDayRule = false
+		for i,day in pairs({'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'}) do
+			if (string.find(days, day) ~= nil) then
+				isDayRule = true
+				break
+			end
+		end
+
+		if (not isDayRule) then
+			return nil
+		end
+
+		local days = string.match(rule, 'on% (.+)$')
 		if (days ~= nil) then
 			-- 'on <day>' was specified
 			local hasDayMatch = string.find(days, self.dayAbbrOfWeek)
@@ -310,17 +331,16 @@ local function Time(sDate, isUTC, _testMS)
 			return nil
 		end
 
+		-- from here on, if there is a match we return true otherwise false
+
 		-- remove spaces and add a comma
-		weeks = string.gsub(weeks, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a ,
+		weeks = string.gsub(weeks, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
 
 		-- do a quick scan first to see if we already have a match without needing to search for ranges
 		if (string.find(weeks, tostring(self.week) .. ',')) then
 			return true
 		end
 
-		local isEmpty = function(v)
-			return (v == nil or v == '')
-		end
 		-- now get the ranges
 		for set, from, to in string.gmatch(weeks, '(([0-9]*)-([0-9]*))') do
 			to = tonumber(to)
@@ -338,7 +358,72 @@ local function Time(sDate, isUTC, _testMS)
 			end
 		end
 
-		return nil
+		return false
+	end
+
+	function self.ruleIsOnDate(rule)
+		local dates = string.match(rule, 'on% ([0-9%*%/%,% %-]*)')
+		if (isEmpty(dates)) then
+			return nil
+		end
+		-- remove spaces and add a comma
+		dates = string.gsub(dates, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
+
+		-- do a quick scan first to see if we already have a match without needing to search for ranges and wildcards
+		if (string.find(dates, tostring(self.day) .. '/' .. tostring(self.month) .. ',')) then
+			return true
+		end
+
+		-- wildcards
+		for set, day, month in string.gmatch(dates, '(([0-9%*]*)/([0-9%*]*))') do
+			if (day == '*' and month ~= '*') then
+				if (self.month == tonumber(month)) then
+					return true
+				end
+			end
+			if (day ~= '*' and month == '*') then
+				if (self.day == tonumber(day)) then
+					return true
+				end
+			end
+		end
+
+		local getParts = function(set)
+			local day, month = string.match(set, '([0-9]+)/([0-9]+)')
+			return tonumber(day), tonumber(month)
+		end
+
+		--now get the ranges
+		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
+			local fromDay, toDay, fromMonth, toMonth
+
+			if (isEmpty(fromSet) and not isEmpty(toSet)) then
+				toDay, toMonth = getParts(toSet)
+				if ((self.month < toMonth) or (self.month == toMonth and self.day <= toDay)) then
+					return true
+				end
+			end
+
+			if (not isEmpty(fromSet) and isEmpty(toSet)) then
+				fromDay, fromMonth = getParts(fromSet)
+				if ((self.month > fromMonth) or (self.month == fromMonth and self.day >= fromDay)) then
+					return true
+				end
+			end
+
+			toDay, toMonth = getParts(toSet)
+			fromDay, fromMonth = getParts(fromSet)
+			if (
+				( self.month > fromMonth and self.month < toMonth ) or
+				( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
+				( self.month == fromMonth and self.day >= fromDay ) or
+				( self.month == toMonth and self.day <= toDay )
+			) then
+				return true
+			end
+		end
+
+		return false
 	end
 
 	--returns true if self.time is at sunrise
@@ -623,7 +708,6 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		return timeIsInRange(fromHH, fromMM, toHH, toMM)
-
 	end
 
 	-- returns true if self.time matches the rule
@@ -643,6 +727,22 @@ local function Time(sDate, isUTC, _testMS)
 			total = res ~= nil and (total or res) or total
 		end
 
+		res = self.ruleIsInWeek(rule)
+		if (res == false) then
+			-- in week <weeks> was specified but 'now' is not
+			-- on any of the specified weeks
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsOnDate(rule)
+		if (res == false) then
+			-- on date <dates> was specified but 'now' is not
+			-- on any of the specified dates
+			return false
+		end
+		updateTotal(res)
+
 		res = self.ruleIsOnDay(rule) -- range
 		if (res == false) then
 			-- on <days> was specified but 'now' is not
@@ -650,7 +750,6 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
-
 
 		local _between = self.ruleMatchesBetweenRange(rule) -- range
 		if (_between == false) then
@@ -750,8 +849,6 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
-
-
 
 		return total
 

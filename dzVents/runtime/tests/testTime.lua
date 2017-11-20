@@ -167,7 +167,7 @@ describe('Time', function()
 			assert.is_same(23, t.week)
 			t = Time('2017-01-01 02:04:00')
 			assert.is_same(52, t.week)
-			t = Time('2016-01-01 02:04:00') 
+			t = Time('2016-01-01 02:04:00')
 			assert.is_same(53, t.week)
 		end)
 
@@ -955,9 +955,9 @@ describe('Time', function()
 					assert.is_true(t.ruleIsInWeek('every even week'))
 				end)
 
-				it('should return nil if week is not in rule', function()
+				it('should return false if week is not in rule', function()
 					local t = Time('2017-06-05 02:04:00') -- week 23
-					assert.is_nil(t.ruleIsInWeek('in week 2,4,5'))
+					assert.is_false(t.ruleIsInWeek('in week 2,4,5'))
 				end)
 
 				it('should return nil when no weeks are provided', function()
@@ -977,12 +977,69 @@ describe('Time', function()
 
 				end)
 
-				it('should return nil when not in range', function()
+				it('should return false when not in range', function()
 					local t = Time('2017-06-05 02:04:00') -- week 23
-					assert.is_nil(t.ruleIsInWeek('in week 25-'))
-					assert.is_nil(t.ruleIsInWeek('in week 25-66'))
+					assert.is_false(t.ruleIsInWeek('in week 25-'))
+					assert.is_false(t.ruleIsInWeek('in week 25-66'))
 				end)
 
+			end)
+
+			describe('on date', function()
+
+				it('should return true when on date', function()
+					local t = Time('2017-06-05 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 5/6'))
+					assert.is_true(t.ruleIsOnDate('on 1/1-2/2,31/12,5/6,1/1'))
+
+				end)
+
+				it('should return true when */mm', function()
+					local t = Time('2017-06-05 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on */6'))
+					assert.is_true(t.ruleIsOnDate('on 12/12, 4/5,*/6,*/8'))
+				end)
+
+				it('should return true when dd/*', function()
+					local t = Time('2017-06-05 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 5/*'))
+					assert.is_true(t.ruleIsOnDate('on 12/12, 4/5,5/*,*/8'))
+				end)
+
+				it('should return true when in range', function()
+					local t = Time('2017-06-20 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
+
+					t = Time('2017-05-20 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
+
+					t = Time('2017-05-21 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
+
+					t = Time('2017-06-20 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 20/5-22/6'))
+
+					t = Time('2017-06-22 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 1/2, 20/5-22/6, 1/11-2/11'))
+
+					t = Time('2017-06-22 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 1/2, 22/6-23/6, 1/11-2/11'))
+
+					t = Time('2017-06-22 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 1/2, -23/6, 1/11-2/11'))
+					t = Time('2017-06-22 02:04:00')
+					assert.is_true(t.ruleIsOnDate('on 1/2, 20/6-, 1/11-2/11'))
+				end)
+
+				it('should return false when not in range', function()
+					local t = Time('2017-06-20 02:04:00')
+					assert.is_false(t.ruleIsOnDate('on 1/2, 20/5-22/5, 1/11-2/11'))
+				end)
+
+				it('should return nil if rule is not there', function()
+					local t = Time('2017-06-05 02:04:00') -- week 23
+					assert.is_nil(t.ruleIsOnDate('iek 23'))
+				end)
 			end)
 
 		end)
@@ -998,7 +1055,7 @@ describe('Time', function()
 
 			end)
 
-			it('at sunset on mon', function()
+			it('#tag at sunset on mon', function()
 				_G.timeofday = { ['SunsetInMinutes'] = 64 }
 				local t = Time('2017-06-05 01:04:00') -- on monday
 				assert.is_true(t.matchesRule('at sunset on mon'))
@@ -1055,6 +1112,30 @@ describe('Time', function()
 				assert.is_true(t.matchesRule('at daytime every 5 minutes at 15:00-16:00 on mon'))
 			end)
 
+			it('in week 47 on mon', function()
+				local t = Time('2017-11-20 16:00:00') -- on monday
+				assert.is_true(t.matchesRule('in week 47 on mon'))
+
+				t = Time('2017-11-21 16:00:00') -- on monday
+				assert.is_false(t.matchesRule('in week 47 on mon'))
+			end)
+
+			it('in week 40-50 on mon', function()
+				local t = Time('2017-11-20 16:00:00') -- on monday, wk47
+				assert.is_true(t.matchesRule('in week 40-50 on mon'))
+				assert.is_false(t.matchesRule('in week 1 on mon'))
+			end)
+
+			it('on date 20/11', function()
+				local t = Time('2017-11-20 16:00:00') -- on monday, wk47
+				assert.is_true(t.matchesRule('on 20/11'))
+				assert.is_true(t.matchesRule('on 20/10-20/12 on mon'))
+				assert.is_false(t.matchesRule('on 20/11-22/11 on fri'))
+
+				assert.is_true(t.matchesRule('on 20/* on mon'))
+
+			end)
+
 			it('every 10 minutes between 2 minutes after sunset and 22:33 on mon,fri', function()
 				_G.timeofday = {
 					['SunriseInMinutes'] = 360, -- 06:00
@@ -1076,6 +1157,28 @@ describe('Time', function()
 				assert.is_false(t.matchesRule(rule))
 			end)
 
+			it('every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri', function()
+				_G.timeofday = {
+					['SunriseInMinutes'] = 360, -- 06:00
+					['SunsetInMinutes'] = 1080
+				}
+
+				local rule = 'every 10 minutes between 2 minutes after sunset and 22:33 on 20/11-20/12 in week 49 on mon,fri'
+
+				local t = Time('2017-11-21 18:10:00') -- on tue, week 47
+				assert.is_false(t.matchesRule(rule))
+
+				t = Time('2017-11-24 18:10:00') -- on fri, week 47
+				assert.is_false(t.matchesRule(rule))
+
+				t = Time('2017-12-08 18:10:00') -- on fri, week 49
+				assert.is_true(t.matchesRule(rule))
+
+				t = Time('2017-12-04 18:10:00') -- on mon, week 49
+				assert.is_true(t.matchesRule(rule))
+
+			end)
+
 			it('at nighttime at 21:32-05:44 every 5 minutes', function()
 				_G.timeofday = { ['Nighttime'] = true }
 				local t = Time('2017-06-05 01:05:00') -- on monday
@@ -1091,6 +1194,7 @@ describe('Time', function()
 				local t = Time('2017-06-05 16:00:00') -- on monday
 				assert.is_false(t.matchesRule('boe bahb ladsfak'))
 			end)
+
 
 		end)
 

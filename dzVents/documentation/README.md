@@ -406,7 +406,7 @@ return {
 
 
 ## *timer* trigger rules
-There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format) :
+There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm) :
 
     on = {
 	    timer = {
@@ -441,10 +441,21 @@ There are several options for time triggers. It is important to know that Domoti
 	        'at daytime',                -- between sunrise and sunset
 	        'at daytime on mon,tue',     -- between sunrise and sunset
 	                                        only on Mondays and Tuesdays
+			'in week 12,44'              -- in week 12 or 44
+			'in week 20-25,33-47'        -- between week 20 and 25 or week 33 and 47
+			'in week -12, 33-'           -- week <= 12 or week >= 33
+			'every odd week',
+			'every even week',           -- odd or even numbered weeks
+			'on 23/11',                  -- on 23rd of november (dd/mm)
+			'on 23/11-25/12',            -- between 23/11 and 25/12
+			'on 2/3-18/3',11/8,10/10-14/10',
+			'on */2,15/*',               -- every day in February or
+			                             -- every 15th day of the month
+            'on -3/4,4/7-',              -- before 3/4 or after 4/7
 
-	        -- or if you want to go really wild:
+	        -- or if you want to go really wild and combine them:
 	        'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
-	        'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue'
+	        'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue on 20/5-18/8'
 
 			-- or just do it yourself:
 	        function(domoticz)
@@ -456,7 +467,9 @@ There are several options for time triggers. It is important to know that Domoti
 	   },
    }
 
-Be mindful of the logic if using multiple types of timer trigger. It may not make sense to combine a trigger for a specific or instantaneous time with a trigger for a span or sequence of times (like 'at sunset' with 'every 6 minutes') in the same construct. Similarly, `'between aa and bb'` only makes sense with instantaneous times for `aa` and `bb`.
+The timer events are triggered every minute. If such a trigger occurs, dzVents will scan all timer-based events and will evaluate the timer rules. So, if you have a rule `on mon` then the script will be executed *every minute* but only on Monday.
+
+Be mindful of the logic if using multiple types of timer triggers. It may not make sense to combine a trigger for a specific or instantaneous time with a trigger for a span or sequence of times (like 'at sunset' with 'every 6 minutes') in the same construct. Similarly, `'between aa and bb'` only makes sense with instantaneous times for `aa` and `bb`.
 
 **One important note: if Domoticz, for whatever reason, skips a timer event then you may miss the trigger! Therefore, you should build in some fail-safe checks or some redundancy if you have critical time-based stuff to control. There is nothing dzVents can do about it**
 
