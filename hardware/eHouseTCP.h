@@ -23,15 +23,12 @@ class eHouseTCP :  public  CDomoticzHardwareBase
 {
 public:
     eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro,const int opta, const int optb);
- 	//eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval);
-	//virtual 
+ 	//virtual 
 		~eHouseTCP();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-		int eHouseTCP::ConnectTCP();
+		int ConnectTCP();
 		void AddTextEvents(unsigned char *ev, int size);
-		signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);
-        //void UDPListener(void);  //for eHouse4Ethernet devices and eHouse1 via CommManager
-       
+		signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);       
 private:
 	int m_modelIndex;
 	bool m_data32;
@@ -44,7 +41,7 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	unsigned char m_newData[7];
 
-	// password to eHouse
+	// password to eHouse 6 ascii chars
 	unsigned char m_userCode[8];
 
 	boost::mutex m_mutex;

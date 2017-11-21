@@ -1570,7 +1570,7 @@ typedef struct WiFieHouseNamesT
     double CalibrationV[4];
     double OffsetV[4];
     //char    TextStatus[100];
-    unsigned char BinaryStatus[25];
+    unsigned char BinaryStatus[50];
     //unsigned char BinaryStatusPrv[25];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;

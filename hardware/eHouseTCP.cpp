@@ -548,10 +548,10 @@ int eHouseTCP::ConnectTCP()
 	unsigned char challange[30];
 #ifndef WIN32
 	struct timeval timeout;
-	timeout.tv_sec = 10;
-	timeout.tv_usec = 0;	//100ms for delay
-	if (eHEnableProDiscovery) timeout.tv_sec = 10000;
-	if (eHEnableAutoDiscovery) timeout = 30000;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 200000;	//100ms for delay
+	if (eHEnableProDiscovery) timeout.tv_sec = 10;
+	if (eHEnableAutoDiscovery) timeout.tv_sec = 30;
 #else
 	unsigned int	timeout = 200;	//ms for TCPIP
 	if (eHEnableProDiscovery) timeout = 10000;

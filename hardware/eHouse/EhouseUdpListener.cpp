@@ -1182,10 +1182,18 @@ void eHouseTCP::TerminateUDP(void)
 	if (ViaTCP)
 		{
 		unsigned long iMode = 1;
+#ifdef WIN32
 		int status = ioctlsocket(TCPSocket, FIONBIO, &iMode);
+#else
+		int status = ioctl(TCPSocket, FIONBIO, &iMode);
+#endif
 		if (status == SOCKET_ERROR)
 			{
+#ifdef WIN32
 			_log.Log(LOG_STATUS, "ioctlsocket failed with error: %d", WSAGetLastError());
+#else
+			_log.Log(LOG_STATUS, "ioctlsocket failed with error",);
+#endif
 			//closesocket(TCPSocket);
 			//WSACleanup();
 			//return -1;
@@ -3074,14 +3082,25 @@ void eHouseTCP::Do_Work()
 	  char dta[2];
 	  dta[0] = 0;
 	  send(TCPSocket, dta, 1, 0);
+#ifdef WIN32
 	  flushall();
-
+#else
 	  //fflush(&TCPSocket);
+#endif
+	  
 	  unsigned long iMode = 1;
+#ifdef WIN32
 	  int status = ioctlsocket(TCPSocket, FIONBIO, &iMode);
+#else
+	  int status = ioctl(TCPSocket, FIONBIO, &iMode);
+#endif
 	  if (status == SOCKET_ERROR)
 		  {
-		  _log.Log(LOG_STATUS, "ioctlsocket failed with error: %d\n", WSAGetLastError());
+#ifdef WIN32
+		  _log.Log(LOG_STATUS, "ioctlsocket failed with error: %d", WSAGetLastError());
+#else
+		  _log.Log(LOG_STATUS, "ioctlsocket failed with error");
+#endif
 		  //closesocket(TCPSocket);
 		  //WSACleanup();
 		  //return -1;
