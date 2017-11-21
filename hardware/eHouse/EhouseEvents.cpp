@@ -35,7 +35,7 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <stropts.h>
+//#include <stropts.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <net/if.h>
