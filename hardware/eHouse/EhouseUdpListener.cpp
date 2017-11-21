@@ -1192,7 +1192,7 @@ void eHouseTCP::TerminateUDP(void)
 #ifdef WIN32
 			_log.Log(LOG_STATUS, "ioctlsocket failed with error: %d", WSAGetLastError());
 #else
-			_log.Log(LOG_STATUS, "ioctlsocket failed with error",);
+			_log.Log(LOG_STATUS, "ioctlsocket failed with error");
 #endif
 			//closesocket(TCPSocket);
 			//WSACleanup();
