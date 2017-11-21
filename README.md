@@ -238,16 +238,16 @@ UA:
 
 	
 HW				OS			Compilation 			LAN UDP/TCP		Internet TCP/IP		100% Tested			eHouse Controllers
-PC x64(2,4,8)	Win 7		+VS2017 Community		+				+					+ (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
-PC x64			Win 8.1		+VS2017 Community		-				-					-					12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
-PC x64			Win 10		+VS2017 Community		-				-					- (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
-PC x64			Ubuntu 16		CMAKE				+				+					+ (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
-PC x64			Ubuntu 17		CMAKE				+				+					+ (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
-RPI1			Raspbian 		CMAKE				-				-					- 					- 1 ERM, PRO - stability test without WWW interface utilization (	~ 300 domoticz points/devices)
-RPI2			Raspbian		CMAKE				+				-					- (continuous)		12*RM,HM, 12*AURA, PRO128/128  (~1000 domoticz points/devices) + eHouse.PRO Server
-RPI3			Raspbian		CMAKE				+				+					+ (*/continuous) 	12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)+ eHousePRO Server
-+ success
-- not tested
+- PC x64(2,4,8)	Win 7		+VS2017 Community		(+)				(+)					(+) (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
+- PC x64		Win 8.1		+VS2017 Community		(-)				(-)					(-)					12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
+- PC x64		Win 10		+VS2017 Community		(-)				(-)					(-) (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
+- PC x64		Ubuntu 16		CMAKE				(+)				(+)					(+) (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
+- PC x64		Ubuntu 17		CMAKE				(+)				(+)					(+) (*)				12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)
+- RPI1			Raspbian 		CMAKE				(-)				(-)					(-) 				(-) 1 ERM, PRO - stability test without WWW interface utilization (	~ 300 domoticz points/devices)
+- RPI2			Raspbian		CMAKE				(+)				(-)					(-) (continuous)	12*RM,HM, 12*AURA, PRO128/128  (~1000 domoticz points/devices) + eHouse.PRO Server
+- RPI3			Raspbian		CMAKE				(+)				(+)					(+) (*/continuous) 	12*RM,HM, 12*AURA, PRO128/128, 12*ERM,CM, 22*WIFI (~1900 domoticz points/devices)+ eHousePRO Server
+(+) success
+(-) not tested
 (*) - sugested platforms
 
 
