@@ -294,6 +294,10 @@ push/InfluxPush.cpp
 push/WebsocketPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
+hardware/eHouse/EhouseEvents.cpp
+hardware/eHouseTCP.cpp
+hardware/eHouse/EhouseUdpListener.cpp
+hardware/eHouse/EhouseTcpClient.cpp
 hardware/1Wire.cpp
 hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp

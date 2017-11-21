@@ -131,7 +131,7 @@
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/EnphaseAPI.h"
-
+#include "../hardware/eHouseTCP.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -760,6 +760,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MQTT:
 		//LAN
 		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
+		break;
+	case HTYPE_eHouseTCP:	//eHouse Pro and other via PRO gateway
+		//LAN
+		pHardware = new eHouseTCP(ID,Address,Port, Password,Mode1,Mode2,Mode3,Mode4,Mode5,Mode6);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN

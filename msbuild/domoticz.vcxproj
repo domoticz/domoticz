@@ -14,7 +14,7 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,9 +44,12 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>$(IncludePath);</IncludePath>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
+    <OutDir>d:\isys\e-house\domoticz\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -444,6 +447,18 @@
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\EnphaseAPI.h" />
@@ -706,6 +721,24 @@
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
