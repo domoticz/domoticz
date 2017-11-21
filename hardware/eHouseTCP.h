@@ -120,26 +120,25 @@ private:
 	signed int hex2bin(const unsigned char *st, int offset);
 	
 	int eHouseUDPSocket;		//UDP socket handler
-	int UDP_PORT=6789;			//Default UDP PORT
+	int UDP_PORT;			//Default UDP PORT
 	unsigned char nr_of_ch;	
-	//static int cleanup_pop_arg = 0;
-	char DEBUG_AURA = 0;		//Debug Aura
-	char CHANGED_DEBUG = 0;
+	char DEBUG_AURA;		//Debug Aura
+	char CHANGED_DEBUG;
 	unsigned char *dta;
-	unsigned disablers485 = 0;
-	unsigned char StatusDebug = 0,	//Log status reception
-		IRPerform = 0,				//Perform InfraRed signals
-		ViaCM = 0;					//eHouse RS-485 via CommManager
+	unsigned disablers485;
+	unsigned char StatusDebug,	//Log status reception
+		IRPerform,				//Perform InfraRed signals
+		ViaCM ;					//eHouse RS-485 via CommManager
 
 	volatile unsigned char eHStatusReceived;			//eHouse1 status received flag
-	int CloudStatusChanged = 0;							//data changed => must be updated
-	unsigned char   COMMANAGER_IP_HIGH = 0,				//initial addresses of different controller types
-	COMMANAGER_IP_LOW = 254,
-	INITIAL_ADDRESS_LAN = 200,
-	INITIAL_ADDRESS_WIFI = 100;
-	volatile unsigned char UDP_terminate_listener = 0;    //terminate udp listener service
-	volatile unsigned char eHEStatusReceived = 0;         //Ethernet eHouse status received flag (count of status from reset this flag)
-	volatile unsigned char eHWiFiStatusReceived = 0;      //eHouse WiFi status received flag (count of status from reset this flag)
+	int CloudStatusChanged;							//data changed => must be updated
+	unsigned char   COMMANAGER_IP_HIGH,				//initial addresses of different controller types
+	COMMANAGER_IP_LOW,
+	INITIAL_ADDRESS_LAN,
+	INITIAL_ADDRESS_WIFI;
+	volatile unsigned char UDP_terminate_listener;    //terminate udp listener service
+	volatile unsigned char eHEStatusReceived;         //Ethernet eHouse status received flag (count of status from reset this flag)
+	volatile unsigned char eHWiFiStatusReceived;      //eHouse WiFi status received flag (count of status from reset this flag)
 
 
 

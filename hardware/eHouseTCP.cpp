@@ -398,6 +398,27 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_stoprequested(false),
 	m_pollInterval(pollInterval)
     {
+	eHouseUDPSocket=-1;		//UDP socket handler
+	UDP_PORT = 6789;			//Default UDP PORT
+	nr_of_ch=0;
+	DEBUG_AURA = 0;		//Debug Aura
+	CHANGED_DEBUG = 0;
+	disablers485 = 0;
+	StatusDebug = 0;	//Log status reception
+	IRPerform = 0;				//Perform InfraRed signals
+	ViaCM = 0;					//eHouse RS-485 via CommManager
+
+	eHStatusReceived=0;			//eHouse1 status received flag
+	CloudStatusChanged = 0;							//data changed => must be updated
+	COMMANAGER_IP_HIGH = 0;				//initial addresses of different controller types
+	COMMANAGER_IP_LOW = 254;
+	INITIAL_ADDRESS_LAN = 200;
+	INITIAL_ADDRESS_WIFI = 100;
+	UDP_terminate_listener = 0;    //terminate udp listener service
+	eHEStatusReceived = 0;         //Ethernet eHouse status received flag (count of status from reset this flag)
+	eHWiFiStatusReceived = 0;      //eHouse WiFi status received flag (count of status from reset this flag)
+
+
     eHEnableAutoDiscovery = AutoDiscovery;
     eHEnableAlarmInputs   = EnableAlarms;
     eHEnableProDiscovery  = EnablePro;
