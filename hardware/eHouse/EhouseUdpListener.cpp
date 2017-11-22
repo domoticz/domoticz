@@ -40,7 +40,7 @@ int HeartBeat=0;
 #endif
 //        #include <iostream>
         #include <sys/types.h>
-char ViaTCP = 0;
+
 #ifndef WIN32
         #include <sys/socket.h>
         #include <netdb.h>
@@ -150,7 +150,7 @@ void deb(char *prefix,unsigned char *dta, int size);
     INPUTS_COUNT_ERM              = 48,//96,   //Maximal nr of inputs for ethernet devices
     DIMMERS_COUNT_RM              = 3;         //dimers count
 */
-
+/*
 struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
 signed int IndexOfeHouseRS485(unsigned char devh,unsigned char devl);
 extern void CalculateAdcWiFi(char index);
@@ -211,7 +211,7 @@ SatelNames                  SatelN[MAX_SATEL];
 SatelStatus                 SatelStat[MAX_SATEL];
 #endif
 
-
+*/
 
 
 //alocate dynamically names structure only during discovery of eHouse PRO controller
@@ -2547,7 +2547,7 @@ void eHouseTCP::Do_Work()
 				closesocket(TCPSocket);				// Try close socket
 				TCPSocket = -1;
 				ssl(6);
-				TCPSocket = ConnectTCP();				// Reconect
+				TCPSocket = ConnectTCP(0);				// Reconect
 														//	goto RETRY;							// Go to start
 				}
 			continue;								//if UDP just ignore errors

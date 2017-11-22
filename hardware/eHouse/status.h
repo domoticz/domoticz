@@ -1404,7 +1404,7 @@ typedef char StringN[2];
 //Names for GUI interface eHouse1
 typedef struct eHouse1NamesT
 {
-	char		INITIALIZED;
+	char		INITIALIZED=0;
     int         AddrH;          //Address H
     int         AddrL;          //Address L
     struct timeval tim;         //Recent status
@@ -1475,7 +1475,7 @@ typedef struct eHouseCANNamesT
 
 typedef struct EtherneteHouseNamesT
 {
-	char        INITIALIZED;
+	char        INITIALIZED=0;
     int         AddrH;          //Address H
     int         AddrL;          //Address L
     char   DevAddr[7];             //Address Combined
@@ -1514,7 +1514,7 @@ typedef struct EtherneteHouseNamesT
 /////////////////////////////////////////////
 typedef struct AuraNamesT
 {
-	unsigned char	      INITIALIZED;
+	unsigned char	      INITIALIZED=0;
     unsigned char         AddrH;    //Address H
     unsigned char         AddrL;    //Address L
     unsigned long         ID;       //Aura Identifier
@@ -1542,7 +1542,7 @@ unsigned char StatusTimeOut;
 
 typedef struct WiFieHouseNamesT
 {
-	char  INITIALIZED;
+	char  INITIALIZED=0;
     int         AddrH;          //Address H
     int         AddrL;          //Address L
     char   DevAddr[7];             //Address Combined
@@ -1582,7 +1582,7 @@ typedef struct WiFieHouseNamesT
 /////////////////////////////////////////////////////////////////////////////////
 typedef struct eHouseProNamesT
 {
-	char INITIALIZED;
+	char INITIALIZED=0;
     int    AddrH[5];          //Address H
     int    AddrL[5];          //Address L
     char   DevAddr[7];          //Address Combined
@@ -1642,7 +1642,7 @@ typedef struct SatelT
 
 typedef struct CommManagerNamesT
     {
-	char INITIALIZED;
+	char INITIALIZED=0;
     int         AddrH;          //Address H
     int         AddrL;          //Address L
     char   DevAddr[7];          //Address Combined
@@ -1854,7 +1854,7 @@ extern struct CtrlADCT			*(adcs[MAX_AURA_DEVS]);
 
 #endif
 //////////////////////////////////////
-extern struct EventQueueT		*(EvQ[EVENT_QUEUE_MAX]);
+//extern struct EventQueueT		*(EvQ[EVENT_QUEUE_MAX]);
 
 
 #ifndef REMOVEUNUSED

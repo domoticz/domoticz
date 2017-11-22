@@ -257,7 +257,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
 		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
-		{HTYPE_eHouseTCP,"eHouse UDP+TCP  - LAN Interface"},
+		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

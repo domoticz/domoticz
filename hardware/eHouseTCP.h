@@ -12,11 +12,6 @@
 #include <map>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-extern unsigned char eHEnableAutoDiscovery;
-extern unsigned char eHEnableProDiscovery;
-extern unsigned char eHEnableAlarmInputs;
-extern unsigned int  eHOptA;
-extern unsigned int  eHOptB;
 
 class eHouseTCP :  public  CDomoticzHardwareBase
             
@@ -26,10 +21,91 @@ public:
  	//virtual 
 		~eHouseTCP();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
-		int ConnectTCP();
+		int ConnectTCP(unsigned int ip);
 		void AddTextEvents(unsigned char *ev, int size);
 		signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);       
+		unsigned char eHEnableAutoDiscovery;
+		unsigned char eHEnableProDiscovery;
+		unsigned char eHEnableAlarmInputs;
+		unsigned int  eHOptA;
+		unsigned int  eHOptB;
+
 private:
+	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
+	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
+	void CalculateAdcWiFi(char index);
+
+
+	//Variables stored dynamically added during status reception (should be added sequentially)
+	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
+	struct CommManagerNamesT        *ECMn = NULL;
+	union CMStatusT					*ECM=0;
+	union CMStatusT					*ECMPrv=0;				//Previous statuses for Update MSQL optimalization  (change data only updated)
+	struct eHouseProNamesT          *eHouseProN=0;
+	union eHouseProStatusUT			*eHouseProStatus=0;
+	union eHouseProStatusUT         *eHouseProStatusPrv=0;
+	void InitStructs(void);
+
+	union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
+	union ERMFullStatT             *(eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);  	//full ERM status decoded previous for detecting changes
+
+	union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX + 1]);  				//full RM status decoded
+	union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);  			//full RM status decoded previous for detecting changes
+
+
+	struct EventQueueT				*(EvQ[EVENT_QUEUE_MAX]);		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+	struct AURAT                    *(AuraDev[MAX_AURA_DEVS]);		// Aura status thermostat
+	struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
+	struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);
+
+#ifndef REMOVEUNUSED
+	CANStatus 				eHCAN[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRF[EHOUSE_RF_MAX];
+	CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
+
+	eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
+	CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
+	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
+#endif
+
+	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX]);			//full wifi status 
+	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX]);		//full wifi status previous for detecting changes
+
+
+
+#ifndef REMOVEUNUSED
+	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
+	WIFIFullStat            eHCANs[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFs[EHOUSE_RF_MAX];
+#endif
+	struct eHouse1NamesT                *(eHn[EHOUSE1_RM_MAX + 1]);			//names of i/o for rs-485 controllers
+	struct EtherneteHouseNamesT         *(eHEn[ETHERNET_EHOUSE_RM_MAX + 1]);	//names of i/o for Ethernet controllers
+	struct WiFieHouseNamesT             *(eHWIFIn[EHOUSE_WIFI_MAX + 1]);		//names of i/o for WiFi controllers
+
+#ifndef REMOVEUNUSED
+	eHouseCANNames              eHCANn[EHOUSE_RF_MAX + 1];
+	eHouseCANNames              eHCANRFn[EHOUSE_RF_MAX + 1];
+	SatelNames                  SatelN[MAX_SATEL];
+	SatelStatus                 SatelStat[MAX_SATEL];
+#endif
+
+	unsigned char COMMANAGER_IP_HIGH;        //default CommManager Ip addr h
+	unsigned char COMMANAGER_IP_LOW;         //default CommManager Ip addr l
+	unsigned char EHOUSE_PRO_HIGH;           //default eHouse Pro Server IP addr h
+	unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
+	char VendorCode[6];
+	int TCPSocket;
+//	char ViaTCP;
+	unsigned char DEBUG_TCPCLIENT;
+	unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
+	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
+	int EHOUSE_TCP_PORT;
+
+
+
+	int AddrH, AddrL; //address high & low for controller type detection & construct idx
 	int m_modelIndex;
 	bool m_data32;
 	sockaddr_in m_addr;
@@ -40,7 +116,7 @@ private:
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	unsigned char m_newData[7];
-
+	unsigned char DisablePerformEvent;
 	// password to eHouse 6 ascii chars
 	unsigned char m_userCode[8];
 
@@ -71,7 +147,7 @@ private:
 	void eHaloc(int eHEIndex, int devaddrh, int devaddrl);
 	void eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl);
 	unsigned char IsCM(unsigned char addrh, unsigned char addrl);
-	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
+	//signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
 	void UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
 	void UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
@@ -82,7 +158,7 @@ private:
 	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
 	float getAdcVolt2(int index);
 	void CalculateAdc2(char index);
-	void CalculateAdcWiFi(char index);
+//	void CalculateAdcWiFi(char index);
 	void CalculateAdcEH1(char index);
 	void deb(char *prefix, unsigned char *dta, int size);
 	void GetStr(unsigned char *GetNamesDta);
@@ -114,32 +190,107 @@ private:
 	void performTCPClientThreads();
 	int  getrealERMpgm(int32_t ID, int level); 
 	int  getrealRMpgm(int32_t ID, int level);
+	void ExecEvent(unsigned int i);
+//	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);
+
 	signed int GetIndexOfEvent(unsigned char *TempEvent);
 	void ExecQueuedEvents(void);
-	void ExecEvent(unsigned int i);
+//	void ExecEvent(unsigned int i);
 	signed int hex2bin(const unsigned char *st, int offset);
-	
+	char ViaTCP;
+	int PlanID;
+	int HwID=-1;
 	int eHouseUDPSocket;		//UDP socket handler
 	int UDP_PORT;			//Default UDP PORT
 	unsigned char nr_of_ch;	
 	char DEBUG_AURA;		//Debug Aura
 	char CHANGED_DEBUG;
+	unsigned int EventsCountInQueue = 0;      //Events In queue count to bypass processing EventQueue when it is empty
+//	struct eHouseProNamesT *eHouseProN;
+	char PassWord[6];
+	int HeartBeat;
+	unsigned char ViaCM;
+	//unsigned char eHEStatusReceived;   //Ethernet eHouse status received flag
+	//unsigned char eHWiFiStatusReceived;   //WiFi eHouse status received flag
+	//unsigned char eHStatusReceived;    //eHouse1 status received flag
+	unsigned char eHouse1FrameEmpty;      //eHouse1 bus free after reception of all status for Safer Event submissions
+
+	 unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;
+
 	unsigned char *dta;
 	unsigned disablers485;
 	unsigned char StatusDebug,	//Log status reception
-		IRPerform,				//Perform InfraRed signals
-		ViaCM ;					//eHouse RS-485 via CommManager
+		IRPerform;				//Perform InfraRed signals
+		
 
-	volatile unsigned char eHStatusReceived;			//eHouse1 status received flag
+	unsigned char eHStatusReceived;			//eHouse1 status received flag
 	int CloudStatusChanged;							//data changed => must be updated
-	unsigned char   COMMANAGER_IP_HIGH,				//initial addresses of different controller types
-	COMMANAGER_IP_LOW,
-	INITIAL_ADDRESS_LAN,
-	INITIAL_ADDRESS_WIFI;
-	volatile unsigned char UDP_terminate_listener;    //terminate udp listener service
-	volatile unsigned char eHEStatusReceived;         //Ethernet eHouse status received flag (count of status from reset this flag)
-	volatile unsigned char eHWiFiStatusReceived;      //eHouse WiFi status received flag (count of status from reset this flag)
+/*	unsigned char   COMMANAGER_IP_HIGH,				//initial addresses of different controller types
+	COMMANAGER_IP_LOW,*/
+	unsigned char   INITIAL_ADDRESS_LAN;
+	unsigned char   INITIAL_ADDRESS_WIFI;
+	unsigned char UDP_terminate_listener;    //terminate udp listener service
+	unsigned char eHEStatusReceived;         //Ethernet eHouse status received flag (count of status from reset this flag)
+	unsigned char eHWiFiStatusReceived;      //eHouse WiFi status received flag (count of status from reset this flag)
+	//static void * EhouseSubmitData(void *ptr);
+typedef struct TcpClientConT
+        {
+        int Socket;                             //TCP Client Sockets for paralel operations
+        unsigned char Events[255u];             //Event buffer for current socket
+        //unsigned char TimeOut;                //TimeOut for current client connection in 0.1s require external thread or non blocking socket
+        //Active connections to Ehouse Controllers to avoid multiple connection to the same device
+        signed int ActiveConnections;        //index of status matrix eHE[] or ETHERNET_EHOUSE_RM_MAX for CM
+        unsigned char AddrH;                    //destination IP byte 3
+        unsigned char AddrL;                    //destination IP byte 4
+        unsigned char EventSize;                //size of event to submit
+        unsigned char EventsToRun[MAX_EVENTS_IN_PACK];            //Events to send in One Pack
+        unsigned char OK;
+        unsigned char NotFinished;
+//        unsigned char Stat;                   //Status of client
+        } TcpClientCon;
+TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of multi-threading
+char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
+void EhouseSubmitData(int SocketIndex);
+void eHType(int devtype, char *dta);
+typedef struct tModel {
+	unsigned int type;          //controller type / interface
+	unsigned int  id;           //id for controller type detection 
+	unsigned int  addrh;        //address high (for LAN wariant 192.168.addrh.addrl
+	unsigned int  addrlfrom;    //minimal address low value
+	unsigned int addrlto;       //maximal address low value
+	const char*   name;         //Controller Name
+								// count of signals for controller        
+	unsigned int  inputs;       //inputs on/off (binary)
+	unsigned int  outputs;      //outputs on/off (binary)
+	unsigned int  adcs;         //adc measurement 
+	unsigned int  dimmers;      //dimmers - PWM
+	unsigned char drives;       //2 outputs drive control
+	unsigned int  zones;        //security zones count
+	unsigned int  programs;     //outputs+dimmers programs
+	unsigned char adcprograms;  //adc measurement+regulation programs
+	unsigned char secuprograms; //drives count
+} Model;
 
-
+#define TOT_MODELS 13
+static Model models[TOT_MODELS] =
+{
+	//Non LAN/IP variants
+	//type  id    h   lmin  lmax   name                         inp  out  adc  dim drv zon pgm  apg  spg
+	/*rs485*/{ EH_RS485,    0x1,  1,    1,   1,    "HeatManager - RS-485"      , 0,  21,  16,  3,  0,  0,  24,    0,  0 },
+	{ EH_RS485,    0x2,  2,    1,   1,    "ExternalManager - RS-485"  , 12, 2,    8,  3, 14,  0,   0,    0,  24 },
+	{ EH_RS485,    0x3,  55,   1, 254,   "RoomManager - RS-485"       , 12, 32,   8,  3,  0,  0,  24,    0,  0 },
+	/*canrf*/{ EH_CANRF,    0x79, 0x79, 1, 128,   "CAN/RF - RF (863MHz)"       , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
+	{ EH_CANRF,    0x80, 0x80, 1, 128,   "CAN/RF - CAN"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
+	/*aura*/{ EH_AURA,    0x81, 0x81, 1, 128,   "Aura RF 863MHz sensors"     , 0 , 0,    1,  0,  0,  0,   0,    0,  0 },
+	/*lora*/{ EH_LORA,    0x82, 0x82, 1, 128,   "LORA RF devs"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
+	//LAN/IP variants other address H than above
+	/*pro*/{ EH_PRO,    0xfe, 256, 190, 200, "eHouse PRO Server / Hybrid"   ,256,256,   0,  0,128,100, 100,  100, 100 },
+	/*lan*/{ EH_LAN,    201,  256, 201, 248, "EthernetRoomManger -ERM LAN"  ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
+	{ EH_LAN,    249,  256, 249, 249, "EthernetPoolManger - LAN"     ,5 ,   8,  15,  3,  6,  0,  24,   12,   0 }, //dedicated firmware for swimming pools
+	{ EH_LAN,    250,  256, 250, 254, "CommManger - LAN"             ,48,   5,  15,  0, 36, 24,   0,   12,  24 }, //dedicated firmware for roler controller + security system
+	{ EH_LAN,    251,  256, 250, 254, "LevelManager - LAN"           ,48,  77,  15,  0, 36, 24,  24,   12,   0 }, //dedicated firmware for floor controller
+	/*wlan*/{ EH_WIFI,    100,  256, 201, 248, "WiFi Controllers"             ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
+};
+int Dtype, Dsubtype;
 
 };

@@ -44,7 +44,3 @@ install_manifest.txt
 /.idea_/
 /www/images/floorplans/*.png
 /www/images/floorplans/*.jpg
-/hardware/1Wire/OneWireDomoticzService/OneWireDomoticzService/obj/Debug/OneWireDomoticzService.csproj.CoreCompileInputs.cache
-/hardware/1Wire/OneWireDomoticzService/OneWireDomoticzService/obj/Release/OneWireDomoticzService.csproj.CoreCompileInputs.cache
-/hardware/1Wire/OneWireDomoticzService/OneWireDomoticzService/obj/x86/Debug/OneWireDomoticzService.csproj.CoreCompileInputs.cache
-/hardware/1Wire/OneWireDomoticzService/OneWireDomoticzService/obj/x86/Release/OneWireDomoticzService.csproj.CoreCompileInputs.cache

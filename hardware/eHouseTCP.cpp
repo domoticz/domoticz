@@ -48,27 +48,27 @@ Events/Commands send via TCP/IP socket with simple authorization (dynamic code/c
 #include "hardwaretypes.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
-#include "../main/Helper.h"
+//#include "../main/Helper.h"
 #include "../main/localtime_r.h"
-#include "../main/mainworker.h"
+//#include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-#include "../httpclient/UrlEncode.h"
-#include "../httpclient/HTTPClient.h"
-#include "../json/json.h"
+//#include "../httpclient/UrlEncode.h"
+//#include "../httpclient/HTTPClient.h"
+//#include "../json/json.h"
 
 #ifdef WIN32
-#pragma comment (lib, "Ws2_32.lib")
-#pragma comment (lib, "Mswsock.lib")
-#pragma comment (lib, "AdvApi32.lib")
-#include <winsock.h>
-#include <winsock2.h>
-WSADATA wsaData;
+//#pragma comment (lib, "Ws2_32.lib")
+//#pragma comment (lib, "Mswsock.lib")
+//#pragma comment (lib, "AdvApi32.lib")
+//#include <winsock.h>
+//#include <winsock2.h>
+//WSADATA wsaData;
 #endif
-
-int HwID=-1;
-
-unsigned int    eHOptA=0;
-unsigned int    eHOptB=0;
+//unsigned char DisablePerformEvent = 0;
+//int HwID=-1;
+//char ViaTCP = 0;
+//unsigned int    eHOptA=0;
+//unsigned int    eHOptB=0;
 #define OPTA_CLR_DB		0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
 #define OPTA_FORCE_TCP	0x2		//Force TCP/IP instead of UDP for LAN connection 
 #define OPTA_DEBUG		0x4
@@ -77,7 +77,7 @@ unsigned int    eHOptB=0;
 //    #define _LOG(x,y,z) {_log.Log(x,y,z);}
 //    #define __LOG(x,y,z,zz) {_log.Log(x,y,z,zz);}
 
-extern unsigned char TESTTEST;
+//extern unsigned char TESTTEST;
 #define EHOUSE_TEMP_POLL_INTERVAL_MS 120*1000 	// 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 			// 12 sec
 
@@ -125,51 +125,83 @@ WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX+1];
 //Eg output nr 2 at eHouse LAN (192.168.0.201)
 //h l O nr
 //00C92101
-typedef struct tModel {
-        unsigned int type;          //controller type / interface
-		unsigned int  id;           //id for controller type detection 
-        unsigned int  addrh;        //address high (for LAN wariant 192.168.addrh.addrl
-        unsigned int  addrlfrom;    //minimal address low value
-        unsigned int addrlto;       //maximal address low value
-		const char*   name;         //Controller Name
-// count of signals for controller        
-        unsigned int  inputs;       //inputs on/off (binary)
-        unsigned int  outputs;      //outputs on/off (binary)
-        unsigned int  adcs;         //adc measurement 
-        unsigned int  dimmers;      //dimmers - PWM
-        unsigned char drives;       //2 outputs drive control
-        unsigned int  zones;        //security zones count
-		unsigned int  programs;     //outputs+dimmers programs
-        unsigned char adcprograms;  //adc measurement+regulation programs
-        unsigned char secuprograms; //drives count
-} Model;
-
-#define TOT_MODELS 13
-static Model models[TOT_MODELS] =
-{  
-    //Non LAN/IP variants
-                   //type  id    h   lmin  lmax   name                         inp  out  adc  dim drv zon pgm  apg  spg
-/*rs485*/   { EH_RS485,    0x1,  1,    1,   1,    "HeatManager - RS-485"      , 0,  21,  16,  3,  0,  0,  24,    0,  0    },
-            { EH_RS485,    0x2,  2,    1,   1,    "ExternalManager - RS-485"  , 12, 2,    8,  3, 14,  0,   0,    0,  24   },
-            { EH_RS485,    0x3,  55,   1, 254,   "RoomManager - RS-485"       , 12, 32,   8,  3,  0,  0,  24,    0,  0    },       
-/*canrf*/   { EH_CANRF,    0x79, 0x79, 1, 128,   "CAN/RF - RF (863MHz)"       , 4 , 4,    4,  4,  2,  0,   0,    0,  0    },       
-            { EH_CANRF,    0x80, 0x80, 1, 128,   "CAN/RF - CAN"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0    },       
-/*aura*/    { EH_AURA,    0x81, 0x81, 1, 128,   "Aura RF 863MHz sensors"     , 0 , 0,    1,  0,  0,  0,   0,    0,  0    },       
-/*lora*/    { EH_LORA,    0x82, 0x82, 1, 128,   "LORA RF devs"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0    },       
-//LAN/IP variants other address H than above
-/*pro*/     { EH_PRO,    0xfe, 256, 190, 200, "eHouse PRO Server / Hybrid"   ,256,256,   0,  0,128,100, 100,  100, 100   },
-/*lan*/     { EH_LAN,    201,  256, 201, 248, "EthernetRoomManger -ERM LAN"  ,22 , 32,  15,  3, 16,  0,  24,   12,   0   },
-            { EH_LAN,    249,  256, 249, 249, "EthernetPoolManger - LAN"     ,5 ,   8,  15,  3,  6,  0,  24,   12,   0   }, //dedicated firmware for swimming pools
-            { EH_LAN,    250,  256, 250, 254, "CommManger - LAN"             ,48,   5,  15,  0, 36, 24,   0,   12,  24   }, //dedicated firmware for roler controller + security system
-            { EH_LAN,    251,  256, 250, 254, "LevelManager - LAN"           ,48,  77,  15,  0, 36, 24,  24,   12,   0   }, //dedicated firmware for floor controller
-/*wlan*/    { EH_WIFI,    100,  256, 201, 248, "WiFi Controllers"             ,22 , 32,  15,  3, 16,  0,  24,   12,   0   },
-};
-int Dtype,Dsubtype;
 //extern void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
 ////////////////////////////////////////////////////////////////////////////////
-int AddrH,AddrL; //address high & low for controller type detection & construct idx
+// Init Structures on start
 // get controler type
+void eHouseTCP::InitStructs(void)
+{
+	int i;
+	int to = EHOUSE_WIFI_MAX + 1;
+	for (i = 0; i < to; i++)
+		{	
+		(eHWIFIs[i]) = NULL;		//full wifi status 
+		(eHWIFIPrev[i]) = NULL;		//full wifi status previous for detecting changes
+		(eHWIFIn[i])=NULL;			//names of i/o for WiFi controllers
+		(eHWiFi[i]) = NULL;
+		}
+	ECMn = NULL;
+	ECM = NULL;
+	ECMPrv = NULL;					//Previous statuses for Update MSQL optimalization  (change data only updated)
+	eHouseProN = NULL;
+	eHouseProStatus = NULL;
+	eHouseProStatusPrv = NULL;
+		
+	to = ETHERNET_EHOUSE_RM_MAX + 1;
+	for (i = 0; i < to; i++)
+		{
+		(eHEn[i])=NULL;				//names of i/o for Ethernet controllers
+		(eHERMs[i]) = NULL;  		//full ERM status decoded
+		(eHERMPrev[i]) = NULL;  	//full ERM status decoded previous for detecting changes
+		}
+	to = EHOUSE1_RM_MAX + 1;
+	for (i = 0; i < to; i++)
+		{
+		(eHRMs[i]) = NULL;  		//full RM status decoded
+		(eHRMPrev[i]) = NULL;  		//full RM status decoded previous for detecting changes
+		(eHn[i]) = NULL;
+		}
+	to = EVENT_QUEUE_MAX;
+	for (i = 0; i < to; i++)
+		(EvQ[i]) = NULL;		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
+	to = MAX_AURA_DEVS;
+	for (i = 0; i < to; i++)
+		{
+		(AuraDev[MAX_AURA_DEVS])=NULL;	// Aura status thermostat
+		(AuraDevPrv[i])=NULL;			// previous for detecting changes
+		(AuraN[i])=NULL;
+		}
+#ifndef REMOVEUNUSED
+	CANStatus 				eHCAN[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRF[EHOUSE_RF_MAX];
+	CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
+	CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
 
+	eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
+	CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
+	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
+#endif
+
+
+#ifndef REMOVEUNUSED
+	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
+	WIFIFullStat            eHCANs[EHOUSE_CAN_MAX];
+	WIFIFullStat            eHRFs[EHOUSE_RF_MAX];
+#endif
+	
+	
+#ifndef REMOVEUNUSED
+	eHouseCANNames              eHCANn[EHOUSE_RF_MAX + 1];
+	eHouseCANNames              eHCANRFn[EHOUSE_RF_MAX + 1];
+	SatelNames                  SatelN[MAX_SATEL];
+	SatelStatus                 SatelStat[MAX_SATEL];
+#endif
+
+
+
+
+}
 int eHouseTCP::gettype(int adrh,int adrl)
 {
     if ((adrh==1) && (adrl==1))
@@ -230,7 +262,7 @@ int eHouseTCP::gettype(int adrh,int adrl)
 	return Dtype;
 }
 //////////////////////////////////////////////////////////////////////////////////
-void eHType(int devtype, char *dta)
+void eHouseTCP::eHType(int devtype, char *dta)
 {    
 switch (devtype)
     {
@@ -467,7 +499,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
     userCode.copy(PassWord,len);
 	SrvAddrH = 0; SrvAddrL = 200;
 	SrvAddrU = 192; SrvAddrM = 168;
-    
+	InitStructs();
 	if (!CheckAddress())
             {
 			//return false;
@@ -509,7 +541,7 @@ eHouseTCP::~eHouseTCP()
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
 {
-#ifdef WIN32
+/*#ifdef WIN32
 int iResult = -1;
 iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
 if (iResult != 0) {
@@ -517,7 +549,7 @@ if (iResult != 0) {
 	exit(1);
 }
 #endif
-
+*/
 #ifdef UDP_USE_THREAD
 	ThEhouseUDPdta.No = 1;
 	ThEhouseUDPdta.IntParam = UDP_PORT;		//udp thread setup
@@ -562,7 +594,7 @@ bool eHouseTCP::StopHardware()
 	return true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
-int eHouseTCP::ConnectTCP()
+int eHouseTCP::ConnectTCP(unsigned int IP)
 {
 	char opt = 0;
 	unsigned long iMode = 0;
@@ -583,7 +615,10 @@ int eHouseTCP::ConnectTCP()
 	struct sockaddr_in saddr;
 	int TCPSocket = -1;
 	saddr.sin_family = AF_INET;							//initialization of protocol & socket
-	saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
+	if (IP>0)
+		saddr.sin_addr.s_addr = IP;
+	else 
+		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
 	saddr.sin_port = htons(EHOUSE_TCP_PORT);
 	memset(&server, 0, sizeof(server));               //clear server structure
 	memset(&challange, 0, sizeof(challange));         //clear buffer
@@ -756,7 +791,7 @@ bool eHouseTCP::CheckAddress()
 				}
 			}
 	if (ViaTCP) 
-		TCPSocket = ConnectTCP();
+		TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
 	return true;
 }
 ///////////////////////////////////////////////////////////////////////////////

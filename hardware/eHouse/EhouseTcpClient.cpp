@@ -53,8 +53,8 @@
 unsigned char SrvAddrH = 0, SrvAddrL = 200, SrvAddrU=192, SrvAddrM=168;
 unsigned char EHOUSE_TCP_CLIENT_TIMEOUT = 0;
 unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US = 100000;
-int EHOUSE_TCP_PORT = 9876;
-unsigned char DEBUG_TCPCLIENT = 0;
+static int EHOUSE_TCP_PORT = 9876;
+static unsigned char DEBUG_TCPCLIENT = 0;
 
 
 
@@ -76,7 +76,7 @@ void KillSocket(int SocketIndex);       //Function if you dont like GOTO instruc
 #endif
 //signed int eHouseTCP::GetIndexOfWiFiDev(unsigned char AddrH,unsigned char AddrL);
 //TCP Client Connection to Ethernet eHouse controllers - structure
-typedef struct
+/*typedef struct TcpClientConT
         {
         int Socket;                             //TCP Client Sockets for paralel operations
         unsigned char Events[255u];             //Event buffer for current socket
@@ -90,12 +90,12 @@ typedef struct
         unsigned char OK;
         unsigned char NotFinished;
 //        unsigned char Stat;                   //Status of client
-        } TcpClientCon;
+        } TcpClientCon;*/
 //#define         TC_NOT_CONNECTED 0
 //#define         TC_CONNECTED     1
-TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of multi-threading
+//TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of multi-threading
 #ifdef EHOUSE_TCP_CLIENT_THREAD
-pthread_t       EhouseTcpClientThread[MAX_CLIENT_SOCKETS];            //TCP ClientThread instances in case of multithread
+//pthread_t       EhouseTcpClientThread[MAX_CLIENT_SOCKETS];            //TCP ClientThread instances in case of multithread
 //thdata 
 //int *EhouseTcpClientThreadParam[MAX_CLIENT_SOCKETS];       //TCP ClientThread instances params
 #endif
@@ -109,7 +109,7 @@ void eHouseTCP::EhouseInitTcpClient(void)
     unsigned char i=0;
     for (i=0;i<MAX_CLIENT_SOCKETS;i++)
         {
-        memset((void *)&TC[i]/*.Events*/,0,sizeof(TC[i]/*.Events*/));
+        memset((void *)&TC[i],0,sizeof(TC[i]));
         TC[i].Socket=-1;
         TC[i].ActiveConnections=-1;
         }
@@ -149,17 +149,17 @@ return -1;
  * @param AddrL - Target host IP 4 byte for Ethernet controllers direct / for eHouse1/CAN via eHouse Pro Server
  * @return - 0 if OK, negative value in case of some errors (all sockets busy, target controller already connected)
  */
-/*char SubmitEvent(const unsigned char *Events, unsigned char EventCount)
+char eHouseTCP::SubmitEvent(const unsigned char *Events, unsigned char EventCount)
 {
     unsigned char Event[255];
     memset(Event,0,sizeof(Event));
     memcpy(Event,Events,EventCount*EVENT_SIZE);
     if (Event[0]!=SrvAddrH) //other than lan, wifi
-        return SendTCPEvent((unsigned char *)&Event,EventCount,SrvAddrH,SrvAddrL,(unsigned char *)&Event);
+        return SendTCPEvent((unsigned char *)&Event, EventCount, SrvAddrH, SrvAddrL, (unsigned char *) &Event);
     else
-        return SendTCPEvent((unsigned char *)&Event,EventCount,Event[0],Event[1],(unsigned char *)&Event);
+        return SendTCPEvent((unsigned char *)&Event, EventCount, Event[0], Event[1], (unsigned char *) &Event);
         
-}*/
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define INDEX_PRO  0
 #define INDEX_ETH  1
@@ -191,7 +191,7 @@ for (i=0;i<EHOUSE_WIFI_MAX;i++)
 return INDEX_PRO;
 }
 ////////////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 char eHouseTCP::SendTCPEvent(const unsigned char *Events,unsigned char EventCount,unsigned char AddrH,unsigned char AddrL,const unsigned char *EventsToRun)
 {
@@ -234,7 +234,7 @@ for (i=0;i<MAX_CLIENT_SOCKETS;i++)     //search first free socket (TCP Client in
     memcpy((void *)&TC[tcp_client_socket_index].EventsToRun,EventsToRun,EventCount);
     int param=tcp_client_socket_index;
 #ifndef EHOUSE_TCP_CLIENT_THREAD
-    SubmitData(tcp_client_socket_index);
+	EhouseSubmitData(tcp_client_socket_index);
 #else
 //printf("Send TCP Thread Ind:%d,  TCPC:%d\r\n",ind,tcp_client_socket_index);    
     pthread_create(
@@ -288,12 +288,13 @@ for (i=0;i<MAX_CLIENT_SOCKETS;i++)
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-char VendorCode[6]={0,0,0,0,0,0};
-char PassWord[6]="";
+//char VendorCode[6]={0,0,0,0,0,0};
+//char PassWord[6]="";
+
 #ifndef EHOUSE_TCP_CLIENT_THREAD
-void EhouseSubmitData(int SocketIndex)
+void eHouseTCP::EhouseSubmitData(int SocketIndex)
 #else
-void *EhouseSubmitData(void *ptr)
+static void * eHouseTCP::EhouseSubmitData(void *ptr)
 #endif
         {
 #ifdef EHOUSE_TCP_CLIENT_THREAD
@@ -303,9 +304,10 @@ void *EhouseSubmitData(void *ptr)
 		_log.Log(LOG_STATUS, "[eHouse TCP Client] Too many sockets");
         pthread_exit(0);
         }
-    TcpClientCon    *ClientCon=&TC[SocketIndex];
+
     
 #endif    
+	TcpClientCon    *ClientCon = &TC[SocketIndex];
   //      unsigned char iters=5;
 //ReTRYSubmission:        
         struct timeval timeout;      
@@ -339,19 +341,12 @@ void *EhouseSubmitData(void *ptr)
          if (setsockopt (TC[SocketIndex].Socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
                 sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
                 LOG(LOG_STATUS,"[TCP Cli] Set Write Timeout failed\n");
-/*        linger li;
-        li.l_linger=0;
-        li.l_onoff=0;   //off
-        if (setsockopt (TC[SocketIndex].Socket, SOL_SOCKET, SO_LINGER, &li,
-                sizeof(li)) < 0)        //Set Socket linger off - close imediatelly
-                perror("[TCP Cli] Set Linger failed\n");
-        */
         //TCP_NODELAYACK
         long kkk=1L;
         status=1L;
-/*        if (setsockopt (TC[SocketIndex].Socket, IPPROTO_TCP, TCP_NODELAY, &kkk,
-                sizeof(status)) < 0)   //Set socket send data imediatelly
-                perror("[TCP Cli] Set TCP No Delay failed\n");*/
+//        if (setsockopt (TC[SocketIndex].Socket, IPPROTO_TCP, TCP_NODELAY, &kkk,
+//                sizeof(status)) < 0)   //Set socket send data imediatelly
+//                perror("[TCP Cli] Set TCP No Delay failed\n");
 								///0xa8c0ull
         server.sin_addr.s_addr= SrvAddrU | (SrvAddrM<<8)    |(ClientCon->AddrH<<16)|(ClientCon->AddrL<<24); //target ip address //inet_addr(line);        //
         server.sin_family = AF_INET;                    //tcp v4
@@ -477,6 +472,6 @@ void KillSocket(int SocketIndex)
                 
                 
 				_log.Log(LOG_STATUS, "[TCP Cli||||| %d] End TCP Client",SocketIndex);
-return 0;
+return;
         }
 

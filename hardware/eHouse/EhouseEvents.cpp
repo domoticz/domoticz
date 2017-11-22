@@ -31,31 +31,27 @@
 #include "../eHouseTCP.h"
 #ifndef WIN32
 
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+//#include <sys/socket.h>
+//#include <sys/ioctl.h>
+//#include <arpa/inet.h>
+//#include <netinet/in.h>
 //#include <stropts.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <net/if.h>
+//#include <unistd.h>
+//#include <dirent.h>
+//#include <net/if.h>
 //#include <linux/netdevice.h>
 #else
-#include <Windows.h>
+//#include <Windows.h>
 #endif
 #include "globals.h"
 #include "status.h"
 
-#include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
+//#include <string.h>
+//#include <stdio.h>
+//#include <fcntl.h>
 
 
 
-unsigned int EventsCountInQueue=0;      //Events In queue count to bypass processing EventQueue when it is empty
-extern eHouseProNames              eHouseProN;
-void ExecEvent(unsigned int i);
-signed int AddToLocalEvent(unsigned char *Even,unsigned char offset);
 
 /////////////////////////////////////////////////////////////////////////////////
 signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)
@@ -68,7 +64,7 @@ for (i=0;i<EVENT_QUEUE_MAX;i++)
         }
 return -1;
 }
-unsigned char DisablePerformEvent=0;
+
  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::ExecQueuedEvents(void)
 {

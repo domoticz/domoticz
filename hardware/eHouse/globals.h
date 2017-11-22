@@ -14,7 +14,6 @@ extern void ExecQueuedEvents(void);
 extern signed int AddToLocalEvent(unsigned char *Even,unsigned char offset);
 extern void performTCPClientThreads();
 extern void UpdateSQL(int devh,int devl, int code,int nr,int State,char *devname,char * signame);*/
-extern int HeartBeat;
 extern class eHouseTCP eHouse;
 
 #define             MAXMSG 0xfffful										//size of udp message buffer
@@ -121,11 +120,9 @@ extern class eHouseTCP eHouse;
 
 #define TCP_CLIENT_THREAD 1
 //#define UDP_USE_THREAD 1              //Use UDP Thread 
-#define EHOUSE_TCP_CLIENT_THREAD 1      //Use Multi-Thread for TCP Clients
+//#define EHOUSE_TCP_CLIENT_THREAD 1      //Use Multi-Thread for TCP Clients
 #endif
 
-extern char PassWord[];
-extern unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;
 
 #ifdef	__cplusplus
 extern "C" {
@@ -176,11 +173,6 @@ extern "C" {
 #define EV_VIA_EHOUSE_PRO               5       //PIC32 Ehouse Pro Controller Server
 #define EV_RF_EVENT                     6
 #define EV_ZIGBEE_EVENT                 7
-extern unsigned char ViaCM;
-extern volatile unsigned char eHEStatusReceived;   //Ethernet eHouse status received flag
-extern volatile unsigned char eHWiFiStatusReceived;   //WiFi eHouse status received flag
-extern volatile unsigned char eHStatusReceived;    //eHouse1 status received flag
-extern volatile unsigned char eHouse1FrameEmpty;      //eHouse1 bus free after reception of all status for Safer Event submissions
 ///function prototypes 
 #ifdef UDP_USE_THREAD
 extern void *UDPListener(void *ptr);  //for eHouse4Ethernet devices and eHouse1 via CommManager
@@ -189,30 +181,17 @@ extern void *UDPListener(void *ptr);  //for eHouse4Ethernet devices and eHouse1 
 extern void UDPListener(void);  //for eHouse4Ethernet devices and eHouse1 via CommManager
 #endif
 #define GSMLOOP 1
-extern unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
-extern unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
-extern int EHOUSE_TCP_PORT;
 #define SIZE_OF_EHOUSE_PRO_STATUS 4000
-#ifndef EHOUSE_TCP_CLIENT_THREAD
-extern void EhouseSubmitData(int SocketIndex);        //submit events pack via TCP Client
-#else
-extern void *EhouseSubmitData(void *ptr);             //multi-thread version
-#endif
-extern int PlanID;
 
 #define MAX_LOCAL_INTERFACES 10
 //extern unsigned long LocalHostS[MAX_LOCAL_INTERFACES];
-extern unsigned char COMMANAGER_IP_HIGH;        //default CommManager Ip addr h
-extern unsigned char COMMANAGER_IP_LOW;         //default CommManager Ip addr l
-extern unsigned char EHOUSE_PRO_HIGH;           //default eHouse Pro Server IP addr h
-extern unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
-
+/*
 #ifndef TCP_CLIENT_THREAD
 extern void SubmitTcpClientData(void *ptr);
 #else
 extern void *SubmitTcpClientData(void *ptr);
 #endif
-
+*/
 #define EV_LOCAL_EVENT                  0       //current server
 #define EV_ETHERNET_EVENT               1       //Ethernet Event
 #define EV_RS485_EVENT                  2       //RS-485 eHouse1 Event
@@ -330,11 +309,4 @@ extern void *SubmitTcpClientData(void *ptr);
                     } while (1);    \
               }}\
 
-extern  unsigned char COMMANAGER_IP_HIGH,COMMANAGER_IP_LOW,INITIAL_ADDRESS_LAN,INITIAL_ADDRESS_WIFI;
 
-extern void TerminateUDP(void);
-extern void deb(char *prefix,unsigned char *dta, int size);
-extern char VendorCode[6];
-extern int TCPSocket;
-extern char ViaTCP;
-extern unsigned char DEBUG_TCPCLIENT;
