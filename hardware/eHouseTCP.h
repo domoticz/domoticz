@@ -69,8 +69,8 @@ private:
 	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
 #endif
 
-	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX]);			//full wifi status 
-	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX]);		//full wifi status previous for detecting changes
+	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX+1]);			//full wifi status 
+	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX+1]);		//full wifi status previous for detecting changes
 
 
 
