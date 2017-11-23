@@ -837,7 +837,7 @@ int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
                     }
                     break;
             case VISUAL_APGM:
-                for (i=0;i <(sizeof(eHEn[index]->ADCPrograms)/sizeof(eHEn[index]->ADCPrograms[0]));i++)
+                for (i = 0; i <(sizeof(eHEn[index]->ADCPrograms) / sizeof(eHEn[index]->ADCPrograms[0])); i++)
                     {
                     if ((strlen(eHEn[index]->ADCPrograms[i])>0) && (strstr(eHEn[index]->ADCPrograms[i],"@")==NULL))
                         {
