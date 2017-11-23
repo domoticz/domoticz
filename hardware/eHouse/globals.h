@@ -91,18 +91,18 @@ extern class eHouseTCP eHouse;
  * Created on June 3, 2013, 9:43 AM
  */
 #ifndef WIN32
-	#include <unistd.h>
-	#include <sys/time.h>
+//	#include <unistd.h>
+//	#include <sys/time.h>
 #else
-	#include <time.h>
+//	#include <time.h>
 #endif
-#include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
+//#include <fcntl.h>
+//#include <string.h>
+//#include <stdlib.h>
 
-#include <sys/timeb.h>
-#include <stdio.h>
-#include <time.h>
+//#include <sys/timeb.h>
+//#include <stdio.h>
+//#include <time.h>
 //extern int nanosleep(const struct timespec *req, struct timespec *rem);
 #ifndef EHGLOBALS_H
 #define	EHGLOBALS_H
@@ -127,10 +127,10 @@ extern "C" {
 #ifdef	__cplusplus
 }
 #endif
-#define STATUS_ARRAYS_SIZE 0x20         //  1f       //32  eH/eHE
-#define STATUS_WIFI_ARRAYS_SIZE 100     //    eHWIFI array size
-#define TCP_CLIENT_COUNT    10
-#define ONKYO_COUNT         3
+#define STATUS_ARRAYS_SIZE				0x20         //  1f       //32  eH/eHE
+#define STATUS_WIFI_ARRAYS_SIZE			100     //    eHWIFI array size
+#define TCP_CLIENT_COUNT				10
+#define ONKYO_COUNT						3
 
 #define EHOUSE1_RM_MAX                  (STATUS_ARRAYS_SIZE)             //do not modify this values here
 #define ETHERNET_EHOUSE_RM_MAX          (STATUS_ARRAYS_SIZE)            //do not modify this values here
@@ -146,7 +146,7 @@ extern "C" {
 #define RS485_EVENT                     2               //event to be send via RS-485 directly
 #define CAN_EVENT                       3               //event kto be send via CAN
 //#define EHOUSE_PRO_EVENT              4               //local event
-#define COMMAND_RUN_ADVANCED_EVENT 	'b'             //Extended event command
+#define COMMAND_RUN_ADVANCED_EVENT 		'b'             //Extended event command
 #define COMMAND_CONFIRM_ADVANCED_EVENT 	'f'             //extended event confirmation
 
 #define RUN_NOW                         5 //*0.2s = ~1s // run now event  timer counter - Execute Imedialtelly
@@ -173,14 +173,7 @@ extern void UDPListener(void);  //for eHouse4Ethernet devices and eHouse1 via Co
 #define SIZE_OF_EHOUSE_PRO_STATUS 4000
 
 #define MAX_LOCAL_INTERFACES 10
-//extern unsigned long LocalHostS[MAX_LOCAL_INTERFACES];
-/*
-#ifndef TCP_CLIENT_THREAD
-extern void SubmitTcpClientData(void *ptr);
-#else
-extern void *SubmitTcpClientData(void *ptr);
-#endif
-*/
+
 #define EV_LOCAL_EVENT                  0       //current server
 #define EV_ETHERNET_EVENT               1       //Ethernet Event
 #define EV_RS485_EVENT                  2       //RS-485 eHouse1 Event

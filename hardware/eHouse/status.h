@@ -408,12 +408,6 @@ typedef struct  ECMStatusBT				//struct offset =72-2;
 } ECMStatusB;
 
 
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////
 typedef struct ERMFullStatusT  				//struct offset =72-2;
 	{
@@ -516,22 +510,6 @@ typedef union WIFIFullStatT
     unsigned char   data[sizeof(WIFIFullStatus)];
 } WIFIFullStat;
 
-////////////////////////////////////////////////////////////////
-/*
-struct CAN_STAT
-{
-struct AdcValue AdcVal[4];		//8 bytes   - by 2 byte status
-unsigned char Dimmer[4]; 		//4 bytes	- by 1 byte
-
-unsigned char Outputs;			//1 bytes
-unsigned char Inputs;			//1 bytes
-unsigned char ProgramNr:5;		//1 bytes	//5 byts 0-31
-unsigned char Mode:3;			//Mode for 3 bits
-unsigned char AdcProgramNr:5;	//1 bytes 	//5 bytes 0-31
-unsigned char Mode2:3;			//Mode 2 for 3 bits
-};
-*/
-/////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 typedef struct
 {
@@ -592,33 +570,6 @@ unsigned char data[sizeof(CANStat)];
 /////////////////////////////////////////////////////////
 //CANStatus CanStatus[CAN_STATUS_LENGTH+1];
 ///////////////////////////////////////////////////////////
-/*
-struct WIFI_STAT_UNIVERSAL
-{
-unsigned char ADRH;           //local address h
-unsigned char ADRL;           //local address l
-unsigned char cmd;
-struct AdcValue AdcVal[4];    //8 bytes   - by 2 byte
-unsigned char Dimmer[4];    //4 bytes -   by 2 byte
-unsigned char Outputs;        //1 bytes - max 8
-unsigned char Inputs;         //1 bytes - max 8
-unsigned char ProgramNr:5;    //1 bytes //5 byts 0-31
-unsigned char Mode:3;         //Mode for 3 bits
-unsigned char AdcProgramNr:5; //1 bytes   //5 bytes 0-31
-unsigned char Mode2:3;        //Mode 2 for 3 bits
-};
-
-
-WIFI_STAT_UNIVERSAL Status;
-union WiFiStatus
-{
-struct  WIFI_STAT_UNIVERSAL stat;
-unsigned char data[];
-
-};
-union WiFiStatus LocalStatus;
-*/
-
                 
 typedef struct WiFiStatT				/// 22B
 	{
@@ -694,151 +645,6 @@ typedef struct EventQueueT
 	} EventQueue;
 
 ///////////////////////////////////////////////////////////
-/////////////EhOUSE PRO STRUCTS        
-//#ifdef eHousePro
-/*typedef struct //CtrlInput_tt
-{//CtrlInput;
-unsigned char invert:1;         //input inversion
-unsigned char trancientstate:1;	//temporary state input buffer
-unsigned char state:1;		//active state filtered from trancient state at least 2 cycles(0,3sec) == the same
-unsigned char statemem:1;	//memorized on state for period of statustimer counter
-unsigned char prevtrancient:1;	//previous from trancient state
-unsigned char prevstate:1;	//previous state
-unsigned char statetamper:1;		//active state filtered from trancient state at least 2 cycles(0,3sec) == the same
-unsigned char statetampermem:1;	//memorized on state for period of statustimer counter
-unsigned char EnableAlarm:1;	//software alarm enabled 
-unsigned char AlarmState:1;	//state of software alarm 
-
-unsigned char EnableHorn:1;	//Horn output enable
-unsigned char HornState:1;	
-
-unsigned char EnableWarning:1;  //Warning Light Output
-unsigned char WarningState:1;
-
-unsigned char EnableMonitoring:1;   //Monitoring Output
-unsigned char MonitoringState:1;
-
-unsigned char EnableEarlyWarning:1;
-unsigned char EarlyWarningState:1;
-
-unsigned char EnableSilent:1;
-unsigned char SilentState:1;
-
-unsigned char EnableSMS:1;
-unsigned char SMSState:1;
-unsigned char SMSReported:1;
-unsigned char changed:1;	//was just changed untill clear
-unsigned char free1:1;		//not used
-unsigned char DisableEvent:1;   //disable event run
-signed int MeasuredCapacity;	//current input capacity
-signed int CMTUCalibration;	//initial input capacity
-signed int  CmtuCount;		//counter
-//unsigned char changedcounter:3;
-unsigned int statetimer;	//timer for memorize input state
-unsigned int statetimerinit;	//initial timeout
-
-unsigned int AlarmDelay;	//postpone alarm for event execution complete
-unsigned int AlarmDelayInit;	//delay for alarm initialization value
-unsigned int AlarmLength;	//Length of alarm
-unsigned int AlarmLengthInit;	//Length of alarm
-
-
-unsigned int HornDelay;
-unsigned int HornDelayInit;
-unsigned int HornLength;
-unsigned int HornLengthInit;
-
-unsigned int WarningDelay;
-unsigned int WarningDelayInit;
-unsigned int WarningLength;
-unsigned int WarningLengthInit;
-
-unsigned int EarlyWarningDelay;
-unsigned int EarlyWarningDelayInit;
-unsigned int EarlyWarningLength;
-unsigned int EarlyWarningLengthInit;
-
-unsigned int MonitoringDelay;
-unsigned int MonitoringDelayInit;
-unsigned int MonitoringLength;
-unsigned int MonitoringLengthInit;
-
-unsigned int SMSDelay;
-unsigned int SMSDelayInit;
-unsigned int SMSLength;
-unsigned int SMSLengthInit;
-
-unsigned int SilentDelay;
-unsigned int SilentDelayInit;
-unsigned int SilentLength;
-unsigned int SilentLengthInit;
-
-
-unsigned char Ignore:1;         //disable input for check
-}CtrlInput;
-//unsigned char LocalStatus[256]="\0";
-/////////////////////////////////////////////////////////////////////////////////////
-typedef struct //CtrlOutput_tt	//Single output
-{
-unsigned char state:1;	//	0/1
-unsigned char disabled:1;	//disable single output while use multi or rollers
-unsigned char cyclic:1;		//cyclic operation |multiple
-unsigned char status:5;	//	state machine
-unsigned int  TimeON;	//  time on then off in case of turning on or toggle max 18h
-unsigned int  TimeOFF;	//  time off delay then on 	max 18h
-unsigned int  TimeONInit;	//  time on then off in case of turning on or toggle max 18h
-unsigned int  TimeOFFInit;	//  time off delay then on 	max 18h
-unsigned char CyclicRepeat;	//repeat count for cyclic operation		
-} CtrlOutput;
-/////////////////////////////////////////////////////////////////////////////////
-typedef struct //CtrlDriveOutput_tt	//rollers, driver, 2way cutoff,
-{
-unsigned char state:3;		//0 N/A, 1 direction A - close , 2 Direction B - open, 3 off / Stop for somfy
-unsigned char TargetState:3;	//current Target state
-unsigned char StateInit:3;		//state memory for cyclic
-unsigned char disabled:1;		//disabled as roller gateway
-unsigned char completed:1;
-unsigned char TimeOffNotZero:1;
-//unsigned char CurrentState:3; //current Trancient state
-unsigned char somfy:1;			//somfy enable 2 lines on
-unsigned char cyclic:1;
-unsigned int TimeON;		//Time to keep on
-unsigned int TimeDisable;		//time to block immediate switch
-unsigned char TimeOFF;			//time to off
-unsigned char CyclicRepeat;
-unsigned int TimeONInit;	//  time on then off in case of turning on or toggle max 18h
-unsigned int TimeOFFInit;	//  time off delay then on 	max 18h
-} CtrlDriveOutput;
-////////////////////////////////////////////////////////////////////////////////
-typedef struct //CtrlMultiOutput_tt	//Multiple outputs output
-{
-unsigned char state;	//status 0..255
-unsigned char minnr;	//min nr out | bitwise lsb for out1 etc
-unsigned char maxnr;	//max nr of out |  bitwise lsb for output1 etc
-unsigned int  TimeON;	//time on 
-unsigned int  TimeOFF;	//time off
-unsigned char subcmd;	//function inc, dec, inc_step, dec_step, shift left, shift right, all off,set
-unsigned char step;		//step for increment/decrement
-} CtrlMultiOutput;
-////////////////////////////////////////////////////////////////////////////////
-typedef struct //CtrlDimm_tt
-{
-int value;	//current value
-int TargetValue;	//destine value
-int MaxValue;		//dimmer max value
-int MinValue;		//dimmer min value
-char state;			
-char admin:1;		//admin options event for switch configuration
-char invert:1;	//PWM is inverted
-char disable;
-char decrement:1;	//dimming operation
-char increment:1;	//lighting up operation
-char ok:1;			//ok value
-char continuous:1;	//continuous decoration mode
-char future:1;		//decoration mode future
-char step;			//dec inc step
-}CtrlDimm;*/
-////////////////////////////////////////////////////////////////////////////////
 typedef struct CtrlADCT
 {
 signed int ADCLow;				//low threshold
@@ -890,7 +696,7 @@ unsigned char LSB;
 };
 ////////////////////////////////////////////////////////////////////////////////
 /*
-ehouse.Pro format: (hex coded)
+ehouse.Pro status format: (hex coded)
 hh - address high  
 ll - address low
 192.168.hh.ll
@@ -1846,16 +1652,17 @@ typedef struct AURAT
     
     
 } AURA;
-extern struct AURAT *(AuraDev[MAX_AURA_DEVS]);
+/*extern struct AURAT *(AuraDev[MAX_AURA_DEVS]);
 extern struct AURAT *(AuraDevPrv[MAX_AURA_DEVS]);
 extern struct CtrlADCT			*(adcs[MAX_AURA_DEVS]);
+*/
 //AuraNames                   AuraN[MAX_AURA_DEVS];
 
 
 #endif
 //////////////////////////////////////
 //extern struct EventQueueT		*(EvQ[EVENT_QUEUE_MAX]);
-
+/*
 
 #ifndef REMOVEUNUSED
 //extern CANStatus 		eHCAN[EHOUSE_RF_MAX];
@@ -1881,7 +1688,7 @@ extern union eHouseProStatusUT			*(eHouseProStatus);
 //extern eHouseProStatusU        *(eHouseProStatusPrv);
 #endif
 
-
+*/
 
 //#ifdef eHousePro
 

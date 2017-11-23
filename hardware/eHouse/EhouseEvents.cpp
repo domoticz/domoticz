@@ -30,28 +30,10 @@
 #include "../main/Logger.h"
 #include "../eHouseTCP.h"
 #ifndef WIN32
-
-//#include <sys/socket.h>
-//#include <sys/ioctl.h>
-//#include <arpa/inet.h>
-//#include <netinet/in.h>
-//#include <stropts.h>
-//#include <unistd.h>
-//#include <dirent.h>
-//#include <net/if.h>
-//#include <linux/netdevice.h>
 #else
-//#include <Windows.h>
 #endif
 #include "globals.h"
 #include "status.h"
-
-//#include <string.h>
-//#include <stdio.h>
-//#include <fcntl.h>
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////
 signed int eHouseTCP::GetIndexOfEvent(unsigned char *TempEvent)

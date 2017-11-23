@@ -1,6 +1,4 @@
 #pragma once
-//#define TEST_DOMOTICZ 1 //without domoticz
-//
 
 // implememtation for eHouse Home Automation System : (eHouse LAN, WiFi, PRO + indirectly RS-485, CAN, RF, AURA, RFID)
 //DIY EN: http://smart.ehouse.pro/
@@ -9,7 +7,7 @@
 // by Robert Jarzabek, iSys - Intelligent systems
 #include "eHouse/globals.h"
 
-#include <map>
+//#include <map>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -18,17 +16,16 @@ class eHouseTCP :  public  CDomoticzHardwareBase
 {
 public:
     eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro,const int opta, const int optb);
- 	//virtual 
-		~eHouseTCP();
+ 	~eHouseTCP();
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		int ConnectTCP(unsigned int ip);
-		void AddTextEvents(unsigned char *ev, int size);
-		signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);       
-		unsigned char eHEnableAutoDiscovery;
-		unsigned char eHEnableProDiscovery;
-		unsigned char eHEnableAlarmInputs;
-		unsigned int  eHOptA;
-		unsigned int  eHOptB;
+	void AddTextEvents(unsigned char *ev, int size);						//Add hex coded string with eHouse events/codes
+	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);  //Add binary coded event from buffer
+	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
+	unsigned char eHEnableProDiscovery;										//enable eHouse PRO Discovery
+	unsigned char eHEnableAlarmInputs;			//Future - Alarm inputs
+	unsigned int  eHOptA;						//Admin options
+	unsigned int  eHOptB;						//Admin options
 
 private:
 	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
@@ -98,7 +95,6 @@ private:
 	unsigned char EHOUSE_PRO_LOW;            //default eHouse Pro Server IP addr l
 	char VendorCode[6];
 	int TCPSocket;
-//	char ViaTCP;
 	unsigned char DEBUG_TCPCLIENT;
 	unsigned char EHOUSE_TCP_CLIENT_TIMEOUT;        //Tcp Client operation timeout Connect/send/receive
 	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
@@ -119,8 +115,8 @@ private:
 	boost::shared_ptr<boost::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
 	unsigned char m_newData[7];
 	unsigned char DisablePerformEvent;
-	// password to eHouse 6 ascii chars
-	unsigned char m_userCode[8];
+
+	unsigned char m_userCode[8]; 	// password to eHouse 6 ascii chars
 
 	boost::mutex m_mutex;
 	bool m_alarmLast;
@@ -152,7 +148,6 @@ private:
 	void IntToHex(unsigned char *buf, const unsigned char *inbuf, int received);
 	float getAdcVolt2(int index);
 	void CalculateAdc2(char index);
-//	void CalculateAdcWiFi(char index);
 	void CalculateAdcEH1(char index);
 	void deb(char *prefix, unsigned char *dta, int size);
 	void GetStr(unsigned char *GetNamesDta);
@@ -162,34 +157,20 @@ private:
 	void GetUDPNamesCM(unsigned char *data, int nbytes);
 	void GetUDPNamesPRO(unsigned char *data, int nbytes);
 	void GetUDPNamesWiFi(unsigned char *data, int nbytes);
-//	void UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	//void UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	//void UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	//void UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	//void UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index);
-	//void UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL);
-//	void GetUDPNamesLAN(unsigned char *data, int nbytes);
-//	void GetUDPNamesWiFi(unsigned char *data, int nbytes);
-//	void GetUDPNamesPRO(unsigned char *data, int nbytes);
-//	void GetUDPNamesCM(unsigned char *data, int nbytes);
-//	void GetUDPNamesRS485(unsigned char *data, int nbytes);
 	int UpdateSQLState(int devh, int devl, int devtype, int type, int subtype, int swtype, int code, int nr, char signal, int nValue, const char  *sValue, const char * Name, const char * SignalName, bool on_off, int battery);
 	void UpdateSQLStatus(int devh, int devl, int devtype, int code, int nr, char signal, int nValue, const char  *sValue, int battery);
 	int UpdateSQLPlan(int devh, int devl, int devtype, const char * Name);
 	void UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx);
 	signed int IndexOfEthDev(unsigned char AddrH, unsigned char AddrL);
-	signed int GetIndexOfWiFiDev(unsigned char AddrH, unsigned char AddrL);
+//	signed int GetIndexOfWiFiDev(unsigned char AddrH, unsigned char AddrL);
 	void EhouseInitTcpClient(void);
 	char SendTCPEvent(const unsigned char *Events, unsigned char EventCount, unsigned char AddrH, unsigned char AddrL, const unsigned char *EventsToRun);
 	void performTCPClientThreads();
 	int  getrealERMpgm(int32_t ID, int level); 
 	int  getrealRMpgm(int32_t ID, int level);
 	void ExecEvent(unsigned int i);
-//	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);
-
 	signed int GetIndexOfEvent(unsigned char *TempEvent);
 	void ExecQueuedEvents(void);
-//	void ExecEvent(unsigned int i);
 	signed int hex2bin(const unsigned char *st, int offset);
 	char ViaTCP;
 	int PlanID;
@@ -200,16 +181,11 @@ private:
 	char DEBUG_AURA;		//Debug Aura
 	char CHANGED_DEBUG;
 	unsigned int EventsCountInQueue;      //Events In queue count to bypass processing EventQueue when it is empty
-//	struct eHouseProNamesT *eHouseProN;
 	char PassWord[6];
 	int HeartBeat;
 	unsigned char ViaCM;
-	//unsigned char eHEStatusReceived;   //Ethernet eHouse status received flag
-	//unsigned char eHWiFiStatusReceived;   //WiFi eHouse status received flag
-	//unsigned char eHStatusReceived;    //eHouse1 status received flag
 	unsigned char eHouse1FrameEmpty;      //eHouse1 bus free after reception of all status for Safer Event submissions
-
-	 unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;
+	 unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;	//eHouse Pro server IP address splited
 
 	unsigned char *dta;
 	unsigned disablers485;
@@ -219,14 +195,11 @@ private:
 
 	unsigned char eHStatusReceived;			//eHouse1 status received flag
 	int CloudStatusChanged;							//data changed => must be updated
-/*	unsigned char   COMMANAGER_IP_HIGH,				//initial addresses of different controller types
-	COMMANAGER_IP_LOW,*/
 	unsigned char   INITIAL_ADDRESS_LAN;
 	unsigned char   INITIAL_ADDRESS_WIFI;
 	unsigned char UDP_terminate_listener;    //terminate udp listener service
 	unsigned char eHEStatusReceived;         //Ethernet eHouse status received flag (count of status from reset this flag)
 	unsigned char eHWiFiStatusReceived;      //eHouse WiFi status received flag (count of status from reset this flag)
-	//static void * EhouseSubmitData(void *ptr);
 typedef struct TcpClientConT
         {
         int Socket;                             //TCP Client Sockets for paralel operations

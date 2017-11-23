@@ -20,54 +20,17 @@
  * 
  */
 
-//#include <iostream>
 #include "stdafx.h"
 #include "../main/Logger.h"
-//#include<stdio.h> //printf
-//#include <time.h>
-//#include<string.h>    //strlen
-//#include <sys/types.h>
 #include "../eHouseTCP.h"
 #ifndef WIN32
-/*#include <sys/socket.h>
-#include <arpa/inet.h> 
-#include<netinet/in.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>*/
 #include <netinet/tcp.h>
-#else
-//#include <winapi.h>
-//#include <Windows.h>
-//#include <winsock.h>
-//#include <winsock2.h>
-
 #endif
 
 #include "globals.h"
 #include "status.h"
-unsigned char SrvAddrH = 0, SrvAddrL = 200, SrvAddrU=192, SrvAddrM=168;
-unsigned char EHOUSE_TCP_CLIENT_TIMEOUT = 0;
-unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US = 100000;
-static int EHOUSE_TCP_PORT = 9876;
-static unsigned char DEBUG_TCPCLIENT = 0;
 
-
-
-
-//#include <errno.h>
-//#include <exception>
-//#include <stdio.h>
-//#include <string.h>
-//#include <sys/types.h>
-
-
-//#include <pthread.h>
-#define USE_GOTO 1              //Less stack utilization and faster execution & more efficient
+#define USE_GOTO 1              //Lesser stack utilization and faster execution & more efficient
 #ifdef USE_GOTO                 //Maybe less elegant but better :)
 #define eHTerminate(x) {goto terminate;}
 #else
@@ -81,28 +44,27 @@ static unsigned char DEBUG_TCPCLIENT = 0;
  */
 void eHouseTCP::EhouseInitTcpClient(void)
 {
-    unsigned char i=0;
-    for (i=0;i<MAX_CLIENT_SOCKETS;i++)
+    unsigned char i = 0;
+    for (i=0; i < MAX_CLIENT_SOCKETS; i++)
         {
-        memset((void *)&TC[i],0,sizeof(TC[i]));
-        TC[i].Socket=-1;
-        TC[i].ActiveConnections=-1;
+        memset((void *) &TC[i], 0, sizeof(TC[i]));
+        TC[i].Socket = -1;
+        TC[i].ActiveConnections = -1;
         }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// Submit binary pack of events
 
 char eHouseTCP::SubmitEvent(const unsigned char *Events, unsigned char EventCount)
 {
     unsigned char Event[255];
-    memset(Event,0,sizeof(Event));
-    memcpy(Event,Events,EventCount*EVENT_SIZE);
-    if (Event[0]!=SrvAddrH) //other than lan, wifi
-        return SendTCPEvent((unsigned char *)&Event, EventCount, SrvAddrH, SrvAddrL, (unsigned char *) &Event);
+    memset(Event, 0, sizeof(Event));
+    memcpy(Event, Events, EventCount * EVENT_SIZE);
+    if (Event[0] != SrvAddrH) //other than lan, wifi
+        return SendTCPEvent((unsigned char *)&Event, EventCount, SrvAddrH, SrvAddrL, (unsigned char *) &Event);	// Via eHouse PRO Server
     else
-        return SendTCPEvent((unsigned char *)&Event, EventCount, Event[0], Event[1], (unsigned char *) &Event);
-        
+        return SendTCPEvent((unsigned char *)&Event, EventCount, Event[0], Event[1], (unsigned char *) &Event);	// Directly to IP controllers        
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define INDEX_PRO  0
@@ -110,26 +72,25 @@ char eHouseTCP::SubmitEvent(const unsigned char *Events, unsigned char EventCoun
 #define INDEX_WIFI 100
 signed int eHouseTCP::IndexOfEthDev(unsigned char AddrH,unsigned char AddrL)
 {
-    unsigned char i=0;
+    unsigned char i = 0;
 	if (ViaTCP)
 		{
 		if  ((SrvAddrU != 192) || (SrvAddrM != 168)) return INDEX_PRO;
-		//if  ((SrvAddrU != 192) || (SrvAddrM != 168)) return INDEX_PRO;
 		}
-    if ((SrvAddrH==AddrH) && (SrvAddrL==AddrL)) return INDEX_PRO;
 
-	
+	if ((SrvAddrH == AddrH) && (SrvAddrL == AddrL)) return INDEX_PRO;
 
-for (i=0;i<ETHERNET_EHOUSE_RM_MAX;i++)
+	for (i = 0; i < ETHERNET_EHOUSE_RM_MAX; i++)
         {
-		if (strlen((char *)&eHEn[i]) > 0) 
-			if ((eHERMs[i]->eHERM.AddrH==AddrH) && (eHERMs[i]->eHERM.AddrL==AddrL)) 
-                return INDEX_ETH+i;            
+		if (strlen((char *) &eHEn[i]) > 0) 
+			if ((eHERMs[i]->eHERM.AddrH == AddrH) && (eHERMs[i]->eHERM.AddrL == AddrL)) 
+                return INDEX_ETH + i;
         }
-for (i=0;i<EHOUSE_WIFI_MAX;i++)
+
+	for (i=0; i<EHOUSE_WIFI_MAX; i++)
         {
 		if (strlen((char *)&eHWIFIn[i]) > 0)
-			if ((eHWiFi[i]->status.AddrH==AddrH) && (eHWiFi[i]->status.AddrL==AddrL)) return INDEX_WIFI+i;            
+			if ((eHWiFi[i]->status.AddrH == AddrH) && (eHWiFi[i]->status.AddrL == AddrL)) return INDEX_WIFI + i;
         }
     
 return INDEX_PRO;
@@ -137,30 +98,30 @@ return INDEX_PRO;
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-char eHouseTCP::SendTCPEvent(const unsigned char *Events,unsigned char EventCount,unsigned char AddrH,unsigned char AddrL,const unsigned char *EventsToRun)
+char eHouseTCP::SendTCPEvent(const unsigned char *Events, unsigned char EventCount, unsigned char AddrH, unsigned char AddrL, const unsigned char *EventsToRun)
 {
 int tcp_client_socket_index;
 unsigned char i;
 int ind;
-ind=IndexOfEthDev(AddrH,AddrL);     //get index of Ethernet Controller (the same as status array index except CM)
-tcp_client_socket_index=-1;
-for (i=0;i<MAX_CLIENT_SOCKETS;i++)     //search first free socket (TCP Client instance)
+ind = IndexOfEthDev(AddrH, AddrL);     //get index of Ethernet Controller (the same as status array index except CM)
+tcp_client_socket_index = -1;
+for (i = 0; i < MAX_CLIENT_SOCKETS; i++)     //search first free socket (TCP Client instance)
         {
-        if (ind>=0)                             //status exists in eHE we have index
-            if (TC[i].ActiveConnections==ind)
+        if (ind >= 0)                             //status exists in eHE we have index
+            if (TC[i].ActiveConnections == ind)
 				{  
 //              printf("Already sending: 192.168.%d.%d\r\n",AddrH,AddrL);
                 return -2;     //!!!! still connected to specified controller
 				}
-			if (TC[i].ActiveConnections>=0) continue;
+			if (TC[i].ActiveConnections >= 0) continue;
 			if (TC[i].NotFinished) continue;
-			if ((TC[i].Socket==-1) & (tcp_client_socket_index<0))  //free socket exists & only once
+			if ((TC[i].Socket == -1) & (tcp_client_socket_index < 0))  //free socket exists & only once
                 {
-                tcp_client_socket_index=i;      //we take it if not connected to this ip addr
+                tcp_client_socket_index = i;      //we take it if not connected to this ip addr
                 break;
                 }
         }
-     if (tcp_client_socket_index<0)
+     if (tcp_client_socket_index < 0)
 				return -1;  //No free socket available (TCP Client instance) will be processed later
     //Can Proceed then submit to TCPClient queue
     TC[tcp_client_socket_index].NotFinished = 90; //~30s         //Not Complete flag for thread garbage in case of error
@@ -174,9 +135,9 @@ for (i=0;i<MAX_CLIENT_SOCKETS;i++)     //search first free socket (TCP Client in
     //using socket timeout - verify in desired system if it act properly with Connect() function
                                                         //depends on implementation
     //TC[tcp_client_socket_index].Stat = TC_NOT_CONNECTED;//is this necessary 
-    memcpy((void *)&TC[tcp_client_socket_index].Events, Events, TC[tcp_client_socket_index].EventSize*EVENT_SIZE);  //copy Events to buffer for thread or SubmitData function
-    memcpy((void *)&TC[tcp_client_socket_index].EventsToRun, EventsToRun, EventCount);
-    int param=tcp_client_socket_index;
+    memcpy((void *) &TC[tcp_client_socket_index].Events, Events, TC[tcp_client_socket_index].EventSize * EVENT_SIZE);  //copy Events to buffer for thread or SubmitData function
+    memcpy((void *) &TC[tcp_client_socket_index].EventsToRun, EventsToRun, EventCount);
+    int param = tcp_client_socket_index;
 #ifndef EHOUSE_TCP_CLIENT_THREAD
 	EhouseSubmitData(tcp_client_socket_index);
 	ExecQueuedEvents();
@@ -205,22 +166,15 @@ void TestTCPClientMultiThread(void)
 }
 
 */
-/* Perform complete submission of data via TCPClient to Ethernet eHouse Controller
- * Uses Xor Password authorization with dynamic challenge code received from server
- * Verify in target operating system if timeout is supported by the platform especially during Connect
- * TCP_CLIENT_TIMEOUT,TCP_CLIENT_TIMEOUT_US is set in globals.h for proper timeout values (default 1sec)
- * PassWord definition contains password for challange response (6B)
- * VendorCode "\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0" defined for additional hashing (6B) - do not modify
- * 
- * @param SocketIndex - Free socket index to pass (TCP Client Instance)
+/* Finalize TCP IP Client Sockets
  */
 void eHouseTCP::performTCPClientThreads()
 {
     int i=0;
-for (i=0;i<MAX_CLIENT_SOCKETS;i++)
-	if ((TC[i].NotFinished)>0)
+for (i=0; i<MAX_CLIENT_SOCKETS; i++)
+	if ((TC[i].NotFinished) > 0)
 		{
-		TC[i].NotFinished--;
+		TC[i].NotFinished --;
 		if (TC[i].NotFinished) continue;
 		/*if (EhouseTcpClientThread[i] -> joinable())
 		{
@@ -228,16 +182,14 @@ for (i=0;i<MAX_CLIENT_SOCKETS;i++)
 				join(); 
 			//EhouseTcpClientThread[i] = NULL;
 		}*/
-		TC[i].NotFinished=0;
-		TC[i].Socket=-1;
-		TC[i].OK=0;
-		TC[i].ActiveConnections=-1;
+		TC[i].NotFinished = 0;
+		TC[i].Socket = -1;
+		TC[i].OK = 0;
+		TC[i].ActiveConnections = -1;
 		
 		}
 }
 ////////////////////////////////////////////////////////////////////////////////
-//char VendorCode[6]={0,0,0,0,0,0};
-//char PassWord[6]="";
 
 #ifndef EHOUSE_TCP_CLIENT_THREAD
 void eHouseTCP::EhouseSubmitData(int SocketIndex)
@@ -265,101 +217,101 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
         struct sockaddr_in server;
         char line[20];
         unsigned char challange[255];
-        int status=0;
+        int status = 0;
         int iter;
-        memset(&server,0,sizeof(server));               //clear server structure
-        memset(&challange,0,sizeof(challange));         //clear buffer
-        sprintf(line,"%d.%d.%d.%d",SrvAddrU,SrvAddrM,ClientCon->AddrH,ClientCon->AddrL);
+        memset(&server, 0, sizeof(server));               //clear server structure
+        memset(&challange, 0, sizeof(challange));         //clear buffer
+        sprintf(line,"%d.%d.%d.%d", SrvAddrU, SrvAddrM, ClientCon->AddrH, ClientCon->AddrL);
         ClientCon->Socket = socket(AF_INET , SOCK_STREAM , 0);
         
         if (ClientCon->Socket < 0)       //Check if socket was created
                 {
-			_log.Log(LOG_ERROR, "[TCP Cli %d] Could not create socket",SocketIndex);
-                ClientCon->NotFinished++;
-				return ;
+			_log.Log(LOG_ERROR, "[TCP Cli %d] Could not create socket", SocketIndex);
+                ClientCon->NotFinished ++;
+				return;
                 }
                 
-        if (setsockopt (ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+        if (setsockopt (ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout,
                 sizeof(timeout)) < 0)   //Set socket Read operation Timeout
-                LOG(LOG_STATUS,"[TCP Cli] Set Read Timeout failed\n");
+                LOG(LOG_STATUS, "[TCP Cli] Set Read Timeout failed");
 
-         if (setsockopt (ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+         if (setsockopt (ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *) &timeout,
                 sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
-                LOG(LOG_STATUS,"[TCP Cli] Set Write Timeout failed\n");
+                LOG(LOG_STATUS, "[TCP Cli] Set Write Timeout failed");
         //TCP_NODELAYACK
         char kkk=1;
         status=1L;
-        if (setsockopt (ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk,sizeof(kkk)) < 0)   //Set socket send data imediatelly
+        if (setsockopt (ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data imediatelly
 			{
 			_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 			}
-        server.sin_addr.s_addr= SrvAddrU | (SrvAddrM<<8)    |(ClientCon->AddrH<<16)|(ClientCon->AddrL<<24); 
+        server.sin_addr.s_addr= SrvAddrU | (SrvAddrM<<8)    | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24); 
         server.sin_family = AF_INET;                    //tcp v4
         server.sin_port = htons(EHOUSE_TCP_PORT);       //assign eHouse Port
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Trying Connecting to: %s",SocketIndex,line);
-        if (connect(ClientCon->Socket , (struct sockaddr *)&server , sizeof(server)) < 0)
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Trying Connecting to: %s", SocketIndex, line);
+        if (connect(ClientCon->Socket , (struct sockaddr *) &server , sizeof(server)) < 0)
                 {
-				_log.Log(LOG_ERROR, "[TCP Cli %d] error connecting: %s",SocketIndex,line);
+				_log.Log(LOG_ERROR, "[TCP Cli %d] error connecting: %s", SocketIndex, line);
                 eHTerminate(SocketIndex)
                 }
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connected OK",SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connected OK", SocketIndex);
 //        TC[SocketIndex].Stat=TC_NOT_CONNECTED;//is this necessary 
-        iter=5;
-        while ((status=recv(ClientCon->Socket,(char *)&challange,6,0))<6)       //receive challenge code
+        iter = 5;
+        while ((status = recv(ClientCon->Socket, (char *) &challange, 6, 0)) < 6)       //receive challenge code
                 {
 				//_log.Log(LOG_STATUS, "[TCP Cli %d] Not Receive Complete Data: %d",SocketIndex,status);
-                if (status<0) eHTerminate(SocketIndex)    //Error in socket
-                if (!(iter--)) eHTerminate(SocketIndex)       //To many retries then Close
+                if (status < 0) eHTerminate(SocketIndex)    //Error in socket
+                if (! (iter --)) eHTerminate(SocketIndex)       //To many retries then Close
 //                if (TC[SocketIndex].TimeOut==0) eHTerminate(SocketIndex) //Use socket timeouts
                 }
-        if (status==6)  //challenge received frcom Ethernet eHouse controller
+        if (status == 6)  //challenge received frcom Ethernet eHouse controller
                 {       //only Hashed password with VendorCode available for OpenSource
                         {
 						//_log.Log(LOG_STATUS, "[TCP Cli %d] Xored Password",SocketIndex);
-                        challange[6]= (challange[0]^PassWord[0]^VendorCode[0]);
-                        challange[7]= (challange[1]^PassWord[1]^VendorCode[1]);
-                        challange[8]= (challange[2]^PassWord[2]^VendorCode[2]);
-                        challange[9]= (challange[3]^PassWord[3]^VendorCode[3]);
-                        challange[10]=(challange[4]^PassWord[4]^VendorCode[4]);
-                        challange[11]=(challange[5]^PassWord[5]^VendorCode[5]);
+                        challange[6]  = (challange[0] ^ PassWord[0] ^ VendorCode[0]);
+                        challange[7]  = (challange[1] ^ PassWord[1] ^ VendorCode[1]);
+                        challange[8]  = (challange[2] ^ PassWord[2] ^ VendorCode[2]);
+                        challange[9]  = (challange[3] ^ PassWord[3] ^ VendorCode[3]);
+                        challange[10] = (challange[4] ^ PassWord[4] ^ VendorCode[4]);
+                        challange[11] = (challange[5] ^ PassWord[5] ^ VendorCode[5]);
                         }                
-                challange[12]=13;
-                challange[13]=ClientCon->EventSize*EVENT_SIZE;        //Add Size of Events Buffer
-                memcpy(&challange[14],(char *)&ClientCon->Events, ClientCon->EventSize*EVENT_SIZE);        //Add Event Code
+                challange[12] = 13;
+                challange[13] = ClientCon->EventSize * EVENT_SIZE;        //Add Size of Events Buffer
+                memcpy(&challange[14], (char *) &ClientCon->Events, ClientCon->EventSize * EVENT_SIZE);        //Add Event Code
                 }
         else eHTerminate(SocketIndex)    //Wrong data size of received data
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending ch-re",SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending ch-re", SocketIndex);
         
         //Send Challange + response + Events    - Only Xor password
-        status=0;
-        iter=5;
-        while ((status=send(ClientCon->Socket,(char *)&challange,(ClientCon->EventSize*EVENT_SIZE)+14,0))!=(int)(ClientCon->EventSize*EVENT_SIZE)+14)
+        status = 0;
+        iter = 5; 
+        while ((status = send(ClientCon->Socket, (char *) &challange, (ClientCon->EventSize * EVENT_SIZE) + 14, 0)) !=(int)(ClientCon->EventSize * EVENT_SIZE) + 14)
               {
 			//_log.Log(LOG_STATUS, "[TCP Cli %d] NotSend Complete Data: %d",SocketIndex,status);
 //                if (!TC[SocketIndex].TimeOut) eHTerminate(SocketIndex)  //not used here socket timeouts used
-                if (!(iter--)) eHTerminate(SocketIndex)       //To many retries then Close        
-                if (status<0) eHTerminate(SocketIndex)        //Error in connection
+                if (! (iter --)) eHTerminate(SocketIndex)       //To many retries then Close        
+                if (status < 0) eHTerminate(SocketIndex)        //Error in connection
                 }
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Receive Confirmation",SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Receive Confirmation", SocketIndex);
         challange[0] = 0;         //clear one byte is sufficient
-        iter=5;
-        while ((status=recv(ClientCon->Socket,(char *)&challange,1,0))<1)   //receive confirmation of events
+        iter = 5;
+        while ((status = recv(ClientCon->Socket, (char *) &challange, 1, 0)) < 1)   //receive confirmation of events
                 {
-                if (status<0) eHTerminate(SocketIndex)                    //error in connection
+                if (status < 0) eHTerminate(SocketIndex)                    //error in connection
 //                if (!TC[SocketIndex].TimeOut) eHTerminate(SocketIndex)  //using socket timeouts
-                if (!(iter--)) eHTerminate(SocketIndex)                   //To many retries so Close                        
+                if (! (iter --)) eHTerminate(SocketIndex)                   //To many retries so Close                        
                 }
-        if (challange[0]=='+')  //confirmation from Ethernet eHouse controller
+        if (challange[0] == '+')  //confirmation from Ethernet eHouse controller
                 {
-				_log.Log(LOG_STATUS, "[TCP Cli %d] Events Accepted",SocketIndex);
-                unsigned char k=0;
-                for (k=0;k< ClientCon->EventSize;k++)
+				_log.Log(LOG_STATUS, "[TCP Cli %d] Events Accepted", SocketIndex);
+                unsigned char k = 0;
+                for (k = 0;k < ClientCon->EventSize; k++)
                         {
-                        unsigned int m=ClientCon->EventsToRun[k];
-                        if (m<EVENT_QUEUE_MAX)
+                        unsigned int m = ClientCon->EventsToRun[k];
+                        if (m < EVENT_QUEUE_MAX)
                                 {
-                                EvQ[m]->LocalEventsTimeOuts=RUN_NOW-1;
-                                ClientCon->OK=1;
+                                EvQ[m]->LocalEventsTimeOuts = RUN_NOW - 1;
+                                ClientCon->OK = 1;
                                 }
                         //TC[SocketIndex].EventsToRun[k]=0;
                         }                
@@ -368,7 +320,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
                 }
         else
                 {
-				_log.Log(LOG_STATUS, "[TCP Cli %d] No Confirmation",SocketIndex);
+				_log.Log(LOG_STATUS, "[TCP Cli %d] No Confirmation", SocketIndex);
                 }
 		#ifdef WIN32
 			timeout = 100;
@@ -376,14 +328,12 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 			timeout.tv_sec = 0;    //Timeout for socket set in globals.h
 			timeout.tv_usec = 100000;
 		#endif
+		//We are trying close connection as fast as possible
+		if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout)) < 0)   //Set socket Read operation Timeout
+			LOG(LOG_STATUS, "[TCP Cli] Set Read Timeout failed");
 
-		if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-			sizeof(timeout)) < 0)   //Set socket Read operation Timeout
-			LOG(LOG_STATUS, "[TCP Cli] Set Read Timeout failed\n");
-
-		if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-			sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
-			LOG(LOG_STATUS, "[TCP Cli] Set Write Timeout failed\n");
+		if (setsockopt(ClientCon->Socket, SOL_SOCKET, SO_SNDTIMEO, (char *) &timeout, sizeof(timeout)) < 0)   //Set Socket Write operation Timeout
+			LOG(LOG_STATUS, "[TCP Cli] Set Write Timeout failed");
 		//TCP_NODELAYACK
 		kkk = 1;
 		status = 1L;
@@ -401,27 +351,28 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 		#endif
 
         //Trying to Send termination of socket (just in case)
-        challange[0]=0; //byte = 0 is termination of connection request in this stage
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending termination of connection",SocketIndex);
-        if ((status=send(ClientCon->Socket,(char *)&challange,1,0))!=1)
+        challange[0] = 0; //byte = 0 is termination of connection request in this stage
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending termination of connection", SocketIndex);
+        if ((status = send(ClientCon->Socket,(char *) &challange, 1, 0)) != 1)
                 {
-			if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Not sent termination (No Problem)",SocketIndex);
-                if (status<0) eHTerminate(SocketIndex)
+			if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Not sent termination (No Problem)", SocketIndex);
+                if (status < 0) eHTerminate(SocketIndex)
                 }
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Termination Sent OK",SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Termination Sent OK", SocketIndex);
 #ifdef USE_GOTO        
 // Terminate connection and initialize TCP Client Socket for next operations
         terminate:      //Could be replace by KillSocket function and return uncomment definition USE_GOTO
 #else
         KillSocket(SocketIndex);
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::KillSocket(int SocketIndex)
         {       
 
 #endif                
-				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Closing Connection",SocketIndex);
-                memset((void *)&ClientCon->Events,0,sizeof(ClientCon->Events));  //copy Events to buffer for thread
-                memset((void *)&ClientCon->EventsToRun,0,sizeof(ClientCon->EventsToRun));
+				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Closing Connection", SocketIndex);
+                memset((void *)&ClientCon->Events, 0, sizeof(ClientCon->Events));  //copy Events to buffer for thread
+                memset((void *)&ClientCon->EventsToRun, 0, sizeof(ClientCon->EventsToRun));
                 ClientCon->EventSize = 0;
 #ifndef WIN32
                 close(ClientCon->Socket);          //close socket handle
@@ -430,31 +381,22 @@ void eHouseTCP::KillSocket(int SocketIndex)
 #endif
                 ClientCon->Socket = -1;              //reset TCP client
                 //ClientCon->ActiveConnections=-1;   //set active connection from index of eHE[]
-                ClientCon->NotFinished=6;
+                ClientCon->NotFinished = 6;
 				if (ClientCon->OK)
 					{
-					ClientCon->NotFinished=3;
+					ClientCon->NotFinished = 3;
 					
 					}
 				if ((SocketIndex < 0) || (SocketIndex >= MAX_CLIENT_SOCKETS))
-#ifndef EHOUSE_TCP_CLIENT_THREAD
-					return;                      //if invalid socket manipulated somewere else 
-#else
-					//                pthread_exit(0);
 					return;
-#endif                        
                 
                 
-				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] End TCP Client",SocketIndex);
-#ifdef EHOUSE_TCP_CLIENT_THREAD
-
-//                pthread_exit(0);
+				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] End TCP Client", SocketIndex);
 				return;
-#endif                
 //                TC[SocketIndex].TimeOut=0;    //used socket timeouts 
                 
                 
-				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli||||| %d] End TCP Client",SocketIndex);
-return;
+				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[!!!!!!!!! TCP Cli ||||| %d] End TCP Client NOT EXITED", SocketIndex);
+	return;
         }
 
