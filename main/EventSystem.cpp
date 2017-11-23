@@ -2399,7 +2399,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		}
 		else if (deviceName.find("OpenURL") != std::string::npos)
 		{
-			OpenURL(doWhat, "", HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
+			OpenURL(doWhat);
 			actionsDone = true;
 			continue;
 		}
@@ -2498,10 +2498,6 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 			iLastTokenType = 5;
 		} else if ( sToken == "TURN" ) {
 			iLastTokenType = 0;
-		}
-		else if (sToken == "NOTRIGGER")
-		{
-			oResults_.bEventTrigger = false;
 		}
 		else if ( sToken.find( "SECOND" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
@@ -3042,8 +3038,12 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	ExportDeviceStatesToLua(lua_state);
 
+	bool bdzVents;
 	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzv_Dir + "dzVents.lua")
+	{
+		bdzVents = true;
 		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, item.reason);
+	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
@@ -3137,7 +3137,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
-	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzv_Dir + "dzVents.lua")
+	if (bdzVents)
 		m_dzvents.SetGlobalVariables(lua_state, item.reason);
 
 	lua_setglobal(lua_state, "globalvariables");
@@ -3192,7 +3192,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
 		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
-		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename, bdzVents));
 		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{
@@ -3243,7 +3243,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	*/
 }
 
-void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
+void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename, const bool bdzVents)
 {
 	int status;
 	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
@@ -3254,7 +3254,7 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	if (lua_istable(lua_state, -1))
 	{
 		int tIndex = lua_gettop(lua_state);
-		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
+		scriptTrue = iterateLuaTable(lua_state, tIndex, filename, bdzVents);
 	}
 	else
 	{
@@ -3286,19 +3286,23 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 	}
 }
 
-bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
+bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename, const bool bdzVents)
 {
 	bool scriptTrue = false;
 	lua_pushnil(lua_state); // first key
 	while (lua_next(lua_state, tIndex) != 0)
 	{
-		if ((std::string(luaL_typename(lua_state, -2)) == "string") && ((std::string(luaL_typename(lua_state, -1))) == "string" || lua_istable(lua_state, -1)))
+		if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
 		{
 			scriptTrue = processLuaCommand(lua_state, filename, tIndex);
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
-			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename);
+			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename, bdzVents);
+		}
+		else if (bdzVents && std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
+		{
+			scriptTrue = m_dzvents.processLuaCommand(lua_state, filename, tIndex);
 		}
 		else
 		{
@@ -3395,125 +3399,14 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand == "OpenURL")
 	{
-		if (lua_istable(lua_state, -1))
-		{
-			std::map<std::string, std::string> URLdata;
-			std::map<std::string, std::string> URLheaders;
-
-			lua_pushnil(lua_state);
-			while (lua_next(lua_state, tIndex + 2) != 0)
-			{
-				if (lua_istable(lua_state, -1) && (std::string(lua_tostring(lua_state, -2)) == "headers"))
-				{
-					lua_pushnil(lua_state);
-					while (lua_next(lua_state, tIndex + 4) != 0)
-					{
-						if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-						{
-							URLheaders.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-							//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
-						}
-						lua_pop(lua_state, 1);
-					}
-				}
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-				{
-					URLdata.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-					//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
-				}
-
-				lua_pop(lua_state, 1);
-			}
-			OpenURL(URLdata, URLheaders);
-		}
-		else
-		{
-			std::string luaString = lua_tostring(lua_state, -1);
-			OpenURL(luaString, "", HTTPClient::HTTP_METHOD_GET, "", "", 0.2f);
-		}
+		std::string luaString = lua_tostring(lua_state, -1);
+		OpenURL(luaString);
 		scriptTrue = true;
 	}
 	else if (lCommand == "UpdateDevice")
 	{
-		std::string luaString;
-		float delayTime = 0;
-		bool bEventTrigger = false;
-
-		if (lua_istable(lua_state, -1))
-		{
-			std::map<std::string, std::string> updateDeviceData;
-
-			lua_pushnil(lua_state);
-			while (lua_next(lua_state, tIndex + 2) != 0)
-			{
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-				{
-					updateDeviceData.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-					//std::cout << std::string(lua_tostring(lua_state, -2)) << " => " << std::string(lua_tostring(lua_state, -1)) << std::endl;
-				}
-				lua_pop(lua_state, 1);
-			}
-			uint64_t ulIdx;
-			float randomTime = 0;
-			std::string szIdx, nValue, sValue, Protected;
-			std::map<std::string, std::string>::const_iterator itt;
-			for (itt = updateDeviceData.begin(); itt != updateDeviceData.end(); itt++)
-			{
-				if (LowerCase(itt->first) == "idx")
-				{
-					std::stringstream ss(itt->second);
-					ss >> ulIdx;
-					szIdx = itt->second;
-				}
-				else if (LowerCase(itt->first) == "nvalue")
-					nValue = itt->second;
-				else if (LowerCase(itt->first) == "svalue")
-					sValue = itt->second;
-				else if (LowerCase(itt->first) == "protected")
-					Protected = itt->second;
-				else if (LowerCase(itt->first) == "_trigger")
-					bEventTrigger = true;
-				else if (LowerCase(itt->first) == "_after")
-				{
-					std::stringstream ss(itt->second);
-					ss >> delayTime;
-				}
-				else if (LowerCase(itt->first) == "_random")
-				{
-					float randomSec;
-					std::stringstream ss(itt->second);
-					ss >> randomSec;
-					srand((unsigned int)mytime(NULL));
-					randomTime = (float)rand() / (float)(RAND_MAX / randomSec);
-				}
-			}
-			if (!szIdx.empty())
-				luaString = szIdx;
-			else
-				return false;
-
-			luaString.append("|");
-			if (!nValue.empty())
-				luaString.append(nValue);
-
-			luaString.append("|");
-			if (!sValue.empty())
-				luaString.append(sValue);
-
-			luaString.append("|");
-			if (!Protected.empty())
-				luaString.append(Protected);
-
-			if (randomTime)
-				delayTime = randomTime;
-
-			m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
-		}
-		else
-		{
-			luaString = lua_tostring(lua_state, -1);
-			UpdateDevice(luaString, bEventTrigger);
-		}
+		std::string	luaString = lua_tostring(lua_state, -1);
+		UpdateDevice(luaString, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3525,39 +3418,18 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		float afterTimerSeconds = 0;
 		size_t aFind = variableValue.find(" AFTER ");
-		size_t bFind = variableValue.find(" TRIGGER");
-		bool bEventTrigger = false;
 		if ((aFind > 0) && (aFind != std::string::npos))
 		{
-			std::string delayString;
-			if (bFind != std::string::npos)
-			{
-				delayString = variableValue.substr(aFind + 7, bFind - aFind - 7);
-				bEventTrigger = true;
-			}
-			else
-				delayString = variableValue.substr(aFind + 7);
-
+			std::string delayString = variableValue.substr(aFind + 7);
 			std::string newAction = variableValue.substr(0, aFind);
 			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
-			variableValue = newAction;
-		}
-		else if (bFind != std::string::npos)
-		{
-			bEventTrigger = true;
-			std::string newAction = variableValue.substr(0, bFind);
 			variableValue = newAction;
 		}
 
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (result.size() > 0)
 		{
-
 			std::vector<std::string> sd = result[0];
-
-			if (bEventTrigger)
-				SetEventTrigger(atoi(sd[0].c_str()), REASON_USERVARIABLE, afterTimerSeconds);
-
 			variableValue = ProcessVariableArgument(variableValue);
 
 			if (afterTimerSeconds < (1./timer_resolution_hz/2))
@@ -3752,74 +3624,11 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 	}
 }
 
-void CEventSystem::OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders)
-{
-	std::string URL, extraHeaders, method, postData, trigger;
-	std::map<std::string, std::string>::const_iterator itt;
-	float delayTime = 0, randomTime = 0;
-
-	if (URLheaders.size() > 0)
-	{
-		std::map<std::string, std::string>::const_iterator itt;
-		for (itt = URLheaders.begin(); itt != URLheaders.end(); itt++)
-			extraHeaders.append("!#").append(itt->first).append(": ").append(itt->second);
-	}
-
-	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
-	{
-		if (LowerCase(itt->first) == "url")
-			URL = itt->second;
-		else if (LowerCase(itt->first) == "method")
-			method = itt->second;
-		else if (LowerCase(itt->first) == "postdata")
-			postData = itt->second;
-		else if (LowerCase(itt->first) == "_trigger")
-			trigger = itt->second;
-		else if (LowerCase(itt->first) == "_after")
-		{
-			std::stringstream ss(itt->second);
-			ss >> delayTime;
-		}
-		else if (LowerCase(itt->first) == "_random")
-		{
-			float randomSec;
-			std::stringstream ss(itt->second);
-			ss >> randomSec;
-			srand((unsigned int)mytime(NULL));
-			randomTime = (float)rand() / (float)(RAND_MAX / randomSec);
-		}
-	}
-	if (URL.empty())
-	{
-		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
-		return;
-	}
-
-	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
-	if (!method.empty())
-	{
-		if (method == "POST")
-			eMethod = HTTPClient::HTTP_METHOD_POST;
-	}
-	if (!postData.empty())
-	{
-		if (eMethod != HTTPClient::HTTP_METHOD_POST)
-		{
-			_log.Log(LOG_ERROR, "EventSystem: You can only use postdata with method POST..");
-			return;
-		}
-	}
-	if (randomTime)
-		delayTime = randomTime;
-
-	OpenURL(URL, extraHeaders, eMethod, postData, trigger, delayTime);
-}
-
-void CEventSystem::OpenURL(const std::string &URL, const std::string extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &callback, const float delayTime)
+void CEventSystem::OpenURL(const std::string &URL)
 {
 	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
 
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, method, postData, callback));
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, URL, "OpenURL"));
 	// maybe do something with sResult in the future.
 }
 
