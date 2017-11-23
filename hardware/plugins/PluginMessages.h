@@ -101,12 +101,14 @@ namespace Plugins {
 	class ReadMessage : public CPluginMessageBase, public CHasConnection
 	{
 	public:
-		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
+		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
 		{
+			m_ElapsedMs = ElapsedMs;
 			m_Buffer.reserve(ByteCount);
 			m_Buffer.assign(Data, Data + ByteCount);
 		};
 		std::vector<byte>		m_Buffer;
+		int						m_ElapsedMs;
 		virtual void Process()
 		{
 			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
