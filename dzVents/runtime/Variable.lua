@@ -46,7 +46,14 @@ local function Variable(domoticz, data)
 
 	-- send an update to domoticz
 	function self.set(value)
-		return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
+		if (value == nil) then value = '' end
+
+		-- return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
+		return TimedCommand(domoticz, 'Variable', {
+			name = data.name,
+			_trigger = "true",
+			value = tostring(value)
+		}, 'variable')
 	end
 
 	function self.cancelQueuedCommands()

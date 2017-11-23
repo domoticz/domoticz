@@ -179,7 +179,7 @@ describe('Event dispatching', function()
 		_G.globalvariables['script_reason'] = 'uservariable'
 		local main = require('dzVents')
 		assert.is_same({
-			{ ['Variable:myVar1'] =  '10 TRIGGER' }
+			{ ['Variable'] = { name = 'myVar1', value='10', _trigger='true' } }
 		}, main)
 	end)
 
