@@ -12,55 +12,22 @@
  */
 
 #include "stdafx.h"
-//#include <ctime>
-//#include "math.h"
 #include "../main/Logger.h"
 #include "globals.h"
 #include "status.h"
-#ifndef WIN32
-#include <sys/ioctl.h>
-#else
-//#include <windows.h>
-//#include <winbase.h>
-#endif
+
 char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
 unsigned int GetIndex,GetSize;
 int HeartBeat=0;
-//#include <string.h>
 #ifndef WIN32
-//	#include <strings.h>
 	#include<netinet/in.h>
-
+	#include <sys/ioctl.h>
 #else
-        //#include <winsock.h>
-        //#include <winsock2.h>
 		#include <io.h>
-		#define F_OK	0
+		#define F_OK		0
 		#define SHUT_RDWR	SD_BOTH
 #endif
-//        #include <iostream>
-//        #include <sys/types.h>
 
-#ifndef WIN32
-//        #include <sys/socket.h>
-//        #include <netdb.h>
-//		#include <unistd.h>
-//		#include <sys/un.h>
-#endif
-
-//        #include <errno.h>
-//        #include <exception>
-        
-
-//#include "pthread.h"
-#ifdef WIN32
-//        #include <Winsock2.h>
-#else
-//        #include <sys/types.h>
-//        #include <sys/socket.h>
-        //#define closesocket close
-#endif
-//#include <stdio.h>
 #include "../eHouseTCP.h"
 #include "../hardwaretypes.h"
 #include "../../main/RFXtrx.h"
@@ -68,77 +35,10 @@ int HeartBeat=0;
 #include "../../main/mainworker.h"
 #include "../../main/SQLHelper.h"
 unsigned char TESTTEST = 0;
-unsigned char eHEnableAutoDiscovery=1;
-unsigned char eHEnableProDiscovery=1;
-unsigned char eHEnableAlarmInputs=0;
+unsigned char eHEnableAutoDiscovery = 1;
+unsigned char eHEnableProDiscovery = 1;
+unsigned char eHEnableAlarmInputs = 0;
 int TCPSocket = -1;
-void deb(char *prefix,unsigned char *dta, int size);
-
-//ethernet controllers full status binary catch  from UDP Packets directly from controllers
-#define STATUS_ADDRH			1u
-#define STATUS_ADDRL			2u
-#define STATUS_CODE				3u								//normal status == 's'
-#define STATUS_DIMMERS			4u   							//dimmers 3 PWM
-#define STATUS_DMX_DIMMERS		STATUS_DIMMERS+3				//17 DMX
-#define STATUS_ADC_LEVELS		24u     						//16*2  //8*2*2 for 8 ADCs
-#define STATUS_MORE				64u             				// 16b
-#define STATUS_ADC_ETH			72u								//ADCs in 16 * 2B
-#define STATUS_ADC_ETH_END		STATUS_ADC_ETH+32u				//84	//104
-#define STATUS_OUT_I2C			STATUS_ADC_ETH_END				//
-#define STATUS_DMX_DIMMERS2		STATUS_OUT_I2C+5				//ERM ONLY 15 bytes/dimmers 
-#define STATUS_INPUTS_I2C		STATUS_OUT_I2C+20u				//2 razy i2c razy 6 rej po 8	//max 96 
-#define STATUS_DALI			STATUS_INPUTS_I2C+2					//ERM ONLY 10 inptus+12 ALARMs+12 Warning+12monitoring
-#define STATUS_ALARM_I2C		STATUS_INPUTS_I2C+12u			//CM only --|---
-#define STATUS_WARNING_I2C		STATUS_ALARM_I2C+12u			//CM only --|---
-#define STATUS_MONITORING_I2C           STATUS_WARNING_I2C+12u  //CM only --|---			//160
-#define STATUS_PROGRAM_NR		STATUS_MONITORING_I2C+12u		//--|---
-#define STATUS_ZONE_NR			STATUS_PROGRAM_NR+1u
-#define STATUS_ADC_PROGRAM		STATUS_ZONE_NR+1u
-#define STATUS_LIGHT_LEVEL		STATUS_ADC_PROGRAM+2u			//LIGHT LEVEL 3 * 2B
-#define STATUS_SIZE                     180u
-#define STATUS_PROFILE_NO               (STATUS_SIZE-1u)		//Program Nr
-#define STATUS_ZONE_NO                  (STATUS_SIZE-2u)		//Zone Nr
-
-//eHouse 1 (RS-485) binary status distributed via eHouse PRO, CommManager/LevelManager
-#define    STATUS_OFFSET 2                 //offset for status locations in binary buffer
-                                           //byte index location of binary status query results
-#define    RM_STATUS_ADC                 1  + STATUS_OFFSET    //start of adc measurement
-#define    RM_STATUS_OUT                 17 + STATUS_OFFSET    //RM start of outputs
-#define    HM_STATUS_OUT                 33 + STATUS_OFFSET    //HM start of outputs
-#define    RM_STATUS_IN                  20 + STATUS_OFFSET    //RM start of inputs
-#define    RM_STATUS_INT                 21 + STATUS_OFFSET    //rm start of inputs (fast)
-#define    RM_STATUS_OUT25               22 + STATUS_OFFSET    //rm starts of outputs => 25-32
-#define    RM_STATUS_LIGHT               23 + STATUS_OFFSET    //rm light level start
-#define    RM_STATUS_ZONE_PGM            26 + STATUS_OFFSET    //rm current zone
-#define    RM_STATUS_PROGRAM             27 + STATUS_OFFSET    //rm current program
-#define    RM_STATUS_INPUTEXT_A_ACTIVE   28 + STATUS_OFFSET    //em input extenders A status active inputs
-#define    RM_STATUS_INPUTEXT_B_ACTIVE   32 + STATUS_OFFSET    //em input extenders B status active inputs
-#define    RM_STATUS_INPUTEXT_C_ACTIVE   36 + STATUS_OFFSET    //em input extenders C status active inputs
-#define    RM_STATUS_INPUTEXT_A          40 + STATUS_OFFSET    //em --||-
-#define    RM_STATUS_INPUTEXT_B          50 + STATUS_OFFSET    //em 
-#define    RM_STATUS_INPUTEXT_C          60 + STATUS_OFFSET    //em 
-#define    HM_STATUS_PROGRAM             36 + STATUS_OFFSET    //hm current program
-#define    HM_STATUS_KOMINEK             46 + STATUS_OFFSET    //hm status bonfire
-#define    HM_STATUS_RECU                48 + STATUS_OFFSET    //hm status recu
-#define    HM_WENT_MODE                  49 + STATUS_OFFSET    //hm went mode
-//eHouse WiFi binary status via UDP Directly
-#define     WIFI_STATUS_OFFSET      4
-#define     WIFI_OUTPUT_COUNT       8
-#define     WIFI_INPUT_COUNT        8
-#define     WIFI_DIMM_COUNT         4
-#define     WIFI_ADC_COUNT          4
-#define     ADC_OFFSET_WIFI         0+WIFI_STATUS_OFFSET      ///4*2B
-#define     DIMM_OFFSET_WIFI        8+WIFI_STATUS_OFFSET      ///4*1B
-#define     OUT_OFFSET_WIFI         12+WIFI_STATUS_OFFSET     //1B
-#define     IN_OFFSET_WIFI          13+WIFI_STATUS_OFFSET
-#define     OUT_PROGRAM_OFFSET_WIFI 14+WIFI_STATUS_OFFSET      //5b
-#define     MODE_OFFSET_WIFI        15+WIFI_STATUS_OFFSET   //3b
-#define     ADCPRG_OFFSET_WIFI      15+WIFI_STATUS_OFFSET   //:5;
-#define     ModeB_OFFSET_WIFI       16+WIFI_STATUS_OFFSET 
-#define     RSSI_WIFI               17+WIFI_STATUS_OFFSET 
-#define     SINCE_WIFI              18+WIFI_STATUS_OFFSET 
-#define     STATUS_ADC_LEVELS_WIFI  19+WIFI_STATUS_OFFSET 
-#define     next_wifi               19+(2*4)+WIFI_STATUS_OFFSET
 
 //alocate dynamically names structure only during discovery of eHouse PRO controller
 void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
@@ -152,8 +52,8 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 		ECMn->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		ECMn->AddrH = devaddrh;
 		ECMn->AddrL = devaddrl;
-		ECM = (union CMStatusT	 *) malloc(sizeof(union CMStatusT));
-		ECMPrv = (union CMStatusT	 *)malloc(sizeof(union CMStatusT));
+		ECM = (union CMStatusT *) malloc(sizeof(union CMStatusT));
+		ECMPrv = (union CMStatusT *) malloc(sizeof(union CMStatusT));
 		if (ECM == NULL) LOG(LOG_ERROR, "CAN'T Allocate ECM Memory");
 		if (ECMPrv == NULL) LOG(LOG_ERROR, "CAN'T Allocate ECMPrev Memory");
 		}
@@ -186,7 +86,7 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 	int i;
 	if (eHEIndex >= MAX_AURA_DEVS) return ;
 	for (i = 0; i <= eHEIndex; i++)
-	{
+		{
 		//if (strlen((char *)&(AuraN[i])) < 1)
 		if (AuraN[i] == NULL)
 			{
@@ -195,7 +95,7 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			if (AuraN[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
 			AuraN[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
 			AuraN[i]->AddrH = devaddrh;
-			AuraN[i]->AddrL = i +1;
+			AuraN[i]->AddrL = i + 1;
 			AuraDev[i] = (struct AURAT *)malloc(sizeof(struct AURAT));
 			AuraDevPrv[i] = (struct AURAT *)malloc(sizeof(struct AURAT));
 			adcs[i] = (struct CtrlADCT *)malloc(sizeof(struct CtrlADCT));
@@ -204,8 +104,8 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			if (AuraDevPrv[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Stat Prv Memory");
 			AuraN[i]->BinaryStatus[0] = 0;	//modified flag
 			AuraDevPrv[i]->Addr = 0;		//modified flag
+			}
 		}
-	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -217,8 +117,8 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 	{
 //	if (strlen((char *)&(eHEn[i])) < 1)
 		if (eHEn[i] == NULL)
-		{
-			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i+INITIAL_ADDRESS_LAN);
+			{
+			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i + INITIAL_ADDRESS_LAN);
 			eHEn[i] = (struct EtherneteHouseNamesT *)malloc(sizeof(struct EtherneteHouseNamesT));
 			if (eHEn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
 			eHEn[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
@@ -230,8 +130,8 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 			if (eHERMPrev[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Stat Prv Memory");
 			eHEn[i]->BinaryStatus[0] = 0;	//modification flags
 			eHERMPrev[i]->data[0] = 0;
+			}
 		}
-	}
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //alocate dynamically names structure only during discovery of RS-485 controller
@@ -240,7 +140,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	int i;
 	for (i = 0; i <= eHEIndex; i++)
-	{
+		{
 //		if (strlen((char *)&eHn[i]) < 1)
 		if (eHn[i] == NULL)
 			{				
@@ -271,7 +171,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 			eHn[i]->BinaryStatus[0] = 0;		//modification flags
 			eHRMPrev[i]->data[0] = 0;
 			}
-	}
+		}
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //alocate dynamically names structure only during discovery of LAN controller
@@ -298,7 +198,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 				eHWIFIn[i]->BinaryStatus[0] = 0;
 				eHWIFIPrev[i]->data[0] = 0;
 				}
-		}
+			}
 	}
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -350,7 +250,7 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH,unsigned char AddrL,unsigned
         AddrH=0x81;
         AddrL=AuraDev[index]->Addr;        
         //printf("[AURA] %x,%x\r\n",AddrH, AddrL);
-        UpdateSQLStatus(AddrH,AddrL,EH_AURA,VISUAL_AURA_PRESET,1,AuraDev[index]->RSSI,(int)round(AuraDev[index]->TempSet*10), sval, (int)round(AuraDev[index]->volt));
+        UpdateSQLStatus(AddrH,AddrL,EH_AURA,VISUAL_AURA_PRESET, 1, AuraDev[index]->RSSI,(int)round(AuraDev[index]->TempSet*10), sval, (int)round(AuraDev[index]->volt));
         }
 
 //ADCs

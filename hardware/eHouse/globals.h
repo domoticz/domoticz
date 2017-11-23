@@ -8,6 +8,73 @@ extern class eHouseTCP eHouse;
 #define             MAXMSG 0xfffful										//size of udp message buffer
 
 
+//ethernet controllers full status binary catch  from UDP Packets directly from controllers
+#define STATUS_ADDRH			1u
+#define STATUS_ADDRL			2u
+#define STATUS_CODE				3u								//normal status == 's'
+#define STATUS_DIMMERS			4u   							//dimmers 3 PWM
+#define STATUS_DMX_DIMMERS		STATUS_DIMMERS + 3				//17 DMX
+#define STATUS_ADC_LEVELS		24u     						//16*2  //8*2*2 for 8 ADCs
+#define STATUS_MORE				64u             				// 16b
+#define STATUS_ADC_ETH			72u								//ADCs in 16 * 2B
+#define STATUS_ADC_ETH_END		STATUS_ADC_ETH + 32u			//84	//104
+#define STATUS_OUT_I2C			STATUS_ADC_ETH_END				//
+#define STATUS_DMX_DIMMERS2		STATUS_OUT_I2C + 5				//ERM ONLY 15 bytes/dimmers 
+#define STATUS_INPUTS_I2C		STATUS_OUT_I2C + 20u			//2 razy i2c razy 6 rej po 8	//max 96 
+#define STATUS_DALI			STATUS_INPUTS_I2C + 2				//ERM ONLY 10 inptus+12 ALARMs+12 Warning+12monitoring
+#define STATUS_ALARM_I2C		STATUS_INPUTS_I2C + 12u			//CM only --|---
+#define STATUS_WARNING_I2C		STATUS_ALARM_I2C + 12u			//CM only --|---
+#define STATUS_MONITORING_I2C           STATUS_WARNING_I2C + 12u//CM only --|---			//160
+#define STATUS_PROGRAM_NR		STATUS_MONITORING_I2C + 12u		//--|---
+#define STATUS_ZONE_NR			STATUS_PROGRAM_NR + 1u
+#define STATUS_ADC_PROGRAM		STATUS_ZONE_NR + 1u
+#define STATUS_LIGHT_LEVEL		STATUS_ADC_PROGRAM + 2u			//LIGHT LEVEL 3 * 2B
+#define STATUS_SIZE             180u
+#define STATUS_PROFILE_NO       (STATUS_SIZE - 1u)				//Program Nr
+#define STATUS_ZONE_NO          (STATUS_SIZE - 2u)				//Zone Nr
+
+//eHouse 1 (RS-485) binary status distributed via eHouse PRO, CommManager/LevelManager
+#define    STATUS_OFFSET 2                 //offset for status locations in binary buffer
+//byte index location of binary status query results
+#define    RM_STATUS_ADC                 1  + STATUS_OFFSET    //start of adc measurement
+#define    RM_STATUS_OUT                 17 + STATUS_OFFSET    //RM start of outputs
+#define    HM_STATUS_OUT                 33 + STATUS_OFFSET    //HM start of outputs
+#define    RM_STATUS_IN                  20 + STATUS_OFFSET    //RM start of inputs
+#define    RM_STATUS_INT                 21 + STATUS_OFFSET    //rm start of inputs (fast)
+#define    RM_STATUS_OUT25               22 + STATUS_OFFSET    //rm starts of outputs => 25-32
+#define    RM_STATUS_LIGHT               23 + STATUS_OFFSET    //rm light level start
+#define    RM_STATUS_ZONE_PGM            26 + STATUS_OFFSET    //rm current zone
+#define    RM_STATUS_PROGRAM             27 + STATUS_OFFSET    //rm current program
+#define    RM_STATUS_INPUTEXT_A_ACTIVE   28 + STATUS_OFFSET    //em input extenders A status active inputs
+#define    RM_STATUS_INPUTEXT_B_ACTIVE   32 + STATUS_OFFSET    //em input extenders B status active inputs
+#define    RM_STATUS_INPUTEXT_C_ACTIVE   36 + STATUS_OFFSET    //em input extenders C status active inputs
+#define    RM_STATUS_INPUTEXT_A          40 + STATUS_OFFSET    //em --||-
+#define    RM_STATUS_INPUTEXT_B          50 + STATUS_OFFSET    //em 
+#define    RM_STATUS_INPUTEXT_C          60 + STATUS_OFFSET    //em 
+#define    HM_STATUS_PROGRAM             36 + STATUS_OFFSET    //hm current program
+#define    HM_STATUS_KOMINEK             46 + STATUS_OFFSET    //hm status bonfire
+#define    HM_STATUS_RECU                48 + STATUS_OFFSET    //hm status recu
+#define    HM_WENT_MODE                  49 + STATUS_OFFSET    //hm went mode
+//eHouse WiFi binary status via UDP Directly
+#define     WIFI_STATUS_OFFSET      4
+#define     WIFI_OUTPUT_COUNT       8
+#define     WIFI_INPUT_COUNT        8
+#define     WIFI_DIMM_COUNT         4
+#define     WIFI_ADC_COUNT          4
+#define     ADC_OFFSET_WIFI         0+WIFI_STATUS_OFFSET      ///4*2B
+#define     DIMM_OFFSET_WIFI        8+WIFI_STATUS_OFFSET      ///4*1B
+#define     OUT_OFFSET_WIFI         12+WIFI_STATUS_OFFSET     //1B
+#define     IN_OFFSET_WIFI          13+WIFI_STATUS_OFFSET
+#define     OUT_PROGRAM_OFFSET_WIFI 14+WIFI_STATUS_OFFSET      //5b
+#define     MODE_OFFSET_WIFI        15+WIFI_STATUS_OFFSET   //3b
+#define     ADCPRG_OFFSET_WIFI      15+WIFI_STATUS_OFFSET   //:5;
+#define     ModeB_OFFSET_WIFI       16+WIFI_STATUS_OFFSET 
+#define     RSSI_WIFI               17+WIFI_STATUS_OFFSET 
+#define     SINCE_WIFI              18+WIFI_STATUS_OFFSET 
+#define     STATUS_ADC_LEVELS_WIFI  19+WIFI_STATUS_OFFSET 
+#define     next_wifi               19+(2*4)+WIFI_STATUS_OFFSET
+
+
 #define EH_RS485    1
 #define EH_LAN      2
 #define EH_PRO      3

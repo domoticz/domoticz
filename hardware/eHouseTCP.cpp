@@ -33,7 +33,16 @@ eHouse 	(directly )	    	WiFi     PRO		LAN
 eHouse				RS-485	 RFID  AURA  CLOUD  CAN/RF  (Future NON IP Solutions)
 
 Events/Commands send via TCP/IP socket with simple authorization (dynamic code/chalange-response based on XOR Password)
+
+Domoticz ID construction
+MSB...............LSB
+AddrH AddrL IOCde IONr
+Eg output nr 2 at eHouse LAN (192.168.0.201)
+h l O nr
+00C92101
 */
+////////////////////////////////////////////////////////////////////////////////
+
 //#define DEBUG_eHouse 1
 #include "stdafx.h"
 #include "eHouse/globals.h"
@@ -53,16 +62,8 @@ Events/Commands send via TCP/IP socket with simple authorization (dynamic code/c
 #define HEARTBEAT_INTERVAL_MS 12*1000 			// 12 sec
 
 #define round(a) ( int ) ( a + .5 )
-//ID construction
-//MSB...............LSB
-//AddrH AddrL IOCde IONr
-//Eg output nr 2 at eHouse LAN (192.168.0.201)
-//h l O nr
-//00C92101
-//extern void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
-////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // Init Structures on start
-// get controler type
 void eHouseTCP::InitStructs(void)
 {
 	int i;
@@ -740,37 +741,6 @@ bool eHouseTCP::CheckAddress()
 		TCPSocket = ConnectTCP(m_addr.sin_addr.s_addr);
 	return true;
 }
-///////////////////////////////////////////////////////////////////////////////
-/*bool eHouseTCP::ConnectToPro()
-{
-    LOG(LOG_ERROR, "eHouse: On Connect");
-	if (m_socket != INVALID_SOCKET)
-		return true;
-
-	m_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (m_socket == INVALID_SOCKET)
-	{
-		LOG(LOG_ERROR, "eHouse: Unable to create socket");
-		return false;
-	}
-
-	if (connect(m_socket, (const sockaddr*)&m_addr, sizeof(m_addr)) == SOCKET_ERROR)
-	{
-		__LOG(LOG_ERROR, "eHouse: Unable to connect to specified IP Address on specified Port (%s:%d)", m_IPAddress.c_str(), m_IPPort);
-		DestroySocket();
-		return false;
-	}
-#if defined WIN32
-	// If iMode != 0, non - blocking mode is enabled.
-	u_long iMode = 1;
-	ioctlsocket(m_socket, FIONBIO, &iMode);
-#else
-	fcntl(m_socket, F_SETFL, O_NONBLOCK);
-#endif
-	__LOG(LOG_STATUS, "eHouse: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
-
-	return true;
-}*/
 //////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::DestroySocket()
 {

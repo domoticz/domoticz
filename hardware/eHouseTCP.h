@@ -17,8 +17,8 @@ class eHouseTCP :  public  CDomoticzHardwareBase
 public:
     eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro,const int opta, const int optb);
  	~eHouseTCP();
-		bool WriteToHardware(const char *pdata, const unsigned char length);
-		int ConnectTCP(unsigned int ip);
+	bool WriteToHardware(const char *pdata, const unsigned char length);
+	int ConnectTCP(unsigned int ip);
 	void AddTextEvents(unsigned char *ev, int size);						//Add hex coded string with eHouse events/codes
 	signed int AddToLocalEvent(unsigned char *Even, unsigned char offset);  //Add binary coded event from buffer
 	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
@@ -66,8 +66,8 @@ private:
 	WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
 #endif
 
-	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX+1]);			//full wifi status 
-	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX+1]);		//full wifi status previous for detecting changes
+	union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX + 1]);			//full wifi status 
+	union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX + 1]);		//full wifi status previous for detecting changes
 
 
 
@@ -129,7 +129,7 @@ private:
 	void DestroySocket();
 	
 	std::string ISO2UTF8(const std::string &name);
-	//void * EhouseSubmitData(void *ptr);
+	//dynamically allocate memories for controllers structures
 	void eCMaloc(int eHEIndex, int devaddrh, int devaddrl);
 	void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
 	void eAURAaloc(int eHEIndex, int devaddrh, int devaddrl);
@@ -172,31 +172,31 @@ private:
 	signed int GetIndexOfEvent(unsigned char *TempEvent);
 	void ExecQueuedEvents(void);
 	signed int hex2bin(const unsigned char *st, int offset);
-	char ViaTCP;
+	char ViaTCP;					//Statuses via TCP/IP connection
 	int PlanID;
-	int HwID;
-	int eHouseUDPSocket;		//UDP socket handler
-	int UDP_PORT;			//Default UDP PORT
+	int HwID;						//Domoticz Hardware ID
+	int eHouseUDPSocket;			//UDP socket handler
+	int UDP_PORT;					//Default UDP PORT
 	unsigned char nr_of_ch;	
-	char DEBUG_AURA;		//Debug Aura
-	char CHANGED_DEBUG;
-	unsigned int EventsCountInQueue;      //Events In queue count to bypass processing EventQueue when it is empty
-	char PassWord[6];
+	char DEBUG_AURA;				//Debug Aura
+	char CHANGED_DEBUG;				//Display changes signals (devices) on 
+	unsigned int EventsCountInQueue;						//Events In queue count to bypass processing EventQueue when it is empty
+	char PassWord[6];				//Password for XOR Password
 	int HeartBeat;
-	unsigned char ViaCM;
-	unsigned char eHouse1FrameEmpty;      //eHouse1 bus free after reception of all status for Safer Event submissions
+	unsigned char ViaCM;			//eHouse RS-485 Via CommManager
+	unsigned char eHouse1FrameEmpty;						//eHouse1 bus free after reception of all status for Safer Event submissions
 	 unsigned char SrvAddrH, SrvAddrL, SrvAddrU, SrvAddrM;	//eHouse Pro server IP address splited
 
 	unsigned char *dta;
-	unsigned disablers485;
+	unsigned char disablers485;
 	unsigned char StatusDebug,	//Log status reception
 		IRPerform;				//Perform InfraRed signals
 		
 
 	unsigned char eHStatusReceived;			//eHouse1 status received flag
 	int CloudStatusChanged;							//data changed => must be updated
-	unsigned char   INITIAL_ADDRESS_LAN;
-	unsigned char   INITIAL_ADDRESS_WIFI;
+	unsigned char INITIAL_ADDRESS_LAN;
+	unsigned char  INITIAL_ADDRESS_WIFI;
 	unsigned char UDP_terminate_listener;    //terminate udp listener service
 	unsigned char eHEStatusReceived;         //Ethernet eHouse status received flag (count of status from reset this flag)
 	unsigned char eHWiFiStatusReceived;      //eHouse WiFi status received flag (count of status from reset this flag)
@@ -206,7 +206,7 @@ typedef struct TcpClientConT
         unsigned char Events[255u];             //Event buffer for current socket
         //unsigned char TimeOut;                //TimeOut for current client connection in 0.1s require external thread or non blocking socket
         //Active connections to Ehouse Controllers to avoid multiple connection to the same device
-        signed int ActiveConnections;        //index of status matrix eHE[] or ETHERNET_EHOUSE_RM_MAX for CM
+        signed int ActiveConnections;			//index of status matrix eHE[] or ETHERNET_EHOUSE_RM_MAX for CM
         unsigned char AddrH;                    //destination IP byte 3
         unsigned char AddrL;                    //destination IP byte 4
         unsigned char EventSize;                //size of event to submit

@@ -236,10 +236,10 @@ typedef struct  	//status hm status[0]='s'			//struct offset =0;
 		} INPUTS;
 	//WORD INPUTS;
 
-	unsigned char DIMM[3];	//[39,40,41]//Dimmers status 1-3 size 1B per channel, offset in struct 41B
-        unsigned char not_usedA;//[42]
-        unsigned char not_usedB; //[43]
-        unsigned char not_usedC; //[44]
+	unsigned char DIMM[3];			//[39,40,41]//Dimmers status 1-3 size 1B per channel, offset in struct 41B
+        unsigned char not_usedA;	//[42]
+        unsigned char not_usedB;	//[43]
+        unsigned char not_usedC;	//[44]
 
 
         
@@ -253,7 +253,7 @@ typedef struct  	//status hm status[0]='s'			//struct offset =0;
 	unsigned char HM_NOT_USED7:1;	//7 bit
 	//byte 48     //a [46]
 	unsigned char BONFIRE_STATE:3;			//0-2 bits+
-	unsigned char BONFIRE_SENSOR_ERROR:1;           //3 bit ???
+	unsigned char BONFIRE_SENSOR_ERROR:1;   //3 bit ???
 	unsigned char BOILER_FUEL_OUT:1;		//4 bit+
 	unsigned char BOILER_ALARM:1;			//5 bit+
 	unsigned char BOILER_POWER_ON:1;		//6 bit+
@@ -384,26 +384,26 @@ struct 	//Monitoring 1-96: offset - size 12 bytes offset in status 72+20+12+12+1
 
 
 	unsigned char CURRENT_PROGRAM;		//Current Program Nr.
-	unsigned char CURRENT_ZONE;		//Current Security Zone Nr.
+	unsigned char CURRENT_ZONE;			//Current Security Zone Nr.
 	unsigned char CURRENT_ADC_PROGRAM;	//Current ADC program
-	unsigned char DIMM[3];	//Dimmers status 1-3 size 1B per channel, offset in struct 
+	unsigned char DIMM[3];				//Dimmers status 1-3 size 1B per channel, offset in struct 
 	unsigned char iface;	
 } ECMStatus;
 ////////////////////////////////////////////////////////////////////////
 typedef struct  ECMStatusBT				//struct offset =72-2;
 	{
-	unsigned char AddrH;		//address high byte of current controller
-	unsigned char AddrL;		//address low  byte 
-	ADCs ADC[16];				//offset in status 72
+	unsigned char AddrH;				//address high byte of current controller
+	unsigned char AddrL;				//address low  byte 
+	ADCs ADC[16];						//offset in status 72
         unsigned char outs[20];         //1 bit fields	20B size 1-160 outputs offset in status 72+32
         unsigned char inputs[12];       //	 INPUTSExt;
         unsigned char Alarms[12];
         unsigned char Warnings[12];
         unsigned char Monitorings[12];
 	unsigned char CURRENT_PROGRAM;		//Current Program Nr.
-	unsigned char CURRENT_ZONE;		//Current Security Zone Nr.
+	unsigned char CURRENT_ZONE;			//Current Security Zone Nr.
 	unsigned char CURRENT_ADC_PROGRAM;	//Current ADC program
-	unsigned char DIMM[3];	//Dimmers status 1-3 size 1B per channel, offset in struct 
+	unsigned char DIMM[3];				//Dimmers status 1-3 size 1B per channel, offset in struct 
 	unsigned char iface;	
 } ECMStatusB;
 
@@ -419,19 +419,13 @@ typedef struct ERMFullStatusT  				//struct offset =72-2;
         unsigned char DMXDimmers[17+15];        
         unsigned char DaliDimmers[46];
         
-        //unsigned 
         int ADC[16];
-        //unsigned 
         int ADCH[16];
-        //unsigned 
         int ADCL[16];
         
         unsigned char More[8];        
-        //unsigned 
         int Temp[16];
-        //unsigned 
         int TempL[16];
-        //unsigned 
         int TempH[16];
         unsigned char Unit[16];
         unsigned char Type;
@@ -480,6 +474,7 @@ typedef struct WIFIFullStatusT 				//struct offset =72-2;
 
 
 //////////////////////////////////////////////////////////
+// eHouse RS-485 status union
 typedef union eHouse1StatusT	//extended address mode status for RM/ EM without input extenders
 {
 RMStatus RM;
@@ -517,6 +512,7 @@ unsigned char MSB;
 unsigned char LSB;
 } tCANAdcValue;
 /////////////////////////////////////////////////////////////////////////////////
+// CAN/RF status structure
 typedef struct CANStatT
 	{
 	unsigned char AddrH;					//from SID + EID address
@@ -558,7 +554,7 @@ typedef struct CANStatT
 
 ////////////////////////////////////////////////////////
 //
-//
+//   eHouse CAN/RF status Union
 //
 ////////////////////////////////////////////////////////
 typedef union	CANStatusT		//20B
@@ -568,9 +564,8 @@ unsigned char data[sizeof(CANStat)];
 } CANStatus;
                
 /////////////////////////////////////////////////////////
-//CANStatus CanStatus[CAN_STATUS_LENGTH+1];
-///////////////////////////////////////////////////////////
-                
+// WiFi status structure
+/////////////////////////////////////////////////////////
 typedef struct WiFiStatT				/// 22B
 	{
 	unsigned char AddrH;					//from SID + EID address
@@ -615,7 +610,7 @@ typedef struct WiFiStatT				/// 22B
 
 ////////////////////////////////////////////////////////
 //
-//
+//  eHouse WiFi Controller union
 //
 ////////////////////////////////////////////////////////
 typedef union WiFiStatusT
@@ -626,14 +621,8 @@ unsigned char data[sizeof(struct WiFiStatT)];
 
 
 
-
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////        
-//Event Queue structure for manipulation of events        
+//Event Queue structure for processing of events        
 typedef struct EventQueueT
 	{
 	unsigned char LocalEventsToRun[EVENT_SIZE];     //direct event command
@@ -1171,18 +1160,11 @@ unsigned char ForceArmInMode2[SIZEOFCTRL];//               0xa2
 unsigned char ForceArmInMode3[SIZEOFCTRL];//               0xa3
 unsigned char ReturnStatus[SIZEOFCTRL];//                  0xef
 
-
-
 unsigned char  ProgramNr;
 unsigned char AdcProgramNr;
 unsigned char SecuZone;
 unsigned char SecuProgram;
 unsigned char RollerProgram;
-
-
-
-
-
 } SatelStatus;
 
 
@@ -1220,9 +1202,7 @@ typedef struct eHouse1NamesT
     StringN ADCs[16];           //ADC measurement Names
     StringN Programs[24];       //Program Names
     StringN Dimmers[3];        //Dimers Names
-    //char    TextStatus[400];
     unsigned char BinaryStatus[200];
-    //unsigned char BinaryStatusPrv[200];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
     unsigned char FromIPH;
@@ -1268,9 +1248,7 @@ typedef struct eHouseCANNamesT
     double Offset[4];
     double CalibrationV[4];
     double OffsetV[4];
-    //char    TextStatus[100];
     unsigned char BinaryStatus[20];
-    //unsigned char BinaryStatusPrv[20];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
 } eHouseCANNames;
@@ -1308,13 +1286,9 @@ typedef struct EtherneteHouseNamesT
     double Offset[16];
     double CalibrationV[16];
     double OffsetV[16];
-    //char   TextStatus[400];
     unsigned char BinaryStatus[200];
-    //unsigned char BinaryStatusPrv[200];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
-    
-    //double Mod[16];
 } EtherneteHouseNames;
 
 /////////////////////////////////////////////
@@ -1336,10 +1310,8 @@ typedef struct AuraNamesT
     int ParamValue[8];
     int ParamPreset[8];
     StringN Dimmers[3];             //Dimers Names
-    //char   TextStatus[200];
     unsigned char   Dtype;          //device type
     unsigned char BinaryStatus[100];
-    //unsigned char BinaryStatusPrv[100];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
 unsigned char StatusTimeOut;
@@ -1375,12 +1347,9 @@ typedef struct WiFieHouseNamesT
     double Offset[4];
     double CalibrationV[4];
     double OffsetV[4];
-    //char    TextStatus[100];
     unsigned char BinaryStatus[50];
-    //unsigned char BinaryStatusPrv[25];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
-    //double Mod[16];
 } WiFieHouseNames;
 
 
@@ -1405,9 +1374,7 @@ typedef struct eHouseProNamesT
     StringN Rollers[256];        //Rollers Names
     StringN InputsSMS[256];         //Inputs Names for SMS
     StringN ZonesSMS[256];          //Zone Names for SMS
-    //char    TextStatus[SIZE_OF_EHOUSE_PRO_STATUS];
     unsigned char BinaryStatus[SIZE_OF_EHOUSE_PRO_STATUS/2];
-    //unsigned char BinaryStatusPrv[SIZE_OF_EHOUSE_PRO_STATUS/2];
     StringN ADCsDS[128];           //ADC measurement Names
     char    ADCIndexs[128];
     StringN ADCType[128];
@@ -1435,9 +1402,7 @@ typedef struct SatelT
     StringN Rollers[256];        //Rollers Names
     StringN InputsSMS[256];         //Inputs Names for SMS
     StringN ZonesSMS[256];          //Zone Names for SMS
-    //char    TextStatus[SIZE_OF_EHOUSE_PRO_STATUS];
     unsigned char BinaryStatus[SIZE_OF_EHOUSE_PRO_STATUS/2];
-    //unsigned char BinaryStatusPrv[SIZE_OF_EHOUSE_PRO_STATUS/2];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
 } SatelNames;
@@ -1477,77 +1442,10 @@ typedef struct CommManagerNamesT
     double Offset[16];
     double CalibrationV[16];
     double OffsetV[16];
-    //char    TextStatus[400];
     unsigned char BinaryStatus[200];
-    //unsigned char BinaryStatusPrv[200];
     unsigned int BinaryStatusLength;
     unsigned int TCPQuery;
-    //double Mod[16];
 } CommManagerNames;
-
-
-extern struct eHouse1NamesT             *(eHn[EHOUSE1_RM_MAX+1]);
-extern struct CommManagerNamesT         *(ECMn);
-extern struct EtherneteHouseNamesT      *(eHEn[ETHERNET_EHOUSE_RM_MAX+1]);
-extern union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX+1]);  //full erm status decoded
-extern union ERMFullStatT             *(eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);// [ETHERNET_EHOUSE_RM_MAX + 1];  //full erm status decoded
-extern union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX+1]);  //full erm status decoded
-extern union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);// [ETHERNET_EHOUSE_RM_MAX + 1];  //full erm status decoded
-extern union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX]);
-extern union WIFIFullStatT            eHCANs[EHOUSE_CAN_MAX];
-extern union WIFIFullStatT            eHRFs[EHOUSE_RF_MAX];
-extern union WIFIFullStatT            *(eHWIFIPrev [EHOUSE_WIFI_MAX]);
-extern union WIFIFullStatT            eHCANPrev [EHOUSE_CAN_MAX];
-//extern WIFIFullStat            eHRFPrev [EHOUSE_RF_MAX];
-
-extern struct WiFieHouseNamesT      *(eHWIFIn[EHOUSE_WIFI_MAX+1]);
-//extern struct eHouseCANNamesT		eHCANn[EHOUSE_RF_MAX+1];
-//extern struct eHouseCANNamesT		eHCANRFn[EHOUSE_RF_MAX+1];
-extern struct AuraNamesT			*(AuraN[MAX_AURA_DEVS]);
-typedef struct AURA_JS_tt
-{
-    unsigned char   Addr;
-    unsigned char    DType;
-    uint32_t        ID;
-    unsigned char   ParamsCount;
-    unsigned char   ParamUnit[20];
-    int             ParamValue[20];
-    int             ParamPreset[20];
-    int             VCC;
-    int   RSSI;
-    int   LQI;   
-    unsigned char inputs;
-    unsigned char outputs;
-    unsigned char dimmers[3];
-    unsigned char program;
-    unsigned char adcprogram;
-    unsigned char Close:1;
-    unsigned char OpenL:1;
-    unsigned char OpenSmall:1;
-    unsigned char OpenP:1;
-    unsigned char NonProof:1;
-    unsigned char AlarmSoft:1;
-    unsigned char On:1;
-    unsigned char Off:1;
-    unsigned char Flood:1;
-    unsigned char Smoke:1;
-    unsigned char AlarmTamper:1;
-    unsigned char AlarmFire:1;
-    unsigned char AlarmHardware:1;
-    unsigned char AlarmMemory:1;
-    unsigned char Rain:1;
-    unsigned char AlarmFreeze:1;
-    unsigned char LocalControl:1;
-    unsigned char Switch:1;    
-    unsigned char Direction;
-    unsigned char DoorState;
-    unsigned char CentralTemp;
-    unsigned char CentralCont;
-    unsigned char Units;
-    unsigned char Hist;
-    unsigned char Lock;
-    unsigned char Door;
-} AURA_JS;
 
 typedef struct AURAT
 {
@@ -1646,56 +1544,10 @@ typedef struct AURAT
     unsigned char ALARM_GAS:1;
     unsigned char ALARM_WIND:1;
     
-
-    
-    
-    
-    
 } AURA;
-/*extern struct AURAT *(AuraDev[MAX_AURA_DEVS]);
-extern struct AURAT *(AuraDevPrv[MAX_AURA_DEVS]);
-extern struct CtrlADCT			*(adcs[MAX_AURA_DEVS]);
-*/
-//AuraNames                   AuraN[MAX_AURA_DEVS];
 
 
 #endif
 //////////////////////////////////////
-//extern struct EventQueueT		*(EvQ[EVENT_QUEUE_MAX]);
-/*
 
-#ifndef REMOVEUNUSED
-//extern CANStatus 		eHCAN[EHOUSE_RF_MAX];
-//extern CANStatus 		eHCANr[EHOUSE_RF_MAX];
-//extern CANStatus 		eHCANRF[EHOUSE_RF_MAX];
-#endif
-//extern eHouse1Status		eH[EHOUSE1_RM_MAX];
-//extern CMStatus             eHE[ETHERNET_EHOUSE_RM_MAX+1];
-//extern ERMFullStat             eHERMs[ETHERNET_EHOUSE_RM_MAX];  //full erm status decoded
-extern union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
-extern union CMStatusT					*(ECM);
-extern union CMStatusT					*(ECMPrv);
-//#ifdef eHousePro
-extern union eHouseProStatusUT			*(eHouseProStatus);
-#ifndef REMOVEUNUSED
-//extern CANStatus 		eHCANPrv[EHOUSE_RF_MAX];
-////extern CANStatus 		eHCANr[EHOUSE_RF_MAX];
-//extern CANStatus 		eHCANRFPrv[EHOUSE_RF_MAX];
-
-//extern eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
-//extern CMStatus                 eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
-//extern WiFiStatus				eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
-//extern eHouseProStatusU        *(eHouseProStatusPrv);
-#endif
-
-*/
-
-//#ifdef eHousePro
-
-
-/*#ifdef	__cplusplus
-}
-#endif
-*/
-//#endif
 #endif
