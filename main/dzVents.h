@@ -9,6 +9,7 @@ public:
 	void SetGlobalVariables(lua_State *lua_state, const int reason);
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
+	void ProcessHttpResponse(lua_State *lua_state, const std::vector<std::string> &item, const std::string &sValue, const std::string &nValueWording);
 
 private:
 	float StringToFloatRandom(const std::string &randomString);

@@ -1184,7 +1184,7 @@ void CEventSystem::TriggerURL(const std::string &result, const std::vector<std::
 	item.sValue = result;
 	item.nValueWording = callback;
 	item.varId = 0;
-	item.vsData = headerData;
+	item.vData = headerData;
 	item.trigger = NULL;
 	m_eventqueue.push(item);
 }
@@ -3043,6 +3043,9 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	{
 		bdzVents = true;
 		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, item.reason);
+		if (item.reason == REASON_URL)
+			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
+
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -3141,43 +3144,6 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		m_dzvents.SetGlobalVariables(lua_state, item.reason);
 
 	lua_setglobal(lua_state, "globalvariables");
-
-	if (item.reason == REASON_URL)
-	{
-		int statusCode;
-		lua_createtable(lua_state, 0, 0);
-		lua_pushstring(lua_state, "headers");
-		lua_createtable(lua_state, (int)item.vsData.size(), 0);
-		if (item.vsData.size() > 0)
-		{
-			std::vector<std::string>::const_iterator itt;
-			for (itt = item.vsData.begin(); itt != item.vsData.end() - 1; itt++)
-			{
-				size_t pos = (*itt).find(": ");
-				if (pos != std::string::npos)
-				{
-					lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
-					lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
-					lua_rawset(lua_state, -3);
-				}
-			}
-			// last item in vector is always the status code
-			itt = item.vsData.end() - 1;
-			std::stringstream ss(*itt);
-			ss >> statusCode;
-		}
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "statusCode");
-		lua_pushnumber(lua_state, (lua_Number)statusCode);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "data");
-		lua_pushstring(lua_state, item.sValue.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "callback");
-		lua_pushstring(lua_state, item.nValueWording.c_str());
-		lua_rawset(lua_state, -3);
-		lua_setglobal(lua_state, "httpresponse");
-	}
 
 	int status = 0;
 	if (LuaString.length() == 0) {

@@ -172,7 +172,7 @@ private:
 		uint64_t varId;
 		std::string lastUpdate;
 		uint8_t lastLevel;
-		std::vector<std::string> vsData;
+		std::vector<std::string> vData;
 		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;

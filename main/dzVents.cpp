@@ -22,6 +22,43 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
+void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<std::string> &vData, const std::string &sValue, const std::string &nValueWording)
+{
+	int statusCode;
+	lua_createtable(lua_state, 0, 0);
+	lua_pushstring(lua_state, "headers");
+	lua_createtable(lua_state, (int)vData.size(), 0);
+	if (vData.size() > 0)
+	{
+		std::vector<std::string>::const_iterator itt;
+		for (itt = vData.begin(); itt != vData.end() - 1; itt++)
+		{
+			size_t pos = (*itt).find(": ");
+			if (pos != std::string::npos)
+			{
+				lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
+				lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
+				lua_rawset(lua_state, -3);
+			}
+		}
+		// last item in vector is always the status code
+		itt = vData.end() - 1;
+		std::stringstream ss(*itt);
+		ss >> statusCode;
+	}
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "statusCode");
+	lua_pushnumber(lua_state, (lua_Number)statusCode);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "data");
+	lua_pushstring(lua_state, sValue.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "callback");
+	lua_pushstring(lua_state, nValueWording.c_str());
+	lua_rawset(lua_state, -3);
+	lua_setglobal(lua_state, "httpresponse");
+}
+
 float CdzVents::StringToFloatRandom(const std::string &randomString)
 {
 	float randomSec;
