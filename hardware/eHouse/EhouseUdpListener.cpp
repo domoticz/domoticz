@@ -12,55 +12,55 @@
  */
 
 #include "stdafx.h"
-#include <ctime>
-#include "math.h"
+//#include <ctime>
+//#include "math.h"
 #include "../main/Logger.h"
 #include "globals.h"
 #include "status.h"
 #ifndef WIN32
 #include <sys/ioctl.h>
 #else
-#include <windows.h>
-#include <winbase.h>
+//#include <windows.h>
+//#include <winbase.h>
 #endif
 char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
 unsigned int GetIndex,GetSize;
 int HeartBeat=0;
-#include <string.h>
+//#include <string.h>
 #ifndef WIN32
-	#include <strings.h>
+//	#include <strings.h>
 	#include<netinet/in.h>
 
 #else
-        #include <winsock.h>
-        #include <winsock2.h>
+        //#include <winsock.h>
+        //#include <winsock2.h>
 		#include <io.h>
 		#define F_OK	0
 		#define SHUT_RDWR	SD_BOTH
 #endif
 //        #include <iostream>
-        #include <sys/types.h>
+//        #include <sys/types.h>
 
 #ifndef WIN32
-        #include <sys/socket.h>
-        #include <netdb.h>
-		#include <unistd.h>
-		#include <sys/un.h>
+//        #include <sys/socket.h>
+//        #include <netdb.h>
+//		#include <unistd.h>
+//		#include <sys/un.h>
 #endif
 
-        #include <errno.h>
+//        #include <errno.h>
 //        #include <exception>
         
 
-#include "pthread.h"
+//#include "pthread.h"
 #ifdef WIN32
-        #include <Winsock2.h>
+//        #include <Winsock2.h>
 #else
-        #include <sys/types.h>
-        #include <sys/socket.h>
+//        #include <sys/types.h>
+//        #include <sys/socket.h>
         //#define closesocket close
 #endif
-#include <stdio.h>
+//#include <stdio.h>
 #include "../eHouseTCP.h"
 #include "../hardwaretypes.h"
 #include "../../main/RFXtrx.h"
@@ -140,84 +140,11 @@ void deb(char *prefix,unsigned char *dta, int size);
 #define     STATUS_ADC_LEVELS_WIFI  19+WIFI_STATUS_OFFSET 
 #define     next_wifi               19+(2*4)+WIFI_STATUS_OFFSET
 
-//Size of resources for eHouse controllers
-/*    OUTPUTS_COUNT_RM              = 35,      //maximal number of outputs
-    OUTPUTS_COUNT_ERM             = 80,//160,  //maximal nr of outputs for ethernet devices
-    SENSORS_COUNT_RM              = 16,        //maximal number of ADCs
-    SENSORS_COUNT_ERM             = 16,        //maximal number of ADCs for ethernet devices
-    ALARM_SENSORS_COUNT_ERM       = 48,        //96 maximal number of alarm sensors for CM 
-    INPUTS_COUNT_RM               = 16,        //maximal number of Inputs
-    INPUTS_COUNT_ERM              = 48,//96,   //Maximal nr of inputs for ethernet devices
-    DIMMERS_COUNT_RM              = 3;         //dimers count
-*/
-/*
-struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
-signed int IndexOfeHouseRS485(unsigned char devh,unsigned char devl);
-extern void CalculateAdcWiFi(char index);
-
-
-//Variables stored dynamically added during status reception (should be added sequentially)
-union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
-struct CommManagerNamesT        *ECMn=NULL;
-union CMStatusT					*ECM;
-union CMStatusT					*ECMPrv;				//Previous statuses for Update MSQL optimalization  (change data only updated)
-struct eHouseProNamesT          *eHouseProN;
-union eHouseProStatusUT			*eHouseProStatus;
-union eHouseProStatusUT         *eHouseProStatusPrv;
-
-							
-union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
-union ERMFullStatT             *(eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1]);  	//full ERM status decoded previous for detecting changes
-
-union ERMFullStatT             *(eHRMs[EHOUSE1_RM_MAX + 1]);  				//full RM status decoded
-union ERMFullStatT             *(eHRMPrev[EHOUSE1_RM_MAX + 1]);  			//full RM status decoded previous for detecting changes
-
-
-struct EventQueueT				*(EvQ[EVENT_QUEUE_MAX]);		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
-struct AURAT                    *(AuraDev[MAX_AURA_DEVS]);		// Aura status thermostat
-struct AURAT                    *(AuraDevPrv[MAX_AURA_DEVS]);   // previous for detecting changes
-struct AuraNamesT               *(AuraN[MAX_AURA_DEVS]);		
-
-#ifndef REMOVEUNUSED
-CANStatus 				eHCAN[EHOUSE_RF_MAX];
-CANStatus 				eHCANRF[EHOUSE_RF_MAX];
-CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
-CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
-
-eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
-CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX + 1];
-WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX + 1];
-#endif
-
-union WIFIFullStatT            *(eHWIFIs[EHOUSE_WIFI_MAX]);			//full wifi status 
-union WIFIFullStatT            *(eHWIFIPrev[EHOUSE_WIFI_MAX]);		//full wifi status previous for detecting changes
-
-
-
-#ifndef REMOVEUNUSED
-WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
-WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
-WIFIFullStat            eHCANs[EHOUSE_CAN_MAX];
-WIFIFullStat            eHRFs[EHOUSE_RF_MAX];
-#endif
-struct eHouse1NamesT                *(eHn[EHOUSE1_RM_MAX+1]);			//names of i/o for rs-485 controllers
-struct EtherneteHouseNamesT         *(eHEn[ETHERNET_EHOUSE_RM_MAX+1]);	//names of i/o for Ethernet controllers
-struct WiFieHouseNamesT             *(eHWIFIn[EHOUSE_WIFI_MAX+1]);		//names of i/o for WiFi controllers
-
-#ifndef REMOVEUNUSED
-eHouseCANNames              eHCANn[EHOUSE_RF_MAX+1];
-eHouseCANNames              eHCANRFn[EHOUSE_RF_MAX+1];
-SatelNames                  SatelN[MAX_SATEL];
-SatelStatus                 SatelStat[MAX_SATEL];
-#endif
-
-*/
-
-
 //alocate dynamically names structure only during discovery of eHouse PRO controller
 void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
-	if (strlen((char *)&ECMn) < 1)
+//	if (strlen((char *)&ECMn) < 1)
+	if (ECMn == NULL)
 		{
 		LOG(LOG_STATUS, "Allocating CommManager LAN Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		ECMn = (struct CommManagerNamesT *)malloc(sizeof(struct CommManagerNamesT));
@@ -236,7 +163,8 @@ void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
-	if (strlen((char *)&eHouseProN) < 1)
+//	if (strlen((char *)&eHouseProN) < 1)
+	if (eHouseProN == NULL)
 		{
 		LOG(LOG_STATUS, "Allocating eHouse PRO Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		eHouseProN = (struct eHouseProNamesT *)malloc(sizeof(struct eHouseProNamesT));
@@ -259,8 +187,9 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 	if (eHEIndex >= MAX_AURA_DEVS) return ;
 	for (i = 0; i <= eHEIndex; i++)
 	{
-		if (strlen((char *)&(AuraN[i])) < 1)
-		{
+		//if (strlen((char *)&(AuraN[i])) < 1)
+		if (AuraN[i] == NULL)
+			{
 			LOG(LOG_STATUS, "Allocating Aura Thermostat (%d.%d)", devaddrh, i+1);
 			AuraN[i] = (struct AuraNamesT *)malloc(sizeof(struct AuraNamesT));
 			if (AuraN[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
@@ -286,7 +215,8 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 	int i;
 	for (i = 0; i <= eHEIndex; i++)
 	{
-	if (strlen((char *)&(eHEn[i])) < 1)
+//	if (strlen((char *)&(eHEn[i])) < 1)
+		if (eHEn[i] == NULL)
 		{
 			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i+INITIAL_ADDRESS_LAN);
 			eHEn[i] = (struct EtherneteHouseNamesT *)malloc(sizeof(struct EtherneteHouseNamesT));
@@ -311,9 +241,9 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 	int i;
 	for (i = 0; i <= eHEIndex; i++)
 	{
-		if (strlen((char *)&eHn[i]) < 1)
-		{	
-			
+//		if (strlen((char *)&eHn[i]) < 1)
+		if (eHn[i] == NULL)
+			{				
 			eHn[i] = (struct eHouse1NamesT *)malloc(sizeof(struct eHouse1NamesT));
 			if (eHn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");	
 			eHn[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
@@ -340,7 +270,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 			if (eHRMPrev[i] == NULL) LOG(LOG_ERROR, "CANT Allocate RS-485 Stat Prev Memory");
 			eHn[i]->BinaryStatus[0] = 0;		//modification flags
 			eHRMPrev[i]->data[0] = 0;
-		}
+			}
 	}
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,7 +281,8 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 		int i;
 		for (i = 0; i <= eHEIndex; i++)
 			{
-			if (strlen((char *)&eHWIFIn[i]) < 1)
+//			if (strlen((char *)&eHWIFIn[i]) < 1)
+			if (eHWIFIn[i] == NULL)
 				{
 				LOG(LOG_STATUS, "Allocating eHouse WiFi Controller (192.168.%d.%d)", devaddrh, INITIAL_ADDRESS_WIFI + i);
 				eHWIFIn[i] = (struct WiFieHouseNamesT *)malloc(sizeof(struct WiFieHouseNamesT));
@@ -3169,7 +3100,8 @@ LOG(LOG_STATUS, "\r\nTERMINATED UDP\r\n");
 //Freeing ALL Dynamic memory
 int eHEIndex = 0;
 for (eHEIndex =0; eHEIndex<ETHERNET_EHOUSE_RM_MAX + 1;eHEIndex++)
-	if (strlen((char *)&eHEn[eHEIndex])>0)
+//	if (strlen((char *)&eHEn[eHEIndex])>0)
+	if (eHEn[eHEIndex] != NULL)
 		{
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", eHEn[eHEIndex]->AddrH, eHEn[eHEIndex]->AddrL);
 		free(eHEn[eHEIndex]);
@@ -3181,8 +3113,9 @@ for (eHEIndex =0; eHEIndex<ETHERNET_EHOUSE_RM_MAX + 1;eHEIndex++)
 		}
 
 for (eHEIndex = 0; eHEIndex<EHOUSE1_RM_MAX + 1; eHEIndex++)
-	if (strlen((char *)&eHn[eHEIndex])>0)
-	{
+	//if (strlen((char *)&eHn[eHEIndex])>0)
+	if (eHn[eHEIndex] != NULL)
+		{
 		LOG(LOG_STATUS, "Freeing (%d,%d)", eHn[eHEIndex]->AddrH, eHn[eHEIndex]->AddrL);
 		free(eHn[eHEIndex]);
 		eHn[eHEIndex] = 0;
@@ -3190,11 +3123,12 @@ for (eHEIndex = 0; eHEIndex<EHOUSE1_RM_MAX + 1; eHEIndex++)
 		free(eHRMPrev[eHEIndex]);
 		eHRMs[eHEIndex]=0;
 		eHRMPrev[eHEIndex]=0;
-	}
+		}
 
 
 for (eHEIndex = 0; eHEIndex<EHOUSE_WIFI_MAX + 1; eHEIndex++)
-	if (strlen((char *)&eHWIFIn[eHEIndex]) > 0)
+//	if (strlen((char *)&eHWIFIn[eHEIndex]) > 0)
+if (eHWIFIn[eHEIndex] != NULL)
 		{
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", eHWIFIn[eHEIndex]->AddrH, eHWIFIn[eHEIndex]->AddrL);
 		free(eHWIFIn[eHEIndex]);
@@ -3207,7 +3141,8 @@ for (eHEIndex = 0; eHEIndex<EHOUSE_WIFI_MAX + 1; eHEIndex++)
 		eHWIFIPrev[eHEIndex] = 0;
 		}
 
-if (strlen((char *)&ECMn) > 0)
+//if (strlen((char *)&ECMn) > 0)
+if (ECMn != NULL)
 	{
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", ECMn->AddrH, ECMn->AddrL);
 		free(ECMn);
@@ -3218,7 +3153,8 @@ if (strlen((char *)&ECMn) > 0)
 		ECMPrv = 0;
 	}
 
-if (strlen((char *)&eHouseProN) > 0)
+//if (strlen((char *)&eHouseProN) > 0)
+if (eHouseProN != 0)
 		{
 		LOG(LOG_STATUS, "Freeing 192.168.%d.%d", eHouseProN->AddrH[0], eHouseProN->AddrL[0]);
 		free(eHouseProN);
@@ -3241,7 +3177,8 @@ for (i = 0; i < EVENT_QUEUE_MAX; i++)
 
 for (i = 0; i <= MAX_AURA_DEVS; i++)
 	{
-		if (strlen((char *)&(AuraN[i])) < 1)
+		//if (strlen((char *)&(AuraN[i])) < 1)
+		if (AuraN[i] != NULL)
 			{
 			LOG(LOG_STATUS, "Free AURA (%d,%d)", 0x81, i + 1);
 			free(AuraN[i]);

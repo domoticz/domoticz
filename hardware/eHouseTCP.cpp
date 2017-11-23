@@ -32,7 +32,7 @@ eHouse 	(directly )	    	WiFi     PRO		LAN
 						|	   |     |     |      |     |
 eHouse				RS-485	 RFID  AURA  CLOUD  CAN/RF  (Future NON IP Solutions)
 
-Events/Commands send via TCP/IP socket with simple authorization (dynamic code/chalange-response)
+Events/Commands send via TCP/IP socket with simple authorization (dynamic code/chalange-response based on XOR Password)
 */
 //#include <list>
 //#define DEBUG_eHouse 1
@@ -107,10 +107,11 @@ void eHouseTCP::InitStructs(void)
 	to = MAX_AURA_DEVS;
 	for (i = 0; i < to; i++)
 		{
-		(AuraDev[MAX_AURA_DEVS])=NULL;	// Aura status thermostat
-		(AuraDevPrv[i])=NULL;			// previous for detecting changes
-		(AuraN[i])=NULL;
+		(AuraDev[MAX_AURA_DEVS]) = NULL;	// Aura status thermostat
+		(AuraDevPrv[i]) = NULL;			// previous for detecting changes
+		(AuraN[i]) = NULL;
 		}
+//future initialzation
 #ifndef REMOVEUNUSED
 	CANStatus 				eHCAN[EHOUSE_RF_MAX];
 	CANStatus 				eHCANRF[EHOUSE_RF_MAX];
@@ -146,58 +147,58 @@ void eHouseTCP::InitStructs(void)
 // Get controller type from address
 int eHouseTCP::gettype(int adrh,int adrl)
 {
-    if ((adrh==1) && (adrl==1))
+    if ((adrh == 1) && (adrl == 1))
         {
-        Dtype=EH_RS485;
-        Dsubtype=1;
+        Dtype = EH_RS485;
+        Dsubtype = 1;
         return Dtype;
         }
-    if ((adrh==2) && (adrl==1))
+    if ((adrh == 2) && (adrl == 1))
         {
-        Dtype=EH_RS485;
-        Dsubtype=2;
+        Dtype = EH_RS485;
+        Dsubtype = 2;
         return Dtype;
         }
-    if (adrh==55)
+    if (adrh == 55)
         {
-        Dtype=EH_RS485;
-        Dsubtype=3;
+        Dtype = EH_RS485;
+        Dsubtype = 3;
         return Dtype;
         }
-    if ((adrh==0x79) || (adrh==0x80))
+    if ((adrh == 0x79) || (adrh == 0x80))
         {
-        Dtype=EH_CANRF;
-        Dsubtype=adrl;
+        Dtype = EH_CANRF;
+        Dsubtype = adrl;
         return Dtype;
         }
-    if (adrh==0x81)
+    if (adrh == 0x81)
         {
-        Dtype=EH_AURA;
-        Dsubtype=adrl;
+        Dtype = EH_AURA;
+        Dsubtype = adrl;
         return Dtype;
         }
-    if (adrh==0x82)
+    if (adrh == 0x82)
         {
-        Dtype=EH_LORA;
-        Dsubtype=adrl;
+        Dtype = EH_LORA;
+        Dsubtype = adrl;
         return Dtype;
         }
-    if (((adrl>190) && (adrl<201)) || (adrl==SrvAddrL))
+    if (((adrl > 190) && (adrl < 201)) || (adrl == SrvAddrL))
         {
-        Dtype=EH_PRO;
-        Dsubtype=adrl;
+        Dtype = EH_PRO;
+        Dsubtype = adrl;
         return Dtype;
         }    
-    if ((adrl>200) && (adrl<255))
+    if ((adrl > 200) && (adrl < 255))
         {
-        Dtype=EH_LAN;
-        Dsubtype=adrl;
+        Dtype = EH_LAN;
+        Dsubtype = adrl;
         return Dtype;
         }
-    if ((adrl>99) && (adrl<190))
+    if ((adrl > 99) && (adrl < 190))
         {
-        Dtype=EH_WIFI;
-        Dsubtype=adrl;
+        Dtype = EH_WIFI;
+        Dsubtype = adrl;
         return Dtype;
         }    
 	Dtype = EH_PRO;
@@ -209,13 +210,27 @@ void eHouseTCP::eHType(int devtype, char *dta)
 {    
 switch (devtype)
     {
-    case EH_RS485:strcpy(dta,"eHRS");break;
-    case EH_LAN:strcpy(dta,"eHEt");break;
-    case EH_PRO:strcpy(dta,"eHPR");break;
-    case EH_WIFI:strcpy(dta,"eHWi");break;
-    case EH_CANRF:strcpy(dta,"eHCR");break;
-    case EH_AURA:strcpy(dta,"eHAu");break;
-    case EH_LORA:strcpy(dta,"eHLo");break;
+    case EH_RS485:
+		strcpy(dta,"eHRS");
+		break;
+    case EH_LAN:
+		strcpy(dta,"eHEt");
+		break;
+    case EH_PRO:
+		strcpy(dta,"eHPR");
+		break;
+    case EH_WIFI:
+		strcpy(dta,"eHWi");
+		break;
+    case EH_CANRF:
+		strcpy(dta,"eHCR");
+		break;
+    case EH_AURA:
+		strcpy(dta,"eHAu");
+		break;
+    case EH_LORA:
+		strcpy(dta,"eHLo");
+		break;
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -226,30 +241,30 @@ int eHouseTCP::UpdateSQLState(int devh,int devl,int devtype, int type,int subtyp
         bool on_off,int battery)
 {
 char IDX[20];
-char state[5]="";
+char state[5] = "";
 int i;
 sprintf(IDX,"%02X%02X%02X%02X",devh,devl,code,nr);  //index calculated adrh,adrl,signalcode,i/o nr
 if ((type==pTypeLighting2)) // || (type==pTypeTEMP))
     sprintf(IDX,"%X%02X%02X%02X",devh,devl,code,nr);    //exception bug in Domoticz??
-int lastlevel=0;
-int nvalue=0;
-std::string devname="";
+int lastlevel = 0;
+int nvalue = 0;
+std::string devname = "";
 std::vector<std::vector<std::string> > result;
 //if name contains '@' - ignore i/o - do not add to DB (unused)
-if ((strstr(Name,"@")==NULL) && (strlen(Name)>0))   
+if ((strstr(Name,"@") == NULL) && (strlen(Name) > 0))   
     {
     devname.append(Name,strlen(Name));
     devname.append(" - ");
     }
 if (swtype!=STYPE_Selector)
-    if ((strstr(SignalName,"@")!=NULL) || (strlen(SignalName)<1))
+    if ((strstr(SignalName,"@") != NULL) || (strlen(SignalName) < 1 ))
     {
     return -1;
     }
-devname.append(SignalName,strlen(SignalName));
-if ((devtype!=EH_PRO) && (devtype!=EH_CANRF))
-    devname=ISO2UTF8(devname);
-result =m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+devname.append(SignalName, strlen(SignalName));
+if ((devtype != EH_PRO) && (devtype != EH_CANRF))
+    devname = ISO2UTF8(devname);
+result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
                                                                     m_HwdID,                IDX,           devl );
 
 if (result.size() < 1)
@@ -258,13 +273,13 @@ if (result.size() < 1)
                                            "VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
                                             m_HwdID,    IDX,        devl,type,subtype,  signal,     battery,      nValue, sValue,devname.c_str(), swtype);
  
-		result =m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
 			                                                               m_HwdID,                IDX,           devl );
     //add Plan for each controllers
     if (result.size() > 0)
             {
-            i=atoi(result[0][0].c_str());
-            result =m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)",i);
+            i = atoi(result[0][0].c_str());
+            result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)",i);
             if (result.size() < 1)
                 {
                 m_sql.safe_query("INSERT INTO DeviceToPlansMap (DeviceRowID, DevSceneType, PlanID) VALUES ('%d', '%d', '%d')",
@@ -283,7 +298,7 @@ return -1;
 void eHouseTCP::UpdatePGM(int adrh,int adrl,int devtype,const char *names,int idx)
 {
 if (idx<0) return;
-std::string Names=ISO2UTF8(std::string(names));
+std::string Names = ISO2UTF8(std::string(names));
  m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
 }                                      
 ///////////////////////////////////////////////////////////////////////////////////////////
