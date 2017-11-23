@@ -969,7 +969,7 @@ Many attributes represent a moment in time, like `myDevice.lastUpdate`  or `domo
 	print(myDevice.lastUpdate.daysAgo)
 
 	-- compare two times
-	print(domoticz.time.compare(myDevice.lastUpdate).seconds))
+	print(domoticz.time.compare(myDevice.lastUpdate).secs))
 ```
 
 You can also create your own:
@@ -1002,7 +1002,7 @@ Use this in combination with the various dzVents time attributes:
 
 	-- very powerful if you want to compare two time instances:
 	local anotherTime = Time('...') -- fill-in some time here
-	print(t.compare(anotherTime).seconds) -- diff in seconds between t and anotherTime.
+	print(t.compare(anotherTime).secs) -- diff in seconds between t and anotherTime.
 
 ```
 
@@ -1017,9 +1017,9 @@ local utcTime = Time('2017-12-31 22:19:15', true)
 ```
 
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
-	+ **milliseconds**: Total difference in milliseconds.
-	+ **seconds**: Total difference in whole seconds.
-	+ **minutes**: Total difference in whole minutes.
+	+ **ms**: Total difference in milliseconds.
+	+ **secs**: Total difference in whole seconds.
+	+ **mins**: Total difference in whole minutes.
 	+ **hours**: Total difference in whole hours.
 	+ **days**: Total difference in whole days.
 	+ **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
@@ -1282,9 +1282,9 @@ Example:
 #### Getting data points
 
  - **get(idx)**: Returns the idx-th item in the set. Same as `myVar.storage[idx]`.
- - **getAtTime( [timeAgo](#Time_specification_.28timeAgo.29) )**: Returns the data point *closest* to the moment as specified by `timeAgo`. So, `myVar.getAtTime('1:00:00')` returns the item that is closest to one hour old. It may be a bit younger or a bit older than 1 hour.
+ - **getAtTime([timeAgo](#Time_specification_.28timeAgo.29))**: Returns the data point *closest* to the moment as specified by `timeAgo` and the index in the set. So, `myVar.getAtTime('1:00:00')` returns the item that is closest to one hour old. It may be a bit younger or a bit older than 1 hour. The second return value is the index in the set: `local item, index = myVar.getAtTime('1:00:00')`
  - **getLatest( )**: Returns the youngest item in the set. Same as `print(myVar.get(1).data)`.
- - **getOldest( )**: Returns the oldest item in the set. Same as `print(myVar.get(myVar.size).data)`.
+ - **getOldest( )**: Returns the oldest item in the set and the index. Same as `print(myVar.get(myVar.size).data)`. Note that the index is always the same as the total size. `local item, index = myVar.getOldest()`.
  - **size**: Return the number of data points in the set.
  - **subset( [fromIdx], [toIdx] )**: Returns a subset of the stored data. Default value, if omitted, of `fromIdx` is 1. Omitting `toIdx` takes all items until the end of the set (oldest). E.g., `myVar.subset()` returns all data. The result set supports [iterators](#Looping_through_the_data:_iterators) `forEach`, `filter`, `find` and `reduce`.
  - **subsetSince( [[timeAgo](#Time_specification_.28timeAgo.29)] )**: Returns a subset of the stored data since the relative time specified by timeAgo. So calling `myVar.subsetSince('00:60:00')` returns all items that have been added to the list in the past 60 minutes. The result set supports [iterators](#Looping_through_the_data:_iterators) `forEach`, `filter`, `find` and `reduce`.
@@ -1354,15 +1354,17 @@ This function tells dzVents how to get the numeric value for a data item. **Note
 Of course, if you don't intend to use any of these statistical functions you can put whatever you want in the set.
 
  - **avg( [fromIdx], [toIdx], [default] )**: Calculates the average of all item values within the range `fromIdx` to `toIdx`. If no data are in the set, the value `default` will be returned instead of `0`.
- - **avgSince( [timeAgo](#Time_specification_.28timeAgo.29), default )**: Calculates the average of all data points since `timeAgo`. Returns `default` if there are no data, otherwise 0. E.g.: `local avg = myVar.avgSince('00:30:00')` returns the average over the past 30 minutes.
+ - **avgSince([timeAgo](#Time_specification_.28timeAgo.29), default )**: Calculates the average of all data points since `timeAgo`. Returns `default` if there are no data, otherwise 0. E.g.: `local avg = myVar.avgSince('00:30:00')` returns the average over the past 30 minutes.
  - **min( [fromIdx], [toIdx] )**: Returns the lowest value in the range defined by fromIdx and toIdx.
- - **minSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **min** but now within the `timeAgo` interval.
+ - **minSince([timeAgo](#Time_specification_.28timeAgo.29))**: Same as **min** but now within the `timeAgo` interval.
  - **max( [fromIdx], [toIdx] )**: Returns the highest value in the range defined by fromIdx and toIdx.
- - **maxSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **max** but within the `timeAgo` interval.
+ - **maxSince([timeAgo](#Time_specification_.28timeAgo.29))**: Same as **max** but within the `timeAgo` interval.
  - **sum( [fromIdx], [toIdx] )**: Returns the summation of all values in the range defined by fromIdx and toIdx. It will return 0 when there are no data.
- - **sumSince( [timeAgo](#Time_specification_.28timeAgo.29) )**: Same as **sum** but within the `timeAgo` interval.  It will return 0 when there are no data in the interval.
+ - **sumSince([timeAgo](#Time_specification_.28timeAgo.29))**: Same as **sum** but within the `timeAgo` interval.  It will return 0 when there are no data in the interval.
  - **delta( fromIdx, toIdx, [smoothRange], [default] )**: Returns the delta (difference) between items specified by `fromIdx` and `toIdx`. Provide a valid range (no `nil` values). [Supports data smoothing](#Data_smoothing) when providing a `smoothRange` value. Returns `default` if there is not enough data.
- - **deltaSince( [timeAgo](#Time_specification_.28timeAgo.29),  [smoothRange], [default] )**: Same as **delta** but within the `timeAgo` interval.
+ - **delta2( fromIdx, toIdx, [smoothRangeFrom], [smoothRangeTo], [default] )**: Same as **delta** but now you can control if the smooth values for the *from-item* and the *to-item* separately.
+ - **deltaSince([timeAgo](#Time_specification_.28timeAgo.29),  [smoothRange], [default] )**: Same as **delta** but within the `timeAgo` interval.
+ - **deltaSinceOrOldest([timeAgo](#Time_specification_.28timeAgo.29),  [smoothRangeFrom], [smoothRangeTo], [default] )**: Same as **deltaSince** but it will take the oldest value in the set if *timeAgo* is older than the age of the entire set.
  - **localMin( [smoothRange], default )**: Returns the first minimum value (and the item holding the minimal value) in the past. [Supports data smoothing](#Data_smoothing) when providing a `smoothRange` value. For example, given this range of values in the data set (from new to old): `10 8 7 5 3 4 5 6`, it will return `3` because older values *and* newer values are higher: a local minimum. Use this if you want to know at what time a temperature started to rise after it had been dropping. E.g.:
 
 		local value, item = myVar.localMin()
@@ -1715,7 +1717,24 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # Change log
 
-[2.3.0]
+##[2.4.0]
+
+- **BREAKING CHANGE**: The second parameter passed to the `execute` function is no longer `nil` when the script was triggered by a timer or a security event. Please check your scripts. The second parameter now has checks to determine the type. E.g. `execute = function(domoticz, item) .. end`. You can inspect `item` using: `item.isDevice`, `item.isTimer`, `item.isVariable`, `item.isScene`, `item.isGroup`, `item.isSecurity`, `item.isHTTPResponse`. Please read the documentation about the execute function.
+- Added ``.cancelQueuedCommands()`` to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance `.afterMin(10)` or `.repeatAfterMin(1, 4)`
+- Added `.devices()` collection to scenes and groups to iterate (`forEach`, `filter`, `reduce`, `find`) over the associated devices.
+- Added http response event triggers to be used in combination with `openURL`. You can now do `GET` and `POST` request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex `curl` shizzle.
+- Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
+- Added locked/unlocked support for door-locks (locked == active).
+- Moved utility functions from the domoticz object to `domoticz.utils` object. You will see a deprecation warning when using the old function like `round()`, `toCelsius()` etc.
+- Added `lodash` as a method to `domoticz.utils`: `domoticz.utils._`
+- Added `toJSON` and `fromJSON` methods to domoticz.utils.
+- Added `afterXXX()` and `withinXXX()` support for device-update commands. E.g.: `myTextDevice.updateText('Zork').afterMin(2)`.
+- Added support for Logitech Media Server devices (thanks to Eoreh).
+- Added new time rules: `on dd/mm`, `on */mm`, `on dd/*`, `on dd1/mm1-dd2/mm2`, `on -dd/mm`, `on dd/mm-`, `in week aa,bb,cc-dd,-ee, ff-`, `every even week`, `every odd week`
+- Added historical data helper `delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)` to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
+- Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
+
+##[2.3.0]
 
  - Added `active` attribute to devices (more logical naming than the attribute 'bState'). `myDevice.active` is true or false depending on a set of known state values (like On, Off, Open, Closed etc). Use like `if mySwitch.active then .. end`
  - Added `domoticz.urlEncode` method on the `domoticz` object so you can prepare a string before using it with `openURL()`.
@@ -1745,7 +1764,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed the confusing setting for enabling/disabling dzVents event system in Domoticz settings.
  - Fixed a problem where if you have two scripts for a device and one script uses the name and the other uses the id as trigger, the id-based script wasn't executed.
 
-[2.2.0]
+##[2.2.0]
 
  - Fixed typo in the doc WActual > WhActual.
  - Updated switch adapter to match more switch-like devices.
@@ -1762,15 +1781,14 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed bug in check battery levels example.
  - Fixed some irregularities with dimmer levels.
 
-
-[2.1.1]
+##[2.1.1]
 
  - Fixed typo in the doc WActual > WhActual.
  - Updated switch adapter to match more switch-like devices.
  - Added Z-Wave Thermostat mode device adapter.
  - Fixed a problem with thermostat setpoint devices to issue the proper url when updating.
 
-[2.1.0]
+##[2.1.0]
 
  - Added support for switching RGB(W) devices (including Philips/Hue) to have toggleSwitch(), switchOn() and switchOff() and a proper level attribute.
  - Added support for Ampère 1 and 3-phase devices
@@ -1792,7 +1810,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed boiler example to fallback to the current temperature when there is no history data yet when it calculates the average temperature.
  - Use different api command for setting setPoints in the Thermostat setpoint device adapter.
 
-[2.0.0] Domoticz integration
+##[2.0.0] Domoticz integration
 
  - Almost a complete rewrite.
  - **BREAKING CHANGE**: Accessing a device, scene, group, variable, changedDevice, or changedVariable has been changed: instead of doing `domoticz.devices['myDevice']` you now have to call a function: `domoticz.devices('myDevice')`. This applies also for the other collections: `domoticz.scenes(), domoticz.groups(), domoticz.changedDevices(), domoticz.changedVariables()`. If you want to loop over these collection **you can no longer use the standard Lua for..pairs or for..ipairs construct**. You have to use the iterators like forEach, filter and reduce: `domoticz.devices().forEach(function() .. end)` (see [Looping through the collections: iterators](#Looping_through_the_collections:_iterators)). This was a necessary change to make dzVents a whole lot faster in processing your event scripts. **So please change your existing dzVents scripts!**
@@ -1823,18 +1841,18 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Add support for subsystem selection for domoticz.notify function.
  - Fixed a bug where a new persistent variable wasn't picked up when that variable was added to an already existing data section.
 
-[1.1.2]
+##[1.1.2]
 
  - More robust way of updating devices.lua
  - Added device level information for non-dimmer-like devices
 
-[1.1.1]
+##[1.1.1]
 
  - Added support for a devices table in the 'on' section.
  - Added extra log level for only showing information about the execution of a script module.
  - Added example script for System-alive checker notifications (preventing false negatives).
 
-[1.1]
+##[1.1]
 
  - Added example script for controlling the temperature in a room with hysteresis control.
  - Fixed updateLux (thanks to neutrino)
@@ -1842,19 +1860,19 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Fixed updateCounter
  - Added counterToday and counterTotal attributes for counter devices. Only available when http fetching is enabled.
 
-[1.0.2]
+##[1.0.2]
 
  - Added device description attribute.
  - Added support for setting the setpoint for opentherm gateway.
  - Added timedOut boolean attribute to devices. Requires http data fetching to be anabled.
  - Properly detects usage devices and their Wattage.
 
-[1.0.1]
+##[1.0.1]
 
  - Added updateCustomSensor(value) method.
  - Fixed reset() for historical data.
 
-[1.0][1.0-beta2]
+##[1.0][1.0-beta2]
 
  - Deprecated setNew(). Use add() instead. You can now add multiple values at once in a script by calling multiple add()s in succession.
  - Fixed printing device logs when a value was boolean or nil
@@ -1863,7 +1881,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added couple of helper properties on Time object. See README.
  - Renamed the file dzVents_settings.lua to dzVents_settings_example.lua so you don't overwrite your settings when you copy over a new version of dzVents to your system.
 
-[1.0-beta1]
+##[1.0-beta1]
 
  - Added data persistence for scripts between script runs (see readme for more info)
  - Added a time-line based data type for you scripts with historical information and many statistical functions for retreiving information like average, minumum, maximum, delta, data smoothing (averaging values over neighbours) etc. See readme for more information.
@@ -1881,33 +1899,33 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added scenes and groups collections to the domoticz object
  - Added Quick Reference Guide.
 
-[0.9.13]
+##[0.9.13]
 
  - Fixed some timer functions
 
-[0.9.12]
+##[0.9.12]
 
  - Fixed a bug with log level printing. Now errors are printed.
  - Added setPoint, heatingMode, lux, WhTotal, WhToday, WActual attributes to devices that support it. No need to access rawData for these anymore.
 
-[0.9.11]
+##[0.9.11]
 
  - Added log method to domoticz object. Using this to log message in the Domoticz log will respect the log level setting in the settings file. [dannybloe]
  - Updated readme. Better overview, more attributes described.
  - Added iterator functions (forEach and filter) to domoticz.devices, domoticz.changedDevices and domoticz.variables to iterate or filter more easily over these collections.
  - Added a couple of example scripts.
 
-[0.9.10]
+##[0.9.10]
 
  - A little less verbose debug logging. Domoticz seems not to print all message in the log. If there are too many they may get lost. [dannybloe]
  - Added method fetchHttpDomoticzData to domoticz object so you can manually trigger getting device information from Domoticz through http. [dannybloe]
  - Added support for sounds in domiticz.notify(). [WebStarVenlo]
 
-[0.9.9]
+##[0.9.9]
 
  - Fixed a bug where every trigger name was treated as a wild-carded name. Oopsidayzy...
 
-[0.9.8]
+##[0.9.8]
 
  - Fixed a bug where a device can have underscores in its name.
  - Added dimTo(percentage) method to control dimmers.
@@ -1917,6 +1935,6 @@ On the other hand, you have to make sure that dzVents can access the json withou
  - Added http request data from Domoticz to devices. Now you can check the battery level and switch type and more. Make sure to edit dzVents_settings.lua file first and check the readme for install instructions!!!
  - Added log level setting in dzVents_settings.lua
 
-[0.9.7]
+#[0.9.7]
 
  - Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.

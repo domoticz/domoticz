@@ -414,10 +414,11 @@ describe('event helper storage', function()
 
 		it('should get the oldest', function()
 			local hs = HS(data)
-			local item = hs.getOldest()
+			local item, index = hs.getOldest()
 
 			assert.is_same(data[10].time, item.time.raw)
 			assert.is_same(data[10].data, item.data)
+			assert.is_same(index, hs.size)
 
 			-- empty
 			hs = HS()
@@ -820,12 +821,40 @@ describe('event helper storage', function()
 			local smooth = hs.delta(1, 10, 2)  -- 3 > 13  = 10
 			assert.is_same(10, smooth)
 
-			smooth = hs.delta(2, 10, 2)  -- 3 > 13  = 10
+			smooth = hs.delta(2, 10, 2)  -- 3 > 11.75  = 8.75
 			assert.is_same(8.75, smooth)
 
+			-- check against an empty storage
 			hs = HS()
 			assert.is_nil(hs.delta(1, 4))
+			assert.is_same(100, hs.delta(1, 4, nil, 100))
 
+		end)
+
+		it('should return a delta value since a specifc time without start-smoothing', function()
+			local hs = HS(data)
+			hs.setNew(20)
+			-- 20[1] 10[2], 9[3], 8[4], 7[5], 6[6], 5[7], 4[8], 3[9], 2[10] dropped: 1
+
+			local nosmooth = hs.delta2(1, 6)  -- 6 > 20 = 14
+			assert.is_same(14, nosmooth)
+
+			local smooth = hs.delta2(1, 10, 0, 2)  -- 3 > 20  = 17
+			assert.is_same(17, smooth)
+
+			smooth = hs.delta2(2, 10, 0, 2)  -- 3 > 10  = 7
+			assert.is_same(7, smooth)
+
+			smooth = hs.delta2(2, 10, 2, 2)  -- 3 > 11.75  = 8.75
+			assert.is_same(8.75, smooth)
+
+			smooth = hs.delta2(2, 10, 2, 2)  -- 3 > 11.75  = 8.75
+			assert.is_same(8.75, smooth)
+
+			-- check against an empty storage
+			hs = HS()
+			assert.is_nil(hs.delta2(1, 4))
+			assert.is_same(100, hs.delta2(1, 4, 0, 0, 100))
 		end)
 
 		it('should return a delta value since a specifc time', function()
@@ -837,6 +866,22 @@ describe('event helper storage', function()
 			-- beyond the limits, return default value (22)
 			assert.is_same(22, smooth)
 		end)
+
+		it('should return a delta value since a specifc time or oldest', function()
+			local hs = HS(data)
+			-- 10[1], 9[2], 8[3], 7[4], 6[5], 5[6], 4[7], 3[8], 2[9], 1[10]
+
+			local smooth = hs.deltaSinceOrOldest('5:0:0', 2, 2) -- 5[6] > 10[1] (smoothed: 5 > 9)
+			assert.is_same(4, smooth)
+
+			smooth = hs.deltaSinceOrOldest('15:0:0')
+			-- beyond the limits, use oldest value
+			assert.is_same(9, smooth) -- 1 > 10
+
+			hs = HS()
+			assert.is_same(33, hs.deltaSinceOrOldest('15:0:0', nil, nil, 33)) -- empty set
+		end)
+
 
 		it('should return an item at a specific time', function()
 			local hs = HS(data)

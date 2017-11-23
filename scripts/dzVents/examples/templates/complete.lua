@@ -98,7 +98,7 @@ return {
 		-- example
 
 		if (triggerdItem.active) then -- state == 'On'
-			triggerdItem.switchOff().after_min(2) -- if it is a switch
+			triggerdItem.switchOff().afterMin(2) -- if it is a switch
 			domoticz.notify('Light info', 'The light ' .. triggerdItem.name .. ' will be switched off soon')
 		end
 	end

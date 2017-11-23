@@ -1,17 +1,18 @@
 [2.4.0]
-- **BREAKING CHANGE**: The second parameter passed to the execute function is no longer nil when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. execute = function(domoticz, item) .. end. You can inspect item using: item.isDevice, item.isTimer, item.isVariable, item.isScene, item.isGroup, item.isSecurity, item.isHTTPResponse. Please read the documentation about the execute function.
-- Added .cancelQueuedCommands() to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance .afterMin(10) or .repeatAfterMin(1, 4)
-- Added .devices() collection to scenes and groups to iterate (forEach, filter, reduce, find) over the associated devices.
-- Added http response event triggers to be used in combination with openURL. You can now do GET and POST request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex curl shizzle.
+- **BREAKING CHANGE**: The second parameter passed to the execute function is no longer `nil` when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. `execute = function(domoticz, item) .. end`. You can inspect `item` using: `item.isDevice`, `item.isTimer`, `item.isVariable`, `item.isScene`, `item.isGroup`, `item.isSecurity`, `item.isHTTPResponse`. Please read the documentation about the execute function.
+- Added ``.cancelQueuedCommands()`` to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance `.afterMin(10)` or `.repeatAfterMin(1, 4)`
+- Added `.devices()` collection to scenes and groups to iterate (`forEach`, `filter`, `reduce`, `find`) over the associated devices.
+- Added http response event triggers to be used in combination with `openURL`. You can now do `GET` and `POST` request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex `curl` shizzle.
 - Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
 - Added locked/unlocked support for door-locks (locked == active).
-- Added isDevice, isGroup, isTimer, isScene, isHTTPResponse, isVariable to the objects passed as the second parameter to the execute function for even easier detection of object type.
-- Moved utility function from the domoticz object to domoticz.utils object.
-- Added lodash as a method to domoticz.utils: domoticz.utils._
-- Added toJSON and fromJSON methods to domoticz.utils.
-- Added afterXXX() and withinXXX() support for device-update commands. E.g.: myTextDevice.updateText('Zork').afterMin(2).
+- Moved utility functions from the domoticz object to `domoticz.utils` object. You will see a deprecation warning when using the old function like `round()`, `toCelsius()` etc.
+- Added `lodash` as a method to `domoticz.utils`: `domoticz.utils._`
+- Added `toJSON` and `fromJSON` methods to domoticz.utils.
+- Added `afterXXX()` and `withinXXX()` support for device-update commands. E.g.: `myTextDevice.updateText('Zork').afterMin(2)`.
 - Added support for Logitech Media Server devices (thanks to Eoreh).
-- Added new time rules: on dd/mm, on */mm, on dd/*, on dd1/mm1-dd2/mm2, on -dd/mm; on dd/mm-, in week aa,bb,cc-dd,-ee, ff-, every even week, every odd week
+- Added new time rules: `on dd/mm`, `on */mm`, `on dd/*`, `on dd1/mm1-dd2/mm2`, `on -dd/mm`, `on dd/mm-`, `in week aa,bb,cc-dd,-ee, ff-`, `every even week`, `every odd week`
+- Added historical data helper `delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)` to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
+- Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
 
 [2.3.0]
 
