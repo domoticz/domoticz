@@ -25,6 +25,8 @@
 #include "../eHouseTCP.h"
 #ifndef WIN32
 #include <netinet/tcp.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #include "globals.h"
