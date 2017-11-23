@@ -451,6 +451,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
             }
 
 	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
+	EventsCountInQueue = 0;
 	m_HwdID = ID;
     HwID = m_HwdID;
 	memset(m_newData, 0, sizeof(m_newData));

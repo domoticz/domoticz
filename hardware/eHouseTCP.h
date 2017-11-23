@@ -38,12 +38,12 @@ private:
 
 	//Variables stored dynamically added during status reception (should be added sequentially)
 	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
-	struct CommManagerNamesT        *ECMn = NULL;
-	union CMStatusT					*ECM=0;
-	union CMStatusT					*ECMPrv=0;				//Previous statuses for Update MSQL optimalization  (change data only updated)
-	struct eHouseProNamesT          *eHouseProN=0;
-	union eHouseProStatusUT			*eHouseProStatus=0;
-	union eHouseProStatusUT         *eHouseProStatusPrv=0;
+	struct CommManagerNamesT        *ECMn;
+	union CMStatusT					*ECM;
+	union CMStatusT					*ECMPrv;				//Previous statuses for Update MSQL optimalization  (change data only updated)
+	struct eHouseProNamesT          *eHouseProN;
+	union eHouseProStatusUT			*eHouseProStatus;
+	union eHouseProStatusUT         *eHouseProStatusPrv;
 	void InitStructs(void);
 
 	union ERMFullStatT             *(eHERMs[ETHERNET_EHOUSE_RM_MAX + 1]);  		//full ERM status decoded
@@ -131,17 +131,9 @@ private:
 	bool CheckAddress();
 	// Closes socket
 	void DestroySocket();
-	// Connects socket
-	bool ConnectToPro();
-	// new data is collected in Integra for selected command
-	bool ReadNewData();
-	// Gets info from hardware about PCB, ETHM1 etc
-	bool GetInfo();
-	// convert string from cp1250 to utf8
+	
 	std::string ISO2UTF8(const std::string &name);
 	//void * EhouseSubmitData(void *ptr);
-	std::pair<unsigned char*, unsigned int> getFullFrame(const unsigned char* pCmd, const unsigned int cmdLength);
-	int SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const unsigned int expectedLength1, const unsigned int expectedLength2 = -1);
 	void eCMaloc(int eHEIndex, int devaddrh, int devaddrl);
 	void eHPROaloc(int eHEIndex, int devaddrh, int devaddrl);
 	void eAURAaloc(int eHEIndex, int devaddrh, int devaddrl);
@@ -201,13 +193,13 @@ private:
 	signed int hex2bin(const unsigned char *st, int offset);
 	char ViaTCP;
 	int PlanID;
-	int HwID=-1;
+	int HwID;
 	int eHouseUDPSocket;		//UDP socket handler
 	int UDP_PORT;			//Default UDP PORT
 	unsigned char nr_of_ch;	
 	char DEBUG_AURA;		//Debug Aura
 	char CHANGED_DEBUG;
-	unsigned int EventsCountInQueue = 0;      //Events In queue count to bypass processing EventQueue when it is empty
+	unsigned int EventsCountInQueue;      //Events In queue count to bypass processing EventQueue when it is empty
 //	struct eHouseProNamesT *eHouseProN;
 	char PassWord[6];
 	int HeartBeat;
@@ -254,7 +246,7 @@ TcpClientCon    TC[MAX_CLIENT_SOCKETS];    //TCP Client Instances in case of mul
 char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
 void EhouseSubmitData(int SocketIndex);
 void eHType(int devtype, char *dta);
-typedef struct tModel {
+/*typedef struct tModel {
 	unsigned int type;          //controller type / interface
 	unsigned int  id;           //id for controller type detection 
 	unsigned int  addrh;        //address high (for LAN wariant 192.168.addrh.addrl
@@ -278,21 +270,22 @@ Model models[TOT_MODELS] =
 {
 	//Non LAN/IP variants
 	//type  id    h   lmin  lmax   name                         inp  out  adc  dim drv zon pgm  apg  spg
-	/*rs485*/{ EH_RS485,    0x1,  1,    1,   1,    "HeatManager - RS-485"      , 0,  21,  16,  3,  0,  0,  24,    0,  0 },
+	{ EH_RS485,    0x1,  1,    1,   1,    "HeatManager - RS-485"      , 0,  21,  16,  3,  0,  0,  24,    0,  0 },
 	{ EH_RS485,    0x2,  2,    1,   1,    "ExternalManager - RS-485"  , 12, 2,    8,  3, 14,  0,   0,    0,  24 },
 	{ EH_RS485,    0x3,  55,   1, 254,   "RoomManager - RS-485"       , 12, 32,   8,  3,  0,  0,  24,    0,  0 },
-	/*canrf*/{ EH_CANRF,    0x79, 0x79, 1, 128,   "CAN/RF - RF (863MHz)"       , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
+	{ EH_CANRF,    0x79, 0x79, 1, 128,   "CAN/RF - RF (863MHz)"       , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
 	{ EH_CANRF,    0x80, 0x80, 1, 128,   "CAN/RF - CAN"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
-	/*aura*/{ EH_AURA,    0x81, 0x81, 1, 128,   "Aura RF 863MHz sensors"     , 0 , 0,    1,  0,  0,  0,   0,    0,  0 },
-	/*lora*/{ EH_LORA,    0x82, 0x82, 1, 128,   "LORA RF devs"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
+	{ EH_AURA,    0x81, 0x81, 1, 128,   "Aura RF 863MHz sensors"     , 0 , 0,    1,  0,  0,  0,   0,    0,  0 },
+	{ EH_LORA,    0x82, 0x82, 1, 128,   "LORA RF devs"               , 4 , 4,    4,  4,  2,  0,   0,    0,  0 },
 	//LAN/IP variants other address H than above
-	/*pro*/{ EH_PRO,    0xfe, 256, 190, 200, "eHouse PRO Server / Hybrid"   ,256,256,   0,  0,128,100, 100,  100, 100 },
-	/*lan*/{ EH_LAN,    201,  256, 201, 248, "EthernetRoomManger -ERM LAN"  ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
+	{ EH_PRO,    0xfe, 256, 190, 200, "eHouse PRO Server / Hybrid"   ,256,256,   0,  0,128,100, 100,  100, 100 },
+	{ EH_LAN,    201,  256, 201, 248, "EthernetRoomManger -ERM LAN"  ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
 	{ EH_LAN,    249,  256, 249, 249, "EthernetPoolManger - LAN"     ,5 ,   8,  15,  3,  6,  0,  24,   12,   0 }, //dedicated firmware for swimming pools
 	{ EH_LAN,    250,  256, 250, 254, "CommManger - LAN"             ,48,   5,  15,  0, 36, 24,   0,   12,  24 }, //dedicated firmware for roler controller + security system
 	{ EH_LAN,    251,  256, 250, 254, "LevelManager - LAN"           ,48,  77,  15,  0, 36, 24,  24,   12,   0 }, //dedicated firmware for floor controller
-	/*wlan*/{ EH_WIFI,    100,  256, 201, 248, "WiFi Controllers"             ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
+	{ EH_WIFI,    100,  256, 201, 248, "WiFi Controllers"             ,22 , 32,  15,  3, 16,  0,  24,   12,   0 },
 };
+*/
 int Dtype, Dsubtype;
 
 };
