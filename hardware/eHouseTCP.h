@@ -74,6 +74,7 @@ private:
 
 
 
+
 #ifndef REMOVEUNUSED
 	WIFIFullStat            eHCANPrev[EHOUSE_CAN_MAX];
 	WIFIFullStat            eHRFPrev[EHOUSE_RF_MAX];
