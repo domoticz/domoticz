@@ -115,6 +115,7 @@ private:
 	int m_pollInterval;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
+	boost::shared_ptr<boost::thread> EhouseTcpClientThread[MAX_CLIENT_SOCKETS];
 	unsigned char m_newData[7];
 	unsigned char DisablePerformEvent;
 	// password to eHouse 6 ascii chars
@@ -272,7 +273,7 @@ typedef struct tModel {
 } Model;
 
 #define TOT_MODELS 13
-static Model models[TOT_MODELS] =
+Model models[TOT_MODELS] =
 {
 	//Non LAN/IP variants
 	//type  id    h   lmin  lmax   name                         inp  out  adc  dim drv zon pgm  apg  spg

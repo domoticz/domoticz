@@ -3,17 +3,6 @@
 
 #define EH_REMOVE_NAMES 1
 #define LOG _log.Log
-/*extern char SubmitEvent(const unsigned char *Events, unsigned char EventCount);
-//extern char SendTCPEvent(const unsigned char *Events,unsigned char EventCount,unsigned char AddrH,unsigned char AddrL,const unsigned char *EventsToRun);
-extern void EhouseInitTcpClient(void);
-extern void TerminateTcpServer(void);
-extern void *TCPServer(void*);
-extern signed int IndexOfEthDev(unsigned char AddrH,unsigned char AddrL);       //get Index status eHE[] matrix
-extern void TerminateUDP(void);
-extern void ExecQueuedEvents(void);
-extern signed int AddToLocalEvent(unsigned char *Even,unsigned char offset);
-extern void performTCPClientThreads();
-extern void UpdateSQL(int devh,int devl, int code,int nr,int State,char *devname,char * signame);*/
 extern class eHouseTCP eHouse;
 
 #define             MAXMSG 0xfffful										//size of udp message buffer
@@ -120,7 +109,7 @@ extern class eHouseTCP eHouse;
 
 #define TCP_CLIENT_THREAD 1
 //#define UDP_USE_THREAD 1              //Use UDP Thread 
-//#define EHOUSE_TCP_CLIENT_THREAD 1      //Use Multi-Thread for TCP Clients
+#define EHOUSE_TCP_CLIENT_THREAD 1      //Use Multi-Thread for TCP Clients
 #endif
 
 

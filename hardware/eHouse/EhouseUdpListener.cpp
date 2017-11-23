@@ -2421,13 +2421,16 @@ void eHouseTCP::Do_Work()
 	tv.tv_usec = 100000;
 
 #endif
+	
 	if (ViaTCP)
 		{
 		sprintf(LogPrefix, "eHouse TCP");
+		LOG(LOG_STATUS, "[eHouse] TCP");
 		}
 	else
 		{
 		sprintf(LogPrefix, "eHouse UDP");
+		LOG(LOG_STATUS, "[eHouse] UDP");
 		}
 
 	if (access("/usr/local/ehouse/disable_udp_rs485.cfg", F_OK) != -1)        //fileexists read cfg
@@ -2501,16 +2504,18 @@ void eHouseTCP::Do_Work()
 			performTCPClientThreads();		//perform TCP events and submit to Ethernet/WiFi/PRO controllers
 			ExecQueuedEvents();
 			}
-		/*	if ((SecIter % 100) == 1)		//timing tests
+			if ((SecIter % 20) == 1)		//timing tests
 				{
-				LOG(LOG_STATUS, "TIM: %d", tim - prevtim);
-				prevtim = tim;
-				}*/
+			//	performTCPClientThreads();
+				//LOG(LOG_STATUS, "TIM: %d", tim - prevtim);
+				//prevtim = tim;
+				}
 			if (ViaTCP)
 				{
 				m_LastHeartbeat = mytime(NULL);
 				if ((SecIter % 100) == 1)		//15-30 sec - send keep alive
 					{
+					
 					_log.Log(LOG_STATUS, "[TCP Keep Alive ] ");
 					char dta[2];
 					dta[0] = 'q';
@@ -2520,6 +2525,7 @@ void eHouseTCP::Do_Work()
 			else
 				if ((SecIter % 100) == 1)
 					{ 
+					
 					//LOG(LOG_STATUS, "!!!!TTTTIM: %d", time(NULL) - tt);
 					//tt = time(NULL);
 					m_LastHeartbeat = mytime(NULL);

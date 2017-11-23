@@ -34,11 +34,11 @@ eHouse				RS-485	 RFID  AURA  CLOUD  CAN/RF  (Future NON IP Solutions)
 
 Events/Commands send via TCP/IP socket with simple authorization (dynamic code/chalange-response)
 */
-#include <list>
+//#include <list>
 //#define DEBUG_eHouse 1
 #ifdef UDP_USE_THREAD
-#include "pthread.h"
-#include <csignal>
+//#include "pthread.h"
+//#include <csignal>
 #endif
 
 #include "stdafx.h"
@@ -48,75 +48,15 @@ Events/Commands send via TCP/IP socket with simple authorization (dynamic code/c
 #include "hardwaretypes.h"
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
-//#include "../main/Helper.h"
 #include "../main/localtime_r.h"
-//#include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
-//#include "../httpclient/UrlEncode.h"
-//#include "../httpclient/HTTPClient.h"
-//#include "../json/json.h"
 
-#ifdef WIN32
-//#pragma comment (lib, "Ws2_32.lib")
-//#pragma comment (lib, "Mswsock.lib")
-//#pragma comment (lib, "AdvApi32.lib")
-//#include <winsock.h>
-//#include <winsock2.h>
-//WSADATA wsaData;
-#endif
-//unsigned char DisablePerformEvent = 0;
-//int HwID=-1;
-//char ViaTCP = 0;
-//unsigned int    eHOptA=0;
-//unsigned int    eHOptB=0;
 #define OPTA_CLR_DB		0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
 #define OPTA_FORCE_TCP	0x2		//Force TCP/IP instead of UDP for LAN connection 
 #define OPTA_DEBUG		0x4
 
-//    #define LOG(x,y) {_log.Log(x,y);}
-//    #define _LOG(x,y,z) {_log.Log(x,y,z);}
-//    #define __LOG(x,y,z,zz) {_log.Log(x,y,z,zz);}
-
-//extern unsigned char TESTTEST;
 #define EHOUSE_TEMP_POLL_INTERVAL_MS 120*1000 	// 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 			// 12 sec
-
-
-//Data buffering - more effective data update than querying point by point
-//Controller structures and max amounts
-/*
-eHouse1Status		eH[EHOUSE1_RM_MAX];
-CMStatus            eHE[ETHERNET_EHOUSE_RM_MAX+1];
-WiFiStatus          eHWiFi[EHOUSE_WIFI_MAX+1];
-CMStatus			ECM;
-eHouseProStatusU    eHouseProStatus;
-EventQueue			EvQ[EVENT_QUEUE_MAX];		//eHouse event queue for submit to the controllers (directly LAN, WiFi, PRO / indirectly via PRO other variants) - multiple events can be executed at once
-
-//Previous statuses for Update MSQL optimalization  (change data only updated)
-ERMFullStat             eHERMs[ETHERNET_EHOUSE_RM_MAX+1];  		//full erm status decoded
-ERMFullStat             eHERMPrev[ETHERNET_EHOUSE_RM_MAX + 1];  	//full erm status decoded
-ERMFullStat             eHRMs[ETHERNET_EHOUSE_RM_MAX+1];  		//full Rm status decoded
-ERMFullStat             eHRMPrev[ETHERNET_EHOUSE_RM_MAX + 1];  	//full Rm status decoded
-CMStatus				ECMPrv;
-eHouseProNames              eHouseProN;
-eHouseProStatusU        eHouseProStatusPrv;
-AURA                        AuraDev[MAX_AURA_DEVS];
-AURA                        AuraDevPrv[MAX_AURA_DEVS];
-AuraNames                   AuraN[MAX_AURA_DEVS];
-
-#ifndef REMOVEUNUSED
-CANStatus 				eHCAN[EHOUSE_RF_MAX];
-CANStatus 				eHCANRF[EHOUSE_RF_MAX];
-CANStatus 				eHCANPrv[EHOUSE_RF_MAX];
-CANStatus 				eHCANRFPrv[EHOUSE_RF_MAX];
-
-eHouse1Status			eHPrv[EHOUSE1_RM_MAX];
-CMStatus                eHEPrv[ETHERNET_EHOUSE_RM_MAX+1];
-WiFiStatus              eHWiFiPrv[EHOUSE_WIFI_MAX+1];
-
-
-#endif
-*/
 
 #define round(a) ( int ) ( a + .5 )
 //ID construction
@@ -202,6 +142,8 @@ void eHouseTCP::InitStructs(void)
 
 
 }
+///////////////////////////////////////////////////////////////////////////////////////////
+// Get controller type from address
 int eHouseTCP::gettype(int adrh,int adrl)
 {
     if ((adrh==1) && (adrl==1))
@@ -262,6 +204,7 @@ int eHouseTCP::gettype(int adrh,int adrl)
 	return Dtype;
 }
 //////////////////////////////////////////////////////////////////////////////////
+// Get eHouse Controller Type
 void eHouseTCP::eHType(int devtype, char *dta)
 {    
 switch (devtype)
@@ -277,6 +220,7 @@ switch (devtype)
 }
 //////////////////////////////////////////////////////////////////////////////////////
 //Device Discovery - Update database fields (DeviceStatus) + Plans for each controller
+///////////////////////////////////////////////////////////////////////////////////////
 int eHouseTCP::UpdateSQLState(int devh,int devl,int devtype, int type,int subtype, int swtype,int code,
         int nr,char signal,int nValue, const char  *sValue, const char * Name,const char * SignalName,
         bool on_off,int battery)
@@ -430,32 +374,33 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_stoprequested(false),
 	m_pollInterval(pollInterval)
     {
-	eHouseUDPSocket=-1;		//UDP socket handler
+	eHouseUDPSocket=-1;			//UDP socket handler
 	UDP_PORT = 6789;			//Default UDP PORT
 	nr_of_ch=0;
-	DEBUG_AURA = 0;		//Debug Aura
+	DEBUG_AURA = 0;				//Debug Aura
 	CHANGED_DEBUG = 0;
 	disablers485 = 0;
-	StatusDebug = 0;	//Log status reception
+	StatusDebug = 0;			//Log status reception
 	IRPerform = 0;				//Perform InfraRed signals
 	ViaCM = 0;					//eHouse RS-485 via CommManager
-
-	eHStatusReceived=0;			//eHouse1 status received flag
+	memset(VendorCode, 0, sizeof(VendorCode));
+	eHStatusReceived = 0;		//eHouse1 status received flag
 	CloudStatusChanged = 0;							//data changed => must be updated
-	COMMANAGER_IP_HIGH = 0;				//initial addresses of different controller types
+	COMMANAGER_IP_HIGH = 0;		//initial addresses of different controller types
 	COMMANAGER_IP_LOW = 254;
 	INITIAL_ADDRESS_LAN = 200;
 	INITIAL_ADDRESS_WIFI = 100;
-	UDP_terminate_listener = 0;    //terminate udp listener service
-	eHEStatusReceived = 0;         //Ethernet eHouse status received flag (count of status from reset this flag)
-	eHWiFiStatusReceived = 0;      //eHouse WiFi status received flag (count of status from reset this flag)
-
+	UDP_terminate_listener = 0; //terminate udp listener service
+	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
+	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
+	LOG(LOG_STATUS, "[eHouse] Create");
 
     eHEnableAutoDiscovery = AutoDiscovery;
     eHEnableAlarmInputs   = EnableAlarms;
     eHEnableProDiscovery  = EnablePro;
-    eHOptA=opta;
-    eHOptB=optb;
+    eHOptA = opta;
+    eHOptB = optb;
+	EhouseInitTcpClient();					//init multithreaded event sender
 	if (IPPort > 0) EHOUSE_TCP_PORT = IPPort;
 	ViaTCP = 0;
 	if ((eHOptA&OPTA_CLR_DB))// || (TESTTEST))
@@ -478,9 +423,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		CHANGED_DEBUG = 1;
 		DEBUG_TCPCLIENT = 1;
 		}
-	//ViaTCP = 0;
-	//StatusDebug = 1;
-    if (eHEnableAutoDiscovery)
+	if (eHEnableAutoDiscovery)
         {
 		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n",eHEnableAutoDiscovery);
         }
@@ -490,15 +433,17 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
         }
     if(eHEnableProDiscovery)
         {
-		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n",eHEnableProDiscovery);
+		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
         }
     
-	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n",eHOptA,eHOptB);
+	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
     int len=userCode.length();
     if (len>6) len=6;
     userCode.copy(PassWord,len);
-	SrvAddrH = 0; SrvAddrL = 200;
-	SrvAddrU = 192; SrvAddrM = 168;
+	SrvAddrH = 0; 
+	SrvAddrL = 200;
+	SrvAddrU = 192; 
+	SrvAddrM = 168;
 	InitStructs();
 	if (!CheckAddress())
             {
@@ -507,10 +452,10 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 
 	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
 	m_HwdID = ID;
-    HwID=m_HwdID;
+    HwID = m_HwdID;
 	memset(m_newData, 0, sizeof(m_newData));
-    AddrL=SrvAddrL;
-    AddrH=SrvAddrH;
+    AddrL = SrvAddrL;
+    AddrH = SrvAddrH;
 	int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
 			{
@@ -526,11 +471,11 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		
 		eHPROaloc(0, AddrH, AddrL);
         unsigned char ev[10]="";
-        ev[0]=AddrH;
-        ev[1]=AddrL;
-        ev[2]=254;
-        ev[3]=0x33;
-        if (eHEnableAutoDiscovery) AddToLocalEvent(ev,0);  //Init UDP broadcast of Device Names for auto Discovery
+        ev[0] = AddrH;
+        ev[1] = AddrL;
+        ev[2] = 254;
+        ev[3] = 0x33;
+        if (eHEnableAutoDiscovery) AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
 		m_alarmLast = false;
 }
 //////////////////////////////////////////////////////////////////////
@@ -554,7 +499,7 @@ if (iResult != 0) {
 	ThEhouseUDPdta.No = 1;
 	ThEhouseUDPdta.IntParam = UDP_PORT;		//udp thread setup
 #endif
-	EhouseInitTcpClient();					//init multithreaded event sender
+
 #ifdef DEBUG_eHouse
 	LOG(LOG_STATUS, "eHouse: Start Hardware");
 #endif
@@ -579,15 +524,15 @@ bool eHouseTCP::StopHardware()
 	TerminateUDP();
 	ssl(1);
 	m_stoprequested = true;
-#ifdef WIN32
+/*#ifdef WIN32
 	WSACleanup();
 #endif
-
+*/
 
 	if (m_thread)
-	{
+		{
 		m_thread->join();
-	}
+		}
 
 	//        DestroySocket();
 	m_bIsStarted = false;
