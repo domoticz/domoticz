@@ -295,32 +295,32 @@ return -1;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 //Programs for controllers - add Option field (combobox) - upto 10
-void eHouseTCP::UpdatePGM(int adrh,int adrl,int devtype,const char *names,int idx)
+void eHouseTCP::UpdatePGM(int adrh, int adrl, int devtype, const char *names, int idx)
 {
-if (idx<0) return;
+if (idx < 0) return;
 std::string Names = ISO2UTF8(std::string(names));
  m_sql.SetDeviceOptions(idx, m_sql.BuildDeviceOptions(Names.c_str(), false));
 }                                      
 ///////////////////////////////////////////////////////////////////////////////////////////
 //Add Controllers To 'Plans' DB
-int eHouseTCP::UpdateSQLPlan(int devh,int devl,int devtype,const char * Name)
+int eHouseTCP::UpdateSQLPlan(int devh, int devl, int devtype, const char * Name)
 {
-int i=0;
-std::string devname="";
+int i = 0;
+std::string devname = "";
 std::vector<std::vector<std::string> > result;
-devname.append(Name,strlen(Name));
-devname=ISO2UTF8(devname);
+devname.append(Name, strlen(Name));
+devname = ISO2UTF8(devname);
 
-result =m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ",devname.c_str());
+result = m_sql.safe_query("SELECT ID FROM Plans WHERE (Name=='%q') ", devname.c_str());
 
 
         if (result.size() < 1)
             {
-            m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')",devname.c_str());
+            m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", devname.c_str());
             }
         else
             {
-            i=atoi(result[0][0].c_str());
+            i = atoi(result[0][0].c_str());
             return i;
             
             }
@@ -331,15 +331,15 @@ return -1;
 void eHouseTCP::UpdateSQLStatus(int devh,int devl,int devtype,int code,int nr, char signal,int nValue, const char  *sValue, int battery)
 {
 char IDX[20];
-char state[5]="";
+char state[5] = "";
 char szLastUpdate[40];
 time_t now = time(0);
 struct tm ltime;
 localtime_r(&now, &ltime);
 sprintf(szLastUpdate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-sprintf(IDX,"%02X%02X%02X%02X",devh,devl,code,nr);
-int lastlevel=0;
-int nvalue=0;
+sprintf(IDX,"%02X%02X%02X%02X", devh, devl, code, nr);
+int lastlevel = 0;
+int nvalue = 0;
 int _state;
 std::vector<std::vector<std::string> > result;
 
@@ -348,39 +348,39 @@ switch (code)
     case VISUAL_BLINDS:
         break;
     case VISUAL_DIMMER_OUT:
-        _state=0;
-        sprintf(IDX,"%X%02X%02X%02X",devh,devl,code,nr);    //exception for dimmers Domoticz BUG?
-        if (nValue==0) 
+        _state = 0;
+        sprintf(IDX,"%X%02X%02X%02X", devh, devl, code, nr);    //exception for dimmers Domoticz BUG?
+        if (nValue == 0) 
             {
-            lastlevel=0;
-            _state=0;
-            strcpy(state,"0");
+            lastlevel = 0;
+            _state = 0;
+            strcpy(state, "0");
             }
         else 
-            if (nValue==100)
+            if (nValue == 100)
                 {
-                lastlevel=100;
-                strcpy(state,"0");
-                _state=1;
+                lastlevel = 100;
+                strcpy(state, "0");
+                _state = 1;
                 }
             else
                 {
-                lastlevel=nValue;
-                _state=2;
-                sprintf(state,"%d",(nValue*15)/100);
+                lastlevel = nValue;
+                _state = 2;
+                sprintf(state, "%d", (nValue * 15) / 100);
                 }
-        result =m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+        result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
                                                               _state,       state,    lastlevel,   szLastUpdate,               m_HwdID,                IDX);                
         break;
     default:
-        result =m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')",
+        result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%s', LastUpdate='%q'  WHERE (HardwareID==%d) AND (DeviceID=='%q')",
                                                               nValue,      sValue,   szLastUpdate,                m_HwdID,                IDX);
         break;
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro,const int opta, const int optb):
+eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro, const int opta, const int optb):
         m_modelIndex(-1),
 	m_data32(false),
 	m_socket(INVALID_SOCKET),
@@ -389,9 +389,9 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	m_stoprequested(false),
 	m_pollInterval(pollInterval)
     {
-	eHouseUDPSocket=-1;			//UDP socket handler
+	eHouseUDPSocket = -1;			//UDP socket handler
 	UDP_PORT = 6789;			//Default UDP PORT
-	nr_of_ch=0;
+	nr_of_ch = 0;
 	DEBUG_AURA = 0;				//Debug Aura
 	CHANGED_DEBUG = 0;
 	disablers485 = 0;
@@ -418,7 +418,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	EhouseInitTcpClient();					//init multithreaded event sender
 	if (IPPort > 0) EHOUSE_TCP_PORT = IPPort;
 	ViaTCP = 0;
-	if ((eHOptA&OPTA_CLR_DB))// || (TESTTEST))
+	if ((eHOptA & OPTA_CLR_DB))// || (TESTTEST))
 		{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
@@ -427,11 +427,11 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		m_sql.safe_query("DELETE FROM \"DeviceStatus\" WHERE 1");
 		m_sql.safe_query("DELETE FROM \"Plans\" WHERE (ID>1)");
 		}
-	if (eHOptA&OPTA_FORCE_TCP)
+	if (eHOptA & OPTA_FORCE_TCP)
 		{
 		ViaTCP = 1;
 		}
-	if (eHOptA&OPTA_DEBUG)
+	if (eHOptA & OPTA_DEBUG)
 		{
 		StatusDebug = 1;
 		DEBUG_AURA = 1;
@@ -440,11 +440,11 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		}
 	if (eHEnableAutoDiscovery)
         {
-		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n",eHEnableAutoDiscovery);
+		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
         }
     if (eHEnableAlarmInputs)
             {
-		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n",eHEnableAlarmInputs);
+		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
         }
     if(eHEnableProDiscovery)
         {
@@ -452,15 +452,15 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
         }
     
 	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
-    int len=userCode.length();
-    if (len>6) len=6;
-    userCode.copy(PassWord,len);
+    int len = userCode.length();
+    if (len > 6) len = 6;
+    userCode.copy(PassWord, len);
 	SrvAddrH = 0; 
 	SrvAddrL = 200;
 	SrvAddrU = 192; 
 	SrvAddrM = 168;
 	InitStructs();
-	if (!CheckAddress())
+	if (! CheckAddress())
             {
 			//return false;
             }
@@ -486,7 +486,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 			}
 		
 		eHPROaloc(0, AddrH, AddrL);
-        unsigned char ev[10]="";
+        unsigned char ev[10] = "";
         ev[0] = AddrH;
         ev[1] = AddrL;
         ev[2] = 254;
@@ -502,15 +502,6 @@ eHouseTCP::~eHouseTCP()
 /////////////////////////////////////////////////////////////////////////////
 bool eHouseTCP::StartHardware()
 {
-/*#ifdef WIN32
-int iResult = -1;
-iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-if (iResult != 0) {
-	LOG(LOG_STATUS,"WSAStartup failed with error: %d\n", iResult);
-	exit(1);
-}
-#endif
-*/
 #ifdef UDP_USE_THREAD
 	ThEhouseUDPdta.No = 1;
 	ThEhouseUDPdta.IntParam = UDP_PORT;		//udp thread setup
@@ -576,7 +567,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	struct sockaddr_in saddr;
 	int TCPSocket = -1;
 	saddr.sin_family = AF_INET;							//initialization of protocol & socket
-	if (IP>0)
+	if (IP > 0)
 		saddr.sin_addr.s_addr = IP;
 	else 
 		saddr.sin_addr.s_addr = m_addr.sin_addr.s_addr;
@@ -605,7 +596,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	int iter = 5;
 	while ((status = recv(TCPSocket, (char *)&challange, 6, 0)) < 6)       //receive challenge code
 		{
-		if ((status < 0) || (!(iter--)))
+		if ((status < 0) || (! (iter --)))
 			{
 			_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
 			closesocket(TCPSocket);
@@ -614,10 +605,10 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		}
 	if (status == 6)	//challenge received from Ethernet eHouse controllers
 		{				// only Hashed password with VendorCode available for OpenSource						
-		challange[6] = (challange[0] ^ PassWord[0] ^ VendorCode[0]);
-		challange[7] = (challange[1] ^ PassWord[1] ^ VendorCode[1]);
-		challange[8] = (challange[2] ^ PassWord[2] ^ VendorCode[2]);
-		challange[9] = (challange[3] ^ PassWord[3] ^ VendorCode[3]);
+		challange[6]  = (challange[0] ^ PassWord[0] ^ VendorCode[0]);
+		challange[7]  = (challange[1] ^ PassWord[1] ^ VendorCode[1]);
+		challange[8]  = (challange[2] ^ PassWord[2] ^ VendorCode[2]);
+		challange[9]  = (challange[3] ^ PassWord[3] ^ VendorCode[3]);
 		challange[10] = (challange[4] ^ PassWord[4] ^ VendorCode[4]);
 		challange[11] = (challange[5] ^ PassWord[5] ^ VendorCode[5]);
 		challange[12] = 13;
@@ -631,7 +622,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
 	status = 0;
 	iter = 5;
-	while ((status = send(TCPSocket, (char *)&challange, 13, 0)) != 13)
+	while ((status = send(TCPSocket, (char *) &challange, 13, 0)) != 13)
 		{
 		if ((!(iter--)) || (status < 0))
 			{
@@ -644,9 +635,9 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	//Send Challange + response + Events    - Only Xor password
 	status = 0;
 	iter = 5;
-	while ((status = recv(TCPSocket, (char *)&challange, 1, 0)) < 1)       //receive challenge code
+	while ((status = recv(TCPSocket, (char *) &challange, 1, 0)) < 1)       //receive challenge code
 		{
-		if ((status < 0) || (!(iter--)))
+		if ((status < 0) || (! (iter --)))
 			{
 			_log.Log(LOG_STATUS, "[TCP Cli Status] Receiving confirmation: %s", line);
 			closesocket(TCPSocket);
@@ -725,9 +716,9 @@ bool eHouseTCP::CheckAddress()
 			m_addr.sin_addr.s_addr = ip;
 			SrvAddrU = ip & 0xff;
 			SrvAddrM = (ip >> 8) & 0xff;
-			SrvAddrL=ip>>24;
-            SrvAddrH=(ip>>16)&0xff;				
-			LOG(LOG_STATUS, "[eHouse PRO] IP Address: %d.%d.%d.%d\r\n",SrvAddrU,SrvAddrM,SrvAddrH,SrvAddrL);
+			SrvAddrL = ip>>24;
+            SrvAddrH = (ip>>16)&0xff;				
+			LOG(LOG_STATUS, "[eHouse PRO] IP Address: %d.%d.%d.%d\r\n", SrvAddrU, SrvAddrM, SrvAddrH, SrvAddrL);
 			if ((SrvAddrU != 192) || (SrvAddrM != 168)) 
 					ViaTCP = 1;
             }
@@ -789,65 +780,64 @@ bool eHouseTCP::CheckAddress()
 //////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::DestroySocket()
 {
-    	LOG(LOG_STATUS, "eHouse: On Destroy Socket");
 	if (m_socket != INVALID_SOCKET)
 	{
 #ifdef DEBUG_eHouse
 		LOG(LOG_STATUS, "eHouse: destroy socket");
 #endif
 		try
-		{
+			{
 			closesocket(m_socket);
-		}
+			}
 		catch (...)
-		{
-		}
+			{
+			}
 
 		m_socket = INVALID_SOCKET;
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 // Get ERM Programs Scenes, Measurement-regulation
-int  eHouseTCP::getrealERMpgm(int32_t ID,int level)
+int  eHouseTCP::getrealERMpgm(int32_t ID, int level)
 	{
-    int devh=ID>>24;
-    int devl=(ID>>16)&0xff;
-    int code=(ID>>8)&0xff;
+    int devh = ID >> 24;
+    int devl = (ID >> 16) & 0xff;
+    int code = (ID >> 8) & 0xff;
     int i;
-    int lv=level/10;
-    lv+=1;
-    int Lev=0;
+    int lv = level / 10;
+    lv += 1;
+    int Lev = 0;
     unsigned char ev[10];
-    memset(ev,0,sizeof(ev));
-    ev[0]=devh;
-    ev[1]=devl;
-    gettype(devh,devl);
-    if (Dtype!=EH_LAN) return -1;
-	LOG(LOG_STATUS,"LAN PGM");
-    int index=devl-INITIAL_ADDRESS_LAN;
-    if ((Dsubtype<249))  //ERMs Only =>No PoolManager/CommManager/LevelManager
+    memset(ev, 0, sizeof(ev));
+    ev[0] = devh;
+    ev[1] = devl;
+    gettype(devh, devl);
+    if (Dtype != EH_LAN) return -1;
+	LOG(LOG_STATUS, "LAN PGM");
+    int index = devl - INITIAL_ADDRESS_LAN;
+    if ((Dsubtype < 249))  //ERMs Only =>No PoolManager/CommManager/LevelManager
         {
         switch (code)
             {
             case VISUAL_PGM:
-                for (i=0;i<(sizeof(eHEn[index]->Programs)/sizeof(eHEn[index]->Programs[0]));i++)
+                for (i = 0; i < (sizeof(eHEn[index]->Programs) / sizeof(eHEn[index]->Programs[0])); i++)
                     {
-                    if ((strlen(eHEn[index]->Programs[i])>0) && (strstr(eHEn[index]->Programs[i],"@")==NULL))
+                    if ((strlen(eHEn[index]->Programs[i]) > 0) && (strstr(eHEn[index]->Programs[i], "@") == NULL))
                         {
-                        Lev++;                        
+                        Lev ++;
                         }
-                    if (Lev==lv)
+                    if (Lev == lv)
                         {
-						LOG(LOG_STATUS, "[EX] Execute pgm %d",i);
-                        ev[2]=2;//exec program/scene
-                        ev[3]=(unsigned char) i;
-                        AddToLocalEvent(ev,0);
+						LOG(LOG_STATUS, "[EX] Execute pgm %d", i);
+                        ev[2] = 2;//exec program/scene
+                        ev[3] = (unsigned char) i;
+                        AddToLocalEvent(ev, 0);
                         return i;
                         }
                     }
                     break;
             case VISUAL_APGM:
-                for (i=0;i<(sizeof(eHEn[index]->ADCPrograms)/sizeof(eHEn[index]->ADCPrograms[0]));i++)
+                for (i=0;i <(sizeof(eHEn[index]->ADCPrograms)/sizeof(eHEn[index]->ADCPrograms[0]));i++)
                     {
                     if ((strlen(eHEn[index]->ADCPrograms[i])>0) && (strstr(eHEn[index]->ADCPrograms[i],"@")==NULL))
                         {

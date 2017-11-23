@@ -222,11 +222,12 @@ for (i=0;i<MAX_CLIENT_SOCKETS;i++)
 		{
 		TC[i].NotFinished--;
 		if (TC[i].NotFinished) continue;
-		if (EhouseTcpClientThread[i])
+		/*if (EhouseTcpClientThread[i] -> joinable())
 		{
-			EhouseTcpClientThread[i]->join(); 
-			EhouseTcpClientThread[i] = NULL;
-		}
+			EhouseTcpClientThread[i]->try_join_for()
+				join(); 
+			//EhouseTcpClientThread[i] = NULL;
+		}*/
 		TC[i].NotFinished=0;
 		TC[i].Socket=-1;
 		TC[i].OK=0;
