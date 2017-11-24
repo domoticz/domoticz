@@ -1045,9 +1045,9 @@ namespace Plugins {
 		if (sProtocol == "Line") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
 		else if (sProtocol == "XML") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
 		else if (sProtocol == "JSON") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-		else if (sProtocol == "HTTP")
+		else if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
 		{
-			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP();
+			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP(sProtocol == "HTTPS");
 			pProtocol->AuthenticationDetails(m_Username, m_Password);
 			pConnection->pProtocol = (CPluginProtocol*)pProtocol;
 		}
@@ -1072,10 +1072,14 @@ namespace Plugins {
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, (PyObject*)pConnection, sAddress, pConnection->Baud);
 		}
@@ -1116,17 +1120,22 @@ namespace Plugins {
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, "", sPort);
 		}
 		else if (sTransport == "UDP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
