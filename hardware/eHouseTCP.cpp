@@ -404,6 +404,9 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	eHEStatusReceived = 0;      //Ethernet eHouse status received flag (count of status from reset this flag)
 	eHWiFiStatusReceived = 0;   //eHouse WiFi status received flag (count of status from reset this flag)
 	LOG(LOG_STATUS, "[eHouse] Create");
+	VccRef = 0;
+	AdcRefMax = 0;
+	CalcCalibration = 0;
 
     eHEnableAutoDiscovery = AutoDiscovery;
     eHEnableAlarmInputs   = EnableAlarms;

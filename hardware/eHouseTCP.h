@@ -100,6 +100,9 @@ private:
 	unsigned int EHOUSE_TCP_CLIENT_TIMEOUT_US;     //Tcp Client operation timeout Connect/send/receive
 	int EHOUSE_TCP_PORT;
 
+	float VccRef;
+	int   AdcRefMax;
+	float CalcCalibration;
 
 
 	int AddrH, AddrL; //address high & low for controller type detection & construct idx

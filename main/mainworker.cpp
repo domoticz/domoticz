@@ -762,7 +762,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
 	case HTYPE_eHouseTCP:	
-		//LAN
+		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
 		pHardware = new eHouseTCP(ID, Address, Port, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_FRITZBOX:

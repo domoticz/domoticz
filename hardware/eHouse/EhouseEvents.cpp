@@ -145,83 +145,56 @@ else
                     if (EventSize >= MAX_EVENTS_IN_PACK) break;								//As many events as possible
                     }
             }
-/*        if (devl == 202)
-            {
-            m = 4;
-            }
-        if (devl==201)
-            {
-            m = 3;
-            }
-*/
         SendTCPEvent(EventBuff, EventSize, devh, devl, EventsToRun);       //Submit via tcp client to desired Ethernet eHouse controller
     }
 }
-/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//      convert hex string to unsigned char with offset and value checking for text events
+//
+///////////////////////////////////////////////////////////////////////////////////////////
 signed int eHouseTCP::hex2bin(const unsigned char *st, int offset)
  {
- char    i;
+ char i;
  int  tmp = 0;
  for (i = 0; i < 2; i++)
         {
         tmp = tmp << 4;
-        switch (st[offset])
-                {
-                    case '0': tmp = tmp + 0;break;
-                    case '1': tmp = tmp + 1;break;
-                    case '2': tmp = tmp + 2;break;
-                    case '3': tmp = tmp + 3;break;
-                    case '4': tmp = tmp + 4;break;
-                    case '5': tmp = tmp + 5;break;
-                    case '6': tmp = tmp + 6;break;
-                    case '7': tmp = tmp + 7;break;
-                    case '8': tmp = tmp + 8;break;
-                    case '9': tmp = tmp + 9;break;
-                    case 'A':
-					case 'a': tmp = tmp + 10;break;
-                    case 'B': 
-					case 'b': tmp = tmp + 11;break;
-                    case 'C': 
-					case 'c': tmp = tmp + 12;break;
-                    case 'D': 
-					case 'd': tmp = tmp + 13;break;
-                    case 'E': 
-					case 'e': tmp = tmp + 14;break;
-                    case 'F': 
-					case 'f': tmp = tmp + 15;break;                    
-            default: return -1;
-				
-                }
+		i = st[offset];
+		if ((i >= 'A') && (i <= 'F')) tmp += i - 'A' + 10;
+		else  if ((i >= 'a') && (i <= 'f')) tmp += i - 'a' + 10;
+		else  if ((i >= '0') && (i <= '9')) tmp += i - '0';
+		else return -1;
         offset++;
         }
  return tmp;
  }
  
 /////////////////////////////////////////////////////////////////////////////////
-//Text Hex Coded Event
-void eHouseTCP::AddTextEvents(unsigned char *ev,int size)
+// add multiple events to event queue - stored in text format with validation
+////////////////////////////////////////////////////////////////////////////////
+void eHouseTCP::AddTextEvents(unsigned char *ev, int size)
 {
 unsigned char ck = 0,  i = 0;
 unsigned char offset = 0;               
 int tmp;
-unsigned char evnt[EVENT_SIZE+1];
-if (size < 20) return;              
+unsigned char evnt[EVENT_SIZE + 1];
+if (size < 20) return;						//ignore if tho short
                 while (offset < size - 1)
                         {
-                        tmp=hex2bin(ev, offset);
-                        if (tmp >= 0)
-                                evnt[i]=(unsigned char)tmp;
+                        tmp=hex2bin(ev, offset);			// decode Text Hex Coded Event
+                        if (tmp >= 0)						// valid hex char
+                                evnt[i]=(unsigned char)tmp;	// construct binary
                         else 
-                                return;
+                                return;		//ignore if wrong data (non hex digit)
                         i++;
-                        if (i == 10)
+                        if (i == 10)		//only if valid eHouse text event 10 binary = 20 hex char event
                                 {
                                 i = 0;
-                                AddToLocalEvent(evnt, 0);
+                                AddToLocalEvent(evnt, 0);	//add to queue
                                 }
                         offset += 2;
-                        }
-    
+                        }    
 }
 
 
@@ -233,24 +206,24 @@ if (size < 20) return;
 
 
 ///////////////////////////////////////////////////////////////////////////////////
-//  Add Event to Queue for Buffering and Multiple Event Submissions
-
+//  Add Event to Queue for Buffering and Multiple Event Submissions - binary mode
+//////////////////////////////////////////////////////////////////////////////////
 signed int eHouseTCP::AddToLocalEvent(unsigned char *Even, unsigned char offset)
 { //start
 signed int i;
 //signed int k;
 unsigned char m;
 unsigned char Event[EVENT_SIZE + 1];
-memcpy(Event, (unsigned char *)&Even[offset], EVENT_SIZE); //copy event from selected offset
+memcpy(Event, (unsigned char *) &Even[offset], EVENT_SIZE); //copy event from selected offset
 if (Event[2] == 0)  return 0;
 if (Event[2] == 0xff)  return 0;
 i = GetIndexOfEvent(Event);
 m = 0;
 _log.Log(LOG_STATUS, "[Add Event]: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", Event[0], Event[1], Event[2], Event[3], Event[4], Event[5], Event[6], Event[7], Event[8], Event[9]);
 
-if ( i>=0 )       //event already exists in EventQueue
+if (i >= 0 )       //event already exists in EventQueue
 	{
-		if (EvQ[i]->LocalEventsTimeOuts>=RUN_NOW)                //Wasn't confirmed - No Successful Execution so far
+		if (EvQ[i]->LocalEventsTimeOuts >= RUN_NOW)                //Wasn't confirmed - No Successful Execution so far
                         {
                         
                         }

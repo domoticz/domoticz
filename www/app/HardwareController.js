@@ -443,7 +443,7 @@ define(['app'], function (app) {
 				if (text.indexOf("eHouse") >= 0) 
 					{
 					if (password == "") {
-								ShowNotify($.t('Please enter a Password!'), 2500, true);
+								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
 								}
 					}
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
