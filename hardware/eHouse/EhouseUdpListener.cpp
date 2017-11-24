@@ -20,8 +20,9 @@ char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
 unsigned int GetIndex,GetSize;
 int HeartBeat = 0;
 #ifndef WIN32
-	#include<netinet/in.h>
-	#include < sys/ioctl.h>
+	#include <unistd.h>
+	#include <netinet/in.h>	
+	#include <sys/ioctl.h>
 #else
 		#include <io.h>
 		#define F_OK		0
