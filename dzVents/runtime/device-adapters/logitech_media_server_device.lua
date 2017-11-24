@@ -21,6 +21,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		device.playlistID = data.data.levelVal
+
 		function device.switchOff()
 			return TimedCommand(domoticz, device.name, 'Off', 'device', device.state)
 		end

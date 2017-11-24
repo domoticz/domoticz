@@ -988,6 +988,7 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myDevice',
 				['hardwareType'] = 'Logitech Media Server',
+				['additionalDataData'] = { ['levelVal'] = 34 }
 			})
 
 			device.switchOff()
@@ -997,6 +998,7 @@ describe('device', function()
 			device.setVolume(10)
 			device.startPlaylist('myList')
 			device.playFavorites('30')
+			assert.is_same(34, device.playlistID)
 			assert.is_same({
 				{ ["myDevice"] = "Off" },
 				{ ["myDevice"] = "Stop" },

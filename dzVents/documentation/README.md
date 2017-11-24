@@ -722,13 +722,15 @@ Note that if you do not find your specific device type here you can always inspe
  - **updateWetness(wetness)**: *Function*.
 
 #### Logitech Media Server
- - **switchOff()**: *Function*.  todo.
- - **stop()**: *Function*.  todo.
- - **play()**: *Function*.  todo.
- - **pause()**: *Function*.  todo.
- - **setVolume()**: *Function*.  todo.
- - **startPlaylist()**: *Function*.  todo.
- - **playFavorites()**: *Function*.  todo.
+ - **pause()**: *Function*.  Will pause the device if it was streaming.
+ - **play()**: *Function*.  If the device was off, it will turn on and start streaming
+ - **playFavorites([position])**: *Function*.  Will start the favorites playlist. `position` is optional (0 = default).
+ - **playlistID**: *Nubmer*.
+ - **setVolume(level)**: *Function*.  Sets the volume (0 <= level <= 100).
+ - **startPlaylist(name)**: *Function*.  Will start the playlist by its `name`.
+ - **stop()**: *Function*.  Will stop the device (only effective if the device is streaming).
+ - **switchOff()**: *Function*.  Will turn the device off.
+
 
 #### Lux sensor
  - **lux**: *Number*. Lux level for light sensors.
