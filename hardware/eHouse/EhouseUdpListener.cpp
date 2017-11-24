@@ -17,7 +17,7 @@
 #include "status.h"
 
 char GetLine[SIZEOFTEXT];   //global variable for decoding names discovery
-unsigned int GetIndex,GetSize;
+unsigned int GetIndex, GetSize;
 int HeartBeat = 0;
 #ifndef WIN32
 	#include <unistd.h>
@@ -80,7 +80,7 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 		}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//alocate dynamically names structure only during discovery of LAN controller
+//allocate dynamically names structure only during discovery of LAN controller
 //////////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
@@ -110,7 +110,8 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//alocate dynamically names structure only during discovery of LAN controller
+//allocate dynamically names structure only during discovery of LAN controller
+///////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	int i;
@@ -176,7 +177,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //alocate dynamically names structure only during discovery of LAN controller
-//////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 	{
 		int i;
@@ -210,11 +211,11 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 unsigned char eHouseTCP::IsCM(unsigned char addrh, unsigned char addrl)
 {
-if (addrl >= 250u)    return 1;
+if (addrl >= 250u) return 1;
 return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////
-//Index of eHouse RS-485 controllers in array (0-HM, 1..n-1-RM, nmax=EM)
+// Index of eHouse RS-485 controllers in array (0-HM, 1..n-1-RM, nmax=EM)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 signed int eHouseTCP::IndexOfeHouseRS485(unsigned char devh, unsigned char devl)
 {
@@ -232,7 +233,7 @@ signed int eHouseTCP::IndexOfeHouseRS485(unsigned char devh, unsigned char devl)
 void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsigned char index)
 {
     char sval[10];
-    float acurr,aprev;
+    float acurr, aprev;
     unsigned char size=sizeof(AuraN[index]->Outs) / sizeof(AuraN[index]->Outs[0]); 
     size=8;
     if (index > MAX_AURA_DEVS-1)
@@ -246,7 +247,7 @@ void eHouseTCP::UpdateAuraToSQL(unsigned char AddrH, unsigned char AddrL, unsign
     //printf("\r\n!!!!!Aura [%s]  TempSet =%f, Temp=%f\r\n", Auras[index],acurr, AuraDev[index].Temp);
     if ((acurr != aprev) || (AuraDevPrv[index]->Addr == 0))
         {
-		if (CHANGED_DEBUG) _log.Log(LOG_STATUS,"Temp Preset #%d changed to: %d", (int)index, (int)acurr);
+		if (CHANGED_DEBUG) _log.Log(LOG_STATUS, "Temp Preset #%d changed to: %d", (int) index, (int) acurr);
         sprintf(sval, "%.1f", (AuraDev[index]->TempSet));
         AddrH = 0x81;
         AddrL = AuraDev[index]->Addr;        
@@ -348,8 +349,8 @@ for (i = 0; i < size; i++)
     acurr = acurr << 8;
     aprev = aprev << 8;
     
-    acurr = (ECM->CMB.ADC[i].LSB);
-    aprev = (ECMPrv->CMB.ADC[i].LSB);
+    acurr += (ECM->CMB.ADC[i].LSB);
+    aprev += (ECMPrv->CMB.ADC[i].LSB);
     
     if ((acurr != aprev) || (ECMPrv->data[1] == 0))
         {
@@ -451,7 +452,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
     unsigned char i, curr, prev;
     char sval[10];
     int acurr, aprev;
-    unsigned char size=sizeof(eHEn[index]->Outs) / sizeof(eHEn[index]->Outs[0]); //for cm only
+    unsigned char size = sizeof(eHEn[index]->Outs) / sizeof(eHEn[index]->Outs[0]); //for cm only
     if (AddrL < 250) size = 32;
     else size = 77;
     if (index > ETHERNET_EHOUSE_RM_MAX - 1) 
@@ -490,6 +491,7 @@ for (i = 0; i < size; i++)
         UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_INPUT_IN, i, 100, curr, "", 100);
         }
     }
+
 if (eHERMs[index]->eHERM.CURRENT_ADC_PROGRAM != eHERMPrev[index]->eHERM.CURRENT_ADC_PROGRAM)
     { 
 	curr = eHERMs[index]->eHERM.CURRENT_ADC_PROGRAM;
@@ -497,6 +499,7 @@ if (eHERMs[index]->eHERM.CURRENT_ADC_PROGRAM != eHERMPrev[index]->eHERM.CURRENT_
 		if (eHERMPrev[index]->data[0]) 
 			_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d", (int) AddrH, (int) AddrL, (int) i, (int) curr);
     }
+
 if (eHERMs[index]->eHERM.CURRENT_PROFILE != eHERMPrev[index]->eHERM.CURRENT_PROFILE)
     {
     curr = eHERMs[index]->eHERM.CURRENT_PROFILE;
@@ -504,6 +507,7 @@ if (eHERMs[index]->eHERM.CURRENT_PROFILE != eHERMPrev[index]->eHERM.CURRENT_PROF
 		if (eHERMPrev[index]->data[0]) 
 			_log.Log(LOG_STATUS, "[LAN 192.168.%d.%d] Current Profile #%d changed to: %d", (int) AddrH, (int) AddrL, (int) i, (int) curr);
     }
+
 if (eHERMs[index]->eHERM.CURRENT_PROGRAM != eHERMPrev[index]->eHERM.CURRENT_PROGRAM)
     {
     curr = eHERMs[index]->eHERM.CURRENT_PROGRAM;
@@ -526,6 +530,7 @@ for (i = 0; i < size; i++)
         UpdateSQLStatus(AddrH, AddrL, EH_LAN, VISUAL_DIMMER_OUT, i, 100, (curr * 100) / 255, "", 100);
         }
     }
+
 size = 16;
 //ADCs Preset H
 for (i = 0; i < size; i++)
@@ -609,7 +614,7 @@ for (i = 0; i < size; i++)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // eHouse PRO/BMS - centralized controller + integrations
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void eHouseTCP::UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL)
 {
     unsigned char curr, prev;
@@ -643,21 +648,25 @@ for (i = 0; i < size; i++)
         UpdateSQLStatus(AddrH, AddrL, EH_PRO, VISUAL_INPUT_IN, i, 100, curr, "", 100);
         }
     }
+
 if (eHouseProStatus->status.AdcProgramNr != eHouseProStatusPrv->status.AdcProgramNr)
     { 
     curr = eHouseProStatus->status.AdcProgramNr;
     //printf("[LAN 192.168.%d.%d] Current ADC Program #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
     }
+
 if (eHouseProStatus->status.ProgramNr != eHouseProStatusPrv->status.ProgramNr)
     {
     curr = eHouseProStatus->status.ProgramNr;
     //printf("[LAN 192.168.%d.%d] Current Profile #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
     }
+
 if (eHouseProStatus->status.RollerProgram != eHouseProStatusPrv->status.RollerProgram)
     {
     curr = eHouseProStatus->status.RollerProgram;
     //printf("[LAN 192.168.%d.%d] Current Proram #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
     }
+
 if (eHouseProStatus->status.SecuZone != eHouseProStatusPrv->status.SecuZone)
     { 
     curr = eHouseProStatus->status.SecuZone;
@@ -741,7 +750,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
     size=8;
     
     
-    if (index>EHOUSE_WIFI_MAX-1) 
+    if (index > EHOUSE_WIFI_MAX - 1) 
     {
 		_log.Log(LOG_STATUS, " WIFI INDEX !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! to much");
     return;
@@ -887,12 +896,12 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 {
     unsigned char i,curr, prev;
     char sval[10];
-    int acurr,aprev;
+    int acurr, aprev;
     unsigned char size=sizeof(eHn[index]->Outs) / sizeof(eHn[index]->Outs[0]); //for cm only
 	size = 32;
     if (AddrH == 1) size = 21;
     if (AddrH == 2) size = 32;
-    if (index>EHOUSE1_RM_MAX-1) 
+    if (index > EHOUSE1_RM_MAX - 1) 
 	    {
 		_log.Log(LOG_STATUS, "RS485 to much !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! to much");
 		return;
@@ -910,9 +919,9 @@ for (i = 0; i < size; i++)
         }
     }
 //inputs
-    size= 16;
-if (AddrH== 1) size= 0;
-if (AddrH==2) size= 16;
+    size = 16;
+if (AddrH == 1) size = 0;
+if (AddrH == 2) size = 16;
         
 {
 for (i = 0; i < size; i++)
@@ -948,8 +957,10 @@ for (i = 0; i < size; i++)
     prev = (eHRMPrev[index]->eHERM.Dimmers[i]);
     if ((curr != prev) || (eHRMPrev[index]->data[0] == 0))
         {
-		if (CHANGED_DEBUG) if (eHRMPrev[index]->data[0]) _log.Log(LOG_STATUS, "[RS485 (%d,%d)] Dimmer #%d changed to: %d", (int) AddrH, (int) AddrL, (int) i, (int) curr);
-        UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_DIMMER_OUT, i + 1, 100, (curr*100)/255, "", 100);
+		if (CHANGED_DEBUG) 
+			if (eHRMPrev[index]->data[0]) 
+				_log.Log(LOG_STATUS, "[RS485 (%d,%d)] Dimmer #%d changed to: %d", (int) AddrH, (int) AddrL, (int) i, (int) curr);
+        UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_DIMMER_OUT, i + 1, 100, (curr * 100) / 255, "", 100);
         }
     }
 size= 16;
@@ -964,7 +975,7 @@ for (i = 0; i < size; i++)
         {
         //printf("[LAN 192.168.%d.%d] ADC #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
         sprintf(sval,"%d", (acurr));
-        UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_ADC_IN, i + 1, 100,acurr, sval, 100);
+        UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_ADC_IN, i + 1, 100, acurr, sval, 100);
         }
     }
 
@@ -976,11 +987,11 @@ for (i = 0; i < size; i++)
     aprev = (eHRMPrev[index]->eHERM.Temp[i]);
     if ((acurr != aprev) || (eHRMPrev[index]->data[0] == 0))
         {
-        sprintf(sval, "%.1f", ((float)acurr)/10);
-        if (i>0)
+        sprintf(sval, "%.1f", ((float)acurr) / 10);
+        if (i > 0)
             {
-            sprintf(sval, "%.1f", ((float)acurr)/10);
-            UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_LM335_IN, i + 1, 100,acurr, sval, 100);
+            sprintf(sval, "%.1f", ((float)acurr) / 10);
+            UpdateSQLStatus(AddrH, AddrL, EH_RS485, VISUAL_LM335_IN, i + 1, 100, acurr, sval, 100);
             }
         else 
             {
@@ -1327,7 +1338,7 @@ if (field == 0)
     temp = temmp;
     eHWIFIs[index]->eHWIFI.TempH[field] = (int) round(temp);
     
-    temp=-50.0+Offset+((adcl*Vcc)/(10.0*1023.0))*1;//Calibration;  //mcp9700 10mv/c offset -50
+    temp= -50.0 + Offset + ((adcl * Vcc) / (10.0 * 1023.0)) * 1;//Calibration;  //mcp9700 10mv/c offset -50
     temmp = (int) round(temp * 10);
     temp = temmp;
     eHWIFIs[index]->eHWIFI.TempL[field] = (int) round(temp);
@@ -1638,10 +1649,10 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	
     memset(PGMs, 0, sizeof(PGMs));
     gettype(data[1], data[2]);
-    if (data[3]!= 'n') return;   //not names
-    if (data[4]!= '1') return;   //other controller type than ERM
-    unsigned char nr= (data[2]-INITIAL_ADDRESS_LAN)%STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-    GetIndex=7;             //Ignore binary control fields 
+    if (data[3] != 'n') return;   //not names
+    if (data[4] != '1') return;   //other controller type than ERM
+    unsigned char nr = (data[2] - INITIAL_ADDRESS_LAN) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
+    GetIndex = 7;             //Ignore binary control fields 
     GetSize=nbytes;         //size of whole packet
     GetStr(data);           //addr combined
     GetStr(data);			//addr h
@@ -1649,8 +1660,8 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
     GetStr(data);			//name
     i= 1;
 	eHEaloc(nr, data[1], data[2]);
-    PlanID =UpdateSQLPlan((int) data[1], (int) data[2], EH_LAN, (char *) &GetLine);//for Automatic RoomPlan generation for RoomManager
-    if (PlanID<0) PlanID =UpdateSQLPlan((int) data[1], (int) data[2], EH_LAN, (char *) &GetLine); //Add RoomPlan for RoomManager (RM)
+    PlanID = UpdateSQLPlan((int) data[1], (int) data[2], EH_LAN, (char *) &GetLine);//for Automatic RoomPlan generation for RoomManager
+    if (PlanID < 0) PlanID =UpdateSQLPlan((int) data[1], (int) data[2], EH_LAN, (char *) &GetLine); //Add RoomPlan for RoomManager (RM)
 	
 	
     strncpy((char *) &eHEn[nr]->Name, (char *) &GetLine, sizeof(eHEn[nr]->Name)); //RM Controller Name
@@ -1661,17 +1672,15 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
         {
         GetStr(data);
         strncpy((char *) &eHEn[nr]->ADCs[i], (char *) &GetLine, sizeof(eHEn[nr]->ADCs[i]));
-        UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5,
-            0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *) &GetLine, true, 100);
-        UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint,
-            0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
+        UpdateSQLState(data[1], data[2], EH_LAN, pTypeTEMP, sTypeTEMP5,  0, VISUAL_MCP9700_IN, i, 1, 0, "0", Name, (char *) &GetLine, true, 100);
+        UpdateSQLState(data[1], data[2], EH_LAN, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_MCP9700_PRESET, i, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
         }
     
     GetStr(data);// #ADC CFG;
     for (i = 0; i < sizeof(eHEn[nr]->ADCs) / sizeof(eHEn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
         {
         GetStr(data);
-        eHEn[nr]->ADCConfig[i] =GetLine[0]-'0';
+        eHEn[nr]->ADCConfig[i] = GetLine[0] - '0';
         }
     
     GetStr(data);// #Outs;
@@ -1679,8 +1688,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
         {
         GetStr(data);
         strncpy((char *) &eHEn[nr]->Outs[i], (char *) &GetLine, sizeof(eHEn[nr]->Outs[i]));
-        UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC,
-            STYPE_OnOff, 0x21, i, 1, 0, "0",  Name, (char *) &GetLine, true, 100);
+        UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeAC, STYPE_OnOff, 0x21, i, 1, 0, "0",  Name, (char *) &GetLine, true, 100);
         }
     
     GetStr(data);
@@ -1688,8 +1696,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
         {
         GetStr(data);
         strncpy((char *) &eHEn[nr]->Inputs[i], (char *) &GetLine, sizeof(eHEn[nr]->Inputs[i]));
-        UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch,
-            STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, (char *) &GetLine, true, 100);    
+        UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchGeneralSwitch, STYPE_Contact, VISUAL_INPUT_IN, i, 1, 0, "", Name, (char *) &GetLine, true, 100);    
         }
 		    
 
@@ -1729,7 +1736,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_PGM, 1, 1, 0, "0", Name, "Scene", true, 100);
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_PGM, 1, 1, 0, "0", Name, "Scene", true, 100);
     //ISO2UTF8(PGMs);
-    UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs,k);
+    UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs, k);
     k= 0;
     strcpy(PGMs,"SelectorStyle:1;LevelNames:"); //Add Requlation Program Selector
     GetStr(data);// "#ADC Programs Names
@@ -1750,7 +1757,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_APGM, 1, 1, 0, "0", Name, "Reg. Scene", true, 100);
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_APGM, 1, 1, 0, "0", Name, "Reg. Scene", true, 100);
     //ISO2UTF8(PGMs);
-    UpdatePGM(data[1], data[2], VISUAL_APGM, PGMs,k);
+    UpdatePGM(data[1], data[2], VISUAL_APGM, PGMs, k);
 
 /*strcat(Names,"#Secu Programs Names\r\n"); //CM only
 for (i = 0; i < sizeof((void *) &eHEn[nr]) / sizeof(&eHEn[nr].SecuPrograms[0]); i++)
@@ -1781,10 +1788,10 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
     
     memset(PGMs, 0, sizeof(PGMs));
     gettype(data[1], data[2]);
-    if (data[3]!= 'n') return;   //not names
-    if (data[4]!= '2') return;   //other controller type than ERM
-    unsigned char nr= (data[2]-INITIAL_ADDRESS_LAN)%STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-    GetIndex=7;					//Ignore binary control fields 
+    if (data[3] != 'n') return;   //not names
+    if (data[4] != '2') return;   //other controller type than ERM
+    unsigned char nr = (data[2] - INITIAL_ADDRESS_LAN) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
+    GetIndex = 7;					//Ignore binary control fields 
     GetSize=nbytes;				//size of whole packet
     GetStr(data);				//addr combined
     GetStr(data);				//addr h
@@ -1811,7 +1818,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
     for (i = 0; i < sizeof(ECMn->ADCs) / sizeof(ECMn->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
         {
         GetStr(data);
-        ECMn->ADCConfig[i] =GetLine[0]-'0';
+        ECMn->ADCConfig[i] = GetLine[0] - '0';
         }
     
     GetStr(data);		// #Outs;
@@ -1867,19 +1874,19 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_PGM, 1, 1, 0, "0", Name, "Scene", true, 100);
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_PGM, 1, 1, 0, "0", Name, "Scene", true, 100);
     //ISO2UTF8(PGMs);
-    UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs,k);
-    k= 0;
-    strcpy(PGMs,"SelectorStyle:1;LevelNames:"); //Add Requlation Program Selector
+    UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs, k);
+    k = 0;
+    strcpy(PGMs, "SelectorStyle:1;LevelNames:"); //Add Requlation Program Selector
     GetStr(data);// "#ADC Programs Names
     for (i = 0; i < sizeof(ECMn->ADCPrograms) / sizeof(ECMn->ADCPrograms[0]); i++)
         {
         GetStr(data);
         strncpy((char *) &ECMn->ADCPrograms[i], (char *) &GetLine, sizeof(ECMn->ADCPrograms[i]));
-        if ((strlen((char *) &GetLine)>1) && (strstr((char *) &GetLine,"@") == NULL))
+        if ((strlen((char *) &GetLine) > 1) && (strstr((char *) &GetLine,"@") == NULL))
                 {
                 k++;
                 sprintf(tmp,"%s (%d)|", (char *) &GetLine, i + 1);
-                if (k<= 10) strncat(PGMs, tmp, strlen(tmp));                
+                if (k <= 10) strncat(PGMs, tmp, strlen(tmp));                
                 }
         }
     PGMs[strlen(PGMs) - 1] = 0; //remove last '|'
@@ -1887,7 +1894,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_APGM, 1, 1, 0, "0", Name, "Reg. Scene", true, 100);
     k=UpdateSQLState(data[1], data[2], EH_LAN, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, VISUAL_APGM, 1, 1, 0, "0", Name, "Reg. Scene", true, 100);
     //ISO2UTF8(PGMs);
-    UpdatePGM(data[1], data[2], VISUAL_APGM, PGMs,k);
+    UpdatePGM(data[1], data[2], VISUAL_APGM, PGMs, k);
 
 /*strcat(Names,"#Secu Programs Names\r\n"); //CM only
 for (i = 0; i < sizeof((void *) &eHEn[nr]) / sizeof(&eHEn[nr].SecuPrograms[0]); i++)
@@ -1938,20 +1945,20 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	GetStr(data);		//comment
 
 	for (i = 0; i < sizeof(eHouseProN->ADCs) / sizeof(eHouseProN->ADCs[0]); i++)          //ADC Names (measurement+regulation)
-	{
+		{
 		GetStr(data);
 		strncpy((char *) &eHouseProN->ADCs[i], (char *) &GetLine, sizeof(eHouseProN->ADCs[i]));
 		if (i < MAX_AURA_DEVS)
-		{
+			{
 			//eAURAaloc(i, 0x81, i + 1);
 			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeTEMP, sTypeTEMP5, 0, VISUAL_AURA_IN, 1, 1, 0, "0", Name, (char *) &GetLine, true, 100);
 			UpdateSQLState(0x81, i + 1, EH_AURA, pTypeThermostat, sTypeThermSetpoint, 0, VISUAL_AURA_PRESET, 1, 1, 0, "20.5", Name, (char *) &GetLine, true, 100);
 			if (strlen((char *) &AuraN[i]) > 0)
-			{
+				{
 				AuraDevPrv[i]->Addr = 0;
 				AuraN[i]->BinaryStatus[0] = 0;
+				}
 			}
-		}
 	}
 
 	GetStr(data);// #ADC CFG;
@@ -2118,11 +2125,11 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
     //char PGMs[500u];    
     //memset(PGMs, 0, sizeof(PGMs));
     gettype(data[1], data[2]);
-    if (data[3]!= 'n') return;   //not names
-    if (data[4]!= '4') return;   //other controller type than ERM
-    unsigned char nr= (data[2]-INITIAL_ADDRESS_WIFI)%STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-    GetIndex=7;					//Ignore binary control fields 
-    GetSize=nbytes;				//size of whole packet
+    if (data[3] != 'n') return;   //not names
+    if (data[4] != '4') return;   //other controller type than ERM
+    unsigned char nr = (data[2] - INITIAL_ADDRESS_WIFI) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
+    GetIndex = 7;					//Ignore binary control fields 
+    GetSize = nbytes;				//size of whole packet
     GetStr(data);				//addr combined
     GetStr(data);				//addr h
     GetStr(data);				//addr l
@@ -2148,7 +2155,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
     for (i = 0; i < sizeof(eHWIFIn[nr]->ADCs) / sizeof(eHWIFIn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
         {
         GetStr(data);
-        eHWIFIn[nr]->ADCConfig[i] =GetLine[0]-'0';
+        eHWIFIn[nr]->ADCConfig[i] = GetLine[0] - '0';
         }
     
     GetStr(data);		// #Outs;
@@ -2184,7 +2191,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
         UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_BlindsPercentage, VISUAL_BLINDS, i + 1, 1, 0, "", Name, (char *) &GetLine, true, 100);
         }
     
-    int k= 0;
+    int k = 0;
 /*    GetStr(data);    // #Programs Names
     strcpy(PGMs,"SelectorStyle:1;LevelNames:");     //Program/scene selector
     for (i = 0; i < sizeof(eHWIFIn[nr].Programs) / sizeof(eHWIFIn[nr].Programs[0]); i++)
@@ -2536,7 +2543,7 @@ void eHouseTCP::Do_Work()
                                                 i=EHOUSE1_RM_MAX-1;
                                         else 
                                                 i=devaddrl;                //RM index in status the same as device address low - eH[devaddrl]
-                        if (udp_status[3]!= 'l')
+                        if (udp_status[3] != 'l')
                                 {
                                 if( StatusDebug) _log.Log(LOG_STATUS, "[%s] St: (%-3d,%-3d) - OK (%dB)", LogPrefix, devaddrh, devaddrl, nbytes);
                                 }
@@ -2544,8 +2551,8 @@ void eHouseTCP::Do_Work()
                         //if    (udp_status[3] == 'l')
                             if (nbytes>6)
                                 {
-                                strncpy((char *) &log, (char *) &udp_status[4], nbytes-6);
-								LOG(LOG_STATUS, "[%s Log] (%-3d,%-3d) - %s", LogPrefix, devaddrh, devaddrl,log);
+                                strncpy((char *) &log, (char *) &udp_status[4], nbytes - 6);
+								LOG(LOG_STATUS, "[%s Log] (%-3d,%-3d) - %s", LogPrefix, devaddrh, devaddrl, log);
                                 if (IRPerform)
                                         {
                                         if (strstr((char *) &log,"[IR]"))
@@ -2561,7 +2568,7 @@ void eHouseTCP::Do_Work()
 						
                         if (index>= 0)
                             {
-							if (((ipaddrh != SrvAddrH) || (ipaddrl != SrvAddrL)) && (!ViaTCP))
+							if (((ipaddrh != SrvAddrH) || (ipaddrl != SrvAddrL)) && (! ViaTCP))
 								{
 								if (TESTTEST) LOG(LOG_STATUS, "Ignore other instalation from Serwer: 192.168.%d.%d", ipaddrh, ipaddrl);
 								continue;
@@ -2573,14 +2580,14 @@ void eHouseTCP::Do_Work()
                                         memcpy(&eHn[index]->BinaryStatus[0], udp_status, nbytes);
                                         memcpy(&eHRMs[index]->data[0], &udp_status,4);					//control data size,addres,code 's'
                                         eHRMs[index]->eHERM.Outs[0]   = udp_status[RM_STATUS_OUT];
-                                        eHRMs[index]->eHERM.Outs[1]   = udp_status[RM_STATUS_OUT+1];
-                                        eHRMs[index]->eHERM.Outs[2]   = udp_status[RM_STATUS_OUT+2];
+                                        eHRMs[index]->eHERM.Outs[1]   = udp_status[RM_STATUS_OUT + 1];
+                                        eHRMs[index]->eHERM.Outs[2]   = udp_status[RM_STATUS_OUT + 2];
                                         eHRMs[index]->eHERM.Outs[3]   = udp_status[RM_STATUS_OUT25];
                                         eHRMs[index]->eHERM.Inputs[0] = udp_status[RM_STATUS_IN];
                                         eHRMs[index]->eHERM.Inputs[1] = udp_status[RM_STATUS_INT];
                                         eHRMs[index]->eHERM.Dimmers[0] = udp_status[RM_STATUS_LIGHT];
-                                        eHRMs[index]->eHERM.Dimmers[1] = udp_status[RM_STATUS_LIGHT+1];
-                                        eHRMs[index]->eHERM.Dimmers[2] = udp_status[RM_STATUS_LIGHT+2];
+                                        eHRMs[index]->eHERM.Dimmers[1] = udp_status[RM_STATUS_LIGHT + 1];
+                                        eHRMs[index]->eHERM.Dimmers[2] = udp_status[RM_STATUS_LIGHT + 2];
                                         CalculateAdcEH1(index);
                                         //memcpy(&eHRMs[index].eHERM.More, &udp_status[STATUS_MORE],8);
                                         //memcpy(&eHRMs[index].eHERM.DMXDimmers[17], &udp_status[STATUS_DMX_DIMMERS2], 15);
@@ -2591,8 +2598,8 @@ void eHouseTCP::Do_Work()
                                             {
                                             eHRMs[index]->eHERM.CURRENT_PROFILE = udp_status[HM_STATUS_PROGRAM];
                                             eHRMs[index]->eHERM.Outs[0] = udp_status[HM_STATUS_OUT];
-                                            eHRMs[index]->eHERM.Outs[1] = udp_status[HM_STATUS_OUT+1];
-                                            eHRMs[index]->eHERM.Outs[2] = udp_status[HM_STATUS_OUT+2];
+                                            eHRMs[index]->eHERM.Outs[1] = udp_status[HM_STATUS_OUT + 1];
+                                            eHRMs[index]->eHERM.Outs[2] = udp_status[HM_STATUS_OUT + 2];
                                             eHRMs[index]->eHERM.Outs[3] = 0;
                                             eHRMs[index]->eHERM.Inputs[0] = 0;
                                             eHRMs[index]->eHERM.Inputs[1] = 0;                                        
@@ -2649,12 +2656,12 @@ void eHouseTCP::Do_Work()
                                         eHEStatusReceived++;
                                         }
                                 else    //Not CM
-                                    if (devaddrl!= 0)
-                                        if (devaddrl>=INITIAL_ADDRESS_LAN)
+                                    if (devaddrl != 0)
+                                        if (devaddrl >= INITIAL_ADDRESS_LAN)
                                             {
-                                            if (devaddrl-INITIAL_ADDRESS_LAN<=ETHERNET_EHOUSE_RM_MAX)   //Ethernet eHouse LAN Controllers
+                                            if (devaddrl - INITIAL_ADDRESS_LAN <= ETHERNET_EHOUSE_RM_MAX)   //Ethernet eHouse LAN Controllers
                                                 {
-                                                unsigned char eHEIndex= (devaddrl-INITIAL_ADDRESS_LAN)%(STATUS_ARRAYS_SIZE);
+                                                unsigned char eHEIndex= (devaddrl - INITIAL_ADDRESS_LAN) % (STATUS_ARRAYS_SIZE);
                                                         {
 													
 														eHEaloc(eHEIndex, devaddrh, devaddrl);
@@ -2662,32 +2669,32 @@ void eHouseTCP::Do_Work()
 																CloudStatusChanged = 1;
 
                                                         memcpy(eHEn[eHEIndex]->BinaryStatus, udp_status, nbytes);
-                                                        eHEn[eHEIndex]->BinaryStatusLength =nbytes;
-                                                        eHEn[eHEIndex]->TCPQuery++;
+                                                        eHEn[eHEIndex]->BinaryStatusLength = nbytes;
+                                                        eHEn[eHEIndex]->TCPQuery ++;
 
                                                         {
                                                         memcpy(&eHERMs[eHEIndex]->data[0], &udp_status,24); //control, dimmers
-                                                        memcpy(&eHERMs[eHEIndex]->eHERM.ADC[0], &udp_status[STATUS_ADC_ETH],32);//adcs 
-                                                        memcpy(&eHERMs[eHEIndex]->eHERM.Outs[0], &udp_status[STATUS_OUT_I2C],5);
-                                                        memcpy(&eHERMs[eHEIndex]->eHERM.Inputs[0], &udp_status[STATUS_INPUTS_I2C],3);
+                                                        memcpy(&eHERMs[eHEIndex]->eHERM.ADC[0], &udp_status[STATUS_ADC_ETH], 32);//adcs 
+                                                        memcpy(&eHERMs[eHEIndex]->eHERM.Outs[0], &udp_status[STATUS_OUT_I2C], 5);
+                                                        memcpy(&eHERMs[eHEIndex]->eHERM.Inputs[0], &udp_status[STATUS_INPUTS_I2C], 3);
                                                         //memcpy(&eHERMs[eHEIndex].eHERM.ADC, &udp_status[STATUS_INPUTS_I2C]
 														CalculateAdc2(eHEIndex);
 
 														
-                                                        memcpy(eHERMs[eHEIndex]->eHERM.More, &udp_status[STATUS_MORE],8);
+                                                        memcpy(eHERMs[eHEIndex]->eHERM.More, &udp_status[STATUS_MORE], 8);
                                                         memcpy(&eHERMs[eHEIndex]->eHERM.DMXDimmers[17], &udp_status[STATUS_DMX_DIMMERS2], 15);
-                                                        memcpy(eHERMs[eHEIndex]->eHERM.DaliDimmers, &udp_status[STATUS_DALI],46);
+                                                        memcpy(eHERMs[eHEIndex]->eHERM.DaliDimmers, &udp_status[STATUS_DALI], 46);
                                                         
                                                        //eHERM.CURRENT_PROGRAM= udp_status[STATUS_PROGRAM_NR];
-                                                        eHERMs[eHEIndex]->eHERM.CURRENT_PROFILE= udp_status[STATUS_PROFILE_NO];
-                                                        eHERMs[eHEIndex]->eHERM.CURRENT_ADC_PROGRAM= udp_status[STATUS_ADC_PROGRAM];
+                                                        eHERMs[eHEIndex]->eHERM.CURRENT_PROFILE = udp_status[STATUS_PROFILE_NO];
+                                                        eHERMs[eHEIndex]->eHERM.CURRENT_ADC_PROGRAM = udp_status[STATUS_ADC_PROGRAM];
                                                         if (CloudStatusChanged)
                                                             {
                                                               UpdateLanToSQL(devaddrh, devaddrl, eHEIndex);
                                                               CloudStatusChanged = 0;
                                                             }
                                                         }
-                                                        eHEStatusReceived++;
+                                                        eHEStatusReceived ++;
                                                         }
                                                 }
                                             }
@@ -2709,8 +2716,8 @@ void eHouseTCP::Do_Work()
                                                         eHWIFIs[eHWiFiIndex]->eHWIFI.Outs[0] = udp_status[OUT_OFFSET_WIFI];
                                                         eHWIFIs[eHWiFiIndex]->eHWIFI.Inputs[0] = udp_status[IN_OFFSET_WIFI];
                                                         eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[0] = udp_status[DIMM_OFFSET_WIFI];
-                                                        eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[1] = udp_status[DIMM_OFFSET_WIFI+1];
-                                                        eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[2] = udp_status[DIMM_OFFSET_WIFI+2];
+                                                        eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[1] = udp_status[DIMM_OFFSET_WIFI + 1];
+                                                        eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[2] = udp_status[DIMM_OFFSET_WIFI + 2];
                                                         //eHWIFIs[index].eHWIFI.Dimmers[3] = udp_status[DIMM_OFFSET_WIFI+3];
                                                         eHWIFIn[eHWiFiIndex]->TCPQuery++;
                                                         memcpy(&eHWiFi[eHWiFiIndex]->data[0], &udp_status[1], sizeof(union WiFiStatusT));          //ERMs, EHM -ethernet
@@ -2721,7 +2728,7 @@ void eHouseTCP::Do_Work()
                                                             UpdateWiFiToSQL(devaddrh, devaddrl, eHWiFiIndex);
                                                             CloudStatusChanged = 0;
                                                             }                                                        
-                                                        eHWiFiStatusReceived++;
+                                                        eHWiFiStatusReceived ++;
                                                         }
                                                     }
                                                 }
@@ -2751,25 +2758,25 @@ void eHouseTCP::Do_Work()
                                                     int m, k = 0;
                                                     int bkpi = i +2;
                                                     char FirstTime = 0;
-                                                    for ( m= 0;m < sizeof(AuraN[aindex]->ParamSymbol); m++)
+                                                    for ( m= 0; m < sizeof(AuraN[aindex]->ParamSymbol); m++)
                                                             {
                                                 //if ((AuraDev[index].ParamSize>2) && (!FirstTime))
                                                     {
                                                     
                                                     AuraN[aindex]->ParamValue[m] = AuraN[aindex]->BinaryStatus[i++];
-                                                    AuraN[aindex]->ParamValue[m] = AuraN[aindex]->ParamValue[m]<<8;
+                                                    AuraN[aindex]->ParamValue[m] = AuraN[aindex]->ParamValue[m] << 8;
                                                     AuraN[aindex]->ParamValue[m] |= AuraN[aindex]->BinaryStatus[i++];
                                                     //if (AuraDev[index].ParamValue[i]>0x8000)
 
 
                                                     AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->BinaryStatus[i++];
-                                                    AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->ParamPreset[m]<<8;
+                                                    AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->ParamPreset[m] << 8;
                                                     AuraN[aindex]->ParamPreset[m] |= AuraN[aindex]->BinaryStatus[i++];
 
                                                     AuraN[aindex]->ParamSymbol[m] = AuraN[aindex]->BinaryStatus[i++];
 
                                                     
-                                                    if (((AuraN[aindex]->ParamSymbol[m] == 'C') || (AuraN[aindex]->ParamSymbol[m] == 'T') ) && (!FirstTime))
+                                                    if (((AuraN[aindex]->ParamSymbol[m] == 'C') || (AuraN[aindex]->ParamSymbol[m] == 'T') ) && (! FirstTime))
                                                         {
                                                         FirstTime++;
                                                         AuraN[aindex]->ADCUnit[aindex] = 'T';
@@ -2798,15 +2805,15 @@ void eHouseTCP::Do_Work()
                                                             }
                                             //for (i = 0; i<AuraDev[auraindex].ParamsCount; i++)
                                                                     {
-                                                                    AuraN[aindex]->ParamPreset[0] = (unsigned int) (AuraDev[aindex]->TempSet*10);
+                                                                    AuraN[aindex]->ParamPreset[0] = (unsigned int) (AuraDev[aindex]->TempSet * 10);
 
 																	//eHPROaloc(0, SrvAddrH, SrvAddrL);
 
                                                                     eHouseProStatus->status.AdcVal[aindex] = AuraN[aindex]->ParamValue[0];// temp * 10;//.MSB<<8) + eHouseProStatus.status.AdcVal[nr_of_ch].LSB;
                                                                     //adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
-                                                                    adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0]+3;
-                                                                    adcs[aindex]->ADCLow= AuraN[aindex]->ParamPreset[0]-3;
-                                                                    AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0]>>8;
+                                                                    adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0] + 3;
+                                                                    adcs[aindex]->ADCLow= AuraN[aindex]->ParamPreset[0] - 3;
+                                                                    AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
                                                                     AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
                                                                     nr_of_ch = aindex;
                                                             //        PerformADC();       //Perform Adc measurement process    
@@ -2835,99 +2842,98 @@ void eHouseTCP::Do_Work()
                                                 break;
 
                                             case 1: AuraDev[aindex]->Door= '<';
-                                                AuraDev[aindex]->WINDOW_OPEN= 1;
-                                                adcs[aindex]->door= 10;
-                                                adcs[aindex]->flagsa|= AURA_STAT_WINDOW_OPEN;
+                                                AuraDev[aindex]->WINDOW_OPEN = 1;
+                                                adcs[aindex]->door = 10;
+                                                adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
                                                 adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableHeating= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableRecu= 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableCooling= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableFan= 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
                                                 break;
                                             case 2: 
-                                                AuraDev[aindex]->WINDOW_SMALL= 1;
-                                                adcs[aindex]->door=2;
-                                                AuraDev[aindex]->Door= '/';
-                                                adcs[aindex]->flagsa|= AURA_STAT_WINDOW_SMALL;
+                                                AuraDev[aindex]->WINDOW_SMALL = 1;
+                                                adcs[aindex]->door = 2;
+                                                AuraDev[aindex]->Door = '/';
+                                                adcs[aindex]->flagsa |= AURA_STAT_WINDOW_SMALL;
                                                 adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableHeating= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableRecu= 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableCooling= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableFan= 0;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableFan = 0;    //Disable Ventilation if flag is set
                                                 break;                                    
                                             case 3: 
-                                                adcs[aindex]->door= 10;
-                                                AuraDev[aindex]->WINDOW_OPEN= 1;
-                                                adcs[aindex]->flagsa|= AURA_STAT_WINDOW_OPEN;
-                                                AuraDev[aindex]->Door= '>';
+                                                adcs[aindex]->door = 10;
+                                                AuraDev[aindex]->WINDOW_OPEN = 1;
+                                                adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
+                                                AuraDev[aindex]->Door = '>';
                                                 adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableHeating= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableRecu= 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableCooling= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableFan= 1;    //Disable Ventilation if flag is set                                                        
+                                                adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set                                                        
                                                 break;
                                             case 4: 
-                                                AuraDev[aindex]->WINDOW_UNPROOF= 1;
-                                                AuraDev[aindex]->Door= '~';
-                                                adcs[aindex]->door= 1;
-                                                adcs[aindex]->flagsa|= AURA_STAT_WINDOW_UNPROOF;
+                                                AuraDev[aindex]->WINDOW_UNPROOF = 1;
+                                                AuraDev[aindex]->Door = '~';
+                                                adcs[aindex]->door = 1;
+                                                adcs[aindex]->flagsa |= AURA_STAT_WINDOW_UNPROOF;
                                                 break;
                                             case 5: 
-                                                adcs[aindex]->door= 10;
-                                                adcs[aindex]->flagsa|= AURA_STAT_WINDOW_OPEN;
-                                                AuraDev[aindex]->Door= 'X';                            
+                                                adcs[aindex]->door = 10;
+                                                adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
+                                                AuraDev[aindex]->Door = 'X';                            
                                                 adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableHeating= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableRecu= 1;    //Disable Ventilation if flag is set
-                                                adcs[aindex]->DisableCooling= 1; //Disable Heating if flag is set
-                                                adcs[aindex]->DisableFan= 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+                                                adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+                                                adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
                                                 break;
-                                            case 6: AuraDev[aindex]->Door= '-';break;
+                                            case 6: AuraDev[aindex]->Door = '-';break;
                                             case 7: AuraDev[aindex]->Door= '-';break;                            
                                             }
                                         if (AuraDev[aindex]->DoorState&0x8)
                                             {
-                                            AuraDev[aindex]->LOCK= 1;
-                                            AuraDev[aindex]->Lock= 1;
+                                            AuraDev[aindex]->LOCK = 1;
+                                            AuraDev[aindex]->Lock = 1;
                                             }
                                         else
                                             {
-                                            AuraDev[aindex]->Lock= 0;
+                                            AuraDev[aindex]->Lock = 0;
                                             }
                                         if (DEBUG_AURA) LOG(LOG_STATUS, "DoorState: %d\t", AuraDev[aindex]->DoorState);
                                         AuraDev[aindex]->Door= AuraN[aindex]->BinaryStatus[i++];
                                         if (DEBUG_AURA) LOG(LOG_STATUS, "Door: %d\t", AuraDev[aindex]->Door);
-                                        adcs[aindex]->flagsa= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsa=adcs[aindex]->flagsa<<8;
-                                        adcs[aindex]->flagsa|= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsa=adcs[aindex]->flagsa<<8;
-                                        adcs[aindex]->flagsa|= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsa=adcs[aindex]->flagsa<<8;
-                                        adcs[aindex]->flagsa|= AuraN[aindex]->BinaryStatus[i++];
-                                        if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsA: %lx\t",adcs[aindex]->flagsa);
+                                        adcs[aindex]->flagsa = AuraN[aindex]->BinaryStatus[i++];
+                                        adcs[aindex]->flagsa = adcs[aindex]->flagsa<<8;
+                                        adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+                                        adcs[aindex]->flagsa = adcs[aindex]->flagsa<<8;
+                                        adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+                                        adcs[aindex]->flagsa = adcs[aindex]->flagsa<<8;
+                                        adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+                                        if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsA: %lx\t", adcs[aindex]->flagsa);
 
                                         adcs[aindex]->flagsb= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsb=adcs[aindex]->flagsb<<8;
-                                        adcs[aindex]->flagsb|= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsb=adcs[aindex]->flagsb<<8;
-                                        adcs[aindex]->flagsb|= AuraN[aindex]->BinaryStatus[i++];
-                                        adcs[aindex]->flagsb=adcs[aindex]->flagsb<<8;
-                                        adcs[aindex]->flagsb|= AuraN[aindex]->BinaryStatus[i++];
-                                        unsigned int time= AuraN[aindex]->BinaryStatus[i++];
-                                        time=time<<8;
-                                        time+= AuraN[aindex]->BinaryStatus[i++];
-                                        AuraDev[aindex]->ServerTempSet =time;
-                                        AuraDev[aindex]->ServerTempSet/= 10;
+                                        adcs[aindex]->flagsb= adcs[aindex]->flagsb<<8;
+                                        adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+                                        adcs[aindex]->flagsb = adcs[aindex]->flagsb<<8;
+                                        adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+                                        adcs[aindex]->flagsb = adcs[aindex]->flagsb<<8;
+                                        adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+                                        unsigned int time = AuraN[aindex]->BinaryStatus[i++];
+                                        time = time << 8;
+                                        time += AuraN[aindex]->BinaryStatus[i++];
+                                        AuraDev[aindex]->ServerTempSet = time;
+                                        AuraDev[aindex]->ServerTempSet /= 10;
                                         if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsB: %lx\t", (long unsigned int) adcs[aindex]->flagsb);
-                                        AuraDev[aindex]->LQI= AuraN[aindex]->BinaryStatus[i++];
+                                        AuraDev[aindex]->LQI = AuraN[aindex]->BinaryStatus[i++];
                                         if (DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", AuraDev[aindex]->LQI);
                                         AuraN[aindex]->BinaryStatusLength    = AuraN[aindex]->BinaryStatus[0];//nbytes;           
-                                        AuraN[aindex]->TCPQuery++;
+                                        AuraN[aindex]->TCPQuery ++;
                                         AuraN[aindex]->StatusTimeOut = 15u;
-                                        UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL,aindex);
-                                                    }
-                        
-                                                }
+                                        UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
+                                        }                        
+                                    }
                                 }
                         
                         }
@@ -3029,7 +3035,7 @@ LOG(LOG_STATUS, "close %d",ressock);
 LOG(LOG_STATUS, "\r\nTERMINATED UDP\r\n");
 //Freeing ALL Dynamic memory
 int eHEIndex = 0;
-for (eHEIndex = 0; eHEIndex<ETHERNET_EHOUSE_RM_MAX + 1;eHEIndex++)
+for (eHEIndex = 0; eHEIndex<ETHERNET_EHOUSE_RM_MAX + 1; eHEIndex++)
 //	if (strlen((char *) &eHEn[eHEIndex])>0)
 	if (eHEn[eHEIndex] != NULL)
 		{
