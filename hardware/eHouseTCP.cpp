@@ -407,7 +407,7 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	VccRef = 0;
 	AdcRefMax = 0;
 	CalcCalibration = 0;
-
+	DEBUG_TCPCLIENT = 0;
     eHEnableAutoDiscovery = AutoDiscovery;
     eHEnableAlarmInputs   = EnableAlarms;
     eHEnableProDiscovery  = EnablePro;

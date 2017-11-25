@@ -245,7 +245,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
         status=1L;
         if (setsockopt (ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data imediatelly
 			{
-			_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
+			//_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 			}
         server.sin_addr.s_addr= SrvAddrU | (SrvAddrM<<8)    | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24); 
         server.sin_family = AF_INET;                    //tcp v4
@@ -342,7 +342,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 
 		if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data imediatelly
 			{
-			_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
+			//_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 			}
 
 		#if defined WIN32
@@ -357,7 +357,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Sending termination of connection", SocketIndex);
         if ((status = send(ClientCon->Socket,(char *) &challange, 1, 0)) != 1)
                 {
-			if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Not sent termination (No Problem)", SocketIndex);
+				if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Not sent termination (No Problem)", SocketIndex);
                 if (status < 0) eHTerminate(SocketIndex)
                 }
 		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Termination Sent OK", SocketIndex);
