@@ -266,7 +266,7 @@ private:
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
 	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename, const bool bdzVents);
-	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
+	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);
 	void StripQuotes(std::string &sString);

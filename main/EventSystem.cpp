@@ -3045,7 +3045,6 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, item.reason);
 		if (item.reason == REASON_URL)
 			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
-
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -3260,7 +3259,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 	{
 		if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
 		{
-			scriptTrue = processLuaCommand(lua_state, filename, tIndex);
+			scriptTrue = processLuaCommand(lua_state, filename);
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
@@ -3282,7 +3281,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 
 }
 
-bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex)
+bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
 {
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
@@ -3424,21 +3423,6 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		int idx = atoi(SetPointIdx.c_str());
 		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
-	}
-	else if (lCommand.find("Cancel:") == 0)
-	{
-		std::string Type = lCommand.substr(7);
-		uint64_t Idx = lua_tointeger(lua_state, -1);
-		int count = 0;
-
-		if (Type == "Device")
-			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_EVENT, count);
-		else if (Type == "Scene")
-			m_sql.RemoveTaskItem(Idx, TITEM_SWITCHCMD_SCENE, count);
-		else if (Type == "Variable")
-			m_sql.RemoveTaskItem(Idx, TITEM_SET_VARIABLE, count);
-		if (count)
-			_log.Log(LOG_STATUS, "EventSystem: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, Idx, Type.c_str());
 	}
 	else
 	{
