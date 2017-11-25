@@ -1,5 +1,11 @@
-define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD) {
-	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue']);
+// request permission on page load
+document.addEventListener('DOMContentLoaded', function () {
+	if (Notification.permission !== "granted")
+		Notification.requestPermission();
+});
+
+define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-flexible-height', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue', 'angular-websocket'], function (angularAMD) {
+	var app = angular.module('domoticz', ['ngRoute', 'ngAnimate', 'ngGrid', 'highcharts-ng', 'treeControl', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue', 'ngWebsocket']);
 
 	isOnline = false;
 	dashboardType = 1;
@@ -163,6 +169,161 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		};
 	});
+		function notifyMe(title, body) {
+            if (typeof Notification == "undefined") {
+                console.log("Notification: " + title + ": " + body);
+				console.log('Desktop notifications not available in your browser. Try Chromium.');
+				return;
+			}
+
+			if (Notification.permission !== "granted")
+				Notification.requestPermission();
+			else {
+				var notification = new Notification(title, {
+					//icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+					body: body,
+				});
+
+				notification.onclick = function () {
+					window.open("http://stackoverflow.com/a/13328397/1269037");
+				};
+			}
+		}
+
+		app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
+			return {
+				initialised: false,
+				getJson: function (url, callback_fn) {
+					if (!callback_fn) {
+						callback_fn = function (data) {
+							$rootScope.$broadcast('jsonupdate', data);
+						};
+					}
+					var use_http = !(url.substr(0, 9) == "json.htm?");
+                    if (use_http) {
+                        var loc = window.location, http_uri;
+                        if (loc.protocol === "https:") {
+                            http_uri = "https:";
+                        } else {
+                            http_uri = "http:";
+                        }
+                        http_uri += "//" + loc.host;
+                        http_uri += loc.pathname;
+						// get via json get
+                        url = http_uri + url;
+						$http.get(url).success(callback_fn);
+					}
+					else {
+						var settings = {
+							url: url,
+							success: callback_fn
+						};
+                        settings.context = settings;
+						return this.SendAsync(settings);
+					}
+				},
+				Init: function () {
+					if (this.initialised) {
+						return;
+                    }
+                    var self = this;
+					var loc = window.location, ws_uri;
+					if (loc.protocol === "https:") {
+						ws_uri = "wss:";
+					} else {
+						ws_uri = "ws:";
+					}
+					ws_uri += "//" + loc.host;
+					ws_uri += loc.pathname + "json";
+					this.websocket = $websocket.$new({
+						url: ws_uri,
+						protocols: ["domoticz"],
+						lazy: false,
+						reconnect: true,
+						reconnectInterval: 2000,
+						enqueue: true
+					});
+					this.websocket.callbackqueue = [];
+					this.websocket.$on('$open', function () {
+						console.log("websocket opened");
+					});
+					this.websocket.$on('$close', function () {
+						console.log("websocket closed");
+                    });
+                    this.websocket.$on('$error', function () {
+                        console.log("websocket error");
+                    });
+					this.websocket.$on('$message', function (msg) {
+						if (typeof msg == "string") {
+							msg = JSON.parse(msg);
+						}
+						switch (msg.event) {
+							case "notification":
+								notifyMe(msg.Subject, msg.Text);
+								return;
+						}
+                        var requestid = msg.requestid;
+                        if (requestid >= 0) {
+							var callback_obj = this.callbackqueue[requestid];
+							var settings = callback_obj.settings;
+							var data = msg.data || msg;
+							if (typeof data == "string") {
+								data = JSON.parse(data);
+							}
+							callback_obj.defer_object.resolveWith(settings.context, [settings.success, data]);
+						}
+						else {
+							var data = msg.data || msg;
+							if (typeof data == "string") {
+								data = JSON.parse(data);
+							}
+							//alert("req_id: " + requestid + "\ndata: " + msg.data + ", msg: " + msg + "\n, data: " + JSON.stringify(data));
+							var send = {
+								title: "Devices", // msg.title
+								item: (typeof data.result != 'undefined') ? data.result[0] : null,
+								ServerTime: data.ServerTime,
+								Sunrise: data.Sunrise,
+								Sunset: data.Sunset
+							}
+							$rootScope.$broadcast('jsonupdate', send);
+						}
+						if (!$rootScope.$$phase) { // prevents triggering a $digest if there's already one in progress
+							$rootScope.$digest();
+						}
+					});
+					this.initialised = true;
+				},
+				Close: function () {
+					if (!this.initialised) {
+						return;
+					}
+					this.websocket.$close();
+					this.initialised = false;
+				},
+				Send: function (data) {
+					this.Init();
+					this.websocket.$$send(data);
+					//this.websocket.$emit('message', data);
+				},
+				SendLoginInfo: function (sessionid) {
+					this.Send(new Blob["2", sessionid]);
+				},
+				/* mimic ajax call */
+				SendAsync: function (settings) {
+					this.Init();
+					var defer_object = new $.Deferred();
+					defer_object.done(function (fn, json) {
+						fn.call(this, json);
+					});
+					this.websocket.callbackqueue.push({ settings: settings, defer_object: defer_object });
+					var requestid = this.websocket.callbackqueue.length - 1;
+					var requestobj = { "event": "request", "requestid": requestid, "query": settings.url.substr(9) };
+                    var content = JSON.stringify(requestobj);
+					this.Send(requestobj);
+					return defer_object.promise();
+				}
+			}
+		}]);
 	app.config(function ($routeProvider, $locationProvider) {
 		$routeProvider.
 			when('/Dashboard', angularAMD.route({
@@ -668,6 +829,47 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		});
 		permissions.setPermissions(permissionList);
 
+			/* this doesnt run, for some reason */
+			app.run(function (livesocket) {
+				console.log(livesocket);
+				//alert('run');
+				livesocket.Init();
+			});
+			/*
+			var oAjax = $.ajax;
+			$.ajax = function (settings) {
+				if (settings.url.substr(0, 9) == "json.htm?" && settings.url.match(/type=devices/)) {
+					if (typeof settings.context === 'undefined') settings.context = settings;
+					return websocket.SendAsync(settings);
+				}
+				else {
+					return oAjax(settings);
+				}
+			};
+			*/
+			/* end ajax override */
+
+		app.directive('timesun', function () {
+			return {
+				templateUrl: 'timesuntemplate',
+				controller: ['$scope', function ($scope) {
+					var self = $scope;
+					$scope.data = {};
+					$scope.$on('jsonupdate', function (event, data) {
+						if (typeof data.ServerTime !== 'undefined') {
+							self.data.ServerTime = data.ServerTime;
+						}
+						if (typeof data.Sunrise !== 'undefined') {
+							self.data.Sunrise = data.Sunrise;
+						}
+						if (typeof data.Sunset !== 'undefined') {
+							self.data.Sunset = data.Sunset;
+						}
+					});
+				}
+				]
+			};
+		});
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
 			var month = ServerTime.split(' ')[0];
 			ServerTime = ServerTime.replace(month, $.t(month));

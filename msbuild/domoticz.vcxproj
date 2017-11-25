@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -62,6 +62,8 @@
       <AdditionalIncludeDirectories>./Windows Libraries/Boost;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;../tinyxpath;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnablePREfast>false</EnablePREfast>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -69,7 +71,7 @@
       <AdditionalLibraryDirectories>./Windows Libraries/Boost/Stage;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
-      <Profile>true</Profile>
+      <Profile>false</Profile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)makeversion.bat"</Command>
@@ -263,6 +265,7 @@
     <None Include="..\www\js\angular-sanitize.min.js.gz" />
     <None Include="..\www\js\angular-scrollglue.js.gz" />
     <None Include="..\www\js\angular-tree-control.js.gz" />
+    <None Include="..\www\js\angular-websocket.js" />
     <None Include="..\www\js\angular.min.js.gz" />
     <None Include="..\www\js\angularAMD.min.js.gz" />
     <None Include="..\www\js\blockly_compressed.js.gz" />
@@ -394,6 +397,7 @@
     <None Include="..\www\views\scenes.html" />
     <None Include="..\www\views\setup.html" />
     <None Include="..\www\views\temperature.html" />
+    <None Include="..\www\views\temperatures\temperatureWidget.html" />
     <None Include="..\www\views\update.html" />
     <None Include="..\www\views\users.html" />
     <None Include="..\www\views\uservariables.html" />
@@ -442,6 +446,7 @@
     <ClInclude Include="..\hardware\EcoDevices.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
+    <ClInclude Include="..\hardware\EnphaseAPI.h" />
     <ClInclude Include="..\hardware\ETH8020.h" />
     <ClInclude Include="..\hardware\EvohomeBase.h" />
     <ClInclude Include="..\hardware\EvohomeRadio.h" />
@@ -529,6 +534,8 @@
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
+    <ClInclude Include="..\hardware\USBtin.h" />
+    <ClInclude Include="..\hardware\USBtin_MultiblocV8.h" />
     <ClInclude Include="..\hardware\VolcraftCO20.h" />
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
@@ -592,6 +599,7 @@
     <ClInclude Include="..\MQTT\util_mosq.h" />
     <ClInclude Include="..\MQTT\will_mosq.h" />
     <ClInclude Include="..\notifications\NotificationBase.h" />
+    <ClInclude Include="..\notifications\NotificationBrowser.h" />
     <ClInclude Include="..\notifications\NotificationGCM.h" />
     <ClInclude Include="..\notifications\NotificationHelper.h" />
     <ClInclude Include="..\notifications\NotificationEmail.h" />
@@ -609,12 +617,16 @@
     <ClInclude Include="..\push\FibaroPush.h" />
     <ClInclude Include="..\push\GooglePubSubPush.h" />
     <ClInclude Include="..\push\HttpPush.h" />
+    <ClInclude Include="..\push\Push.h" />
+    <ClInclude Include="..\push\WebsocketPush.h" />
     <ClInclude Include="..\push\InfluxPush.h" />
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
     <ClInclude Include="..\webserver\proxycommon.h" />
+    <ClInclude Include="..\webserver\WebsocketHandler.h" />
+    <ClInclude Include="..\webserver\Websockets.hpp" />
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
@@ -697,6 +709,7 @@
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
+    <ClCompile Include="..\hardware\EnphaseAPI.cpp" />
     <ClCompile Include="..\hardware\ETH8020.cpp" />
     <ClCompile Include="..\hardware\EvohomeBase.cpp" />
     <ClCompile Include="..\hardware\EvohomeRadio.cpp" />
@@ -787,6 +800,8 @@
     <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
+    <ClCompile Include="..\hardware\USBtin.cpp" />
+    <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp" />
     <ClCompile Include="..\hardware\VolcraftCO20.cpp" />
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
@@ -906,6 +921,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationBase.cpp" />
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp" />
     <ClCompile Include="..\notifications\NotificationGCM.cpp" />
     <ClCompile Include="..\notifications\NotificationHelper.cpp" />
     <ClCompile Include="..\notifications\NotificationEmail.cpp" />
@@ -923,6 +939,7 @@
     <ClCompile Include="..\push\FibaroPush.cpp" />
     <ClCompile Include="..\push\GooglePubSubPush.cpp" />
     <ClCompile Include="..\push\HttpPush.cpp" />
+    <ClCompile Include="..\push\WebsocketPush.cpp" />
     <ClCompile Include="..\push\InfluxPush.cpp" />
     <ClCompile Include="..\push\BasePush.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
@@ -962,6 +979,8 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp" />
+    <ClCompile Include="..\webserver\Websockets.cpp" />
     <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />

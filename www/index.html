@@ -447,6 +447,13 @@ $(document).ready(function() {
 </script>
 </head>
 <body>
+	<script type="text/ng-template" id="timesuntemplate">
+		<table><tbody>
+			<tr>
+				<td align="left" valign="top" id="timesun"><div><span ng-bind="data.ServerTime"></span> <font color="yellow">☀</font>▲<span ng-bind="data.Sunrise"></span> ▼<span ng-bind="data.Sunset"></span></div></td>
+			</tr>
+		</tbody></table>
+	</script>
 	<div id="thermostat3_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" style="width: 176px;">
 		<div class="ui-close" onclick="CloseTherm3Popup()"></div>
 		<table class="display" border="0" cellpadding="0" cellspacing="0">

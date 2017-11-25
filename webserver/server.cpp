@@ -84,6 +84,9 @@ void server_base::run() {
 void server_base::stop() {
 	if (is_running) {
 		// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
+		// Rene, set is_running to false, because the following is an io_service call, which makes is_running
+		// never set to false whilst in the call itself
+		is_running = false;
 		io_service_.post(boost::bind(&server_base::handle_stop, this));
 	} else {
 		// if io_service is not running then the post call will not be performed
@@ -103,6 +106,7 @@ void server_base::stop() {
 		}
 		sleep_milliseconds(500);
 	}
+	io_service_.stop();
 }
 
 void server_base::handle_stop() {
