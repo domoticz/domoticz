@@ -16,7 +16,8 @@ private:
 	{
 		TYPE_UNKNOWN,	// 0
 		TYPE_STRING,	// 1
-		TYPE_INTEGER	// 2
+		TYPE_INTEGER,	// 2
+		TYPE_BOOLEAN    // 3
 	};
 	struct _tLuaTableValues
 	{
