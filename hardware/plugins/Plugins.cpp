@@ -1034,7 +1034,7 @@ namespace Plugins {
 	void CPlugin::ConnectionProtocol(CDirectiveBase * pMess)
 	{
 		ProtocolDirective*	pMessage = (ProtocolDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pProtocol)
 		{
 			delete pConnection->pProtocol;
@@ -1058,12 +1058,22 @@ namespace Plugins {
 	void CPlugin::ConnectionConnect(CDirectiveBase * pMess)
 	{
 		ConnectDirective*	pMessage = (ConnectDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
 			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
 			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
@@ -1106,12 +1116,22 @@ namespace Plugins {
 	void CPlugin::ConnectionListen(CDirectiveBase * pMess)
 	{
 		ListenDirective*	pMessage = (ListenDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
 			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
 			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
@@ -1164,11 +1184,6 @@ namespace Plugins {
 		ReadMessage*	pMessage = (ReadMessage*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 
-		if (!pConnection->pProtocol)
-		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-			pConnection->pProtocol = new CPluginProtocol();
-		}
 		pConnection->pProtocol->ProcessInbound(pMessage);
 	}
 
@@ -1212,12 +1227,6 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
-		}
-
-		if (!pConnection->pProtocol)
-		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
-			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
