@@ -288,6 +288,7 @@ define(['app'], function (app) {
 					text.indexOf("Denkovi") == -1 &&
 					text.indexOf("Relay-Net") == -1 &&
 					text.indexOf("Satel Integra") == -1 &&
+					text.indexOf("eHouse") == -1 &&
 					text.indexOf("ETH8020") == -1 &&
 					text.indexOf("Daikin") == -1 &&
 					text.indexOf("Sterbox") == -1 &&
@@ -362,14 +363,23 @@ define(['app'], function (app) {
 			}
 			else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (text.indexOf("eHouse") >= 0)
+						{
+						if (address == "") address="192.168.0.200";
+						}
 				if (address == "") {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
+				if (text.indexOf("eHouse") >= 0)
+						{
+						if (port == "") port="9876";
+						}
+
 				if (port == "") {
 					ShowNotify($.t('Please enter an Port!'), 2500, true);
 					return;
@@ -388,6 +398,21 @@ define(['app'], function (app) {
 					}
 					Mode1 = pollinterval;
 				}
+				if (text.indexOf("eHouse") >= 0) 
+					{
+					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+					if (pollinterval == "") 
+						{
+						ShowNotify($.t('Please enter poll interval!'), 2500, true);
+						return;
+						}
+					Mode1 = pollinterval;
+					Mode2 = $('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked") ? 1 : 0;
+					Mode3 = $("#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin").prop("checked") ? 1 : 0;
+					Mode4 = $("#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery").prop("checked") ? 1 : 0;
+					Mode5 = $("#hardwarecontent #hardwareparamsehouse #ehouseopts").val();
+					Mode6 = $("#hardwarecontent #hardwareparamsehouse #ehouseopts2").val();
+					}
 				if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
 					Mode2 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollrelays').prop("checked") ? 1 : 0;
@@ -415,6 +440,12 @@ define(['app'], function (app) {
 					Mode5 = relaycount;
 				}
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				if (text.indexOf("eHouse") >= 0) 
+					{
+					if (password == "") {
+								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
+								}
+					}
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
 					if (password != "") {
 						if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
@@ -1071,6 +1102,7 @@ define(['app'], function (app) {
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Relay-Net") == -1 &&
 					text.indexOf("Satel Integra") == -1 &&
+					text.indexOf("eHouse") == -1 &&
 					text.indexOf("Razberry") == -1 &&
 					text.indexOf("MyHome OpenWebNet with LAN interface") == -1
 				)
@@ -1313,6 +1345,7 @@ define(['app'], function (app) {
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Relay-Net") == -1 &&
 					text.indexOf("Satel Integra") == -1 &&
+					text.indexOf("eHouse") == -1 &&
 					text.indexOf("Razberry") == -1 &&
 					text.indexOf("MyHome OpenWebNet with LAN interface") == -1
 				)
@@ -1350,7 +1383,7 @@ define(['app'], function (app) {
 			}
 			else if (
 				(text.indexOf("LAN") >= 0 && ((text.indexOf("YouLess") >= 0) || (text.indexOf("Denkovi") >= 0))) ||
-				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) ||
+				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) ||
 				(text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				Mode1 = 0;
@@ -1382,6 +1415,23 @@ define(['app'], function (app) {
 					}
 					Mode1 = pollinterval;
 				}
+
+				if (text.indexOf("eHouse") >= 0) 
+					{
+					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+					Mode2 = $('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked") ? 1 : 0;
+					Mode3 = $('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked") ? 1 : 0;
+					Mode4 = $('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked") ? 1 : 0;
+					Mode5 = $('#hardwarecontent #hardwareparamsehouse #ehouseopts').val();
+					Mode6 = $('#hardwarecontent #hardwareparamsehouse #ehouseopts2').val();
+					if (pollinterval == "") 
+						{
+						ShowNotify($.t('Please enter poll interval!'), 2500, true);
+						return;
+						}
+					Mode1 = pollinterval;					
+					}
+
 				if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
 					Mode2 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollrelays').prop("checked") ? 1 : 0;
@@ -5081,7 +5131,7 @@ define(['app'], function (app) {
 								
 							}
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
+						else if ((((data["Type"].indexOf("LAN") >= 0) || (data["Type"].indexOf("Eco Devices") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") == -1) && (data["Type"].indexOf("Denkovi") == -1) && (data["Type"].indexOf("Relay-Net") == -1) && (data["Type"].indexOf("Satel Integra") == -1) && (data["Type"].indexOf("eHouse") == -1) && (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") == -1)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Harmony") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							if (data["Type"].indexOf("P1 Smart Meter") >= 0) {
@@ -5096,7 +5146,7 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divevohometcp #controlleridevohometcp").val(data["Extra"]);
 							}
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Relay-Net") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0) || (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)) {
+						else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Relay-Net") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("eHouse") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0) || (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -5104,6 +5154,14 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("Satel Integra") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 							}
+							if (data["Type"].indexOf("eHouse") >= 0) {
+								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+					 			$('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked",data["Mode2"] == 1);
+								$('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked",data["Mode3"] == 1);
+								$('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked",data["Mode4"] == 1);
+								$('#hardwarecontent #hardwareparamsehouse #ehouseopts').val(data["Mode5"]);
+								$('#hardwarecontent #hardwareparamsehouse #ehouseopts2').val(data["Mode6"]);
+								}
 
 							if (data["Type"].indexOf("Relay-Net") >= 0) {
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs").prop("checked", data["Mode1"] == 1);
@@ -5151,6 +5209,14 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("Satel Integra") >= 0) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+						}
+						else if (data["Type"].indexOf("eHouse") >= 0) {
+                            $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
+					 		$('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked",data["Mode2"] == 1);
+							$('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked",data["Mode3"] == 1);
+							$('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked",data["Mode4"] == 1);
+							$('#hardwarecontent #hardwareparamsehouse #ehouseopts').val(data["Mode5"]);
+							$('#hardwarecontent #hardwareparamsehouse #ehouseopts2').val(data["Mode6"]);
 						}
 						else if (data["Type"].indexOf("Relay-Net") >= 0) {
 							$("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs").prop("checked", data["Mode1"] == 1);
@@ -5378,6 +5444,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divpollinterval").hide();
 			$("#hardwarecontent #divpythonplugin").hide();
 			$("#hardwarecontent #divrelaynet").hide();
+			$("#hardwarecontent #ehouse").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
 
@@ -5454,7 +5521,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
-			else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1 && text.indexOf("Satel Integra") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1) {
+			else if ((text.indexOf("LAN") >= 0 || text.indexOf("Harmony") >= 0 || text.indexOf("Eco Devices") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && text.indexOf("YouLess") == -1 && text.indexOf("Denkovi") == -1 && text.indexOf("Relay-Net") == -1 && text.indexOf("Satel Integra") == -1 && text.indexOf("eHouse") == -1 && text.indexOf("MyHome OpenWebNet with LAN interface") == -1) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").hide();
@@ -5473,7 +5540,7 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divevohometcp").show();
 				}
 			}
-			else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Relay-Net") >= 0 || text.indexOf("Satel Integra") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+			else if ((text.indexOf("LAN") >= 0 || text.indexOf("MySensors Gateway with MQTT") >= 0) && (text.indexOf("YouLess") >= 0 || text.indexOf("Denkovi") >= 0 || text.indexOf("Relay-Net") >= 0 || text.indexOf("Satel Integra") >= 0) || text.indexOf("eHouse") >= 0 || (text.indexOf("Xiaomi Gateway") >= 0) || text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
@@ -5494,6 +5561,14 @@ define(['app'], function (app) {
 				if (text.indexOf("Satel Integra") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+				}
+				if (text.indexOf("eHouse") >= 0) {
+					$("#hardwarecontent #divpollinterval").show();
+					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
+					//$("#hardwarecontent #password").show();		
+					//$("#hardwarecontent #lblpassword").show();
+					//$("#hardwarecontent #divlogin").hide();
+					$("#hardwarecontent #divehouse").show();
 				}
 
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {

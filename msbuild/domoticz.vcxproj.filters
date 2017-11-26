@@ -486,6 +486,9 @@
     <Filter Include="Pushers\Websocket">
       <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\eHouse">
+      <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2121,6 +2124,18 @@
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2842,6 +2857,18 @@
     </ClCompile>
     <ClCompile Include="..\webserver\Websockets.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+  <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <Filter>Devices\eHouse</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
