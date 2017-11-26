@@ -5609,7 +5609,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
+//				$("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
 			}
 			else if (text.indexOf("HEOS by DENON") >= 0) {
 				$("#hardwarecontent #divserial").hide();
