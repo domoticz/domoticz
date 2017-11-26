@@ -260,7 +260,7 @@ describe('Domoticz', function()
 							headers = { ['Content-Type'] = 'application/json' },
 							_trigger = 'trigger1',
       						postdata = '{"a":1,"b":2}',
-							_after = '60'
+							_after = 60
 						}
 					}
 				}, domoticz.commandArray)
@@ -274,7 +274,7 @@ describe('Domoticz', function()
       						method = 'POST',
 							headers = { ['Content-Type'] = 'application/json' },
       						postdata = '{"a":1,"b":2}',
-							_after = '60'
+							_after = 60
 						}
 					}
 				}, domoticz.commandArray)

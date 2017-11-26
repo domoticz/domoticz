@@ -23,11 +23,11 @@ local function Device(domoticz, data, dummyLogger)
 
 	function self.update(nValue, sValue, protected)
 		local params = {
-			idx = tostring(self.id),
-			nValue = (nValue ~= nil and nValue ~= '')  and tostring(nValue) or nil,
+			idx = self.id,
+			nValue = (nValue ~= nil and nValue ~= '')  and nValue or nil,
 			sValue = (sValue ~= nil and sValue ~= '')  and tostring(sValue) or nil,
-			_trigger = 'true',
-			protected = protected ~= nil and tostring(protected) or nil
+			_trigger = true,
+			protected = protected ~= nil and protected or nil
 		}
 		return TimedCommand(domoticz, 'UpdateDevice', params, 'updatedevice')
 	end

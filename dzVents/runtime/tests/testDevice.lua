@@ -300,9 +300,9 @@ describe('device', function()
 
 			device.updateLux(333)
 			assert.is_same({ { ["UpdateDevice"] = {
-				idx = '1',
-				_trigger = "true",
-				nValue = '0',
+				idx = 1,
+				_trigger = true,
+				nValue = 0,
 				sValue = '333',
 			} } }, commandArray)
 		end)
@@ -335,10 +335,10 @@ describe('device', function()
 
 			device.updateElectricity(220, 1000)
 			assert.is_same({ { ["UpdateDevice"] = {
-				idx= '1',
-				nValue = '0',
+				idx= 1,
+				nValue = 0,
 				sValue = '220;1000',
-				_trigger = 'true'
+				_trigger = true
 			} } }, commandArray)
 		end)
 
@@ -353,7 +353,7 @@ describe('device', function()
 
 			assert.is_same(12345, device.WhActual)
 			device.updateEnergy(1000)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="1000", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1000", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a visibility device', function()
@@ -369,7 +369,7 @@ describe('device', function()
 
 			assert.is_same(33, device.visibility)
 			device.updateVisibility(22)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="22", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="22", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a p1 smart meter device', function()
@@ -407,7 +407,7 @@ describe('device', function()
 			assert.is_same(12345, device.WhActual)
 
 			device.updateP1(1, 2, 3, 4, 5, 6)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="1;2;3;4;5;6", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1;2;3;4;5;6", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a thermostat setpoint device', function()
@@ -444,7 +444,7 @@ describe('device', function()
 
 			assert.is_same('dzVents rocks', device.text)
 			device.updateText('foo')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="foo", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="foo", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a rain device', function()
@@ -455,7 +455,7 @@ describe('device', function()
 			})
 
 			device.updateRain(10, 20)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10;20", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;20", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a 2-phase ampere device', function()
@@ -471,7 +471,7 @@ describe('device', function()
 
 			assert.is_same(123, device.current)
 			device.updateCurrent(10)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a 3-phase ampere device', function()
@@ -491,7 +491,7 @@ describe('device', function()
 			assert.is_same(456, device.current2)
 			assert.is_same(789, device.current3)
 			device.updateCurrent(10, 20, 30)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10;20;30", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;20;30", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect an air quality device', function()
@@ -507,7 +507,7 @@ describe('device', function()
 			assert.is_same(12, device.co2)
 
 			device.updateAirQuality(44)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="44", sValue="0", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=44, sValue="0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a security device', function()
@@ -675,13 +675,13 @@ describe('device', function()
 
 
 			device.updateMode('Heat')
-			assert.is_same({ { ["UpdateDevice"] ={idx="1", nValue="1", sValue="1", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] ={idx=1, nValue=1, sValue="1", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Off')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="0", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="0", _trigger=true} } }, commandArray)
 			commandArray = {}
 			device.updateMode('Heat Econ')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="2", sValue="2", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=2, sValue="2", _trigger=true} } }, commandArray)
 
 		end)
 
@@ -703,7 +703,7 @@ describe('device', function()
 			assert.is.same(32, device.chill)
 
 			device.updateWind(1, 2, 3, 4, 5, 6)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="1;2;30;40;5;6", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1;2;30;40;5;6", _trigger=true} } }, commandArray)
 
 		end)
 
@@ -719,7 +719,7 @@ describe('device', function()
 			assert.is.same(123.55, device.uv)
 
 			device.updateUV(33.5)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="33.5;0", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33.5;0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a barometer device', function()
@@ -729,7 +729,7 @@ describe('device', function()
 			})
 
 			device.updateBarometer(1024, 'thunderstorm')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="1024;4", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1024;4", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a temperature device', function()
@@ -739,7 +739,7 @@ describe('device', function()
 			})
 
 			device.updateTemperature(23)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="23", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="23", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a humidity device', function()
@@ -752,7 +752,7 @@ describe('device', function()
 			})
 
 			device.updateHumidity(66, 'wet')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="66", sValue="wet", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=66, sValue="wet", _trigger=true} } }, commandArray)
 			assert.is_same(3, device.humidityStatusValue)
 		end)
 
@@ -766,7 +766,7 @@ describe('device', function()
 			})
 
 			device.updateTempHum(10, 12, 'wet')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10;12;wet", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet", _trigger=true} } }, commandArray)
 			assert.is_same(2, device.humidityStatusValue)
 		end)
 
@@ -780,7 +780,7 @@ describe('device', function()
 			})
 
 			device.updateTempHumBaro(10, 12, 'wet', 1000, 'rain')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10;12;wet;1000;4", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;12;wet;1000;4", _trigger=true} } }, commandArray)
 			assert.is_same(1, device.humidityStatusValue)
 		end)
 
@@ -791,7 +791,7 @@ describe('device', function()
 			})
 
 			device.updateTempBaro(10, 1000, 'thunderstorm')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="10;1000;4", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="10;1000;4", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a counter device', function()
@@ -807,7 +807,7 @@ describe('device', function()
 			assert.is_same(6.7894, device.counter)
 
 			device.updateCounter(555)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="555", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
 
 		end)
 
@@ -824,7 +824,7 @@ describe('device', function()
 			assert.is_same(6.7894, device.counter)
 
 			device.updateCounter(555)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="555", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a pressure device', function()
@@ -834,7 +834,7 @@ describe('device', function()
 			})
 
 			device.updatePressure(567)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="567", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="567", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a gas device', function()
@@ -851,7 +851,7 @@ describe('device', function()
 			assert.is_same(123.445, device.counter)
 
 			device.updateGas(567)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="567", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="567", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a percentage device', function()
@@ -863,7 +863,7 @@ describe('device', function()
 
 			assert.is_same( 99.98, device.percentage )
 			device.updatePercentage(12.55)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="12.55", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12.55", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a voltage device', function()
@@ -874,7 +874,7 @@ describe('device', function()
 			})
 
 			device.updateVoltage(123.55)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="123.55", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="123.55", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect an alert device', function()
@@ -888,7 +888,7 @@ describe('device', function()
 			assert.is_same(4, device.color)
 			assert.is_same('some text', device.text)
 			device.updateAlertSensor(0, 'Oh dear!')
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="Oh dear!", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="Oh dear!", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a distance device', function()
@@ -901,7 +901,7 @@ describe('device', function()
 			assert.is_same(44.33, device.distance)
 
 			device.updateDistance(3.14)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="3.14", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="3.14", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a custom sensor device', function()
@@ -911,7 +911,7 @@ describe('device', function()
 			})
 
 			device.updateCustomSensor(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="12", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a solar radiation device', function()
@@ -921,7 +921,7 @@ describe('device', function()
 			})
 
 			device.updateRadiation(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="12", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a leaf wetness device', function()
@@ -933,7 +933,7 @@ describe('device', function()
 
 			assert.is_same(4, device.wetness)
 			device.updateWetness(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="12", sValue="0", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue="12", sValue="0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a scale weight device', function()
@@ -945,7 +945,7 @@ describe('device', function()
 
 			assert.is_same(44, device.weight)
 			device.updateWeight(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="12", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="12", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a sound level device', function()
@@ -957,7 +957,7 @@ describe('device', function()
 
 			assert.is_same(120, device.level)
 			device.updateSoundLevel(33)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="33", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a waterflow device', function()
@@ -969,7 +969,7 @@ describe('device', function()
 
 			assert.is_same(44, device.flow)
 			device.updateWaterflow(33)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="0", sValue="33", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="33", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a soil moisture device', function()
@@ -981,7 +981,7 @@ describe('device', function()
 
 			assert.is_same(34, device.moisture)
 			device.updateSoilMoisture(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx="1", nValue="12", sValue="0", _trigger="true"} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, sValue="0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a Logitech Media Server device', function()
@@ -1340,12 +1340,12 @@ describe('device', function()
 	describe('Updating', function()
 		it('should send generic update commands', function()
 			device.update(1,2,true)
-			assert.is_same({{["UpdateDevice"]={idx="1", nValue="1", sValue="2", protected="true", _trigger="true"}}}, commandArray)
+			assert.is_same({{["UpdateDevice"]={idx=1, nValue=1, sValue="2", protected=true, _trigger=true}}}, commandArray)
 		end)
 
 		it('should send generic update commands', function()
 			device.update(1, 2, true).silent()
-			assert.is_same({{["UpdateDevice"]={idx="1", nValue="1", sValue="2", protected="true"}}}, commandArray)
+			assert.is_same({{["UpdateDevice"]={idx=1, nValue=1, sValue="2", protected=true}}}, commandArray)
 		end)
 
 

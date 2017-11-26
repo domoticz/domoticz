@@ -65,15 +65,15 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 
 		if (randomValue ~= nil) then
 			-- value._after = tostring(math.random(randomValue))
-			value._random = tostring(randomValue)
+			value._random = randomValue
 		end
 
 		if (afterValue ~= nil) then
-			value._after = tostring(afterValue)
+			value._after = afterValue
 		end
 
 		if (forValue ~= nil) then
-			value._for = tostring(forValue)
+			value._for = forValue
 		end
 
 		if (silentValue == true) then
@@ -83,11 +83,11 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 		end
 
 		if (repeatValue ~= nil) then
-			value._repeat = tostring(repeatValue)
+			value._repeat = repeatValue
 		end
 
 		if (repeatIntervalValue ~= nil) then
-			value._repeatInterval = tostring(repeatIntervalValue)
+			value._repeatInterval = repeatIntervalValue
 		end
 
 		return value
