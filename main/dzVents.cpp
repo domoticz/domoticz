@@ -108,7 +108,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 					}
 					else if (itt->second.type == TYPE_STRING)
 					{
-						if (itt->second.name == "url")
+						if (itt->second.name == "URL")
 							URL = itt->second.sValue;
 						else if (itt->second.name == "method")
 							method = itt->second.sValue;
@@ -172,7 +172,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 								ulIdx = static_cast<uint64_t>(itt->second.iValue);
 								szIdx = ss.str();
 							}
-							else if (itt->second.name == "nvalue")
+							else if (itt->second.name == "nValue")
 								nValue = ss.str();
 							else if (itt->second.name == "protected")
 								Protected = ss.str();
@@ -185,7 +185,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 						}
 						else if (!itt->second.sValue.empty())
 						{
-							if (itt->second.name == "svalue")
+							if (itt->second.name == "sValue")
 								sValue = itt->second.sValue;
 						}
 					}

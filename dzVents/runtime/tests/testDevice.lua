@@ -933,7 +933,7 @@ describe('device', function()
 
 			assert.is_same(4, device.wetness)
 			device.updateWetness(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue="12", sValue="0", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, sValue="0", _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a scale weight device', function()

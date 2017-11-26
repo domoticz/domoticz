@@ -2499,6 +2499,9 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 		} else if ( sToken == "TURN" ) {
 			iLastTokenType = 0;
 		}
+		else if (sToken == "NOTRIGGER")
+			oResults_.bEventTrigger = false;
+
 		else if ( sToken.find( "SECOND" ) != std::string::npos ) {
 			switch( iLastTokenType ) {
 				case 1: oResults_.fForSec /= 60.; break;
@@ -3265,7 +3268,8 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		{
 			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename, bdzVents);
 		}
-		else if (bdzVents && std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
+//		else if (bdzVents && std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
+		else if (std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
 		{
 			scriptTrue = m_dzvents.processLuaCommand(lua_state, filename, tIndex);
 		}
