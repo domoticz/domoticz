@@ -903,9 +903,39 @@ describe('Time', function()
 
 			describe('on <days>', function()
 
-				it('should return true when it is on the day', function()
+				it('should return true when it is on monday', function()
 					local t = Time('2017-06-05 02:04:00')
 					assert.is_true(t.ruleIsOnDay('on mon'))
+				end)
+
+				it('should return true when it is on tuesday', function()
+					local t = Time('2017-06-06 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on tue'))
+				end)
+
+				it('should return true when it is on wednesday', function()
+					local t = Time('2017-06-07 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on wed'))
+				end)
+
+				it('should return true when it is on thursday', function()
+					local t = Time('2017-06-08 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on thu'))
+				end)
+
+				it('should return true when it is on friday', function()
+					local t = Time('2017-06-09 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on fri'))
+				end)
+
+				it('should return true when it is on saturday', function()
+					local t = Time('2017-06-10 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on sat'))
+				end)
+
+				it('should return true when it is on sunday', function()
+					local t = Time('2017-06-11 02:04:00')
+					assert.is_true(t.ruleIsOnDay('on sun'))
 				end)
 
 				it('should return true when it is on the days', function()
