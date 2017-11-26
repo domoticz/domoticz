@@ -57,7 +57,10 @@ local function Variable(domoticz, data)
 	end
 
 	function self.cancelQueuedCommands()
-		domoticz.sendCommand('Cancel:Variable', tostring(data.id))
+		domoticz.sendCommand('Cancel', {
+			type = 'variable',
+			idx = data.id
+		})
 	end
 
 	return self

@@ -99,7 +99,10 @@ return {
 			device['nValue'] = data.data._nValue
 
 			device['cancelQueuedCommands'] = function()
-				domoticz.sendCommand('Cancel:Device', tostring(data.id))
+				domoticz.sendCommand('Cancel', {
+					type = 'device',
+					idx = data.id
+				})
 			end
 
 			device.isDevice = true
@@ -111,7 +114,10 @@ return {
 			device['rawData'] = { [1] = data.data._state }
 			device['changed'] = data.changed
 			device['cancelQueuedCommands'] = function()
-				domoticz.sendCommand('Cancel:Scene', tostring(data.id))
+				domoticz.sendCommand('Cancel', {
+					type = 'scene',
+					idx = data.id
+				})
 			end
 
 		end
