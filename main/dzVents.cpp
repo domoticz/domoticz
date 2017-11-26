@@ -4,6 +4,8 @@
 #include "localtime_r.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/WebServerHelper.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 extern std::string szUserDataFolder;
 extern http::server::CWebServerHelper m_webservers;
@@ -59,242 +61,291 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<std::
 	lua_setglobal(lua_state, "httpresponse");
 }
 
-float CdzVents::StringToFloatRandom(const std::string &randomString)
+float CdzVents::RandomTime(const int randomTime)
 {
-	float randomSec;
-	std::stringstream ss(randomString);
-	ss >> randomSec;
 	srand((unsigned int)mytime(NULL));
-	return (float)rand() / (float)(RAND_MAX / randomSec);
-}
-
-void CdzVents::OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders)
-{
-	std::string URL, extraHeaders, method, postData, trigger;
-	std::map<std::string, std::string>::const_iterator itt;
-	float delayTime = 0, randomTime = 0;
-
-	if (URLheaders.size() > 0)
-	{
-		std::map<std::string, std::string>::const_iterator itt;
-		for (itt = URLheaders.begin(); itt != URLheaders.end(); itt++)
-			extraHeaders += "!#" + itt->first + ": " + itt->second;
-	}
-
-	for (itt = URLdata.begin(); itt != URLdata.end(); itt++)
-	{
-		if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "url")
-			URL = itt->second;
-		else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "method")
-			method = itt->second;
-		else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "postdata")
-			postData = itt->second;
-		else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_trigger")
-			trigger = itt->second;
-		else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_random")
-			randomTime = StringToFloatRandom(itt->second);
-		else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_after")
-		{
-			std::stringstream ss(itt->second);
-			ss >> delayTime;
-		}
-	}
-	if (URL.empty())
-	{
-		_log.Log(LOG_ERROR, "EventSystem: No URL set.");
-		return;
-	}
-
-	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
-	if (!method.empty())
-	{
-		if (method == "POST")
-			eMethod = HTTPClient::HTTP_METHOD_POST;
-	}
-	if (!postData.empty())
-	{
-		if (eMethod != HTTPClient::HTTP_METHOD_POST)
-		{
-			_log.Log(LOG_ERROR, "EventSystem: You can only use postdata with method POST..");
-			return;
-		}
-	}
-	if (randomTime)
-		delayTime = randomTime;
-
-	_log.Log(LOG_STATUS, "EventSystem: Fetching url %s...", URL.c_str());
-	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
+	return ((float)(rand() / (RAND_MAX / randomTime)));
 }
 
 bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex)
 {
 	bool scriptTrue = false;
-	std::string lCommand = std::string(lua_tostring(lua_state, -2));
-
-	if (lCommand == "OpenURL")
+	if (lua_istable(lua_state, -1))
 	{
-		if (lua_istable(lua_state, -1))
-		{
-			std::map<std::string, std::string> URLdata;
-			std::map<std::string, std::string> URLheaders;
+		std::string lCommand = std::string(lua_tostring(lua_state, -2));
 
-			lua_pushnil(lua_state);
-			while (lua_next(lua_state, tIndex + 2) != 0)
+		if (lCommand == "OpenURL")
+		{
+			float delayTime = 0;
+			std::string URL, extraHeaders, method, postData, trigger;
+
+			std::map<int, _tLuaTableValues> mLuaTable;
+			IterateTable(lua_state, tIndex + 2, 0, mLuaTable);
+			if (mLuaTable.size() > 0)
 			{
-				if (lua_istable(lua_state, -1) && (std::string(lua_tostring(lua_state, -2)) == "headers"))
+				std::map<int, _tLuaTableValues>::const_iterator itt;
+				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
 				{
-					lua_pushnil(lua_state);
-					while (lua_next(lua_state, tIndex + 4) != 0)
+					if (itt->second.isTable && itt->second.name == "headers")
 					{
-						if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-							URLheaders.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-						lua_pop(lua_state, 1);
+						int tIndex = itt->second.tIndex;
+						if (itt == mLuaTable.end())
+							break;
+
+						itt++;
+						std::map<int, _tLuaTableValues>::const_iterator itt2;
+						for (itt2 = itt; itt2 != mLuaTable.end(); itt2++)
+						{
+							if (itt2->second.tIndex != tIndex)
+							{
+								itt--;
+								break;
+							}
+							extraHeaders += "!#" + itt2->second.name + ": " + itt2->second.sValue;
+							if (itt != mLuaTable.end())
+								itt++;
+						}
+					}
+					else if (itt->second.type == TYPE_STRING)
+					{
+						if (itt->second.name == "url")
+							URL = itt->second.sValue;
+						else if (itt->second.name == "method")
+							method = itt->second.sValue;
+						else if (itt->second.name == "postdata")
+							postData = itt->second.sValue;
+						else if (itt->second.name == "_trigger")
+							trigger = itt->second.sValue;
+					}
+					else if (itt->second.type == TYPE_INTEGER)
+					{
+						if (itt->second.name == "_random")
+							delayTime = RandomTime(itt->second.iValue);
+						else if (itt->second.name == "_after")
+							delayTime = static_cast<float>(itt->second.iValue);
 					}
 				}
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-					URLdata.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-
-				lua_pop(lua_state, 1);
 			}
-			OpenURL(URLdata, URLheaders);
-			scriptTrue = true;
-		}
-	}
-	else if (lCommand == "UpdateDevice")
-	{
-		std::string luaString;
-		float delayTime = 0;
-		bool bEventTrigger = false;
-
-		if (lua_istable(lua_state, -1))
-		{
-			std::map<std::string, std::string> updateDeviceData;
-
-			lua_pushnil(lua_state);
-			while (lua_next(lua_state, tIndex + 2) != 0)
+			if (URL.empty())
 			{
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-					updateDeviceData.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-				lua_pop(lua_state, 1);
-			}
-			uint64_t ulIdx;
-			float randomTime = 0;
-			std::string szIdx, nValue, sValue, Protected;
-			std::map<std::string, std::string>::const_iterator itt;
-			for (itt = updateDeviceData.begin(); itt != updateDeviceData.end(); itt++)
-			{
-				if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "idx")
-				{
-					std::stringstream ss(itt->second);
-					ss >> ulIdx;
-					szIdx = itt->second;
-				}
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "nvalue")
-					nValue = itt->second;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "svalue")
-					sValue = itt->second;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "protected")
-					Protected = itt->second;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_trigger")
-					bEventTrigger = true;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_random")
-					randomTime = StringToFloatRandom(itt->second);
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_after")
-				{
-					std::stringstream ss(itt->second);
-					ss >> delayTime;
-				}
-			}
-			if (szIdx.empty())
+				_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
 				return false;
+			}
 
-			luaString = szIdx + "|";
+			HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
+			if (!method.empty() && method == "POST")
+				eMethod = HTTPClient::HTTP_METHOD_POST;
 
-			if (!nValue.empty())
-				luaString += nValue;
+			if (!postData.empty() && eMethod != HTTPClient::HTTP_METHOD_POST)
+			{
+				_log.Log(LOG_ERROR, "dzVents: You can only use postdata with method POST..");
+				return false;
+			}
 
-			luaString += "|";
-			if (!sValue.empty())
-				luaString += sValue;
+			_log.Log(LOG_STATUS, "dzVents: Fetching url %s...", URL.c_str());
+			m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
+			scriptTrue = true;
+		}
+		else if (lCommand == "UpdateDevice")
+		{
+			if (lua_istable(lua_state, -1))
+			{
+				std::string luaString, szIdx, nValue, sValue, Protected;
+				uint64_t ulIdx;
+				float delayTime = 0;
+				bool bEventTrigger = false;
 
-			luaString += "|";
-			if (!Protected.empty())
-				luaString += Protected;
+				std::map<int, _tLuaTableValues> mLuaTable;
+				IterateTable(lua_state, tIndex, 0, mLuaTable);
 
-			if (randomTime)
-				delayTime = randomTime;
+				if (mLuaTable.size() > 0)
+				{
+					std::map<int, _tLuaTableValues>::const_iterator itt;
+					for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+					{
+						if (itt->second.iValue != -1)
+						{
+							std::stringstream ss;
+							ss << itt->second.iValue;
+							if (itt->second.name == "idx")
+							{
+								ulIdx = static_cast<uint64_t>(itt->second.iValue);
+								szIdx = ss.str();
+							}
+							else if (itt->second.name == "nvalue")
+								nValue = ss.str();
+							else if (itt->second.name == "protected")
+								Protected = ss.str();
+							else if (itt->second.name == "_trigger")
+								bEventTrigger = true;
+							else if (itt->second.name == "_random")
+								delayTime = RandomTime(itt->second.iValue);
+							else if (itt->second.name == "_after")
+								delayTime = static_cast<float>(itt->second.iValue);
+						}
+						else if (!itt->second.sValue.empty())
+						{
+							if (itt->second.name == "svalue")
+								sValue = itt->second.sValue;
+						}
+					}
+				}
 
-			m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
+				if (szIdx.empty())
+					return false;
+
+				luaString = szIdx + "|";
+
+				if (!nValue.empty())
+					luaString += nValue;
+
+				luaString += "|";
+				if (!sValue.empty())
+					luaString += sValue;
+
+				luaString += "|";
+				if (!Protected.empty())
+					luaString += Protected;
+
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
+				scriptTrue = true;
+			}
+		}
+		else if (lCommand.find("Variable") == 0)
+		{
+			std::string variableName, variableValue;
+			float delayTime = 0;
+			bool bEventTrigger = false;
+
+			std::map<int, _tLuaTableValues> mLuaTable;
+			IterateTable(lua_state, tIndex, 0, mLuaTable);
+
+			if (mLuaTable.size() > 0)
+			{
+				std::map<int, _tLuaTableValues>::const_iterator itt;
+				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+				{
+					if (itt->second.name == "_trigger")
+						bEventTrigger = true;
+					else if (itt->second.name == "_random")
+						delayTime = RandomTime(itt->second.iValue);
+					else if (itt->second.name == "_after")
+						delayTime = static_cast<float>(itt->second.iValue);
+					else if (itt->second.name == "name")
+						variableName = itt->second.sValue;
+					else if (itt->second.name == "value")
+						variableValue = itt->second.sValue;
+				}
+			}
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
+			if (result.size() > 0)
+			{
+				std::vector<std::string> sd = result[0];
+
+				if (bEventTrigger)
+					m_mainworker.m_eventsystem.SetEventTrigger(atoi(sd[0].c_str()), m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
+
+				variableValue = m_mainworker.m_eventsystem.ProcessVariableArgument(variableValue);
+
+				if (delayTime < (1./timer_resolution_hz/2))
+				{
+					std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
+					if (updateResult != "OK") {
+						_log.Log(LOG_ERROR, "dzVents: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
+					}
+				}
+				else
+				{
+					uint64_t idx;
+					std::stringstream sstr;
+					sstr << sd[0];
+					sstr >> idx;
+					m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
+				}
+				scriptTrue = true;
+			}
+		}
+		else if (lCommand.find("Cancel") == 0)
+		{
+			uint64_t idx;
+			int count = 0;
+			std::string type;
+
+			std::map<int, _tLuaTableValues> mLuaTable;
+			IterateTable(lua_state, tIndex, 0, mLuaTable);
+
+			if (mLuaTable.size() > 0)
+			{
+				std::map<int, _tLuaTableValues>::const_iterator itt;
+				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+				{
+					if (itt->second.name == "idx")
+						idx = static_cast<uint64_t>(itt->second.iValue);
+					else if (itt->second.name == "type")
+					{
+						if (itt->second.sValue == "device")
+							m_sql.RemoveTaskItem(idx, TITEM_SWITCHCMD_EVENT, count);
+						else if (itt->second.sValue == "scene")
+							m_sql.RemoveTaskItem(idx, TITEM_SWITCHCMD_SCENE, count);
+						else if (itt->second.sValue == "variable")
+							m_sql.RemoveTaskItem(idx, TITEM_SET_VARIABLE, count);
+					}
+				}
+			}
+			if (count)
+				_log.Log(LOG_STATUS, "dzVents: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, idx, type.c_str());
+
 			scriptTrue = true;
 		}
 	}
-	else if (lCommand.find("Variable") == 0)
+}
+
+bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, std::map<int, _tLuaTableValues> &mLuaTable)
+{
+	_tLuaTableValues item;
+	item.isTable = false;
+	static int indexCount;
+	indexCount = index;
+
+	lua_pushnil(lua_state);
+	while (lua_next(lua_state, tIndex) != 0)
 	{
-		std::string variableName, variableValue;
-		float delayTime = 0;
-		float randomTime = 0;
-		bool bEventTrigger = false;
-		std::vector<std::vector<std::string> > result;
-
-		if (lua_istable(lua_state, -1))
+		item.type = TYPE_UNKNOWN;
+		indexCount++;
+		if (lua_istable(lua_state, -1) && (std::string(luaL_typename(lua_state, -2)) == "string"))
 		{
-			std::map<std::string, std::string> variableData;
-
-			lua_pushnil(lua_state);
-			while (lua_next(lua_state, tIndex + 2) != 0)
-			{
-				if ((std::string(luaL_typename(lua_state, -2)) == "string") && (std::string(luaL_typename(lua_state, -1)) == "string"))
-					variableData.insert(std::pair<std::string, std::string> (std::string(lua_tostring(lua_state, -2)), std::string(lua_tostring(lua_state, -1))));
-				lua_pop(lua_state, 1);
-			}
-			std::map<std::string, std::string>::const_iterator itt;
-			for (itt = variableData.begin(); itt != variableData.end(); itt++)
-			{
-				if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "name")
-					variableName = itt->second;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "value")
-					variableValue = itt->second;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_trigger")
-					bEventTrigger = true;
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_random")
-					randomTime = StringToFloatRandom(itt->second);
-				else if (m_mainworker.m_eventsystem.LowerCase(itt->first) == "_after")
-				{
-					std::stringstream ss(itt->second);
-					ss >> delayTime;
-				}
-			}
-			if (randomTime)
-				delayTime = randomTime;
+			item.type = TYPE_STRING;
+			item.isTable = true;
+			item.tIndex = tIndex + 2;
+			item.iValue = -1;
+			item.name = std::string(lua_tostring(lua_state, -2));
+			item.sValue.clear();
+			mLuaTable.insert(std::pair<int, _tLuaTableValues> (indexCount, item));
+			IterateTable(lua_state, tIndex + 2, indexCount, mLuaTable);
 		}
-
-		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
-		if (result.size() > 0)
+		else if (std::string(luaL_typename(lua_state, -1)) == "string")
 		{
-			std::vector<std::string> sd = result[0];
-
-			if (bEventTrigger)
-				m_mainworker.m_eventsystem.SetEventTrigger(atoi(sd[0].c_str()), m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
-
-			variableValue = m_mainworker.m_eventsystem.ProcessVariableArgument(variableValue);
-
-			if (delayTime < (1./timer_resolution_hz/2))
-			{
-				std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-				if (updateResult != "OK") {
-					_log.Log(LOG_ERROR, "EventSystem: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
-				}
-			}
-			else
-			{
-				uint64_t idx;
-				std::stringstream sstr;
-				sstr << sd[0];
-				sstr >> idx;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
-			}
-			scriptTrue = true;
+			item.type = TYPE_STRING;
+			item.isTable = false;
+			item.tIndex = tIndex;
+			item.iValue = -1;
+			item.name = std::string(lua_tostring(lua_state, -2));
+			item.sValue = std::string(lua_tostring(lua_state, -1));
 		}
+		else if (std::string(luaL_typename(lua_state, -1)) == "number")
+		{
+			item.type = TYPE_INTEGER;
+			item.isTable = false;
+			item.tIndex = tIndex;
+			item.iValue = lua_tointeger(lua_state, -1);
+			item.name = std::string(lua_tostring(lua_state, -2));
+			item.sValue.clear();
+		}
+		if (!item.isTable && item.type != TYPE_UNKNOWN)
+			mLuaTable.insert(std::pair<int, _tLuaTableValues> (indexCount, item));
+		lua_pop(lua_state, 1);
 	}
 }
 
@@ -349,7 +400,7 @@ void CdzVents::LoadEvents()
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
 				s = dzv_Dir + eitem.Name.c_str() + ".lua";
-				_log.Log(LOG_STATUS, "EventSystem: Write file: %s",s.c_str());
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s",s.c_str());
 				FILE *fOut = fopen(s.c_str(), "wb+");
 				if (fOut)
 				{
