@@ -79,7 +79,7 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 		if (silentValue == true) then
 			value._trigger = nil
 		else
-			value_trigger = true
+			value._trigger = true
 		end
 
 		if (repeatValue ~= nil) then
