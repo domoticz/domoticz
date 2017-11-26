@@ -377,7 +377,7 @@ return {
 				callback = 'energyRetrieved'
 			})
 		elseif (item.isHTTPResponse) then
-			if (item.statusCode == 200) then
+			if (item.ok) then -- statusCode == 2xx
 				local current = item.json.consumption
 				domoticz.devices('myCurrentUsage').updateEnergy(current)
 			end
@@ -1072,7 +1072,8 @@ return {
 	helpers = {
 		myHandyFunction = function(param1, param2)
 			-- do your stuff
-		end
+		end,
+		MY_CONSTANT = 100 -- doesn't have to be a function
 	}
 }
 ```
@@ -1082,6 +1083,7 @@ return {
 	...
 	execute = function(domoticz, device)
 		local results = domoticz.helpers.myHandyFunction('bla', 'boo')
+		print(domoticz.helpers.MY_CONSTANT)
 	end
 }
 ```
@@ -1109,7 +1111,7 @@ return {
 	end
 }
 ```
-**Note**: there can be only one `global_data.lua` on your system. Either in `/path/to/domoticz/scripts/dzVents/script` or in Domoticz' internal GUI web editor.
+**Note**: there can be only **one** `global_data.lua` on your system. Either in `/path/to/domoticz/scripts/dzVents/script` or in Domoticz' internal GUI web editor.
 
 ## Requiring your own modules
 If you don't want to use the helpers support, but you want to require your own modules, place them either in `/path/to/domoticz/scripts/dzVents/modules` or `/path/to/domoticz/scripts/dzVents/scripts/modules` as these folders are already added to the Lua package path. You can just require those modules: `local myModule = require('myModule')`
@@ -1470,7 +1472,7 @@ return {
 		httpResponses = { 'mycallbackstring' }
 	},
 	execute = function(domoticz, response)
-		if (response.statusCode == 200) then -- success
+		if (response.ok) then -- success
 			if (response.isJSON) then
 				domoticz.utils._.print(response.json)
 			end
@@ -1495,7 +1497,7 @@ return {
 			})
 		end
 		if (item.isHTTPResponse) then
-			if (item.statusCode == 200) then
+			if (item.ok) then
 				...
 			end
 		end
@@ -1518,9 +1520,10 @@ The response object has these attributes:
 
  - **data**: Raw response data.
  - **headers**: *Table*. Response headers.
- - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://developer.mozilla.org/nl/docs/Web/HTTP/Status).
  - **isJSON**: *Boolean*. Short for `response.headers['Content-Type'] == 'application/json'`. When true, the data is automatically converted to a Lua table.
  - **json**. *Table*. When the response data is `application/json` then the response data is automatically converted to a Lua table for quick and easy access.
+ - **ok**: *Boolean*. `True` when the request was successful. It checks for statusCode to be in range of 200-299.
+ - **statusCode**: *Number*. HTTP status codes. See [HTTP response status codes](https://developer.mozilla.org/nl/docs/Web/HTTP/Status).
  - **trigger**, **callback**: *String*. The callback string that triggered this response instance. This is useful if you have a script that is triggered by multiple different callback strings.
 
 # Settings

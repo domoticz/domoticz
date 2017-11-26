@@ -434,7 +434,8 @@ describe('event helpers', function()
 			local trigger1 = bindings['trigger1'][1]
 
 			local res = helpers.callEventHandler(trigger1, nil, nil, nil, nil, {
-				callback = 'trigger1'
+				callback = 'trigger1',
+                statusCode = 200
 			})
 			-- should pass the arguments to the execute function
 			-- and catch the results from the function

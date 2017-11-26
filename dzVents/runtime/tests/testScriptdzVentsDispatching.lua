@@ -186,7 +186,8 @@ describe('Event dispatching', function()
 	it("should dispatch httpResponse events", function()
 		_G.commandArray = {}
 		_G.httpresponse = {
-			callback='trigger1'
+			callback='trigger1',
+			statusCode = 200
 		}
 		_G.globalvariables['script_reason'] = 'url'
 

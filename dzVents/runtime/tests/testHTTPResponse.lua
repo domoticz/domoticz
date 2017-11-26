@@ -32,6 +32,21 @@ describe('HTTPResponse', function()
 		assert.is_false(r.isGroup)
 		assert.is_false(r.isSecurity)
 		assert.is_same(404, r.statusCode)
+		assert.is_false(r.ok)
+	end)
+
+	it('should have valid statuscode', function()
+
+		local r = HTTPResponse({
+			BASETYPE_HTTP_RESPONSE = 'httpResponse'
+		}, {
+			headers = {['Content-Type'] = 'application/json'},
+			data  = '{"a":1}',
+			callback = 'trigger1',
+			statusCode = 200
+		})
+
+		assert.is_true(r.ok)
 	end)
 
 end)

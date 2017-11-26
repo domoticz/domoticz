@@ -16,6 +16,11 @@ local function HTTPResponce(domoticz, responseData)
 
     self.statusCode = responseData.statusCode
 
+    self.ok = false
+    if (self.statusCode >= 200 and self.statusCode <= 299) then
+        self.ok = true
+    end
+
     self.isHTTPResponse = true
     self.isDevice = false
     self.isScene = false
@@ -38,6 +43,5 @@ local function HTTPResponce(domoticz, responseData)
 
     return self
 end
-
 
 return HTTPResponce
