@@ -243,7 +243,7 @@ describe('device', function()
 
 			device.cancelQueuedCommands()
 			assert.is_same({
-				{ ['Cancel:Device'] = '1' } }, commandArray)
+				{ ['Cancel'] = { idx = 1, type = 'device' } } }, commandArray)
 		end)
 
 		it('should deal with percentages', function()
@@ -933,7 +933,7 @@ describe('device', function()
 
 			assert.is_same(4, device.wetness)
 			device.updateWetness(12)
-			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, sValue="0", _trigger=true} } }, commandArray)
+			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=12, _trigger=true} } }, commandArray)
 		end)
 
 		it('should detect a scale weight device', function()
@@ -1121,7 +1121,7 @@ describe('device', function()
 				scene.cancelQueuedCommands()
 
 				assert.is_same({
-					{ ['Cancel:Scene'] = '1' }
+					{ ['Cancel'] = { idx = 1, type = 'scene' } }
 				}, commandArray)
 
 				assert.is_false(scene.isHTTPResponse)

@@ -501,7 +501,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
  - **helpers**: *Table*. Collection of shared helper functions available to all your dzVents scripts. See [Creating shared helper functions](#Creating_shared_helper_functions).
  - **log(message, [level])**: *Function*. Creates a logging entry in the Domoticz log but respects the log level settings. You can provide the loglevel: `domoticz.LOG_INFO`, `domoticz.LOG_DEBUG`, `domoticz.LOG_ERROR` or `domoticz.LOG_FORCE`. In Domoticz settings you can set the log level for dzVents.
  - **notify(subject, message, priority, sound, extra, subsystem)**: *Function*. Send a notification (like Prowl). Priority can be like `domoticz.PRIORITY_LOW, PRIORITY_MODERATE, PRIORITY_NORMAL, PRIORITY_HIGH, PRIORITY_EMERGENCY`. For sound see the SOUND constants below. `subsystem` can be a table containing one or more notification subsystems. See `domoticz.NSS_xxx` types.
- - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified.  If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about invoking and handling of asynchronous http requests with dzVents.
+ - **openURL(url/options)**: *Function*. Have Domoticz 'call' a URL. If you just pass a url then Domoticz will execute the url after your script has finished but you will not get notified.  If you pass a table with options then you have to possibility to receive the results of the request in a dzVents script. Read more about invoking and handling of asynchronous http requests with dzVents. Supports timing options. See [below](#Switch_timing_options_.28delay.2C_duration.29).
  - **scenes(idx/name)**: *Function*: A function returning a scene by name or id. Each scene has the same interface as a device. See [Device object API](#Device_object_API). To iterate over all scenes do: `domoticz.scenes().forEach(..)`. See [Looping through the collections: iterators]. (#Looping_through_the_collections:_iterators). Note that you cannot do `for i, j in pairs(domoticz.scenes()) do .. end`. Read more about [Scenes](#Scene).
  - **security**: Holds the state of the security system e.g. `Armed Home` or `Armed Away`.
  - **sendCommand(command, value)**: Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. *There is likely no need to use this directly. Use any of the device methods instead (see below).*
@@ -941,7 +941,8 @@ Some options are not available to all commands. All the options are available to
 | `checkFirst()`           |  • (switch-like devices) |  n/a            | n/a            |
 | `cancelQueuedCommands()` |  •                       |  •              | •              |
 
-**Note**: `cancelQueuedCommands()` is not available for `domoticz.openURL()`
+**Note**: XXX is a placeholder for `Min/Sec/Hour` affix e.g. `afterMin()`.
+**Note**: for `domoticz.openURL()` only `afterXXX()` and `withinXXX()` is available.
 
 #### Follow-up event triggers
 Normally if you issue a command, Domoticz will immediately trigger follow-up events, and dzVents will automatically trigger defined event scripts. If you trigger a scene, all devices in that scene will issue a change event. If you have event triggers for these devices, they will be executed by dzVents. If you don't want this to happen, add `.silent()` to your commands.
@@ -1021,9 +1022,9 @@ local utcTime = Time('2017-12-31 22:19:15', true)
 ```
 
  - **compare(time)**: *Function*. Compares the current time object with another time object. *Make sure you pass a Time object!* Returns a table (all values are *positive*, use the compare property to see if *time* is in the past or future):
-	+ **ms**: Total difference in milliseconds.
-	+ **secs**: Total difference in whole seconds.
-	+ **mins**: Total difference in whole minutes.
+	+ **milliSeconds**: Total difference in milliseconds.
+	+ **seconds**: Total difference in whole seconds.
+	+ **minutes**: Total difference in whole minutes.
 	+ **hours**: Total difference in whole hours.
 	+ **days**: Total difference in whole days.
 	+ **compare**: 0 = both are equal, 1 = *time* is in the future, -1 = *time* is in the past.
@@ -1035,29 +1036,29 @@ local utcTime = Time('2017-12-31 22:19:15', true)
  - **isToday**: *Boolean*. Indicates if the device was updated today
  - **isUTC**: *Boolean*.
  - **matchesRule(rule) **: *Function*. Returns true if the rule matches with the time. See [time trigger rules](#timer_trigger_rules) for rule examples.
- - **min**: *Number*
+ - **minutes**: *Number*
  - **minutesAgo**: *Number*. Number of minutes since the last update.
  - **month**: *Number*
- - **msAgo**: *Number*. Number of milliseconds since the last update.
+ - **milliSecondsAgo**: *Number*. Number of milliseconds since the last update.
  - **raw**: *String*. Generated by Domoticz
  - **rawDate**: *String*. Returns the date part of the raw data.
  - **rawTime**: *String*. Returns the time part of the raw data.
- - **sec**: *Number*
+ - **seconds**: *Number*
  - **secondsSinceMidnight**: *Number*
  - **secondsAgo**: *Number*. Number of seconds since the last update.
  - **utcSystemTime**: *Table*. UTC system time (only when in UTC mode):
 	 - **day**: *Number*
 	 - **hour**: *Number*
 	 - **month**: *Number*
-	 - **min**: *Number*
-	 - **sec**: *Number*
+	 - **minutes**: *Number*
+	 - **seconds**: *Number*
 	 - **year**: *Number*
  - **utcTime**: *Table*. Time stamp in UTC time:
 	 - **day**: *Number*
 	 - **hour**: *Number*
 	 - **month**: *Number*
-	 - **min**: *Number*
-	 - **sec**: *Number*
+	 - **minutes**: *Number*
+	 - **seconds**: *Number*
 	 - **year**: *Number*
  - **year**: *Number*
 

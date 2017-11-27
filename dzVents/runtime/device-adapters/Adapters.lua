@@ -168,6 +168,9 @@ local function DeviceAdapters(dummyLogger)
 		paused = { b = false, inv = 'Play' },
 		['all on'] = { b = true, inv = 'All Off' },
 		['all off'] = { b = false, inv = 'All On' },
+		['nightmode'] = { b = true, inv = 'Off' },
+		['set to white'] = { b = true, inv = 'Off' },
+		['set kelvin level'] = { b = true, inv = 'Off' },
 	}
 
 	return self

@@ -218,7 +218,7 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
-		describe('openURL', function()
+		describe('#tag openURL', function()
 
 			it('should open a simple url', function()
 				domoticz.openURL('some url')

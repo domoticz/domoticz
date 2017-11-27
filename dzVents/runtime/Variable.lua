@@ -50,7 +50,7 @@ local function Variable(domoticz, data)
 
 		-- return TimedCommand(domoticz, 'Variable:' .. data.name, tostring(value), 'variable')
 		return TimedCommand(domoticz, 'Variable', {
-			name = data.name,
+			idx = data.id,
 			_trigger = true,
 			value = tostring(value)
 		}, 'variable')

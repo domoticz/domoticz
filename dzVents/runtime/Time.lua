@@ -162,6 +162,8 @@ local function Time(sDate, isUTC, _testMS)
 		self = localTime
 		self['utcSystemTime'] = now
 		self['utcTime'] = time
+		self['utcTime'].minutes = time.min
+		self['utcTime'].seconds = time.sec
 	else
 		self = time
 	end
@@ -169,6 +171,7 @@ local function Time(sDate, isUTC, _testMS)
 	self.rawDate = self.year .. '-' .. self.month .. '-' .. self.day
 	self.rawTime = self.hour .. ':' .. self.min .. ':' .. self.sec
 	self.milliSeconds = ms
+	self.milliseconds = ms
 	self.dayAbbrOfWeek = LOOKUP[self.wday]
 	self.week = tonumber(os.date('%V', dDate))
 
@@ -178,10 +181,14 @@ local function Time(sDate, isUTC, _testMS)
 		now.day==time.day)
 
 	self['msAgo'] = msDiff
+	self['millisecondsAgo'] = msDiff
 	self['minutesAgo'] = minDiff
 	self['secondsAgo'] = secDiff
 	self['hoursAgo'] = hourDiff
 	self['daysAgo'] = dayDiff
+
+	self['minutes'] = self.min
+	self['seconds'] = self.sec
 
 	self['secondsSinceMidnight'] = self.hour * 3600 + self.min * 60 + self.sec
 	self['utils'] = utils
@@ -201,14 +208,17 @@ local function Time(sDate, isUTC, _testMS)
 		if (t.raw ~= nil) then
 
 			local msDiff, secDiff, minDiff, hourDiff, dayDiff, cmp =
-				getDiffParts(os.difftime(dDate, t.dDate), t.milliSeconds, ms) -- offset is 'our' ms value
+				getDiffParts(os.difftime(dDate, t.dDate), t.milliseconds, ms) -- offset is 'our' ms value
 
 			return {
 				mins = minDiff,
 				hours = hourDiff,
 				secs = secDiff,
+				seconds = secDiff,
+				minutes = minDiff,
 				days = dayDiff,
 				ms = msDiff,
+				milliseconds = msDiff,
 				compare = cmp -- 0 == equal, -1==(t earlier than self), 1=(t later than self)
 			}
 		else

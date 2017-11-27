@@ -30,10 +30,9 @@ return {
 			end
 
 			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
+			return domoticz.openURL(url)
 		end
 
 	end
 
 }
-

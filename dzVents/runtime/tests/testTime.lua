@@ -106,7 +106,9 @@ describe('Time', function()
 			assert.is_same(localPast.day, utcT.day)
 			assert.is_same(localPast.hour, utcT.hour)
 			assert.is_same(localPast.min, utcT.min)
+			assert.is_same(localPast.min, utcT.minutes)
 			assert.is_same(localPast.sec, utcT.sec)
+			assert.is_same(localPast.sec, utcT.seconds)
 
 			-- however utcTime holds the utc time
 			assert.is_same(utcPast.year, utcT.utcTime.year)
@@ -114,7 +116,9 @@ describe('Time', function()
 			assert.is_same(utcPast.day, utcT.utcTime.day)
 			assert.is_same(utcPast.hour, utcT.utcTime.hour)
 			assert.is_same(utcPast.min, utcT.utcTime.min)
+			assert.is_same(utcPast.min, utcT.utcTime.minutes)
 			assert.is_same(utcPast.sec, utcT.utcTime.sec)
+			assert.is_same(utcPast.sec, utcT.utcTime.seconds)
 
 		end)
 
@@ -160,6 +164,7 @@ describe('Time', function()
 
 		it('should have milliseconds', function()
 			assert.is_same(342, localT.milliSeconds)
+			assert.is_same(342, localT.milliseconds)
 		end)
 
 		it('should have week number', function()
@@ -185,6 +190,7 @@ describe('Time', function()
 
 		it('should have msAgo', function()
 			assert.is_same((300000 - 342 + 123), localT.msAgo)
+			assert.is_same((300000 - 342 + 123), localT.millisecondsAgo)
 		end)
 
 		it('should have 0 seconds ago when ms < 1000', function()
@@ -198,6 +204,7 @@ describe('Time', function()
 			local t = Time(raw, false, 0)
 			assert.is_same(0, t.secondsAgo)
 			assert.is_same(500, t.msAgo)
+			assert.is_same(500, t.millisecondsAgo)
 			assert.is_same(0, t.minutesAgo)
 		end)
 
@@ -249,47 +256,62 @@ describe('Time', function()
 
 			assert.is_same({
 				["secs"] = 0,
+				["seconds"] = 0,
 				["hours"] = 0,
 				["days"] = 0,
 				["mins"] = 0,
+				["minutes"] = 0,
 				["ms"] = 0,
+				["milliseconds"] = 0,
 				["compare"] = 0
 			}, t1.compare(t1))
 
 			assert.is_same({
 				["secs"] = 86400,
+				["seconds"] = 86400,
 				["hours"] = 24,
 				["days"] = 1,
 				["mins"] = 1440,
+				["minutes"] = 1440,
 				["ms"] = 86400000 + 100,
+				["milliseconds"] = 86400000 + 100,
 				["compare"] = -1
 			}, t1.compare(t2))
 
 			assert.is_same({
 				["secs"] = 172885,
+				["seconds"] = 172885,
 				["hours"] = 48,
 				["days"] = 2,
 				["mins"] = 2881,
+				["minutes"] = 2881,
 				["ms"] = 172885000 + 100,
+				["milliseconds"] = 172885000 + 100,
 				["compare"] = -1
 			}, t1.compare(t3))
 
 			assert.is_same({
 				["secs"] = 172885,
+				["seconds"] = 172885,
 				["hours"] = 48,
 				["days"] = 2,
 				["mins"] = 2881,
+				["minutes"] = 2881,
 				["compare"] = -1,
-				["ms"] = 172885000 - 500 + 100 -- t4 is 500ms closer to t1
+				["ms"] = 172885000 - 500 + 100, -- t4 is 500ms closer to t1
+				["milliseconds"] = 172885000 - 500 + 100 -- t4 is 500ms closer to t1
 			}, t1.compare(t4))
 
 			assert.is_same({
 				["secs"] = 86400,
+				["seconds"] = 86400,
 				["hours"] = 24,
 				["days"] = 1,
 				["mins"] = 1440,
+				["minutes"] = 1440,
 				["compare"] = 1,
-				["ms"] = 86400100
+				["ms"] = 86400100,
+				["milliseconds"] = 86400100
 			}, t1.compare(tFuture))
 
 		end)
@@ -301,6 +323,8 @@ describe('Time', function()
 			assert.is_same(localPast.hour, localT.hour)
 			assert.is_same(localPast.min, localT.min)
 			assert.is_same(localPast.sec, localT.sec)
+			assert.is_same(localPast.min, localT.minutes)
+			assert.is_same(localPast.sec, localT.seconds)
 		end)
 
 		it('should return iso format', function()
