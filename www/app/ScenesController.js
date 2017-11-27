@@ -1273,7 +1273,7 @@ define(['app'], function (app) {
 			$("#scenecontent #sdate").datepicker({
 				minDate: now,
 				defaultDate: now,
-				dateFormat: "mm/dd/yy",
+				dateFormat: "yy-mm-dd",
 				showWeek: true,
 				firstDay: 1
 			});
@@ -1318,7 +1318,7 @@ define(['app'], function (app) {
 					$("#scenecontent #timerparamstable #rdate").hide();
 					$("#scenecontent #timerparamstable #rnorm").hide();
 					$("#scenecontent #timerparamstable #rdays").hide();
-					$("#scenecontent #timerparamstable #roccurence").show();
+				$("#scenecontent #timerparamstable #roccurence").show();
 					$("#scenecontent #timerparamstable #rmonths").show();
 				}
 				else {

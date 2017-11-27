@@ -971,7 +971,7 @@ namespace http {
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
 						int Day = atoi(sdate.substr(8, 2).c_str());
-						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
 					else
@@ -1043,7 +1043,7 @@ namespace http {
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
 						int Day = atoi(sdate.substr(8, 2).c_str());
-						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
 					else
@@ -1141,9 +1141,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1246,9 +1253,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1416,7 +1430,7 @@ namespace http {
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
 						int Day = atoi(sdate.substr(8, 2).c_str());
-						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
 					else
@@ -1478,9 +1492,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1574,9 +1595,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1744,7 +1772,7 @@ namespace http {
 						int Year = atoi(sdate.substr(0, 4).c_str());
 						int Month = atoi(sdate.substr(5, 2).c_str());
 						int Day = atoi(sdate.substr(8, 2).c_str());
-						sprintf(szTmp, "%02d-%02d-%04d", Month, Day, Year);
+						sprintf(szTmp, "%04d-%02d-%02d", Year, Month, Day);
 						sdate = szTmp;
 					}
 					else
@@ -1813,9 +1841,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
@@ -1916,9 +1951,16 @@ namespace http {
 			{
 				if (sdate.size() == 10)
 				{
-					Month = atoi(sdate.substr(0, 2).c_str());
-					Day = atoi(sdate.substr(3, 2).c_str());
-					Year = atoi(sdate.substr(6, 4).c_str());
+					if (sdate.c_str()[2] == '/' && sdate.c_str()[5] == '/') {
+					/* Legacy US-local date format */
+						Month = atoi(sdate.substr(0, 2).c_str());
+						Day = atoi(sdate.substr(3, 2).c_str());
+						Year = atoi(sdate.substr(6, 4).c_str());
+					} else {
+						Year = atoi(sdate.substr(0, 4).c_str());
+						Month = atoi(sdate.substr(5, 2).c_str());
+						Day = atoi(sdate.substr(8, 2).c_str());
+					}
 				}
 			}
 			else if (iTimerType == TTYPE_MONTHLY)
