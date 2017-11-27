@@ -7795,12 +7795,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
-	if (idx < 1) {
-		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
-		return false;
-	}
-
+std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap) {
 	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
@@ -7820,14 +7815,25 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 		}
 		options.assign(ssoptions.str());
 	}
-	if (options.empty() && (count > 0)) {
-		_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+
+	return options;
+}
+
+bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+	if (idx < 1) {
+		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
 		return false;
 	}
-	if (options.empty()) {
+
+	if (optionsMap.empty()) {
 		//_log.Log(LOG_STATUS, "DEBUG : removing options on device %" PRIu64 "", idx);
 		safe_query("UPDATE DeviceStatus SET Options = null WHERE (ID==%" PRIu64 ")", idx);
 	} else {
+		std::string options = FormatDeviceOptions(optionsMap);
+		if (options.empty()) {
+			_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+			return false;
+		}
 		//_log.Log(LOG_STATUS, "DEBUG : setting options '%s' on device %" PRIu64 "", options.c_str(), idx);
 		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%" PRIu64 ")", options.c_str(), idx);
 	}

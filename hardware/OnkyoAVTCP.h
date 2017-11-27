@@ -24,7 +24,10 @@ private:
 	bool SendPacket(const char *pdata);
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);
-	
+	bool ReceiveXML(const char *pData, int Len);
+	void EnsureDevice(int Unit, const char *options = NULL);
+	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
+
  protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
