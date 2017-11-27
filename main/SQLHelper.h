@@ -342,6 +342,8 @@ public:
 	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
+	uint64_t CreateDevice(const int HardwareID, const int iSensorType, char ID[40], std::string &devname, const unsigned long nid, const std::string &soptions);
+
 	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
 	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
