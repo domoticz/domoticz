@@ -234,12 +234,10 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Door Contact") {
 											if (item.InternalState == "Open") {
-												status = '<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Open") + '</button> ' +
-													'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');">' + $.t("Lock") + '</button>';
+												status = '<button class="btn btn-mini btn-info" type="button">' + $.t("Open") + '</button>';
 											}
 											else {
-												status = '<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Open") + '</button> ' +
-													'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');">' + $.t("Locked") + '</button>';
+												status = '<button class="btn btn-mini" type="button">' + $.t("Closed") + '</button>';
 											}
 										}
 										else if (item.SwitchType == "Door Lock") {
@@ -595,10 +593,10 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Door Contact") {
 											if (item.InternalState == "Open") {
-												img = '<img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+												img = '<img src="images/door48open.png" height="40" width="40">';
 											}
 											else {
-												img = '<img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
+												img = '<img src="images/door48.png" height="40" width="40">';
 											}
 										}
 										else if (item.SwitchType == "Door Lock") {
@@ -1472,7 +1470,6 @@ define(['app'], function (app) {
 											(item.SubType == "Voltage") ||
 											(item.SubType == "Distance") ||
 											(item.SubType == "Current") ||
-											(item.SubType == "Text") ||
 											(item.SubType == "Pressure") ||
 											(item.SubType == "A/D") ||
 											(item.SubType == "Waterflow") ||
@@ -1489,7 +1486,10 @@ define(['app'], function (app) {
 										else if (item.SubType == "Alert") {
 											var aLevel = item.Level;
 											if (aLevel > 4) aLevel = 4;
-											status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2') + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+										}
+										else if (item.SubType == "Text") {
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
 										else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 											status += item.Data + '\u00B0 ' + $scope.config.TempSign;
@@ -1587,10 +1587,10 @@ define(['app'], function (app) {
 											bigtext = item.Data;
 										}
 										else if (item.SubType == "Text") {
-											status = item.Data;
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 										}
 										else if (item.SubType == "Alert") {
-											status = item.Data;
+											status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 											var aLevel = item.Level;
 											if (aLevel > 4) aLevel = 4;
 											img = '<img src="images/Alert48_' + aLevel + '.png" height="40" width="40">';
@@ -1962,12 +1962,10 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Door Contact") {
 										if (item.InternalState == "Open") {
-											status = '<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Open") + '</button> ' +
-												'<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Lock") + '</button>';
+											status = '<button class="btn btn-mini btn-info" type="button">' + $.t("Open") + '</button>';
 										}
 										else {
-											status = '<button class="btn btn-mini" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Open") + '</button> ' +
-												'<button class="btn btn-mini btn-info" type="button" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');">' + $.t("Locked") + '</button>';
+											status = '<button class="btn btn-mini" type="button">' + $.t("Closed") + '</button>';
 										}
 									}
 									else if (item.SwitchType == "Door Lock") {
@@ -2381,10 +2379,10 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Door Contact") {
 										if (item.InternalState == "Open") {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" height="40" width="40"></td>\n';
 										}
 										else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
+											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Door Lock") {
@@ -3525,7 +3523,6 @@ define(['app'], function (app) {
 										(item.SubType == "Voltage") ||
 										(item.SubType == "Distance") ||
 										(item.SubType == "Current") ||
-										(item.SubType == "Text") ||
 										(item.SubType == "Pressure") ||
 										(item.SubType == "A/D") ||
 										(item.SubType == "Waterflow") ||
@@ -3542,7 +3539,10 @@ define(['app'], function (app) {
 									else if (item.SubType == "Alert") {
 										var aLevel = item.Level;
 										if (aLevel > 4) aLevel = 4;
-										status = item.Data + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2') + ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+									}
+									else if (item.SubType == "Text") {
+										status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 										status = ' <button class="btn btn-mini btn-info" type="button" onclick="ShowSetpointPopup(event, ' + item.idx + ', ShowFavorites, ' + item.Protected + ', ' + item.Data + ',true);">' + item.Data + '\u00B0 ' + $scope.config.TempSign + '</button> ';
@@ -3658,7 +3658,6 @@ define(['app'], function (app) {
 										(item.SubType == "Sound Level") ||
 										(item.SubType == "Waterflow") ||
 										(item.Type == "Current") ||
-										(item.SubType == "Alert") ||
 										(item.SubType == "Gas") ||
 										(item.SubType == "RFXMeter counter") ||
 										(item.SubType == "Counter Incremental") ||
@@ -3671,13 +3670,6 @@ define(['app'], function (app) {
 									}
 									else if (item.SubType == "Smartwares") {
 										bigtexthtml += item.Data + '\u00B0 ' + $scope.config.TempSign;
-									}
-									else if (item.SubType == "Text") {
-										if (item.Data.length > 12) {
-											bigtexthtml += '' + item.Data.substr(0, 11) + '..';
-										} else {
-											bigtexthtml += item.Data;
-										}
 									}
 									bigtexthtml += '</span>';
 
@@ -3786,11 +3778,11 @@ define(['app'], function (app) {
 									}
 									else if (item.SubType == "Text") {
 										imagehtml += 'text48.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-										statushtml = item.Data;
+										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Alert") {
 										imagehtml += 'Alert48_' + item.Level + '.png" class="lcursor" onclick="ShowTextLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\');" height="40" width="40"></td>\n';
-										statushtml = item.Data;
+										statushtml = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
 									}
 									else if (item.SubType == "Pressure") {
 										imagehtml += 'gauge48.png" class="lcursor" onclick="ShowGeneralGraph(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="40" width="40"></td>\n';

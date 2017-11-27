@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Z-Wave Touch Panel Wall Controller - ZSC-01D
+    https://www.tronika.no/en/index.php?controller=attachment&id_attachment=544
+    -->
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="12" label="Button 1" />
+            <Group index="3" max_associations="12" label="Button 2"/>
+            <Group index="4" max_associations="12" label="Button 3"/>
+            <Group index="5" max_associations="12" label="Button 4"/>
+        </Associations>
+    </CommandClass>
+</Product>

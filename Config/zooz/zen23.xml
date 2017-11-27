@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- https://products.z-wavealliance.org/products/2058 -->
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" index="1" genre="config" label="Invert Switch" units="" min="0" max="1" value="0" size="1">

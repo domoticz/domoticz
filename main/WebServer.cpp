@@ -7755,7 +7755,6 @@ namespace http {
 				m_mainworker.m_eventsystem.LoadEvents();
 				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
-
 			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
 
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");

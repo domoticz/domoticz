@@ -20,10 +20,12 @@
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="4" label="Root Device Mapped Setting" value="1" size="1">
+    <Value type="list" genre="config" instance="1" index="4" label="Root Device Mapped Setting" min="0" max="3" value="0" size="1">
       <Help>This parameter defines which endpoint is mapped to root device (Endpoint 0). 0 - No endpoint is mapped to root device. 1 - Endpoint 1 is mapped to root device. 2 - Endpoint 2 is mapped to root device. 3 - Both endpoint 1 and 2 are mapped to root device.</Help>
-      <Item label="Disable" value="0"/>
-      <Item label="Enable" value="1"/>
+      <Item label="No endpoint is mapped to root device" value="0"/>
+      <Item label="Endpoint 1 is mapped to root device" value="1"/>
+      <Item label="Endpoint 2 is mapped to root device" value="2"/>
+      <Item label="Both endpoint 1 and 2 are mapped to root device" value="3"/>
     </Value>
   </CommandClass>
   <!-- Association Groups -->

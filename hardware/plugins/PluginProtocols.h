@@ -8,12 +8,15 @@ namespace Plugins {
 	{
 	protected:
 		std::vector<byte>	m_sRetainedData;
+		bool				m_Secure;
 
 	public:
+		CPluginProtocol() : m_Secure(false) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);
 		virtual int					Length() { return m_sRetainedData.size(); };
+		virtual bool				Secure() { return m_Secure; };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
@@ -47,7 +50,7 @@ namespace Plugins {
 
 		void			ExtractHeaders(std::string*	pData);
 	public:
-		CPluginProtocolHTTP() : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) {};
+		CPluginProtocolHTTP(bool Secure) : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) { m_Secure = Secure; };
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
