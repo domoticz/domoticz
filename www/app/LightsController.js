@@ -616,7 +616,7 @@ define(['app'], function (app) {
 			$("#lightcontent #sdate").datepicker({
 				minDate: now,
 				defaultDate: now,
-				dateFormat: "mm/dd/yy",
+				dateFormat: "yy-mm-dd",
 				showWeek: true,
 				firstDay: 1
 			});
