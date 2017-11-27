@@ -398,8 +398,7 @@ define(['app'], function (app) {
 				}
 				if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
-					if (pollinterval == "") 
-						{
+					if (pollinterval == "") {
 						ShowNotify($.t('Please enter poll interval!'), 2500, true);
 						return;
 						}
@@ -1419,8 +1418,7 @@ define(['app'], function (app) {
 					Mode4 = $('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked") ? 1 : 0;
 					Mode5 = $('#hardwarecontent #hardwareparamsehouse #ehouseopts').val();
 					Mode6 = $('#hardwarecontent #hardwareparamsehouse #ehouseopts2').val();
-					if (pollinterval == "") 
-						{
+					if (pollinterval == "") {
 						ShowNotify($.t('Please enter poll interval!'), 2500, true);
 						return;
 						}
