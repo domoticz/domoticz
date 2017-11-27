@@ -186,12 +186,8 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 							if (itt->second.name == "sValue")
 								sValue = itt->second.sValue;
 						}
-						else if (itt->second.type == TYPE_BOOLEAN &&
-							itt->second.name == "_trigger" &&
-							itt->second.iValue == 1)
-						{
-							bEventTrigger = true;
-						}
+						else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
+								bEventTrigger = true;
 					}
 				}
 
@@ -243,12 +239,8 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 						else if (itt->second.name == "value")
 							variableValue = itt->second.sValue;
 					}
-					else if (itt->second.type == TYPE_BOOLEAN &&
-						itt->second.name == "_trigger" &&
-						itt->second.iValue == 1)
-					{
+					else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
 						bEventTrigger = true;
-					}
 				}
 			}
 
@@ -261,23 +253,11 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 				if (bEventTrigger)
 					m_mainworker.m_eventsystem.SetEventTrigger(atoi(sd[0].c_str()), m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
 
-				variableValue = m_mainworker.m_eventsystem.ProcessVariableArgument(variableValue);
-
-				if (delayTime < (1./timer_resolution_hz/2))
-				{
-					std::string updateResult = m_sql.UpdateUserVariable(sd[0], variableName, sd[1], variableValue, false);
-					if (updateResult != "OK") {
-						_log.Log(LOG_ERROR, "dzVents: Error updating variable %s: %s", variableName.c_str(), updateResult.c_str());
-					}
-				}
-				else
-				{
-					uint64_t idx;
-					std::stringstream sstr;
-					sstr << sd[0];
-					sstr >> idx;
-					m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
-				}
+				uint64_t idx;
+				std::stringstream sstr;
+				sstr << sd[0];
+				sstr >> idx;
+				m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
 				scriptTrue = true;
 			}
 		}
@@ -299,15 +279,20 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 						idx = static_cast<uint64_t>(itt->second.iValue);
 
 					else if (itt->second.type == TYPE_STRING && itt->second.name == "type")
-					{
-						if (itt->second.sValue == "device")
-							m_sql.RemoveTaskItem(idx, TITEM_SWITCHCMD_EVENT, count);
-						else if (itt->second.sValue == "scene")
-							m_sql.RemoveTaskItem(idx, TITEM_SWITCHCMD_SCENE, count);
-						else if (itt->second.sValue == "variable")
-							m_sql.RemoveTaskItem(idx, TITEM_SET_VARIABLE, count);
-					}
+						type = itt->second.sValue;
 				}
+				_tTaskItem tItem;
+				tItem._idx = idx;
+				tItem._DelayTime = 0;
+				if (type == "device")
+					tItem._ItemType = TITEM_SWITCHCMD_EVENT;
+				else if (type == "scene")
+					tItem._ItemType = TITEM_SWITCHCMD_SCENE;
+				else if (type == "variable")
+					tItem._ItemType = TITEM_SET_VARIABLE;
+
+				m_sql.AddTaskItem(tItem, true);
+
 			}
 			if (count)
 				_log.Log(LOG_STATUS, "dzVents: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, idx, type.c_str());
