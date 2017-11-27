@@ -12150,8 +12150,6 @@ namespace http {
 			//unsigned char dSubType=atoi(sd[1].c_str());
 			//int HwdID = atoi(sd[2].c_str());
 
-			int nEvoMode = 0;
-
 			if (setPoint != "" || state != "")
 			{
 				double tempcelcius = atof(setPoint.c_str());
@@ -12161,14 +12159,8 @@ namespace http {
 					tempcelcius = ConvertToCelsius(tempcelcius);
 				}
 				sprintf(szTmp, "%.2f", tempcelcius);
-				if (dType == pTypeEvohomeZone || dType == pTypeEvohomeWater)//sql update now done in setsetpoint for evohome devices
-				{
-					if (mode == "PermanentOverride")
-						nEvoMode = 1;
-					else if (mode == "TemporaryOverride")
-						nEvoMode = 2;
-				}
-				else
+
+				if (dType != pTypeEvohomeZone && dType != pTypeEvohomeWater)//sql update now done in setsetpoint for evohome devices
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')",
 						used, szTmp, idx.c_str());
@@ -12217,9 +12209,9 @@ namespace http {
 				if (urights < 1)
 					return;
 				if (dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPoint(idx, (state == "On") ? 1.0f : 0.0f, nEvoMode, until);//FIXME float not guaranteed precise?
+					m_mainworker.SetSetPoint(idx, (state == "On") ? 1.0f : 0.0f, mode, until);//FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
-					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), nEvoMode, until);
+					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
 				else
 					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
 			}

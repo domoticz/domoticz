@@ -3144,7 +3144,7 @@ void CSQLHelper::Do_Work()
 				sstr << itt->_idx;
 				std::string idx = sstr.str();
 				float fValue = (float)atof(itt->_sValue.c_str());
-				m_mainworker.SetSetPoint(idx, fValue);
+				m_mainworker.SetSetPoint(idx, fValue, itt->_command, itt->_sUntil);
 			}
 			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
 			{

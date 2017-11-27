@@ -11815,12 +11815,12 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, c
 		return SwitchLightInt(sd, switchcmd, level, hue, false);
 }
 
-bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until)
+bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const std::string &newMode, const std::string &until)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.size() < 1)
 		return false;
@@ -11834,6 +11834,17 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 	if (pHardware == NULL)
 		return false;
+
+	if (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT && pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_WEB && pHardware->HwdType != HTYPE_EVOHOME_TCP)
+		return SetSetPointInt(sd, TempValue);
+
+	int nEvoMode = 0;
+	if (newMode == "PermanentOverride" || newMode.empty())
+		nEvoMode = CEvohomeBase::zmPerm;
+	else if (newMode == "TemporaryOverride")
+		nEvoMode = CEvohomeBase::zmTmp;
+
+	//_log.Log(LOG_TRACE, "Set point %s %f '%s' '%s'", idx.c_str(), TempValue, newMode.c_str(), until.c_str());
 
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -11861,8 +11872,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 			tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
 		tsen.EVOHOME2.updatetype = CEvohomeBase::updSetPoint;//setpoint
 		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
-		tsen.EVOHOME2.mode = newMode;
-		if (newMode == CEvohomeBase::zmTmp)
+		tsen.EVOHOME2.mode = nEvoMode;
+		if (nEvoMode == CEvohomeBase::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2, until.c_str());
 		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME2));
 
@@ -11986,7 +11997,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
-			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
+			SetSetPoint(sd[7], TempValue, "PermanentOverride", "");
 		}
 		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		{
