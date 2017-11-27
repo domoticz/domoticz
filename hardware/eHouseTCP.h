@@ -32,7 +32,7 @@ private:
 	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void CalculateAdcWiFi(char index);
-	char eHouseTCP::eH1(unsigned char addrh, unsigned char addrl);
+	char eH1(unsigned char addrh, unsigned char addrl);
 
 	//Variables stored dynamically added during status reception (should be added sequentially)
 	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
