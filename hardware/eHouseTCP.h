@@ -24,6 +24,7 @@ public:
 	unsigned char eHEnableAutoDiscovery;									//enable eHouse Controllers Auto Discovery
 	unsigned char eHEnableProDiscovery;										//enable eHouse PRO Discovery
 	unsigned char eHEnableAlarmInputs;			//Future - Alarm inputs
+	char NoDetectTCPPack;
 	unsigned int  eHOptA;						//Admin options
 	unsigned int  eHOptB;						//Admin options
 
@@ -31,7 +32,7 @@ private:
 	struct CtrlADCT     *(adcs[MAX_AURA_DEVS]);
 	signed int IndexOfeHouseRS485(unsigned char devh, unsigned char devl);
 	void CalculateAdcWiFi(char index);
-
+	char eHouseTCP::eH1(unsigned char addrh, unsigned char addrl);
 
 	//Variables stored dynamically added during status reception (should be added sequentially)
 	union WiFiStatusT				*(eHWiFi[EHOUSE_WIFI_MAX + 1]);
@@ -190,6 +191,9 @@ private:
 	char CHANGED_DEBUG;				//Display changes signals (devices) on 
 	unsigned int EventsCountInQueue;						//Events In queue count to bypass processing EventQueue when it is empty
 	char PassWord[6];				//Password for XOR Password
+	unsigned char ipaddrh;
+	unsigned char ipaddrl;
+
 //	int HeartBeat;
 	unsigned char ViaCM;			//eHouse RS-485 Via CommManager
 	unsigned char eHouse1FrameEmpty;						//eHouse1 bus free after reception of all status for Safer Event submissions
@@ -199,7 +203,7 @@ private:
 	unsigned char disablers485;
 	unsigned char StatusDebug,	//Log status reception
 		IRPerform;				//Perform InfraRed signals
-		
+	int ProSize;
 
 	unsigned char eHStatusReceived;			//eHouse1 status received flag
 	int CloudStatusChanged;							//data changed => must be updated

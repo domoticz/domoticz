@@ -83,6 +83,7 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	int i;
 	if (eHEIndex >= MAX_AURA_DEVS) return;
+	if (eHEIndex < 0) return;
 	for (i = 0; i <= eHEIndex; i++)
 		{
 		//if (strlen((char *) & (AuraN[i])) < 1)
@@ -112,6 +113,8 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	int i;
+	if (eHEIndex >= ETHERNET_EHOUSE_RM_MAX) return;
+	if (eHEIndex < 0) return;
 	for (i = 0; i <= eHEIndex; i++)
 	{
 //	if (strlen((char *) & (eHEn[i])) < 1)
@@ -138,6 +141,8 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	int i;
+	if (eHEIndex >= EHOUSE1_RM_MAX) return;
+	if (eHEIndex < 0) return;
 	for (i = 0; i <= eHEIndex; i++)
 		{
 //		if (strlen((char *) &eHn[i]) < 1)
@@ -178,6 +183,8 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 	void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 	{
 		int i;
+		if (eHEIndex >= EHOUSE_WIFI_MAX) return;
+		if (eHEIndex < 0) return;
 		for (i = 0; i <= eHEIndex; i++)
 			{
 //			if (strlen((char *) &eHWIFIn[i]) < 1)
@@ -2263,7 +2270,43 @@ for (i = 0; i < sizeof(eHEn[nr].) / sizeof(eHEn[nr].Zones[0]); i++)
 // Preconditions: none
 // Termination: run TerminateUDP() function
 //
+char eHouseTCP::eH1(unsigned char addrh, unsigned char addrl)
+{
+	char eh1=0;
+	if (addrh == 55) eh1 = 1;
+	if (addrh == 2) eh1 = 1;
+	if (addrh == 1) eh1 = 1;
+	if (addrh == 129) eh1 = 1;
+	if ((eh1) || ((addrh == 0x55) && (addrl == 0xff)))	// via pro or pro
+		{
+		ipaddrh = SrvAddrH;
+		ipaddrl = SrvAddrL;
+		}
+	if (eh1)
+		{
+		eh1++;	
+		}
+	return eh1;
+}
 
+/* //Debug communication  errors to file
+char FIRST_TIME = 1;
+void debu(unsigned char adrh, unsigned char adrl, unsigned char err, int size, unsigned int sum, unsigned int sum2, unsigned int siz2)
+{
+	FILE *tf;
+	if (FIRST_TIME) tf = fopen("c:\\temp\\log.log", "w+");
+	else tf = fopen("c:\\temp\\log.log", "a+");
+	FIRST_TIME = 0;
+	if (tf == NULL) return;
+	if (sum2 == sum)
+		fprintf(tf, "(%d, %d) #%d, %d [B] OK\n", adrh, adrl, size, siz2);
+	else
+		fprintf(tf, "(%d, %d) #%d, %d [B] Invalid checksum: %d <> %d\n", adrh, adrl, siz2, size, sum , sum2);
+
+	//if (err == 1) fprintf(tf, "ERR Checksum (%d, %d) #%d [B] OK\r\n", adrh, adrl, size);
+	fflush(tf);
+	fclose(tf);
+}*/
 void eHouseTCP::Do_Work()
 //void UDPListener(void)  //for eHouse4Ethernet devices and eHouse1 via CommManager
 
@@ -2303,7 +2346,8 @@ void eHouseTCP::Do_Work()
 		disablers485 = 1;
 		}
 	unsigned int sum, sum2;
-	unsigned char udp_status[MAXMSG], i, devaddrh, devaddrl, log[300u], dir[10];	// , code[20];
+	unsigned char udp_status[MAXMSG], devaddrh, devaddrl, log[300u], dir[10];	// , code[20];
+	int i;
 	char GetLine[255];
 	struct sockaddr_in saddr, caddr;
 	socklen_t size;
@@ -2355,52 +2399,132 @@ void eHouseTCP::Do_Work()
 	prevtim = tim;
 	time_t tt = time(NULL);
 	while (! m_stoprequested)				//mainloop
-		{
+	{
 		tim = clock();
 		//if (tim-prevtim>= 100)
 							//    0.1-0.3 sec - based on TCP Socket Timeout depending on Status counts
 							//   similar for UDP listener
 							//   non critical value (used for retransmission events)
-			{
+		{
 			//LOG(LOG_STATUS, "TIM: %d", tim-prevtim);
 			//prevtim = tim;
 			SecIter++;
 			//ExecQueuedEvents();				//perform Event Queue
 			performTCPClientThreads();		//perform TCP events and submit to Ethernet/WiFi/PRO controllers
 			ExecQueuedEvents();
-			}
-			if ((SecIter % 20) == 1)		//timing tests
-				{
+		}
+		if ((SecIter % 20) == 1)		//timing tests
+		{
 			//	performTCPClientThreads();
 				//LOG(LOG_STATUS, "TIM: %d", tim - prevtim);
 				//prevtim = tim;
-				}
-			if (ViaTCP)
-				{
+		}
+		if (ViaTCP)
+		{
+			if (NoDetectTCPPack > 0) NoDetectTCPPack--;
+			m_LastHeartbeat = mytime(NULL);
+			if ((SecIter % 100) == 1)		//15-30 sec - send keep alive
+			{
+
+				//_log.Log(LOG_STATUS, "[TCP Keep Alive ] ");
+				char dta[2];
+				dta[0] = 'q';
+				send(TCPSocket, dta, 1, 0);
+			}
+		}
+		else
+			if ((SecIter % 100) == 1)
+			{
+
+				//LOG(LOG_STATUS, "!!!!TTTTIM: %d", time(NULL) - tt);
+				//tt = time(NULL);
 				m_LastHeartbeat = mytime(NULL);
-				if ((SecIter % 100) == 1)		//15-30 sec - send keep alive
-					{
-					
-					_log.Log(LOG_STATUS, "[TCP Keep Alive ] ");
-					char dta[2];
-					dta[0] = 'q';
-					send(TCPSocket, dta, 1, 0);
-					}
-				}
-			else
-				if ((SecIter % 100) == 1)
-					{ 
-					
-					//LOG(LOG_STATUS, "!!!!TTTTIM: %d", time(NULL) - tt);
-					//tt = time(NULL);
-					m_LastHeartbeat = mytime(NULL);
-					}
+			}
 		char eh1 = 0;
 		size = sizeof(caddr);
+		memset(udp_status, 0, sizeof(udp_status));
 		if (!ViaTCP)
-			nbytes = recvfrom(eHouseUDPSocket, (char *) &udp_status, MAXMSG, 0, (struct sockaddr *) & caddr, &size);
+			nbytes = recvfrom(eHouseUDPSocket, (char *) &udp_status, MAXMSG, 0, (struct sockaddr *) & caddr, &size);	//Standard UDP Operation (LAN)
 		else
-			nbytes = recv(TCPSocket, (char *) &udp_status, MAXMSG, 0);
+			{
+			if (NoDetectTCPPack != 0)
+				{
+				nbytes = recv(TCPSocket, (char *)&udp_status, MAXMSG, 0);				//TCP Operation Based on Timeout - may loose combined statuses
+				if (eH1(udp_status[1], udp_status[2])) 
+						eh1 = 1;
+				}
+			else	//recover multiple packets for Slow links (eg. Internet)			
+				{
+				int len = 0;
+				nbytes = recv(TCPSocket, (char *)&udp_status, 4, 0);
+/*				if (udp_status[2] == 202)
+					{
+					len ++;
+					}*/
+				if (nbytes == 4)	//size + address
+					{
+					len = udp_status[0] - 2;
+					if (udp_status[0] == 22)
+						{
+						len -= 2;						///  Old wifi Workaround
+						}
+					}
+				else        //problem receive data
+					if (nbytes>0)
+						{
+						LOG(LOG_STATUS, "Problem receive data<3");
+						recv(TCPSocket, (char *)&udp_status, MAXMSG, 0);
+						continue;
+						}
+					else
+						if (nbytes < 0)									//SOCKET ERROR 
+							{
+							if (m_stoprequested)					//real termination - end LOOP
+								{
+								TerminateUDP();
+								break;
+								}
+							comm++;
+							//_log.Log(LOG_STATUS, "Nbytes<0");
+							if ((ViaTCP) && (comm > 600))							// TCP must try reconnect
+								{
+								comm = 0;
+								_log.Log(LOG_STATUS, "[eHouse TCP] Connection Lost. Reconnecting...");
+								closesocket(TCPSocket);				// Try close socket
+								TCPSocket = -1;
+								ssl(6);
+								TCPSocket = ConnectTCP(0);				// Reconect
+																		//	goto RETRY;							// Go to start
+								}
+							continue;								//if UDP just ignore errors
+							}
+
+
+
+				if ((udp_status[0] == 0) || (udp_status[2] == 0) || (nbytes==0))
+					{
+					LOG(LOG_STATUS, "[eHouse TCP] Data Is Zero");
+					recv(TCPSocket, (char *)&udp_status, MAXMSG, 0);
+					continue;
+					}
+				if (eH1(udp_status[1], udp_status[2]))					///!!!!! tymczasowo do uruhcmonienia wifi
+					{
+//					LOG(LOG_STATUS, "EH 1");
+					len--;
+					eh1 = 1;
+					}
+				if ((udp_status[0] < 255) && (udp_status[4]!='n'))	//not eHouse PRO
+					{
+					nbytes += recv(TCPSocket, (char *) &udp_status[4], len, 0);
+					}
+				else
+					{									//eHouse PRO
+					if (ProSize == 0) ProSize = MAXMSG;
+					nbytes += recv(TCPSocket, (char *) &udp_status[4], ProSize , 0);					
+					}
+				}
+			}
+		
 		if (nbytes == 0) continue;
 		if (nbytes < 0)									//SOCKET ERROR 
 			{
@@ -2414,7 +2538,7 @@ void eHouseTCP::Do_Work()
 			if ((ViaTCP) && (comm > 600))							// TCP must try reconnect
 				{
 				comm = 0;
-				_log.Log(LOG_STATUS, "Connection Lost. Reconnecting...");
+				_log.Log(LOG_STATUS, "[eHouse TCP] Connection Lost. Reconnecting...");
 				closesocket(TCPSocket);				// Try close socket
 				TCPSocket = -1;
 				ssl(6);
@@ -2425,22 +2549,10 @@ void eHouseTCP::Do_Work()
 			}
 		comm = 0;
 
-		unsigned char ipaddrh;
-		unsigned char ipaddrl;
-		eh1 = 0;
 		if (ViaTCP)
 			{
-			ipaddrh = udp_status[1];
-			ipaddrl = udp_status[2];
-			if (ipaddrh == 55) eh1 = 1;
-			if (ipaddrh == 2) eh1 = 1;
-			if (ipaddrh == 1) eh1 = 1;
-			if (ipaddrh == 129) eh1 = 1;
-			if ((eh1) || ((ipaddrh == 0x55) && (ipaddrl == 0xff)))	// via pro or pro
-				{
-				ipaddrh = SrvAddrH;
-				ipaddrl = SrvAddrL;
-				}
+			devaddrh = ipaddrh = udp_status[1];
+			devaddrl = ipaddrl = udp_status[2];
 			}
 		else
 			{
@@ -2454,6 +2566,7 @@ void eHouseTCP::Do_Work()
 			//comm = 0;
             if (udp_status[3] == 'n')
                 {						//get names
+				NoDetectTCPPack = 120;
 				_log.Log(LOG_STATUS, "[%s NAMES: 192.168.%d.%d ] ", LogPrefix, udp_status[1], udp_status[2]);
                 if ((eHEnableAutoDiscovery))
                     {
@@ -2487,12 +2600,14 @@ void eHouseTCP::Do_Work()
                 if (udp_status[3] != 0x55) continue;
 				if (ViaTCP)
 					{
-					ipaddrh = udp_status[4];
-					ipaddrl = udp_status[5];
+					devaddrh = ipaddrh = udp_status[4];
+					devaddrl = ipaddrl = udp_status[5];
 					}
-
+				//debu(devaddrh, devaddrl, 0, nbytes, sum, sum2, udp_status[0]); 
                 if (((sum & 0xffff) == (sum2 & 0xffff)) || (ViaTCP) )        //if valid then perform
                         {
+						ProSize = MAXMSG;// nbytes - 4;
+
 						//eHPROaloc(0, devaddrh, devaddrl);
 						if (! ViaTCP)
 							if ((ipaddrh != SrvAddrH) || (ipaddrl != SrvAddrL))
@@ -2517,18 +2632,19 @@ void eHouseTCP::Do_Work()
 				sum2 = ((unsigned int)udp_status[nbytes - 2]);
 				sum2 = sum2 << 8;							//get sent checksum                
                 sum2 += udp_status[nbytes - 1];
-                for (i = 0; i < nbytes - 2u; i++)               //calculate local checksum
+                for (i = 0; i < nbytes - 2; i++)               //calculate local checksum
                    {
-                    sum += (unsigned)udp_status[i];
+                    sum += (unsigned int) udp_status[i];
                     }
+				devaddrh = udp_status[1];
+				devaddrl = udp_status[2];
+				//debu(devaddrh, devaddrl, 0, nbytes, sum, sum2, udp_status[0]);
                 if (((sum & 0xffff) == (sum2 & 0xffff)) || (eh1)) //if valid then perform
                         {
-                        devaddrh = udp_status[1];
-                        devaddrl = udp_status[2];
                         HeartBeat++;
                         if (disablers485)
                             {
-                            if ((devaddrh ==55) || (devaddrh == 1) || (devaddrh ==2)) continue;
+                            if ((devaddrh == 55) || (devaddrh == 1) || (devaddrh == 2)) continue;
                             }
                         //if( StatusDebug) printf("[UDP] Status: (%-3d,%-3d)  (%dB)\r\n", devaddrh, devaddrl, nbytes);
                         if (devaddrl > 199) i = EHOUSE1_RM_MAX + 3;
@@ -2536,25 +2652,25 @@ void eHouseTCP::Do_Work()
                                 if ((devaddrh == 1) )							//HM index in status eH[0]
                                         i = 0;
                                 else
-                                        if ((devaddrh ==2) )					//EM index in status eH[0]
-                                                i=EHOUSE1_RM_MAX-1;
+                                        if ((devaddrh == 2) )					//EM index in status eH[0]
+                                                i=EHOUSE1_RM_MAX - 1;
                                         else 
-                                                i=devaddrl;                //RM index in status the same as device address low - eH[devaddrl]
+                                                i = devaddrl;                //RM index in status the same as device address low - eH[devaddrl]
                         if (udp_status[3] != 'l')
                                 {
                                 if( StatusDebug) _log.Log(LOG_STATUS, "[%s] St: (%-3d,%-3d) - OK (%dB)", LogPrefix, devaddrh, devaddrl, nbytes);
                                 }
                         else
                         //if    (udp_status[3] == 'l')
-                            if (nbytes>6)
+                            if (nbytes > 6)
                                 {
                                 strncpy((char *) &log, (char *) &udp_status[4], nbytes - 6);
 								LOG(LOG_STATUS, "[%s Log] (%-3d,%-3d) - %s", LogPrefix, devaddrh, devaddrl, log);
                                 if (IRPerform)
                                         {
-                                        if (strstr((char *) &log,"[IR]"))
+                                        if (strstr((char *) &log, "[IR]"))
                                                 {                                            
-                                                sprintf((char *) &dir,"%02x_%02x", devaddrh, devaddrl);
+                                                sprintf((char *) &dir, "%02x_%02x", devaddrh, devaddrl);
 /*                                                mf("IR", dir,"captured", &log[6], 0);
                                                 mf("IR", dir,"events", &log[6], 1);*/
                                                 }
@@ -2937,12 +3053,17 @@ void eHouseTCP::Do_Work()
 				else
 					{
 					LOG(LOG_STATUS, "[%s] St:  (%03d,%03d) Invalid Check Sum {%d!=%d} (%dB)", LogPrefix, devaddrh, devaddrl, sum, sum2, nbytes);
+					if (ViaTCP)
+						{
+						nbytes = recv(TCPSocket, (char *) &udp_status, MAXMSG, 0);
+						continue;
+						}
 					//if (ViaTCP) LOG(LOG_STATUS, "[TCP n=%d] #%d (%d,%d) Data=%c", nbytes, udp_status[0], udp_status[1], udp_status[2], udp_status[4]);
 					}
                 //EthernetPerformData();
                 devaddrl = 0;
                 devaddrh = 0;
-                memset(udp_status, 0, sizeof(udp_status));
+                //memset(udp_status, 0, sizeof(udp_status));
                 
                 }
         }

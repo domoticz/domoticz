@@ -366,8 +366,7 @@ define(['app'], function (app) {
 				(text.indexOf("Relay-Net") >= 0) || (text.indexOf("Satel Integra") >= 0) || (text.indexOf("eHouse") >= 0) || (text.indexOf("Harmony") >= 0) || (text.indexOf("Xiaomi Gateway") >= 0) || (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
-				if (text.indexOf("eHouse") >= 0)
-						{
+				if (text.indexOf("eHouse") >= 0) {
 						if (address == "") address="192.168.0.200";
 						}
 				if (address == "") {
@@ -375,8 +374,7 @@ define(['app'], function (app) {
 					return;
 				}
 				var port = $("#hardwarecontent #divremote #tcpport").val();
-				if (text.indexOf("eHouse") >= 0)
-						{
+				if (text.indexOf("eHouse") >= 0) {
 						if (port == "") port="9876";
 						}
 
@@ -398,8 +396,7 @@ define(['app'], function (app) {
 					}
 					Mode1 = pollinterval;
 				}
-				if (text.indexOf("eHouse") >= 0) 
-					{
+				if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
 					if (pollinterval == "") 
 						{
@@ -440,8 +437,7 @@ define(['app'], function (app) {
 					Mode5 = relaycount;
 				}
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
-				if (text.indexOf("eHouse") >= 0) 
-					{
+				if (text.indexOf("eHouse") >= 0) {
 					if (password == "") {
 								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
 								}
@@ -1416,8 +1412,7 @@ define(['app'], function (app) {
 					Mode1 = pollinterval;
 				}
 
-				if (text.indexOf("eHouse") >= 0) 
-					{
+				if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
 					Mode2 = $('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked") ? 1 : 0;
 					Mode3 = $('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked") ? 1 : 0;
@@ -5447,8 +5442,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #ehouse").hide();
 			$("#hardwarecontent #divgpio").hide();
 			$("#hardwarecontent #divsysfsgpio").hide();
-			if (text.indexOf("eHouse") >= 0)
-				{
+			if (text.indexOf("eHouse") >= 0) {
 				$("#hardwarecontent #divehouse").show();
 				}
 

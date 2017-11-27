@@ -54,9 +54,10 @@ h l O nr
 #include "../main/localtime_r.h"
 #include "../main/SQLHelper.h"
 
-#define OPTA_CLR_DB		0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
-#define OPTA_FORCE_TCP	0x2		//Force TCP/IP instead of UDP for LAN connection 
-#define OPTA_DEBUG		0x4
+#define OPTA_CLR_DB					0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
+#define OPTA_FORCE_TCP				0x2		//Force TCP/IP instead of UDP for LAN connection 
+#define OPTA_DEBUG					0x4		//Debug Info 
+#define OPTA_DETECT_TCP_PACKETS		0x8		//Perform Multiple TCP Packages
 
 #define EHOUSE_TEMP_POLL_INTERVAL_MS 120*1000 	// 120 sec
 #define HEARTBEAT_INTERVAL_MS 12*1000 			// 12 sec
@@ -375,21 +376,22 @@ switch (code)
 }
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval,const int AutoDiscovery,const int EnableAlarms, const int EnablePro, const int opta, const int optb):
-        m_modelIndex(-1),
+eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned short IPPort, const std::string& userCode, const int pollInterval, const int AutoDiscovery, const int EnableAlarms, const int EnablePro, const int opta, const int optb):
+	m_modelIndex(-1),
 	m_data32(false),
 	m_socket(INVALID_SOCKET),
 	m_IPPort(IPPort),
 	m_IPAddress(IPAddress),
 	m_stoprequested(false),
 	m_pollInterval(pollInterval)
-    {
+{
 	eHouseUDPSocket = -1;			//UDP socket handler
 	UDP_PORT = 6789;			//Default UDP PORT
 	nr_of_ch = 0;
 	DEBUG_AURA = 0;				//Debug Aura
 	CHANGED_DEBUG = 0;
 	disablers485 = 0;
+	ProSize = 0;
 	StatusDebug = 0;			//Log status reception
 	IRPerform = 0;				//Perform InfraRed signals
 	ViaCM = 0;					//eHouse RS-485 via CommManager
@@ -408,15 +410,17 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 	AdcRefMax = 0;
 	CalcCalibration = 0;
 	DEBUG_TCPCLIENT = 0;
-    eHEnableAutoDiscovery = AutoDiscovery;
-    eHEnableAlarmInputs   = EnableAlarms;
-    eHEnableProDiscovery  = EnablePro;
-    eHOptA = opta;
-    eHOptB = optb;
+	NoDetectTCPPack = 0;
+	StatusDebug = 0;
+	eHEnableAutoDiscovery	= AutoDiscovery;
+	eHEnableAlarmInputs		= EnableAlarms;
+	eHEnableProDiscovery	= EnablePro;
+	eHOptA = opta;
+	eHOptB = optb;
 	EhouseInitTcpClient();					//init multithreaded event sender
 	if (IPPort > 0) EHOUSE_TCP_PORT = IPPort;
 	ViaTCP = 0;
-	if ((eHOptA & OPTA_CLR_DB))// || (TESTTEST))
+	if ((eHOptA & OPTA_CLR_DB))
 		{
 		//For Test of Auto Discovery Clean DeviceStatus & DeviceToPlansMap
 		//Clear altered database
@@ -436,60 +440,74 @@ eHouseTCP::eHouseTCP(const int ID, const std::string &IPAddress, const unsigned 
 		CHANGED_DEBUG = 1;
 		DEBUG_TCPCLIENT = 1;
 		}
+	if (eHOptA & OPTA_DETECT_TCP_PACKETS)
+		{
+		NoDetectTCPPack = -1;
+		}
 	if (eHEnableAutoDiscovery)
-        {
+	{
 		LOG(LOG_STATUS, "[eHouse] Auto Discovery %d\r\n", eHEnableAutoDiscovery);
-        }
-    if (eHEnableAlarmInputs)
-            {
+	}
+	if (eHEnableAlarmInputs)
+	{
 		LOG(LOG_STATUS, "[eHouse] Enable Alarm Inputs %d\r\n", eHEnableAlarmInputs);
-        }
-    if(eHEnableProDiscovery)
-        {
+	}
+	if (eHEnableProDiscovery)
+		{
 		LOG(LOG_STATUS, "[eHouse] Enable PRO Discovery %d\r\n", eHEnableProDiscovery);
-        }
-    
+		}
+
 	LOG(LOG_STATUS, "[eHouse] Opts: %x,%x\r\n", eHOptA, eHOptB);
-    int len = userCode.length();
-    if (len > 6) len = 6;
-    userCode.copy(PassWord, len);
-	SrvAddrH = 0; 
+	int len = userCode.length();
+	if (len > 6) len = 6;
+	userCode.copy(PassWord, len);
+	SrvAddrH = 0;
 	SrvAddrL = 200;
-	SrvAddrU = 192; 
+	SrvAddrU = 192;
 	SrvAddrM = 168;
 	InitStructs();
 	if (! CheckAddress())
-            {
-			//return false;
-            }
+		{
+		//return false;
+		}
 
 	LOG(LOG_STATUS, "eHouse UDP/TCP: Create instance");
 	EventsCountInQueue = 0;
 	m_HwdID = ID;
-    HwID = m_HwdID;
+	HwID = m_HwdID;
 	memset(m_newData, 0, sizeof(m_newData));
-    AddrL = SrvAddrL;
-    AddrH = SrvAddrH;
+	AddrL = SrvAddrL;
+	AddrH = SrvAddrH;
 	int i;
 	for (i = 0; i < EVENT_QUEUE_MAX; i++)
-			{
-			EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
+	{
+		EvQ[i] = (struct EventQueueT *) malloc(sizeof(struct EventQueueT));
 
-			if (EvQ[i] == NULL)
-				{
-				LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
-				return;
-				}
-			memset(EvQ[i], 0, sizeof(struct EventQueueT));
-			}
-		
-		eHPROaloc(0, AddrH, AddrL);
-        unsigned char ev[10] = "";
-        ev[0] = AddrH;
-        ev[1] = AddrL;
+		if (EvQ[i] == NULL)
+		{
+			LOG(LOG_ERROR, "Can't Alloc Events Queue Memory");
+			return;
+		}
+		memset(EvQ[i], 0, sizeof(struct EventQueueT));
+	}
+
+	eHPROaloc(0, AddrH, AddrL);
+	unsigned char ev[10] = "";
+	if ((SrvAddrU == 192) && (SrvAddrM == 168))	//local network LAN IP 192.168.x.y
+		{
+		ev[0] = AddrH;
+		ev[1] = AddrL;
+		}
+	else										//Via Internet, Intranet, ETC
+		{
+		ev[0] = 0;
+		ev[1] = 0;
+		}
         ev[2] = 254;
         ev[3] = 0x33;
-        if (eHEnableAutoDiscovery) AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
+		int nr = -1;
+        if (eHEnableAutoDiscovery) nr = AddToLocalEvent(ev, 0);  //Init UDP broadcast of Device Names for auto Discovery
+		if (nr >= 0) EvQ[nr]->LocalEventsTimeOuts = 200u;
 		m_alarmLast = false;
 }
 //////////////////////////////////////////////////////////////////////
@@ -557,8 +575,8 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 	if (eHEnableAutoDiscovery) timeout.tv_sec = 30;
 #else
 	unsigned int	timeout = 200;	//ms for TCPIP
-	if (eHEnableProDiscovery) timeout = 10000;
-	if (eHEnableAutoDiscovery) timeout = 20000;
+	if (eHEnableProDiscovery)	timeout = 10000;
+	if (eHEnableAutoDiscovery)	timeout = 20000;
 #endif
 	
 	struct sockaddr_in server;
@@ -590,7 +608,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		_log.Log(LOG_STATUS, "[TCP Cli Status] error connecting: %s", line);
 		return -1;                              //!!!! Counldn't Create Socket
 		}
-	_log.Log(LOG_STATUS, "[TCP Cli Status] Connected OK");
+	_log.Log(LOG_STATUS, "[TCP Cli Status] Authorizing");
 	int iter = 5;
 	while ((status = recv(TCPSocket, (char *)&challange, 6, 0)) < 6)       //receive challenge code
 		{
@@ -617,7 +635,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		TerminateUDP();
 		return -1;
 		}
-	_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
+	//_log.Log(LOG_STATUS, "[TCP Cli Status] Sending ch-re");
 	status = 0;
 	iter = 5;
 	while ((status = send(TCPSocket, (char *) &challange, 13, 0)) != 13)
@@ -642,7 +660,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 			return -1;
 			}
 		}
-	_log.Log(LOG_STATUS,"Confirmation: %c", challange[0]);
+	//_log.Log(LOG_STATUS,"Confirmation: %c", challange[0]);
 	challange[0] = 1;
 	while ((status = send(TCPSocket, (char *)&challange, 1, 0)) != 1)
 		{

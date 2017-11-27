@@ -250,13 +250,13 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
         server.sin_addr.s_addr= SrvAddrU | (SrvAddrM<<8)    | (ClientCon->AddrH << 16) | (ClientCon->AddrL << 24); 
         server.sin_family = AF_INET;                    //tcp v4
         server.sin_port = htons(EHOUSE_TCP_PORT);       //assign eHouse Port
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Trying Connecting to: %s", SocketIndex, line);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connecting to: %s", SocketIndex, line);
         if (connect(ClientCon->Socket , (struct sockaddr *) &server , sizeof(server)) < 0)
                 {
 				_log.Log(LOG_ERROR, "[TCP Cli %d] error connecting: %s", SocketIndex, line);
                 eHTerminate(SocketIndex)
                 }
-		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Connected OK", SocketIndex);
+		if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[TCP Cli %d] Authorizing", SocketIndex);
 //        TC[SocketIndex].Stat=TC_NOT_CONNECTED;//is this necessary 
         iter = 5;
         while ((status = recv(ClientCon->Socket, (char *) &challange, 6, 0)) < 6)       //receive challenge code
