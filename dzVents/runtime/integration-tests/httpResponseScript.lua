@@ -44,7 +44,7 @@ return {
                 if (res) then
                     domoticz.globalData.httpTrigger = 'trigger1'
                     domoticz.openURL({
-                       url = 'http://localhost:3000/testpost',
+                       url = 'http://localhost:4000/testpost',
                        method = 'POST',
                        callback = 'trigger2',
                        postData = {
@@ -62,7 +62,7 @@ return {
 
         elseif (triggerItem.baseType == domoticz.BASETYPE_DEVICE) then
             domoticz.openURL({
-                url = 'http://localhost:3000/testget?p=1',
+                url = 'http://localhost:4000/testget?p=1',
                 method = 'GET',
                 callback = 'trigger1',
             })
