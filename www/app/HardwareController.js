@@ -297,7 +297,7 @@ define(['app'], function (app) {
 					text.indexOf("MQTT") == -1 &&
 					text.indexOf("Razberry") == -1 &&
                     text.indexOf("MyHome OpenWebNet with LAN interface") == -1 &&
-                    text.indexof("EnphaseAPI") == -1
+                    text.indexOf("EnphaseAPI") == -1
 				)
 			) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
@@ -5680,7 +5680,7 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
-				$("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
+//				$("#hardwarecontent #hardwareparamsremote #tcpport").val(9000);
 			}
 			else if (text.indexOf("HEOS by DENON") >= 0) {
 				$("#hardwarecontent #divserial").hide();
