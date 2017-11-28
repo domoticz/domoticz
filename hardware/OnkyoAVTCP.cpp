@@ -204,6 +204,17 @@ static struct {
 	{ "HDO", NULL, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
 };
 
+static struct {
+	const char *iscpCmd;
+	const char *name;
+} text_types[] = {
+	{ "NAL", "Album name" },
+	{ "NAT", "Artist name" },
+	{ "NTI", "Title name" },
+	{ "NTM", "Playback time" },
+	{ "NTR", "Track info" },
+};
+
 #define IS_END_CHAR(x) ((x) == 0x1a)
 
 
@@ -509,13 +520,21 @@ void OnkyoAVTCP::ReceiveMessage(const char *pData, int Len)
 	_log.Log(LOG_NORM, "OnkyoAVTCP: Packet received: %d %.*s", Len, Len-1, pData);
 
 	int i;
+	for (i = 0; i < ARRAY_SIZE(text_types); i++) {
+		if (!memcmp(pData, text_types[i].iscpCmd, 3)) {
+			std::string str(reinterpret_cast<const char*>(pData + 3), Len - 4);
+			SendTextSensor(1, i, 255, str, text_types[i].name);
+			return;
+		}
+	}
+
 	for (i = 0; i < ARRAY_SIZE(switch_types); i++) {
 	  if (!memcmp(pData, switch_types[i].iscpCmd, 3)) {
 		  ReceiveSwitchMsg(pData, Len, false, i);
-		  break;
+		  return;
 	  } else if (switch_types[i].iscpMute && !memcmp(pData, switch_types[i].iscpMute, 3)) {
 		  ReceiveSwitchMsg(pData, Len, true, i);
-		  break;
+		  return;
 	  }
 	}
 }
