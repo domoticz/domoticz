@@ -96,7 +96,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		teleinfo.triphase  = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if ((teleinfo.PAPP == 0) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
+	if ((!teleinfo.withPAPP) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
 		teleinfo.PAPP = (teleinfo.triphase ? (teleinfo.IINST1 + teleinfo.IINST2 + teleinfo.IINST3) : (teleinfo.IINST)) * 230;
 
 	if (teleinfo.PTEC.substr(0,2) == "TH")
