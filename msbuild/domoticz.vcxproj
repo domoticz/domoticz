@@ -444,6 +444,18 @@
     <ClInclude Include="..\hardware\Dummy.h" />
     <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\EnphaseAPI.h" />
@@ -706,6 +718,24 @@
     <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
     <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </LanguageStandard>
+    </ClCompile>
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />

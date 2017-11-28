@@ -257,6 +257,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
 		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
+		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -1963,7 +1964,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			ss.clear(); ss.str(""); ss << i;
 			std::string level(ss.str());
 			std::string levelName = *itt;
@@ -1987,7 +1988,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (*itt == levelName) {
 				level = i;
 				break;
@@ -2011,7 +2012,7 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (i == level) {
 				action = *itt;
 				break;

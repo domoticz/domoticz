@@ -3,11 +3,12 @@
 #           Author:     Dnpwwo, 2017
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="2.0.7">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.0.1">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
-When remote devices are found a matching Domoticz device is created in the Devices tab.
+<br/>
+Creates 2 devices per address, one to show status and one to show how long ping took.<br/>
     </description>
     <params>
         <param field="Address" label="Address(es) comma separated" width="300px" required="true" default="127.0.0.1"/>
@@ -63,7 +64,7 @@ class IcmpDevice:
     def Open(self):
         if (self.icmpConn != None):
             self.Close()
-        self.icmpConn = Domoticz.Connection(Name=self.Address+" Connection", Transport="ICMP/IP", Protocol="ICMP", Address=self.Address)
+        self.icmpConn = Domoticz.Connection(Name=self.Address, Transport="ICMP/IP", Protocol="ICMP", Address=self.Address)
         self.icmpConn.Listen()
     
     def Send(self):
@@ -78,20 +79,32 @@ class IcmpDevice:
 class BasePlugin:
     icmpConn = None
     icmpList = []
-    nextDev = 0
+    nextDev = 1
  
     def onStart(self):
         if Parameters["Mode6"] != "Normal":
             DumpConfigToLog()
-            #Domoticz.Debugging(1)
+            Domoticz.Debugging(1)
+        Domoticz.Heartbeat(int(Parameters["Mode1"]))
+
+        # Find devices that already exist, create those that don't
         self.icmpList = Parameters["Address"].replace(" ", "").split(",")
         for destination in self.icmpList:
             Domoticz.Debug("Endpoint '"+destination+"' found.")
-        Domoticz.Heartbeat(int(Parameters["Mode1"]))
-        if Parameters["Mode5"] == "True":
+            deviceFound = False
             for Device in Devices:
-                UpdateDevice(Device, Devices[Device].nValue, Devices[Device].sValue, 1)
-
+                if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == destination)): deviceFound = True
+            if (deviceFound == False):
+                Domoticz.Device(Name=destination, Unit=len(Devices)+1, Type=243, Subtype=31, Image=17, Options={"Custom":"1;ms"}).Create()
+                Domoticz.Device(Name=destination, Unit=len(Devices)+1, Type=17, Subtype=0, Image=17, Options={"Name":destination,"Related":str(len(Devices))}).Create()
+              
+        # Mark all devices as connection lost if requested
+        deviceLost = 0
+        if Parameters["Mode5"] == "True":
+            deviceLost = 1
+        for Device in Devices:
+            UpdateDevice(Device, Devices[Device].nValue, Devices[Device].sValue, deviceLost)
+                
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Log("Successful connect to: "+Connection.Address+" which is surprising because ICMP is connectionless.")
@@ -100,34 +113,41 @@ class BasePlugin:
         self.icmpConn = None
 
     def onMessage(self, Connection, Data):
-        Domoticz.Debug("onMessage called for connection: '"+Connection.Name+"', with address: "+Connection.Address)
+        Domoticz.Debug("onMessage called for connection: '"+Connection.Name+"'")
         if Parameters["Mode6"] == "Verbose":
             DumpICMPResponseToLog(Data)
         if isinstance(Data, dict) and (Data["Status"] == 0):
-            iUnit = int(Data["IPv4"]["Source"].split(".")[3])
-            Domoticz.Log("Device: '"+Connection.Address+"' responding at: "+Data["IPv4"]["Source"]+", Unit number: "+str(iUnit))
-            if not iUnit in Devices:
-                # Store the address in the option field so that users can change the device name and IP address and it can still be mapped to
-                Domoticz.Device(Name=Connection.Address, Unit=iUnit, Type=17, Subtype=0, Image=17, Options={"Address":Connection.Address}).Create()
-                Domoticz.Log("Device: '"+Connection.Address+"' created and listed in Devices Tab.")
-            UpdateDevice(iUnit, 1, "On", 0)
+            iUnit = -1
+            for Device in Devices:
+                if ("Name" in Devices[Device].Options):
+                    Domoticz.Debug("Checking: '"+Connection.Name+"' against '"+Devices[Device].Options["Name"]+"'")
+                    if (Devices[Device].Options["Name"] == Connection.Name):
+                        iUnit = Device
+            if (iUnit > 0):
+                # Device found, set it to On and if elapsed time suplied update related device
+                UpdateDevice(iUnit, 1, "On", 0)
+                relatedDevice = int(Devices[iUnit].Options["Related"])
+                if ("ElapsedMs" in Data):
+                    UpdateDevice(relatedDevice, Data["ElapsedMs"], str(Data["ElapsedMs"]), 0)
         else:
-            Domoticz.Log("Device: '"+Connection.Address+"' returned '"+Data["Description"]+"'.")
+            Domoticz.Log("Device: '"+Connection.Name+"' returned '"+Data["Description"]+"'.")
             if Parameters["Mode6"] == "Verbose":
                 DumpICMPResponseToLog(Data)
             TimedOut = 0
             if Parameters["Mode5"] == "True": TimedOut = 1
             for Device in Devices:
-                if (Devices[Device].Options["Address"] == Connection.Address):
+                if (("Name" in Devices[Device].Options) and (Devices[Device].Options["Name"] == Connection.Name)):
                     UpdateDevice(Device, 0, "Off", TimedOut)
         self.icmpConn = None
 
     def onHeartbeat(self):
+        Domoticz.Debug("Heartbeating...")
+
         # No response to previous heartbeat so mark as Off
         if (self.icmpConn != None):
             for Device in Devices:
-                if (Devices[Device].Options["Address"] == self.icmpConn.Address):
-                    Domoticz.Log("Device: '"+self.icmpConn.Address+"' - No response.")
+                if (Devices[Device].Options["Name"] == self.icmpConn.Name):
+                    Domoticz.Log("Device: '"+Devices[Device].Options["Name"]+"' address '"+self.icmpConn.Address+"' - No response.")
                     TimedOut = 0
                     if Parameters["Mode5"] == "True": TimedOut = 1
                     UpdateDevice(Device, 0, "Off", TimedOut)
@@ -139,6 +159,7 @@ class BasePlugin:
         self.nextDev += 1
         if (self.nextDev >= len(self.icmpList)):
             self.nextDev = 0
+ 
  
 global _plugin
 _plugin = BasePlugin()
