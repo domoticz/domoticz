@@ -75,7 +75,10 @@ namespace http {
 			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
-			int iSensorType = atoi(ssensortype.c_str());
+			unsigned int fullType = std::stoul(ssensortype, nullptr, 16);
+
+			int SensorType = fullType >> 8;
+			int SensorSubType = fullType & 0xFF;
 
 			int HwdID = atoi(idx.c_str());
 
@@ -99,7 +102,7 @@ namespace http {
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, iSensorType, ID, devname, nid, soptions);
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, ID, devname, nid, soptions);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 

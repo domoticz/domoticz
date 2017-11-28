@@ -4468,7 +4468,7 @@ define(['app'], function (app) {
 		function OnDummySensorTypeChange() {
 			var stype = $("#dialog-createsensor #sensortype option:selected").val();
 			$("#dialog-createsensor #sensoraxis").val("");
-			if (stype == 1004) {
+			if (stype == 0xF31F) {
 				$("#dialog-createsensor #vsensoraxis").show();
 			}
 			else {
@@ -4507,7 +4507,7 @@ define(['app'], function (app) {
 							return;
 						}
 						var extraSendData = "";
-						if (SensorType == 1004) {
+                        if (SensorType == 0xF31F) {
 							var AxisLabel = $("#dialog-createsensor #sensoraxis").val();
 							if (AxisLabel == "") {
 								ShowNotify($.t('Please enter a Axis Label!'), 2500, true);
