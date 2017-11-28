@@ -243,7 +243,7 @@ void eHouseTCP::EhouseSubmitData(int SocketIndex)
 	//TCP_NODELAYACK
 	char kkk = 1;
 	status = 1L;
-	if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data imediatelly
+	if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data immediately
 	{
 		//_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 	}
@@ -340,7 +340,7 @@ if (!(iter--)) eHTerminate(SocketIndex)                   //To many retries so C
 	kkk = 1;
 	status = 1L;
 
-	if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data imediatelly
+	if (setsockopt(ClientCon->Socket, IPPROTO_TCP, TCP_NODELAY, &kkk, sizeof(kkk)) < 0)   //Set socket send data immediately
 	{
 		//_log.Log(LOG_STATUS, "[TCP Cli %d] Cant Set TCP NODELAY", SocketIndex);
 	}

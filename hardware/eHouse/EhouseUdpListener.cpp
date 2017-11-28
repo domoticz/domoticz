@@ -38,7 +38,7 @@ unsigned char eHEnableProDiscovery = 1;
 unsigned char eHEnableAlarmInputs = 0;
 int TCPSocket = -1;
 
-//alocate dynamically names structure only during discovery of eHouse PRO controller
+//allocate dynamically names structure only during discovery of eHouse PRO controller
 void eHouseTCP::eCMaloc(int eHEIndex, int devaddrh, int devaddrl)
 {
 	//	if (strlen((char *) &ECMn) < 1)
@@ -67,7 +67,7 @@ void eHouseTCP::eHPROaloc(int eHEIndex, int devaddrh, int devaddrl)
 		LOG(LOG_STATUS, "Allocating eHouse PRO Controller (192.168.%d.%d)", devaddrh, devaddrl);
 		eHouseProN = (struct eHouseProNamesT *) malloc(sizeof(struct eHouseProNamesT));
 		if (eHouseProN == NULL) LOG(LOG_ERROR, "CAN'T Allocate PRO Names Memory");
-		eHouseProN->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
+		eHouseProN->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 		eHouseProN->AddrH[0] = devaddrh;
 		eHouseProN->AddrL[0] = devaddrl;
 		eHouseProStatus = (union eHouseProStatusUT *)  malloc(sizeof(union eHouseProStatusUT));
@@ -92,7 +92,7 @@ void eHouseTCP::eAURAaloc(int eHEIndex, int devaddrh, int devaddrl)
 			LOG(LOG_STATUS, "Allocating Aura Thermostat (%d.%d)", devaddrh, i + 1);
 			AuraN[i] = (struct AuraNamesT *) malloc(sizeof(struct AuraNamesT));
 			if (AuraN[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate AURA Names Memory");
-			AuraN[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
+			AuraN[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			AuraN[i]->AddrH = devaddrh;
 			AuraN[i]->AddrL = i + 1;
 			AuraDev[i] = (struct AURAT *) malloc(sizeof(struct AURAT));
@@ -123,7 +123,7 @@ void eHouseTCP::eHEaloc(int eHEIndex, int devaddrh, int devaddrl)
 			LOG(LOG_STATUS, "Allocating eHouse LAN controller (192.168.%d.%d)", devaddrh, i + INITIAL_ADDRESS_LAN);
 			eHEn[i] = (struct EtherneteHouseNamesT *) malloc(sizeof(struct EtherneteHouseNamesT));
 			if (eHEn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate LAN Names Memory");
-			eHEn[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
+			eHEn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			eHEn[i]->AddrH = devaddrh;
 			eHEn[i]->AddrL = i + INITIAL_ADDRESS_LAN;
 			eHERMs[i] = (union ERMFullStatT *) malloc(sizeof(union ERMFullStatT));
@@ -150,7 +150,7 @@ void eHouseTCP::eHaloc(int eHEIndex, int devaddrh, int devaddrl)
 		{
 			eHn[i] = (struct eHouse1NamesT *) malloc(sizeof(struct eHouse1NamesT));
 			if (eHn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate RS-485 Names Memory");
-			eHn[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
+			eHn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			if (i == 0)
 			{
 				eHn[i]->AddrH = 1;
@@ -193,7 +193,7 @@ void eHouseTCP::eHWIFIaloc(int eHEIndex, int devaddrh, int devaddrl)
 			LOG(LOG_STATUS, "Allocating eHouse WiFi Controller (192.168.%d.%d)", devaddrh, INITIAL_ADDRESS_WIFI + i);
 			eHWIFIn[i] = (struct WiFieHouseNamesT *) malloc(sizeof(struct WiFieHouseNamesT));
 			if (eHWIFIn[i] == NULL) LOG(LOG_ERROR, "CAN'T Allocate WiFi Names Memory");
-			eHWIFIn[i]->INITIALIZED = 'a';	//first byte of structure for detection of alocated memory
+			eHWIFIn[i]->INITIALIZED = 'a';	//first byte of structure for detection of allocated memory
 			eHWIFIn[i]->AddrH = devaddrh;
 			eHWIFIn[i]->AddrL = devaddrl;
 			eHWiFi[i] = (union WiFiStatusT *) malloc(sizeof(union WiFiStatusT));
@@ -668,7 +668,7 @@ void eHouseTCP::UpdatePROToSQL(unsigned char AddrH, unsigned char AddrL)
 		if (eHouseProStatus->status.RollerProgram != eHouseProStatusPrv->status.RollerProgram)
 		{
 			curr = eHouseProStatus->status.RollerProgram;
-			//printf("[LAN 192.168.%d.%d] Current Proram #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
+			//printf("[LAN 192.168.%d.%d] Current Program #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
 		}
 
 		if (eHouseProStatus->status.SecuZone != eHouseProStatusPrv->status.SecuZone)
@@ -1030,7 +1030,7 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 		if (eHRMs[index].eHERM.CURRENT_PROGRAM!=eHRMPrev[index].eHERM.CURRENT_PROGRAM)
 			{
 			curr = eHRMs[index].eHERM.CURRENT_PROGRAM;
-			printf("[RS485 (%d,%d)] Current Proram #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
+			printf("[RS485 (%d,%d)] Current Program #%d changed to: %d\r\n", (int) AddrH, (int) AddrL, (int) i, (int) curr);
 			}
 		if (eHRMs[index].eHERM.CURRENT_ZONE!=eHRMPrev[index].eHERM.CURRENT_ZONE)
 			{
@@ -1571,7 +1571,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
 	UpdateSQLState(data[1], data[2], EH_RS485, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
-	GetStr(data);	//rolers names
+	GetStr(data);	//rollers names
 
 	for (i = 0; i < sizeof(eHn[nr]->Outs) / sizeof(eHn[nr]->Outs[0]); i += 2)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
@@ -1712,7 +1712,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
 	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
-	GetStr(data);		//rolers names
+	GetStr(data);		//rollers names
 
 	for (i = 0; i < sizeof(eHEn[nr]->Rollers) / sizeof(eHEn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
@@ -1742,7 +1742,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	//ISO2UTF8(PGMs);
 	UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs, k);
 	k = 0;
-	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); //Add Requlation Program Selector
+	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); //Add Regulation Program Selector
 	GetStr(data);// "#ADC Programs Names
 	for (i = 0; i < sizeof(eHEn[nr]->ADCPrograms) / sizeof(eHEn[nr]->ADCPrograms[0]); i++)
 	{
@@ -1880,7 +1880,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	//ISO2UTF8(PGMs);
 	UpdatePGM(data[1], data[2], VISUAL_PGM, PGMs, k);
 	k = 0;
-	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); //Add Requlation Program Selector
+	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); //Add Regulation Program Selector
 	GetStr(data);// "#ADC Programs Names
 	for (i = 0; i < sizeof(ECMn->ADCPrograms) / sizeof(ECMn->ADCPrograms[0]); i++)
 	{
@@ -1999,7 +1999,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		//    UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *) &GetLine, true, 100);
 	}
 	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
-	GetStr(data);//rolers names
+	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHouseProN->Rollers) / sizeof(eHouseProN->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
@@ -2033,7 +2033,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	}
 	k = 0;
 
-	strcpy(PGMs, "SelectorStyle:1;LevelNames:");		//Add Requlation Program Selector
+	strcpy(PGMs, "SelectorStyle:1;LevelNames:");		//Add Regulation Program Selector
 	GetStr(data);									// "#ADC Programs Names
 	for (i = 0; i < sizeof(eHouseProN->ADCPrograms) / sizeof(eHouseProN->ADCPrograms[0]); i++)
 	{
@@ -2057,7 +2057,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	}
 	GetStr(data);
 	strcat(Name, "#Secu Programs Names\r\n");		//CM only
-	strcpy(PGMs, "SelectorStyle:1;LevelNames:");	//Add Requlation Program Selector
+	strcpy(PGMs, "SelectorStyle:1;LevelNames:");	//Add Regulation Program Selector
 	k = 0;
 	for (i = 0; i < sizeof((void *)&eHouseProN->SecuPrograms) / sizeof(&eHouseProN->SecuPrograms[0]); i++)
 	{
@@ -2086,7 +2086,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	GetStr(data);
 	k = 0;
 	strcat(Name, "#Zones Programs Names\r\n");		//CM only
-	strcpy(PGMs, "SelectorStyle:1;LevelNames:");	//Add Requlation Program Selector
+	strcpy(PGMs, "SelectorStyle:1;LevelNames:");	//Add Regulation Program Selector
 	for (i = 0; i < sizeof((void *)&eHouseProN->Zones) / sizeof(&eHouseProN->Zones[0]); i++)
 	{
 		//strcat(Name, EHouseProN.SecuPrograms[i]);
@@ -2187,7 +2187,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
 	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
-	GetStr(data);//rolers names
+	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHWIFIn[nr]->Rollers) / sizeof(eHWIFIn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
 	{
@@ -2341,7 +2341,7 @@ void eHouseTCP::Do_Work()
 		LOG(LOG_STATUS, "[eHouse] UDP");
 	}
 
-	if (access("/usr/local/ehouse/disable_udp_rs485.cfg", F_OK) != -1)        //fileexists read cfg
+	if (access("/usr/local/ehouse/disable_udp_rs485.cfg", F_OK) != -1)        //file exists read cfg
 	{
 		disablers485 = 1;
 	}
@@ -2398,7 +2398,7 @@ void eHouseTCP::Do_Work()
 	int prevtim, tim = clock();
 	prevtim = tim;
 	time_t tt = time(NULL);
-	while (!m_stoprequested)				//mainloop
+	while (!m_stoprequested)				//main loop
 	{
 		tim = clock();
 		//if (tim-prevtim>= 100)
@@ -2507,7 +2507,7 @@ void eHouseTCP::Do_Work()
 					recv(TCPSocket, (char *)&udp_status, MAXMSG, 0);
 					continue;
 				}
-				if (eH1(udp_status[1], udp_status[2]))					///!!!!! tymczasowo do uruhcmonienia wifi
+				if (eH1(udp_status[1], udp_status[2]))					///!!!!! tymczasowo do uruhcmonienia wifi ?? translation in English please!
 				{
 					//					LOG(LOG_STATUS, "EH 1");
 					len--;
@@ -2542,7 +2542,7 @@ void eHouseTCP::Do_Work()
 				closesocket(TCPSocket);				// Try close socket
 				TCPSocket = -1;
 				ssl(6);
-				TCPSocket = ConnectTCP(0);				// Reconect
+				TCPSocket = ConnectTCP(0);				// Reconnect
 														//	goto RETRY;							// Go to start
 			}
 			continue;								//if UDP just ignore errors
@@ -2691,7 +2691,7 @@ void eHouseTCP::Do_Work()
 					eHaloc(index, devaddrh, devaddrl);
 					if (memcmp(&eHn[index]->BinaryStatus[0], &udp_status, nbytes) != 0) CloudStatusChanged = 1;
 					memcpy(&eHn[index]->BinaryStatus[0], udp_status, nbytes);
-					memcpy(&eHRMs[index]->data[0], &udp_status, 4);					//control data size,addres,code 's'
+					memcpy(&eHRMs[index]->data[0], &udp_status, 4);					//control data size,address,code 's'
 					eHRMs[index]->eHERM.Outs[0] = udp_status[RM_STATUS_OUT];
 					eHRMs[index]->eHERM.Outs[1] = udp_status[RM_STATUS_OUT + 1];
 					eHRMs[index]->eHERM.Outs[2] = udp_status[RM_STATUS_OUT + 2];
@@ -2707,7 +2707,7 @@ void eHouseTCP::Do_Work()
 					//memcpy(&eHRMs[eHEIndex].eHERM.DaliDimmers, &udp_status[STATUS_DALI],46);
 
 					eHRMs[index]->eHERM.CURRENT_PROFILE = udp_status[RM_STATUS_PROGRAM];
-					if (index == 0)			//heatmanager
+					if (index == 0)			//heat manager
 					{
 						eHRMs[index]->eHERM.CURRENT_PROFILE = udp_status[HM_STATUS_PROGRAM];
 						eHRMs[index]->eHERM.Outs[0] = udp_status[HM_STATUS_OUT];
@@ -2833,7 +2833,7 @@ void eHouseTCP::Do_Work()
 											eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[2] = udp_status[DIMM_OFFSET_WIFI + 2];
 											//eHWIFIs[index].eHWIFI.Dimmers[3] = udp_status[DIMM_OFFSET_WIFI+3];
 											eHWIFIn[eHWiFiIndex]->TCPQuery++;
-											memcpy(&eHWiFi[eHWiFiIndex]->data[0], &udp_status[1], sizeof(union WiFiStatusT));          //ERMs, EHM -ethernet
+											memcpy(&eHWiFi[eHWiFiIndex]->data[0], &udp_status[1], sizeof(union WiFiStatusT));          //ERMs, EHM -Ethernet
 											CalculateAdcWiFi(eHWiFiIndex);
 											if (CloudStatusChanged)
 											{
