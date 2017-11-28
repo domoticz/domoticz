@@ -142,26 +142,26 @@ extern class eHouseTCP eHouse;
 #define USE_SYS_TYPES_FD_SET 1
 #endif
 
-/* 
+/*
  * File:   globals.h
- * * ONLY for usage with eHouse system controllers | Intellectual property of iSys.Pl | Any other usage, copy etc. is forbidden 
+ * * ONLY for usage with eHouse system controllers | Intellectual property of iSys.Pl | Any other usage, copy etc. is forbidden
  * Author: Robert Jarzabek
  * http://www.iSys.Pl/ Strona producenta iSys - Intelligent Systems
  * http://Inteligentny-Dom.eHouse.Pro/ Inteligentny Dom eHouse - ZrĂłb to sam, Programowanie, Samodzielny montaĹĽ, projektowanie
- * http://www.eHouse.Pro/ Automatyka Budynku eHouse 
+ * http://www.eHouse.Pro/ Automatyka Budynku eHouse
  * http://sterowanie.biz/ Sterowanie domem, budynkiem z eHouse
  * http://Home-Automation.iSys.pl/ eHouse Home Automation producer homepage
  * http://Home-Automation.eHouse.Pro/ eHouse Home Automation "DIY" Do It Yourself, Examples, Designs, Self Installation, Programming
  *
  * Global configuration
- * 
+ *
  * Created on June 3, 2013, 9:43 AM
  */
 #ifndef WIN32
-//	#include <unistd.h>
-//	#include <sys/time.h>
+ //	#include <unistd.h>
+ //	#include <sys/time.h>
 #else
-//	#include <time.h>
+ //	#include <time.h>
 #endif
 //#include <fcntl.h>
 //#include <string.h>
@@ -184,10 +184,10 @@ extern class eHouseTCP eHouse;
 extern "C" {
 #endif
 
-//#define D_HOST      "localhost"
-//#define D_QUEUE     32
-//#define D_SOCKETS   16
-//#define D_INFO      25616 
+	//#define D_HOST      "localhost"
+	//#define D_QUEUE     32
+	//#define D_SOCKETS   16
+	//#define D_INFO      25616 
 
 
 
