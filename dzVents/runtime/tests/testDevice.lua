@@ -161,7 +161,6 @@ describe('device', function()
 		TimedCommand = require('TimedCommand')
 
 		Device = require('Device')
-
 	end)
 
 	teardown(function()
@@ -182,7 +181,6 @@ describe('device', function()
 	after_each(function()
 		device = nil
 		commandArray = {}
-
 	end)
 
 	describe('Adapters', function()
@@ -532,7 +530,6 @@ describe('device', function()
 			device.armHome().afterSec(4)
 
 			assert.is_same({ { ['myDevice'] = 'Arm Home AFTER 4 SECONDS' } }, commandArray)
-
 		end)
 
 		describe('dummy methods', function()
@@ -610,7 +607,6 @@ describe('device', function()
 					"updateWetness",
 					"updateWind" }, values(dummies))
 			end)
-
 		end)
 
 		it('should detect an evohome device', function()
@@ -704,7 +700,6 @@ describe('device', function()
 
 			device.updateWind(1, 2, 3, 4, 5, 6)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="1;2;30;40;5;6", _trigger=true} } }, commandArray)
-
 		end)
 
 		it('should detect a uv device', function()
@@ -808,7 +803,6 @@ describe('device', function()
 
 			device.updateCounter(555)
 			assert.is_same({ { ["UpdateDevice"] = {idx=1, nValue=0, sValue="555", _trigger=true} } }, commandArray)
-
 		end)
 
 		it('should detect an incremental counter device', function()
@@ -1010,7 +1004,6 @@ describe('device', function()
 			}, commandArray)
 		end)
 
-
 		describe('Switch', function()
 
 			local switch
@@ -1189,6 +1182,70 @@ describe('device', function()
 			assert.is_same({ { ["myHue"] = "Off" } }, commandArray)
 		end)
 
+		it('should detect an rgbw device', function()
+
+			local commandArray = {}
+			local utils = require('Utils')
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			domoticz.utils = {
+				rgbToHSB = function(r, g, b)
+					return utils.rgbToHSB(r, g, b)
+				end
+			}
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'Set Kelvin Level',
+				['type'] = 'Lighting Limitless/Applamp'
+			})
+
+			assert.is_true(device.active)
+
+			device.setKelvin(5500)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setkelvinlevel&idx=1&kelvin=5500' }, commandArray)
+
+			commandArray = {}
+			device.setWhiteMode()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=whitelight&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.increaseBrightness()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=brightnessup&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.decreaseBrightness()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=brightnessdown&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.setNightMode()
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=nightlight&idx=1' }, commandArray)
+
+			commandArray = {}
+			device.setRGB(255, 0, 0)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+
+			device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'Set To White',
+				['type'] = 'Lighting Limitless/Applamp'
+			})
+
+			assert.is_true(device.active)
+
+			device = getDevice(domoticz, {
+				['name'] = 'myRGBW',
+				['state'] = 'NightMode',
+				['type'] = 'Lighting Limitless/Applamp'
+			})
+
+			assert.is_true(device.active)
+
+		end)
+
 		describe('Kodi', function()
 
 			local device = getDevice(domoticz, {
@@ -1328,7 +1385,6 @@ describe('device', function()
 				assert.is_true(device.active)
 			end
 		end)
-
 	end)
 
 	it('should set the state', function()
@@ -1347,8 +1403,6 @@ describe('device', function()
 			device.update(1, 2, true).silent()
 			assert.is_same({{["UpdateDevice"]={idx=1, nValue=1, sValue="2", protected=true}}}, commandArray)
 		end)
-
-
 	end)
 
 

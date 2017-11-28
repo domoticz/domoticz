@@ -47,6 +47,16 @@ return {
 					'/json.htm?type=command&param=nightlight&idx=' .. device.id
 			return domoticz.openURL(url)
 		end
-	end
 
+		function device.setRGB(r, g, b)
+			local h, s, b, isWhite = domoticz.utils.rgbToHSB(r, g, b)
+			url = domoticz.settings['Domoticz url'] ..
+					'/json.htm?type=command&param=setcolbrightnessvalue&idx=' ..
+					device.id ..
+					'&hue=' .. tostring(h) ..
+					'&brightness=' .. tostring(b) ..
+					'&iswhite=' ..  tostring(isWhite)
+			return domoticz.openURL(url)
+		end
+	end
 }

@@ -765,6 +765,14 @@ See switch below.
  - **rainRate**: *Number*
  - **updateRain(rate, counter)**: *Function*.
 
+#### RGBW / Lighting Limitless/Applamp
+ - **decreaseBrightness()**: *Function*.
+ - **increaseBrightness()**: *Function*.
+ - **setKelvin(Kelvin)**: *Function*. Sets Kelvin level of the light.
+ - **setNightMode()**: *Function*. Sets the lamp to night mode.
+ - **setRGB(red, green, blue)**: *Function*. Set the lamps RGB color. Values are from 0-255.
+ - **setWhiteMode()**: *Function*. Sets the lamp to white mode.
+
 #### Scale weight
  - **weight**: *Number*
  - **udateWeight()**: *Function*.
@@ -1741,6 +1749,8 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added new time rules: `on dd/mm`, `on */mm`, `on dd/*`, `on dd1/mm1-dd2/mm2`, `on -dd/mm`, `on dd/mm-`, `in week aa,bb,cc-dd,-ee, ff-`, `every even week`, `every odd week`
 - Added historical data helper `delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)` to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
 - Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
+- Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
+
 
 ##[2.3.0]
 

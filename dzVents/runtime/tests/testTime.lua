@@ -1109,7 +1109,7 @@ describe('Time', function()
 
 			end)
 
-			it('#tag at sunset on mon', function()
+			it('at sunset on mon', function()
 				_G.timeofday = { ['SunsetInMinutes'] = 64 }
 				local t = Time('2017-06-05 01:04:00') -- on monday
 				assert.is_true(t.matchesRule('at sunset on mon'))

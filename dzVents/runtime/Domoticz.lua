@@ -179,11 +179,13 @@ local function Domoticz(settings)
 
 			toJSON = function(luaTable)
 				return utils.toJSON(luaTable)
-			end
+			end,
 
+			rgbToHSB = function(r, g, b)
+				return utils.rgbToHSB(r,g,b)
+			end
 		}
 	}
-
 
 	-- add domoticz commands to the commandArray
 	function self.sendCommand(command, value)

@@ -121,4 +121,39 @@ function self.log(msg, level)
 	end
 end
 
+function self.rgbToHSB(r, g, b)
+	local hsb = {h = 0, s = 0, b = 0}
+
+	local min = math.min(r, g, b)
+	local max = math.max(r, g, b)
+
+	local delta = max - min;
+
+	hsb.b = max;
+	hsb.s = max ~= 0 and (255 * delta / max) or 0;
+
+	if (hsb.s ~= 0) then
+		if (r == max) then
+			hsb.h = (g - b) / delta
+		elseif (g == max) then
+			 hsb.h = 2 + (b - r) / delta
+		else
+			hsb.h = 4 + (r - g) / delta
+		end
+	else
+		hsb.h = -1
+	end
+
+	hsb.h = hsb.h * 60
+	if (hsb.h < 0) then
+		hsb.h = hsb.h + 360
+	end
+
+	hsb.s = hsb.s * (100 / 255)
+	hsb.b = hsb.b * (100 / 255)
+
+	local isWhite = (hsb.s < 20)
+	return hsb.h, hsb.s, hsb.b, isWhite
+end
+
 return self
