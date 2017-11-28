@@ -9,6 +9,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../json/json.h"
 #include "../tinyxpath/tinyxml.h"
+#include "../main/WebServer.h"
 
 #include <sstream>
 #include <map>
@@ -589,3 +590,46 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 }
 
 
+//Webserver helpers
+namespace http {
+	namespace server {
+		void CWebServer::Cmd_OnkyoEiscpCommand(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string sIdx = request::findValue(&req, "idx");
+			std::string sAction = request::findValue(&req, "action");
+			if (sIdx.empty())
+				return;
+			int idx = atoi(sIdx.c_str());
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT DS.SwitchType, DS.DeviceID, H.Type, H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%q') AND (DS.HardwareID == H.ID)", sIdx.c_str());
+
+			root["status"] = "ERR";
+			if (result.size() == 1)
+			{
+				_eHardwareTypes	hType = (_eHardwareTypes)atoi(result[0][2].c_str());
+				switch (hType) {
+				// We allow raw EISCP commands to be sent on *any* of the logical devices
+				// associated with the hardware.
+				case HTYPE_OnkyoAVTCP:
+					CDomoticzHardwareBase *pBaseHardware = m_mainworker.GetHardwareByIDType(result[0][3].c_str(), HTYPE_OnkyoAVTCP);
+					if (pBaseHardware == NULL)
+						return;
+					OnkyoAVTCP *pOnkyoAVTCP = reinterpret_cast<OnkyoAVTCP*>(pBaseHardware);
+
+					pOnkyoAVTCP->SendPacket(sAction.c_str());
+					root["status"] = "OK";
+					root["title"] = "OnkyoEiscpCommand";
+					break;
+				}
+			}
+		}
+
+	}
+}
