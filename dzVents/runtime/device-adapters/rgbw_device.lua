@@ -8,6 +8,13 @@ return {
 
 	matches = function (device, adapterManager)
 		local res = device.deviceType == 'Lighting Limitless/Applamp'
+		adapterManager.addDummyMethod(device, 'setKelvin')
+		adapterManager.addDummyMethod(device, 'setWhiteMode')
+		adapterManager.addDummyMethod(device, 'increaseBrightness')
+		adapterManager.addDummyMethod(device, 'decreaseBrightness')
+		adapterManager.addDummyMethod(device, 'setNightMode')
+		adapterManager.addDummyMethod(device, 'setRGB')
+
 		return res
 	end,
 
