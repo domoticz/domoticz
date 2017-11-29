@@ -21,7 +21,7 @@ return {
 			local url = domoticz.settings['Domoticz url'] ..
 					'/json.htm?type=command&param=udevice&idx=' .. device.id .. '&nvalue=0&svalue=' .. setPoint
 			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
+			return domoticz.openURL(url)
 		end
 
 	end

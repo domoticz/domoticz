@@ -68,7 +68,6 @@ local function DeviceAdapters(dummyLogger)
 		local adapters = {}
 
 		for i, adapterName in pairs(deviceAdapters) do
-
 			-- do a safe call and catch possible errors
 			ok, adapter = pcall(require, adapterName)
 			if (not ok) then
@@ -83,7 +82,6 @@ local function DeviceAdapters(dummyLogger)
 				end
 			end
 		end
-
 		return adapters
 	end
 

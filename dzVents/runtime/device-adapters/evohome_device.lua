@@ -1,3 +1,5 @@
+local TimedCommand = require('TimedCommand')
+
 return {
 
 	baseType = 'device',
@@ -15,18 +17,15 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['setPoint'] = tonumber(device.rawData[1] or 0)
+		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint, mode, untilDate)
-			local url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=setused&idx=' .. device.id .. '&setpoint=' .. setPoint .. '&mode=' .. tostring(mode) .. '&used=true'
-
-			if (untilDate) then
-				url = url .. '&until=' .. tostring(untilDate)
-			end
-
-			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			domoticz.openURL(url)
+			return TimedCommand(domoticz,
+				'SetSetPoint:' ..
+				tostring(device.id),
+			   tostring(setPoint) ..
+			   '#' .. tostring(mode) ..
+			   '#' .. tostring(untilDate) , 'updatedevice')
 		end
 
 	end

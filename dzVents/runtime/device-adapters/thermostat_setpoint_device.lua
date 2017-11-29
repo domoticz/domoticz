@@ -1,3 +1,5 @@
+local TimedCommand = require('TimedCommand')
+
 return {
 
 	baseType = 'device',
@@ -17,20 +19,7 @@ return {
 		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint)
-			local url
-
-			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
-
-			if (device.hardwareTypeValue == 15) then -- dummy
-				url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=setsetpoint&idx=' .. device.id .. '&setpoint=' .. setPoint
-			else
-				url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=udevice&idx=' .. device.id .. '&nvalue=0&svalue=' .. setPoint
-			end
-
-			utils.log('Setting setpoint using openURL ' .. url, utils.LOG_DEBUG)
-			return domoticz.openURL(url)
+			return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) , 'device')
 		end
 
 	end

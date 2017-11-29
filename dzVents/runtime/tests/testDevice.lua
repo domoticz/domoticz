@@ -420,15 +420,9 @@ describe('device', function()
 
 			assert.is_same(12.5, device.setPoint)
 
-			local res;
-
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
 			device.updateSetPoint(14)
+			assert.is_same({ { ['SetSetPoint:1'] = '14 TRIGGER'} }, commandArray)
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=setsetpoint&idx=1&setpoint=14', res)
 		end)
 
 		it('should detect a text device', function()
@@ -625,16 +619,11 @@ describe('device', function()
 				['rawData'] = { [1] = 12.5 }
 			})
 
-			local res;
-			domoticz.openURL = function(url)
-				res = url;
-			end
-
 			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=setused&idx=1&setpoint=14&mode=Permanent&used=true&until=2016-04-29T06:32:58Z', res)
+			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z TRIGGER'} }, commandArray)
 		end)
 
 		it('should detect an opentherm gateway device', function()
