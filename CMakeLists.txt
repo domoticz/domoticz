@@ -322,6 +322,10 @@ hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
 hardware/EcoDevices.cpp
+hardware/eHouseTCP.cpp
+hardware/eHouse/EhouseEvents.cpp
+hardware/eHouse/EhouseTcpClient.cpp
+hardware/eHouse/EhouseUdpListener.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/EnphaseAPI.cpp

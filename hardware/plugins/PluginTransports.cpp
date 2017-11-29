@@ -19,10 +19,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+#define round(a) ( int ) ( a + .5 )
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
+	extern boost::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
@@ -290,7 +291,7 @@ namespace Plugins {
 		{
 			if ((e.value() != 2) && 
 				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation cancelled
+				(e.value() != 125) &&	// Operation canceled
 				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
@@ -481,7 +482,7 @@ namespace Plugins {
 		{
 			if ((e.value() != 2) &&
 				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation cancelled
+				(e.value() != 125) &&	// Operation canceled
 				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
@@ -622,7 +623,7 @@ namespace Plugins {
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
-			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
+			// Make sure only the only Message objects are referring to Connection so that it is cleaned up right after plugin onMessage
 			Py_DECREF(pConnection);
 
 			// Set up listener again
@@ -632,7 +633,7 @@ namespace Plugins {
 		{
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 125) &&	// Operation canceled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
@@ -801,7 +802,7 @@ namespace Plugins {
 			}
 
 		}
-		else if (ec != boost::asio::error::operation_aborted)  // Timer cancelled by message arriving
+		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
 			_log.Log(LOG_ERROR, "Plugin: %s: %d, %s", __func__, ec.value(), ec.message().c_str());
 		}
@@ -854,7 +855,7 @@ namespace Plugins {
 		{
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 125) &&	// Operation canceled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
@@ -878,7 +879,7 @@ namespace Plugins {
 		{
 			CConnection*	pConnection = (CConnection*)this->m_pConnection;
 			std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
-			_log.Log(LOG_ERROR, "(%s) Transport not initialised, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
+			_log.Log(LOG_ERROR, "(%s) Transport not initialized, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
 		}
 
 		// Reset timeout if one is set or set one

@@ -67,6 +67,7 @@ struct _tTaskItem
 	int _nValue;
 	std::string _sValue;
 	std::string _command;
+	std::string _sUntil;
 	unsigned char _level;
 	int _Hue;
 	std::string _relatedEvent;
@@ -248,13 +249,15 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue)
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string())
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_SETPOINT;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = idx;
 		tItem._sValue = varvalue;
+		tItem._command = mode;
+		tItem._sUntil = until;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -383,6 +386,7 @@ public:
 
 	std::map<std::string, std::string> BuildDeviceOptions(const std::string & options, const bool decode = true);
 	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
+	std::string FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap);
 	bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & options);
 public:
 	std::string m_LastSwitchID;	//for learning command
