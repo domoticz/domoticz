@@ -3054,7 +3054,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
 	{
-		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, item.reason);
+		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason));
 		if (item.reason == REASON_URL)
 			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
 	}
@@ -3152,7 +3152,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
 	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
-		m_dzvents.SetGlobalVariables(lua_state, item.reason);
+		m_dzvents.SetGlobalVariables(lua_state, static_cast<int>(item.reason));
 
 	lua_setglobal(lua_state, "globalvariables");
 

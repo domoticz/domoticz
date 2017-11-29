@@ -129,15 +129,12 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
 	m_sUserAgent = useragent;
 }
 
-void HTTPClient::LogError(void *curlobj)
+void HTTPClient::LogError(const long response_code)
 {
 #ifndef _DEBUG
 	if (_log.isTraceEnabled())
 #endif
 	{
-		long response_code;
-		CURL *curl = (CURL *)curlobj;
-		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
 		switch (response_code)
 		{
 		case 400:
@@ -219,7 +216,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		if (res == CURLE_HTTP_RETURNED_ERROR)
 		{
-			LogError(curl);
+			LogError(responseCode);
 		}
 
 		curl_easy_cleanup(curl);
@@ -311,7 +308,9 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 
 		if (res == CURLE_HTTP_RETURNED_ERROR)
 		{
-			LogError(curl);
+			long responseCode;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+			LogError(responseCode);
 		}
 
 		curl_easy_cleanup(curl);

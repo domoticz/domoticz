@@ -47,7 +47,7 @@ public:
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
-	static void LogError(void *curlobj);
+	static void LogError(const long response_code);
 	//our static variables
 	static bool m_bCurlGlobalInitialized;
 	static bool m_bVerifyHost;
