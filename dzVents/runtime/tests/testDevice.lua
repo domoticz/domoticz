@@ -418,7 +418,7 @@ describe('device', function()
 				['rawData'] = { [1] = 12.5 }
 			})
 
-			assert.is_same(12.5, device.SetPoint)
+			assert.is_same(12.5, device.setPoint)
 
 			local res;
 
@@ -630,7 +630,7 @@ describe('device', function()
 				res = url;
 			end
 
-			assert.is_same(12.5, device.SetPoint)
+			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
@@ -653,7 +653,7 @@ describe('device', function()
 				res = url;
 			end
 
-			assert.is_same(12.5, device.SetPoint)
+			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
 

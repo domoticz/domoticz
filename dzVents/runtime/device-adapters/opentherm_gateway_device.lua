@@ -14,7 +14,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['SetPoint'] = device.rawData[1] or 0
+		device['setPoint'] = device.rawData[1] or 0
 
 		function device.updateSetPoint(setPoint)
 			-- send the command using openURL otherwise, due to a bug in Domoticz, you will get a timeout on the script
