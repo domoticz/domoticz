@@ -216,6 +216,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 			std::string variableName, variableValue;
 			float delayTime = 0;
 			bool bEventTrigger = false;
+			uint64_t idx;
 
 			std::map<int, _tLuaTableValues> mLuaTable;
 			IterateTable(lua_state, tIndex, 0, mLuaTable);
@@ -227,39 +228,22 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 				{
 					if (itt->second.type == TYPE_INTEGER)
 					{
-						if (itt->second.name == "_random")
+						if (itt->second.name == "idx")
+							idx = static_cast<uint64_t>(itt->second.iValue);
+						else if (itt->second.name == "_random")
 							delayTime = RandomTime(itt->second.iValue);
 						else if (itt->second.name == "_after")
 							delayTime = static_cast<float>(itt->second.iValue);
 					}
-					else if (itt->second.type == TYPE_STRING)
-					{
-						if (itt->second.name == "name")
-							variableName = itt->second.sValue;
-						else if (itt->second.name == "value")
-							variableValue = itt->second.sValue;
-					}
+					else if (itt->second.type == TYPE_STRING && itt->second.name == "value")
+						variableValue = itt->second.sValue;
+
 					else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
 						bEventTrigger = true;
 				}
 			}
-
-			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
-			if (result.size() > 0)
-			{
-				std::vector<std::string> sd = result[0];
-
-				if (bEventTrigger)
-					m_mainworker.m_eventsystem.SetEventTrigger(atoi(sd[0].c_str()), m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
-
-				uint64_t idx;
-				std::stringstream sstr;
-				sstr << sd[0];
-				sstr >> idx;
-				m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
-				scriptTrue = true;
-			}
+			m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
+			scriptTrue = true;
 		}
 		else if (lCommand.find("Cancel") == 0)
 		{
