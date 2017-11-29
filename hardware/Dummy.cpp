@@ -95,12 +95,10 @@ namespace http {
 			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
 			nid += 82000;
 
-			std::string devname;
-
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, devname, nid, soptions);
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, ssensorname, nid, soptions);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
@@ -111,9 +109,6 @@ namespace http {
 				std::stringstream ss;
 				ss << vs_idx;
 				root["idx"] = ss.str().c_str();
-
-				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%" PRIu64 ")", ssensorname.c_str(), DeviceRowIdx);
-				m_mainworker.m_eventsystem.GetCurrentStates();
 			}
 		}
 	}

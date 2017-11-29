@@ -3602,8 +3602,14 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		}
 		break;
 	}
-
 	}
+
+	if (DeviceRowIdx != -1)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%" PRIu64 ")", devname.c_str(), DeviceRowIdx);
+		m_mainworker.m_eventsystem.GetCurrentStates();
+	}
+
 	return DeviceRowIdx;
 }
 
