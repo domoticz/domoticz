@@ -3043,14 +3043,14 @@ void CSQLHelper::Do_Work()
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
 				std::string response;
-				std::vector<std::string> headerData;
+				std::vector<std::string> headerData, extraHeaders;
 				std::string postData = itt->_command;
 				std::string callback = itt->_ID;
-				std::vector<std::string> extraHeaders;
 
-				StringSplit(itt->_relatedEvent, "!#", extraHeaders);
+				if (!itt->_relatedEvent.empty())
+					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
 
-				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod> (itt->_switchtype);
+				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod>(itt->_switchtype);
 
 				bool ret;
 				if (method == HTTPClient::HTTP_METHOD_GET)
