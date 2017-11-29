@@ -69,7 +69,7 @@ public:
 	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
-	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
+	bool SetSetPoint(const std::string &idx, const float TempValue, const std::string &newMode, const std::string &until);
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
 	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
