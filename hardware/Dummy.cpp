@@ -94,15 +94,13 @@ namespace http {
 			}
 			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
 			nid += 82000;
-			char ID[40];
-			sprintf(ID, "%lu", nid);
 
 			std::string devname;
 
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, ID, devname, nid, soptions);
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, devname, nid, soptions);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 
