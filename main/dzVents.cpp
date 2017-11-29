@@ -242,6 +242,9 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 						bEventTrigger = true;
 				}
 			}
+			if (bEventTrigger)
+				m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
+
 			m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
 			scriptTrue = true;
 		}
