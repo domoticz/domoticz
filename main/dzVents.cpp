@@ -24,6 +24,12 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
+float CdzVents::RandomTime(const int randomTime)
+{
+	srand((unsigned int)mytime(NULL));
+	return ((float)(rand() / (RAND_MAX / randomTime)));
+}
+
 void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<std::string> &vData, const std::string &sValue, const std::string &nValueWording)
 {
 	int statusCode;
@@ -61,232 +67,211 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<std::
 	lua_setglobal(lua_state, "httpresponse");
 }
 
-float CdzVents::RandomTime(const int randomTime)
+bool CdzVents::OpenURL(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable)
 {
-	srand((unsigned int)mytime(NULL));
-	return ((float)(rand() / (RAND_MAX / randomTime)));
+	float delayTime = 0;
+	std::string URL, extraHeaders, method, postData, trigger;
+
+	std::map<int, _tLuaTableValues>::const_iterator itt;
+	for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+	{
+		if (itt->second.isTable && itt->second.sValue == "headers")
+		{
+			if (itt == mLuaTable.end())
+				break;
+
+			int tIndex = itt->second.tIndex;
+			itt++;
+			std::map<int, _tLuaTableValues>::const_iterator itt2;
+			for (itt2 = itt; itt2 != mLuaTable.end(); itt2++)
+			{
+				if (itt2->second.tIndex != tIndex)
+				{
+					itt--;
+					break;
+				}
+				extraHeaders += "!#" + itt2->second.name + ": " + itt2->second.sValue;
+				if (itt != mLuaTable.end())
+					itt++;
+			}
+		}
+		else if (itt->second.type == TYPE_STRING)
+		{
+			if (itt->second.name == "URL")
+				URL = itt->second.sValue;
+			else if (itt->second.name == "method")
+				method = itt->second.sValue;
+			else if (itt->second.name == "postdata")
+				postData = itt->second.sValue;
+			else if (itt->second.name == "_trigger")
+				trigger = itt->second.sValue;
+		}
+		else if (itt->second.type == TYPE_INTEGER)
+		{
+			if (itt->second.name == "_random")
+				delayTime = RandomTime(itt->second.iValue);
+			else if (itt->second.name == "_after")
+				delayTime = static_cast<float>(itt->second.iValue);
+		}
+	}
+	if (URL.empty())
+	{
+		_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
+		return false;
+	}
+
+	HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
+	if (!method.empty() && method == "POST")
+		eMethod = HTTPClient::HTTP_METHOD_POST;
+
+	if (!postData.empty() && eMethod != HTTPClient::HTTP_METHOD_POST)
+	{
+		_log.Log(LOG_ERROR, "dzVents: You can only use postdata with method POST..");
+		return false;
+	}
+
+	m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
+	return true;
+}
+
+bool CdzVents::UpdateDevice(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable)
+{
+	std::string luaString, szIdx, nValue, sValue, Protected;
+	uint64_t ulIdx;
+	float delayTime = 0;
+	bool bEventTrigger = false;
+
+	std::map<int, _tLuaTableValues>::const_iterator itt;
+	for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+	{
+		if (itt->second.type == TYPE_INTEGER)
+		{
+			std::stringstream ss;
+			ss << itt->second.iValue;
+			if (itt->second.name == "idx")
+			{
+				ulIdx = static_cast<uint64_t>(itt->second.iValue);
+				szIdx = ss.str();
+			}
+			else if (itt->second.name == "nValue")
+				nValue = ss.str();
+			else if (itt->second.name == "protected")
+				Protected = ss.str();
+			else if (itt->second.name == "_random")
+				delayTime = RandomTime(itt->second.iValue);
+			else if (itt->second.name == "_after")
+				delayTime = static_cast<float>(itt->second.iValue);
+		}
+		else if (itt->second.type == TYPE_STRING)
+		{
+			if (itt->second.name == "sValue")
+				sValue = itt->second.sValue;
+		}
+		else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
+				bEventTrigger = true;
+	}
+	if (szIdx.empty())
+		return false;
+
+	luaString = szIdx + "|";
+
+	if (!nValue.empty())
+		luaString += nValue;
+
+	luaString += "|";
+	if (!sValue.empty())
+		luaString += sValue;
+
+	luaString += "|";
+	if (!Protected.empty())
+		luaString += Protected;
+
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
+	return true;
+}
+
+bool CdzVents::UpdateVariable(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable)
+{
+	std::string variableName, variableValue;
+	float delayTime = 0;
+	bool bEventTrigger = false;
+	uint64_t idx;
+
+	std::map<int, _tLuaTableValues>::const_iterator itt;
+	for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+	{
+		if (itt->second.type == TYPE_INTEGER)
+		{
+			if (itt->second.name == "idx")
+				idx = static_cast<uint64_t>(itt->second.iValue);
+			else if (itt->second.name == "_random")
+				delayTime = RandomTime(itt->second.iValue);
+			else if (itt->second.name == "_after")
+				delayTime = static_cast<float>(itt->second.iValue);
+		}
+		else if (itt->second.type == TYPE_STRING && itt->second.name == "value")
+			variableValue = itt->second.sValue;
+
+		else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
+			bEventTrigger = true;
+	}
+	if (bEventTrigger)
+		m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
+
+	m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
+	return true;
+}
+
+bool CdzVents::CancelItem(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable)
+{
+	uint64_t idx;
+	int count = 0;
+	std::string type;
+
+	std::map<int, _tLuaTableValues>::const_iterator itt;
+	for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
+	{
+		if (itt->second.type == TYPE_INTEGER && itt->second.name == "idx")
+			idx = static_cast<uint64_t>(itt->second.iValue);
+
+		else if (itt->second.type == TYPE_STRING && itt->second.name == "type")
+			type = itt->second.sValue;
+	}
+	_tTaskItem tItem;
+	tItem._idx = idx;
+	tItem._DelayTime = 0;
+	if (type == "device")
+		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
+	else if (type == "scene")
+		tItem._ItemType = TITEM_SWITCHCMD_SCENE;
+	else if (type == "variable")
+		tItem._ItemType = TITEM_SET_VARIABLE;
+
+	m_sql.AddTaskItem(tItem, true);
+	return true;
 }
 
 bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex)
 {
 	bool scriptTrue = false;
-	if (lua_istable(lua_state, -1))
+	std::string lCommand = std::string(lua_tostring(lua_state, -2));
+	std::map<int, _tLuaTableValues> mLuaTable;
+	IterateTable(lua_state, tIndex, 0, mLuaTable);
+	if (mLuaTable.size() > 0)
 	{
-		std::string lCommand = std::string(lua_tostring(lua_state, -2));
-
 		if (lCommand == "OpenURL")
-		{
-			float delayTime = 0;
-			std::string URL, extraHeaders, method, postData, trigger;
+			scriptTrue = OpenURL(lua_state, mLuaTable);
 
-			std::map<int, _tLuaTableValues> mLuaTable;
-			IterateTable(lua_state, tIndex + 2, 0, mLuaTable);
-			if (mLuaTable.size() > 0)
-			{
-				std::map<int, _tLuaTableValues>::const_iterator itt;
-				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
-				{
-					if (itt->second.isTable && itt->second.name == "headers")
-					{
-						int tIndex = itt->second.tIndex;
-						if (itt == mLuaTable.end())
-							break;
-
-						itt++;
-						std::map<int, _tLuaTableValues>::const_iterator itt2;
-						for (itt2 = itt; itt2 != mLuaTable.end(); itt2++)
-						{
-							if (itt2->second.tIndex != tIndex)
-							{
-								itt--;
-								break;
-							}
-							extraHeaders += "!#" + itt2->second.name + ": " + itt2->second.sValue;
-							if (itt != mLuaTable.end())
-								itt++;
-						}
-					}
-					else if (itt->second.type == TYPE_STRING)
-					{
-						if (itt->second.name == "URL")
-							URL = itt->second.sValue;
-						else if (itt->second.name == "method")
-							method = itt->second.sValue;
-						else if (itt->second.name == "postdata")
-							postData = itt->second.sValue;
-						else if (itt->second.name == "_trigger")
-							trigger = itt->second.sValue;
-					}
-					else if (itt->second.type == TYPE_INTEGER)
-					{
-						if (itt->second.name == "_random")
-							delayTime = RandomTime(itt->second.iValue);
-						else if (itt->second.name == "_after")
-							delayTime = static_cast<float>(itt->second.iValue);
-					}
-				}
-			}
-			if (URL.empty())
-			{
-				_log.Log(LOG_ERROR, "dzVents: No URL supplied!");
-				return false;
-			}
-
-			HTTPClient::_eHTTPmethod eMethod = HTTPClient::HTTP_METHOD_GET; // defaults to GET
-			if (!method.empty() && method == "POST")
-				eMethod = HTTPClient::HTTP_METHOD_POST;
-
-			if (!postData.empty() && eMethod != HTTPClient::HTTP_METHOD_POST)
-			{
-				_log.Log(LOG_ERROR, "dzVents: You can only use postdata with method POST..");
-				return false;
-			}
-
-			_log.Log(LOG_STATUS, "dzVents: Fetching url %s...", URL.c_str());
-			m_sql.AddTaskItem(_tTaskItem::GetHTTPPage(delayTime, URL, extraHeaders, eMethod, postData, trigger));
-			scriptTrue = true;
-		}
 		else if (lCommand == "UpdateDevice")
-		{
-			if (lua_istable(lua_state, -1))
-			{
-				std::string luaString, szIdx, nValue, sValue, Protected;
-				uint64_t ulIdx;
-				float delayTime = 0;
-				bool bEventTrigger = false;
+			scriptTrue = UpdateDevice(lua_state, mLuaTable);
 
-				std::map<int, _tLuaTableValues> mLuaTable;
-				IterateTable(lua_state, tIndex, 0, mLuaTable);
+		else if (lCommand == "Variable")
+			scriptTrue = UpdateVariable(lua_state, mLuaTable);
 
-				if (mLuaTable.size() > 0)
-				{
-					std::map<int, _tLuaTableValues>::const_iterator itt;
-					for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
-					{
-						if (itt->second.type == TYPE_INTEGER)
-						{
-							std::stringstream ss;
-							ss << itt->second.iValue;
-							if (itt->second.name == "idx")
-							{
-								ulIdx = static_cast<uint64_t>(itt->second.iValue);
-								szIdx = ss.str();
-							}
-							else if (itt->second.name == "nValue")
-								nValue = ss.str();
-							else if (itt->second.name == "protected")
-								Protected = ss.str();
-							else if (itt->second.name == "_random")
-								delayTime = RandomTime(itt->second.iValue);
-							else if (itt->second.name == "_after")
-								delayTime = static_cast<float>(itt->second.iValue);
-						}
-						else if (itt->second.type == TYPE_STRING)
-						{
-							if (itt->second.name == "sValue")
-								sValue = itt->second.sValue;
-						}
-						else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
-								bEventTrigger = true;
-					}
-				}
-
-				if (szIdx.empty())
-					return false;
-
-				luaString = szIdx + "|";
-
-				if (!nValue.empty())
-					luaString += nValue;
-
-				luaString += "|";
-				if (!sValue.empty())
-					luaString += sValue;
-
-				luaString += "|";
-				if (!Protected.empty())
-					luaString += Protected;
-
-				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
-				scriptTrue = true;
-			}
-		}
-		else if (lCommand.find("Variable") == 0)
-		{
-			std::string variableName, variableValue;
-			float delayTime = 0;
-			bool bEventTrigger = false;
-			uint64_t idx;
-
-			std::map<int, _tLuaTableValues> mLuaTable;
-			IterateTable(lua_state, tIndex, 0, mLuaTable);
-
-			if (mLuaTable.size() > 0)
-			{
-				std::map<int, _tLuaTableValues>::const_iterator itt;
-				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
-				{
-					if (itt->second.type == TYPE_INTEGER)
-					{
-						if (itt->second.name == "idx")
-							idx = static_cast<uint64_t>(itt->second.iValue);
-						else if (itt->second.name == "_random")
-							delayTime = RandomTime(itt->second.iValue);
-						else if (itt->second.name == "_after")
-							delayTime = static_cast<float>(itt->second.iValue);
-					}
-					else if (itt->second.type == TYPE_STRING && itt->second.name == "value")
-						variableValue = itt->second.sValue;
-
-					else if (itt->second.type == TYPE_BOOLEAN && itt->second.name == "_trigger")
-						bEventTrigger = true;
-				}
-			}
-			if (bEventTrigger)
-				m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, delayTime);
-
-			m_sql.AddTaskItem(_tTaskItem::SetVariable(delayTime, idx, variableValue, false));
-			scriptTrue = true;
-		}
-		else if (lCommand.find("Cancel") == 0)
-		{
-			uint64_t idx;
-			int count = 0;
-			std::string type;
-
-			std::map<int, _tLuaTableValues> mLuaTable;
-			IterateTable(lua_state, tIndex, 0, mLuaTable);
-
-			if (mLuaTable.size() > 0)
-			{
-				std::map<int, _tLuaTableValues>::const_iterator itt;
-				for (itt = mLuaTable.begin(); itt != mLuaTable.end(); itt++)
-				{
-					if (itt->second.type == TYPE_INTEGER && itt->second.name == "idx")
-						idx = static_cast<uint64_t>(itt->second.iValue);
-
-					else if (itt->second.type == TYPE_STRING && itt->second.name == "type")
-						type = itt->second.sValue;
-				}
-				_tTaskItem tItem;
-				tItem._idx = idx;
-				tItem._DelayTime = 0;
-				if (type == "device")
-					tItem._ItemType = TITEM_SWITCHCMD_EVENT;
-				else if (type == "scene")
-					tItem._ItemType = TITEM_SWITCHCMD_SCENE;
-				else if (type == "variable")
-					tItem._ItemType = TITEM_SET_VARIABLE;
-
-				m_sql.AddTaskItem(tItem, true);
-
-			}
-			if (count)
-				_log.Log(LOG_STATUS, "dzVents: Removed %d queued task(s) for IDX %" PRIu64 " (%s)", count, idx, type.c_str());
-
-			scriptTrue = true;
-		}
+		else if (lCommand == "Cancel")
+			scriptTrue = CancelItem(lua_state, mLuaTable);
 	}
+	return scriptTrue;
 }
 
 bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, std::map<int, _tLuaTableValues> &mLuaTable)
@@ -300,44 +285,45 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 	while (lua_next(lua_state, tIndex) != 0)
 	{
 		item.type = TYPE_UNKNOWN;
+		item.isTable = false;
+		item.tIndex = tIndex;
 		indexCount++;
-		if (lua_istable(lua_state, -1) && (std::string(luaL_typename(lua_state, -2)) == "string"))
+		if (lua_istable(lua_state, -1))
 		{
-			item.type = TYPE_STRING;
+			if (std::string(luaL_typename(lua_state, -2)) == "string")
+			{
+				item.type = TYPE_STRING;
+				item.sValue = std::string(lua_tostring(lua_state, -2));
+			}
+			else if (std::string(luaL_typename(lua_state, -2)) == "number")
+			{
+				item.type = TYPE_INTEGER;
+				item.iValue = lua_tonumber(lua_state, -2);
+			}
+			else
+				continue;
 			item.isTable = true;
-			item.tIndex = tIndex + 2;
-			item.iValue = -1;
-			item.name = std::string(lua_tostring(lua_state, -2));
-			item.sValue.clear();
+			item.tIndex += 2;
 			mLuaTable.insert(std::pair<int, _tLuaTableValues> (indexCount, item));
-			IterateTable(lua_state, tIndex + 2, indexCount, mLuaTable);
+			IterateTable(lua_state, item.tIndex, indexCount, mLuaTable);
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "string")
 		{
 			item.type = TYPE_STRING;
-			item.isTable = false;
-			item.tIndex = tIndex;
-			item.iValue = -1;
 			item.name = std::string(lua_tostring(lua_state, -2));
 			item.sValue = std::string(lua_tostring(lua_state, -1));
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "number")
 		{
 			item.type = TYPE_INTEGER;
-			item.isTable = false;
-			item.tIndex = tIndex;
 			item.iValue = lua_tointeger(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
-			item.sValue.clear();
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "boolean")
 		{
 			item.type = TYPE_BOOLEAN;
-			item.isTable = false;
-			item.tIndex = tIndex;
 			item.iValue = lua_toboolean(lua_state, -1);
 			item.name = std::string(lua_tostring(lua_state, -2));
-			item.sValue.clear();
 		}
 		if (!item.isTable && item.type != TYPE_UNKNOWN)
 			mLuaTable.insert(std::pair<int, _tLuaTableValues> (indexCount, item));
@@ -347,14 +333,16 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 
 void CdzVents::LoadEvents()
 {
-	m_mainworker.m_eventsystem.m_bdzVentsExist = false;
+	m_bdzVentsExist = false;
 	std::string dzv_Dir, s;
 #ifdef WIN32
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
-	m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents\\runtime\\";
+	m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+	m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
 #else
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
-	m_mainworker.m_eventsystem.m_dzv_Dir = szUserDataFolder + "dzVents/runtime/";
+	m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
+	m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
 #endif
 
 	// Remove dzVents DB files from disk
@@ -403,7 +391,7 @@ void CdzVents::LoadEvents()
 					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
 					fclose(fOut);
 				}
-				m_mainworker.m_eventsystem.m_bdzVentsExist = true;
+				m_bdzVentsExist = true;
 			}
 		}
 	}

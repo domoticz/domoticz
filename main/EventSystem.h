@@ -179,7 +179,6 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
-	bool m_bdzVentsExist;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
@@ -191,7 +190,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread, m_eventqueuethread;
 	int m_SecStatus;
 	std::string m_lua_Dir;
-	std::string m_dzv_Dir;
 	std::string m_szStartTime;
 
 	static const std::string m_szReason[];
@@ -211,7 +209,7 @@ private:
 	void EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString);
 #endif
 	void EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString);
-	void luaThread(lua_State *lua_state, const std::string &filename, const bool bdzVents = false);
+	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);
 	static int l_domoticz_print(lua_State* lua_state);
@@ -265,7 +263,7 @@ private:
 	void reportMissingDevice(const int deviceID, const std::string &EventName, const uint64_t eventID);
 	int getSunRiseSunSetMinutes(const std::string &what);
 	bool isEventscheduled(const std::string &eventName);
-	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename, const bool bdzVents);
+	bool iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename);
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename);
 	void report_errors(lua_State *L, int status, std::string filename);
 	unsigned char calculateDimLevel(int deviceID, int percentageLevel);

@@ -1438,24 +1438,18 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 	{
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
-		if (m_bdzVentsExist)
-			EvaluateLua(item, m_dzv_Dir + "dzVents.lua", "");
+		if (m_dzvents.m_bdzVentsExist)
+			EvaluateLua(item, m_dzvents.m_runtimeDir + "dzVents.lua", "");
 		else
 		{
-			std::string dzv_scripts;
-#ifdef WIN32
-			dzv_scripts = szUserDataFolder + "scripts\\dzVents\\scripts\\";
-#else
-			dzv_scripts = szUserDataFolder + "scripts/dzVents/scripts/";
-#endif
-			DirectoryListing(FileEntries, dzv_scripts, false, true);
+			DirectoryListing(FileEntries, m_dzvents.m_scriptsDir, false, true);
 			for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 			{
 				filename = *itt;
 				if (filename.length() > 4 &&
 					filename.compare(filename.length() - 4, 4, ".lua") == 0)
 				{
-					EvaluateLua(item, m_dzv_Dir + "dzVents.lua", "");
+					EvaluateLua(item, m_dzvents.m_runtimeDir + "dzVents.lua", "");
 					break;
 				}
 			}
@@ -3041,10 +3035,8 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	ExportDeviceStatesToLua(lua_state);
 
-	bool bdzVents;
-	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzv_Dir + "dzVents.lua")
+	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
 	{
-		bdzVents = true;
 		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, item.reason);
 		if (item.reason == REASON_URL)
 			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
@@ -3142,7 +3134,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
-	if (bdzVents)
+	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
 		m_dzvents.SetGlobalVariables(lua_state, item.reason);
 
 	lua_setglobal(lua_state, "globalvariables");
@@ -3160,7 +3152,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
 		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
-		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename, bdzVents));
+		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
 		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
 		{
@@ -3211,7 +3203,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	*/
 }
 
-void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename, const bool bdzVents)
+void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 {
 	int status;
 	status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
@@ -3222,7 +3214,7 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename, 
 	if (lua_istable(lua_state, -1))
 	{
 		int tIndex = lua_gettop(lua_state);
-		scriptTrue = iterateLuaTable(lua_state, tIndex, filename, bdzVents);
+		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
 	}
 	else
 	{
@@ -3254,7 +3246,7 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 	}
 }
 
-bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename, const bool bdzVents)
+bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
 {
 	bool scriptTrue = false;
 	lua_pushnil(lua_state); // first key
@@ -3266,10 +3258,9 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
-			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename, bdzVents);
+			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename);
 		}
-//		else if (bdzVents && std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
-		else if (std::string(luaL_typename(lua_state, -2)) == "string" && lua_istable(lua_state, -1))
+		else if (!m_sql.m_bDisableDzVentsSystem && lua_istable(lua_state, -1) && std::string(luaL_typename(lua_state, -2)) == "string")
 		{
 			scriptTrue = m_dzvents.processLuaCommand(lua_state, filename, tIndex);
 		}

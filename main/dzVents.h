@@ -11,6 +11,9 @@ public:
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<std::string> &item, const std::string &sValue, const std::string &nValueWording);
 
+	std::string m_scriptsDir, m_runtimeDir;
+	bool m_bdzVentsExist;
+
 private:
 	enum _eType
 	{
@@ -28,9 +31,12 @@ private:
 		std::string name;
 		std::string sValue;
 	};
-	bool IterateTable(lua_State *lua_state, const int tIndex, int index, std::map<int, _tLuaTableValues> &mLuaTable);
 	float RandomTime(const int randomTime);
-	void OpenURL(const std::map<std::string, std::string> &URLdata, const std::map<std::string, std::string> &URLheaders);
+	bool IterateTable(lua_State *lua_state, const int tIndex, int index, std::map<int, _tLuaTableValues> &mLuaTable);
+	bool OpenURL(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable);
+	bool UpdateDevice(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable);
+	bool UpdateVariable(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable);
+	bool CancelItem(lua_State *lua_state, const std::map<int, _tLuaTableValues> &mLuaTable);
 
 	std::string m_version;
 };
