@@ -284,10 +284,10 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 	lua_pushnil(lua_state);
 	while (lua_next(lua_state, tIndex) != 0)
 	{
+		indexCount++;
 		item.type = TYPE_UNKNOWN;
 		item.isTable = false;
 		item.tIndex = tIndex;
-		indexCount++;
 		if (lua_istable(lua_state, -1))
 		{
 			if (std::string(luaL_typename(lua_state, -2)) == "string")
@@ -301,7 +301,10 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 				item.iValue = lua_tonumber(lua_state, -2);
 			}
 			else
+			{
+				lua_pop(lua_state, 1);
 				continue;
+			}
 			item.isTable = true;
 			item.tIndex += 2;
 			mLuaTable.insert(std::pair<int, _tLuaTableValues> (indexCount, item));
