@@ -14,7 +14,7 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		device['setPoint'] = device.rawData[1] or 0
+		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint)
 			local url

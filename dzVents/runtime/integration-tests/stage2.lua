@@ -399,7 +399,7 @@ local testThermostatSetpoint = function(name)
 	local dev = dz.devices(name)
 	local res = true
 	res = res and checkAttributes(dev, {
-		["setPoint"] = 22,
+		["setPoint"] = 22.00,
 	})
 	tstMsg('Test thermostat device', res)
 	return res
