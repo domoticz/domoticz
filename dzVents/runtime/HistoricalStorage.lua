@@ -456,7 +456,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			toIndex < 1 or
 			fromIndex > toIndex or
 			toIndex < fromIndex) then
-			return default
+			return default, default, default
 		end
 
 		local value, item, referenceValue
@@ -470,7 +470,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 
 		if (referenceValue == nil) then
 			-- no need to compare
-			return nil
+			return nil, nil, nil
 		end
 
 		if (smoothRangeTo ~= nil and smoothRangeTo > 0) then
@@ -481,7 +481,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 
 		if (value == nil) then
 			-- nothing to compare
-			return nil
+			return nil, nil, nil
 		end
 
 		return tonumber(referenceValue - value), tonumber(referenceValue), tonumber(value)
