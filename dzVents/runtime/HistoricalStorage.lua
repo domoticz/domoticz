@@ -238,7 +238,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	end
 
 	function self.getOldest()
-		return self.get(self.size), self.size
+		return self.get(self.size)
 	end
 
 	function self.reset()
@@ -437,25 +437,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		return avg
 	end
 
-	function self.delta(fromIndex, toIndex, smoothRange, default)
-		local res, from, to = _delta(fromIndex, toIndex, smoothRange, smoothRange)
-		if (res == nil) then
-			return default, default, default
-		end
-
-		return res, from, to
-
-	end
-
-	function self.delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
-		local res, reffrom, refto = _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
-		if (res == nil) then
-			return default, default, default
-		end
-		return res, reffrom, refto
-	end
-
-	function _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+	local function _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
 		if (fromIndex < 1 or
 			fromIndex > self.size-1 or
 			toIndex > self.size or
@@ -491,6 +473,24 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		end
 
 		return tonumber(referenceValue - value), tonumber(referenceValue), tonumber(value)
+	end
+
+	function self.delta(fromIndex, toIndex, smoothRange, default)
+		local res, from, to = _delta(fromIndex, toIndex, smoothRange, smoothRange)
+		if (res == nil) then
+			return default, default, default
+		end
+
+		return res, from, to
+
+	end
+
+	function self.delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+		local res, reffrom, refto = _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+		if (res == nil) then
+			return default, default, default
+		end
+		return res, reffrom, refto
 	end
 
 	function self.deltaSince(timeAgo, smoothRange, default)
