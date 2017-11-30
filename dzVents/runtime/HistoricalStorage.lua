@@ -238,7 +238,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	end
 
 	function self.getOldest()
-		return self.get(self.size)
+		return self.get(self.size), self.size
 	end
 
 	function self.reset()
