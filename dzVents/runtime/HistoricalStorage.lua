@@ -438,7 +438,13 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	end
 
 	function self.delta(fromIndex, toIndex, smoothRange, default)
-		return _delta(fromIndex, toIndex, smoothRange, smoothRange, default)
+		local res, from, to = _delta(fromIndex, toIndex, smoothRange, smoothRange)
+		if (res == nil) then
+			return default, default, default
+		end
+
+		return res, from, to
+
 	end
 
 	function self.delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
@@ -456,7 +462,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			toIndex < 1 or
 			fromIndex > toIndex or
 			toIndex < fromIndex) then
-			return default, default, default
+			return nil, nil, nil
 		end
 
 		local value, item, referenceValue
@@ -505,9 +511,10 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		end
 
 		if (item ~= nil) then
-			return self.delta2(1, index, smoothRangeFrom, smoothRangeTo, default)
+			return self.delta2(1, index, smoothRangeFrom, smoothRangeTo)
 		end
 
+		-- there is no data at all
 		return default, default, default
 	end
 
