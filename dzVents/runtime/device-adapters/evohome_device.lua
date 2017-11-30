@@ -25,7 +25,7 @@ return {
 				tostring(device.id),
 			   tostring(setPoint) ..
 			   '#' .. tostring(mode) ..
-			   '#' .. tostring(untilDate) , 'updatedevice')
+			   '#' .. tostring(untilDate) , 'setpoint')
 		end
 
 	end

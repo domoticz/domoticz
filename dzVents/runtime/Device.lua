@@ -1,6 +1,8 @@
 local utils = require('Utils')
 local Adapters = require('Adapters')
 local TimedCommand = require('TimedCommand')
+local TIMED_OPTIONS = require('TimedCommandOptions')
+
 
 local function Device(domoticz, data, dummyLogger)
 
@@ -35,7 +37,6 @@ local function Device(domoticz, data, dummyLogger)
 	function self.dump()
 		domoticz.logDevice(self)
 	end
-
 
 	self['name'] = data.name
 	self['id'] = data.id -- actually, this is the idx

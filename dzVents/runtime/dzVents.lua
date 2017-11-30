@@ -30,7 +30,7 @@ end
 
 commandArray = {}
 
-utils.log('dzVents version: 2.3.0', utils.LOG_DEBUG)
+utils.log('dzVents version: 2.4.0', utils.LOG_DEBUG)
 utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
 
 if triggerReason == "time" then

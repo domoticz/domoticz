@@ -623,7 +623,7 @@ describe('device', function()
 
 			device.updateSetPoint(14, 'Permanent', '2016-04-29T06:32:58Z')
 
-			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z TRIGGER'} }, commandArray)
+			assert.is_same({ { ['SetSetPoint:1'] = '14#Permanent#2016-04-29T06:32:58Z'} }, commandArray)
 		end)
 
 		it('should detect an opentherm gateway device', function()

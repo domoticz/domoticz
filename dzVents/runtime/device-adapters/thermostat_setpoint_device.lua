@@ -19,7 +19,7 @@ return {
 		device.setPoint = tonumber(device.rawData[1] or 0)
 
 		function device.updateSetPoint(setPoint)
-			return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) , 'device')
+			return TimedCommand(domoticz, 'SetSetPoint:' .. tostring(device.id), tostring(setPoint) , 'setpoint')
 		end
 
 	end

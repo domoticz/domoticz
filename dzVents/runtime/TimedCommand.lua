@@ -1,9 +1,15 @@
 local scriptPath = _G.globalvariables['script_path']
 package.path    = package.path .. ';' .. scriptPath .. '?.lua'
+local TIMED_OPTIONS = require('TimedCommandOptions')
 
 local utils = require('Utils')
 
+
 local function TimedCommand(domoticz, commandName, value, mode, currentState)
+
+	if (type(mode) == 'string') then
+		mode = TIMED_OPTIONS[mode]
+	end
 
 	math.randomseed(os.time())
 
@@ -36,8 +42,8 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 			table.insert(command, 'FOR ' .. tostring(forValue) .. ' SECONDS')
 		end
 
-		if (mode ~= 'device') then
-			if (silentValue == false or silentValue == nil) then
+		if (mode._triggerMode == 'TRIGGER') then
+			if (not silentValue == true) then
 				table.insert(command, 'TRIGGER')
 			end
 		else
@@ -107,34 +113,37 @@ local function TimedCommand(domoticz, commandName, value, mode, currentState)
 
 		local res = {}
 
-		if (mode == 'device') then
-			if (forValue == nil and mode == 'device') then
-				res.forSec = _for(1)
-				res.forMin = _for(60)
-				res.forHour = _for(3600)
-			end
+		if (mode._for == true and forValue == nil) then
+			res.forSec = _for(1)
+			res.forMin = _for(60)
+			res.forHour = _for(3600)
+		end
 
-			if (repeatIntervalValue == nil) then
-				res.repeatAfterSec = _repeatAfter(1)
-				res.repeatAfterMin = _repeatAfter(60)
-				res.repeatAfterHour = _repeatAfter(3600)
-			end
+		if (mode._repeat == true and repeatIntervalValue == nil) then
+			res.repeatAfterSec = _repeatAfter(1)
+			res.repeatAfterMin = _repeatAfter(60)
+			res.repeatAfterHour = _repeatAfter(3600)
+		end
 
-			if (checkValue == nil and currentState ~= nil) then
-				res.checkFirst = _checkState
-			end
+		if (mode._checkState and checkValue == nil and currentState ~= nil) then
+			res.checkFirst = _checkState
 		end
 
 		if (afterValue == nil and randomValue == nil) then
-			res.afterSec = _after(1)
-			res.afterMin = _after(60)
-			res.afterHour = _after(3600)
-			res.withinSec = _within(1)
-			res.withinMin = _within(60)
-			res.withinHour = _within(3600)
+			if (mode._after == true) then
+				res.afterSec = _after(1)
+				res.afterMin = _after(60)
+				res.afterHour = _after(3600)
+			end
+
+			if (mode._within == true) then
+				res.withinSec = _within(1)
+				res.withinMin = _within(60)
+				res.withinHour = _within(3600)
+			end
 		end
 
-		if (silentValue == nil) then
+		if (mode._silent == true and silentValue == nil) then
 			res.silent = _silent
 		end
 
