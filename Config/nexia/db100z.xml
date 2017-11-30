@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ingersoll Rand - Nexia Home Intelligence; DB100Z Z-Wave Doorbell Sensor -->
+<!-- If the device isn't being discovered by OZW, tap the install button 3 times in a second (LED will turn on for 10 seconds) -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="Send Battery Report with Notification Report" min="0" max="1" value="0" size="1">
+			<Help>Send a battery report in addition to the alarm report when the alarm report is triggered</Help>
+			<Item label="No (default)" value="0" />
+			<Item label="Yes (recommended)" value="1" />
+		</Value>
+	</CommandClass>
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<!-- Z-Wave Plus Lifeline Battery Report, Notification Report, Device Reset Locally Notification -->
+			<Group index="1" max_associations="5" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+</Product>

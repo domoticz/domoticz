@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- http://products.z-wavealliance.org/products/786 -->
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="byte" genre="config" instance="1" index="1" label="Watt meter report period" min="1" max="32767" units="5 sec" value="1">

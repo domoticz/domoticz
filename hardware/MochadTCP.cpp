@@ -53,8 +53,8 @@ MochadTCP::MochadTCP(const int ID, const std::string &IPAddress, const unsigned 
 m_szIPAddress(IPAddress)
 {
 	m_HwdID=ID;
-	m_socket=INVALID_SOCKET;
 	m_stoprequested=false;
+	m_bDoRestart = false;
 	m_usIPPort=usIPPort;
 	m_linecount=0;
 	m_exclmarkfound=0;
@@ -77,7 +77,7 @@ m_szIPAddress(IPAddress)
 	m_mochadsec.SECURITY1.id1 = 0;
 	m_mochadsec.SECURITY1.id2 = 0;
 	m_mochadsec.SECURITY1.id3 = 0;
-	m_mochadsec.SECURITY1.status;
+	m_mochadsec.SECURITY1.status = sStatusNormal;
 	m_mochadsec.SECURITY1.rssi = 12;
 	m_mochadsec.SECURITY1.battery_level = 0;
 
@@ -93,32 +93,7 @@ MochadTCP::~MochadTCP(void)
 bool MochadTCP::StartHardware()
 {
 	m_stoprequested=false;
-
-	memset(&m_addr,0,sizeof(sockaddr_in));
-	m_addr.sin_family = AF_INET;
-	m_addr.sin_port = htons(m_usIPPort);
-
-	unsigned long ip;
-	ip=inet_addr(m_szIPAddress.c_str());
-
-	// if we have a error in the ip, it means we have entered a string
-	if(ip!=INADDR_NONE)
-	{
-		m_addr.sin_addr.s_addr=ip;
-	}
-	else
-	{
-		// change Hostname in serveraddr
-		hostent *he=gethostbyname(m_szIPAddress.c_str());
-		if(he==NULL)
-		{
-			return false;
-		}
-		else
-		{
-			memcpy(&(m_addr.sin_addr),he->h_addr_list[0],4);
-		}
-	}
+	m_bDoRestart = false;
 
 	//force connect the next first time
 //	m_retrycntr=RETRY_DELAY;
@@ -150,6 +125,7 @@ void MochadTCP::OnConnect()
 {
 	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
+	m_bDoRestart = false;
 
 	sOnConnected(this);
 }
@@ -157,31 +133,14 @@ void MochadTCP::OnConnect()
 void MochadTCP::OnDisconnect()
 {
 	_log.Log(LOG_STATUS, "Mochad: disconnected");
+	m_bDoRestart = true;
 }
-
-
-
-bool MochadTCP::ConnectInternal()
-{
-
-// connect to the server
-	connect((const std::string &)m_addr, sizeof(m_addr));
-	_log.Log(LOG_STATUS,"Mochad: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
-
-//	Init();
-
-	sOnConnected(this);
-	return true;
-}
-
 
 void MochadTCP::OnData(const unsigned char *pData, size_t length)
 {
 	boost::lock_guard<boost::mutex> l(readQueueMutex);
 	ParseData(pData, length);
 }
-
-
 
 void MochadTCP::Do_Work()
 {
@@ -209,6 +168,11 @@ void MochadTCP::Do_Work()
 		}
 		else
 		{
+			if ((m_bDoRestart) && (ltime.tm_sec % 30 == 0))
+			{
+				_log.Log(LOG_STATUS, "Mochad: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+				connect(m_szIPAddress, m_usIPPort);
+			}
 			sleep_milliseconds(40);
 			update();
 		}
@@ -231,7 +195,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_STATUS, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -522,11 +486,14 @@ void MochadTCP::ParseData(const unsigned char *pData, int Len)
 void MochadTCP::setSecID(unsigned char *p)
 {
 	int j = 0;
-	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id1 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id1 |= hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4) | hex2bin(p[j++]);
+	m_mochadsec.SECURITY1.id2 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id2 |= hex2bin(p[j++]);
 	j++; // skip the ":"
-	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4) | hex2bin(p[j]);
+	m_mochadsec.SECURITY1.id3 = (hex2bin(p[j++]) << 4);
+	m_mochadsec.SECURITY1.id3 |= hex2bin(p[j]);
 }
 
 unsigned char MochadTCP::hex2bin(char h)

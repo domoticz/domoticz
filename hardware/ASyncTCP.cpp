@@ -2,6 +2,10 @@
 #include "ASyncTCP.h"
 #include "../main/Logger.h"
 
+#ifndef WIN32
+	#include <unistd.h> //gethostbyname
+#endif
+
 /*
 #ifdef WIN32
 	#include <Mstcpip.h>
@@ -37,7 +41,28 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 	// connect socket
 	try 
 	{
-		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(ip), port);
+		std::string fip = ip;
+
+		unsigned long ipn = inet_addr(fip.c_str());
+		// if we have a error in the ip, it means we have entered a string
+		if (ipn == INADDR_NONE)
+		{
+			// change Hostname in Server Address
+			hostent *he = gethostbyname(fip.c_str());
+			if (he != NULL)
+			{
+				char szIP[20];
+				sprintf(szIP, "%d.%d.%d.%d", (uint8_t)he->h_addr_list[0][0], (uint8_t)he->h_addr_list[0][1], (uint8_t)he->h_addr_list[0][2], (uint8_t)he->h_addr_list[0][3]);
+				fip = szIP;
+			}
+			else
+			{
+				//we will fail
+				_log.Log(LOG_ERROR, "TCP: Unable to resolve '%s'", fip.c_str());
+			}
+		}
+
+		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(fip), port);
 
 		connect(endpoint);
 	}

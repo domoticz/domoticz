@@ -8,7 +8,7 @@
 class P1MeterSerial: public AsyncSerial, public P1MeterBase
 {
 public:
-	P1MeterSerial(const int ID, const std::string& devname, unsigned int baud_rate);
+	P1MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const bool disable_crc, const int ratelimit);
     /**
     * Opens a serial device.
     * \param devname serial device name, example "/dev/ttyS0" or "COM1"
@@ -36,7 +36,6 @@ public:
     ~P1MeterSerial();
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
 	bool StartHardware();

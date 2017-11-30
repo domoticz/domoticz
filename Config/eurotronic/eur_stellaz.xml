@@ -18,9 +18,10 @@
         </CommandClass>
         <CommandClass id="67" base="0">
                 <Instance index="1" />
-                <Value type="decimal" genre="user" instance="1" index="1" label="Comfort setpoint" units="C" />
-                <Value type="decimal" genre="user" instance="1" index="11" label="Energy saving setpoint" units="C" />
-                <!-- <Value instance="1" index="7" action="remove" /> -->
+                <Value type="decimal" genre="user" instance="1" index="0" label="Frost protection setpoint" units="C" />
+				<Value type="decimal" genre="user" instance="1" index="1" label="Comfort setpoint" units="C" />
+                <Value type="decimal" genre="user" instance="1" index="11" label="Energy saving setpoint" units="C" />				
+               <!-- <Value instance="1" index="7" action="remove" />-->
         </CommandClass>
 
 </Product>

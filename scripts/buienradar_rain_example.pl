@@ -4,6 +4,9 @@
 
 Installation:
 
+Perl, you need to install the LWP module:
+sudo apt-get install libjson-perl
+
 In Domoticz create a Dummy Percentage sensor.
 Next go to the Devices overview, and write down the 'idx' value of the sensor.
 
@@ -11,11 +14,6 @@ Copy this file to another location and edit the setting below to match your situ
 
 cp /home/pi/domoticz/scripts/buienradar_rain_example.pl /home/pi/domoticz/buienradar_rain.pl
 nano /home/pi/domoticz/buienradar_rain.pl
-
-You might have to install perl or additional modules
-
-LWP: http://lwp.interglacial.com/ch01_03.htm
-sudo apt-get install libjson-perl
 
 Next add a Crontab rule:
 

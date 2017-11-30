@@ -29,15 +29,19 @@ public:
 		boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), destination, "");
 		destination_ = *resolver_.resolve(query);
 
-		start_send(iPingTimeoutms);
+		num_tries_ = 1;
+		PingTimeoutms_ = iPingTimeoutms;
+		start_send();
 		start_receive();
 	}
 	int num_replies_;
+	int num_tries_;
+	int PingTimeoutms_;
 	bool m_PingState;
 private:
-	void start_send(const int iPingTimeoutms)
+	void start_send()
 	{
-		std::string body("Ping from Domoticz.");
+		std::string body("Domoticz");
 
 		// Create an ICMP header for an echo request.
 		icmp_header echo_request;
@@ -57,17 +61,27 @@ private:
 		socket_.send_to(request_buffer.data(), destination_);
 
 		num_replies_ = 0;
-		timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(iPingTimeoutms));
+		timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(PingTimeoutms_));
 		timer_.async_wait(boost::bind(&pinger::handle_timeout, this, boost::asio::placeholders::error));
 	}
 
 	void handle_timeout(const boost::system::error_code& error)
 	{
-		if (error != boost::asio::error::operation_aborted) {
+		if (error != boost::asio::error::operation_aborted)
+		{
 			if (num_replies_ == 0)
 			{
 				m_PingState = false;
-				resolver_.get_io_service().stop();
+				timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(PingTimeoutms_));
+				num_tries_++;
+				if (num_tries_ > 4)
+				{
+					resolver_.get_io_service().stop();
+				}
+				else
+				{
+					timer_.async_wait(boost::bind(&pinger::start_send, this));
+				}
 			}
 		}
 	}
@@ -101,21 +115,18 @@ private:
 			&& icmp_hdr.identifier() == get_identifier()
 			&& icmp_hdr.sequence_number() == sequence_number_)
 		{
+			if (num_replies_++ == 0)
+				timer_.cancel();
 			m_PingState = true;
-			num_replies_++;
-			/*
-			// Print out some information about the reply packet.
-			posix_time::ptime now = posix_time::microsec_clock::universal_time();
-			std::cout << length - ipv4_hdr.header_length()
-			<< " bytes from " << ipv4_hdr.source_address()
-			<< ": icmp_seq=" << icmp_hdr.sequence_number()
-			<< ", ttl=" << ipv4_hdr.time_to_live()
-			<< ", time=" << (now - time_sent_).total_milliseconds() << " ms"
-			<< std::endl;
-			*/
+			resolver_.get_io_service().stop();
 		}
-		timer_.cancel();
-		resolver_.get_io_service().stop();
+		else
+		{
+			// DD 2 possible 'invalid' replies that will be discarded are:
+			// Type 8: Echo request, happens when we ping ourselves (localhost)
+			// Type 3: Destination host unreachable. 
+			start_receive();
+		}
 	}
 
 	static unsigned short get_identifier()
@@ -135,24 +146,24 @@ private:
 	boost::asio::streambuf reply_buffer_;
 };
 
-CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms):
-m_stoprequested(false),
-m_iThreadsRunning(0)
+CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
+	m_stoprequested(false),
+	m_iThreadsRunning(0)
 {
-	m_HwdID=ID;
+	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
 	SetSettings(PollIntervalsec, PingTimeoutms);
 }
 
 CPinger::~CPinger(void)
 {
-	m_bIsStarted=false;
+	m_bIsStarted = false;
 }
 
 bool CPinger::StartHardware()
 {
 	StopHardware();
-	m_bIsStarted=true;
+	m_bIsStarted = true;
 	sOnConnected(this);
 	m_iThreadsRunning = 0;
 
@@ -163,7 +174,7 @@ bool CPinger::StartHardware()
 	//Start worker thread
 	m_stoprequested = false;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPinger::Do_Work, this)));
-	_log.Log(LOG_STATUS,"Pinger: Started");
+	_log.Log(LOG_STATUS, "Pinger: Started");
 
 	return true;
 }
@@ -181,7 +192,7 @@ bool CPinger::StopHardware()
 
 			//Make sure all our background workers are stopped
 			int iRetryCounter = 0;
-			while ((m_iThreadsRunning > 0) && (iRetryCounter<15))
+			while ((m_iThreadsRunning > 0) && (iRetryCounter < 15))
 			{
 				sleep_milliseconds(500);
 				iRetryCounter++;
@@ -192,8 +203,8 @@ bool CPinger::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	m_bIsStarted=false;
-    return true;
+	m_bIsStarted = false;
+	return true;
 }
 
 bool CPinger::WriteToHardware(const char *pdata, const unsigned char length)
@@ -209,22 +220,22 @@ void CPinger::AddNode(const std::string &Name, const std::string &IPAddress, con
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()>0)
+	if (result.size() > 0)
 		return; //Already exists
 	m_sql.safe_query("INSERT INTO WOLNodes (HardwareID, Name, MacAddress, Timeout) VALUES (%d,'%q','%q',%d)",
 		m_HwdID, Name.c_str(), IPAddress.c_str(), Timeout);
 
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (Name=='%q') AND (MacAddress=='%q')",
 		m_HwdID, Name.c_str(), IPAddress.c_str());
-	if (result.size()<1)
+	if (result.size() < 1)
 		return;
 
-	int ID=atoi(result[0][0].c_str());
+	int ID = atoi(result[0][0].c_str());
 
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	SendSwitch(ID, 1, 255, false, 0, Name);
 	ReloadNodes();
@@ -237,16 +248,16 @@ bool CPinger::UpdateNode(const int ID, const std::string &Name, const std::strin
 	std::vector<std::vector<std::string> > result;
 
 	//Check if exists
-	result=m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
+	result = m_sql.safe_query("SELECT ID FROM WOLNodes WHERE (HardwareID==%d) AND (ID==%d)",
 		m_HwdID, ID);
-	if (result.size()<1)
+	if (result.size() < 1)
 		return false; //Not Found!?
 
 	m_sql.safe_query("UPDATE WOLNodes SET Name='%q', MacAddress='%q', Timeout=%d WHERE (HardwareID==%d) AND (ID==%d)",
 		Name.c_str(), IPAddress.c_str(), Timeout, m_HwdID, ID);
 
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	//Also update Light/Switch
 	m_sql.safe_query(
@@ -265,7 +276,7 @@ void CPinger::RemoveNode(const int ID)
 
 	//Also delete the switch
 	char szID[40];
-	sprintf(szID,"%X%02X%02X%02X", 0, 0, (ID&0xFF00)>>8, ID&0xFF);
+	sprintf(szID, "%X%02X%02X%02X", 0, 0, (ID & 0xFF00) >> 8, ID & 0xFF);
 
 	m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 		m_HwdID, szID);
@@ -358,7 +369,7 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 			}
 			else
 			{
-				if (atime - itt->LastOK >= Node.SensorTimeoutSec)
+				if (difftime(atime, itt->LastOK) >= Node.SensorTimeoutSec)
 				{
 					itt->LastOK = atime;
 					SendSwitch(Node.ID, 1, 255, bPingOK, 0, Node.Name);
@@ -434,7 +445,10 @@ namespace http {
 		void CWebServer::Cmd_PingerGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -472,8 +486,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -512,8 +526,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -544,8 +558,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -579,8 +593,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -608,8 +622,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

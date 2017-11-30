@@ -7,7 +7,6 @@
 #include "../main/mainworker.h"
 
 #include "../main/SQLHelper.h"
-extern CSQLHelper m_sql;
 #include "../hardware/hardwaretypes.h"
 
 #include <sstream>

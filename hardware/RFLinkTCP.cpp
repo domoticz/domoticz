@@ -100,7 +100,7 @@ void CRFLinkTCP::Do_Work()
 			if (atime - m_LastReceivedTime > 30)
 			{
 				//Timeout
-				_log.Log(LOG_ERROR, "RFLink: Nothing received for more then 30 seconds, restarting...");
+				_log.Log(LOG_ERROR, "RFLink: Nothing received for more than 30 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				m_bDoRestart = true;
@@ -131,15 +131,23 @@ void CRFLinkTCP::Do_Work()
 					//Don't throw from a Stop command
 				}
 			}
-			_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
 		{
 			if ((m_bDoRestart) && (sec_counter % 30 == 0))
 			{
-				_log.Log(LOG_ERROR, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-				connect(m_szIPAddress,m_usIPPort);
+				_log.Log(LOG_STATUS, "RFLink: trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+				try {
+					disconnect();
+					close();
+				}
+				catch (...)
+				{
+					//Don't throw from a Stop command
+				}
+				connect(m_szIPAddress, m_usIPPort);
 			}
 			update();
 		}
@@ -168,7 +176,7 @@ void CRFLinkTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_STATUS, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

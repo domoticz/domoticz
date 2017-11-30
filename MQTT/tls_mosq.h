@@ -17,7 +17,13 @@ Contributors:
 #ifndef _TLS_MOSQ_H_
 #define _TLS_MOSQ_H_
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
+#  define SSL_DATA_PENDING(A) ((A)->ssl && SSL_pending((A)->ssl))
+#else
+#  define SSL_DATA_PENDING(A) 0
+#endif
+
+#ifdef WITH_TLS
 
 #include <openssl/ssl.h>
 #ifdef WITH_TLS_PSK
@@ -31,6 +37,6 @@ Contributors:
 int _mosquitto_server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx);
 int _mosquitto_verify_certificate_hostname(X509 *cert, const char *hostname);
 
-#endif /* WWW_ENABLE_SSL */
+#endif /* WITH_TLS */
 
 #endif

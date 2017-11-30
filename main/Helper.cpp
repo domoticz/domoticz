@@ -2,6 +2,7 @@
 #include "Helper.h"
 #ifdef WIN32
 #include "dirent_windows.h"
+#include <direct.h>
 #else
 #include <dirent.h>
 #endif
@@ -10,6 +11,8 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include "../main/localtime_r.h"
+#include <sstream>
 #include <openssl/md5.h>
 
 #if defined WIN32
@@ -23,15 +26,12 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 {
 	results.clear();
 	size_t cutAt;
-	while( (cutAt = str.find_first_of(delim)) != str.npos )
+	while( (cutAt = str.find(delim)) != std::string::npos )
 	{
-		if(cutAt > 0)
-		{
-			results.push_back(str.substr(0,cutAt));
-		}
-		str = str.substr(cutAt+1);
+		results.push_back(str.substr(0,cutAt));
+		str = str.substr(cutAt+ delim.size());
 	}
-	if(str.length() > 0)
+	if (!str.empty())
 	{
 		results.push_back(str);
 	}
@@ -39,7 +39,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
 	int pos = 0;
@@ -136,7 +136,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				sprintf(szPortName, "COM%d", ii);
 				ret.push_back(szPortName); // add port
 			}
-			// --------------            
+			// --------------
 		}
 	}
 	// Method 3: EnumSerialPortsWindows, often fails
@@ -155,7 +155,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 	}
 
 #else
-	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA*
+	//scan /dev for /dev/ttyUSB* or /dev/ttyS* or /dev/tty.usbserial* or /dev/ttyAMA* or /dev/ttySAC*
 
 	bool bHaveTtyAMAfree=false;
 	std::string sLine = "";
@@ -179,6 +179,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -194,8 +197,18 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__            
+			else if (fname.find("ttySAC") != std::string::npos)
+			{
+				bUseDirectPath = true;
+				ret.push_back("/dev/" + fname);
+			}
+#ifdef __FreeBSD__
 			else if (fname.find("ttyU")!=std::string::npos)
+			{
+				bUseDirectPath=true;
+				ret.push_back("/dev/" + fname);
+			}
+			else if (fname.find("cuaU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
 				ret.push_back("/dev/" + fname);
@@ -214,6 +227,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}
@@ -243,7 +271,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 bool file_exist (const char *filename)
 {
-	struct stat sbuffer;   
+	struct stat sbuffer;
 	return (stat(filename, &sbuffer) == 0);
 }
 
@@ -347,7 +375,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-uint32_t IPToUInt(const std::string &ip) 
+uint32_t IPToUInt(const std::string &ip)
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -389,42 +417,46 @@ void sleep_milliseconds(const long milliseconds)
 #endif
 }
 
+int createdir(const char *szDirName, int secattr)
+{
+	int ret = 0;
+#ifdef WIN32
+	ret = _mkdir(szDirName);
+#else
+	ret = mkdir(szDirName, secattr);
+#endif
+	return ret;
+}
+
 int mkdir_deep(const char *szDirName, int secattr)
 {
 	char DirName[260];
 	DirName[0] = 0;
 	const char* p = szDirName;
-	char* q = DirName; 
+	char* q = DirName;
+	int ret = 0;
 	while(*p)
 	{
 		if (('\\' == *p) || ('/' == *p))
 		{
-		 if (':' != *(p-1))
-		 {
-#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-			CreateDirectory(DirName, NULL);
-#else
-			 mkdir(DirName,secattr);
-#endif
-		 }
+			if (':' != *(p-1))
+			{
+				ret = createdir(DirName, secattr);
+			}
 		}
 		*q++ = *p++;
 		*q = '\0';
 	}
 	if (DirName[0])
 	{
-		#if (defined(__WIN32__) || defined(_WIN32)) && !defined(IMN_PIM)
-				CreateDirectory(DirName, NULL);
-		#else
-				mkdir(DirName, secattr);
-		#endif
+		ret = createdir(DirName, secattr);
 	}
-	return 0;
+	return ret;
 }
 
 double ConvertToCelsius(const double Fahrenheit)
 {
-	return (Fahrenheit-32.0)/1.8;
+	return (Fahrenheit-32.0) * 0.5556;
 }
 
 double ConvertToFahrenheit(const double Celsius)
@@ -446,7 +478,7 @@ double ConvertTemperature(const double tValue, const unsigned char tSign)
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode)
 {
 	std::vector<std::string> ret;
 
@@ -470,19 +502,63 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 			}
 			/* close */
 #ifdef WIN32
-			_pclose(fp);
+			returncode = _pclose(fp);
 #else
-			pclose(fp);
+			returncode = pclose(fp);
 #endif
 		}
 	}
 	catch (...)
 	{
-		
+
 	}
 	return ret;
 }
 
+//convert date string 10/12/2014 10:45:58 en  struct tm
+void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+{
+		tmTime.tm_isdst=0; //dayly saving time
+		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
+		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
+		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
+		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
+		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
+		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+
+
+}
+//convert struct tm time to char
+void AsciiTime (struct tm &ltime , char * pTime )
+{
+		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+}
+
+std::string  GetCurrentAsciiTime ()
+{
+	    time_t now = time(0)+1;
+		struct tm ltime;
+		localtime_r(&now, &ltime);
+		char pTime[40];
+		AsciiTime (ltime ,  pTime );
+		return pTime ;
+}
+
+void AsciiTime ( time_t DateStart, char * DateStr )
+{
+	struct tm ltime;
+	localtime_r(&DateStart, &ltime);
+	AsciiTime (ltime ,  DateStr );
+
+}
+
+time_t DateAsciiToTime_t ( std::string & DateStr )
+{
+	struct tm tmTime ;
+	DateAsciiTotmTime (DateStr , tmTime  );
+	return mktime(&tmTime);
+
+}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
@@ -586,7 +662,7 @@ void rgb2hsb(const int r, const int g, const int b, float hsbvals[3])
 bool is_number(const std::string& s)
 {
 	std::string::const_iterator it = s.begin();
-	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' '))) ++it;
+	while (it != s.end() && (isdigit(*it) || (*it == '.') || (*it == '-') || (*it == ' ') || (*it == 0x00))) ++it;
 	return !s.empty() && it == s.end();
 }
 
@@ -616,6 +692,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeRFY:
 	case pTypeThermostat2:
 	case pTypeThermostat3:
+	case pTypeThermostat4:
 	case pTypeRemote:
 	case pTypeGeneralSwitch:
 	case pTypeHomeConfort:
@@ -662,6 +739,8 @@ bool dirent_is_directory(std::string dir, struct dirent *ent)
 	if (ent->d_type == DT_DIR)
 		return true;
 #ifndef WIN32
+	if (ent->d_type == DT_LNK)
+		return true;
 	if (ent->d_type == DT_UNKNOWN) {
 		std::string fname = dir + "/" + ent->d_name;
 		struct stat st;
@@ -685,4 +764,138 @@ bool dirent_is_file(std::string dir, struct dirent *ent)
 	}
 #endif
 	return false;
+}
+
+/*!
+ * List entries of a directory.
+ * @param entries A string vector containing the result
+ * @param dir Target directory for listing
+ * @param bInclDirs Boolean flag to include directories in the result
+ * @param bInclFiles Boolean flag to include regular files in the result
+ */
+void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles)
+{
+	DIR *d = NULL;
+	struct dirent *ent;
+	if ((d = opendir(dir.c_str())) != NULL)
+	{
+		while ((ent = readdir(d)) != NULL) {
+			std::string name = ent->d_name;
+			if (bInclDirs && dirent_is_directory(dir, ent) && name != "." && name != "..") {
+				entries.push_back(name);
+				continue;
+			}
+			if (bInclFiles && dirent_is_file(dir, ent)) {
+				entries.push_back(name);
+				continue;
+			}
+		}
+		closedir(d);
+	}
+	return;
+}
+
+std::string GenerateUserAgent()
+{
+	srand((unsigned int)time(NULL));
+	int cversion = rand() % 0xFFFF;
+	int mversion = rand() % 3;
+	int sversion = rand() % 3;
+	std::stringstream sstr;
+	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
+	return sstr.str();
+}
+
+std::string MakeHtml(const std::string &txt)
+{
+        std::string sRet = txt;
+
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
+}
+
+#if defined WIN32
+//FILETIME of Jan 1 1970 00:00:00
+static const uint64_t epoch = (const uint64_t)(116444736000000000);
+
+int gettimeofday( timeval * tp, void * tzp)
+{
+	FILETIME    file_time;
+	SYSTEMTIME  system_time;
+	ULARGE_INTEGER ularge;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	ularge.LowPart = file_time.dwLowDateTime;
+	ularge.HighPart = file_time.dwHighDateTime;
+	tp->tv_sec = (long)((ularge.QuadPart - epoch) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
+
+int getclock(struct timeval *tv) {
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+			return 0;
+		}
+#endif
+	return gettimeofday(tv, NULL);
+}
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}
+
+const char *szInsecureArgumentOptions[] = {
+	"import",
+	"socket",
+	"process",
+	"os",
+	"|",
+	";",
+	"&",
+	"$",
+	"<",
+	">",
+	NULL
+};
+
+bool IsArgumentSecure(const std::string &arg)
+{
+	std::string larg(arg);
+	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
+
+	int ii = 0;
+	while (szInsecureArgumentOptions[ii] != NULL)
+	{
+		if (larg.find(szInsecureArgumentOptions[ii]) != std::string::npos)
+			return false;
+		ii++;
+	}
+	return true;
 }

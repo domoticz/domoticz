@@ -7,27 +7,24 @@
  * applications, without requiring any in depth knowledge of the Z-Wave
  * protocol.
  * <p>
- * Z-Wave employs a proprietary protocol which the owners, Sigma Designs,
- * have chosen not to release into the public domain.  There is also no
- * official free or low-cost SDK that can be used to develop applications
- * (The ControlThink SDK is now tied exclusively to their own Z-Wave PC
- * interface).  The only way to obtain the protocol documentation and sample
- * code is to purchase an expensive development kit, and sign a non-disclosure
- * agreement (NDA) preventing the release of that knowledge.
+ * The Majority of the Z-Wave Protocol has been released into the public domain
+ * on Sept, 2016. Prior to Sept, 2016, OpenZWave had reverse engineered the
+ * protocol to allow applications to be created to interact with Z-Wave devices.
+ * There is now ongoing work to update OpenZWave to be compliant with the Z-Wave
+ * Specifications that are now released at http://zwavepublic.com
  * <p>
- * OpenZWave was created to fill that gap.  We do not have the official
- * documentation, have signed no NDA, and are free to develop the library as
- * we see fit.  Our knowledge comes from existing bodies of open-source code
- * (principally the Z-Wave parts of LinuxMCE), and through examining the
- * messages sent by Z-Wave devices.
+ * There is one part of the protocol that has not been released into the Public
+ * Domain, namely, the "SerialAPI" protocol that specifies how to talk to
+ * a USB Stick via a Serial COM Port. This portion of OpenZWave will continue to
+ * be reverse engineered if needed in the future.
  * <p>
  * The goal of the project is to make a positive contribution to the Z-Wave
  * community by creating a library that supports as much of the Z-Wave
  * specification as possible, and that can be used as a "black-box" 
- * solution by anyone wanting to add Z-Wave to their application.  It is NOT
- * our aim to publish alternative documentation of the Z-Wave protocol, or
- * to attempt to "punish" Sigma Designs for their decision to keep the
- * protocol closed.
+ * solution by anyone wanting to add Z-Wave to their application.
+ * <p>
+ * @image html zwalliance_250x100.jpg
+ * <center>OpenZWave is a affiliate member of the Z-Wave Alliance (http://zwavealliance.org/)</center>
 
  * \section ZWave Z-Wave Concepts
  * Z-Wave is a proprietary wireless communications protocol employing mesh
@@ -112,23 +109,6 @@
  * with any changes that occur to the network while the application is not
  * running.
  *
- 
- * <hr>
- * \section Structure Source Code Structure
- *
-
- * <hr>
- * \section Samples Samples
- * The SDK package includes skeleton code for creating xPL-enabled
- * applications.  Code is provided for three types of application - a Windows
- * service, a Windowed application, and a console application.  The Windows
- * service is quite flexible - it will run as a console application if no
- * command line parameters are passed to it.  This makes it possible to 
- * ship one application that will run on all versions of Windows, whether or
- * not there is support for services.  It is also useful for debugging.
- * <p>
- * The full source code for the W800RF32 service is also provided as a real
- * life example of using the SDK to build a complete xPL application.
  
  * <hr>
  * \section Licensing Licensing

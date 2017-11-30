@@ -55,14 +55,14 @@
 										<td>
 											<select id="combolanguage" name="Language" style="width:160px" class="combobox ui-corner-all">
 											<!--#embed combolanguage -->
-											</select>			
+											</select>
 										</td>
 									</tr>
 									<tr>
 										<td align="right" style="width:60px"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
 										<td>
 											<select id="combothemes" name="Themes" style="width:200px" class="combobox ui-corner-all">
-											</select>			
+											</select>
 										</td>
 									</tr>
 									</table>
@@ -71,6 +71,11 @@
 									<h2><span data-i18n="Location"></span>:</h2>
 									<label id="sunriseset"></label>
 									<table class="display" id="locationtable" border="0" cellpadding="0" cellspacing="0">
+									 <tr>
+
+                                                                                <td align="right" style="width:60px"><label for="Title"><span data-i18n="Name">Name</span>: </label></td>
+                                                                                <td><input type="input" id="Title" name="Title" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                                                        </tr>
 									<tr>
 										<td align="right" style="width:60px"><label for="Latitude"><span data-i18n="Latitude"></span>: </label></td>
 										<td><input type="text" id="Latitude" name="Latitude" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -224,7 +229,7 @@
 											</tr>
 										</table>
 									</div>
-									<br>			
+									<br>
 								</div>
 							</div>
 							<div class="row-fluid">
@@ -275,7 +280,7 @@
 									</div>
 								</div>
 							</div>
-							<br>			
+							<br>
 							<div id="ActiveTabs">
 								<h2><span data-i18n="ActiveMenus"></span>:</h2>
 								<table class="display" id="activemenustable" border="0" cellpadding="0" cellspacing="0">
@@ -391,6 +396,25 @@
 									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushbullet.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
 									<br>
 								</div>
+								<div class="span6">
+									<h2>Pushsafer (iOS/Android/Windows10) + <span data-i18n="ImageURL"></span>:</h2>
+									<table class="display" id="pushsafertable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="PushsaferEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="PushsaferEnabled" name="PushsaferEnabled"/></td>
+									</tr>
+									<tr>
+										<td align="right"><label for="PushsaferAPI"><span data-i18n="API Key"></span>: </label></td>
+										<td><input type="input" id="PushsaferAPI" name="PushsaferAPI" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('pushsafer')">Test</button></td>
+									</tr>
+                                    <tr>
+                                        <td align="right"><label for="PushsaferImage"><span data-i18n="ImageURL"></span>: </label></td>
+                                        <td><input type="input" id="PushsaferImage" name="PushsaferImage" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                    </tr>
+									</table>
+									<span data-i18n="To get a free account/API key click"></span> <a href="https://www.pushsafer.com/" class="norm-link" target="_blank"><span class="norm-link" data-i18n="Here"></span></a><br>
+									<br>
+								</div>
 							</div>
 							<div class="row-fluid">
 								<div class="span6">
@@ -494,9 +518,28 @@
 									<tr>
 										<td align="right"><label for="HTTPURL"><span data-i18n="URL"></span>/<span data-i18n="Action"></span>: </label></td>
 										<td>
-											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea>  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+											<textarea id="HTTPURL" name="HTTPURL" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
 											<span data-i18n="(Should start with http:// or script://)">(Should start with http://, https:// or script://)</span><br>
-											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE
+											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
+										</td>
+									</tr>
+                                    <tr>
+										<td align="right"><label for="HTTPPostData">POST Data: </label></td>
+										<td>
+											<textarea id="HTTPPostData" name="HTTPPostData" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
+											<span data-i18n="(Optional)">(Optional)</span> #SUBJECT, #MESSAGE, #PRIORITY
+										</td>
+									</tr>
+                                    <tr>
+										<td align="right"><label for="HTTPPostContentType">POST Content-Type: </label></td>
+										<td>
+                                            <input type="input" id="HTTPPostContentType" name="HTTPPostContentType" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all" />  <button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('http')">Test</button><br>
+										</td>
+									</tr>
+                                    <tr>
+										<td align="right"><label for="HTTPPostHeaders">POST Headers: </label></td>
+										<td>
+											<textarea id="HTTPPostHeaders" name="HTTPPostHeaders" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea><br>
 										</td>
 									</tr>
 									</table>
@@ -559,6 +602,19 @@
 										</tr>
 									</table>
 									<span style="color:red" data-i18n="This notifier only works when the Logitech Media Server hardware has been added/enabled"></span><br>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span6">
+									<h2><span data-i18n="Google Cloud Messaging"></span>:</h2>
+									<table class="display" id="gcmtable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:80px"><label for="GCMEnabled"><span data-i18n="Enabled"></span>: </label></td>
+										<td><input type="checkbox" id="GCMEnabled" name="GCMEnabled"/></td>
+										<td><button data-i18n="Test" class="btn btn-info" ng-click="TestNotification('gcm')">Test</button></td>
+									</tr>
+									</table>
 									<br>
 								</div>
 							</div>
@@ -651,7 +707,7 @@
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="To"></span>: </label></td>
-								<td><input type="email" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+								<td><input type="input" id="EmailTo" name="EmailTo" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 							</tr>
 							<tr>
 								<td></td>
@@ -680,6 +736,10 @@
 							<tr>
 								<td></td>
 								<td><input type="checkbox" id="EmailAsAttachment" name="EmailAsAttachment"/> <span data-i18n="Send Camera snapshots as Attachment (Gmail)"></span></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td><input type="checkbox" id="SendErrorsAsNotification" name="SendErrorsAsNotification"/> <span data-i18n="Send Errors as Notification"></span></td>
 							</tr>
 							</table>
 						</section>
@@ -711,11 +771,23 @@
 									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
 									<td>
 										<select id="comboTempUnit" name="TempUnit" style="width:120px" class="combobox ui-corner-all">
-											<option value="0">Celcius</option>
+											<option value="0">Celsius</option>
 											<option value="1">Fahrenheit</option>
 										</select>
 										<label><span data-i18n="Degree Days"></span> (<span data-i18n="Base Temperature"></span>): </label>
 										<input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+									</td>
+								</tr>
+							</table>
+							<h2><span data-i18n="Weight"></span>:</h2>
+							<table class="display" id="weighttable" border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
+									<td>
+										<select id="comboWeightUnit" name="WeightUnit" style="width:120px" class="combobox ui-corner-all">
+											<option value="0">Kilograms</option>
+											<option value="1">Pounds</option>
+										</select>
 									</td>
 								</tr>
 							</table>
@@ -729,6 +801,14 @@
 								<td><input type="input" id="CostEnergy" name="CostEnergy" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> T2: </label></td>
 								<td><input type="input" id="CostEnergyT2" name="CostEnergyT2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R1: </label></td>
+								<td><input type="input" id="CostEnergyR1" name="CostEnergyR1" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
+								<td align="right" style="width:90px"><label><span data-i18n="Costs"></span> R2: </label></td>
+								<td><input type="input" id="CostEnergyR2" name="CostEnergyR2" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> / kWh</td>
 							</tr>
 							<tr>
 								<td align="right" style="width:60px"><label><span data-i18n="Gas"></span>: </label></td>
@@ -766,17 +846,6 @@
 									<td><select id="comboP1MeterType" name="SmartMeterType" style="width:180px" class="combobox ui-corner-all">
 										<option data-i18n="With Decimals" value="0">With Decimals</option>
 										<option data-i18n="No Decimals" value="1">No Decimals</option>
-									</select></td>
-								</tr>
-							</table>
-							<br>
-							<h2><span data-i18n="General/kWh Day Graph with Power">General/kWh Day Graph with Power</span>:</h2>
-							<table class="display" id="kwhshortlogtable" border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td align="right" style="width:60px"><label><span data-i18n="Display"></span>: </label></td>
-									<td><select id="combokWhShotlogDisplay" name="DisplayPowerUsageInkWhGraph" style="width:180px" class="combobox ui-corner-all">
-										<option value="0" data-i18n="Energy day graph">Energy day graph</option>
-										<option value="1" data-i18n="Power day graph">Power day graph</option>
 									</select></td>
 								</tr>
 							</table>
@@ -903,13 +972,38 @@
 							<table class="display" id="timerplantable" border="0" cellpadding="0" cellspacing="0">
 								<tr>
 									<td align="right" style="width:90px"><label><span data-i18n="Plan">Plan</span>: </label></td>
-									<td><select id="comboTimerplan" name="ActiveTimerPlan" style="width:120px" class="combobox ui-corner-all">
-										<option data-i18n="default" value="0">default</option>
-										<option data-i18n="Holiday" value="1">Holiday</option>
+									<td><select id="comboTimerplan" name="ActiveTimerPlan" style="width:220px" class="combobox ui-corner-all">
 									</select></td>
 								</tr>
 							</table>
 							<br>
+							<div id="LogDebug" style="display:none;">
+							    <h2><span data-i18n="Log "></span>Log:</h2>
+							    <table class="display" id="LogFilterTable" border="0" cellpadding="0" cellspacing="0">
+							    <tr>
+								    <td align="right" style="width:60px"><label><span data-i18n="LogFilter"></span>Filter: </label></td>
+								    <td><input type="input" id="LogFilter" name="LogFilter" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+							    </tr>
+							    <tr>
+								    <td align="right" style="width:60px"><label><span data-i18n="LogFileName"></span>File Name: </label></td>
+								    <td><input type="input" id="LogFileName" name="LogFileName" style="width: 600px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> </td>
+							    </tr>
+							    <tr>
+								    <td align="right" style="width:60px"><label><span data-i18n="LogLevel">Level</span>: </label></td>
+								    <td><select id="LogLevel" name="LogLevel" style="width:120px" class="combobox ui-corner-all">
+									    <option data-i18n="Error" value="0">Error</option>
+									    <option data-i18n="Status" value="1">Status</option>
+									    <option data-i18n="Normal" value="2">Normal</option>
+									    <option data-i18n="Trace" value="3">Trace</option>
+										<option data-i18n="ErrorVerbose"  value="4">ErrorVerbose</option>
+										<option data-i18n="StatusVerbose" value="5">StatusVerbose</option>
+										<option data-i18n="NormalVerbose" value="6">NormalVerbose</option>
+										<option data-i18n="TraceVerbose"  value="7">TraceVerbose</option>
+								    </select></td>
+							    </tr>
+							    </table>
+							    <br>
+							</div>
 							<h2><span data-i18n="Doorbell Command"></span>:</h2>
 							<table class="display" id="doorbelltable" border="0" cellpadding="0" cellspacing="0">
 								<tr>
@@ -951,7 +1045,46 @@
 									<input type="checkbox" id="DisableEventScriptSystem" name="DisableEventScriptSystem"/>
 								</td>
 							</tr>
+							<tr>
+								<td style="width:90px"></td>
+								<td>
+							 		<input type="checkbox" id="LogEventScriptTrigger" name="LogEventScriptTrigger" />
+									<label><span data-i18n="Log 'event script triggers'">Log 'event script triggers'</span></label>
+								</td>
+							</tr>
 							</table>
+							<br>
+							<h2><span data-i18n="dzVents">dzVents (2.2.0)</span>:</h2>
+							<table class="display" id="dzventstable" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td align="right" style="width:90px"><span data-i18n="Disabled"></span>:</td>
+								<td><input id="DisableDzVentsSystem" name="DisableDzVentsSystem" type="checkbox"></td>
+							</tr>
+							<tr>
+								<td align="right"><label>Log Level:</label></td>
+								<td>
+									<select class="combobox ui-corner-all" id="comboDzVentsLogLevel" name="DzVentsLogLevel">
+										<option data-i18n="Silent" value="0">
+											Silent
+										</option>
+										<option data-i18n="Errors only" value="1">
+											Errors + forced messages
+										</option>
+										<option data-i18n="Errors + minimal execution info" value="2">
+											Errors + minimal execution info
+										</option>
+										<option data-i18n="Errors + minimal execution info + generic info" value="3">
+											Errors + minimal execution info + generic info
+										</option>
+										<option data-i18n="Debug (everything)" value="4">
+											Debug (everything)
+										</option>
+									</select>
+								</td>
+							</tr>
+							</table>
+							<br>
+
 						</section>
 					</div>
 					<div class="tab-pane" id="tabbackuprestore">
@@ -965,6 +1098,6 @@
 						</section>
 					</div>
 				</div>
-			</div>	
+			</div>
 	</div>
 </div>

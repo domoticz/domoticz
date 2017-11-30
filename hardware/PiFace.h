@@ -3,7 +3,7 @@
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
 
-#define CONFIG_NR_OF_PARAMETER_TYPES        12
+#define CONFIG_NR_OF_PARAMETER_TYPES        13
 #define CONFIG_NR_OF_PARAMETER_BOOL_TYPES   4
 #define CONFIG_NR_OF_PARAMETER_PIN_TYPES    4
 #define CONFIG_NR_OF_PARAMETER_COUNT_TYPES  3
@@ -28,41 +28,40 @@ public:
     ~CIOCount();
     
     int Update(unsigned long Counts);
-    unsigned long GetCurrent(void) const {return Current;};
     unsigned long GetTotal(void) const {return Total;};
     unsigned long GetLastTotal(void) const { return LastTotal; };
     unsigned long GetRateLimit(void) const { return Minimum_Pulse_Period_ms; };
     unsigned long GetDivider(void) const { return Divider; };
-    unsigned long GetUpdatePulsePeriodDiff(void) const { return UpdatePulsePeriodDiff_ms; };
-    void SetCurrent(unsigned long NewCurValue) {Current=NewCurValue;};
     void SetTotal(unsigned long NewTotalValue) { Total = NewTotalValue; };
     void SetLastTotal(unsigned long NewTotalValue) { LastTotal = NewTotalValue; };
     void SetRateLimit(unsigned long NewRateLimit) { Minimum_Pulse_Period_ms = NewRateLimit; };
-    void ResetCurrent(void) {Current=0;};
     void ResetTotal(void) {
         Total = 0;
         LastTotal = 0;
     };
     bool ProcessUpdateInterval(unsigned long PassedTime_ms);
     void SetUpdateInterval(unsigned long NewValue_ms);
-    void SetUpdatePulsePeriodDiff(unsigned long NewValue_ms) { UpdatePulsePeriodDiff_ms = NewValue_ms; };
+    void SetUpdateIntervalPerc(unsigned long NewValue) { UpdateIntervalPerc = NewValue; };
     void SetDivider(unsigned long NewValue) { Divider = NewValue; };
     unsigned long GetUpdateInterval(void) {return UpdateInterval_ms;};
+    unsigned long GetUpdateIntervalPerc(void) {return UpdateIntervalPerc;};
     bool Enabled;
     bool InitialStateSent;
     int Type;
     
 private:
-    unsigned long Current;
     unsigned long Total;
     unsigned long LastTotal;
     unsigned long UpdateInterval_ms;
     unsigned long UpdateDownCount_ms;
+    unsigned long UpdateIntervalPerc;
     unsigned long Minimum_Pulse_Period_ms;
-    unsigned long UpdatePulsePeriodDiff_ms;
     unsigned long Divider;
-    boost::posix_time::ptime Last_Call;
-    boost::posix_time::ptime Cur_Call;
+    boost::posix_time::ptime Last_Pulse;
+    boost::posix_time::ptime Cur_Pulse;
+    boost::posix_time::ptime Last_Callback;
+    boost::posix_time::time_duration Last_Interval;
+    boost::posix_time::time_duration Cur_Interval;
 };
 
 class CIOPinState

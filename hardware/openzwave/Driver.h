@@ -68,6 +68,7 @@ namespace OpenZWave
 		friend class Association;
 		friend class Basic;
 		friend class ManufacturerSpecific;
+		friend class MultiChannelAssociation;
 		friend class NodeNaming;
 		friend class NoOperation;
 		friend class SceneActivation;
@@ -135,7 +136,7 @@ namespace OpenZWave
 		 *  - Get version
 		 *  - Get home and node IDs
 		 *  - Get controller capabilities
-		 *  - Get serial API capabilties
+		 *  - Get serial API capabilities
 		 *  - [Get SUC node ID]
 		 *  - Get init data [identifying the nodes on the network]
 		 *  Init() will return false if the serial port could not be opened.
@@ -172,18 +173,18 @@ namespace OpenZWave
 		// Controller Capabilities (return in FUNC_ID_ZW_GET_CONTROLLER_CAPABILITIES)
 		enum
 		{
-			ControllerCaps_Secondary	= 0x01,		/**< The controller is a secondary. */
+			ControllerCaps_Secondary		= 0x01,		/**< The controller is a secondary. */
 			ControllerCaps_OnOtherNetwork	= 0x02,		/**< The controller is not using its default HomeID. */
-			ControllerCaps_SIS		= 0x04,		/**< There is a SUC ID Server on the network. */
-			ControllerCaps_RealPrimary	= 0x08,		/**< Controller was the primary before the SIS was added. */
-			ControllerCaps_SUC		= 0x10		/**< Controller is a static update controller. */
+			ControllerCaps_SIS				= 0x04,		/**< There is a SUC ID Server on the network. */
+			ControllerCaps_RealPrimary		= 0x08,		/**< Controller was the primary before the SIS was added. */
+			ControllerCaps_SUC				= 0x10		/**< Controller is a static update controller. */
 		};
 
 		// Init Capabilities (return in FUNC_ID_SERIAL_API_GET_INIT_DATA)
 		enum
 		{
 			InitCaps_Slave					= 0x01,		/**<  */
-			InitCaps_TimerSupport				= 0x02,		/**< Controller supports timers. */
+			InitCaps_TimerSupport			= 0x02,		/**< Controller supports timers. */
 			InitCaps_Secondary				= 0x04,		/**< Controller is a secondary. */
 			InitCaps_SUC					= 0x08		/**< Controller is a static update controller. */
 		};
@@ -243,12 +244,12 @@ namespace OpenZWave
 		 */
 		//void ReleaseNodes();
 
-		ControllerInterface			m_controllerInterfaceType;						// Specifies the controller's hardware interface
+		ControllerInterface			m_controllerInterfaceType;				// Specifies the controller's hardware interface
 		string					m_controllerPath;							// name or path used to open the controller hardware.
 		Controller*				m_controller;								// Handles communications with the controller hardware.
 		uint32					m_homeId;									// Home ID of the Z-Wave controller.  Not valid until the DriverReady notification has been received.
 
-		string					m_libraryVersion;							// Verison of the Z-Wave Library used by the controller.
+		string					m_libraryVersion;							// Version of the Z-Wave Library used by the controller.
 		string					m_libraryTypeName;							// Name describing the library type.
 		uint8					m_libraryType;								// Type of library used by the controller.
 
@@ -261,7 +262,7 @@ namespace OpenZWave
 		uint8					m_initVersion;								// Version of the Serial API used by the controller.
 		uint8					m_initCaps;									// Set of flags indicating the serial API capabilities (See IsSlave, HasTimerSupport, IsPrimaryController and IsStaticUpdateController above).
 		uint8					m_controllerCaps;							// Set of flags indicating the controller's capabilities (See IsInclusionController above).
-		uint8					m_Controller_nodeId;									// Z-Wave Controller's own node ID.
+		uint8					m_Controller_nodeId;						// Z-Wave Controller's own node ID.
 		Node*					m_nodes[256];								// Array containing all the node objects.
 		Mutex*					m_nodeMutex;								// Serializes access to node data
 
@@ -457,20 +458,20 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		 */
 		enum ControllerCommand
 		{
-			ControllerCommand_None = 0,					/**< No command. */
+			ControllerCommand_None = 0,						/**< No command. */
 			ControllerCommand_AddDevice,					/**< Add a new device or controller to the Z-Wave network. */
 			ControllerCommand_CreateNewPrimary,				/**< Add a new controller to the Z-Wave network. Used when old primary fails. Requires SUC. */
-			ControllerCommand_ReceiveConfiguration,				/**< Receive Z-Wave network configuration information from another controller. */
+			ControllerCommand_ReceiveConfiguration,			/**< Receive Z-Wave network configuration information from another controller. */
 			ControllerCommand_RemoveDevice,					/**< Remove a device or controller from the Z-Wave network. */
 			ControllerCommand_RemoveFailedNode,				/**< Move a node to the controller's failed nodes list. This command will only work if the node cannot respond. */
 			ControllerCommand_HasNodeFailed,				/**< Check whether a node is in the controller's failed nodes list. */
-			ControllerCommand_ReplaceFailedNode,				/**< Replace a non-responding node with another. The node must be in the controller's list of failed nodes for this command to succeed. */
-			ControllerCommand_TransferPrimaryRole,				/**< Make a different controller the primary. */
-			ControllerCommand_RequestNetworkUpdate,				/**< Request network information from the SUC/SIS. */
-			ControllerCommand_RequestNodeNeighborUpdate,			/**< Get a node to rebuild its neighbour list.  This method also does RequestNodeNeighbors */
-			ControllerCommand_AssignReturnRoute,				/**< Assign a network return routes to a device. */
-			ControllerCommand_DeleteAllReturnRoutes,			/**< Delete all return routes from a device. */
-			ControllerCommand_SendNodeInformation,				/**< Send a node information frame */
+			ControllerCommand_ReplaceFailedNode,			/**< Replace a non-responding node with another. The node must be in the controller's list of failed nodes for this command to succeed. */
+			ControllerCommand_TransferPrimaryRole,			/**< Make a different controller the primary. */
+			ControllerCommand_RequestNetworkUpdate,			/**< Request network information from the SUC/SIS. */
+			ControllerCommand_RequestNodeNeighborUpdate,	/**< Get a node to rebuild its neighbour list.  This method also does RequestNodeNeighbors */
+			ControllerCommand_AssignReturnRoute,			/**< Assign a network return routes to a device. */
+			ControllerCommand_DeleteAllReturnRoutes,		/**< Delete all return routes from a device. */
+			ControllerCommand_SendNodeInformation,			/**< Send a node information frame */
 			ControllerCommand_ReplicationSend,				/**< Send information from primary to secondary */
 			ControllerCommand_CreateButton,					/**< Create an id that tracks handheld button presses */
 			ControllerCommand_DeleteButton					/**< Delete id that tracks handheld button presses */
@@ -485,12 +486,12 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		{
 			ControllerState_Normal = 0,				/**< No command in progress. */
 			ControllerState_Starting,				/**< The command is starting. */
-			ControllerState_Cancel,					/**< The command was cancelled. */
+			ControllerState_Cancel,					/**< The command was canceled. */
 			ControllerState_Error,					/**< Command invocation had error(s) and was aborted */
 			ControllerState_Waiting,				/**< Controller is waiting for a user action. */
 			ControllerState_Sleeping,				/**< Controller command is on a sleep queue wait for device. */
 			ControllerState_InProgress,				/**< The controller is communicating with the other device to carry out the command. */
-			ControllerState_Completed,			    	/**< The command has completed successfully. */
+			ControllerState_Completed,			    /**< The command has completed successfully. */
 			ControllerState_Failed,					/**< The command has failed. */
 			ControllerState_NodeOK,					/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node is OK. */
 			ControllerState_NodeFailed				/**< Used only with ControllerCommand_HasNodeFailed to indicate that the controller thinks the node has failed. */
@@ -503,11 +504,11 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		enum ControllerError
 		{
 			ControllerError_None = 0,
-			ControllerError_ButtonNotFound,					/**< Button */
-			ControllerError_NodeNotFound,					/**< Button */
+			ControllerError_ButtonNotFound,				/**< Button */
+			ControllerError_NodeNotFound,				/**< Button */
 			ControllerError_NotBridge,					/**< Button */
 			ControllerError_NotSUC,						/**< CreateNewPrimary */
-			ControllerError_NotSecondary,					/**< CreateNewPrimary */
+			ControllerError_NotSecondary,				/**< CreateNewPrimary */
 			ControllerError_NotPrimary,					/**< RemoveFailedNode, AddNodeToNetwork */
 			ControllerError_IsPrimary,					/**< ReceiveConfiguration */
 			ControllerError_NotFound,					/**< RemoveFailedNode */
@@ -602,7 +603,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		bool WriteNextMsg( MsgQueue const _queue );							// Extracts the first message from the queue, and makes it the current one.
 		bool WriteMsg( string const &str);									// Sends the current message to the Z-Wave network
 		void RemoveCurrentMsg();											// Deletes the current message and cleans up the callback etc states
-		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it mext wakes up.
+		bool MoveMessagesToWakeUpQueue(	uint8 const _targetNodeId, bool const _move );		// If a node does not respond, and is of a type that can sleep, this method is used to move all its pending messages to another queue ready for when it wakes up next.
 		bool HandleErrorResponse( uint8 const _error, uint8 const _nodeId, char const* _funcStr, bool _sleepCheck = false );									    // Handle data errors and process consistently. If message is moved to wake-up queue, return true.
 		bool IsExpectedReply( uint8 const _nodeId );						// Determine if reply message is the one we are expecting
 		void SendQueryStageComplete( uint8 const _nodeId, Node::QueryStage const _stage );
@@ -619,13 +620,13 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		//
 		// 1)	The command queue, for controller commands.  This is the 2nd highest
 		//		priority send queue, because the controller command processes are not
-		//		permitted to be interupted by other requests.
+		//		permitted to be interrupted by other requests.
 		//
 		// 2)	The controller queue exists to handle multi-step controller commands. These
 		//		typically require user interaction or affect the network in some way.
 		//
 		// 3)	The No Operation command class queue. This is used for device probing
-		//		at startup as well as network diagostics.
+		//		at startup as well as network diagnostics.
 		//
 		// 4)	The wakeup queue.  This holds messages that have been held for a
 		//		sleeping device that has now woken up.  These get a high priority
@@ -693,7 +694,7 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 OPENZWAVE_EXPORT_WARNINGS_OFF
 		list<MsgQueueItem>			m_msgQueue[MsgQueue_Count];
 OPENZWAVE_EXPORT_WARNINGS_ON
-		Event*					m_queueEvent[MsgQueue_Count];				// Events for each queue, which are signalled when the queue is not empty
+		Event*					m_queueEvent[MsgQueue_Count];		// Events for each queue, which are signaled when the queue is not empty
 		Mutex*					m_sendMutex;						// Serialize access to the queues
 		Msg*					m_currentMsg;
 		MsgQueue				m_currentMsgQueueSource;			// identifies which queue held m_currentMsg
@@ -773,9 +774,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		struct DriverData
 		{
 			uint32 m_SOFCnt;			// Number of SOF bytes received
-			uint32 m_ACKWaiting;			// Number of unsolicited messages while waiting for an ACK
-			uint32 m_readAborts;			// Number of times read were aborted due to timeouts
-			uint32 m_badChecksum;			// Number of bad checksums
+			uint32 m_ACKWaiting;		// Number of unsolicited messages while waiting for an ACK
+			uint32 m_readAborts;		// Number of times read were aborted due to timeouts
+			uint32 m_badChecksum;		// Number of bad checksums
 			uint32 m_readCnt;			// Number of messages successfully read
 			uint32 m_writeCnt;			// Number of messages successfully sent
 			uint32 m_CANCnt;			// Number of CAN bytes received
@@ -789,10 +790,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 			uint32 m_noack;				// Number of no ACK returned errors
 			uint32 m_netbusy;			// Number of network busy/failure messages
 			uint32 m_notidle;
-			uint32 m_nondelivery;			// Number of messages not delivered to network
-			uint32 m_routedbusy;			// Number of messages received with routed busy status
-			uint32 m_broadcastReadCnt;		// Number of broadcasts read
-			uint32 m_broadcastWriteCnt;		// Number of broadcasts sent
+			uint32 m_nondelivery;		// Number of messages not delivered to network
+			uint32 m_routedbusy;		// Number of messages received with routed busy status
+			uint32 m_broadcastReadCnt;	// Number of broadcasts read
+			uint32 m_broadcastWriteCnt;	// Number of broadcasts sent
 		};
 
 		void LogDriverStatistics();
@@ -802,9 +803,9 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		void GetNodeStatistics( uint8 const _nodeId, Node::NodeData* _data );
 
 		uint32 m_SOFCnt;			// Number of SOF bytes received
-		uint32 m_ACKWaiting;			// Number of unsolcited messages while waiting for an ACK
-		uint32 m_readAborts;			// Number of times read were aborted due to timeouts
-		uint32 m_badChecksum;			// Number of bad checksums
+		uint32 m_ACKWaiting;		// Number of unsolicited messages while waiting for an ACK
+		uint32 m_readAborts;		// Number of times read were aborted due to timeouts
+		uint32 m_badChecksum;		// Number of bad checksums
 		uint32 m_readCnt;			// Number of messages successfully read
 		uint32 m_writeCnt;			// Number of messages successfully sent
 		uint32 m_CANCnt;			// Number of CAN bytes received
@@ -818,10 +819,10 @@ OPENZWAVE_EXPORT_WARNINGS_ON
 		uint32 m_noack;				// Number of no ACK returned errors
 		uint32 m_netbusy;			// Number of network busy/failure messages
 		uint32 m_notidle;			// Number of not idle messages
-		uint32 m_nondelivery;			// Number of messages not delivered to network
-		uint32 m_routedbusy;			// Number of messages received with routed busy status
-		uint32 m_broadcastReadCnt;		// Number of broadcasts read
-		uint32 m_broadcastWriteCnt;		// Number of broadcasts sent
+		uint32 m_nondelivery;		// Number of messages not delivered to network
+		uint32 m_routedbusy;		// Number of messages received with routed busy status
+		uint32 m_broadcastReadCnt;	// Number of broadcasts read
+		uint32 m_broadcastWriteCnt;	// Number of broadcasts sent
 		//time_t m_commandStart;	// Start time of last command
 		//time_t m_timeoutLost;		// Cumulative time lost to timeouts
 

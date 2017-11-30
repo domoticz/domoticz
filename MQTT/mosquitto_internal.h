@@ -17,13 +17,13 @@ Contributors:
 #ifndef _MOSQUITTO_INTERNAL_H_
 #define _MOSQUITTO_INTERNAL_H_
 
-#include "config.h"
+#include <config.h>
 
 #ifdef WIN32
 #  include <winsock2.h>
 #endif
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 #  include <openssl/ssl.h>
 #else
 #  include <time.h>
@@ -112,6 +112,12 @@ enum _mosquitto_protocol {
 	mosq_p_mqtts = 3
 };
 
+enum mosquitto__threaded_state {
+	mosq_ts_none,		/* No threads in use */
+	mosq_ts_self,		/* Threads started by libmosquitto */
+	mosq_ts_external	/* Threads started by external code */
+};
+
 enum _mosquitto_transport {
 	mosq_t_invalid = 0,
 	mosq_t_tcp = 1,
@@ -155,13 +161,13 @@ struct mosquitto {
 	uint16_t last_mid;
 	enum mosquitto_client_state state;
 	time_t last_msg_in;
-	time_t last_msg_out;
+	time_t next_msg_out;
 	time_t ping_t;
 	struct _mosquitto_packet in_packet;
 	struct _mosquitto_packet *current_out_packet;
 	struct _mosquitto_packet *out_packet;
 	struct mosquitto_message *will;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	SSL *ssl;
 	SSL_CTX *ssl_ctx;
 	char *tls_cafile;
@@ -207,8 +213,12 @@ struct mosquitto {
 	int sub_count;
 	int pollfd_index;
 #  ifdef WITH_WEBSOCKETS
+#    if defined(LWS_LIBRARY_VERSION_NUMBER)
+	struct lws *wsi;
+#    else
 	struct libwebsocket_context *ws_context;
 	struct libwebsocket *wsi;
+#    endif
 #  endif
 #else
 #  ifdef WITH_SOCKS
@@ -241,7 +251,7 @@ struct mosquitto {
 	unsigned int reconnect_delay;
 	unsigned int reconnect_delay_max;
 	bool reconnect_exponential_backoff;
-	bool threaded;
+	char threaded;
 	struct _mosquitto_packet *out_packet_last;
 	int inflight_messages;
 	int max_inflight_messages;
@@ -256,5 +266,7 @@ struct mosquitto {
 	struct mosquitto *for_free_next;
 #endif
 };
+
+#define STREMPTY(str) (str[0] == '\0')
 
 #endif

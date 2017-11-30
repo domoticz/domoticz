@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="4" genre="config" label="Invert switch" min="0" max="1" size="1" value="0">
+            <Help>Change the top of the switch to OFF and the bottom of the switch to ON if the switch was installed upside down.</Help>
+            <Item label="No" value="0"/>
+            <Item label="Yes" value="1"/>
+        </Value>
+        <Value type="byte" index="7" genre="config" label="Remote level percent" units="%" min="1" max="99" value="99">
+            <Help>Indicates how much each level dims/brightens as a portion of the whole range when set remotely.</Help>
+        </Value>
+        <Value type="list" index="8" genre="config" label="Remote duration per level" units="ms" size="2" min="1" max="22" value="22">
+            <Help>Indicates the time duration of each level when set remotely.</Help>
+            <Item label="10" value="1"/>
+            <Item label="20" value="2"/>
+            <Item label="30" value="3"/>
+            <Item label="40" value="4"/>
+            <Item label="50" value="5"/>
+            <Item label="60" value="6"/>
+            <Item label="70" value="7"/>
+            <Item label="80" value="8"/>
+            <Item label="90" value="9"/>
+            <Item label="100" value="10"/>
+            <Item label="110" value="11"/>
+            <Item label="120" value="12"/>
+            <Item label="130" value="13"/>
+            <Item label="140" value="14"/>
+            <Item label="150" value="15"/>
+            <Item label="160" value="16"/>
+            <Item label="170" value="17"/>
+            <Item label="180" value="18"/>
+            <Item label="190" value="19"/>
+            <Item label="200" value="20"/>
+            <Item label="210" value="21"/>
+            <Item label="220" value="22"/>
+        </Value>
+        <Value type="byte" index="9" genre="config" label="Local level percent" units="%" min="1" max="99" value="99">
+            <Help>Indicates how much each level dims/brightens as a portion of the whole range when set locally.</Help>
+        </Value>
+        <Value type="list" index="10" genre="config" label="Local duration per level" units="ms" size="2" min="1" max="22" value="22">
+            <Help>Indicates the time duration of each level when set locally.</Help>
+            <Item label="10" value="1"/>
+            <Item label="20" value="2"/>
+            <Item label="30" value="3"/>
+            <Item label="40" value="4"/>
+            <Item label="50" value="5"/>
+            <Item label="60" value="6"/>
+            <Item label="70" value="7"/>
+            <Item label="80" value="8"/>
+            <Item label="90" value="9"/>
+            <Item label="100" value="10"/>
+            <Item label="110" value="11"/>
+            <Item label="120" value="12"/>
+            <Item label="130" value="13"/>
+            <Item label="140" value="14"/>
+            <Item label="150" value="15"/>
+            <Item label="160" value="16"/>
+            <Item label="170" value="17"/>
+            <Item label="180" value="18"/>
+            <Item label="190" value="19"/>
+            <Item label="200" value="20"/>
+            <Item label="210" value="21"/>
+            <Item label="220" value="22"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

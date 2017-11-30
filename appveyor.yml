@@ -1,19 +1,40 @@
 version: 1.0.{build}
-os: Visual Studio 2015
+image: Visual Studio 2017
+configuration: Release
 
-install:
-- ps: cinst innosetup
+#init:
+#- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#
+#on_finish:
+#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  
+before_build:
+- ps: >-
+    nuget install Tools.InnoSetup
+    
+- cmd: >-    
+    cd msbuild
+    
+    appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
+    
+    7z x WindowsLibraries.7z > NUL:
+    
+    cd ..
 
-build_script:
-- cd msbuild
-- appveyor DownloadFile https://cdn.rawgit.com/domoticz/win32-libraries/master/WindowsLibraries.7z
-- '7z x WindowsLibraries.7z > NUL:'
-- cd ..
-- msbuild msbuild\domoticz.sln /p:Configuration=Release /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-- ps: cp appversion.h version_windows_x86.h
-- ps: cp History.txt history_windows_x86.txt
-- '"C:\Program Files (x86)\Inno Setup 5\ISCC.exe" msbuild\WindowsInstaller\DomoticzSetup.iss'
-- msbuild msbuild\package.proj
+build:
+  parallel: true                  # enable MSBuild parallel builds
+  project: msbuild\domoticz.sln   # path to Visual Studio solution or project
+  verbosity: minimal
+
+after_build:
+- cmd: >-
+    cp appversion.h version_windows_x86.h
+    
+    cp History.txt history_windows_x86.txt
+    
+    Tools.InnoSetup.5.5.9\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+    
+    msbuild msbuild\package.proj
 
 artifacts:
 - path: domoticz_windows_x86.zip
@@ -25,11 +46,11 @@ test: off
 
 deploy:
 - provider: FTP
-  host: 188.166.24.182
-  folder: beta
-  protocol: ftps
-  username: uploads@domoticz.com
+  protocol: sftp
+  host: $(FTP_HOST)
+  username: $(FTP_USER)
   password: $(FTP_PASSWORD)
+  folder: beta
   on:
     APPVEYOR_REPO_NAME: domoticz/domoticz
     APPVEYOR_REPO_BRANCH: master  

@@ -67,6 +67,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
 
 	sPostData << sPostdata;
+	
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
@@ -76,7 +77,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 	}
 	Json::Reader jReader;
 	bRetVal = jReader.parse(sResult, root);
-	if (!bRetVal)
+	if ((!bRetVal) || (!root.isObject()))
 	{
 		size_t aFind = sResult.find("401 Authorization Required");
 		if ((aFind > 0) && (aFind != std::string::npos))
@@ -815,8 +816,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -849,7 +850,10 @@ namespace http {
 		void CWebServer::Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;

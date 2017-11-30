@@ -74,5 +74,5 @@ for name, device in domoticz.devices.items():
   if device.is_off():
       domoticz.log("could turn it on in 3 seconds")
       #device.on(after=3)
-for name, value in user_variables:
+for name, value in user_variables.items():
   domoticz.log("var", name, "has value", value)

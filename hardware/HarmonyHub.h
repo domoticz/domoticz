@@ -78,30 +78,10 @@ public:
 class CHarmonyHub : public CDomoticzHardwareBase
 {
 public:
-	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port, const std::string &userName, const std::string &password);
+	CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port);
 	~CHarmonyHub(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-
 private:
-	
-	std::string m_username;
-	std::string m_password;
-	std::string m_harmonyAddress;
-	std::string m_szAuthorizationToken;
-	std::string m_szCurActivityID;
-	boost::mutex m_mutex;
-
-    csocket * m_commandcsocket;
-	unsigned short m_usIPPort;
-	volatile bool m_stoprequested;
-	bool m_bDoLogin;
-	bool m_bIsChangingActivity;
-	std::string m_hubSwVersion;
-	boost::shared_ptr<boost::thread> m_thread;
-	char m_databuffer[BUFFER_SIZE];	
-	std::string m_szResultString;
-
-
 	bool Login();
 	void Logout();
 	bool SetupCommandSocket();
@@ -115,13 +95,27 @@ private:
 	bool StopHardware();
 	void Do_Work();
 
-	bool HarmonyWebServiceLogin(const std::string &strUserEmail, const std::string &strPassword, std::string& m_szAuthorizationToken);
 	bool ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket);
 	bool StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword);
-	bool SwapAuthorizationToken(csocket* authorizationcsocket, std::string& m_szAuthorizationToken);
+	bool GetAuthorizationToken(csocket* authorizationcsocket);
 	bool SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	bool SendPing();
 	bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
+
+	std::string m_harmonyAddress;
+	unsigned short m_usIPPort;
+	std::string m_szAuthorizationToken;
+	std::string m_szCurActivityID;
+	boost::mutex m_mutex;
+
+	csocket * m_commandcsocket;
+	volatile bool m_stoprequested;
+	bool m_bDoLogin;
+	bool m_bIsChangingActivity;
+	std::string m_hubSwVersion;
+	boost::shared_ptr<boost::thread> m_thread;
+	char m_databuffer[BUFFER_SIZE];
+	std::string m_szResultString;
 };

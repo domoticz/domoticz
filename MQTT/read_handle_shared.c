@@ -18,17 +18,17 @@ Contributors:
 #include <stdio.h>
 #include <string.h>
 
-#include "mosquitto.h"
-#include "logging_mosq.h"
-#include "memory_mosq.h"
-#include "messages_mosq.h"
-#include "mqtt3_protocol.h"
-#include "net_mosq.h"
-#include "read_handle.h"
-#include "send_mosq.h"
-#include "util_mosq.h"
+#include <mosquitto.h>
+#include <logging_mosq.h>
+#include <memory_mosq.h>
+#include <messages_mosq.h>
+#include <mqtt3_protocol.h>
+#include <net_mosq.h>
+#include <read_handle.h>
+#include <send_mosq.h>
+#include <util_mosq.h>
 #ifdef WITH_BROKER
-#include "mosquitto_broker.h"
+#include <mosquitto_broker.h>
 #endif
 
 int _mosquitto_handle_pingreq(struct mosquitto *mosq)
@@ -71,7 +71,12 @@ int _mosquitto_handle_pubackcomp(struct mosquitto *mosq, const char *type)
 
 	if(mid){
 		rc = mqtt3_db_message_delete(db, mosq, mid, mosq_md_out);
-		if(rc) return rc;
+		if(rc == MOSQ_ERR_NOT_FOUND){
+			_mosquitto_log_printf(mosq, MOSQ_LOG_WARNING, "Warning: Received %s from %s for an unknown packet identifier %d.", type, mosq->id, mid);
+			return MOSQ_ERR_SUCCESS;
+		}else{
+			return rc;
+		}
 	}
 #else
 	_mosquitto_log_printf(mosq, MOSQ_LOG_DEBUG, "Client %s received %s (Mid: %d)", mosq->id, type, mid);
@@ -108,7 +113,11 @@ int _mosquitto_handle_pubrec(struct mosquitto *mosq)
 
 	rc = _mosquitto_message_out_update(mosq, mid, mosq_ms_wait_for_pubcomp);
 #endif
-	if(rc) return rc;
+	if(rc == MOSQ_ERR_NOT_FOUND){
+		_mosquitto_log_printf(mosq, MOSQ_LOG_WARNING, "Warning: Received PUBREC from %s for an unknown packet identifier %d.", mosq->id, mid);
+	}else if(rc != MOSQ_ERR_SUCCESS){
+		return rc;
+	}
 	rc = _mosquitto_send_pubrel(mosq, mid);
 	if(rc) return rc;
 
@@ -137,6 +146,7 @@ int _mosquitto_handle_pubrel(struct mosquitto_db *db, struct mosquitto *mosq)
 	if(mqtt3_db_message_release(db, mosq, mid, mosq_md_in)){
 		/* Message not found. Still send a PUBCOMP anyway because this could be
 		 * due to a repeated PUBREL after a client has reconnected. */
+		_mosquitto_log_printf(mosq, MOSQ_LOG_WARNING, "Warning: Received PUBREL from %s for an unknown packet identifier %d.", mosq->id, mid);
 	}
 #else
 	_mosquitto_log_printf(mosq, MOSQ_LOG_DEBUG, "Client %s received PUBREL (Mid: %d)", mosq->id, mid);

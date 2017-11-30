@@ -235,7 +235,7 @@ void CTE923::GetSensorDetails()
 		{
 			tsen.WIND.tempsign=(data.wChill>=0)?0:1;
 			tsen.WIND.chillsign=(data.wChill>=0)?0:1;
-			int at10=round(abs(data.wChill*10.0f));
+			int at10=round(std::abs(data.wChill*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
@@ -280,21 +280,7 @@ void CTE923::GetSensorDetails()
 	//UV
 	if (data._uv==0)
 	{
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.UV.packetlength=sizeof(tsen.UV)-1;
-		tsen.UV.packettype=pTypeUV;
-		tsen.UV.subtype=sTypeUV1;
-		if (dev.batteryUV)
-			tsen.UV.battery_level=9;
-		else
-			tsen.UV.battery_level=0;
-		tsen.UV.rssi=12;
-		tsen.UV.id1=0;
-		tsen.UV.id2=1;
-
-		tsen.UV.uv=(BYTE)round(data.uv*10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, -1);
+		SendUVSensor(0, 1, 255, data.uv, "UV");
 	}
 }
 #endif //WITH_LIBUSB

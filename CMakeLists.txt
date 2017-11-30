@@ -3,8 +3,48 @@ cmake_minimum_required(VERSION 2.8.4)
 
 project(domoticz)
 
+## required min. libBoost version
+SET(DOMO_MIN_LIBBOOST_VERSION 105500)
+##
+
+MACRO(Gitversion_GET_REVISION dir variable)
+  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
+    WORKING_DIRECTORY ${dir}
+    OUTPUT_VARIABLE ${variable}
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+ENDMACRO(Gitversion_GET_REVISION)
+
+Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
+IF(NOT ProjectRevision)
+  MESSAGE(STATUS "Failed to get ProjectRevision from git")
+  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
+    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
+    LIST(GET AppVersionContent 0 AppVersionContent)
+    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
+    LIST(GET AppVersionContent 2 ProjectRevision)
+  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
+    set (ProjectRevision 0)
+  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
+ELSE(NOT ProjectRevision)
+  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
+ENDIF(NOT ProjectRevision)
+
+MESSAGE(STATUS "###########################")
+MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
+MESSAGE(STATUS "###########################")
+
+# The version number.
+set (domoticz_VERSION_MAJOR 3)
+set (domoticz_VERSION_MINOR 0)
+set (domoticz_VERSION_PATCH ${ProjectRevision})
+
 option(USE_BUILTIN_LUA "Use builtin lua library" YES)
 IF(USE_BUILTIN_LUA)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_definitions(-DLUA_USE_MACOSX)
+  ENDIF()
   add_subdirectory (lua)
   get_directory_property (LUA_LIBRARIES DIRECTORY lua
     DEFINITION LUA_LIBRARIES)
@@ -37,7 +77,7 @@ ELSE(USE_BUILTIN_MQTT)
     ENDIF(MQTT_LIBRARIES)
     INCLUDE_DIRECTORIES(${MQTT_INCLUDE_DIRS})
   ELSE(MQTT_INCLUDE_DIRS)
-     meessage(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
+     message(FATAL_ERROR "Mosquitto includes or library cannot be found, and you ask to NOT use builtin")
   ENDIF(MQTT_INCLUDE_DIRS)
 ENDIF(USE_BUILTIN_MQTT)
 
@@ -57,9 +97,60 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
+option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
+IF(USE_PYTHON)
+  find_package(PythonLibs 3.4)
+  IF(PYTHONLIBS_FOUND)
+    MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
+    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    add_definitions(-DENABLE_PYTHON)
+  ELSE(PYTHONLIBS_FOUND)
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON=NO or sudo apt-get install python3-dev)")
+  ENDIF(PYTHONLIBS_FOUND)
+ENDIF(USE_PYTHON)
+
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
   )
+
+INCLUDE(CheckIncludeFile)
+CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
+
+IF(HAVE_EXECINFO_H)
+  # FreeBSD have to include libexeinfo
+  IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    find_library(EXECINFO_LIBRARIES NAMES libexecinfo.so)
+    IF(EXECINFO_LIBRARIES)
+      ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
+    ENDIF()
+  ELSE()
+    ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
+  ENDIF()
+ENDIF(HAVE_EXECINFO_H)
+
+INCLUDE(CheckIncludeFiles)
+
+option(INCLUDE_LINUX_I2C "Include I2C support" YES)
+IF (INCLUDE_LINUX_I2C)
+	CHECK_INCLUDE_FILES ("sys/types.h;linux/i2c-dev.h;linux/i2c.h" HAVE_LINUX_I2C_H)
+	IF (HAVE_LINUX_I2C_H)
+		message(STATUS "Building with I2C support")
+		add_definitions(-DHAVE_LINUX_I2C)
+	ELSE()
+		message(WARNING "I2C support disabled: headers not found!")
+	ENDIF (HAVE_LINUX_I2C_H)
+ENDIF (INCLUDE_LINUX_I2C)
+
+option(INCLUDE_SPI "Include SPI support" YES)
+IF (INCLUDE_SPI)
+	CHECK_INCLUDE_FILES ("sys/types.h;linux/spi/spidev.h" HAVE_LINUX_SPI_H)
+	IF (HAVE_LINUX_SPI_H)
+		message(STATUS "Building with SPI support")
+		add_definitions(-DHAVE_LINUX_SPI)
+	ELSE()
+		message(WARNING "SPI support disabled: headers not found!")
+	ENDIF (HAVE_LINUX_SPI_H)
+ENDIF (INCLUDE_SPI)
 
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -113,7 +204,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
   ENDIF()
-
+  IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  ENDIF()
   IF(CMAKE_COMPILER_IS_GNUCXX)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
@@ -151,35 +244,6 @@ ENDMACRO()
 FIND_PROGRAM(GIT_EXECUTABLE git
   DOC "git command line client")
 
-MACRO(Gitversion_GET_REVISION dir variable)
-  EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
-    WORKING_DIRECTORY ${dir}
-    OUTPUT_VARIABLE ${variable}
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-ENDMACRO(Gitversion_GET_REVISION)
-
-Gitversion_GET_REVISION("${CMAKE_SOURCE_DIR}" ProjectRevision)
-IF(NOT ProjectRevision)
-  MESSAGE(STATUS "Failed to get ProjectRevision from git")
-  IF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "Read ProjectRevision from appversion.default")
-    FILE(STRINGS ${CMAKE_SOURCE_DIR}/appversion.default AppVersionContent)
-    LIST(GET AppVersionContent 0 AppVersionContent)
-    STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
-    LIST(GET AppVersionContent 2 ProjectRevision)
-  ELSE(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-    MESSAGE(STATUS "No appversion.default, set ProjectRevision to 0")
-    set (ProjectRevision 0)
-  ENDIF(EXISTS ${CMAKE_SOURCE_DIR}/appversion.default)
-ELSE(NOT ProjectRevision)
-  MATH(EXPR ProjectRevision "${ProjectRevision}+2107")
-ENDIF(NOT ProjectRevision)
-MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
-
-# The version number.
-set (domoticz_VERSION_MAJOR 3)
-set (domoticz_VERSION_MINOR 0)
-set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 include_directories(${CMAKE_SOURCE_DIR}/main)
 
@@ -197,15 +261,16 @@ domoticz_SRCS
 main/stdafx.cpp
 main/CmdLine.cpp
 main/Camera.cpp
-main/DataPush.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
+main/EventsPythonModule.cpp
+main/EventsPythonDevice.cpp
 main/Helper.cpp
-main/HttpPush.cpp
 main/localtime_r.cpp
 main/Logger.cpp
+main/LuaCommon.cpp
+main/LuaHandler.cpp
 main/mainworker.cpp
-main/Push.cpp
 main/RFXNames.cpp
 main/Scheduler.cpp
 main/SQLHelper.cpp
@@ -213,6 +278,11 @@ main/SunRiseSet.cpp
 main/WebServer.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
+push/BasePush.cpp
+push/FibaroPush.cpp
+push/GooglePubSubPush.cpp
+push/HttpPush.cpp
+push/InfluxPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -220,16 +290,23 @@ hardware/1Wire/1WireByOWFS.cpp
 hardware/1Wire/1WireByKernel.cpp
 hardware/1Wire/1WireCommon.cpp
 hardware/1Wire/1WireForWindows.cpp
+hardware/AccuWeather.cpp
 hardware/AnnaThermostat.cpp
+hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
+hardware/BleBox.cpp
 hardware/Comm5TCP.cpp
+hardware/Comm5Serial.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
+hardware/Daikin.cpp
+hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
+hardware/DenkoviSmartdenLan.cpp
 hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
@@ -237,34 +314,46 @@ hardware/Dummy.cpp
 hardware/EcoDevices.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
-hardware/evohome.cpp
+hardware/Ec3kMeterTCP.cpp
+hardware/EvohomeBase.cpp
+hardware/EvohomeScript.cpp
+hardware/EvohomeSerial.cpp
+hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
-hardware/Sterbox.cpp
-hardware/ForecastIO.cpp
 hardware/FritzboxTCP.cpp
+hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
+hardware/InComfort.cpp
 hardware/KMTronicBase.cpp
 hardware/KMTronic433.cpp
 hardware/KMTronicSerial.cpp
 hardware/KMTronicTCP.cpp
+hardware/KMTronicUDP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
 hardware/Meteostick.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
+hardware/MultiFun.cpp
 hardware/MySensorsBase.cpp
 hardware/MySensorsSerial.cpp
 hardware/MySensorsTCP.cpp
+hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
-hardware/OpenWebNet.cpp
+hardware/HttpPoller.cpp
+hardware/OnkyoAVTCP.cpp
+hardware/OpenWeatherMap.cpp
+hardware/OpenWebNetTCP.cpp
+hardware/OpenWebNetUSB.cpp
 hardware/openwebnet/bt_openwebnet.cpp
 hardware/OpenZWave.cpp
 hardware/openzwave/control_panel/ozwcp.cpp
@@ -276,38 +365,58 @@ hardware/PanasonicTV.cpp
 hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
-hardware/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
+hardware/RelayNet.cpp
 hardware/RFLinkBase.cpp
 hardware/RFLinkSerial.cpp
 hardware/RFLinkTCP.cpp
+hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
+hardware/Rtl433.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
+hardware/S0MeterTCP.cpp
 hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
+hardware/Sterbox.cpp
+hardware/SysfsGpio.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
-hardware/Teleinfo.cpp
+hardware/TeleinfoBase.cpp
+hardware/TeleinfoSerial.cpp
 hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
+hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
 hardware/YouLess.cpp
+hardware/ZiBlueBase.cpp
+hardware/ZiBlueSerial.cpp
+hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
+hardware/Yeelight.cpp
+hardware/XiaomiGateway.cpp
+hardware/plugins/DelayedLink.cpp
+hardware/plugins/Plugins.cpp
+hardware/plugins/PluginManager.cpp
+hardware/plugins/PluginProtocols.cpp
+hardware/plugins/PluginTransports.cpp
+hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
@@ -319,6 +428,7 @@ notifications/NotificationNma.cpp
 notifications/NotificationPushbullet.cpp
 notifications/NotificationProwl.cpp
 notifications/NotificationPushover.cpp
+notifications/NotificationPushsafer.cpp
 notifications/NotificationPushalot.cpp
 notifications/NotificationSMS.cpp
 smtpclient/SMTPClient.cpp
@@ -340,21 +450,21 @@ json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
 tinyxpath/action_store.cpp
+tinyxpath/htmlutil.cpp
+tinyxpath/lex_util.cpp
+tinyxpath/node_set.cpp
+tinyxpath/tinystr.cpp
 tinyxpath/tinyxml.cpp
+tinyxpath/tinyxmlerror.cpp
+tinyxpath/tinyxmlparser.cpp
 tinyxpath/tokenlist.cpp
+tinyxpath/xml_util.cpp
+tinyxpath/xpath_expression.cpp
 tinyxpath/xpath_processor.cpp
 tinyxpath/xpath_stream.cpp
-tinyxpath/htmlutil.cpp
-tinyxpath/node_set.cpp
-tinyxpath/tinyxmlerror.cpp
-tinyxpath/xml_util.cpp
 tinyxpath/xpath_stack.cpp
-tinyxpath/xpath_syntax.cpp
-tinyxpath/lex_util.cpp
-tinyxpath/tinystr.cpp
-tinyxpath/tinyxmlparser.cpp
-tinyxpath/xpath_expression.cpp
 tinyxpath/xpath_static.cpp
+tinyxpath/xpath_syntax.cpp
 )
 add_executable(domoticz ${domoticz_SRCS})
 
@@ -364,52 +474,24 @@ add_dependencies(domoticz revisiontag)
 
 ## Link libraries
 
-option(USE_PYTHON "Use Python as a scripting language" NO)
-if(USE_PYTHON)
-  FIND_PACKAGE(PythonLibs)
-  IF(PYTHONLIBS_FOUND)
-    MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
-    MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  else()
-    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-  ENDIF(PYTHONLIBS_FOUND)
-
-  FIND_PACKAGE(PythonInterp)
-  IF(PYTHONINTERP_FOUND)
-    MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-    LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
-    MESSAGE(STATUS "Python as scripting languages: ENABLED")
-    IF(PYTHONLIBS_FOUND)
-      add_definitions(-DENABLE_PYTHON)
-      add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
-      target_link_libraries(domoticz ${PYTHON_LIBRARIES})
-    ELSE()
-      MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-    ENDIF(PYTHONLIBS_FOUND)
-
-  else()
-    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-  ENDIF(PYTHONINTERP_FOUND)
-endif(USE_PYTHON)
-
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-IF(USE_PYTHON AND PYTHONLIBS_FOUND)
-  find_package(Boost REQUIRED COMPONENTS thread date_time system python)
-else()
-  find_package(Boost REQUIRED COMPONENTS thread date_time system)
-endif(USE_PYTHON AND PYTHONLIBS_FOUND)
+find_package(Boost REQUIRED COMPONENTS thread date_time system)
 
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
 else(USE_STATIC_BOOST)
    message(STATUS "Linking against boost dynamic libraries")
 endif(USE_STATIC_BOOST)
+
+# compare found vs required libBoost version
+if(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+   message(FATAL_ERROR "Found libBoost version ${Boost_VERSION}, ${DOMO_MIN_LIBBOOST_VERSION} or newer required")
+endif(Boost_VERSION VERSION_LESS DOMO_MIN_LIBBOOST_VERSION)
+
 include_directories(${Boost_INCLUDE_DIRS})
 
 
@@ -518,12 +600,12 @@ IF(OpenZWave)
       find_library(UDEV NAMES libudev.a)
       IF(UDEV)
         message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt)
+        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
       else()
         find_library(UDEV NAMES libudev.so)
         IF(UDEV)
            message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt)
+           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
         else()
            MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
         ENDIF(UDEV)
@@ -534,22 +616,14 @@ else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-find_path(WiringPi wiringPi.h)
-IF(WiringPi)
-  message(STATUS "WiringPi include was found in ${WiringPi}...")
-  find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
-  IF(WIRINGPI_LIBRARY)
-    message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
-    add_definitions(-DWITH_GPIO)
-    target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
-  else()
-    message(STATUS "==== WiringPi library not found. GPIO support disabled.")
-  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-  ENDIF()
-else()
-  message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
-  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-ENDIF(WiringPi)
+
+IF(EXISTS /sys/class/gpio)
+  message(STATUS "GPIO is available")
+  add_definitions(-DWITH_GPIO)
+ELSE()
+  message(STATUS "GPIO is not available")
+ENDIF()
+
 
 find_path(TELLDUSCORE_INCLUDE NAMES telldus-core.h)
 if (TELLDUSCORE_INCLUDE)
@@ -563,26 +637,12 @@ else()
   message(STATUS "Not found telldus-core (telldus-core.h), not adding tellstick support")
 endif (TELLDUSCORE_INCLUDE)
 
-# Under FreeBSD sys/sysinfo?h exist using a separate pkg
-IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-  find_path(SYSINFO_INCLUDE NAMES sys/sysinfo.h)
-  if (SYSINFO_INCLUDE)
-     message(STATUS "Found sys/sysinfo.h at : ${SYSINFO_INCLUDE}")
-     find_library(SYSINFO_LIBRARIES NAMES libsysinfo.so)
-     if(SYSINFO_LIBRARIES)
-       message(STATUS "Found libsysinfo.so at : ${SYSINFO_LIBRARIES}")
-     else(SYSINFO_LIBRARIES)
-       message(FATAL_ERROR "Cannot find libsysinfo, please install it with 'pkg install libsysinfo'")
-     endif(SYSINFO_LIBRARIES)
-  else()
-     message(FATAL_ERROR "Cannot find sysinfo.h, please install it with 'pkg install libsysinfo'")
-  endif()
-ENDIF()
-
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 else()
-  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${SYSINFO_LIBRARIES})
+  target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()
 
 ADD_PRECOMPILED_HEADER(domoticz "main/stdafx.h")
@@ -636,7 +696,9 @@ install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
 

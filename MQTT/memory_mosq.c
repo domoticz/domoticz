@@ -14,12 +14,12 @@ Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "memory_mosq.h"
+#include <memory_mosq.h>
 
 #ifdef REAL_WITH_MEMORY_TRACKING
 #  if defined(__APPLE__)
@@ -54,6 +54,9 @@ void *_mosquitto_calloc(size_t nmemb, size_t size)
 void _mosquitto_free(void *mem)
 {
 #ifdef REAL_WITH_MEMORY_TRACKING
+	if(!mem){
+		return;
+	}
 	memcount -= malloc_usable_size(mem);
 #endif
 	free(mem);

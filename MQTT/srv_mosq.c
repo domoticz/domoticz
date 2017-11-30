@@ -67,7 +67,7 @@ int mosquitto_connect_srv(struct mosquitto *mosq, const char *host, int keepaliv
 	if(!host){
 		// get local domain
 	}else{
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 		if(mosq->tls_cafile || mosq->tls_capath || mosq->tls_psk){
 			h = _mosquitto_malloc(strlen(host) + strlen("_secure-mqtt._tcp.") + 1);
 			if(!h) return MOSQ_ERR_NOMEM;
@@ -77,7 +77,7 @@ int mosquitto_connect_srv(struct mosquitto *mosq, const char *host, int keepaliv
 			h = _mosquitto_malloc(strlen(host) + strlen("_mqtt._tcp.") + 1);
 			if(!h) return MOSQ_ERR_NOMEM;
 			sprintf(h, "_mqtt._tcp.%s", host);
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 		}
 #endif
 		ares_search(mosq->achan, h, ns_c_in, ns_t_srv, srv_callback, mosq);

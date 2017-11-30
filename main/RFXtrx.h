@@ -27,6 +27,33 @@ portions of this file.
 */
 
 /*
+SDK version 9.15
+	BlindsT13 - Screenline angle change added
+
+SDK version 9.14
+	Lighting5 - Kangtai added
+
+SDK version 9.13
+	BlindsT13 - Screenline added
+
+SDK version 9.12
+	Thermostat4 updated
+
+SDK version 9.11
+	FAN - Westinghouse fan added
+	Security1 - RM174RF added
+	Thermostat4 added
+
+SDK version 9.10
+	FAN - SEAV remote added
+
+SDK version 9.09
+	Lighting5 - MDremote108 added
+
+SDK version 9.08
+	CARTELECTRONIC TIC and Encoder added
+	Lighting5 - Livolo dim/scene added
+
 SDK version 9.07
 	Lighting5 IT added
 	BlindsT12 Confexx added
@@ -321,6 +348,9 @@ SDK version 4.9
 #define cmd835		0x59 // select 868.35MHz ASK in the 868 transceiver
 #define cmd835F		0x5A // select 868.35MHz FSK in the 868 transceiver
 #define cmd895		0x5B // select 868.95MHz in the 868 transceiver
+#define cmd830F_P	0x5C // select 868.30MHz FSK PKT in the 868 transceiver
+#define cmd835F_P	0x5D // select 868.35MHz FSK PKT in the 868 transceiver
+#define cmd840F_P	0x5E // select 868.40MHz FSK PKT in the 868 transceiver
 
 #define pTypeInterfaceMessage 0x01
 #define sTypeInterfaceResponse 0x00
@@ -341,6 +371,10 @@ SDK version 4.9
 #define recType86835 0x59
 #define recType86835FSK 0x5A
 #define recType86895 0x5B
+#define recType86830FSK_PKT 0x5C
+#define recType86835FSK_PKT 0x5D
+#define recType86840FSK_PKT 0x5E
+#define trxType43450 0x5F
 
 #define msg3_AE 0x01			//AE Blyss
 #define msg3_RUBICSON 0x02		//Rubicson,Lacrosse, Banggood
@@ -481,6 +515,8 @@ SDK version 4.9
 #define sTypeLegrandCAD 0x0D
 #define sTypeAvantek 0x0E
 #define sTypeIT 0x0F
+#define sTypeMDREMOTE108 0x10
+#define sTypeKangtai 0x11
 
 #define light5_sOff 0x0
 #define light5_sOn 0x1
@@ -515,15 +551,16 @@ SDK version 4.9
 #define light5_sModeMin 0xA
 #define light5_sLivoloAllOff 0x00
 #define light5_sLivoloGang1Toggle 0x01
-#define light5_sLivoloGang2Toggle 0x02	//dim+ for dimmer
-#define light5_sLivoloGang3Toggle 0x03	//dim- for dimmer
-#define light5_sLivoloGang4Toggle 0x04
-#define light5_sLivoloGang5Toggle 0x05
-#define light5_sLivoloGang6Toggle 0x06
-#define light5_sLivoloGang7Toggle 0x07
-#define light5_sLivoloGang8Toggle 0x08
-#define light5_sLivoloGang9Toggle 0x09
-#define light5_sLivoloGang10Toggle 0x0A
+#define light5_sLivoloGang2Toggle 0x02
+#define light5_sLivoloDimR1plus 0x02
+#define light5_sLivoloGang3Toggle 0x03
+#define light5_sLivoloDimR1min 0x03
+#define light5_sLivoloScene1R1 0x04
+#define light5_sLivoloScene2R1 0x05
+#define light5_sLivoloDimR2plus 0x06
+#define light5_sLivoloDimR2min 0x07
+#define light5_sLivoloScene1R2 0x08
+#define light5_sLivoloScene2R2 0x09
 #define light5_sRGBoff 0x00
 #define light5_sRGBon 0x01
 #define light5_sRGBbright 0x02
@@ -567,6 +604,8 @@ SDK version 4.9
 #define sTypeSiemensSF01 0x0
 #define sTypeItho 0x1
 #define sTypeLucciAir 0x2
+#define sTypeSeavTXS4 0x3
+#define sTypeWestinghouse 0x4
 #define fan_sTimer 0x1
 #define fan_sMin 0x2
 #define fan_sLearn 0x3
@@ -585,6 +624,15 @@ SDK version 4.9
 #define fan_LucciLow 0x3
 #define fan_LucciOff 0x4
 #define fan_LucciLight 0x5
+#define fan_T1 0x1
+#define fan_T2 0x2
+#define fan_T3 0x3
+#define fan_T4 0x4
+#define fan_WestinghouseHi 0x1
+#define fan_WestinghouseMed 0x2
+#define fan_WestinghouseLow 0x3
+#define fan_WestinghouseOff 0x4
+#define fan_WestinghouseLight 0x5
 
 //types for Curtain
 #define pTypeCurtain 0x18
@@ -609,6 +657,7 @@ SDK version 4.9
 #define sTypeBlindsT10 0xA	//Dolat DLM-1
 #define sTypeBlindsT11 0xB	//ASP
 #define sTypeBlindsT12 0xC	//Confexx
+#define sTypeBlindsT13 0xD	//Screenline
 
 #define blinds_sOpen 0x0
 #define blinds_sClose 0x1
@@ -621,14 +670,16 @@ SDK version 4.9
 #define blinds_sLeft 0x8
 #define blinds_sRight 0x9
 #define blinds_s9ChangeDirection 0x6
-#define blinds_s9ImA = 0x7
-#define blinds_s9ImCenter = 0x8
-#define blinds_s9ImB = 0x9
-#define blinds_s9EraseCurrentCh = 0xA
-#define blinds_s9EraseAllCh = 0xB
-#define blinds_s10LearnMaster = 0x4
-#define blinds_s10EraseCurrentCh = 0x5
-#define blinds_s10ChangeDirection = 0x6
+#define blinds_s9ImA 0x7
+#define blinds_s9ImCenter 0x8
+#define blinds_s9ImB 0x9
+#define blinds_s9EraseCurrentCh 0xA
+#define blinds_s9EraseAllCh 0xB
+#define blinds_s10LearnMaster 0x4
+#define blinds_s10EraseCurrentCh 0x5
+#define blinds_s10ChangeDirection 0x6
+#define blinds_s13anglePlus 0x4
+#define blinds_s13angleMinus 0x5
 
 //types for RFY
 #define pTypeRFY 0x1A
@@ -677,6 +728,7 @@ SDK version 4.9
 #define sTypePowercodeAux 0x07		//Visonic PowerCode sensor - auxiliary contact
 #define sTypeMeiantech 0x8			//Meiantech
 #define sTypeSA30 0x9				//SA30 smoke detector
+#define sTypeRM174RF 0xA			//RM174RF smoke detector
 
 //status security
 #define sStatusNormal 0x0
@@ -770,6 +822,15 @@ SDK version 4.9
 #define thermostat3_sRunDown 0x5
 #define thermostat3_On2nd 0x5
 #define thermostat3_sStop 0x6
+
+#define pTypeThermostat4 0x43
+#define sTypeMCZ1 0x0	//MCZ 1 fan model
+#define sTypeMCZ2 0x1	//MCZ 2 fan model
+#define sTypeMCZ3 0x2	//MCZ 3 fan model
+#define thermostat4_sOff 0x0
+#define thermostat4_sManual 0x1
+#define thermostat4_sAuto 0x2
+#define thermostat4_sEco 0x3
 
 //types for Radiator valve
 #define pTypeRadiator1 0x48
@@ -900,6 +961,11 @@ SDK version 4.9
 
 //types for water
 #define pTypeWATER 0x5F
+
+//types for CARTELECTRONIC
+#define pTypeCARTELECTRONIC 0x60
+#define sTypeTIC 0x1
+#define sTypeCEencoder 0x2
 
 //RFXSensor
 #define pTypeRFXSensor 0x70
@@ -1480,6 +1546,34 @@ typedef union tRBUF {
 		BYTE	packettype;
 		BYTE	subtype;
 		BYTE	seqnbr;
+		BYTE	unitcode1;
+		BYTE	unitcode2;
+		BYTE	unitcode3;
+		BYTE	beep;
+		BYTE	fan1_speed;
+#ifdef IS_BIG_ENDIAN
+		BYTE	fan3_speed : 4;
+		BYTE	fan2_speed : 4;
+#else
+		BYTE	fan2_speed : 4;
+		BYTE	fan3_speed : 4;
+#endif
+		BYTE	flame_power;
+		BYTE	mode;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	filler : 4;
+#else
+		BYTE	filler : 4;
+		BYTE	rssi : 4;
+#endif
+	} THERMOSTAT4;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
 		BYTE	id1;
 		BYTE	id2;
 		BYTE	id3;
@@ -1903,6 +1997,64 @@ typedef union tRBUF {
 		BYTE	rssi : 4;
 #endif
 	} WEIGHT;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	id5;
+		BYTE	contract_type;
+		BYTE	counter1_0;
+		BYTE	counter1_1;
+		BYTE	counter1_2;
+		BYTE	counter1_3;
+		BYTE	counter2_0;
+		BYTE	counter2_1;
+		BYTE	counter2_2;
+		BYTE	counter2_3;
+		BYTE	power_H;
+		BYTE	power_L;
+		BYTE	state;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} TIC;
+
+	struct {
+		BYTE	packetlength;
+		BYTE	packettype;
+		BYTE	subtype;
+		BYTE	seqnbr;
+		BYTE	id1;
+		BYTE	id2;
+		BYTE	id3;
+		BYTE	id4;
+		BYTE	counter1_0;
+		BYTE	counter1_1;
+		BYTE	counter1_2;
+		BYTE	counter1_3;
+		BYTE	counter2_0;
+		BYTE	counter2_1;
+		BYTE	counter2_2;
+		BYTE	counter2_3;
+		BYTE	state;
+#ifdef IS_BIG_ENDIAN
+		BYTE	rssi : 4;
+		BYTE	battery_level : 4;
+#else
+		BYTE	battery_level : 4;
+		BYTE	rssi : 4;
+#endif
+	} CEENCODER;
 
 	struct {
 		BYTE	packetlength;

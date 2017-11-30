@@ -97,7 +97,7 @@ namespace OpenZWave
 
 		/**
 		 * Open a serial port.
-		 * Attempts to open a serial port and initialize it with the specified paramters.
+		 * Attempts to open a serial port and initialize it with the specified parameters.
 		 * @param _SerialControllerName The name of the port to open.  For example, ttyS1 on Linux, or \\.\COM2 in Windows.
 		 * @return True if the port was opened and configured successfully.
 		 * @see Close, Read, Write

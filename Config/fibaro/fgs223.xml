@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- COMMAND_CLASS_SWITCH_MULTILEVEL. This class is in the list reported by the device, but it does not respond to requests -->
+    <CommandClass id="38" getsupported="false"/>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="9" label="Saving state before power failure" value="1" size="1">
+            <Help>Saving state before power failure</Help>
+            <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
+            <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="10" label="First channel - operating mode" value="0" size="1">
+            <Help>This parameter allows to choose operating for the 1st channel controlled by the S1 switch.</Help>
+            <Item label="Standard operation" value="0"/>
+            <Item label="Delay On" value="1"/>
+            <Item label="Delay Off" value="2"/>
+            <Item label="Auto On" value="3"/>
+            <Item label="Auto Off" value="4"/>
+            <Item label="Flashing Mode" value="5"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="11" label="First channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S1 terminal.</Help>
+            <Item label="Cancel mode and set target state" value="0"/>
+            <Item label="No reaction to switch - mode runs until it ends" value="1"/>
+            <Item label="Reset timer - start counting from the beginning" value="2"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="12" label="First channel - time parameter for delay/auto ON/OFF modes" value="50" min="1" max="32000" size="2">
+            <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="13" label="First channel - pulse time for flashing mode" value="5" min="1" max="32000" size="2">
+            <Help>
+                This parameter allows to set time of switching to opposite state in flashing mode.
+                1-32000 (0.1-3200.0s, 0.1s step)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Second channel - operating mode" value="0" size="1">
+            <Help>This parameter allows to choose operating for the 2st channel controlled by the S2 switch.</Help>
+            <Item label="Standard operation" value="0"/>
+            <Item label="Delay On" value="1"/>
+            <Item label="Delay Off" value="2"/>
+            <Item label="Auto On" value="3"/>
+            <Item label="Auto Off" value="4"/>
+            <Item label="Flashing Mode" value="5"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="16" label="Second channel - reaction to switch for delay/auto ON/OFF modes" value="0" size="1">
+            <Help>This parameter determines how the device in timed mode reacts to pushing the switch connected to the S2 terminal.</Help>
+            <Item label="Cancel mode and set target state" value="0"/>
+            <Item label="No reaction to switch - mode runs until it ends" value="1"/>
+            <Item label="Reset timer - start counting from the beginning" value="2"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="17" label="Second channel - time parameter for delay/auto ON/OFF modes" value="50" min="1" max="32000" size="2">
+            <Help>This parameter allows to set time parameter used in timed modes. (s)</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="18" label="Second channel - pulse time for flashing mode" value="5" min="1" max="32000" size="2">
+            <Help>
+                This parameter allows to set time of switching to opposite state in flashing mode.
+                1-32000 (0.1-3200.0s, 0.1s step)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="20" label="Switch type" value="2" size="1">
+            <Help>Inputs type configuration</Help>
+            <Item label="Momentary switch" value="0"/>
+            <Item label="Toggle switch (contact closed - On, contact opened - OFF)" value="1"/>
+            <Item label="Toggle switch (device changes status when switch changes status)" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="21" label="Flashing mode report" value="0" size="1">
+            <Help>Enabled / Disabled reports on Flashing mode</Help>
+            <Item label="Disabled" value="0"/>
+            <Item label="Enabled" value="1"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="27" label="Associations in Z-Wave network security mode" value="15" min="0" max="15" size="1">
+            <Help>
+                This parameter defines how commands are sent to specified association groups: as secure or non-secure.
+                Parameter is active only in Z-Wave network security mode.
+                This parameter does not apply to 1st lifeline group.
+                1 - 2nd group sent as secure.
+                2 - 3rd group sent as secure.
+                4 - 4th group sent as secure.
+                8 - 5th group sent as secure.
+                Default setting: 15 (all)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="28" label="S1 switch - scenes sent" value="0" min="0" max="15" size="1">
+            <Help>
+                This parameter determines which actions result in sending scene IDs assigned to them.
+                1 - Key pressed 1 time.
+                2 - Key pressed 2 times.
+                4 - Key pressed 3 times.
+                8 - Key Hold Down and Key Released.
+                Default setting: 0 (none)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="29" label="S2 switch - scenes sent" value="0" min="0" max="15" size="1">
+            <Help>
+                This parameter determines which actions result in sending scene IDs assigned to them.
+                1 - Key pressed 1 time.
+                2 - Key pressed 2 times.
+                4 - Key pressed 3 times.
+                8 - Key Hold Down and Key Released.
+                Default setting: 0 (none)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="30" label="S1 associations sent to 2nd and 3rd association groups" value="0" min="0" max="15" size="1">
+            <Help>
+                This parameter determines which actions are ignored when sending commands to devices associated in 2nd and 3rd association group.
+                All actions are active by default.
+                1 - ignore turning On with 1 click of the switch.
+                2 - ignore turning OFF with 1 click of the switch.
+                4 - ignore holding and releasing the switch.
+                8 - ignore double click of the switch.
+                Default setting: 0
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="31" label="S1 Switch ON value sent to 2nd and 3rd association groups" value="255" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Switch On command to devices associated in 2nd and 3rd association group.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="32" label="S1 Switch OFF value sent to 2nd and 3rd association groups" value="0" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Switch Off command to devices associated in 2nd and 3rd association group.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="33" label="S1 Switch Double Click value sent to 2nd and 3rd association groups" value="99" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Double Click command to devices associated in 2nd and 3rd association group.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="35" label="S2 associations sent to 4th and 5th association groups" value="0" min="0" max="15" size="1">
+            <Help>
+                This parameter determines which actions are ignored when sending commands to devices associated in 4th and 5th association group.
+                All actions are active by default.
+                1 - ignore turning On with 1 click of the switch.
+                2 - ignore turning OFF with 1 click of the switch.
+                4 - ignore holding and releasing the switch.
+                8 - ignore double click of the switch.
+                Default setting: 0
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="36" label="S2 Switch ON value sent to 4th and 5th association groups" value="255" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Switch On command to devices associated in 4th and 5th association group.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="37" label="S2 Switch OFF value sent to 4th and 5th association groups" value="0" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Switch Off command to devices associated in 4th and 5th association group.
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="38" label="S2 Switch Double Click value sent to 4th and 5th association groups" value="99" min="0" max="255" size="2">
+            <Help>
+                This parameter determines value sent with Double Click command to devices associated in 4th and 5th association group.
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="40" label="Reaction to General Alarm" value="3" size="1">
+            <Help>This parameter determines how the device will react to General Alarm frame.</Help>
+            <Item label="Ignored" value="0"/>
+            <Item label="Turn On" value="1"/>
+            <Item label="Turn OFF" value="2"/>
+            <Item label="Flash" value="3"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="41" label="Reaction to Flood Alarm" value="2" size="1">
+            <Help>This parameter determines how the device will react to Flood Alarm frame.</Help>
+            <Item label="Ignored" value="0"/>
+            <Item label="Turn On" value="1"/>
+            <Item label="Turn OFF" value="2"/>
+            <Item label="Flash" value="3"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="42" label="Reaction to CO/CO2/Smoke Alarm" value="3" size="1">
+            <Help>This parameter determines how the device will react to CO/CO2/Smoke Alarm frame.</Help>
+            <Item label="Ignored" value="0"/>
+            <Item label="Turn On" value="1"/>
+            <Item label="Turn OFF" value="2"/>
+            <Item label="Flash" value="3"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="43" label="Reaction to Heat Alarm" value="1" size="1">
+            <Help>This parameter determines how the device will react to Heat alarm frame.</Help>
+            <Item label="Ignored" value="0"/>
+            <Item label="Turn On" value="1"/>
+            <Item label="Turn OFF" value="2"/>
+            <Item label="Flash" value="3"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="44" label="Flashing alarm duration" value="600" min="1" max="32000" size="2">
+            <Help>
+                This parameter allows to set duration of flashing alarm mode.
+                1-32000 (0.1-32000s, 1s step) Default: 600 (10min)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="50" label="First channel - power reports" value="20" min="1" max="100" size="2">
+            <Help>
+                This parameter determines the minimum change in consumed power
+                that will result in sending new power report to the main controller.
+                1-100 (%) Default 20 (20%)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="51" label="First channel - minimal time between power reports" value="10" min="1" max="120" size="2">
+            <Help>
+                This parameter determines minimum time that has to elapse before
+                sending new power report to the main controller.
+                1-120 (s) Default 10 (10s)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="53" label="First channel - energy reports" value="100" min="1" max="32000" size="2">
+            <Help>
+                This parameter determines the minimum change in consumed energy
+                that will result in sending new energy report to the main controller.
+                1-32000 (0.01-320 kWh) Default 100 (1kWh)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="54" label="Second Channel - power reports" value="20" min="1" max="100" size="2">
+            <Help>
+                This parameter determines the minimum change in consumed power
+                that will result in sending new power report to the main controller.
+                1-100 (%) Default 20 (20%)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="55" label="Second channel - minimal time between power reports" value="10" min="1" max="120" size="2">
+            <Help>
+                This parameter determines minimum time that has to elapse before
+                sending new power report to the main controller.
+                1-120 (s) Default 10 (10s)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="57" label="Second channel - energy reports" value="100" min="1" max="32000" size="2">
+            <Help>
+                This parameter determines the minimum change in consumed energy
+                that will result in sending new energy report to the main controller
+                1-32000 (0.01-320 kWh) Default 100 (1kWh)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="58" label="Periodic power reports" value="3600" min="1" max="32000" size="2">
+            <Help>
+                This parameter determines in what time interval the periodic
+                power reports are sent to the main controller.
+                1-32000 (s) Default 3600 (1h)
+            </Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="59" label="Periodic energy reports" value="3600" min="1" max="32000" size="2">
+            <Help>
+                This parameter determines in what time interval the periodic
+                power reports are sent to the main controller.
+                1-32000 (s) Default 3600 (1h)
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="60" label="Measuring energy consumed by the device itself" value="0" size="1">
+            <Help>
+                This parameter determines whether energy metering should include
+                the amount of energy consumed by the device itself. Results are
+                being added to energy reports for first endpoint.
+            </Help>
+            <Item label="function inactive" value="0"/>
+            <Item label="function active" value="1"/>
+        </Value>
+    </CommandClass>
+    <!-- -->
+    <CommandClass id="96" mapping="endpoints"/>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="5">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="On/Off S1"/>
+            <Group index="3" max_associations="5" label="Dimmer S1"/>
+            <Group index="4" max_associations="5" label="On/Off S2"/>
+            <Group index="5" max_associations="5" label="Dimmer S2"/>
+        </Associations>
+    </CommandClass>
+    <CommandClass id="142" ForceInstances="true"/>
+</Product>

@@ -62,8 +62,13 @@
 						$('#digitdisplay').val("* "+displaytext+" *");
 					}
 				},
-				error: function(){
-					ShowError('NoConnect');
+				error: function(data){
+					if (data.status==401) { // 401 : Unauthorized
+						window.location = "/index.html";
+					}
+					else {
+						ShowError('NoConnect');
+					}
 					return;
 				}
 			});

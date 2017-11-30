@@ -18,16 +18,16 @@ Contributors:
 #include <stdio.h>
 #include <string.h>
 
-#include "mosquitto.h"
-#include "logging_mosq.h"
-#include "memory_mosq.h"
-#include "messages_mosq.h"
-#include "mqtt3_protocol.h"
-#include "net_mosq.h"
-#include "read_handle.h"
-#include "send_mosq.h"
-#include "time_mosq.h"
-#include "util_mosq.h"
+#include <mosquitto.h>
+#include <logging_mosq.h>
+#include <memory_mosq.h>
+#include <messages_mosq.h>
+#include <mqtt3_protocol.h>
+#include <net_mosq.h>
+#include <read_handle.h>
+#include <send_mosq.h>
+#include <time_mosq.h>
+#include <util_mosq.h>
 
 int _mosquitto_packet_handle(struct mosquitto *mosq)
 {

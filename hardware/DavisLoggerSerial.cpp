@@ -307,8 +307,22 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	if ((pData[12]!=0xFF)||(pData[13]!=0x7F))
 	{
 		bOutsideTemperatureValid=true;
-		OutsideTemperature=((unsigned int)((pData[13] << 8) | pData[12])) / 10.f;
-
+		//OutsideTemperature=((unsigned int)((pData[13] << 8) | pData[12])) / 10.f;
+		//OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
+		
+		uint8_t msb = pData[13];
+		uint8_t lsb = pData[12];
+		
+		uint16_t temp16 = ((msb << 8) | lsb);
+		if (temp16 > 0x800) {
+			// Negative values, convert to float from two complements int
+			int temp_int = (temp16 | ~((1 << 16) - 1));
+			OutsideTemperature = (float)temp_int / 10.0f;
+		} else {
+			OutsideTemperature = (float)temp16 / 10.0f;
+		}
+		
+		// Convert to celsius
 		OutsideTemperature = (OutsideTemperature - 32.0f) * 5.0f / 9.0f;
 	}
 	//Outside Humidity
@@ -467,7 +481,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 		{
 			tsen.WIND.tempsign=(OutsideTemperature>=0)?0:1;
 			tsen.WIND.chillsign=(OutsideTemperature>=0)?0:1;
-			int at10=round(abs(OutsideTemperature*10.0f));
+			int at10=round(std::abs(OutsideTemperature*10.0f));
 			tsen.WIND.temperatureh=(BYTE)(at10/256);
 			tsen.WIND.chillh=(BYTE)(at10/256);
 			at10-=(tsen.WIND.chillh*256);
@@ -487,18 +501,7 @@ bool CDavisLoggerSerial::HandleLoopData(const unsigned char *data, size_t len)
 	}
 	if (bUVValid)
 	{
-		RBUF tsen;
-		memset(&tsen,0,sizeof(RBUF));
-		tsen.UV.packetlength=sizeof(tsen.UV)-1;
-		tsen.UV.packettype=pTypeUV;
-		tsen.UV.subtype=sTypeUV1;
-		tsen.UV.battery_level=9;
-		tsen.UV.rssi=12;
-		tsen.UV.id1=0;
-		tsen.UV.id2=1;
-
-		tsen.UV.uv=(BYTE)round(UV*10);
-		sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
+		SendUVSensor(0, 1, 255, UV, "UV");
 	}
 	
 	//Rain Rate

@@ -44,6 +44,7 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
+	std::string MakeRequestURL(const bool bIsHomeCoach);
 	void GetMeterDetails();
 	void GetThermostatDetails();
 	bool ParseNetatmoGetResponse(const std::string &sResult, const bool bIsThermostat);
@@ -54,6 +55,8 @@ private:
 	bool LoadRefreshToken();
 	void StoreRefreshToken();
 	bool m_isLogged;
+	bool m_bForceLogin;
+	bool m_bIsHomeCoach;
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_vp);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_vp);

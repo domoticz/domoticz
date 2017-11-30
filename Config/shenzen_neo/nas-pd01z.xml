@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Coolcam NAS-PD01ZE Motion Sensor (PIR)
+  http://products.z-wavealliance.org/ProductManual/File?folder=&filename=Manuals/1920/Motion%20Detector%20User%20Guide%20EU%20V3.3.pdf
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" instance="1" index="1" label="Sensitivity Level Setting" value="12" min="8" max="255" size="1">
+      <Help>This parameter defines the sensitivity of PIR detector, it is recommended to test the detector with movements from a farthest end of the coverage area at first time of use.
+        If movements cannot be detected sensitively, simply adjust the sensitivity level with this parameter.
+        This Parameter can be configured with the value 8 trough 255, where 8 means high sensitivity and 255 means lowest sensitivity.
+      </Help>
+    </Value>
+    
+    <Value type="short" genre="config" instance="1" index="2" label="On/Off Duration" units="second" value="30" min="5" max="600" size="2">
+      <Help>This parameter can be determined how long the associated devices should stay ON status.
+        For instance, this parameter is set to 30(second), the PIR detector will send a BASIC_SET Command to an associated device with value basic set level if PIR detector is triggered and the associated device will be turned on 30(second) before it is turned off.
+        This Parameter value must be large than Parameter 6#.
+        If user set this parameter to default by Configure CC, the parameter #6 will be set to default value.
+        Available Settings:5 to 600(second).
+      </Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="3" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>Basic Set Command will be sent where contains a value when PIR detector is triggered, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
+        This Parameter is used to some associated devices.
+        Available Settings: 0, 1 to 99 or 255.
+      </Help>
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="4" label="PIR Detecting Function Enabled/Disabled" value="1" size="1">
+      <Help>This parameter can be enabled or disabled the PIR detector detecting function.
+      </Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+     </Value>
+    
+    <Value type="short" genre="config" instance="1" index="5" label="Ambient Illumination Lux Level" units="lux" value="100" min="0" max="1000" size="2">
+      <Help>This parameter can be set a lux level value which determines when the light sensor is activated.
+        If the ambient illumination level falls below this value and a person moves across or within the detected area , PIR detector will send a Z-Wave ON command(i.e. BASIC_SET (value = parameter 3) to an associated device and activate it.
+        0 to 1000(Lux).
+      </Help>
+    </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="6" label="Re-trigger Interval Setting" units="second" value="8" min="1" max="8" size="1">
+      <Help>This Parameter can be used to adjust the interval of being re-triggered after the PIR detector has been triggered.
+        This Parameter value must be less than Parameter 2#.
+        If user set this parameter to default by Configure CC, the parameter #2 will be set to default value.
+        Available Settings: 1 to 8(s).
+      </Help>
+    </Value>
+    
+    <Value type="short" genre="config" instance="1" index="7" label="Light Sensor Polling Interval" units="second" value="180" min="60" max="36000" size="2">
+      <Help>This Parameter can be set the light sensor measure ambient illumination level interval time.
+        NOTE: This Value Must Be less than Wakeup Interval Time.
+        Available Settings: 60 ~ 36000(second).
+      </Help>
+    </Value>
+    
+    <Value type="list" genre="config" instance="1" index="8" label="Lux Level Function Enable" value="0" size="1">
+      <Help>If this parameter is set to Enable, and when Lux level less than the value define by parameter #5, PIR detector will send a BASIC_SET command frame(i.e. BASIC_SET (value = parameter 3) to an associated device and activate it.
+        If Lux Level greater than the value define by parameter #5, PIR detector will not send a BASIC_SET command frame.</Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+     </Value>
+    
+    <Value type="byte" genre="config" instance="1" index="9" label="Ambient illumination Lux Level Report" units="lux" value="100" min="0" max="255" size="1">
+      <Help>This parameter defines by how much Lux Level must change, in lux, to be reported to the main controller.</Help>
+    </Value>
+	
+    <Value type="list" genre="config" instance="1" index="10" label="Led Blink Enable" value="1" size="1">
+      <Help>This parameter can enabled or disable the PIR led blinking function. </Help>
+      <Item label="Disable" value="0" />
+      <Item label="Enable" value="1" />
+     </Value>
+ 
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="4" label="Lifeline" />
+      <Group index="2" max_associations="4" label="Control Commands BASIC_SET" />
+      <Group index="3" max_associations="4" label="Send Notification Report" />
+      <Group index="4" max_associations="4" label="Send Sensor Binary Report" />
+    </Associations>
+  </CommandClass>
+</Product>

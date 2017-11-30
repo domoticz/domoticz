@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Aeotec DSC26103 Micro Switch (2nd Edition)
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584525
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">    
+    <Value type="short" index="2" genre="config" label="Blinking behavior" units="" min="0" max="65535" write_only="true" value="0">
+      <Help>
+	This is actually a double byte value. The LSB defines the total time the device needs to blink in seconds. The MSB defines the on/off interval of the blink in tenths of seconds.
+      </Help>
+    </Value>
+    <Value type="list" index="80" genre="config" label="Notification status" units="" size="1" value="0">
+      <Help>Enables automatic notifications to associated devices whenever there is a state change.</Help>
+      <Item label="None" value="0" />
+      <Item label="Hail" value="1" />
+      <Item label="Basic" value="2" />
+    </Value>	
+	<Value type="list" index="120" genre="config" label="Turn external button mode" units="" size="1" value="255">
+      <Help>Turn external button mode</Help>
+      <Item label="Momentary button" value="0" />
+      <Item label="2 state switch" value="1" />
+      <Item label="3 way switch" value="2" />
+	  <Item label="Unidentified" value="255" />
+    </Value>
+	<Value type="list" index="200" genre="config" label="Partner ID" units="" min="0" max="1" size="1" value="0">
+      <Help>Partner ID</Help>
+      <Item label="Aeon Labs Standard (Default)" value="0"/>
+      <Item label="AT&amp;T" value="1"/>
+    </Value>
+    <Value type="list" index="252" genre="config" label="Configuration Locked" units="" min="0" max="1" size="1" value="0">
+      <Help>Enable/disable Configuration Locked</Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="short" index="254" genre="config" label="Device tag" units="" min="0" max="65535" value="0">
+      <Help>Device tag.</Help>
+    </Value>
+    <Value type="button" index="255" genre="config" label="Reset device" units="" write_only="true" value="0">
+      <Help>Reset to the default configuration.</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="2">
+      <Group index="1" max_associations="5" label="Lifeline" />
+	  <Group index="2" max_associations="5" label="Retransmit Switch CC" />
+    </Associations>
+  </CommandClass>
+</Product>
+

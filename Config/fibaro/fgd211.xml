@@ -5,7 +5,7 @@
   <!-- Configuration -->
   <CommandClass id="112">
     <Value type="list" genre="config" instance="1" index="1" label="Enable/Disable ALL ON/OFF" size="1" value="255">
-      <Help>Activate/Deactive ALL ON/OFF. Default 255.</Help>
+      <Help>Enable/Disable ALL ON/OFF. Default 255.</Help>
       <Item label="ALL ON active / ALL OFF active" value="255" />
       <Item label="ALL ON disabled/ ALL OFF disabled" value="0" />
       <Item label="ALL ON disabled/ ALL OFF active" value="1" />
@@ -54,8 +54,8 @@
       <Item label="Disable double click" value="0"/>
       <Item label="Enable double click" value="1"/>
     </Value>
-    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power faillure" size="1" value="1">
-      <Help>Saving state before power faillure. Default 1.</Help>
+    <Value type="list" genre="config" instance="1" index="16" label="Saving state before power failure" size="1" value="1">
+      <Help>Saving state before power failure. Default 1.</Help>
       <Item label="State NOT saved at power failure, all outputs are set to OFF upon power restore" value="0"/>
       <Item label="State saved at power failure, all outputs are set to previous state upon power restore" value="1"/>
     </Value>
@@ -75,7 +75,7 @@
       <Item label="Enable" value="1"/>
     </Value>
     <Value type="byte" genre="config" instance="1" index="20" label="ADVANCED Impulse length" min="100" max="170" value="110">
-      <Help>This function will enable decreasing the minimum level of the Dimmer by extending the control impulse.[100 - 170]. By changing the minimum level, the user may completely dim LED bulbs. Not all LED bulbs available on the market have the dimmming option. WARNING: Wrong setting of the function may cause incorrect operation of the Dimmer. INFO: THIS PARAMETER IS NOT AVAILABLE IN DEVICE FGD211 v2.1-2.3</Help>
+      <Help>This function will enable decreasing the minimum level of the Dimmer by extending the control impulse.[100 - 170]. By changing the minimum level, the user may completely dim LED bulbs. Not all LED bulbs available on the market have the dimming option. WARNING: Wrong setting of the function may cause incorrect operation of the Dimmer. INFO: THIS PARAMETER IS NOT AVAILABLE IN DEVICE FGD211 v2.1-2.3</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="30" label="Alarm" size="1" value="3">
       <Help>Alarm of any type (general alarm, water flooding alarm, smoke alarm: CO, CO2, temperature alarm).
@@ -101,9 +101,9 @@
   <!-- Association Groups -->
   <CommandClass id="133">
     <Associations num_groups="3">
-      <Group index="1" max_associations="5" label="Group 1" auto="false"/>
-      <Group index="2" max_associations="5" label="Group 2" />
-      <Group index="3" max_associations="1" label="Controller Updates" auto="true"/>
+      <Group index="1" max_associations="5" label="Key no 1" auto="false"/>
+      <Group index="2" max_associations="5" label="Key no 2"/>
+      <Group index="3" max_associations="1" label="Lifeline" auto="true"/>
     </Associations>
   </CommandClass>
 

@@ -15,6 +15,10 @@
         <script src="js/bootstrap.min.js"></script>
 		<script src="js/bootbox.min.js"></script>
         <script src="js/jquery-ui.min.js"></script>
+
+        <!-- Highcharts is not needed here but domoticz.js depends on it -->
+		<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
+
 		<script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
 		<script src="js/d3.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
@@ -22,22 +26,47 @@
 		<script>
 		
 		function getParameter(paramName) {
-			var searchString = window.location.search.substring(1),i, val, params = searchString.split("&");
+			var searchString = window.location.search.substring(1),i, val, params = searchString.split('&');
 			for (i=0;i<params.length;i++) {
-				val = params[i].split("=");
+				val = params[i].split('=');
 				if (val[0] == paramName) {
 					return unescape(val[1]);
 				}
 			}
 			return null;
 		}
+
+
+        function getNodeId(node){
+            return (
+                addLeadingZeros(node.nodeID, 3)
+                + ' (0x' + addLeadingZeros(node.nodeID.toString(16), 2) + ')'
+            );
+        }
+
+		function getNodeName(node){
+		    return node ? node.nodeName : '';
+		}
+
+		function getGroupName(group){
+			return group ? group.groupName : '';
+		}
 		
-		function removeNodeFromGroup(node,group,removenode) {
-			var hwid=getParameter("hwid");
-			bootbox.confirm($.t("Are you sure you want to remove this node from the group?"), function(result) {
+		function removeNodeFromGroup(event) {
+			var node = event.data.node;
+			var group = event.data.group;
+			var removeNode = event.data.removeNode;
+			var removeNodeId = event.data.removeNodeId;
+			var hwid=getParameter('hwid');
+			bootbox.confirm($.t(
+					'Are you sure you want to remove this node?<br>'
+					+ 'Node: ' + getNodeName(removeNode)
+					+ ' (' + removeNodeId
+					+ ')<br>From group: ' + getGroupName(group)
+					+ '<br>On node ' + getNodeName(node)), function(result) {
 				if (result==true) {
 					$.ajax({
-						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node="+node+"&group="+group+"&removenode="+removenode,
+						 url: "json.htm?type=command&param=zwaveremovegroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&removenode=" + removeNodeId,
 						 async: false, 
 						 dataType: 'json',
 						 success: function(data) {
@@ -49,11 +78,13 @@
 				}
 			});
 		}
-		function addNodeToGroup(node,group) {
-			var hwid=getParameter("hwid");
+		function addNodeToGroup(event) {
+		    var node = event.data.node;
+		    var group = event.data.group;
+			var hwid=getParameter('hwid');
 			bootbox.dialog({
-			  message: $.t("Please enter the node to add to this group:")+"<input type='text' id='add_node' data-toggle='tooltip' title='NodeId or NodeId.Instance'></input>",
-			  title: "Add node",
+			  message: $.t("Please enter the node to add to this group:")+"<input type='text' id='add_node' data-toggle='tooltip' title='NodeId or NodeId.Instance'></input><br>" + group.groupName,
+			  title: 'Add node to ' + getNodeName(node),
 			  buttons: {
 				main: {
 				  label: $.t("Save"),
@@ -61,7 +92,7 @@
 				  callback: function() {
 					var addnode = $("#add_node").val();
 					$.ajax({
-						url: "json.htm?type=command&param=zwaveaddgroupnode&idx=" + hwid + "&node="+node+"&group="+group+"&addnode="+addnode,
+						url: "json.htm?type=command&param=zwaveaddgroupnode&idx=" + hwid + "&node=" + node.nodeID + "&group=" + group.id + "&addnode=" + addnode,
 						async: false, 
 						dataType: 'json',
 						success: redrawGroupTable() 
@@ -95,43 +126,60 @@
 					if (typeof data != 'undefined') {
 						if (data.status=="OK") {
 							if (typeof data.result != 'undefined') {
-								grouptable = $('#grouptable'); 
-								var maxgroups = data.result.MaxNoOfGroups; 
-								thead = $('<thead></thead>');
-								trow = $('<tr></tr>');
+								grouptable = $('#grouptable');
+								var maxgroups = data.result.MaxNoOfGroups;
+								var thead = $('<thead></thead>');
+								var trow = $('<tr></tr>');
 
-								$('<th></th>').text($.t("Node")).appendTo(trow); 
-								$('<th></th>').text($.t("Name")).appendTo(trow); 
+								$('<th></th>').text($.t("Node")).appendTo(trow);
+								$('<th></th>').text($.t("Name")).appendTo(trow);
 								for (var i = 0; i < maxgroups; i++) {
-									$('<th></th>').text($.t("Group")+" " +(i+1)).appendTo(trow); 
+									$('<th></th>').text($.t("Group") + " " + (i + 1)).appendTo(trow);
 								}
 								trow.appendTo(thead);
 								thead.appendTo(grouptable);
 								tbody = $('<tbody></tbody>');
-							
-								jsonnodes = data.result.nodes;
-								$.each(jsonnodes, function(i, item) {
+
+								var jsonnodes = data.result.nodes;
+								var nodes = {};
+								var i = jsonnodes.length;
+								while (i--) {
+                                    var node = jsonnodes[i];
+									nodes[node.nodeID] = node;
+								}
+								$.each(jsonnodes, function(i, node) {
 									var groupsDone = 0;
-									noderow = $('<tr></tr>');
-									var nodeStr = addLeadingZeros(item.nodeID,3) + " (0x" + addLeadingZeros(item.nodeID.toString(16),2) + ")";
-									$('<td></td>').text(nodeStr).appendTo(noderow); 
-									$('<td></td>').text(item.nodeName).appendTo(noderow); 
-									noGroups = item.groupCount;
+									noderow = $('<tr>');
+									$('<td>').text(getNodeId(node)).appendTo(noderow);
+									$('<td>').text(node.nodeName).appendTo(noderow);
+									noGroups = node.groupCount;
 									if (noGroups > 0) {
-										groupnodes = item.groups;
+										groupnodes = node.groups;
 										$.each(groupnodes, function(g, group) {
-											td = $('<td data-toggle="tooltip" title="' + group.groupName + '"></td>');
+											td = $('<td>').data('toggle', 'tooltip').attr('title', getGroupName(group));
+
+											function createButton(text){
+												var button = $('<span>');
+												button.text(text);
+												button.addClass('label label-info lcursor');
+												return button;
+											}
+
 											$.each(group.nodes.split(','), function(){
 												if (this!="") {
-													button=$('<span class="label label-info lcursor" onclick="removeNodeFromGroup('+item.nodeID+','+group.id+','+this+');">'+this+'</span>');
+													var button = createButton(this);
+													var removeNodeId = this * 1;
+													var removeNode = nodes[Math.round(removeNodeId)];
+													button.click({node: node, group: group, removeNode: removeNode, removeNodeId: this}, removeNodeFromGroup);
+													button.attr('title', getNodeName(node) + ' on ' + getGroupName(group));
 													button.appendTo(td);
 												}
 											});
-											button=$('<span class="label label-info lcursor" onclick="addNodeToGroup('+item.nodeID+','+group.id+');">+</span>');
+											var button = createButton('+');
+											button.click({node: node, group: group}, addNodeToGroup);
 											button.appendTo(td);
 											td.appendTo(noderow);
 											groupsDone++;						
-								
 										});
 									}
 									if (groupsDone<maxgroups) {
@@ -161,6 +209,7 @@
 								  "aLengthMenu": [[5,10], [5,10]],
 								  "iDisplayLength": 10,
 								  "sPaginationType": "full_numbers",
+								  paging: false,
 								  language: $.DataTableLanguage
 								});
 							}
@@ -172,8 +221,8 @@
 
 		function drawChord() {
 
-			var width = 430; //window.innerWidth*0.9;
-			var height = 430; //window.innerHeight*0.8;
+			var width = window.innerWidth*0.39;
+			var height = window.innerHeight*0.8;
 			innerRadius = Math.min(width, height) * .40,
 			outerRadius = innerRadius * 1.1;
 			var nodeslist=[];
@@ -366,14 +415,12 @@
 				clear: both;
 			}
 			div.left {
-				width: 50%;
+				width: 40%;
 				position: relative;
 				float: left;
-				height: 450px;
 			}
 			div.right {
-				width: 49%;
-				height: 450px;
+				width: 60%;
 				position: relative;
 				float: right;
 				overflow: auto;

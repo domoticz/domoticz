@@ -13,7 +13,15 @@ CNotificationNma::~CNotificationNma()
 {
 }
 
-bool CNotificationNma::SendMessageImplementation(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationNma::SendMessageImplementation(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	//send message to NMA
 	bool bRet;

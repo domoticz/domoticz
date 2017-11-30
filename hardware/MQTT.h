@@ -18,9 +18,9 @@ public:
 	~MQTT(void);
 	bool isConnected(){ return m_IsConnected; };
 
-	void on_connect(int rc);
+	virtual void on_connect(int rc);
 	void on_disconnect(int rc);
-	void on_message(const struct mosquitto_message *message);
+	virtual void on_message(const struct mosquitto_message *message);
 	void on_subscribe(int mid, int qos_count, const int *granted_qos);
 
 	void OnMQTTMessage(char *topicName, int topicLen,  void *pMessage);
@@ -32,23 +32,26 @@ public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	bool StartHardware();
-	bool StopHardware();
 	bool ConnectInt();
 	bool ConnectIntEx();
-	void WriteInt(const std::string &sendStr);
-	void ProcessMySensorsMessage(const std::string &MySensorsMessage);
-	void SendDeviceInfo(const int m_HwdID, const unsigned long long DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
+	void SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName);
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_UserName;
 	std::string m_Password;
 	std::string m_CAFilename;
+	std::string m_TopicIn;
+	std::string m_TopicOut;
 	boost::mutex m_mqtt_mutex;
+	virtual bool StartHardware();
+	virtual bool StopHardware();
 	void StopMQTT();
 	void Do_Work();
+	virtual void SendHeartbeat();
 	void OnData(const unsigned char *pData, size_t length);
+	void WriteInt(const std::string &sendStr);
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 	boost::signals2::connection m_sConnection;

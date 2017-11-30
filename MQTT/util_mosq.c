@@ -22,13 +22,13 @@ Contributors:
 #endif
 
 
-#include "mosquitto.h"
-#include "memory_mosq.h"
-#include "net_mosq.h"
-#include "send_mosq.h"
-#include "time_mosq.h"
-#include "tls_mosq.h"
-#include "util_mosq.h"
+#include <mosquitto.h>
+#include <memory_mosq.h>
+#include <net_mosq.h>
+#include <send_mosq.h>
+#include <time_mosq.h>
+#include <tls_mosq.h>
+#include <util_mosq.h>
 
 #ifdef WITH_BROKER
 #include <mosquitto_broker.h>
@@ -83,7 +83,7 @@ void _mosquitto_check_keepalive(struct mosquitto_db *db, struct mosquitto *mosq)
 void _mosquitto_check_keepalive(struct mosquitto *mosq)
 #endif
 {
-	time_t last_msg_out;
+	time_t next_msg_out;
 	time_t last_msg_in;
 	time_t now = mosquitto_time();
 #ifndef WITH_BROKER
@@ -95,7 +95,7 @@ void _mosquitto_check_keepalive(struct mosquitto *mosq)
 	/* Check if a lazy bridge should be timed out due to idle. */
 	if(mosq->bridge && mosq->bridge->start_type == bst_lazy
 				&& mosq->sock != INVALID_SOCKET
-				&& now - mosq->last_msg_out >= mosq->bridge->idle_timeout){
+				&& now - mosq->next_msg_out - mosq->keepalive >= mosq->bridge->idle_timeout){
 
 		_mosquitto_log_printf(NULL, MOSQ_LOG_NOTICE, "Bridge connection %s has exceeded idle timeout, disconnecting.", mosq->id);
 		_mosquitto_socket_close(db, mosq);
@@ -103,18 +103,18 @@ void _mosquitto_check_keepalive(struct mosquitto *mosq)
 	}
 #endif
 	pthread_mutex_lock(&mosq->msgtime_mutex);
-	last_msg_out = mosq->last_msg_out;
+	next_msg_out = mosq->next_msg_out;
 	last_msg_in = mosq->last_msg_in;
 	pthread_mutex_unlock(&mosq->msgtime_mutex);
 	if(mosq->keepalive && mosq->sock != INVALID_SOCKET &&
-			(now - last_msg_out >= mosq->keepalive || now - last_msg_in >= mosq->keepalive)){
+			(now >= next_msg_out || now - last_msg_in >= mosq->keepalive)){
 
 		if(mosq->state == mosq_cs_connected && mosq->ping_t == 0){
 			_mosquitto_send_pingreq(mosq);
 			/* Reset last msg times to give the server time to send a pingresp */
 			pthread_mutex_lock(&mosq->msgtime_mutex);
 			mosq->last_msg_in = now;
-			mosq->last_msg_out = now;
+			mosq->next_msg_out = now + mosq->keepalive;
 			pthread_mutex_unlock(&mosq->msgtime_mutex);
 		}else{
 #ifdef WITH_BROKER
@@ -228,6 +228,11 @@ int mosquitto_topic_matches_sub(const char *sub, const char *topic, bool *result
 	slen = strlen(sub);
 	tlen = strlen(topic);
 
+	if(!slen || !tlen){
+		*result = false;
+		return MOSQ_ERR_INVAL;
+	}
+
 	if(slen && tlen){
 		if((sub[0] == '$' && topic[0] != '$')
 				|| (topic[0] == '$' && sub[0] != '$')){
@@ -240,7 +245,7 @@ int mosquitto_topic_matches_sub(const char *sub, const char *topic, bool *result
 	spos = 0;
 	tpos = 0;
 
-	while(spos < slen && tpos < tlen){
+	while(spos < slen && tpos <= tlen){
 		if(sub[spos] == topic[tpos]){
 			if(tpos == tlen-1){
 				/* Check for e.g. foo matching foo/# */
@@ -258,12 +263,26 @@ int mosquitto_topic_matches_sub(const char *sub, const char *topic, bool *result
 				*result = true;
 				return MOSQ_ERR_SUCCESS;
 			}else if(tpos == tlen && spos == slen-1 && sub[spos] == '+'){
+				if(spos > 0 && sub[spos-1] != '/'){
+					*result = false;
+					return MOSQ_ERR_INVAL;
+				}
 				spos++;
 				*result = true;
 				return MOSQ_ERR_SUCCESS;
 			}
 		}else{
 			if(sub[spos] == '+'){
+				/* Check for bad "+foo" or "a/+foo" subscription */
+				if(spos > 0 && sub[spos-1] != '/'){
+					*result = false;
+					return MOSQ_ERR_INVAL;
+				}
+				/* Check for bad "foo+" or "foo+/a" subscription */
+				if(spos < slen-1 && sub[spos+1] != '/'){
+					*result = false;
+					return MOSQ_ERR_INVAL;
+				}
 				spos++;
 				while(tpos < tlen && topic[tpos] != '/'){
 					tpos++;
@@ -273,10 +292,14 @@ int mosquitto_topic_matches_sub(const char *sub, const char *topic, bool *result
 					return MOSQ_ERR_SUCCESS;
 				}
 			}else if(sub[spos] == '#'){
+				if(spos > 0 && sub[spos-1] != '/'){
+					*result = false;
+					return MOSQ_ERR_INVAL;
+				}
 				multilevel_wildcard = true;
 				if(spos+1 != slen){
 					*result = false;
-					return MOSQ_ERR_SUCCESS;
+					return MOSQ_ERR_INVAL;
 				}else{
 					*result = true;
 					return MOSQ_ERR_SUCCESS;

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Qubino: ZMNHVDx Flush Dimmer 0-10V 
+     ZMNHVD1 868,4 MHz
+     ZMNHVD2 921,4 MHz
+     ZMNHVD3 908,4 MHz
+     ZMNHVD4 869,0 MHz
+     ZMNHVD5 916,0 MHz
+    -->
+    <!-- Configuration  -->
+    <CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Input 1 type" size="1" min="0" max="5" value="0">
+			<Help>NOTE: After parameter change to value 3, 4 or 5 first exclude module (without setting parameters to default value) then wait at least 30s and then re include the module!</Help>
+			<Item label="Mono-stable switch" value="0" />
+			<Item label="Bi-stable switch" value="1" />
+			<Item label="Potentiometer" value="2" />
+			<Item label="Temperature sensor" value="3" />
+			<Item label="Illumination sensor" value="4" />
+			<Item label="General purpose sensor" value="5" />
+		</Value>		
+        <Value type="list" genre="config" instance="1" index="10" label="Activate / deactivate functions ALL ON/ALL OFF" size="2" min="0" max="255" value="255">
+            <Help>Responds to commands ALL ON / ALL OFF that may be sent by the main controller or by other controller belonging to the system.</Help>
+            <Item label="ALL ON active, ALL OFF active" value="255" />
+            <Item label="ALL ON is not active ALL OFF is not active" value="0" />
+            <Item label="ALL ON is not active ALL OFF active" value="1" />
+            <Item label="ALL ON active ALL OFF is not active" value="2" />
+        </Value>
+		<Value type="short" genre="config" instance="1" index="11" label="Automatic turning off output after set time" min="0" max="32535" value="0">
+			<Help>0 => Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto OFF enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+		</Value>
+        <Value type="short" genre="config" instance="1" index="12" label="Automatic turning on output after set time" min="0" max="32535" value="0">
+            <Help>0 - Auto OFF disabled. 1 - 32535  => 1 second (0,01s) - 32535 seconds (325,35s). Auto ON enabled with define time, step is 1s or 10ms according to parameter 15. Default value 0</Help>
+        </Value>
+		<Value type="list" genre="config" instance="1" index="21" label="Double click function" size="1" min="0" max="1" value="0">
+            <Help/>
+            <Item label="Disabled" value="0" />
+            <Item label="Enabled" value="1" />
+        </Value>
+		<Value type="list" genre="config" instance="1" index="30" label="Saving the state of the device after a power failure" size="1" min="0" max="1" value="0">
+			<Help/>
+			<Item label="Saves state before power failure" value="0" />
+			<Item label="After a power failure, it returns to off position" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="52" label="Auto or manual selection" size="1" min="0" max="1" value="0">
+			<Help>
+			This parameter is influencing on the software only when the value of parameter number 1 is set to value 3, 4 or 5.
+			In manual mode regulation (how the input influence on output) is disabled.
+			</Help>
+			<Item label="Manual" value="0" />
+			<Item label="Auto" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="53" label="PID value inside deadband" size="1" min="0" max="1" value="0">
+			<Help>
+			NOTE: When ZERO PID inside deadband is forced to zero. 
+			Last value means that PID remains on same level as was before entering into deadband.
+			</Help>
+			<Item label="Zero" value="0" />
+			<Item label="Last value" value="1" />
+		</Value>		
+        <Value type="byte" genre="config" instance="1" index="54" label="PID deadband" size="1" min="0" max="100" units="%" value="1">
+            <Help>
+			0 to 100 => 0 to 100%, step is 1%. 
+			Default value 1.
+			NOTE: This parameter defines the zone where PID is not active. If the temperature difference between actual and setpoint is bigger than PID deadband, then the PID will start to regulate the system, otherwise the PID is zero or fixed.
+			</Help>
+        </Value>
+		<Value type="byte" genre="config" instance="1" index="55" label="- Integral sampling time" size="1" min="0" max="127" units="seconde" value="5">
+            <Help>
+			0 to 127 => 0 to 127s, step is 1s. 
+			Default value 1.
+			Parameter defines the time between samples. On each sample the controller capture difference between SP-act.
+			</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="56" label="P parameter" min="0" max="1000" value="100">
+            <Help>
+			0 to 1000, step is 1. 
+			Default value 100.
+			</Help>
+        </Value>
+		<Value type="short" genre="config" instance="1" index="57" label="I parameter" min="0" max="1000" value="1">
+            <Help>
+			0 to 1000, step is 1. 
+			Default value 1.
+			</Help>
+        </Value>
+		<Value type="short" genre="config" instance="1" index="58" label="D parameter" min="0" max="1000" value="1">
+            <Help>
+			0 to 1000, step is 1. 
+			Default value 1.
+			</Help>
+        </Value>
+		<Value type="byte" genre="config" instance="1" index="60" label="Minimum dimming value" min="1" max="98" value="1">
+			<Help>1 - 98 = 1% - 98%, step is 1%. Minimum dimming values is set by entered value.
+			Default value 1 (Minimum dimming value is 1%).</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="61" label="Maximum dimming value" min="2" max="99" value="99">
+			<Help>2 - 99 = 2% - 99%, step is 1%. Maximum dimming values is set by entered value.
+			Default value 99 (Maximum dimming value is 99%).</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="65" label="Dimming time (soft on/off)" min="1" max="255" value="100">
+			<Help>Set value means time of moving the Dimmer between min. and max. dimming values by short press of push button I1 or controlled through.
+			1- 255 = 10mseconds - 2550mseconds (2,55s), step is 10mseconds.
+			Default value 100 (Dimming time between min. and max. dimming values is 1s).</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="66" label="Dimming time when key pressed" min="1" max="255" value="3">
+			<Help>Time of moving the Dimmer between min. and max dimming values by continues hold of push button I1.
+			1- 255 = 1 second - 255 seconds.
+			Default value 3 (Dimming time between min. and max. dimming values is 3s).</Help>
+		</Value>		
+		<Value type="list" genre="config" instance="1" index="67" label="Ignore start level" size="1" min="0" max="1" value="0">
+			<Help>This parameter is used with association group 4.
+				A receiving device SHOULD respect the start level if the Ignore Start Level bit is 0.
+				A receiving device MUST ignore the start level if the Ignore Start Level bit is 1.
+				Default value 0.</Help>
+			<Item label="respect start level" value="0"/>
+			<Item label="ignore start level" value="1"/>
+		</Value>		
+		<Value type="list" genre="config" instance="1" index="68" label="Dimming duration" size="1" min="0" max="1" value="0">
+			<Help>This parameter is used with association group 3.
+				The Duration field MUST specify the time that the transition should take from the current value to the new target value.
+				A supporting device SHOULD respect the specified Duration value.
+				Default value 0.</Help>
+			<Item label="Respect start level" value="0"/>
+			<Item label="Ignore start level" value="1"/>
+		</Value>
+        <Value type="short" genre="config" instance="1" index="110" label="Temperature sensor offset settings" min="1" max="1100" value="32536">
+            <Help>
+                From 1 to 100 - value from 0.1 C to 10.0 C is added to actual measured temperature.
+                From 1001 to 1100 - value from -0.1 C to -10.0 C is subtracted to actual measured temperature.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="120" label="Digital temperature sensor reporting" min="0" max="127" value="5">
+            <Help>If digital temperature sensor is connected, module reports measured temperature on temperature change defined by this parameter.
+                Available settings: 0 - Reporting disabled.
+                1 - 127 = 0,1C - 12,7C, step is 0,1C.
+            </Help>
+        </Value>		
+		<Value type="short" genre="config" instance="1" index="140" label="Input I1 Sensor reporting" min="0" max="10000" value="5">
+            <Help>
+			If analogue sensor is connected, module reports measured value on change defined by this parameter.
+			0 - Reporting disabled.
+			1 to 10000, step is 0.1. 			
+			Default value 5 => 0.5C.
+            </Help>
+        </Value>		
+		<Value type="byte" genre="config" instance="1" index="141" label="1 Input I1 0-10V reporting threshold" min="0" max="100" value="5">
+            <Help>Parameter is associated with Association group No. 2.
+			Below this value, the Association No. 2 will report Basic Set 0xFF and above this value will report Basic Set 0xFF.
+			Basic Set is reported only, when the input value changes for more than 10% (1V). 
+			Default setting: 5 (0.5V)
+			1 to 100 => (0,1 to 10V) 
+            </Help>
+        </Value>
+		<Value type="short" genre="config" instance="1" index="143" label="Minimum sensor range value" min="0" max="20000" value="0">
+            <Help>
+			Value that must correspond to minimum sensor range value.
+			Valid only if parameter 1 is set to values 3, 4 or 5).
+			default value 0 = 0.0C / 0Lux / 0.0%rh
+			0 to 10000 => value from 0 to 1000 (resolution 0,1)
+			10001 to 20000 => value from -0,1 to -1000 (resolution 0,1)
+			NOTE: Minimum value must not be higher than maximum value!
+            </Help>
+        </Value>
+		<Value type="short" genre="config" instance="1" index="144" label="Maximum sensor range value" min="0" max="20000" value="1000">
+            <Help>
+			Value that must correspond to maximum sensor range value.
+			Valid only if parameter 1 is set to values 3, 4 or 5).
+			default value 1000 = 100.0C / 100Lux / 100.0%rh
+			0 to 10000 => value from 0 to 1000 (resolution 0,1)
+			10001 to 20000 => value from -0,1 to -1000 (resolution 0,1)
+			NOTE: Maximum value must not be lower than minimum value!
+            </Help>
+        </Value>		
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="6">
+            <Group index="1" max_associations="1"  label="Lifeline" />
+            <Group index="2" max_associations="16" label="Basic on/off of the input I1 state" />
+            <Group index="3" max_associations="16" label="Level change I1" />
+            <Group index="4" max_associations="16" label="Multilevel set of the Flush Dimmer" />
+            <Group index="5" max_associations="16" label="Multilevel sensor report analogue sensor"/>
+            <Group index="6" max_associations="16" label="Multilevel sensor report temperature sensor"/>           
+        </Associations>
+    </CommandClass>
+    <!-- Remove COMMAND_CLASS_BASIC -->
+    <CommandClass id="32" action="remove" />
+</Product>

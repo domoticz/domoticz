@@ -18,22 +18,22 @@ Contributors:
 #include <stdio.h>
 #include <string.h>
 
-#include "mosquitto.h"
-#include "mosquitto_internal.h"
-#include "logging_mosq.h"
-#include "mqtt3_protocol.h"
-#include "memory_mosq.h"
-#include "net_mosq.h"
-#include "send_mosq.h"
-#include "time_mosq.h"
-#include "util_mosq.h"
-
 #ifdef WITH_BROKER
 #include <mosquitto_broker.h>
 #  ifdef WITH_SYS_TREE
 extern uint64_t g_pub_bytes_sent;
 #  endif
 #endif
+
+#include <mosquitto.h>
+#include <mosquitto_internal.h>
+#include <logging_mosq.h>
+#include <mqtt3_protocol.h>
+#include <memory_mosq.h>
+#include <net_mosq.h>
+#include <send_mosq.h>
+#include <time_mosq.h>
+#include <util_mosq.h>
 
 int _mosquitto_send_pingreq(struct mosquitto *mosq)
 {

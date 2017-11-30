@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" index="1" genre="config" label="Basic Set Level" units="" min="0" max="99" value="99">
+      <Help>
+        The Basic Set Command is sent with value to have the receiving device recognize the value for controlled level, for example, if the Basic Set Command sent to dimmer with value, the dimmer would activate the luminance according to the value
+        0 : Off
+        1 - 99 : On
+      </Help>
+    </Value>
+    <Value type="bool" index="2" genre="config" label="Amount of delay" units="second" min="0" max="127" value="1">
+      <Help>
+        This is applied to determine the delay time setting to send the Basic Set Off command when the manual switch input at NO (open)
+        0 : immediately Off
+        1 - 127 : delay 1 - 127 second to Off
+      </Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Basic set as report -->
+  <CommandClass id="32" setasreport="true"/>
+
+  <!-- COMMAND_CLASS_ASSOCIATION. Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Reports" />
+    </Associations>
+  </CommandClass>
+
+</Product>

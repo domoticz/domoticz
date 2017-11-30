@@ -24,7 +24,7 @@
 				  <div class="sk-circle10 sk-circle"></div>
 				  <div class="sk-circle11 sk-circle"></div>
 				  <div class="sk-circle12 sk-circle"></div>
-				</div>				
+				</div>
 				<br>
 				<button type="button" onclick="OnZWaveAbortInclude()" id="izwd_abort" class="btn btn-info">Abort</button><br>
 			</div>
@@ -32,7 +32,7 @@
 				Included node: <b>{{ozw_node_id}}</b><br>
 				<b>{{ozw_node_desc}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseInclude()" class="btn btn-default" data-dismiss="modal">Close</button>
 			</div>
 			</font>
 			</center>
@@ -67,14 +67,14 @@
 				  <div class="sk-circle10 sk-circle"></div>
 				  <div class="sk-circle11 sk-circle"></div>
 				  <div class="sk-circle12 sk-circle"></div>
-				</div>				
+				</div>
 				<br>
 				<button type="button" onclick="OnZWaveAbortExclude()" id="ezwd_abort" class="btn btn-info">Abort</button><br>
 			</div>
 			<div id="ezwd_result" style="display:none;">
 				Excluded node: <b>{{ozw_node_id}}</b><br>
 				<br>
-				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button> 
+				<button type="button" onclick="OnZWaveCloseExclude()" class="btn btn-default" data-dismiss="modal">Close</button>
 			</div>
 			</font>
 			</center>
@@ -149,24 +149,24 @@
 						<span class="caret"></span>
 					  </button>
 					  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownMenu1">
-						<li ><a href="javascript:ZWaveIncludeNode(false);" ><span data-i18n="Include Node" class="btn btn-primary">Include Node</span></a></li>
-						<li ><a href="javascript:ZWaveIncludeNode(true);" ><span data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</span></a></li>
-						<li><a href="javascript:ZWaveExcludeNode();" ><span data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</span></a></li>
-						<li><a href="javascript:ZWaveHealNetwork();" ><span data-i18n="Heal network" class="btn btn-warning">Heal network</span></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(false);" ><button type="button" data-i18n="Include Node" class="btn btn-primary">Include Node</button></a></li>
+						<li ><a href="javascript:ZWaveIncludeNode(true);" ><button type="button" data-i18n="Include Node Secure" class="btn btn-primary">Include Node Secure</button></a></li>
+						<li><a href="javascript:ZWaveExcludeNode();" ><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
+						<li><a href="javascript:ZWaveHealNetwork();" ><button type="button" data-i18n="Heal network" class="btn btn-warning">Heal network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveTopology();" ><span data-i18n="Groups & Network" class="btn btn-success">Groups & Network</span></a></li>
+						<li><a href="javascript:ZWaveTopology();" ><button type="button" data-i18n="Groups & Network" class="btn btn-success">Groups & Network</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a href="javascript:ZWaveSoftResetNode();" ><span data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</span></a></li>
-						<li><a href="javascript:ZWaveHardResetNode();" ><span data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</span></a></li>
-						<li><a href="javascript:ZWaveReceiveConfiguration();" ><span data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</span></a></li>
-						<li><a href="javascript:ZWaveSendConfiguration();" ><span data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</span></a></li>
-						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><span data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</span></a></li>
+						<li><a href="javascript:ZWaveSoftResetNode();" ><button type="button" data-i18n="Soft reset controller" class="btn btn-danger">Soft reset controller</button></a></li>
+						<li><a href="javascript:ZWaveHardResetNode();" ><button type="button" data-i18n="Hard reset controller" class="btn btn-danger">Hard reset controller</button></a></li>
+						<li><a href="javascript:ZWaveReceiveConfiguration();" ><button type="button" data-i18n="Receive configuration from other controller" class="btn btn-primary">Receive configuration from other controller</button></a></li>
+						<li><a href="javascript:ZWaveSendConfiguration();" ><button type="button" data-i18n="Send configuration to other controller" class="btn btn-primary">Send configuration to other controller</button></a></li>
+						<li><a href="javascript:ZWaveTransferPrimaryRole();" ><button type="button" data-i18n="Transfer primary role" class="btn btn-danger">Transfer primary role</button></a></li>
 						<li id="usercodegrp" role="presentation" class="divider"></li>
-						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><span data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</span></a></li>
-						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><span data-i18n="User Code Management" class="btn btn-primary">User Code Management</span></a></li>
+						<li id="usercodegrp"><a href="javascript:ZWaveStartUserCodeEnrollment();" ><button type="button" data-i18n="Start User Code Enrollment" class="btn btn-primary">Start User Code Enrollment</button></a></li>
+						<li id="usercodegrp"><a id="zwavecodemanagement" href="javascript:ZWaveUserCodeManagement();" ><button type="button" data-i18n="User Code Management" class="btn btn-primary">User Code Management</button></a></li>
 						<li role="presentation" class="divider"></li>
-						<li><a id="zwave_configdownload" href="#" ><span data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</span></a></li>
-						<li><a id="zwave_controlpabel" href="/ozwcp/cp.html" ><span data-i18n="Control Panel" class="btn btn-primary">Control Panel</span></a></li>
+						<li><a id="zwave_configdownload" href="#" ><button type="button" data-i18n="Download Configuration File" class="btn btn-primary">Download Configuration File</button></a></li>
+						<li><a id="zwave_controlpabel" href="./ozwcp/cp.html" ><button type="button" data-i18n="Control Panel" class="btn btn-primary">Control Panel</button></a></li>
 					  </ul>
 					</div>
 				</td>
@@ -302,6 +302,7 @@
 				<th align="80" data-i18n="Name">Name</th>
 				<th data-i18n="Values">Values</th>
 				<th width="80" align="left" data-i18n="Ack">Ack</th>
+				<th width="100" align="left" data-i18n="Ack Timeout">Ack Timeout</th>
 				<th width="160" align="left" data-i18n="Last Seen">Last Seen</th>
 			</tr>
 		</thead>
@@ -321,14 +322,17 @@
 	<div id="trChildSettings">
 		<table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td align="right" style="width:80px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
+				<td align="right" style="width:120px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
 				<td><input type="checkbox" id="Ack" /></td>
+			</tr>
+			<tr>
+				<td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
+				<td><input type="text" id="AckTimeout" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(ms)</td>
 			</tr>
 		</table>
 	</div>
 	<input type="hidden" id="idx" name="idx" value="-1">
 </div>
-
 <div id="wakeonlan" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -376,7 +380,6 @@
 		</tr>
 	</table>
 </div>
-
 <div id="pinger" style="display:none;">
 	<div class="page-header-small">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -519,7 +522,7 @@
             <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
-            <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Port">Port</span>:</label></td>
+            <td align="right" style="width:110px"><label for="nodeport"><span data-i18n="Port">Port</span>:</label></td>
             <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
@@ -595,12 +598,99 @@
             <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
-            <td align="right" style="width:110px"><label for="nodetimeout"><span data-i18n="Port">Port</span>:</label></td>
+            <td align="right" style="width:110px"><label for="nodeport"><span data-i18n="Port">Port</span>:</label></td>
             <td><input type="text" id="nodeport" style="width: 70px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
         </tr>
         <tr>
             <td></td>
             <td><a class="btnstyle3" onclick="PanasonicAddNode();" data-i18n="Add">Add</a></td>
+        </tr>
+    </table>
+</div>
+
+
+<div id="blebox" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="bleboxsettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:170px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:170px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetBleBoxSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+        <tr>
+            <td align="left" style="width:170px">
+                <a align="left" class="btnstyle3" id="autosearching" data-i18n="AutoSearching" onclick="BleBoxAutoSearchingNodes();">Auto Searching on:</a>
+            </td>
+            <td>
+                <input type="text" id="ipmask" style="width: 120px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+            </td>
+        </tr>
+    </table>
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Nodes">Nodes</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="bleboxnodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th width="70" align="center" data-i18n="ID">ID</th>
+                <th width="250" align="left" data-i18n="Name">Name</th>
+                <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+				<th width="200" align="left" data-i18n="Type">Type</th>
+				<th width="100" align="left" data-i18n="Uptime">Uptime</th>
+				<th width="100" align="left" data-i18n="Hardware">Hardware</th>
+				<th align="left" data-i18n="Firmware">Firmware</th>
+            </tr>
+        </thead>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+    <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+                <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
+            </td>
+            <td align="right" style="width:200px">
+                <a align="left" class="btnstyle3" id="updatefirmware" data-i18n="Update devices firmware" onclick="BleBoxUpdateFirmware();">Update devices firmware</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="nodelistrefresh" data-i18n="Clear" onclick="BleBoxClearNodes();">Clear</a>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <table class="display" id="bleboxnodeparamstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="nodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="nodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
+            <td><input type="text" id="nodeip" style="width: 350px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btnstyle3" onclick="BleBoxAddNode();" data-i18n="Add">Add</a></td>
         </tr>
     </table>
 </div>
@@ -652,6 +742,33 @@
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
 
+<div id="heos" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="heossettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+            <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="pingtimeout"><span data-i18n="Ping Timeout"></span>:</label></td>
+            <td><input type="text" id="pingtimeout" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="SetHEOSSettings();" data-i18n="Apply Settings">Apply Settings</a></td>
+        </tr>
+    </table>
+    <input type="hidden" id="idx" name="idx" value="-1">
+</div>
+
 <div id="rfxhardwaremode" style="display:none;">
 <center>
 <form id="settings">
@@ -666,7 +783,7 @@
 			<td><input type="checkbox" id="HC" name="HC">&nbsp;<label for="HC">Home Confort</label></td>
 			<td><input type="checkbox" id="ImaginTronix" name="ImaginTronix">&nbsp;<label for="ImaginTronix">ImaginTronix</label></td>
 			<td><input type="checkbox" id="BlindT0" name="BlindT0">&nbsp;<label for="BlindT0">Blind T0</label></td>
-			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI remote</label></td>
+			<td><input type="checkbox" id="ATIremote" name="ATIremote">&nbsp;<label for="ATIremote">ATI/Cartelectronic</label></td>
 		</tr>
 		<tr>
 			<td></td>
@@ -778,27 +895,6 @@
 	<br>
 	<input type="hidden" id="idx" name="idx" value="-1">
 	<button class="btn btn-danger" id="submitbuttonrego">Set Mode</button>
-</form>
-</center>
-</div>
-<div id="p1usbeedit" style="display:none;">
-<center>
-<form id="p1usbtype">
-	<br>
-	<h2><span data-i18n="Hardware">Hardware</span>:</h2>
-	<table>
-		<tr>
-			<td align="right" style="width:60px"><label><span data-i18n="Baudrate">Baudrate</span>: </label></td>
-			<td><select id="P1Baudrate" name="P1Baudrate" style="width:100px" class="combobox ui-corner-all">
-				<option value="0">9600</option>
-				<option value="1">115200</option>
-			</select></td>
-		</tr>
-	</table>
-	<br>
-	<br>
-	<input type="hidden" id="idx" name="idx" value="-1">
-	<button class="btn btn-danger" id="submitbuttonp1usb">Set Mode</button>
 </form>
 </center>
 </div>
@@ -924,10 +1020,17 @@
 	<form id="limitform">
 		<br>
 		<center>
+			<label><span data-i18n="Bridge Type"></span>: </label>
+			<select id="CCBridgeType" name="CCBridgeType" style="width:100px" class="combobox ui-corner-all">
+				<option value="0">V4/V5</option>
+				<option value="2">V6</option>
+			</select>
+			<br><br>
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
 				<option value="3">White</option>
+				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
 			<input type="hidden" id="idx" name="idx" value="-1">
@@ -1013,6 +1116,23 @@
 				</td>
 			</tr>
 		</table>
+		<div id="div1wire">
+			<br>
+			<table class="display" id="hardwareparams1wire" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="OWFS Path">OWFS Path</span>:</label></td>
+					<td><input type="text" id="owfspath" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="/mnt/1wire" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Sensor Poll Period">Sensor Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSensorPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="300000" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Switch Poll Period">Switch Poll Period</span>:</label></td>
+					<td><input type="text" id="OneWireSwitchPollPeriod" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="100" />(<span data-i18n="milliseconds"></span>)</td>
+				</tr>
+			</table>
+		</div>
 		<div id="divserial">
 			<br>
 			<table class="display" id="hardwareparamsserial" border="0" cellpadding="0" cellspacing="20">
@@ -1020,6 +1140,101 @@
 					<td align="right" style="width:110px"><label id="lblserialport" for="name"><span data-i18n="Serial Port"></span>:</label></td>
 					<td><select id="comboserialport" style="width:210px" class="combobox ui-corner-all"></select></td>
 				</tr>
+			</table>
+		</div>
+		<div id="divi2clocal">
+			<br>
+			<table class="display" id="hardwareparamsi2clocal" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2cname" for="name"><span data-i18n="SubType"></span>:</label></td>
+					<td><select id="comboi2clocal" style="width:410px" class="combobox ui-corner-all"></select></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divi2caddress">
+			<br>
+			<table class="display" id="hardwareparami2caddress" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lbli2caddress" for="name"><span data-i18n="I2C address"></span>I2C address:</label></td>
+					<td><input type="text" id="i2caddress" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divgpio">
+			<br>
+			<table class="display" id="hardwareparamsgpio" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpiodebounce" for="name"><span data-i18n="Debounce"></span>Debounce:</label></td>
+					<td><input type="text" id="gpiodebounce" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Make sure the correct pin status is read by introducing a bounce delay.">Make sure the correct pin status is read by introducing a bounce delay.</span>
+						<br />
+						</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblgpioperiod" for="name"><span data-i18n="Period"></span>Period:</label></td>
+					<td><input type="text" id="gpioperiod" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="50" />&nbsp;(<span data-i18n="Milliseconds"></span>)
+					<br />
+						<span data-i18n="Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).">Maximum of one interrupt per pin allowed in this period (prevents interrupt storms).</span>
+						<br />
+					</td>
+				</tr>
+                <tr valign="top">
+                    <td align="right" style="width:110px"><label id="lblgpiopollinterval" for="name"><span data-i18n="Pollinterval"></span>Poll interval:</label></td>
+                    <td><input type="text" id="gpiopollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled"></span>
+                    </td>
+                </tr>
+			</table>
+		</div>
+        <div id="divsysfsgpio">
+            <br>
+            <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
+                </tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
+					<td><select id="sysfsdebounce" style="width:110" class="combobox ui-corner-all">
+						<option data-i18n="Default" value="50">default</option>
+						<option data-i18n="1 msec" value="1">1 msec</option>						
+						<option data-i18n="2 msec" value="2">2 msec</option>						
+						<option data-i18n="5 msec" value="5">5 msec</option>						
+						<option data-i18n="10 msec" value="10">10 msec</option>
+						<option data-i18n="25 msec" value="25">25 msec</option>
+						<option data-i18n="50 msec" value="50">50 msec</option>
+						<option data-i18n="75 msec" value="75">75 msec</option>						
+						<option data-i18n="100 msec" value="100">100 msec</option>
+						<option data-i18n="150 msec" value="150">150 msec</option>
+						<option data-i18n="200 msec" value="200">200 msec</option>
+						<option data-i18n="250 msec" value="250">250 msec</option>
+						<option data-i18n="300 msec" value="300">300 msec</option>					
+						<option data-i18n="350 msec" value="350">350 msec</option>					
+						<option data-i18n="400 msec" value="400">400 msec</option>					
+						<option data-i18n="450 msec" value="450">450 msec</option>					
+						<option data-i18n="500 msec" value="500">500 msec</option>										
+					</select>
+					</td>
+				</tr>				
+            </table>
+        </div>
+        <div id="divevohome">
+			<br>
+			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">      
+                <tr>
+                    <td align="right" style="width:110px"><label id="lblbaudrateevohome" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+                    <td>
+                        <select id="combobaudrateevohome" style="width:210px" class="combobox ui-corner-all">
+                            <option value="115200">115200 (for genuine Honeywell HGI80/HGS80)</option>
+                            <option value="76800">76800</option>
+                            <option value="38400">38400</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Controller ID (hex)">Controller ID (hex)</span>:</label></td>
+                    <td><input type="text" id="controllerid" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                </tr>
 			</table>
 		</div>
     <div id="divbaudratemysensors">
@@ -1033,6 +1248,45 @@
       </tr>
       </table>
     </div>
+		<div id="divbaudratep1">
+			<table class="display" id="hardwareparamsbaudratep1" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblbaudratep1" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+					<td>
+						<select id="combobaudratep1" style="width:210px" class="combobox ui-corner-all">
+						<option value="0">9600</option>
+						<option value="1">115200</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divbaudrateteleinfo">
+                        <table class="display" id="hardwareparamsbaudrateteleinfo" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblbaudrateteleinfo" for="name"><span data-i18n="Baudrate">Baudrate</span>: </label></td>
+                                        <td>
+                                                <select id="combobaudrateteleinfo" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">1200</option>
+                                                <option value="1">9600</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
+               <div id="divmodelecodevices">
+                        <table class="display" id="hardwareparamsmodelecodevices" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+                                        <td align="right" style="width:110px"><label id="lblmodelecodevices" for="name"><span data-i18n="Model">Model</span>: </label></td>
+                                        <td>
+                                                <select id="combomodelecodevices" style="width:210px" class="combobox ui-corner-all">
+                                                <option value="0">EcoDevices</option>
+                                                <option value="1">EcoDevices RT2</option>
+                                                </select>
+                                        </td>
+                                </tr>
+                        </table>
+                </div>
 		<div id="divremote">
 			<br>
 			<table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
@@ -1046,6 +1300,106 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divcrcp1">
+			<table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label id="lblcrcp1" for="name"><span data-i18n="CRC message validation">CRC message validation</span>: </label></td>
+					<td>
+						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1">
+						<br />
+						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span>
+						<br />
+						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span></font></strong>
+					</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divratelimitp1">
+			<br>
+			<table class="display" id="hardwareparamsratelimitp1" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="ratelimitp1"><span data-i18n="Rate Limit">Rate Limit</span>: </label></td>
+					<td><input type="text" id="ratelimitp1" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;<span data-i18n="(Seconds) 0 = Disabled">Seconds</span>
+            <br />
+						<span data-i18n="This limits the amount of meter updates.">This limits the amount of meter updates.</span>
+						<br />
+          </td>
+				</tr>
+			</table>
+		</div>
+		<div id="divhttppoller">
+			<br>
+			<table class="display" id="hardwareparamshttp" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label id="lblmethod" for="name"><span data-i18n="Method">Method</span>: </label></td>
+					<td>
+						<select id="combomethod" style="width:100px" class="combobox ui-corner-all">
+						<option value="0">GET</option>
+						<option value="1">POST</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblcontenttype" for="name"><span data-i18n="ContentType">Content Type</span>: </label></td>
+					<td><input type="text" id="contenttype" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lblheaders" for="name"><span data-i18n="Headers">Headers</span>: </label></td>
+					<td align="left"><textarea id="headers" name="Headers" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px" id="divpostdatalabel"><label id="lblpostdata" for="name"><span data-i18n="PostData">POST Data</span>: </label></td>
+					<td align="left" id="divpostdatatextarea"><textarea id="postdata" name="POST DATA" rows="4" style="width: 356px; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="URL"></span>:</label></td>
+					<td><input type="text" id="url" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Command"></span>:</label></td>
+					<td><input type="text" id="script" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>:</label></td>
+					<td><input type="text" id="refresh" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divpollinterval">
+			<br>
+			<table class="display" id="hardwareparamspollinterval" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh"></span>(ms):</label></td>
+					<td><input type="text" id="pollinterval" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+        <div id="divrelaynet">
+            <br>
+            <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll inputs">Poll inputs</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll relays">Poll relays</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll interval">Poll interval</span>:</label></td>
+                    <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Input count">Input count</span>:</label></td>
+                    <td><input type="text" id="relaynetinputcount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Relay count">Relay count</span>:</label></td>
+                    <td><input type="text" id="relaynetrelaycount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
+                </tr>
+            </tr>
+            </table>
+        </div>
 		<div id="divunderground">
 			<br>
 			<table class="display" id="hardwareparamsunderground" border="0" cellpadding="0" cellspacing="20">
@@ -1063,16 +1417,20 @@
 			<br>
 			<table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
 				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="SiteID">SiteID</span>:</label></td>
-					<td><input type="text" id="siteid" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="Serial">Serial</span>:</label></td>
-					<td><input type="text" id="serial" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
-				<tr>
 					<td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
 					<td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divenecotoon">
+			<br>
+			<table class="display" id="hardwareparamsenecotoon" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Agreement">Agreement</span>:</label></td>
+					<td><input type="text" id="agreement" value="0" style="width: 20px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>    <td></td>
+					<td><span data-i18n="Toon Agreement">Change only to select another Toon when having multiple agreements</span></td>
 				</tr>
 			</table>
 		</div>
@@ -1101,9 +1459,17 @@
 		<div id="divphilipshue">
 			<br>
 			<table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
+                    <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+                </tr>
 				<tr>
 					<td align="right" style="width:110px"><label id="lblusername" for="name"><span data-i18n="Username"></span>:</label></td>
-					<td><input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+					<td>
+						<input type="text" id="username" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
+						<br />
+						<span data-i18n="Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.">Leave the username empty and press the LINK button on the Philips Hue bridge. Then press the 'Register on Bridge' button.</span>
+					</td>
 				</tr>
 				<tr>
 					<td></td>
@@ -1126,6 +1492,7 @@
 						<option value="121">De Trouwe Wachter</option>
 						<option value="131">De Blauwe Reiger</option>
 						<option value="141">De Vier Winden</option>
+						<option value="191">De Boerenzwaluw</option>
 						</select>
 					</td>
 				</tr>
@@ -1135,6 +1502,16 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divgoodweweb">
+                        <br>
+                        <table class="display" id="hardwareparamsgoodweweb" border="0" cellpadding="0" cellspacing="20">
+                                <tr>
+					<td align="right" style="width:110px"><label><span data-i18n="username">Goodwe-power Username</span>:</label></td>
+					<td><input type="text" id="username" style="width: 170px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+                                </tr>
+                        </table>
+                </div>
+		<div id="divpythonplugin"/>
 		<div id="divmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmqtt" border="0" cellpadding="0" cellspacing="20">
@@ -1153,7 +1530,7 @@
 						<b>Combined</b> - Use both <b>Flat</b> and <b>Hierarchical</b> topic schemes.<br />
 						<b>None</b> - disable outgoing messages.<br />
 						<br />
-						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan. 
+						Note that <b>Hierarchical</b> only reports sensor updates for sensors that are placed on a floorplan/plan.
 					</td>
 				</tr>
 				<tr>
@@ -1161,7 +1538,94 @@
 					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 				</tr>
 			</table>
-		</div>		
+		</div>
+		<div id="divmysensorsmqtt">
+			<br>
+			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="combotopicselect"><span data-i18n="Topic Prefix">Topic Prefix</span>:</label></td>
+					<td><select id="combotopicselect" style="width:200px" class="combobox ui-corner-all">
+						<option value="0">MyMQTT (default)</option>
+						<option value="1">Gateway Node Name</option>
+						</select>
+					<br />
+					<span>Select the Topic(s) where Domoticz publish/receive messages.<br />
+						<b>MyMQTT (default)</b> - domoticz/in/MyMQTT, domoticz/out/MyMQTT <br />
+						<b>Gateway Node Name</b> - domoticz/in/GatewayNodeName, domoticz/out/GatewayNodeName (GatewayNodeName is specified in the Name field (above))<br />
+						<br />
+					</td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label id="lbfilename" for="filename"><span data-i18n="CA Filename">CA Filename</span>:</label></td>
+					<td><input type="text" id="filename" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+			</table>
+		</div>
+		<div id="divevohomeweb" style="display:none;">
+			<br />
+			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">      
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblupdfreqevohomeweb"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
+					</td>
+					<td><input type="text" id="updatefrequencyevohomeweb" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"  value="60"/>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br />
+						<span data-i18n="This sets the interval between status requests.">This sets the interval between status requests.</span><br />
+						<strong><font class="warning-text"><span data-i18n="If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!">If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!</span></font></strong>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblautoevohomeweb" for="name"><span data-i18n="Synchronize installation">Synchronize installation</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><br />
+						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblschedevohomeweb" for="name"><span data-i18n="Show schedule">Show schedule</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><br />
+						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Show location">Show location</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb">
+						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Select location">Select location</span>: </label>
+					</td>
+					<td>
+						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"><option value="0">0</option></select>
+						<span data-i18n="(keep at [0,0,0] if you only have one Evohome installation)">(keep at [0,0,0] if you only have one Evohome installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblprecisionevohomeweb" for="name"><span data-i18n="Temperature precision">Temperature precision</span>: </label>
+					</td>
+					<td><select id="comboevoprecision" style="width:200px" class="combobox ui-corner-all">
+						<option selected="selected" value="0">Same as controller (quickest)</option>
+						<option value="8">1 decimal</option>
+						<option value="24">2 decimals</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<div>
 			<br>
 			<table border="0" cellpadding="0" cellspacing="14">
@@ -1203,6 +1667,8 @@
 					<option value="85" data-i18n="Rain">Rain</option>
 					<option value="241" data-i18n="RGB Switch">RGB Switch</option>
 					<option value="1003" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="93" data-i18n="Scale">Scale (Weight)</option>
+					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 					<option value="15" data-i18n="Soil Moisture">Soil Moisture</option>
 					<option value="20" data-i18n="Solar Radiation">Solar Radiation</option>
 					<option value="10" data-i18n="Sound Level">Sound Level</option>
@@ -1210,6 +1676,7 @@
 					<option value="80" data-i18n="Temperature">Temperature</option>
 					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
 					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="247" data-i18n="Temp+Baro">Temp+Baro</option>
 					<option value="5" data-i18n="Text">Text</option>
 					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
 					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>
@@ -1219,7 +1686,6 @@
 					<option value="1000" data-i18n="Waterflow">Waterflow</option>
 					<option value="86" data-i18n="Wind">Wind</option>
 					<option value="1001" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
-					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 				</select>
 				</td>
 			</tr>
@@ -1229,6 +1695,52 @@
 			</tr>
 			</table>
 		</form>
+</div>
+<div id="dialog-addyeelight" title="Add YeeLight Light" style="display: none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width: 200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all"/></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width: 150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">Mono</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="dialog-addArilux" title="Add Arilux AL-C0x controller" style="display:none;">
+    <form>
+        <table border="0" cellpadding="0" cellspacing="10">
+            <tr>
+                <td align="right" style="width:200px"><label for="name"><span data-i18n="Name"></span>:</label></td>
+                <td><input type="text" id="name" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="ipaddress"><span data-i18n="IP Address"></span>:</label></td>
+                <td><input type="text" id="ipaddress" style="width: 140px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="lighttype"><span data-i18n="Light Type">Light Type</span>: </label></td>
+                <td>
+                    <select id="lighttype" style="width:150px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Mono">RGB</option>
+                        <option value="1" data-i18n="RGBW">RGBW</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </form>
 </div>
 <div id="dialog-createevohomesensor" title="Create evohome device" style="display:none;">
 		<form>
@@ -1245,4 +1757,29 @@
 				<label for="sensorname"><span data-i18n="Command"></span>:</label>
 				<input type="text" id="sensorname" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
 		</form>
+</div>
+<div id="tellstick" style="display:none;">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td>
+                    <h1 data-i18n="Settings">Settings</h1>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="display" id="tellstickSettingsTable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:110px"><label for="repeats"><span data-i18n="Repeats">Repeats</span>:</label></td>
+            <td><input type="text" id="repeats" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"</td>
+        </tr>
+        <tr>
+            <td align="right" style="width:110px"><label for="repeatInterval"><span data-i18n="Repeat Interval">Repeat Interval</span>:</label></td>
+            <td><input type="text" id="repeatInterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Milliseconds"></span>)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btn-danger sub-tabs-apply" onclick="TellstickApplySettings();" data-i18n="Apply Settings"></a></td>
+        </tr>
+    </table>
 </div>

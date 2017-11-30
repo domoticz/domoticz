@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Aeotec ZW098 LED Bulb
+https://aeotec.freshdesk.com/helpdesk/attachments/6009584691 v1.04 
+https://aeotec.freshdesk.com/helpdesk/attachments/6034356249 v1.05
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="20" genre="config" label="State after re-power" min="0" max="2" value="1" size="1">
+			<Help>The Bulb state after re-power on it.</Help>
+			<Item label="The last state before re-power on" value="0" />
+			<Item label="Always On" value="1" />
+			<Item label="Always Off" value="2" />
+		</Value>
+		<Value type="list" index="32" genre="config" label="Send out a report when the color is changed" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable to send out a report when the color is changed</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Hail CC" value="1" />
+		</Value>
+		<Value type="int" index="33" genre="config" label="Get the Bulb color value" min="0" max="4294967295" value="0" size="4" read_only="true">
+			<Help>
+			Value 1 = Reserved.
+			Value 2 = Red color value.
+			Value 3 = Green color value.
+			Value 4 = Blue color value.
+			Note: This parameter is a get-only parameter
+			</Help>
+		</Value>
+		<Value type="list" index="34" genre="config" label="Use External Switch to turn on/off the bulb" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable the function of using External Switch to turn on/off the bulb</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+		<Value type="list" index="35" genre="config" label="Use External Switch to changes the bulb color" min="0" max="1" value="1" size="1">
+			<Help>Enable/disable the function of using External Switch to changes the bulb color</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+		<Value type="list" index="36" genre="config" label="Colorful mode" min="0" max="3" value="0" size="1">
+			<Help>Reboot/save/exit Colorful mode</Help>
+			<Item label="Un-reboot Colorful mode" value="0" />
+			<Item label="Reboot Colorful mode" value="1" />
+			<Item label="Exit Colorful mode" value="2" />
+			<Item label="Save the current Colorful mode value and then to be exited" value="3" />
+		</Value>
+		<Value type="int" index="37" genre="config" label="Colorful mode configuration" min="0" max="4294967295" value="157483008" size="4">
+			<Help>Colorful mode configuration (See https://aeotec.freshdesk.com/helpdesk/attachments/6035749140)</Help>
+		</Value>
+		<Value type="int" index="38" genre="config" label="Change speed" min="0" max="4294967295" value="50332416" size="4">
+			<Help>
+			Value 1: the speed from OFF to ON.
+			Value 2: the speed from ON to OFF.
+			Value 3: pause time of ON.
+			Value 4: pause time of OFF.
+			</Help>
+		</Value>
+		<Value type="int" index="39" genre="config" label="Color index configuration when the bulb is in Multi color mode" min="0" max="4294967295" value="2271560481" size="4">
+			<Help>Color index configuration when the bulb is in Multi color mode (See https://aeotec.freshdesk.com/helpdesk/attachments/6035749140)</Help>
+		</Value>
+		<Value type="list" index="80" genre="config" label="Send notifications to associated devices (Lifeline)" min="0" max="2" value="2" size="1">
+			<Help>Enable to send notifications to associated devices (Lifeline) when the state of LED Bulb is changed</Help>
+			<Item label="Nothing" value="0" />
+			<Item label="Hail" value="1" />
+			<Item label="Basic" value="2" />
+		</Value>
+		<Value type="list" index="112" genre="config" label="Dimmer mode" min="0" max="3" value="0" size="1">
+			<Help>Enable to send notifications to associated devices (Lifeline) when the state of LED Bulb is changed</Help>
+			<Item label="Parabolic curve" value="0" />
+			<Item label="Index curve" value="1" />
+			<Item label="(Parabolic + Index)/2" value="2" />
+			<Item label="Linear" value="3" />
+		</Value>		  
+		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
+			<Help>Lock/ unlock all configuration parameters</Help>
+			<Item label="Unlock" value="0"/>
+			<Item label="Lock" value="1"/>
+		</Value>
+		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+      		<Help>Reset to factory defaults</Help>
+      		<Item label="Reset to factory default setting" value="0"/>
+      		<Item label="Normal" value="1"/>
+      		<Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+    	</Value>
+    </CommandClass>    
+    <!-- Association Groups -->
+	<CommandClass id="133">
+	    <Associations num_groups="2">
+			<Group index="1" max_associations="5" label="Lifeline" />
+			<Group index="2" max_associations="5" label="Retransmit" />
+	    </Associations>
+  </CommandClass>
+</Product>

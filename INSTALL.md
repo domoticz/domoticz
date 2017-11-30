@@ -123,11 +123,12 @@ All: (Assuming domoticz development is in a subfolder of the user)
 If you need support for Open-ZWave (for example if you want to use an Aeon USB V2 zwave adapter),
 you need to compile open zwave
 
-- Compile OpenZWave (http://code.google.com/p/open-zwave/)
+- Compile OpenZWave (https://github.com/OpenZWave/open-zwave)
 (On non-darwin install libudev-dev (`sudo apt-get install libudev-dev`)
 ```
-svn co http://open-zwave.googlecode.com/svn/trunk/ open-zwave-read-only
-cd open-zwave-read-only
+git clone https://github.com/OpenZWave/open-zwave.git
+cd open-zwave
+make
 ```
 
 ### Tellstick support
@@ -155,15 +156,15 @@ make
 
 
 ### Windows
-- You need Visual Studio 2015 (community edition is OK)
+- You need Visual Studio 2015 (Community Edition is OK)
 - The project file for Visual Studio can be found inside the "msbuild" folder
-- You need to download and unpack the following archive inside the "msbuild" folder:
-  http://www.domoticz.com/WindowsLibraries.7z
+- You need to download `WindowsLibraries.7z` from https://github.com/domoticz/win32-libraries
+  and unpack the archive inside the "msbuild" folder.
 
 ### Ubuntu / Raspberry Pi (wheezy)
 ```
 sudo apt-get install build-essential -y
-sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev zlib1g-dev
+sudo apt-get install cmake libboost-dev libboost-thread-dev libboost-system-dev libsqlite3-dev subversion curl libcurl4-openssl-dev libusb-dev libudev-dev zlib1g-dev libssl-dev
 ```
 
 Raspberry Pi (wheezy, 22 November 2012): (First time compile time: 25 minutes)

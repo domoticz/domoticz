@@ -1,5 +1,6 @@
 CACHE MANIFEST
-# ref 1244
+
+# ref 1405
 
 CACHE:
 # CSS
@@ -404,6 +405,7 @@ media/click.wav
 media/delete.mp3
 media/delete.wav
 media/disconnect.wav
+media/disconnect.mp3
 secpanel/media/arm.aac
 secpanel/media/arm.mp3
 secpanel/media/arm.ogg
@@ -426,6 +428,7 @@ i18n/domoticz-de.json
 i18n/domoticz-el.json
 i18n/domoticz-en.json
 i18n/domoticz-es.json
+i18n/domoticz-et.json
 i18n/domoticz-fi.json
 i18n/domoticz-fr.json
 i18n/domoticz-he.json
@@ -433,6 +436,7 @@ i18n/domoticz-hu.json
 i18n/domoticz-is.json
 i18n/domoticz-it.json
 i18n/domoticz-lt.json
+i18n/domoticz-lv.json
 i18n/domoticz-mk.json
 i18n/domoticz-nl.json
 i18n/domoticz-no.json
@@ -445,6 +449,7 @@ i18n/domoticz-sl.json
 i18n/domoticz-sr.json
 i18n/domoticz-sv.json
 i18n/domoticz-tr.json
+i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
@@ -456,6 +461,8 @@ app/DashboardController.js
 app/DevicesController.js
 app/DPFibaroController.js
 app/DPHttpController.js
+app/DPInfluxController.js
+app/DPGooglePubSubController.js
 app/DummyController.js
 app/EventsController.js
 app/FloorplanController.js
@@ -476,6 +483,10 @@ app/RoomplanController.js
 app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
+app/TemperatureCustomLogController.js
+app/TemperatureLogController.js
+app/TemperatureNotificationsController.js
+app/TimerplanController.js
 app/UpdateController.js
 app/UsersController.js
 app/UserVariablesController.js
@@ -534,6 +545,7 @@ js/noty/themes/default.js
 js/require.js
 js/respond.min.js
 js/themes/dark-blue.js
+js/themes/dark-ucust.js
 js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
@@ -558,6 +570,8 @@ views/dashboard.html
 views/devices.html
 views/dpfibaro.html
 views/dphttp.html
+views/dpinflux.html
+views/dpgooglepubsub.html
 views/events.html
 views/frontpage_example.html
 views/floorplanedit.html
@@ -573,10 +587,16 @@ views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
+views/temperature_custom_temp_log.html
+views/temperature_log.html
+views/temperature_notifications.html
+views/temperatures/temperatureWidget.html
+views/timerplan.html
 views/update.html
 views/users.html
 views/utility.html
 views/weather.html
+views/weather_widget.html
 eventsframe.html
 zwavetopology.html
 secpanel/index.html

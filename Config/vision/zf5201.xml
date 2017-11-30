@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Vision Security ZF5201 Flood-Sensor -->
+<!-- COMMAND_CLASS_BASIC -->
+        <CommandClass id="32" setasreport="true"/>
+        <CommandClass id="133">
+                <Associations num_groups="1">
+                        <Group index="1" max_associations="5" label="Flood detected"  />
+                </Associations>
+        </CommandClass>
+</Product>

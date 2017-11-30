@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fibaro FGFS101 Zwave+ Flood Sensor -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="short" genre="config" instance="1" index="1" label="Alarm Cancellation Delay" min="0" max="3600" value="0">
+            <Help>Determines time period (in seconds) by which a Flood Sensor will retain the flood state after the flooding itself has ceased. The sensor will keep on reporting flooding to the main controller. This parameter setting does not affect acoustic and visual alarms, which turn off immediately after flooding ceases.</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="2" label="Acoustic and visual signals" value="3" size="1">
+            <Help>Acoustic and visual signals in case of flooding.</Help>
+            <Item label="acoustic and visual alarms inactive" value="0" />
+            <Item label="acoustic alarm inactive, visual alarm active" value="1" />
+            <Item label="acoustic alarm active, visual alarm inactive" value="2" />
+            <Item label="acoustic and visual alarms active" value="3" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="Requested dimming level / roller blind opening level when sending turn on / open command to 2nd association group devices" min="1" max="255" value="255">
+            <Help>Determines the requested "on" level to be sent to devices from 2nd association group upon flood event.</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="9" label="Deactivate turning off devices in 2nd association group alarm cancellation in 3rd group" value="1" size="1">
+            <Help>This setting decides whether device turn off commands and alarm cancellation notifications will be sent to devices in 2nd and 3rd association groups (respectively)</Help>
+            <Item label="Alarm (flooding) cancellation INACTIVE" value="0" />
+            <Item label="Alarm (flooding) cancellation ACTIVE" value="1" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="10" label="Interval between successive readings of temperature sensors" min="1" max="65535" value="300">
+            <Help>Interval between successive readings of temperature from all sensors connected to the device in seconds. Note: taking temperature readings from the sensor does not result in sending a temperature condition report to the central hub.</Help>
+        </Value>
+
+        <Value type="short" genre="config" instance="1" index="12" label="Insensitiveness to temperature changes." min="1" max="1000" value="50">
+            <Help>Insensitiveness to temperature changes. This is the maximum acceptable difference between the last reported temperature and the current temperature taken from the sensor. If the temperatures differ by the set value or more, then a report with the current temperature value is sent to the device assigned to association group no. 3. Intervals between taking readings from sensors are specified by parameter no. 10.
+                Possible parameter settings:1 to 1000 [each 0.01oC] [0.01oC to 10.00oC].</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="50" label="Low temperature alarm threshold." min="-10000" max="10000" value="1500">
+            <Help>The parameter stores a temperature value, below which LED indicator blinks with a colour determined by Parameter 61 settings. By default the LED indicator blinks blue.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="51" label="High temperature alarm threshold." min="-10000" max="10000" value="3500">
+            <Help>The parameter stores a temperature value, above which LED indicator blinks with a colour determined by Parameter 62 settings. By default the LED indicator blinks red.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="61" label="Low temperature alarm indicator colour." min="0" max="16777215" value="255">
+            <Help>The parameter stores RGB colour value.</Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="62" label="High temperature alarm indicator colour." min="0" max="16777215" value="16711680">
+            <Help>The parameter stores RGB colour value.</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="63" label="Managing a LED indicator under standard operation." value="2" size="1">
+            <Help>Parameter determines LED indicator's operation. Set to 0 turns the indicator off, saving battery life.</Help>
+            <Item label="LED doesn't indicate temperature" value="0" />
+            <Item label="LED indicates temperature (blink) every Temperature Measurement Interval (Parameter 10, constant power + battery) or Wake Up Interval (battery)" value="1" />
+            <Item label="LED indicates temperature constantly, only in constant power mode." value="2" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="73" label="Temperature measurement compensation." min="-10000" max="10000" value="0">
+            <Help>Parameter stores a temperature value to be added to or deducted from the current temperature measured by the internal temperature sensor in order to compensate the difference between air temperature and the temperature at floor level.
+                Possible parameter settings:-10000 to 10000 [each 0.01oC] [-100oC to 100oC].</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="74" label="Alarm frame sent to 1st and 4th Association Group activation." value="2" size="1">
+            <Help>The device is able to report tamper alarms resulting from sensor tilt/movement or TMP button state change.</Help>
+            <Item label="Tamper alarms INACTIVE" value="0" />
+            <Item label="Button tamper alarm ACTIVE" value="1" />
+            <Item label="Movement tamper alarm ACTIVE" value="2" />
+            <Item label="Button and movement tamper alarms ACTIVE" value="3" />
+        </Value>
+        <Value type="short" genre="config" instance="1" index="75" label="Visual and audible alarm duration" min="0" max="65535" value="0">
+            <Help>Parameter determines a time period after which alarm will become quiet - still active but the device will go into battery saving mode. Visual or acoustic alarm will be reactivated after time period specified in Parameter 76. When alarm status ceases, alarm will be turned off immediately.
+                Value of 0 means visual and acoustic alarms are active indefinitely. In battery power mode the device will never go to sleep which may shorten battery life significantly.</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="76" label="Alarm signalization reactivation period" min="0" max="65535" value="0">
+            <Help>Parameter determines a time period after which an alarm frame will be retransmitted.
+                Value of 0 cancels an alarm frame retransmission.</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="77" label="Flood sensor functionality turned off." value="0" size="1">
+            <Help>Allows for turning off the internal flood sensor. Tamper and internal temperature sensors will remain active.</Help>
+            <Item label="Default flood sensor operation (ACTIVE)" value="0" />
+            <Item label="Flood sensor INACTIVE" value="1" />
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="78" label="Associations in Z-Wave network security mode" min="0" max="7" value="7">
+            <Help>This parameter defines how commands are sent in specified association groups: as secure or non-secure. Parameter is active only in Z-Wave network security mode. It does not apply to 1st Lifeline group.</Help>
+        </Value>
+    </CommandClass>
+    <CommandClass id="96" mapping="endpoints" />
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Flood Control" />
+            <Group index="3" max_associations="5" label="Flood Alarm" />
+            <Group index="4" max_associations="5" label="Tamper Alarm" />
+        </Associations>
+    </CommandClass>
+</Product>

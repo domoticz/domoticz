@@ -18,12 +18,12 @@ Contributors:
 #include <stdlib.h>
 #include <string.h>
 
-#include "mosquitto_internal.h"
-#include "mosquitto.h"
-#include "memory_mosq.h"
-#include "messages_mosq.h"
-#include "send_mosq.h"
-#include "time_mosq.h"
+#include <mosquitto_internal.h>
+#include <mosquitto.h>
+#include <memory_mosq.h>
+#include <messages_mosq.h>
+#include <send_mosq.h>
+#include <time_mosq.h>
 
 void _mosquitto_message_cleanup(struct mosquitto_message_all **message)
 {
@@ -106,8 +106,18 @@ void mosquitto_message_free(struct mosquitto_message **message)
 	_mosquitto_free(msg);
 }
 
-void _mosquitto_message_queue(struct mosquitto *mosq, struct mosquitto_message_all *message, enum mosquitto_msg_direction dir)
+
+/*
+ * Function: _mosquitto_message_queue
+ *
+ * Returns:
+ *	0 - to indicate an outgoing message can be started
+ *	1 - to indicate that the outgoing message queue is full (inflight limit has been reached)
+ */
+int _mosquitto_message_queue(struct mosquitto *mosq, struct mosquitto_message_all *message, enum mosquitto_msg_direction dir)
 {
+	int rc = 0;
+
 	/* mosq->*_message_mutex should be locked before entering this function */
 	assert(mosq);
 	assert(message);
@@ -121,8 +131,12 @@ void _mosquitto_message_queue(struct mosquitto *mosq, struct mosquitto_message_a
 			mosq->out_messages = message;
 		}
 		mosq->out_messages_last = message;
-		if(message->msg.qos > 0 && (mosq->max_inflight_messages == 0 || mosq->inflight_messages < mosq->max_inflight_messages)){
-			mosq->inflight_messages++;
+		if(message->msg.qos > 0){
+			if(mosq->max_inflight_messages == 0 || mosq->inflight_messages < mosq->max_inflight_messages){
+				mosq->inflight_messages++;
+			}else{
+				rc = 1;
+			}
 		}
 	}else{
 		mosq->in_queue_len++;
@@ -134,6 +148,7 @@ void _mosquitto_message_queue(struct mosquitto *mosq, struct mosquitto_message_a
 		}
 		mosq->in_messages_last = message;
 	}
+	return rc;
 }
 
 void _mosquitto_messages_reconnect_reset(struct mosquitto *mosq)
@@ -177,10 +192,10 @@ void _mosquitto_messages_reconnect_reset(struct mosquitto *mosq)
 		mosq->out_queue_len++;
 		message->timestamp = 0;
 
-		if(message->msg.qos > 0){
-			mosq->inflight_messages++;
-		}
 		if(mosq->max_inflight_messages == 0 || mosq->inflight_messages < mosq->max_inflight_messages){
+			if(message->msg.qos > 0){
+				mosq->inflight_messages++;
+			}
 			if(message->msg.qos == 1){
 				message->state = mosq_ms_wait_for_puback;
 			}else if(message->msg.qos == 2){

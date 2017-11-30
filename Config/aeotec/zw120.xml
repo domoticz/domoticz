@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Aeotec ZW120 Door/Window Sensor Gen5, base on Engineering Spec 08/01/2016
+
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Sensor Binary Report" min="0" max="1" value="0" size="1">
+			<Help>Which value of the Sensor Binary Report will be sent when the door is Opened/Closed</Help>
+			<Item label="Open: 0xFF, Close: 0x00" value="0"/>
+			<Item label="Open: 0x00, Close: 0xFF" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="2" label="Enable wake up 10 minutes when re-power on the sensor" min="0" max="1" value="1" size="1">
+			<Help>Default setting: Disable</Help>
+			<Item label="Disable" value="0"/>
+			<Item label="Enable" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="3" label="Basic Set Report" min="0" max="1" value="0" size="1">
+			<Help>Which value of the Basic Set will be sent when the door is Opened/Closed</Help>
+			<Item label="Open: 0xFF, Close: 0x00" value="0"/>
+			<Item label="Open: 0x00, Close: 0xFF" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="39" label="Set the low battery value" min="10" max="50" value="10" size="1">
+			<Help>10% to 50%</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="111" label="Interval time of battery report" size="4" min="0" max="2147483647" value="0">
+			<Help>
+				Set the interval time of battery report.
+				Value=0, disable the battery report for a interval time.
+				Value=1 to 0x7FFFFFFF, the interval time of battery report is set.
+				Note:
+				1, if the value is less than 10, the time unit is second.
+				If the value is more than 10, the time unit is 4 minutes, which means if the value is more than 10 and less than 240, the interval time is 4 minutes. 
+				If the value is more than 240 and less than 480, the interval is 8 minutes.
+				2, if the current battery report falls below the low battery value (configurable parameter 39), it will send battery report=0xFF.
+			</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="121" label="Report type" min="0" max="65535" value="256" size="4">
+			<Help>
+				To configure which sensor report will be sent when the Sensor is triggered Opened/Closed.
+				Bitsets: 0->Battery report, 4->Sensor Binary, 8->Basic Set, Default setting: 0x00000100 (Basic Set).
+				Ideal Setting for OZW is 17 (Sensor Binary and Battery Report).
+			</Help>
+		</Value>
+		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+			<Help>Reset to factory defaults</Help>
+            <Item label="Reset to factory default setting" value="0"/>
+			<Item label="Normal" value="1"/>
+            <Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+		</Value>
+	</CommandClass>
+
+	<!-- Basic set as report-->
+	<CommandClass id="32" setasreport="true"/>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+</Product>

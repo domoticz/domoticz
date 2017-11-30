@@ -15,12 +15,12 @@ struct _tRemoteShareUser
 {
 	std::string Username;
 	std::string Password;
-	std::vector<unsigned long long> Devices;
+	std::vector<uint64_t> Devices;
 };
 
 #define RemoteMessage_id_Low 0xE2
 #define RemoteMessage_id_High 0x2E
-
+#define SECONDS_PER_DAY 60*60*24
 
 struct _tRemoteMessage
 {
@@ -41,12 +41,17 @@ public:
 	virtual void stopClient(CTCPClient_ptr c) = 0;
 	virtual void stopAllClients();
 
-	void SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
 	unsigned int GetUserDevicesCount(const std::string &username);
 protected:
+	struct _tTCPLogInfo
+	{
+		time_t		time;
+		std::string string;
+	};
 
 	_tRemoteShareUser* FindUser(const std::string &username);
 
@@ -84,6 +89,9 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	CTCPClient_ptr new_connection_;
+
+	bool IsUserHereFirstTime(const std::string &ip_string);
+	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
 
 #ifndef NOCLOUD
@@ -117,7 +125,7 @@ public:
 	bool StartServer(boost::shared_ptr<http::server::CProxyClient> proxy);
 #endif
 	void StopServer();
-	void SendToAll(const int HardwareID, const unsigned long long DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
+	void SendToAll(const int HardwareID, const uint64_t DeviceRowID, const char *pData, size_t Length, const CTCPClientBase* pClient2Ignore);
 	void SetRemoteUsers(const std::vector<_tRemoteShareUser> &users);
 	unsigned int GetUserDevicesCount(const std::string &username);
 	void stopAllClients();

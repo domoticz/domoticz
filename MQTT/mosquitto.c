@@ -29,20 +29,22 @@ Contributors:
 typedef int ssize_t;
 #endif
 
-#include "mosquitto.h"
-#include "mosquitto_internal.h"
-#include "logging_mosq.h"
-#include "messages_mosq.h"
-#include "memory_mosq.h"
-#include "mqtt3_protocol.h"
-#include "net_mosq.h"
-#include "read_handle.h"
-#include "send_mosq.h"
-#include "socks_mosq.h"
-#include "time_mosq.h"
-#include "tls_mosq.h"
-#include "util_mosq.h"
-#include "will_mosq.h"
+#include <mosquitto.h>
+#include <mosquitto_internal.h>
+#include <logging_mosq.h>
+#include <messages_mosq.h>
+#include <memory_mosq.h>
+#include <mqtt3_protocol.h>
+#include <net_mosq.h>
+#include <read_handle.h>
+#include <send_mosq.h>
+#include <socks_mosq.h>
+#include <time_mosq.h>
+#include <tls_mosq.h>
+#include <util_mosq.h>
+#include <will_mosq.h>
+
+#include "config.h"
 
 #if !defined(WIN32) && !defined(__SYMBIAN32__)
 #define HAVE_PSELECT
@@ -148,7 +150,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_se
 	mosq->last_retry_check = 0;
 	mosq->clean_session = clean_session;
 	if(id){
-		if(strlen(id) == 0){
+		if(STREMPTY(id)){
 			return MOSQ_ERR_INVAL;
 		}
 		mosq->id = _mosquitto_strdup(id);
@@ -172,7 +174,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_se
 	mosq->out_packet = NULL;
 	mosq->current_out_packet = NULL;
 	mosq->last_msg_in = mosquitto_time();
-	mosq->last_msg_out = mosquitto_time();
+	mosq->next_msg_out = mosquitto_time() + mosq->keepalive;
 	mosq->ping_t = 0;
 	mosq->last_mid = 0;
 	mosq->state = mosq_cs_new;
@@ -195,8 +197,8 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_se
 	mosq->reconnect_delay = 1;
 	mosq->reconnect_delay_max = 1;
 	mosq->reconnect_exponential_backoff = false;
-	mosq->threaded = false;
-#ifdef WWW_ENABLE_SSL
+	mosq->threaded = mosq_ts_none;
+#ifdef WITH_TLS
 	mosq->ssl = NULL;
 	mosq->tls_cert_reqs = SSL_VERIFY_PEER;
 	mosq->tls_insecure = false;
@@ -276,10 +278,10 @@ void _mosquitto_destroy(struct mosquitto *mosq)
 	if(!mosq) return;
 
 #ifdef WITH_THREADING
-	if(mosq->threaded && !pthread_equal(mosq->thread_id, pthread_self())){
+	if(mosq->threaded == mosq_ts_self && !pthread_equal(mosq->thread_id, pthread_self())){
 		pthread_cancel(mosq->thread_id);
 		pthread_join(mosq->thread_id, NULL);
-		mosq->threaded = false;
+		mosq->threaded = mosq_ts_none;
 	}
 
 	if(mosq->id){
@@ -302,7 +304,7 @@ void _mosquitto_destroy(struct mosquitto *mosq)
 	}
 	_mosquitto_message_cleanup_all(mosq);
 	_mosquitto_will_clear(mosq);
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(mosq->ssl){
 		SSL_free(mosq->ssl);
 	}
@@ -405,6 +407,15 @@ static int _mosquitto_connect_init(struct mosquitto *mosq, const char *host, int
 
 	mosq->keepalive = keepalive;
 
+	if(mosq->sockpairR != INVALID_SOCKET){
+		COMPAT_CLOSE(mosq->sockpairR);
+		mosq->sockpairR = INVALID_SOCKET;
+	}
+	if(mosq->sockpairW != INVALID_SOCKET){
+		COMPAT_CLOSE(mosq->sockpairW);
+		mosq->sockpairW = INVALID_SOCKET;
+	}
+
 	if(_mosquitto_socketpair(&mosq->sockpairR, &mosq->sockpairW)){
 		_mosquitto_log_printf(mosq, MOSQ_LOG_WARNING,
 				"Warning: Unable to open socket pair, outgoing publish commands may be delayed.");
@@ -478,7 +489,7 @@ static int _mosquitto_reconnect(struct mosquitto *mosq, bool blocking)
 
 	pthread_mutex_lock(&mosq->msgtime_mutex);
 	mosq->last_msg_in = mosquitto_time();
-	mosq->last_msg_out = mosquitto_time();
+	mosq->next_msg_out = mosq->last_msg_in + mosq->keepalive;
 	pthread_mutex_unlock(&mosq->msgtime_mutex);
 
 	mosq->ping_t = 0;
@@ -547,9 +558,10 @@ int mosquitto_publish(struct mosquitto *mosq, int *mid, const char *topic, int p
 {
 	struct mosquitto_message_all *message;
 	uint16_t local_mid;
+	int queue_status;
 
 	if(!mosq || !topic || qos<0 || qos>2) return MOSQ_ERR_INVAL;
-	if(strlen(topic) == 0) return MOSQ_ERR_INVAL;
+	if(STREMPTY(topic)) return MOSQ_ERR_INVAL;
 	if(payloadlen < 0 || payloadlen > MQTT_MAX_PAYLOAD) return MOSQ_ERR_PAYLOAD_SIZE;
 
 	if(mosquitto_pub_topic_check(topic) != MOSQ_ERR_SUCCESS){
@@ -592,8 +604,8 @@ int mosquitto_publish(struct mosquitto *mosq, int *mid, const char *topic, int p
 		message->dup = false;
 
 		pthread_mutex_lock(&mosq->out_message_mutex);
-		_mosquitto_message_queue(mosq, message, mosq_md_out);
-		if(mosq->max_inflight_messages == 0 || mosq->inflight_messages < mosq->max_inflight_messages){
+		queue_status = _mosquitto_message_queue(mosq, message, mosq_md_out);
+		if(queue_status == 0){
 			if(qos == 1){
 				message->state = mosq_ms_wait_for_puback;
 			}else if(qos == 2){
@@ -631,7 +643,7 @@ int mosquitto_unsubscribe(struct mosquitto *mosq, int *mid, const char *sub)
 
 int mosquitto_tls_set(struct mosquitto *mosq, const char *cafile, const char *capath, const char *certfile, const char *keyfile, int (*pw_callback)(char *buf, int size, int rwflag, void *userdata))
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	FILE *fptr;
 
 	if(!mosq || (!cafile && !capath) || (certfile && !keyfile) || (!certfile && keyfile)) return MOSQ_ERR_INVAL;
@@ -727,7 +739,7 @@ int mosquitto_tls_set(struct mosquitto *mosq, const char *cafile, const char *ca
 
 int mosquitto_tls_opts_set(struct mosquitto *mosq, int cert_reqs, const char *tls_version, const char *ciphers)
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(!mosq) return MOSQ_ERR_INVAL;
 
 	mosq->tls_cert_reqs = cert_reqs;
@@ -776,7 +788,7 @@ int mosquitto_tls_opts_set(struct mosquitto *mosq, int cert_reqs, const char *tl
 
 int mosquitto_tls_insecure_set(struct mosquitto *mosq, bool value)
 {
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	if(!mosq) return MOSQ_ERR_INVAL;
 	mosq->tls_insecure = value;
 	return MOSQ_ERR_SUCCESS;
@@ -829,6 +841,7 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 	int rc;
 	char pairbuf;
 	int maxfd = 0;
+	time_t now;
 
 	if(!mosq || max_packets < 1) return MOSQ_ERR_INVAL;
 #ifndef WIN32
@@ -847,11 +860,10 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 		if(mosq->out_packet || mosq->current_out_packet){
 			FD_SET(mosq->sock, &writefds);
 		}
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 		if(mosq->ssl){
 			if(mosq->want_write){
 				FD_SET(mosq->sock, &writefds);
-				mosq->want_write = false;
 			}else if(mosq->want_connect){
 				/* Remove possible FD_SET from above, we don't want to check
 				 * for writing if we are still connecting, unless want_write is
@@ -891,21 +903,21 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 		}
 	}
 
-	if(timeout >= 0){
-		local_timeout.tv_sec = timeout/1000;
-#ifdef HAVE_PSELECT
-		local_timeout.tv_nsec = (timeout-local_timeout.tv_sec*1000)*1e6;
-#else
-		local_timeout.tv_usec = (timeout-local_timeout.tv_sec*1000)*1000;
-#endif
-	}else{
-		local_timeout.tv_sec = 1;
-#ifdef HAVE_PSELECT
-		local_timeout.tv_nsec = 0;
-#else
-		local_timeout.tv_usec = 0;
-#endif
+	if(timeout < 0){
+		timeout = 1000;
 	}
+
+	now = mosquitto_time();
+	if(mosq->next_msg_out && now + timeout/1000 > mosq->next_msg_out){
+		timeout = (mosq->next_msg_out - now)*1000;
+	}
+
+	local_timeout.tv_sec = timeout/1000;
+#ifdef HAVE_PSELECT
+	local_timeout.tv_nsec = (timeout-local_timeout.tv_sec*1000)*1e6;
+#else
+	local_timeout.tv_usec = (timeout-local_timeout.tv_sec*1000)*1000;
+#endif
 
 #ifdef HAVE_PSELECT
 	fdcount = pselect(maxfd+1, &readfds, &writefds, NULL, &local_timeout, NULL);
@@ -924,17 +936,19 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 	}else{
 		if(mosq->sock != INVALID_SOCKET){
 			if(FD_ISSET(mosq->sock, &readfds)){
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 				if(mosq->want_connect){
 					rc = mosquitto__socket_connect_tls(mosq);
 					if(rc) return rc;
 				}else
 #endif
 				{
-					rc = mosquitto_loop_read(mosq, max_packets);
-					if(rc || mosq->sock == INVALID_SOCKET){
-						return rc;
-					}
+					do{
+						rc = mosquitto_loop_read(mosq, max_packets);
+						if(rc || mosq->sock == INVALID_SOCKET){
+							return rc;
+						}
+					}while(SSL_DATA_PENDING(mosq));
 				}
 			}
 			if(mosq->sockpairR != INVALID_SOCKET && FD_ISSET(mosq->sockpairR, &readfds)){
@@ -950,7 +964,7 @@ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
 				FD_SET(mosq->sock, &writefds);
 			}
 			if(FD_ISSET(mosq->sock, &writefds)){
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 				if(mosq->want_connect){
 					rc = mosquitto__socket_connect_tls(mosq);
 					if(rc) return rc;
@@ -1179,7 +1193,7 @@ bool mosquitto_want_write(struct mosquitto *mosq)
 {
 	if(mosq->out_packet || mosq->current_out_packet){
 		return true;
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 	}else if(mosq->ssl && mosq->want_write){
 		return true;
 #endif
@@ -1271,6 +1285,8 @@ void mosquitto_user_data_set(struct mosquitto *mosq, void *userdata)
 const char *mosquitto_strerror(int mosq_errno)
 {
 	switch(mosq_errno){
+		case MOSQ_ERR_CONN_PENDING:
+			return "Connection pending.";
 		case MOSQ_ERR_SUCCESS:
 			return "No error.";
 		case MOSQ_ERR_NOMEM:
@@ -1301,6 +1317,8 @@ const char *mosquitto_strerror(int mosq_errno)
 			return "Unknown error.";
 		case MOSQ_ERR_ERRNO:
 			return strerror(errno);
+		case MOSQ_ERR_EAI:
+			return "Lookup error.";
 		case MOSQ_ERR_PROXY:
 			return "Proxy error.";
 		default:

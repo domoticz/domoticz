@@ -26,3 +26,6 @@
 
 #define WITH_THREADING
 
+#ifndef EPROTO
+#  define EPROTO ECONNABORTED
+#endif

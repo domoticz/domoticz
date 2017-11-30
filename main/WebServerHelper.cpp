@@ -5,19 +5,14 @@
 namespace http {
 	namespace server {
 
-		typedef std::vector<CWebServer*>::iterator server_iterator;
+		typedef std::vector<boost::shared_ptr<CWebServer> >::iterator server_iterator;
 #ifndef NOCLOUD
-		typedef std::vector<CProxyManager*>::iterator proxy_iterator;
+		typedef std::vector<boost::shared_ptr<CProxyManager> >::iterator proxy_iterator;
 		extern CProxySharedData sharedData;
 #endif
 
 		CWebServerHelper::CWebServerHelper()
 		{
-#ifdef WWW_ENABLE_SSL
-			secureServer_ = NULL;
-#endif
-			plainServer_ = NULL;
-
 			m_pDomServ = NULL;
 		}
 
@@ -36,13 +31,14 @@ namespace http {
 			m_pDomServ = sharedServer;
 
 			our_serverpath = serverpath;
-			plainServer_ = new CWebServer();
+			plainServer_.reset(new CWebServer());
 			serverCollection.push_back(plainServer_);
 			bRet |= plainServer_->StartServer(web_settings, serverpath, bIgnoreUsernamePassword);
+			our_listener_port = web_settings.listening_port;
 #ifdef WWW_ENABLE_SSL
 			if (secure_web_settings.is_enabled()) {
 				SSL_library_init();
-				secureServer_ = new CWebServer();
+				secureServer_.reset(new CWebServer());
 				bRet |= secureServer_->StartServer(secure_web_settings, serverpath, bIgnoreUsernamePassword);
 				serverCollection.push_back(secureServer_);
 			}
@@ -59,19 +55,17 @@ namespace http {
 		void CWebServerHelper::StopServers()
 		{
 			for (server_iterator it = serverCollection.begin(); it != serverCollection.end(); ++it) {
-				((CWebServer*) *it)->StopServer();
-				if (*it) delete (*it);
+				(*it)->StopServer();
 			}
 			serverCollection.clear();
-			plainServer_ = NULL; // avoid double free
+			plainServer_.reset();
 #ifdef WWW_ENABLE_SSL
-			secureServer_ = NULL; // avoid double free
+			secureServer_.reset();
 #endif
 
 #ifndef NOCLOUD
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
-				((CProxyManager*) *it)->Stop();
-				if (*it) delete (*it);
+				(*it)->Stop();
 			}
 			proxymanagerCollection.clear();
 #endif
@@ -82,14 +76,13 @@ namespace http {
 			sharedData.StopTCPClients();
 			for (proxy_iterator it = proxymanagerCollection.begin(); it != proxymanagerCollection.end(); ++it) {
 				(*it)->Stop();
-				delete (*it);
 			}
 
 			// restart threads
 			const unsigned int connections = GetNrMyDomoticzThreads();
-			proxymanagerCollection.resize(connections);
+			proxymanagerCollection.clear();
 			for (unsigned int i = 0; i < connections; i++) {
-				proxymanagerCollection[i] = new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ);
+				proxymanagerCollection.push_back(boost::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ)));
 				proxymanagerCollection[i]->Start(i == 0);
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");
@@ -139,14 +132,27 @@ namespace http {
 		}
 
 		//JSon
-		void CWebServerHelper::	GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const time_t LastUpdate, const std::string &username)
+		void CWebServerHelper::	GetJSonDevices(
+			Json::Value &root,
+			const std::string &rused,
+			const std::string &rfilter,
+			const std::string &order,
+			const std::string &rowid,
+			const std::string &planID,
+			const std::string &floorID,
+			const bool bDisplayHidden,
+			const bool bDisplayDisabled,
+			const bool bFetchFavorites,
+			const time_t LastUpdate,
+			const std::string &username,
+			const std::string &hardwareid) // OTO
 		{
 			if (plainServer_) { // assert
-				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
+				plainServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bDisplayDisabled, bFetchFavorites, LastUpdate, username, hardwareid);
 			}
 #ifdef WWW_ENABLE_SSL
 			else if (secureServer_) {
-				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, LastUpdate, username);
+				secureServer_->GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bDisplayDisabled, bFetchFavorites, LastUpdate, username, hardwareid);
 			}
 #endif
 		}

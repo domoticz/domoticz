@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -14,21 +14,21 @@
     <ProjectGuid>{6AD96441-5B2C-467B-AAB6-A1B8368D503A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>domoticz</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -44,6 +44,9 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(Configuration)_Build\</IntDir>
     <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -55,15 +58,16 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;ENABLE_PYTHON;_DEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;WWW_ENABLE_SSL;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_63_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_63_0/Debug;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Debug/LuaMSVS.lib;./Windows Libraries/OpenZwave/Debug/OpenZWaveD.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <Profile>true</Profile>
     </Link>
@@ -81,8 +85,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_59_0;./libusb;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;ENABLE_PYTHON;NDEBUG;PTW32_STATIC_LIB;WITH_OPENZWAVE;OPENZWAVE_USEDLL;_CONSOLE;WWW_ENABLE_SSL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./Windows Libraries/Boost/boost_1_63_0;./libusb;../MQTT;..\hardware\openzwave;./Windows Libraries/openssl;./Windows Libraries/Curl;./Windows Libraries/pthread;../hardware/plugins/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -90,8 +94,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_59_0/Release;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Release/LuaMSVS.lib;./Windows Libraries/OpenZwave/Release/OpenZWave.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./Windows Libraries/Boost/boost_1_63_0/Release;../libusb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>./Windows Libraries/pthread/pthread.lib;./Windows Libraries/Curl/libcurl.lib;./Windows Libraries/openssl/ssleay32MT.lib;./Windows Libraries/openssl/libeay32MT.lib;./Windows Libraries/Lua/Release/LuaMSVS.lib;./Windows Libraries/OpenZwave/Release/OpenZWave.lib;./Windows Libraries/ZLib/zlib.lib;Setupapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dnsapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -126,6 +130,7 @@
     <None Include="..\www\app\LoginController.js" />
     <None Include="..\www\app\LogoutController.js" />
     <None Include="..\www\app\main.js" />
+    <None Include="..\www\app\MobileNotificationsController.js" />
     <None Include="..\www\app\NotificationController.js" />
     <None Include="..\www\app\OfflineController.js" />
     <None Include="..\www\app\RestoreDatabaseController.js" />
@@ -372,6 +377,7 @@
     <None Include="..\www\views\log.html" />
     <None Include="..\www\views\login.html" />
     <None Include="..\www\views\logout.html" />
+    <None Include="..\www\views\mobile_notifications.html" />
     <None Include="..\www\views\notification.html" />
     <None Include="..\www\views\offline.html" />
     <None Include="..\www\views\restoredatabase.html" />
@@ -407,32 +413,48 @@
     <ClInclude Include="..\hardware\1Wire\1WireSystem.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="..\hardware\AccuWeather.h" />
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
+    <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
+    <ClInclude Include="..\hardware\Comm5Serial.h" />
     <ClInclude Include="..\hardware\Comm5TCP.h" />
     <ClInclude Include="..\hardware\csocket.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterBase.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
+    <ClInclude Include="..\hardware\Daikin.h" />
+    <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
+    <ClInclude Include="..\hardware\DenkoviSmartdenLan.h" />
     <ClInclude Include="..\hardware\Dummy.h" />
+    <ClInclude Include="..\hardware\Ec3kMeterTCP.h" />
     <ClInclude Include="..\hardware\EcoDevices.h" />
     <ClInclude Include="..\hardware\EnOceanESP2.h" />
     <ClInclude Include="..\hardware\EnOceanESP3.h" />
     <ClInclude Include="..\hardware\ETH8020.h" />
-    <ClInclude Include="..\hardware\evohome.h" />
-    <ClInclude Include="..\hardware\ForecastIO.h" />
+    <ClInclude Include="..\hardware\EvohomeBase.h" />
+    <ClInclude Include="..\hardware\EvohomeScript.h" />
+    <ClInclude Include="..\hardware\EvohomeSerial.h" />
+    <ClInclude Include="..\hardware\EvohomeWeb.h" />
+    <ClInclude Include="..\hardware\GoodweAPI.h" />
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
+    <ClInclude Include="..\hardware\Rtl433.h" />
+    <ClInclude Include="..\hardware\SysfsGpio.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
+    <ClInclude Include="..\hardware\HEOS.h" />
+    <ClInclude Include="..\hardware\HttpPoller.h" />
     <ClInclude Include="..\hardware\I2C.h" />
     <ClInclude Include="..\hardware\ICYThermostat.h" />
+    <ClInclude Include="..\hardware\InComfort.h" />
     <ClInclude Include="..\hardware\KMTronic433.h" />
     <ClInclude Include="..\hardware\KMTronicBase.h" />
     <ClInclude Include="..\hardware\KMTronicSerial.h" />
     <ClInclude Include="..\hardware\KMTronicTCP.h" />
+    <ClInclude Include="..\hardware\KMTronicUDP.h" />
     <ClInclude Include="..\hardware\Kodi.h" />
     <ClInclude Include="..\hardware\Limitless.h" />
     <ClInclude Include="..\hardware\HardwareMonitor.h" />
@@ -440,13 +462,18 @@
     <ClInclude Include="..\hardware\Meteostick.h" />
     <ClInclude Include="..\hardware\MochadTCP.h" />
     <ClInclude Include="..\hardware\MQTT.h" />
+    <ClInclude Include="..\hardware\MultiFun.h" />
     <ClInclude Include="..\hardware\MySensorsBase.h" />
     <ClInclude Include="..\hardware\MySensorsSerial.h" />
     <ClInclude Include="..\hardware\MySensorsTCP.h" />
+    <ClInclude Include="..\hardware\MySensorsMQTT.h" />
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
-    <ClInclude Include="..\hardware\OpenWebNet.h" />
+    <ClInclude Include="..\hardware\OnkyoAVTCP.h" />
+    <ClInclude Include="..\hardware\OpenWeatherMap.h" />
+    <ClInclude Include="..\hardware\OpenWebNetTCP.h" />
+    <ClInclude Include="..\hardware\OpenWebNetUSB.h" />
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
     <ClInclude Include="..\hardware\OpenZWave.h" />
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h" />
@@ -454,17 +481,29 @@
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
     <ClInclude Include="..\hardware\PanasonicTV.h" />
-    <ClInclude Include="..\hardware\PhilipsHue.h" />
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHue.h" />
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h" />
     <ClInclude Include="..\hardware\PiFace.h" />
     <ClInclude Include="..\hardware\Pinger.h" />
+    <ClInclude Include="..\hardware\plugins\DelayedLink.h" />
+    <ClInclude Include="..\hardware\plugins\PluginManager.h" />
+    <ClInclude Include="..\hardware\plugins\PluginMessages.h" />
+    <ClInclude Include="..\hardware\plugins\PluginProtocols.h" />
+    <ClInclude Include="..\hardware\plugins\Plugins.h" />
+    <ClInclude Include="..\hardware\plugins\PluginTransports.h" />
+    <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
+    <ClInclude Include="..\hardware\RAVEn.h" />
     <ClInclude Include="..\hardware\Razberry.h" />
     <ClInclude Include="..\hardware\Rego6XXSerial.h" />
+    <ClInclude Include="..\hardware\RelayNet.h" />
     <ClInclude Include="..\hardware\RFLinkBase.h" />
     <ClInclude Include="..\hardware\RFLinkSerial.h" />
     <ClInclude Include="..\hardware\RFLinkTCP.h" />
+    <ClInclude Include="..\hardware\RFXBase.h" />
     <ClInclude Include="..\hardware\S0MeterBase.h" />
     <ClInclude Include="..\hardware\S0MeterSerial.h" />
+    <ClInclude Include="..\hardware\S0MeterTCP.h" />
     <ClInclude Include="..\hardware\SatelIntegra.h" />
     <ClInclude Include="..\hardware\SBFSpot.h" />
     <ClInclude Include="..\hardware\serial\serial.h" />
@@ -474,7 +513,8 @@
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
     <ClInclude Include="..\hardware\TE923Tool.h" />
-    <ClInclude Include="..\hardware\Teleinfo.h" />
+    <ClInclude Include="..\hardware\TeleinfoBase.h" />
+    <ClInclude Include="..\hardware\TeleinfoSerial.h" />
     <ClInclude Include="..\hardware\Tellstick.h" />
     <ClInclude Include="..\hardware\Thermosmart.h" />
     <ClInclude Include="..\hardware\ToonThermostat.h" />
@@ -482,6 +522,11 @@
     <ClInclude Include="..\hardware\Winddelen.h" />
     <ClInclude Include="..\hardware\WOL.h" />
     <ClInclude Include="..\hardware\Wunderground.h" />
+    <ClInclude Include="..\hardware\Yeelight.h" />
+    <ClInclude Include="..\hardware\ZiBlueBase.h" />
+    <ClInclude Include="..\hardware\ZiBlueSerial.h" />
+    <ClInclude Include="..\hardware\ZiBlueTCP.h" />
+    <ClInclude Include="..\hardware\ziblue_usb_frame_api.h" />
     <ClInclude Include="..\hardware\ZWaveBase.h" />
     <ClInclude Include="..\hardware\ZWaveCommands.h" />
     <ClInclude Include="..\httpclient\HTTPClient.h" />
@@ -494,18 +539,19 @@
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
     <ClInclude Include="..\hardware\hardwaretypes.h" />
     <ClInclude Include="..\main\concurrent_queue.h" />
-    <ClInclude Include="..\main\DataPush.h" />
     <ClInclude Include="..\main\dirent_windows.h" />
+    <ClInclude Include="..\main\EventsPythonDevice.h" />
+    <ClInclude Include="..\main\EventsPythonModule.h" />
     <ClInclude Include="..\main\EventSystem.h" />
     <ClInclude Include="..\main\GZipHelper.h" />
-    <ClInclude Include="..\main\HttpPush.h" />
     <ClInclude Include="..\main\localtime_r.h" />
     <ClInclude Include="..\hardware\P1MeterBase.h" />
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\LuaCommon.h" />
+    <ClInclude Include="..\main\LuaHandler.h" />
     <ClInclude Include="..\main\mainstructs.h" />
-    <ClInclude Include="..\main\Push.h" />
     <ClInclude Include="..\main\unzip.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
@@ -544,7 +590,13 @@
     <ClInclude Include="..\notifications\NotificationPushalot.h" />
     <ClInclude Include="..\notifications\NotificationPushbullet.h" />
     <ClInclude Include="..\notifications\NotificationPushover.h" />
+    <ClInclude Include="..\notifications\NotificationPushsafer.h" />
     <ClInclude Include="..\notifications\NotificationSMS.h" />
+    <ClInclude Include="..\push\FibaroPush.h" />
+    <ClInclude Include="..\push\GooglePubSubPush.h" />
+    <ClInclude Include="..\push\HttpPush.h" />
+    <ClInclude Include="..\push\InfluxPush.h" />
+    <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\webserver\fastcgi.hpp" />
     <ClInclude Include="..\webserver\GZipHelper.h" />
     <ClInclude Include="..\webserver\proxyclient.h" />
@@ -552,6 +604,7 @@
     <ClInclude Include="..\zip\ioapi.h" />
     <ClInclude Include="..\zip\unzip.h" />
     <ClInclude Include="..\zip\zip.h" />
+    <ClInclude Include="..\hardware\BleBox.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\main\Scheduler.h" />
     <ClInclude Include="..\main\SQLHelper.h" />
@@ -587,6 +640,7 @@
     <ClInclude Include="..\webserver\utf.hpp" />
     <ClInclude Include="WindowsHelper.h" />
     <ClInclude Include="..\hardware\YouLess.h" />
+    <ClInclude Include="..\hardware\XiaomiGateway.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\hardware\1Wire.cpp">
@@ -606,33 +660,49 @@
     <ClCompile Include="..\hardware\1Wire\1WireForWindows.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\hardware\AccuWeather.cpp" />
     <ClCompile Include="..\hardware\AnnaThermostat.cpp" />
+    <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
     <ClCompile Include="..\hardware\csocket.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterBase.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
+    <ClCompile Include="..\hardware\Daikin.cpp" />
+    <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
+    <ClCompile Include="..\hardware\DenkoviSmartdenLan.cpp" />
     <ClCompile Include="..\hardware\Dummy.cpp" />
+    <ClCompile Include="..\hardware\Ec3kMeterTCP.cpp" />
     <ClCompile Include="..\hardware\EcoDevices.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP2.cpp" />
     <ClCompile Include="..\hardware\EnOceanESP3.cpp" />
     <ClCompile Include="..\hardware\ETH8020.cpp" />
-    <ClCompile Include="..\hardware\evohome.cpp" />
-    <ClCompile Include="..\hardware\ForecastIO.cpp" />
+    <ClCompile Include="..\hardware\EvohomeBase.cpp" />
+    <ClCompile Include="..\hardware\EvohomeScript.cpp" />
+    <ClCompile Include="..\hardware\EvohomeSerial.cpp" />
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp" />
     <ClCompile Include="..\hardware\FritzboxTCP.cpp" />
+    <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
+    <ClCompile Include="..\hardware\Rtl433.cpp" />
+    <ClCompile Include="..\hardware\SysfsGpio.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
+    <ClCompile Include="..\hardware\HEOS.cpp" />
+    <ClCompile Include="..\hardware\HttpPoller.cpp" />
     <ClCompile Include="..\hardware\I2C.cpp" />
     <ClCompile Include="..\hardware\ICYThermostat.cpp" />
+    <ClCompile Include="..\hardware\InComfort.cpp" />
     <ClCompile Include="..\hardware\KMTronic433.cpp" />
     <ClCompile Include="..\hardware\KMTronicBase.cpp" />
     <ClCompile Include="..\hardware\KMTronicSerial.cpp" />
     <ClCompile Include="..\hardware\KMTronicTCP.cpp" />
+    <ClCompile Include="..\hardware\KMTronicUDP.cpp" />
     <ClCompile Include="..\hardware\Kodi.cpp" />
     <ClCompile Include="..\hardware\Limitless.cpp" />
     <ClCompile Include="..\hardware\HardwareMonitor.cpp" />
@@ -640,16 +710,21 @@
     <ClCompile Include="..\hardware\Meteostick.cpp" />
     <ClCompile Include="..\hardware\MochadTCP.cpp" />
     <ClCompile Include="..\hardware\MQTT.cpp" />
+    <ClCompile Include="..\hardware\MultiFun.cpp" />
     <ClCompile Include="..\hardware\MySensorsBase.cpp" />
     <ClCompile Include="..\hardware\MySensorsSerial.cpp" />
     <ClCompile Include="..\hardware\MySensorsTCP.cpp" />
+    <ClCompile Include="..\hardware\MySensorsMQTT.cpp" />
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
-    <ClCompile Include="..\hardware\OpenWebNet.cpp" />
+    <ClCompile Include="..\hardware\OnkyoAVTCP.cpp" />
+    <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNetTCP.cpp" />
+    <ClCompile Include="..\hardware\OpenWebNetUSB.cpp" />
     <ClCompile Include="..\hardware\openwebnet\bt_openwebnet.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\hardware\OpenZWave.cpp" />
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp" />
@@ -658,16 +733,27 @@
     <ClCompile Include="..\hardware\OTGWSerial.cpp" />
     <ClCompile Include="..\hardware\OTGWTCP.cpp" />
     <ClCompile Include="..\hardware\PanasonicTV.cpp" />
-    <ClCompile Include="..\hardware\PhilipsHue.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
+    <ClCompile Include="..\hardware\plugins\DelayedLink.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginManager.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp" />
+    <ClCompile Include="..\hardware\plugins\Plugins.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginTransports.cpp" />
+    <ClCompile Include="..\hardware\plugins\PythonObjects.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
+    <ClCompile Include="..\hardware\RAVEn.cpp" />
     <ClCompile Include="..\hardware\Razberry.cpp" />
+    <ClCompile Include="..\hardware\RelayNet.cpp" />
     <ClCompile Include="..\hardware\RFLinkBase.cpp" />
     <ClCompile Include="..\hardware\RFLinkSerial.cpp" />
     <ClCompile Include="..\hardware\RFLinkTCP.cpp" />
+    <ClCompile Include="..\hardware\RFXBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterBase.cpp" />
     <ClCompile Include="..\hardware\S0MeterSerial.cpp" />
+    <ClCompile Include="..\hardware\S0MeterTCP.cpp" />
     <ClCompile Include="..\hardware\SatelIntegra.cpp" />
     <ClCompile Include="..\hardware\SBFSpot.cpp" />
     <ClCompile Include="..\hardware\serial\impl\win.cpp" />
@@ -678,7 +764,8 @@
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />
     <ClCompile Include="..\hardware\TE923Tool.cpp" />
-    <ClCompile Include="..\hardware\Teleinfo.cpp" />
+    <ClCompile Include="..\hardware\TeleinfoBase.cpp" />
+    <ClCompile Include="..\hardware\TeleinfoSerial.cpp" />
     <ClCompile Include="..\hardware\Tellstick.cpp" />
     <ClCompile Include="..\hardware\Thermosmart.cpp" />
     <ClCompile Include="..\hardware\ToonThermostat.cpp" />
@@ -686,6 +773,10 @@
     <ClCompile Include="..\hardware\Winddelen.cpp" />
     <ClCompile Include="..\hardware\WOL.cpp" />
     <ClCompile Include="..\hardware\Wunderground.cpp" />
+    <ClCompile Include="..\hardware\Yeelight.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueBase.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueSerial.cpp" />
+    <ClCompile Include="..\hardware\ZiBlueTCP.cpp" />
     <ClCompile Include="..\hardware\ZWaveBase.cpp" />
     <ClCompile Include="..\httpclient\HTTPClient.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
@@ -694,15 +785,16 @@
     <ClCompile Include="..\hardware\DomoticzHardware.cpp" />
     <ClCompile Include="..\hardware\DomoticzInternal.cpp" />
     <ClCompile Include="..\hardware\DomoticzTCP.cpp" />
-    <ClCompile Include="..\main\DataPush.cpp" />
+    <ClCompile Include="..\main\EventsPythonDevice.cpp" />
+    <ClCompile Include="..\main\EventsPythonModule.cpp" />
     <ClCompile Include="..\main\EventSystem.cpp" />
-    <ClCompile Include="..\main\HttpPush.cpp" />
     <ClCompile Include="..\main\localtime_r.cpp" />
     <ClCompile Include="..\hardware\P1MeterBase.cpp" />
     <ClCompile Include="..\hardware\P1MeterSerial.cpp" />
     <ClCompile Include="..\hardware\P1MeterTCP.cpp" />
     <ClCompile Include="..\main\Logger.cpp" />
-    <ClCompile Include="..\main\Push.cpp" />
+    <ClCompile Include="..\main\LuaCommon.cpp" />
+    <ClCompile Include="..\main\LuaHandler.cpp" />
     <ClCompile Include="..\main\Scheduler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
@@ -805,7 +897,13 @@
     <ClCompile Include="..\notifications\NotificationPushalot.cpp" />
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp" />
     <ClCompile Include="..\notifications\NotificationPushover.cpp" />
+    <ClCompile Include="..\notifications\NotificationPushsafer.cpp" />
     <ClCompile Include="..\notifications\NotificationSMS.cpp" />
+    <ClCompile Include="..\push\FibaroPush.cpp" />
+    <ClCompile Include="..\push\GooglePubSubPush.cpp" />
+    <ClCompile Include="..\push\HttpPush.cpp" />
+    <ClCompile Include="..\push\InfluxPush.cpp" />
+    <ClCompile Include="..\push\BasePush.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />
     <ClCompile Include="..\sqlite\sqlite3.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -843,8 +941,10 @@
     <ClCompile Include="..\webserver\request_handler.cpp" />
     <ClCompile Include="..\webserver\request_parser.cpp" />
     <ClCompile Include="..\webserver\server.cpp" />
+    <ClCompile Include="..\hardware\BleBox.cpp" />
     <ClCompile Include="WindowsHelper.cpp" />
     <ClCompile Include="..\hardware\YouLess.cpp" />
+    <ClCompile Include="..\hardware\XiaomiGateway.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="domoticz.rc" />

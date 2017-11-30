@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="1" label="Set to Default" min="0" max="1" value="0" size="1" >
+			<Help>Upper paddle buttons mode.</Help>
+			<Item label="Separate mode (toggle mode)" value="0" />
+			<Item label="In pair mode, left side sends on/up commands, right side sends off/down commands" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="2" label="Set to Default" min="0" max="1" value="0" size="1" >
+			<Help>Lower paddle buttons mode.</Help>
+			<Item label="Separate mode (toggle mode)" value="0" />
+			<Item label="In pair mode, left side sends on/up commands, right side sends off/down commands" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="3" label="Set to Default (1)" min="0" max="7" value="1" size="1" >
+			<Help>LED #1 mode.</Help>
+			<Item label="LED indication is disabled (LED can be controlled by Indicator Command Class Set commands)" value="0" />
+			<Item label="LED indicates the status of the corresponding button" value="1" />
+			<Item label="LED indicates the status of the corresponding button, with inverted indication" value="2" />
+			<Item label="LED indicates the status of corresponding paddle (in pair mode)" value="3" />
+			<Item label="LED indicates the status of the corresponding paddle (in pair mode), with inverted indication" value="4" />
+			<Item label="LED indicates the status of the built-in relay" value="5" />
+			<Item label="LED indicates the status of the built-in relay, with inverted indication" value="6" />
+			<Item label="LED show a 5 seconds indication when the corresponding button is pressed" value="7" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="4" label="Set to Default (1)" min="0" max="7" value="1" size="1" >
+			<Help>LED #2 mode.</Help>
+			<Item label="LED indication is disabled (LED can be controlled by Indicator Command Class Set commands)" value="0" />
+			<Item label="LED indicates the status of the corresponding button" value="1" />
+			<Item label="LED indicates the status of the corresponding button, with inverted indication" value="2" />
+			<Item label="LED indicates the status of corresponding paddle (in pair mode)" value="3" />
+			<Item label="LED indicates the status of the corresponding paddle (in pair mode), with inverted indication" value="4" />
+			<Item label="LED indicates the status of the built-in relay" value="5" />
+			<Item label="LED indicates the status of the built-in relay, with inverted indication" value="6" />
+			<Item label="LED show a 5 seconds indication when the corresponding button is pressed" value="7" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="5" label="Set to Default (1)" min="0" max="7" value="1" size="1" >
+			<Help>LED #3 mode.</Help>
+			<Item label="LED indication is disabled (LED can be controlled by Indicator Command Class Set commands)" value="0" />
+			<Item label="LED indicates the status of the corresponding button" value="1" />
+			<Item label="LED indicates the status of the corresponding button, with inverted indication" value="2" />
+			<Item label="LED indicates the status of corresponding paddle (in pair mode)" value="3" />
+			<Item label="LED indicates the status of the corresponding paddle (in pair mode), with inverted indication" value="4" />
+			<Item label="LED indicates the status of the built-in relay" value="5" />
+			<Item label="LED indicates the status of the built-in relay, with inverted indication" value="6" />
+			<Item label="LED show a 5 seconds indication when the corresponding button is pressed" value="7" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="6" label="Set to Default (1)" min="0" max="7" value="1" size="1" >
+			<Help>LED #4 mode.</Help>
+			<Item label="LED indication is disabled (LED can be controlled by Indicator Command Class Set commands)" value="0" />
+			<Item label="LED indicates the status of the corresponding button" value="1" />
+			<Item label="LED indicates the status of the corresponding button, with inverted indication" value="2" />
+			<Item label="LED indicates the status of corresponding paddle (in pair mode)" value="3" />
+			<Item label="LED indicates the status of the corresponding paddle (in pair mode), with inverted indication" value="4" />
+			<Item label="LED indicates the status of the built-in relay" value="5" />
+			<Item label="LED indicates the status of the built-in relay, with inverted indication" value="6" />
+			<Item label="LED show a 5 seconds indication when the corresponding button is pressed" value="7" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="LED #1 brightness level." min="0" max="100" value="50">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is on.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="8" label="LED #2 brightness level." min="0" max="100" value="50">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is on.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="9" label="LED #3 brightness level." min="0" max="100" value="50">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is on.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="10" label="LED #4 brightness level." min="0" max="100" value="50">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is on.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="11" label="LED #1 off brightness level." min="0" max="100" value="00">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is off.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="12" label="LED #2 off brightness level." min="0" max="100" value="00">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is off.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="13" label="LED #3 off brightness level." min="0" max="100" value="00">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is off.</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="14" label="LED #4 off brightness level." min="0" max="100" value="00">
+			<Help>0 - 100 Specifies the brightness level of the LED when it is off.</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="15" label="Relay mode" min="0" max="5" value="1" size="1" >
+			<Help>Defines the relay mode.</Help>
+			<Item label="Relay is disabled" value="0" />
+			<Item label="Relay is controlled by button #1 or by upper paddle when pair mode is active" value="1" />
+			<Item label="Relay is controlled by button #2 or by upper paddle when pair mode is active" value="2" />
+			<Item label="Relay is controlled by button #3 or by lower paddle when pair mode is active" value="3" />
+			<Item label="Relay is controlled by button #4 or by lower paddle when pair mode is active" value="4" />
+			<Item label="Relay is activated for one second and is controlled by button #1 or by upper paddle when pair mode is active" value="5" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="16" label="Indicator mode" min="0" max="1" value="1" size="1" >
+			<Help>Defines the Indicator mode.</Help>
+			<Item label="Indicator Set level values are only used to control the LED" value="0" />
+			<Item label="Indicator Set level values are also used by internal LED activations" value="1" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="17" label="Scene notification offset" min="0" max="201" value="1">
+			<Help>Button #1 will send scene [value], button #2 will send scene [value] + 1, button #3 will send scene [value] + 2, button #4 will send scene [value] + 3. (Default = 1)</Help>
+			<Item label="Scene notifications are turned off" value="0" />
+			<Item label="Define a value" value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="18" label="Disable House Cleaning Mode" min="0" max="0" value="1" size="1" >
+			<Help>Enable/Disable House Cleaning Mode</Help>
+			<Item label="Enabled" value="0" />
+			<Item label="Disabled" value="1" />
+		</Value>
+		<Value type="int" genre="config" instance="1" index="19" label="Multilevel Switch on single press for device 1 (button #1)" value="33488896" size="4">
+			<Help>
+			Byte 1: Enable / Disable 0 = Disabled a When single pressing the button, nodes associated to group 6 wonat be switched. 1 = Enabled a When single pressing the button, nodes associated to group 6 will be switched between the configured upper and lower switch values. (Default) 
+			Byte 2: Upper switch value: 0 a 99, 255; When single pressing the button for ON, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 255) 
+			Byte 3: Lower switch value: 0 - 99; When single pressing the button for OFF, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 0) 
+			Byte 4: Not used a must be set to 0.
+			</Help>                        
+		</Value>
+		<Value type="int" genre="config" instance="1" index="20" label="Multilevel Switch on single press for device 2 (button #2)" value="33488896" size="4">
+			<Help>
+			Byte 1: Enable / Disable 0 = Disabled a When single pressing the button, nodes associated to group 6 wonat be switched. 1 = Enabled a When single pressing the button, nodes associated to group 6 will be switched between the configured upper and lower switch values. (Default) 
+			Byte 2: Upper switch value: 0 a 99, 255; When single pressing the button for ON, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 255) 
+			Byte 3: Lower switch value: 0 - 99; When single pressing the button for OFF, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 0) 
+			Byte 4: Not used a must be set to 0.
+			</Help>                        
+		</Value>
+		<Value type="int" genre="config" instance="1" index="21" label="Multilevel Switch on single press for device 3 (button #3)" value="33488896" size="4">
+			<Help>
+			Byte 1: Enable / Disable 0 = Disabled a When single pressing the button, nodes associated to group 6 wonat be switched. 1 = Enabled a When single pressing the button, nodes associated to group 6 will be switched between the configured upper and lower switch values. (Default) 
+			Byte 2: Upper switch value: 0 a 99, 255; When single pressing the button for ON, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 255) 
+			Byte 3: Lower switch value: 0 - 99; When single pressing the button for OFF, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 0) 
+			Byte 4: Not used a must be set to 0.
+			</Help>                        
+		</Value>
+		<Value type="int" genre="config" instance="1" index="22" label="Multilevel Switch on single press for device 4 (button #4)" value="33488896" size="4">
+			<Help>
+			Byte 1: Enable / Disable 0 = Disabled a When single pressing the button, nodes associated to group 6 wonat be switched. 1 = Enabled a When single pressing the button, nodes associated to group 6 will be switched between the configured upper and lower switch values. (Default) 
+			Byte 2: Upper switch value: 0 a 99, 255; When single pressing the button for ON, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 255) 
+			Byte 3: Lower switch value: 0 - 99; When single pressing the button for OFF, a Multilevel Switch Set with this value will be send to devices in association group 6. (Default = 0) 
+			Byte 4: Not used a must be set to 0.
+			</Help>                        
+		</Value>
+		<Value type="list" genre="config" instance="1" index="23" label="Control of association groups for device 1 (button #1)" min="0" max="1" value="1" size="1" >
+			<Help>Control of association groups for device 1 (button #1)</Help>
+			<Item label="When commands are received by device 1, nodes in the association groups will not be switched, button activations will still send switch values." value="0" />
+			<Item label="When commands are received by device 1, nodes in the association groups will be switched." value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="24" label="Control of association groups for device 2 (button #2)" min="0" max="1" value="1" size="1" >
+			<Help>Control of association groups for device 2 (button #2)</Help>
+			<Item label="When commands are received by device 2, nodes in the association groups will not be switched, button activations will still send switch values." value="0" />
+			<Item label="When commands are received by device 2, nodes in the association groups will be switched." value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="25" label="Control of association groups for device 3 (button #3)" min="0" max="1" value="1" size="1" >
+			<Help>Control of association groups for device 3 (button #3)</Help>
+			<Item label="When commands are received by device 3, nodes in the association groups will not be switched, button activations will still send switch values." value="0" />
+			<Item label="When commands are received by device 3, nodes in the association groups will be switched." value="1" />
+		</Value>
+		<Value type="list" genre="config" instance="1" index="26" label="Control of association groups for device 4 (button #4)" min="0" max="1" value="1" size="1" >
+			<Help>Control of association groups for device 4 (button #4)</Help>
+			<Item label="When commands are received by device 4, nodes in the association groups will not be switched, button activations will still send switch values." value="0" />
+			<Item label="When commands are received by device 4, nodes in the association groups will be switched." value="1" />
+		</Value>
+	</CommandClass>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="21">
+			<Group index="1" max_associations="1" label="Lifeline." />
+			<Group index="2" max_associations="5" label="Send Basic Report (On/Off) when button #1 is used." auto="true" />
+			<Group index="3" max_associations="5" label="Sends Basic Set (On/Off) when button #1 is used." auto="true" />
+			<Group index="4" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #1 is used.." auto="true" />
+			<Group index="5" max_associations="5" label="Send Binary Toggle Switch Set when button #1 is used." auto="true" />
+			<Group index="6" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #1 is used." auto="true" />
+			<Group index="7" max_associations="5" label="Send Basic Report (On/Off) when button #2 is used." auto="true" />
+			<Group index="8" max_associations="5" label="Sends Basic Set (On/Off) when button #2 is used." auto="true" />
+			<Group index="9" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #2 is used.." auto="true" />
+			<Group index="10" max_associations="5" label="Send Binary Toggle Switch Set when button #2 is used." auto="true" />
+			<Group index="11" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #2 is used." auto="true" />
+			<Group index="12" max_associations="5" label="Send Basic Report (On/Off) when button #3 is used." auto="true" />
+			<Group index="13" max_associations="5" label="Sends Basic Set (On/Off) when button #3 is used." auto="true" />
+			<Group index="14" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #3 is used.." auto="true" />
+			<Group index="15" max_associations="5" label="Send Binary Toggle Switch Set when button #3 is used." auto="true" />
+			<Group index="16" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #3 is used." auto="true" />
+			<Group index="17" max_associations="5" label="Send Basic Report (On/Off) when button #4 is used." auto="true" />
+			<Group index="18" max_associations="5" label="Sends Basic Set (On/Off) when button #4 is used." auto="true" />
+			<Group index="19" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #4 is used.." auto="true" />
+			<Group index="20" max_associations="5" label="Send Binary Toggle Switch Set when button #4 is used." auto="true" />
+			<Group index="21" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #4 is used." auto="true" />
+		</Associations>
+	</CommandClass>
+</Product>

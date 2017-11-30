@@ -35,9 +35,8 @@ private:
      */
     void readCallback(const char *data, size_t len);
 
-	void SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname);
+	void SendTempBaroSensorInt(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname);
 	void SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname);
-	void SendUVSensor(const unsigned char Idx, const float UV, const std::string &defaultname);
 	void SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname);
 	void SendSoilMoistureSensor(const unsigned char Idx, const unsigned char Channel, const int Moisture, const std::string &defaultname);
 	void SendSolarRadiationSensor(const unsigned char Idx, const float Radiation, const std::string &defaultname);

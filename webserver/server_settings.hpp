@@ -188,10 +188,12 @@ public:
 				update_options(opts, boost::asio::ssl::context::no_sslv3);
 			} else if (option.compare("no_tlsv1") == 0) {
 				update_options(opts, boost::asio::ssl::context::no_tlsv1);
-#if (BOOST_VERSION > 105900)
 			} else if (option.compare("no_tlsv1_1") == 0) {
+#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_1);
+#endif
 			} else if (option.compare("no_tlsv1_2") == 0) {
+#if (BOOST_VERSION > 105900)
 				update_options(opts, boost::asio::ssl::context::no_tlsv1_2);
 #endif
 			} else if (option.compare("no_compression") == 0) {
@@ -227,7 +229,7 @@ public:
 			// use certificate file for all usage by default
 			certificate_chain_file_path = ssl_settings.cert_file_path;
 			ca_cert_file_path = ssl_settings.cert_file_path;
-			private_key_file_path = ssl_settings.cert_file_path;
+			private_key_file_path = ssl_settings.private_key_file_path;
 			tmp_dh_file_path = ssl_settings.cert_file_path;
 			verify_file_path = ssl_settings.cert_file_path;
 		}

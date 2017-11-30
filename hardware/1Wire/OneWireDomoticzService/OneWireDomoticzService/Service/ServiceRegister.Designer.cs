@@ -1,4 +1,4 @@
-﻿namespace OneWireDomoticzService.Service
+namespace OneWireDomoticzService.Service
 {
    partial class ServiceRegister
    {

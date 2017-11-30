@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Shenzhen NEO Electronics (NEO-CoolCam) Door Sensor
+  http://products.z-wavealliance.org/products/1782
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="short" genre="config" instance="1" index="1" label="Configuring the OFF Delay" units="second" value="0" min="0" max="65536" size="2">
+      <Help>This configuration parameter that can be used to adjust the amount of delay before the OFF command is transmitted. This parameter can be configured with the value of 0 through 65535, where 0 means send OFF command immediately and 65535 means 65535 seconds of delay.</Help>
+    </Value>
+
+    <Value type="byte" genre="config" instance="1" index="2" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>Basic Set Command will be sent where contains a value when the door/window is opened or closed, the receiver will take it for consideration; for instance, if a lamp module is received the Basic Set Command of which value is decisive as to how bright of dim level of lamp module shall be.
+      </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Control Commands" />
+      <Group index="3" max_associations="5" label="Send Notification Report" />
+      <Group index="4" max_associations="5" label="Send Binary Sensor Report" />    
+    </Associations>
+  </CommandClass>
+</Product>

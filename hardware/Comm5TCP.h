@@ -21,12 +21,6 @@ private:
 
 	bool Connect();
 
-	enum RequestState {
-		Idle,
-		QueryRelayState,
-		QuerySensorState
-	} reqState;
-
 protected:
 	void OnConnect();
 	void OnDisconnect();
@@ -50,7 +44,7 @@ private:
 
 	std::string buffer;
 	bool initSensorData;
-	int lastKnownSensorState;
+	unsigned int lastKnownSensorState;
 
 	bool notificationEnabled;
 

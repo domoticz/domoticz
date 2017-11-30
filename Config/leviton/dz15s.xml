@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Leviton Switch DZ15S 
+http://products.z-wavealliance.org/products/1957
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="7" genre="config" label="Locator LED Status" units="" min="0" max="255" size="1" value="255">
+			<Help>Change the mode of the LED to Status Mode where the LED is illuminated when the load is On, Locator Mode where the LED is illuminated when the Load is Off, or turns off the LED completely for any other setting values.</Help>
+			<Item label="Off" value="0"/>
+			<Item label="Status Mode" value="254"/>
+			<Item label="Locator Mode" value="255"/>
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+		</Associations>
+	</CommandClass>
+	<CommandClass id="134" classgetsupported="false" />
+</Product>

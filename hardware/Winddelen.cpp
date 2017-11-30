@@ -127,6 +127,7 @@ void CWinddelen::GetMeterDetails()
   	winddelen_per_mill[121]=5602.0;
   	winddelen_per_mill[131]=5534.0;
   	winddelen_per_mill[141]=5512.0;
+  	winddelen_per_mill[191]=3000.0;
 
 	double powerusage = atol(pusage.c_str()) * m_usIPPort / winddelen_per_mill[m_usMillID];
 	double usagecurrent = atof(pcurrent.c_str()) * m_usIPPort / 1000.0;

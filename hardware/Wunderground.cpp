@@ -13,10 +13,11 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-	//#define DEBUG_WUNDERGROUND
+	//#define DEBUG_WUNDERGROUNDR
+	//#define DEBUG_WUNDERGROUNDW
 #endif
 
-#ifdef DEBUG_WUNDERGROUND2
+#ifdef DEBUG_WUNDERGROUNDW
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE *fOut = fopen(filename.c_str(), "wb+");
@@ -27,7 +28,7 @@ void SaveString2Disk(std::string str, std::string filename)
 	}
 }
 #endif
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -48,10 +49,12 @@ std::string ReadFile(std::string filename)
 
 CWunderground::CWunderground(const int ID, const std::string &APIKey, const std::string &Location) :
 m_APIKey(APIKey),
-m_Location(Location)
+m_Location(Location),
+m_bForceSingleStation(false),
+m_bFirstTime(true)
 {
-	m_HwdID=ID;
-	m_stoprequested=false;
+	m_HwdID = ID;
+	m_stoprequested = false;
 	Init();
 }
 
@@ -61,6 +64,7 @@ CWunderground::~CWunderground(void)
 
 void CWunderground::Init()
 {
+	m_bFirstTime = true;
 }
 
 bool CWunderground::StartHardware()
@@ -99,7 +103,7 @@ void CWunderground::Do_Work()
 		if (sec_counter % 10 == 0) {
 			m_LastHeartbeat=mytime(NULL);
 		}
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 		if (sec_counter % 10 == 0)
 #else
 		if (sec_counter % 600 == 0)
@@ -127,7 +131,7 @@ std::string CWunderground::GetForecastURL()
 void CWunderground::GetMeterDetails()
 {
 	std::string sResult;
-#ifdef DEBUG_WUNDERGROUND
+#ifdef DEBUG_WUNDERGROUNDR
 	sResult= ReadFile("E:\\wu.json");
 #else
 	std::stringstream sURL;
@@ -141,7 +145,7 @@ void CWunderground::GetMeterDetails()
 		_log.Log(LOG_ERROR,"Wunderground: Error getting http data!");
 		return;
 	}
-#ifdef DEBUG_WUNDERGROUND2
+#ifdef DEBUG_WUNDERGROUNDW
 	SaveString2Disk(sResult, "E:\\wu.json");
 #endif
 #endif
@@ -149,7 +153,7 @@ void CWunderground::GetMeterDetails()
 
 	Json::Reader jReader;
 	bool ret=jReader.parse(sResult,root);
-	if (!ret)
+	if ((!ret) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR,"WUnderground: Invalid data received!");
 		return;
@@ -178,17 +182,42 @@ void CWunderground::GetMeterDetails()
 	{
 		bValid = false;
 	}
+	else if (m_bForceSingleStation && root["current_observation"]["station_id"].empty())
+	{
+		bValid = false;
+	}
+	else if (m_bForceSingleStation && m_Location.find(root["current_observation"]["station_id"].asString()) == std::string::npos)
+	{
+		bValid = false;
+	}
+	else if (root["current_observation"]["observation_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else if (root["current_observation"]["local_epoch"].empty() == true)
+	{
+		bValid = false;
+	}
+	else
+	{
+		if (!m_bFirstTime)
+		{
+			time_t tlocal = static_cast<time_t>(atoll(root["current_observation"]["local_epoch"].asString().c_str()));
+			time_t tobserver = static_cast<time_t>(atoll(root["current_observation"]["observation_epoch"].asString().c_str()));
+			if (difftime(tlocal, tobserver) >= 1800)
+			{
+				//When we don't get any valid data in 30 minutes, we also stop using the values
+				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
+				return;
+			}
+		}
+		m_bFirstTime = false;
+	}
 	if (!bValid)
 	{
 		_log.Log(LOG_ERROR, "WUnderground: Invalid data received, or no data returned!");
 		return;
 	}
-	/*
-	std::string tmpstr2 = root.toStyledString();
-	FILE *fOut = fopen("E:\\underground.json", "wb+");
-	fwrite(tmpstr2.c_str(), 1, tmpstr2.size(), fOut);
-	fclose(fOut);
-	*/
 
 	std::string tmpstr;
 	float temp;
@@ -237,6 +266,10 @@ void CWunderground::GetMeterDetails()
 			{
 				barometric_forcast=baroForecastSunny;
 			}
+			else if (forcasticon=="clear")
+			{
+				barometric_forcast=baroForecastSunny;
+			}			
 			else if (forcasticon=="rain")
 			{
 				barometric_forcast=baroForecastRain;
@@ -347,13 +380,13 @@ void CWunderground::GetMeterDetails()
 		tsen.WIND.temperaturel=0;
 
 		tsen.WIND.tempsign=(wind_temp>=0)?0:1;
-		int at10=round(abs(wind_temp*10.0f));
+		int at10=round(std::abs(wind_temp*10.0f));
 		tsen.WIND.temperatureh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.temperatureh*256);
 		tsen.WIND.temperaturel=(BYTE)(at10);
 
 		tsen.WIND.chillsign=(wind_temp>=0)?0:1;
-		at10=round(abs(wind_chill*10.0f));
+		at10=round(std::abs(wind_chill*10.0f));
 		tsen.WIND.chillh=(BYTE)(at10/256);
 		at10-=(tsen.WIND.chillh*256);
 		tsen.WIND.chilll=(BYTE)(at10);
@@ -371,18 +404,7 @@ void CWunderground::GetMeterDetails()
 				float UV = static_cast<float>(atof(root["current_observation"]["UV"].asString().c_str()));
 				if ((UV < 16) && (UV >= 0))
 				{
-					RBUF tsen;
-					memset(&tsen, 0, sizeof(RBUF));
-					tsen.UV.packetlength = sizeof(tsen.UV) - 1;
-					tsen.UV.packettype = pTypeUV;
-					tsen.UV.subtype = sTypeUV1;
-					tsen.UV.battery_level = 9;
-					tsen.UV.rssi = 12;
-					tsen.UV.id1 = 0;
-					tsen.UV.id2 = 1;
-
-					tsen.UV.uv = (BYTE)round(UV * 10);
-					sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, NULL, 255);
+					SendUVSensor(0, 1, 255, UV, "UV");
 				}
 			}
 		}
@@ -416,7 +438,7 @@ void CWunderground::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
-							int at10 = round(abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph*100.0f));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);

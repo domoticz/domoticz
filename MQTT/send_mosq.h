@@ -16,7 +16,7 @@ Contributors:
 #ifndef _SEND_MOSQ_H_
 #define _SEND_MOSQ_H_
 
-#include "mosquitto.h"
+#include <mosquitto.h>
 
 int _mosquitto_send_simple_command(struct mosquitto *mosq, uint8_t command);
 int _mosquitto_send_command_with_mid(struct mosquitto *mosq, uint8_t command, uint16_t mid, bool dup);

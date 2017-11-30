@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Ecolink Z-Wave Sensor Z-Wave
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Basic set as report-->
+	<CommandClass id="32" setasreport="true"/>
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="991" label="Fault restore" min="0" max="1" value="1" size="1">
+            <Help>Enable/Disable Basic Sets of 0x00 on a fault restore to nodes in Group 2</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="255"/>
+        </Value>       
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Basic Report"/>
+        </Associations>
+    </CommandClass>
+</Product>

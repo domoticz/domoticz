@@ -20,7 +20,7 @@ It must be installed beforehand following instructions at http://wiringpi.com/do
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
     MA 02110-1301 USA.
 
-This is a derivative work based on the samples included with wiringPi where distributed 
+This is a derivative work based on the samples included with wiringPi where distributed
 under the GNU Lesser General Public License version 3
 Source: http://wiringpi.com
 */
@@ -32,29 +32,38 @@ Source: http://wiringpi.com
 
 class CGpio : public CDomoticzHardwareBase
 {
-public:
-	explicit CGpio(const int ID);
-	~CGpio();
 
+public:
+	explicit CGpio(const int ID, const int debounce, const int period, const int pollinterval);
+	~CGpio();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	
-	static bool InitPins();
 	static std::vector<CGpioPin> GetPinList();
 	static CGpioPin* GetPPinById(int id);
-
+	uint32_t m_period;
+	uint32_t m_debounce;
+	uint32_t m_pollinterval;
 private:
+	int GPIORead(int pin, const char* param);
+	int GPIOReadFd(int fd);
+	int GPIOWrite(int pin, bool value);
+	int GetReadResult(int bytecount, char* value_str);
+	int waitForInterrupt(int fd, const int mS);
+	int SetSchedPriority(const int s, const int pri, const int x);
+	bool InitPins();
 	bool StartHardware();
 	bool StopHardware();
+	//bool CreateDomoticzDevices();
+	void InterruptHandler();
+	void Poller();
+	void UpdateDeviceStates(bool forceUpdate);
+	void UpdateStartup();
+	void UpdateSwitch(const int gpioId, const bool value);
+	void GetSchedPriority(int *scheduler, int *priority);
 
-	void Do_Work();
-	void ProcessInterrupt(int gpioId);
-	
-	// List of GPIO pin numbers, ordered as listed
+	boost::mutex m_pins_mutex;
+	boost::shared_ptr<boost::thread> m_thread, m_thread_poller, m_thread_updatestartup;
 	static std::vector<CGpioPin> pins;
-	
-	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
-	int m_waitcntr;
+	volatile int pinPass;
 	tRBUF IOPinStatusPacket;
-
 };

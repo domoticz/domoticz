@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Kwikset smartcode 
+http://s7d5.scene7.com/is/content/BDHHI/z-wave-configuration
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">		
+		<Value type="list" genre="config" instance="1" index="1" label="1 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="2" label="2 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="3" label="3 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="4" label="4 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="5" label="5 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="6" label="6 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="7" label="7 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="8" label="8 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="9" label="9 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="10" label="10 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="11" label="11 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="12" label="12 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="13" label="13 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="14" label="14 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="15" label="15 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="16" label="16 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="17" label="17 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="18" label="18 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="19" label="19 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="20" label="20 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		
+		<Value type="list" genre="config" instance="1" index="21" label="21 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="22" label="22 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="23" label="23 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="24" label="24 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="25" label="25 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="26" label="26 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="27" label="27 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="28" label="28 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="29" label="29 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="30" label="30 User Code Type" min="0" max="255" value="1" size="1" >
+			<Help>
+			 set the User Code Type for their corresponding user codes.
+			</Help>
+			<Item label="Owner" value="1"/>
+			<Item label="Guest (Required for Year Day Schedules)" value="3"/>
+			<Item label="Worker (Required for Week Day Schedules)" value="4"/>
+			<Item label="No corresponding user code" value="255"/>
+		</Value>		
+		<Value type="byte" genre="config" instance="1" index="31" label="Dipswitches state" min="0" max="255" read_only="true">
+            <Help>Bit mask field that returns the state of the user accessible Dipswitches on the door look.
+			Bit 0 Lock LED Status (1: enable)
+			Bit 1 Auto lock (1: enable)
+			Bit 2 Auto Buzzer (1: enable)
+			Bit 3 Secure Screen (1: enable) *Only for MB 916
+			</Help>
+        </Value>		
+		<Value type="byte" genre="config" instance="1" index="33" label="MSB SKU part numbers" min="0" max="255" >
+            <Help>The Configuration Parameter 33 and 34 are used to set the SKU part numbers to the Kwikset locks. 
+			Is the first four most significant bytes (MSB). 
+			Below describes how Configuration Parameter 33 and 34 are being used.
+			* For a ZW Configuration Set, the DLM will first do a GET_SKU_ID to retrieve the full SKU from the lock, and the lock will respond with all 8 bytes. (If it not yet set, the DLM will consider that as all 0x30s.) 
+			  The DLM changes only the appropriate 4 bytes in its local copy of the SKU, and it then sends the full 8 bytes down to the lock in a SET_SKU_ID.
+			* For a ZW Configuration Get, the DLM will do a GET_SKU_ID down to the lock, to which the lock will respond with all 8 bytes. 
+			  The DLM will return the requested 4 bytes via ZW. If the SKU is not set, it will return all 0x30s (ASCII 0s).
+			</Help>
+        </Value>
+		<Value type="byte" genre="config" instance="1" index="34" label="LSB SKU part numbers" min="0" max="255" >
+            <Help>The Configuration Parameter 33 and 34 are used to set the SKU part numbers to the Kwikset locks. 
+			Is the least four significant bytes (LSB). 			
+			</Help>
+        </Value>		
+		<Value type="short" genre="config" instance="1" index="35" label="lock type" size="2" read_only="true">
+			<Help>Unique ID of the lock type
+			910 Z-Wave (Legacy, FW 3.4) 0x00 0x00
+			912 Z-Wave (Legacy, FW 3.2) 0x00 0x00
+			910 Z-Wave 0x02 0x36
+			912 Z-Wave 0x03 0x36
+			914 Z-Wave 0x04 0x36
+			916 Z-Wave 0x06 0x42
+			</Help>
+		</Value>
+		<Value type="list" index="40" genre="config" label="Reset To Factory Defaults" size="1" value="0" write_only="true">
+			<Help>Reset to factory defaults</Help>
+            <Item label="Do reset" value="1"/>
+			<Item label="Normal" value="0"/>
+		</Value>
+	</CommandClass>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1"/>
+		</TriggerRefreshValue>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+</Product>

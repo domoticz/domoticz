@@ -25,38 +25,12 @@
 	};
 #endif
 
-S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate, const std::string& Settings)
+S0MeterSerial::S0MeterSerial(const int ID, const std::string& devname, const unsigned int baud_rate)
 {
 	m_HwdID=ID;
 	m_szSerialPort=devname;
 	m_iBaudRate=baud_rate;
-
-	m_meters[0].m_type=0;
-	m_meters[1].m_type=0;
-	m_meters[2].m_type=0;
-	m_meters[3].m_type=0;
-	m_meters[4].m_type=0;
-	m_meters[0].m_pulse_per_unit=1000.0;
-	m_meters[1].m_pulse_per_unit=1000.0;
-	m_meters[2].m_pulse_per_unit=1000.0;
-	m_meters[3].m_pulse_per_unit=1000.0;
-	m_meters[4].m_pulse_per_unit=1000.0;
-
-	std::vector<std::string> splitresults;
-	StringSplit(Settings, ";", splitresults);
-	if (splitresults.size() == 10)
-	{
-		m_meters[0].m_type = atoi(splitresults[0].c_str());
-		m_meters[0].m_pulse_per_unit = atof(splitresults[1].c_str());
-		m_meters[1].m_type = atoi(splitresults[2].c_str());
-		m_meters[1].m_pulse_per_unit = atof(splitresults[3].c_str());
-		m_meters[2].m_type = atoi(splitresults[4].c_str());
-		m_meters[2].m_pulse_per_unit = atof(splitresults[5].c_str());
-		m_meters[3].m_type = atoi(splitresults[6].c_str());
-		m_meters[3].m_pulse_per_unit = atof(splitresults[7].c_str());
-		m_meters[4].m_type = atoi(splitresults[8].c_str());
-		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
-	}
+	InitBase();
 }
 
 S0MeterSerial::~S0MeterSerial()

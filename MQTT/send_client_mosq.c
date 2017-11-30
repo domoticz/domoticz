@@ -17,13 +17,13 @@ Contributors:
 #include <assert.h>
 #include <string.h>
 
-#include "mosquitto.h"
-#include "logging_mosq.h"
-#include "memory_mosq.h"
-#include "mqtt3_protocol.h"
-#include "net_mosq.h"
-#include "send_mosq.h"
-#include "util_mosq.h"
+#include <mosquitto.h>
+#include <logging_mosq.h>
+#include <memory_mosq.h>
+#include <mqtt3_protocol.h>
+#include <net_mosq.h>
+#include <send_mosq.h>
+#include <util_mosq.h>
 
 #ifdef WITH_BROKER
 #include <mosquitto_broker.h>
@@ -99,9 +99,6 @@ int _mosquitto_send_connect(struct mosquitto *mosq, uint16_t keepalive, bool cle
 		_mosquitto_write_string(packet, PROTOCOL_NAME_v31, strlen(PROTOCOL_NAME_v31));
 	}else if(version == MQTT_PROTOCOL_V311){
 		_mosquitto_write_string(packet, PROTOCOL_NAME_v311, strlen(PROTOCOL_NAME_v311));
-	}else{
-		_mosquitto_free(packet);
-		return MOSQ_ERR_INVAL;
 	}
 #if defined(WITH_BROKER) && defined(WITH_BRIDGE)
 	if(mosq->bridge && mosq->bridge->try_private && mosq->bridge->try_private_accepted){

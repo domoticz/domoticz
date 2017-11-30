@@ -20,7 +20,7 @@
 			<Help>This is a warning when the KWh of load over the preset threshold value, if the setting value is 10000, when the Accumulated Power Consumption of Relay1 over this value, Micromodule will send KWH meter report to warn the Z-Wave Controller. Unit: 1KWh</Help>
 		</Value>
 
-		<Value type="list" instance="1" index="5" genre="config" label="Restore Switch State Mode" min="0" max="2" value="1">
+		<Value type="list" instance="1" index="5" genre="config" label="Restore Switch State Mode" min="0" max="2" size="1" value="1">
 			<Help>Whenever the AC power return from lost, Micromodule will restore the switch state which could be 
 				SWITCH OFF
 				LAST SWITCH STATE
@@ -54,7 +54,7 @@
 				3 :SWITCH ON:It switches to ON state</Help>
              		</Value>
 
-		<Value type="byte" instance="1" index="10" genre="config" label="Edge Mode, Pulse mode or Edge-Togle mode" min="1" max="3" value="1">
+		<Value type="byte" instance="1" index="10" genre="config" label="Edge Mode, Pulse mode or Edge-Toggle mode" min="1" max="3" value="1">
 			<Help>Manual switch S1 and S2 can set to Edge mode or Pulse mode or Edge-Toggle mode, default value is Edge mode.
 				1: EDGE MODE: This mode is suitable for the bi-stable wall switch that has indicator point on the switch, and the same position correspond to same state of relay1. If the Micromodule relay change the state because of receiving Z-Wave RF command, it may need two times of change (switch on to off or switch off to on) to let relay back to the correspond state. Manual switch S2 is disabled in this mode. 
 				2: PULSE MODE: This mode is suitable for the toggle type wall switch to swap the state of Relay1. 
@@ -74,7 +74,7 @@
 	<!-- Association Groups -->
 	<CommandClass id="133">
 		<Associations num_groups="1">
-		<Group index="1" max_associations="1" label="Z-wave controller"/>
+		<Group index="1" max_associations="1" label="Lifeline"/>
 		</Associations>
 	</CommandClass>
 

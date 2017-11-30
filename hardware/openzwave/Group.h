@@ -50,7 +50,7 @@ namespace OpenZWave
 	{
 		friend class Node;
 		friend class Association;
-		friend class MultiInstanceAssociation;
+		friend class MultiChannelAssociation;
 
 	//-----------------------------------------------------------------------------
 	// Construction

@@ -13,7 +13,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 	{
 		ZDTYPE_SWITCH_NORMAL = 0,
 		ZDTYPE_SWITCH_DIMMER,
-		ZDTYPE_SWITCH_FGRGBWM441,
+		ZDTYPE_SWITCH_RGBW,
 		ZDTYPE_SWITCH_COLOR,
 
 		ZDTYPE_SENSOR_TEMPERATURE,
@@ -38,7 +38,15 @@ class ZWaveBase : public CDomoticzHardwareBase
 		ZDTYPE_SENSOR_DEWPOINT,
 		ZDTYPE_SENSOR_CO2,
 		ZDTYPE_SENSOR_UV,
-		ZDTYPE_SENSOR_WATER
+		ZDTYPE_SENSOR_WATER,
+		ZDTYPE_SENSOR_MOISTURE,
+		ZDTYPE_SENSOR_TANK_CAPACITY,
+
+		ZDTYPE_ALARM,
+		ZDTYPE_CENTRAL_SCENE,
+
+		ZDTYPE_SENSOR_CUSTOM,
+
 	};
 	struct _tZWaveDevice
 	{
@@ -78,9 +86,12 @@ class ZWaveBase : public CDomoticzHardwareBase
 
 		//label
 		std::string label;
+		std::string custom_label;
 
 		time_t lastreceived;
 		unsigned char sequence_number;
+
+		int Alarm_Type;
 
 		_tZWaveDevice() :
 			label("Unknown")
@@ -112,6 +123,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 			Product_id = -1;
 			Product_type = -1;
 			lastreceived = 0;
+			Alarm_Type = -1;
 		}
 	};
 public:
@@ -152,7 +164,6 @@ private:
 	virtual void SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)=0;
 	virtual void SetThermostatMode(const int nodeID, const int instanceID, const int commandClass, const int tMode) = 0;
 	virtual void SetThermostatFanMode(const int nodeID, const int instanceID, const int commandClass, const int fMode) = 0;
-	virtual std::string GetSupportedThermostatModes(const unsigned long ID) = 0;
 	virtual std::string GetSupportedThermostatFanModes(const unsigned long ID) = 0;
 	virtual void StopHardwareIntern() = 0;
 	virtual bool IncludeDevice(const bool bSecure) = 0;

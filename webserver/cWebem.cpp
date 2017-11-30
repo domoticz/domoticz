@@ -24,12 +24,8 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-#ifndef WIN32
-	#include <unistd.h> //gethostbyname
-#endif
-
-//10 minutes
-#define SESSION_TIMEOUT 600
+#define SHORT_SESSION_TIMEOUT 600 // 10 minutes
+#define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
 int m_failcounter=0;
 
@@ -345,7 +341,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 					if (
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
 						(szContentType.find("application/json") != std::string::npos) ||
-						(szContentType.find("Content-Type: text/xml") != std::string::npos)
+						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
+						(szContentType.find("Content-Type: text/x-hex") != std::string::npos)
 						)
 					{
 						//Its a file/stream, next line should be empty
@@ -608,11 +605,12 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 		{
 			pfun->second(session, req, rep);
 		}
-		catch (...)
-		{
-			
+		catch (std::exception& e) {
+			_log.Log(LOG_ERROR, "WebServer PO exception occurred : '%s'", e.what());
 		}
-
+		catch (...) {
+			_log.Log(LOG_ERROR, "WebServer PO unknown exception occurred");
+		}
 		std::string attachment;
 		size_t num = rep.headers.size();
 		for (size_t h = 0; h < num; h++) {
@@ -1206,7 +1204,7 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; path=/; Expires=" << make_web_time(0);
+	sstr << "; HttpOnly; path=/; Expires=" << make_web_time(0);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1265,7 +1263,7 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires=" << make_web_time(session.expires);
+	sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1587,9 +1585,13 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
+	if (_log.isTraceEnabled())	  
+		_log.Log(LOG_TRACE, "WEBH : Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;
+	session.reply_status = reply::ok;
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
@@ -1598,6 +1600,19 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
 	bool isAction = myWebem->IsAction(req);
+
+	// Respond to CORS Preflight request (for JSON API)
+	if (req.method == "OPTIONS")
+	{
+		rep.status = reply::ok;
+		reply::add_header(&rep, "Content-Length", "0");
+		reply::add_header(&rep, "Content-Type", "text/plain");
+		reply::add_header(&rep, "Access-Control-Max-Age", "3600");
+		reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+		reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, POST");
+		reply::add_header(&rep, "Access-Control-Allow-Headers", "Authorization, Content-Type");
+		return;
+	}
 
 	// Check authentication on each page or action, if it exists.
 	if ((isPage || isAction) && !CheckAuthentication(session, req, rep)) {
@@ -1615,11 +1630,29 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			return;
 		}
 		myWebem->CheckForAction(session, requestCopy);
+		if (!requestCopy.uri.empty())
+		{
+			if ((requestCopy.method == "POST") && (requestCopy.uri[0] != '/'))
+			{
+				//Send back as data instead of a redirect uri
+				rep.status = reply::ok;
+				rep.content = requestCopy.uri;
+				reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
+				reply::add_header(&rep, "Last-Modified", make_web_time(mytime(NULL)), true);
+				reply::add_header(&rep, "Content-Type", "application/json;charset=UTF-8");
+				return;
+			}
+		}
 	}
 
 	modify_info mInfo;
 	if (!myWebem->CheckForPageOverride(session, requestCopy, rep))
 	{
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
 		// do normal handling
 		try
 		{
@@ -1699,21 +1732,27 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 	else
 	{
+		if (session.reply_status != reply::ok)
+		{
+			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
+			return;
+		}
+
 		if (!rep.bIsGZIP) {
 			CompressWebOutput(req, rep);
 		}
 	}
 
 	// Set timeout to make session in use
-	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
+	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
 		// Create a new session ID
 		session.id = generateSessionID();
 		session.expires = session.timeout;
 		if (session.rememberme) {
-			// Extend session by a year
-			session.expires += (86400 * 30);
+			// Extend session by 30 days
+			session.expires += LONG_SESSION_TIMEOUT;
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
 		session.isnew = false;
@@ -1736,9 +1775,17 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		if (memSession != NULL)
 		{
 			time_t now = mytime(NULL);
-			if (memSession->expires - 60 < now)
+			// Renew session expiration date if half of session duration has been exceeded ("dont remember me" sessions, 10 minutes)
+			if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
 			{
-				memSession->expires = now + SESSION_TIMEOUT;
+				memSession->expires = now + SHORT_SESSION_TIMEOUT;
+				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
+				send_cookie(rep, *memSession);
+			}
+			// Renew session expiration date if half of session duration has been exceeded ("remember me" sessions, 30 days)
+			else if ((memSession->expires > SHORT_SESSION_TIMEOUT + now) && (memSession->expires - (LONG_SESSION_TIMEOUT / 2) < now))
+			{
+				memSession->expires = now + LONG_SESSION_TIMEOUT;
 				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
 				send_cookie(rep, *memSession);
 			}

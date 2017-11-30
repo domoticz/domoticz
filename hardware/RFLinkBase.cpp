@@ -6,6 +6,7 @@
 #include "../main/RFXtrx.h"
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/SQLHelper.h"
 
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
@@ -56,13 +57,13 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "Byron", sSwitchTypeByronSX },         // p72
 	{ "Byron MP", sSwitchTypeByronMP001 },   // p74
 	{ "SelectPlus", sSwitchTypeSelectPlus }, // p70
-	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73  
+	{ "Doorbell", sSwitchTypeSelectPlus3 },  // p73
 	{ "FA20RF", sSwitchTypeFA20 },           // p80
 	{ "Chuango", sSwitchTypeChuango },       // p62
-    { "Plieger", sSwitchTypePlieger },       // p71
-    { "SilverCrest", sSwitchTypeSilvercrest }, // p75
-    { "Mertik", sSwitchTypeMertik },         // p82
-    { "HomeConfort", sSwitchTypeHomeConfort }, // p11
+	{ "Plieger", sSwitchTypePlieger },       // p71
+	{ "SilverCrest", sSwitchTypeSilvercrest }, // p75
+	{ "Mertik", sSwitchTypeMertik },         // p82
+	{ "HomeConfort", sSwitchTypeHomeConfort }, // p11
 	{ "Powerfix", sSwitchTypePowerfix },     // p13
 	{ "TriState", sSwitchTypeTriState },     // p16
 	{ "Deltronic", sSwitchTypeDeltronic },   // p73
@@ -102,6 +103,33 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "BFT", sSwitchBFT },					 // NA
 	{ "Novatys", sSwitchNovatys},			 // NA
 	{ "Halemeier", sSwitchHalemeier},
+	{ "Gaposa", sSwitchGaposa },
+	{ "MiLightv1", sSwitchMiLightv1 },
+	{ "MiLightv2", sSwitchMiLightv2 },
+	{ "HT6P20", sSwitchHT6P20 },
+	{ "Doitrand", sSwitchTypeDoitrand },
+	{ "Warema", sSwitchTypeWarema },
+	{ "Ansluta", sSwitchTypeAnsluta },
+	{ "Livcol", sSwitchTypeLivcol },
+	{ "Bosch", sSwitchTypeBosch },
+	{ "Ningbo", sSwitchTypeNingbo },
+	{ "Ditec", sSwitchTypeDitec },
+	{ "Steffen", sSwitchTypeSteffen },
+	{ "AlectoSA", sSwitchTypeAlectoSA },
+	{ "GPIOset", sSwitchTypeGPIOset },
+	{ "KonigSec", sSwitchTypeKonigSec },
+	{ "RM174RF", sSwitchTypeRM174RF },
+	{ "Liwin", sSwitchTypeLiwin },
+	{ "YW_Secu", sSwitchTypeYW_Secu },
+	{ "Mertik_GV60", sSwitchTypeMertik_GV60 },
+	{ "Ningbo64", sSwitchTypeNingbo64 },
+	{ "X2D", sSwitchTypeX2D },
+	{ "HRCMotor", sSwitchTypeHRCMotor },
+	{ "Velleman", sSwitchTypeVelleman },
+	{ "RFCustom", sSwitchTypeRFCustom },
+	{ "YW_Sensor", sSwitchTypeYW_Sensor },
+	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
+	{ "SysfsGpio", sSwitchTypeSysfsGpio },
 	{ "", -1 }
 };
 
@@ -116,6 +144,9 @@ const _tRFLinkStringIntHelper rfswitchcommands[] =
 	{ "UP", blinds_sOpen },
 	{ "DOWN", blinds_sClose },
 	{ "STOP", gswitch_sStop },
+	{ "COLOR", gswitch_sColor },
+	{ "DISCO+", gswitch_sDiscop },
+	{ "DISCO-", gswitch_sDiscom },
 	{ "", -1 }
 };
 
@@ -128,6 +159,7 @@ const _tRFLinkStringIntHelper rfblindcommands[] =
 	{ "LIMIT", blinds_sLimit },
 	{ "", -1 }
 };
+
 
 
 int GetGeneralRFLinkFromString(const _tRFLinkStringIntHelper *pTable, const std::string &szType)
@@ -158,7 +190,6 @@ CRFLinkBase::CRFLinkBase()
 {
 	m_rfbufferpos=0;
 	memset(&m_rfbuffer,0,sizeof(m_rfbuffer));
-
 	/*
 	ParseLine("20;08;NewKaku;ID=31c42a;SWITCH=2;CMD=OFF;");
 	ParseLine("20;3A;NewKaku;ID=c142;SWITCH=1;CMD=ALLOFF;");
@@ -219,63 +250,237 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 
 #define round(a) ( int ) ( a + .5 )
 
+void GetSwitchType(const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &switchType)
+{
+	switchType = 0;
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", ID, unit, devType, subType);
+	if (result.size() != 0)
+	{
+		switchType = atoi(result[0][0].c_str());
+	}
+}
+
 bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const _tGeneralSwitch *pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
 
-	if (pSwitch->type != pTypeGeneralSwitch)
-		return false; //only allowed to control switches
+	if ((pSwitch->type != pTypeGeneralSwitch) && (pSwitch->type != pTypeLimitlessLights))
+		return false; //only allowed to control regular switches and MiLight
 
+	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", pSwitch->subtype);
 	std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, pSwitch->subtype);
 	if (switchtype.empty())
 	{
 		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch type: %d", pSwitch->subtype);
 		return false;
 	}
-	std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
-    
-    // check setlevel command
-    if (pSwitch->cmnd == gswitch_sSetLevel) {
-        // Get device level to set
-		float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
-		if (fvalue > 15.0f)
-			fvalue = 15.0f; //99 is fully on
-		int svalue = round(fvalue);        
-		//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
-        char buffer[50] = {0};
-		sprintf(buffer, "%d", svalue);
-		switchcmnd = buffer;
-    }    
-    
-	if (switchcmnd.empty())
-	{
-		_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch command: %d", pSwitch->cmnd);
-		return false;
-	}
+	//_log.Log(LOG_ERROR, "RFLink: id: %d", pSwitch->id);
+	//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pSwitch->subtype);
 
-	//Build send string
-	std::stringstream sstr;
-	//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
+	// get SwitchType from SQL table
+	int m_SwitchType = 0;
+	char szDeviceID[20];
+	sprintf(szDeviceID, "%08X", pSwitch->id);
+	std::string ID = szDeviceID;
+	GetSwitchType(ID.c_str(), pSwitch->unitcode, pSwitch->type, pSwitch->subtype, m_SwitchType);
+	//_log.Log(LOG_ERROR, "RFLink: switch type: %d", m_SwitchType);
+	//_log.Log(LOG_ERROR, "RFLink: switch cmd: %d", pSwitch->cmnd);
 
-	sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd;
-//#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
-//#endif
-	sstr << "\n";
-	m_bTXokay = false; // clear OK flag
-	WriteInt(sstr.str());
-	time_t atime = mytime(NULL);
-	time_t btime = mytime(NULL);
-    
-	// Wait for an OK response from RFLink to make sure the command was executed
-	while (m_bTXokay == false) {
-        if (btime-atime > 4) {
-			_log.Log(LOG_ERROR, "RFLink: TX time out...");
+	if (pSwitch->type == pTypeGeneralSwitch) {
+		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pSwitch->cmnd);
+		if (pSwitch->cmnd != gswitch_sStop) {
+			if ((m_SwitchType == STYPE_VenetianBlindsEU) || (m_SwitchType == STYPE_Blinds) || (m_SwitchType == STYPE_BlindsInverted)) {
+				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+			}
+			else {
+				if (m_SwitchType == STYPE_VenetianBlindsUS) {
+				//if ((m_SwitchType == STYPE_VenetianBlindsUS) || (m_SwitchType == STYPE_BlindsInverted)) {
+					switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);
+					if (pSwitch->cmnd == blinds_sOpen) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sClose);
+					else if (pSwitch->cmnd == blinds_sClose) switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, blinds_sOpen);
+				}
+			}
+		}
+		//_log.Log(LOG_ERROR, "RFLink: switch command: %d", pSwitch->cmnd);
+
+        // check setlevel command
+        if (pSwitch->cmnd == gswitch_sSetLevel) {
+           // Get device level to set
+			float fvalue = (15.0f / 100.0f)*float(pSwitch->level);
+			if (fvalue > 15.0f)
+				fvalue = 15.0f; //99 is fully on
+			int svalue = round(fvalue);
+			//_log.Log(LOG_ERROR, "RFLink: level: %d", svalue);
+	        char buffer[50] = {0};
+			sprintf(buffer, "%d", svalue);
+			switchcmnd = buffer;
+	    }
+
+		if (switchcmnd.empty()) {
+			_log.Log(LOG_ERROR, "RFLink: trying to send unknown switch command: %d", pSwitch->cmnd);
 			return false;
-        }
-        btime = mytime(NULL);
+		}
+
+		//Build send string
+		std::stringstream sstr;
+		//10;NewKaku;00c142;1;ON;     => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF/15 -11-15 for dim level)
+
+		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(6) << std::setfill('0') << pSwitch->id << ";" << std::hex << std::nouppercase << pSwitch->unitcode << ";" << switchcmnd;
+//#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
+//#endif
+		sstr << "\n";
+		m_bTXokay = false; // clear OK flag
+		WriteInt(sstr.str());
+		time_t atime = mytime(NULL);
+		time_t btime = mytime(NULL);
+
+		// Wait for an OK response from RFLink to make sure the command was executed
+		while (m_bTXokay == false) {
+			if (difftime(btime,atime) > 4) {
+				_log.Log(LOG_ERROR, "RFLink: TX time out...");
+				return false;
+			}
+			btime = mytime(NULL);
+		}
+		return true;
 	}
-	return true;
+	else {		// RFLink Milight extension
+		_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
+
+		//_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
+		//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
+		//_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
+		//_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+		//_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
+		//_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
+		bool bSendOn = false;
+
+		const int m_LEDType = pLed->type;
+		std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, 0x57);
+		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pLed->command);
+		unsigned int m_colorbright = 0;
+
+		switch (pLed->command){
+		case Limitless_LedOn:
+			switchcmnd = "ON";
+			break;
+		case Limitless_LedOff:
+			switchcmnd = "OFF";
+			break;
+		case Limitless_SetRGBColour:
+			{
+			//Milight colorfix
+			int iHue = ((255 - pLed->value) + 108) & 0xFF;
+			m_colorbright = m_colorbright & 0xff;
+			m_colorbright = (((unsigned char) iHue) << 8) + m_colorbright;
+			switchcmnd = "COLOR";
+			bSendOn = true;
+		    }
+			break;
+		case Limitless_DiscoSpeedSlower:
+			switchcmnd = "DISCO-";
+			bSendOn = true;
+			break;
+		case Limitless_DiscoSpeedFaster:
+			switchcmnd = "DISCO+";
+			bSendOn = true;
+			break;
+		case Limitless_DiscoMode:
+			switchcmnd = "MODE";
+			break;
+		case Limitless_SetColorToWhite:
+			switchcmnd = "ALLON";
+			bSendOn = true;
+			break;
+		case Limitless_SetBrightnessLevel:
+			{
+			//brightness (0-100) converted to 0x00-0xff
+			int m_brightness = (unsigned char)pLed->value;
+			m_brightness = (m_brightness * 255) / 100;
+			m_brightness = m_brightness & 0xff;
+			m_colorbright = m_colorbright & 0xff00;
+			m_colorbright = m_colorbright + (unsigned char)m_brightness;
+			switchcmnd = "BRIGHT";
+			bSendOn = true;
+		    }
+			break;
+
+		// need work:
+		case Limitless_SetBrightUp:
+			switchcmnd = "BRIGHT";
+			bSendOn = true;
+			break;
+		case Limitless_SetBrightDown:
+			switchcmnd = "BRIGHT";
+			bSendOn = true;
+			break;
+		case Limitless_DiscoSpeedFasterLong:
+			switchcmnd = "DISCO+";
+			bSendOn = true;
+			break;
+		case Limitless_RGBDiscoNext:
+			switchcmnd = "DISCO+";
+			bSendOn = true;
+			break;
+		case Limitless_RGBDiscoPrevious:
+			switchcmnd = "DISCO-";
+			bSendOn = true;
+			break;
+		default:
+			_log.Log(LOG_ERROR, "RFLink: trying to send unknown led switch command: %d", pLed->command);
+			return false;
+		}
+
+		// --- Sending first an "ON command" needed
+		if (bSendOn == true) {
+			std::string tswitchcmnd = "ON";
+			//Build send string
+			std::stringstream sstr;
+			sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << m_colorbright << ";" << tswitchcmnd;
+			_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
+			sstr << "\n";
+			m_bTXokay = false; // clear OK flag
+			WriteInt(sstr.str());
+			time_t atime = mytime(NULL);
+			time_t btime = mytime(NULL);
+
+			// Wait for an OK response from RFLink to make sure the command was executed
+			while (m_bTXokay == false) {
+				if (difftime(btime,atime) > 4) {
+					_log.Log(LOG_ERROR, "RFLink: TX time out...");
+					return false;
+				}
+				btime = mytime(NULL);
+			}
+		}
+		// ---
+
+		//Build send string
+		std::stringstream sstr;
+		//10;MiLightv1;1234;01;5566;ON;     => protocol;address;unit number;color&brightness;action (ON/OFF/ALLON/ALLOFF etc)
+
+		sstr << "10;" << switchtype << ";" << std::hex << std::nouppercase << std::setw(4) << std::setfill('0') << pLed->id << ";" << std::setw(2) << std::setfill('0') << int(pLed->dunit) << ";" << std::hex << std::nouppercase << std::setw(4) << m_colorbright << ";" << switchcmnd;
+		//#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "RFLink Sending: %s", sstr.str().c_str());
+		//#endif
+		sstr << "\n";
+		m_bTXokay = false; // clear OK flag
+		WriteInt(sstr.str());
+		time_t atime = mytime(NULL);
+		time_t btime = mytime(NULL);
+
+		// Wait for an OK response from RFLink to make sure the command was executed
+		while (m_bTXokay == false) {
+			if (difftime(btime,atime) > 4) {
+				_log.Log(LOG_ERROR, "RFLink: TX time out...");
+				return false;
+			}
+			btime = mytime(NULL);
+		}
+		return true;
+	}
 }
 
 bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int BatteryLevel, const std::string &switchType, const std::string &switchcmd, const int level)
@@ -291,14 +496,14 @@ bool CRFLinkBase::SendSwitchInt(const int ID, const int switchunit, const int Ba
 
 	int svalue=level;
 	if (cmnd==-1) {
-		if (switchcmd.compare(0, 9, "SETLEVEL=") == 0 ){
+		if (switchcmd.compare(0, 10, "SET_LEVEL=") == 0 ){
 			cmnd=gswitch_sSetLevel;
 			std::string str2 = switchcmd.substr(10);
-			svalue=atoi(str2.c_str()); 
+			svalue=atoi(str2.c_str());
 	  		_log.Log(LOG_STATUS, "RFLink: %d level: %d", cmnd, svalue);
 		}
 	}
-    
+
 	if (cmnd==-1)
 	{
 		_log.Log(LOG_ERROR, "RFLink: Unhandled switch command: %s", switchcmd.c_str());
@@ -385,6 +590,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	if (!bHideDebugLog)
 		_log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 #endif
+   if (m_bRFDebug == true) _log.Log(LOG_NORM, "RFLink: %s", sLine.c_str());
 
 	//std::string Sensor_ID = results[1];
 	if (results.size() >2)
@@ -420,6 +626,10 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 				build = RFLinkGetIntStringValue(results[4]);
 			}
 			_log.Log(LOG_STATUS, "RFLink Detected, Version: %d.%d Revision: %d Build: %d", versionhi, versionlo, revision, build);
+
+			std::stringstream sstr;
+			sstr << revision << "." << build;
+			m_Version = sstr.str();
 
 			mytime(&m_LastHeartbeatReceive);  // keep heartbeat happy
 			mytime(&m_LastHeartbeat);  // keep heartbeat happy
@@ -479,7 +689,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveRain = false; float raincounter = 0;
 	bool bHaveLux = false; float lux = 0;
 	bool bHaveUV = false; float uv = 0;
-    
+
 	bool bHaveWindDir = false; int windir = 0;
 	bool bHaveWindSpeed = false; float windspeed = 0;
 	bool bHaveWindGust = false; float windgust = 0;
@@ -490,16 +700,18 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveRGBW = false; int rgbw = 0;
 	bool bHaveSound = false; int sound = 0;
 	bool bHaveCO2 = false; int co2 = 0;
-	bool bHaveBlind = false; int blind = 0;   
+	bool bHaveBlind = false; int blind = 0;
 
-	bool bHaveKWatt = false; float kwatt = 0;   
-	bool bHaveWatt = false; float watt = 0;   
-	bool bHaveDistance = false; float distance = 0;   
-	bool bHaveMeter = false; float meter = 0;   
-	bool bHaveVoltage = false; float voltage = 0;   
-	bool bHaveCurrent = false; float current = 0;   
-	bool bHaveImpedance = false; float impedance = 0;   
-	bool bHaveSwitch = false; int switchunit = 0; 
+	bool bHaveKWatt = false; float kwatt = 0;
+	bool bHaveWatt = false; float watt = 0;
+	bool bHaveDistance = false; float distance = 0;
+	bool bHaveMeter = false; float meter = 0;
+	bool bHaveVoltage = false; float voltage = 0;
+	bool bHaveCurrent = false; float current = 0;
+	bool bHaveCurrent2 = false; float current2 = 0;
+	bool bHaveCurrent3 = false; float current3 = 0;
+	bool bHaveImpedance = false; float impedance = 0;
+	bool bHaveSwitch = false; int switchunit = 0;
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
 
 	int BatteryLevel = 255;
@@ -541,7 +753,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			bHaveRain = true;
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			raincounter = float(iTemp) / 10.0f; 
+			raincounter = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("LUX") != std::string::npos)
 		{
@@ -656,7 +868,19 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
 			bHaveCurrent = true;
-			current = float(iTemp) / 100.0f;
+			current = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("CURRENT2") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent2 = true;
+			current2 = float(iTemp) / 10.0f;
+		}
+		else if (results[ii].find("CURRENT3") != std::string::npos)
+		{
+			iTemp = RFLinkGetHexStringValue(results[ii]);
+			bHaveCurrent3 = true;
+			current3 = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{
@@ -721,25 +945,31 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
   		SendUVSensor(Node_ID, Child_ID, BatteryLevel, uv, tmp_Name);
 	}
-    
+
 	if (bHaveRain)
 	{
 		SendRainSensor(ID, BatteryLevel, float(raincounter), tmp_Name);
 	}
 
-	if (bHaveWindDir && bHaveWindSpeed && bHaveWindGust && bHaveWindChill)
+	if (bHaveWindDir || bHaveWindSpeed || bHaveWindGust || bHaveWindChill)
 	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
+		bool bExists = false;
+		int twindir = 0;float twindspeed = 0;float twindgust = 0;float twindtemp = 0;float twindchill = 0;
+		GetWindSensorValue(ID, twindir, twindspeed, twindgust, twindtemp, twindchill, bHaveWindTemp, bExists);
+#ifdef _DEBUG
+		if (bExists) {
+			_log.Log(LOG_STATUS, "RFLink: id:%d wd %d ws %f wg: %f wt: %f wc: %f status:%d", ID, twindir, twindspeed, twindgust, twindtemp, twindchill, bExists);
+		}
+#endif
+		if (bHaveWindDir) twindir = round(float(windir)*22.5f);
+		if (!bHaveWindSpeed) windspeed = twindspeed;
+		if (!bHaveWindGust) windgust = twindgust;
+		if (!bHaveWindTemp) windtemp = twindtemp;
+		if (!bHaveWindChill) windchill = twindchill;
+
+		SendWind(ID, BatteryLevel, twindir, windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
 	}
-	else if (bHaveWindDir && bHaveWindGust)
-	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
-	}
-	else if (bHaveWindSpeed)
-	{
-		SendWind(ID, BatteryLevel, float(windir), windspeed, windgust, windtemp, windchill, bHaveWindTemp, tmp_Name);
-	}
-    
+
 	if (bHaveCO2)
 	{
 		SendAirQualitySensor((ID & 0xFF00) >> 8, ID & 0xFF, BatteryLevel, co2, tmp_Name);
@@ -749,16 +979,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		SendSoundSensor(ID, BatteryLevel, sound, tmp_Name);
 	}
 
-	if (bHaveRGB)
-	{
-		//RRGGBB
-		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgb, false, tmp_Name);
-	}
-	if (bHaveRGBW)
-	{
-		//RRGGBBWW
-		SendRGBWSwitch(Node_ID, Child_ID, BatteryLevel, rgbw, true, tmp_Name);
-	}
 	if (bHaveBlind)
 	{
 		SendBlindSensor(Node_ID, Child_ID, BatteryLevel, blind, tmp_Name);
@@ -788,7 +1008,11 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendVoltageSensor(Node_ID, Child_ID, BatteryLevel, voltage, tmp_Name);
 	}
-	if (bHaveCurrent)
+	if (bHaveCurrent && bHaveCurrent2 && bHaveCurrent3)
+	{
+		SendCurrentSensor(ID, BatteryLevel, current, current2, current3, tmp_Name);
+	}
+	else if (bHaveCurrent)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}
@@ -796,6 +1020,20 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);
 	}
+
+	if (bHaveRGB)
+	{
+		//RRGGBB
+		if (switchcmd == "ON") rgb = 0xffff;
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name);
+	} else
+	if (bHaveRGBW)
+	{
+		//RRGGBBWW
+		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
+		if (switchcmd == "OFF") rgbw = 0;
+		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name);
+	} else
 	if (bHaveSwitch && bHaveSwitchCmd)
 	{
 		std::string switchType = results[2];
@@ -812,7 +1050,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				return;									//No admin user, and not allowed to be here
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
@@ -832,8 +1071,24 @@ namespace http {
 			if (pRFLINK == NULL)
 				return;
 
-			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
+			if (scommand.substr(0, 14).compare("10;rfdebug=on;") == 0) {
+				pRFLINK->m_bRFDebug = true; // enable debug
+				_log.Log(LOG_STATUS, "User: %s initiated RFLink Enable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
+				pRFLINK->WriteInt("10;RFDEBUG=ON;\n");
+				root["status"] = "OK";
+				root["title"] = "DebugON";
+				return;
+			}
+			if (scommand.substr(0, 15).compare("10;rfdebug=off;") == 0) {
+				pRFLINK->m_bRFDebug = false; // disable debug
+				_log.Log(LOG_STATUS, "User: %s initiated RFLink Disable Debug mode with command: %s", session.username.c_str(), scommand.c_str());
+				pRFLINK->WriteInt("10;RFDEBUG=OFF;\n");
+				root["status"] = "OK";
+				root["title"] = "DebugOFF";
+				return;
+			}
 
+			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
 			scommand = "11;" + scommand;
 			#ifdef _DEBUG
 			_log.Log(LOG_STATUS, "User: %s initiated a RFLink Device Create command: %s", session.username.c_str(), scommand.c_str());
@@ -848,7 +1103,7 @@ namespace http {
 
 			// Wait for an OK response from RFLink to make sure the command was executed
 			while (pRFLINK->m_bTXokay == false) {
-				if (btime - atime > 4) {
+				if (difftime(btime,atime) > 4) {
 					_log.Log(LOG_ERROR, "RFLink: TX time out...");
 					bCreated = false;
 					break;

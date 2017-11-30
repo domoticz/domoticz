@@ -7,7 +7,6 @@
 #include "../main/mainworker.h"
 
 #include "../main/SQLHelper.h"
-extern CSQLHelper m_sql;
 #include "../hardware/hardwaretypes.h"
 
 #include <sstream>
@@ -158,7 +157,7 @@ void FritzboxTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_STATUS, "Fritzbox: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Fritzbox: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

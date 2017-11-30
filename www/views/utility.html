@@ -54,6 +54,10 @@
             <!--#embed metertypes -->
           </select></td>
 		</tr>
+		<tr id="tdmeteroffset">
+          <td align="right"><label for="meteroffset"><span data-i18n="Meter Offset">Meter Offset</span>: </label></td>
+          <td><input type="text" id="meteroffset" style="width: 120px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
+		</tr>
         <tr id="customcounter">
           <td align="right"><label for="valuequantity"><span data-i18n="Value Quantity (e.g. Weight)">Value Quantity (e.g. Weight)</span>: </label></td>
           <td><input type="text" id="valuequantity" style="width: 140px; padding: .4em;" class="text ui-widget-content ui-corner-all" /></td>
@@ -83,6 +87,13 @@
             <option value="4" data-i18n="Return">Return</option>
           </select></td>
 		</tr>
+        <tr>
+             <td align="right" style="width:120px"><label for="devoptions"><span data-i18n="Energy read">Energy read</span>: </label></td>          
+             <td>
+             <input type="radio" name="devoptions" id="devoptions2" value="1" >&nbsp;&nbsp;<span data-i18n="Computed">&nbsp;&nbsp;Computed</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+             <input type="radio" name="devoptions" id="devoptions1" value="0" checked>&nbsp;&nbsp;<span data-i18n="From device">From device</span>
+             </td>
+        </tr>
 		</table>
     </form>
 </div>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
+		</TriggerRefreshValue>
+	</CommandClass>
+</Product>

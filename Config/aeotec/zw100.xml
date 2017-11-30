@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Aeotec ZW100 MultiSensor 6
+https://aeotec.freshdesk.com/helpdesk/attachments/6028954764
+version 1.07 (4.11.2016)
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="2" genre="config" label="Wake up 10 minutes on Power On" min="0" max="1" value="0" size="1">
+			<Help>Stay awake for 10 minutes after batteries are inserted</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="10" max="3600" value="240">
+			<Help>Duration that the motion sensor must observe no motion before it will return to the no-motion state.
+			If value greater than 255, effective value is rounded up to the nearest minute (255 -> 255 seconds, 256 -> 300 seconds)</Help>
+		</Value>
+		<Value type="list" index="4" genre="config" label="Enable Motion Sensor" min="0" max="1" value="5" size="1">
+			<Help>Enable Motion Sensor, (1 minimum, 5 maximum sensitivity level)</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled level 1" value="1" />
+			<Item label="Enabled level 2" value="2" />
+			<Item label="Enabled level 3" value="3" />
+			<Item label="Enabled level 4" value="4" />
+			<Item label="Enabled level 5" value="5" />
+		</Value>
+		<Value type="list" index="5" genre="config" label="Command Options" min="1" max="2" value="1" size="1">		
+			<Help>Which commands to send when PIR motion sensor triggered
+			OZW Ideal Value is Binary Sensor Report</Help>
+			<Item label="Basic Set" value="1" />
+			<Item label="Binary Sensor Report" value="2" />
+		</Value>
+		<Value type="byte" index="8" genre="config" label="Awake timeout" min="8" max="255" value="30" size="1">
+			<Help>
+			Set the timeout of awake after the Wake Up CC is sent out.
+			Available rang: 8 to 255 seconds.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="9" label="Current power mode" min="0" max="257" size="2" value="0" read_only="true">
+			<Help>Report the current power mode and the product state for battery power mode</Help>
+			<Item label="USB power, sleeping mode after re-power on" value="0"/>
+			<Item label="USB power, keep awake for 10 minutes after re-power on" value="1"/>
+			<Item label="Battery power, sleeping mode after re-power on" value="256"/>
+			<Item label="Battery power, keep awake for 10 minutes after re-power on" value="257"/>
+		</Value>
+		<Value type="byte" index="39" genre="config" label="Low Battery" min="10" max="50" value="20" size="1">
+			<Help>Configure low battery value
+			Value=10 to 50.</Help>
+		</Value>
+		<Value type="list" index="40" genre="config" label="Report Only On Thresholds" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable the selective reporting only when measurements reach a certain threshold or percentage 
+			set in the threshold settings.  This is used to reduce network
+			traffic.</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" />
+		</Value>
+		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="20" size="2">
+			<Help>Threshold change in temperature to induce an automatic report.  
+			Note: 
+			1. The unit is Fahrenheit for US version, Celsius for EU/AU version.
+			2. The value contains one decimal point. E.g. if the value is set to 20, the threshold value = 2.0 C (EU/AU) or 2.0 F (US). When the temperature has changed by 2.0 (of the appropriate unit), a temperature report will be sent.
+			</Help>
+		</Value>
+		<Value type="byte" index="42" genre="config" label="Humidity Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
+			<Help>Threshold change in humidity to induce an automatic report. 
+			Note: 
+			1. The unit is %.
+			2. The default value is 10, which means that a 10% change in humidity will trigger a report.
+			</Help>
+		</Value>
+		<Value type="short" index="43" genre="config" label="Luminance Reporting Threshold" units="LUX" min="0" max="1000" value="100" size="2">
+			<Help>Threshold change in luminance to induce an automatic report.</Help>
+		</Value>
+		<Value type="byte" index="44" genre="config" label="Battery Reporting Threshold" units="%" min="0" max="100" value="10" size="1">
+			<Help>Threshold change in battery level to induce an  automatic report. 
+			Note: 
+			1. The unit is %.
+			2. The default value is 10, which means that a 10% change in battery will trigger a report.
+			</Help>
+		</Value>
+		<Value type="byte" index="45" genre="config" label="UV Reporting Threshold" units="" min="0" max="255" value="2" read_only="true">
+			<Help>Threshold change in ultraviolet to induce an automatic report.
+			</Help>
+		</Value>
+		<Value type="list" index="46" genre="config" label="Low Temp Alarm" min="0" max="1" value="0" size="1">
+			<Help>Enable/disable to send the alarm report of low temperature(Less than 15 Degress C)
+			</Help>
+			<Item label="Disabled" value="0" />
+			<Item label="Enabled" value="1" />
+		</Value>
+		<Value type="byte" index="48" genre="config" label="Enable/disable to send a report on Threshold" units="" min="0" max="255" value="0" >
+			<Help>
+			Enable/disable to send a report when the measurement is more than the upper limit value or less than the lower limit value.
+			Bit mask = 0, disable.
+			Bit mask = 1, enable.
+			Bit 0 = temperature.
+			Bit 1 = humidity.
+			Bit 2 = luminance.
+			Bit 3 = ultraviolet.
+			The above bit masks are used to enable/disable to send out a report when the measurement is less than the lower limit value.
+			The below bit masks are used to enable/disable to send out a report when the measurement is more than the upper limit value.
+			Bit 4 = temperature.
+			Bit 5 = humidity.
+			Bit 6 = luminance.
+			Bit 7 = ultraviolet.
+			Note: 
+			If USB power, the Sensor will check the limit every 10 seconds. If battery power, the Sensor will check the limit when it is waken up. 
+			</Help>
+		</Value>
+		<Value type="int" index="49" genre="config" label="Set the upper limit value of temperature sensor" value="71681" >
+			<Help>
+			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
+			High byte is the upper limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
+			1. When unit is Celsius.
+			Upper limit range: -40.0 to 100.0 C (0xFE70 to 0x03E8).
+			E.g. The default upper limit of EU/AU version is 28.0 C (0x0118), when the measurement is more than 28.0C, it will be triggered to send out a temperature sensor report.
+			2. When unit is Fahrenheit.
+			Upper limit range: -40.0 to 212.0 F (0xFE70 to 0x0848).
+			E.g. The default upper limit of US version is 82.4F (0X0338), when the measurement is more than 82.4F, it will be triggered to send out a temperature sensor report.
+			</Help>
+		</Value>
+		<Value type="int" index="50" genre="config" label="Set the lower limit value of temperature sensor" value="1" >
+			<Help>
+			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
+			High byte is the lower limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
+			1. When unit is Celsius.
+			Lower limit range: -40.0 to 100.0 C (0xFE70 to 0x03E8).
+			E.g. The default lower limit of EU/AU version is 0 C (0x0000), when the measurement is less than 0C, it will be triggered to send out a temperature sensor report.
+			2. When unit is Fahrenheit. 
+			Upper limit range: -40.0 to 212.0 F (0xFE70 to 0x0848).
+			E.g. The default lower limit of US version is 32.0F (0x0140), when the measurement is less than 32.0F, it will be triggered to send out a temperature sensor report.
+			</Help>
+		</Value>
+		<Value type="byte" index="51" genre="config" label="Set the upper limit value of humidity sensor" units="%" min="0" max="100" value="60" >
+			<Help>
+			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
+			Upper limit range: 0 to 100%.
+			E.g. The default upper limit is 60%, when the measurement is more than 60%, it will be triggered to send out a humidity sensor report. 
+			</Help>
+		</Value>
+		<Value type="byte" index="52" genre="config" label="Set the lower limit value of humidity sensor" units="%" min="0" max="100" value="50" >
+			<Help>
+			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
+			Lower limit range: 0 to 100%.
+			E.g. The default lower limit is 50%, when the measurement is less than 50%, it will be triggered to send out a humidity sensor report. 
+			</Help>
+		</Value>
+		<Value type="short" index="53" genre="config" label="Set the upper limit value of Lighting sensor" units="lux" min="0" max="30000" value="1000" >
+			<Help>
+			When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
+			Upper limit range: 0 to 30000 Lux.
+			E.g. The default upper limit is 1000Lux, when the measurement is more than 1000Lux, it will be triggered to send out a Lighting sensor report. 
+			</Help>
+		</Value>
+		<Value type="short" index="54" genre="config" label="Set the lower limit value of Lighting sensor" units="lux" min="0" max="30000" value="100" >
+			<Help>
+			When the measurement is less than this lower limit, which will trigger to sent out a sensor report.
+			Lower limit range: 0 to 30000 Lux.
+			E.g. The default lower limit is 100Lux, when the measurement is less than 100Lux, it will be triggered to send out a Lighting sensor report. 			
+			</Help>
+		</Value>
+		<Value type="byte" index="55" genre="config" label="Set the upper limit value of ultraviolet sensor" units="UV" min="1" max="11" value="8" >
+			<Help>
+			 When the measurement is more than this upper limit, which will trigger to sent out a sensor report.
+			 Upper limit range: 1 to 11.
+			 E.g. The default upper limit is 8, when the measurement is more than 8, it will be triggered to send out a ultraviolet sensor report. 
+			</Help>
+		</Value>
+		<Value type="byte" index="56" genre="config" label="Set the lower limit value of ultraviolet sensor" units="UV" min="1" max="11" value="4" >
+			<Help>
+			 When the measurement is less than this upper limit, which will trigger to sent out a sensor report.
+			 Lower limit range: 1 to 11.
+			 E.g. The default lower limit is 4, when the measurement is less than 8, it will be triggered to send out a ultraviolet sensor report.
+			</Help>
+		</Value>
+		<Value type="short" index="57" genre="config" label="Set the recover limit value of temperature sensor" value="5121" >
+			<Help>
+			Note:
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			After that, the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that, the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
+			3. High byte is the recover limit value. Low byte is the unit (0x01=Celsius, 0x02=Fahrenheit).
+			4. Recover limit range: 1.0 to 25.5 C/ F (0x0101 to 0xFF01 or 0x0102 to 0xFF02).
+			E.g. The default recover limit value is 2.0 C/F (0x1401/0x1402), when the measurement is less than (Upper limit - 2), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 2), the lower limit report would be enabled one time.
+			</Help>
+		</Value>
+		<Value type="byte" index="58" genre="config" label="Set the recover limit value of humidity sensor" units="%" min="1" max="255" value="5" >
+			<Help>
+			 Note:
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
+			3. Recover limit range: 1 to 50% (0x01 to 0x32).
+			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
+			</Help>			
+		</Value>
+		<Value type="byte" index="59" genre="config" label="Set the recover limit value of Lighting sensor" units="10xlux" min="1" max="255" value="10" >
+			<Help>
+			Note:
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal (Lower limit + Recover limit).
+			3. Unit = 10*Recover limit (Lux)
+			4. Recover limit range: 10 to 2550Lux (0x01 to 0xFF).
+			E.g. The default recover limit value is 100 Lux, when the measurement is less than (Upper limit - 100), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 100), the lower limit report would be enabled one time.
+			</Help>
+		</Value>
+		<Value type="byte" index="60" genre="config" label="Set the recover limit value of Ultraviolet sensor" units="UV" min="1" max="5" value="2" >
+			<Help>
+			 Note:
+			1. When the current measurement lower or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit. 
+			After that the upper limit report would be disabled again until the measurement lower or equal (Upper limit - Recover limit).
+			2. When the current measurement greater or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit. 
+			After that the lower limit report would be disabled again until the measurement greater or equal(Lower limit + Recover limit).
+			3. Recover limit range: 1 to 50% (0x01 to 0x32).
+			E.g. The default recover limit value is 5%, when the measurement is less than (Upper limit - 5), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 5), the lower limit report would be enabled one time. 
+			</Help>
+		</Value>
+		<Value type="byte" index="61" genre="config" label="Get the out-of-limit state of the Sensors" units="" min="0" max="255" value="0" read_only="true">
+			<Help>
+			Get the out-of-limit state of the Sensors.
+			Bit mask = 0, within the limit.
+			Bit mask = 1, out of the limit.
+			Bit 0 = temperature.
+			Bit 1 = humidity.
+			Bit 2 = luminance.
+			Bit 3 = ultraviolet.
+			The above bit masks are used to indicate whether the current measurements of the Sensors are out of the lower limit.
+			The below bit masks are used to indicate whether the current measurements of the Sensors are out of the upper limit.
+			Bit 4 = temperature.
+			Bit 5 = humidity.
+			Bit 6 = luminance.
+			Bit 7 = ultraviolet.
+			</Help>
+		</Value>		
+		<Value type="list" index="64" genre="config" label="Temperature scale" min="1" max="2" value="1" size="1">
+			<Help>Default value: Celsius for EU/AU version, Fahrenheit for US version.</Help>
+			<Item label="Celsius" value="1" />
+			<Item label="Fahrenheit" value="2" />
+		</Value>
+        <Value type="list" index="81" genre="config" label="LED report" min="0" max="1" value="0" size="1">
+			<Help>LED when motion/vibration triggered</Help>
+			<Item label="Enable" value="0" />
+			<Item label="Disable" value="1" />
+		</Value>
+		<Value type="button" index="100" genre="config" label="Reset Params 101-103 to Default" write_only="true" affects="101,102,103">
+			<Help>Reset The Reporting Group Configuration (101 to 103) to default</Help>
+		</Value>
+		<Value type="int" index="101" genre="config" label="Group 1 Reports" value="241">
+			<Help>Which reports need to send automatically in timing intervals for group 1.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
+		</Value>
+		<Value type="int" index="102" genre="config" label="Group 2 Reports" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 2.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
+		</Value>
+		<Value type="int" index="103" genre="config" label="Group 3 Reports" value="0">
+			<Help>Which reports need to send automatically in timing intervals for group 3.
+				Bitmask:
+				10000000 - 128 - Luminance
+				01000000 - 64 - Humidity
+				00100000 - 32 - Temperature
+				00010000 - 16 - Ultraviolet
+				00000001 - 1 - Battery
+				10100000 - 160 - Luminance and Temperature (32+128)
+				11110001 - 241 - All (1+16+32+64+128)</Help>
+		</Value>
+		<Value type="button" index="110" genre="config" label="Reset Params 111-113 to Default" write_only="true" affects="111,112,113">
+			<Help>Reset The Reporting Group Interval Configuration (111 to 113) to default</Help>
+		</Value>
+		<!-- Applications can check IsNodeListeningDevice to determine if the device is on USB power (listening) or battery (not listening) -->
+		<Value type="int" index="111" genre="config" label="Group 1 Interval" units="seconds" min="1" max="2678400" value="3600">
+			<Help>The interval for sending reports for group 1.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
+		</Value>
+		<Value type="int" index="112" genre="config" label="Group 2 Interval" units="seconds" min="1" max="2678400" value="3600">
+			<Help>The interval for sending reports for group 2.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
+		</Value>
+		<Value type="int" index="113" genre="config" label="Group 3 Interval" units="seconds" min="1" max="2678400" value="3600">
+			<Help>The interval for sending reports for group 3.
+			The effective behavior of this setting depends on the device's power source:
+			- If the device is on USB power, it will send the reports at the configured interval; set it to something low (~15-60 seconds) to get frequent updates from a powered device.
+			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
+		</Value>
+		<Value type="short" index="201" genre="config" label="Temperature Calibration" value="1">
+			<Help>The calibration value = standard value - measure value. 
+			(the available value range is [-100, 100] or [-10C, 10C]).
+			Note:
+			1. The value contains one decimal point. E.g. if the value is set to 20, the calibration value is 2.0 (EU/AU version) or 2.0 (US version)
+			2. The calibration value = standard value - measure value.
+			If measure value =25.3 and the standard value = 23.2, so the calibration value= 23.2-25.3 = -2.1 (0xEB).
+			If the measure value =30.1 and the standard value = 33.2, so the calibration value= 33.2-30.1= 3.1 (0x1F). 
+			Default value: 1 for EU/AU version, 2 for US version.
+			</Help>
+		</Value>
+		<Value type="byte" index="202" genre="config" label="Humidity Calibration" min="0" max="255" value="0">
+			<Help>The calibration value = standard value - measure value.
+			(the available value range is [-50, 50]).
+			If measure value =80RH and the standard value = 75RH, so the calibration value= 75RH-80RH = -5RH (0xFB).
+			If the measure value =85RH and the standard value = 90RH, so the calibration value= 90RH-85RH = 5RH (0x05).  
+			</Help>
+		</Value>
+		<Value type="short" index="203" genre="config" label="Luminance Calibration" min="0" max="65535"  value="0">
+			<Help>The calibration value = standard value - measure value. 
+			(the available value range is [-1000, 1000]).
+			If measure value =800Lux and the standard value = 750Lux, so the calibration value= 750-800 = -50 (0xFFCE). 
+			If the measure value =850Lux and the standard value = 900Lux, so the calibration value= 900-850 = 50 (0x0032). 
+			</Help>
+		</Value>
+		<Value type="byte" index="204" genre="config" label="Ultraviolet Calibration" min="0" max="255" value="0">
+			<Help>The calibration value = standard value measure value. 
+			(the available value range is [-10, 10]).
+			If measure value =9 and the standard value = 8, so the calibration value= 8-9 = -1 (0xFE). 
+			If the measure value =7 and the standard value = 9, so the calibration value= 9-7 = 2 (0x02).  
+			</Help>
+		</Value>
+		<Value type="list" index="252" genre="config" label="Enable/disable Lock Configuration" units="" min="0" max="1" value="0" size="1">
+			<Help>
+				Enable/disable Lock Configuration
+			</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+		<Value type="button" index="255" genre="config" label="Reset to default" write_only="true" value="0" >
+			<Help>Reset to factory defaults.</Help>
+		</Value>
+	</CommandClass>
+
+	<!-- the Device Doesn't support Get for Alarm Class -->
+	<CommandClass id="113" getsupported="false"/>
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="LifeLine" />
+		</Associations>
+	</CommandClass>
+
+</Product>

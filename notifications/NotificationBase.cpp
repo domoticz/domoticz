@@ -70,12 +70,26 @@ void CNotificationBase::LoadConfig()
 	}
 }
 
-bool CNotificationBase::SendMessage(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const bool bFromNotification)
+bool CNotificationBase::SendMessage(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const bool bFromNotification)
 {
-	return SendMessageEx(Subject, Text, std::string(""), 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subject, Text, std::string(""), 0, std::string(""), bFromNotification);
 }
 
-bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string &Sound, const bool bFromNotification)
+bool CNotificationBase::SendMessageEx(
+	const uint64_t Idx,
+	const std::string &Name,
+	const std::string &Subject,
+	const std::string &Text,
+	const std::string &ExtraData,
+	const int Priority,
+	const std::string &Sound,
+	const bool bFromNotification)
 {
 	if (!IsConfigured()) {
 		// subsystem not configured, skip
@@ -102,16 +116,14 @@ bool CNotificationBase::SendMessageEx(const std::string &Subject, const std::str
 	if (_options & OPTIONS_URL_BODY) {
 		fText = CURLEncode::URLEncode(fText);
 	}
-	
-	bool bRet = SendMessageImplementation(fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
-	if (_subsystemid != "gcm")
-	{
-		if (bRet) {
-			_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
-		}
-		else {
-			_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
-		}
+
+	boost::mutex::scoped_lock SendMessageEx(SendMessageExMutex);
+	bool bRet = SendMessageImplementation(Idx, Name, fSubject, fText, ExtraData, Priority, Sound, bFromNotification);
+	if (bRet) {
+		_log.Log(LOG_NORM, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Success")).c_str());
+	}
+	else {
+		_log.Log(LOG_ERROR, std::string(std::string("Notification sent (") + _subsystemid + std::string(") => Failed")).c_str());
 	}
 	return bRet;
 }
@@ -228,15 +240,3 @@ bool CNotificationBase::IsInConfigBase64(const std::string &Key)
 	return false;
 }
 
-std::string CNotificationBase::MakeHtml(const std::string &txt)
-{
-	std::string sRet = txt;
-
-	stdreplace(sRet, "&", "&amp;");
-	stdreplace(sRet, "\"", "&quot;");
-	stdreplace(sRet, "'", "&apos;");
-	stdreplace(sRet, "<", "&lt;");
-	stdreplace(sRet, ">", "&gt;");
-	stdreplace(sRet, "\r\n", "<br/>");
-	return sRet;
-}

@@ -14,20 +14,13 @@ update-alternatives:
 sources:
   - trusty
 
-
-# Domoticz ftp server account & encrypted password
-env:
-  global:
-    - "FTP_HOST=188.166.24.182"
-    - "FTP_USER=uploads@domoticz.com"
-
 # What to install before the build
 before_install:
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
-  - git clone https://github.com/OpenZWave/open-zwave.git
-  - ln -s open-zwave open-zwave-read-only
+  - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
+  # - ln -s open-zwave open-zwave-read-only
 
 
 # Build matrix definition
@@ -38,12 +31,15 @@ matrix:
   include:
   # Linux x86_64
   - os: linux
+    dist: trusty
+    sudo: required
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     addons:
       apt:
         sources:
+          - george-edison55-precise-backports  # cmake
           - ubuntu-toolchain-r-test
           - boost-latest
         packages:
@@ -51,6 +47,7 @@ matrix:
           - g++-4.9
           - libboost1.55-all-dev
           - cmake
+          - cmake-data
           - libsqlite3-dev
           - curl
           - libcurl4-openssl-dev
@@ -60,29 +57,31 @@ matrix:
           - libudev-dev
           - git
           - libdigest-sha-perl
+          - python3-dev
     script:
-      - (cd open-zwave-read-only; make)
+      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
+    osx_image: xcode6.2
     compiler:
       - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
-      - brew install cmake
       - brew install boost|| true
-      - brew install boost-python|| true
       - brew install libusb
       - brew install libusb-compat
       - brew install zlib || true
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
-      - export LDFLAGS=-L/usr/local/opt/openssl/lib
-      - export CPPFLAGS=-I/usr/local/opt/openssl/include
+      - brew install python3
+      - brew linkapps python3
+      - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - cmake -DCMAKE_BUILD_TYPE=Release
+      - which python3
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
 
 

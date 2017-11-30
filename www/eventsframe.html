@@ -1,4 +1,4 @@
-<html>
+﻿<html>
   <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="js/blockly_compressed.js"></script>
@@ -169,6 +169,10 @@
 				var fieldA = $(value).find("field")[0];
 				return "weatherdevice["+$(fieldA).text()+"]";
 			}
+			else if (variableType.indexOf("zwavealarms") >= 0) {
+				var fieldA = $(value).find("field")[0];
+				return "zwavealarms["+$(fieldA).text()+"]";
+			}
 			else {
 				var fieldB = $(value).find("field")[0];
 				if ($(fieldB).attr("name") == "State") {
@@ -300,11 +304,10 @@
       		var compareString = parseSecurityStatus(ifBlock);
       		boolString += compareString;
       	}      	
-
       	var setArray = [];
       	var doBlock = $($(xml).find("statement[name='DO"+pairId+"']")[0]);
  	      $(doBlock).find('block').each (function(){ 
-	      	if ($(this).attr('type') == 'logic_set') {
+			if ($(this).attr('type') == 'logic_set') {
 		   		var valueA = $(this).find("value[name='A']")[0];
 	        	var fieldA = $(valueA).find("field")[0];
 	        	var blockA = $(valueA).children("block:first");
@@ -331,6 +334,10 @@
 					else if ((blockB.attr("type")=="logic_setlevel") && ($(fieldB).attr("name") == "NUM")) {
 						setString += '="Set Level '+$(fieldB).text()+'"'; 
 						setArray.push(setString);
+					}
+					else {
+						//not handled
+						//alert('A Type: ' + blockA.attr("type") + ', B Type: ' + blockB.attr("type") + ', FieldB: ' + $(fieldB).attr("name"));
 					}
 					//else if ((blockB.attr("type")=="math_number") && ($(fieldB).attr("name") == "NUM")) {
 					//	setString += '="'+$(fieldB).text()+'"'; 
@@ -425,17 +432,19 @@
 		    	var subjectBlock = $(this).find("value[name='notificationTextSubject']")[0];
 		    	var bodyBlock = $(this).find("value[name='notificationTextBody']")[0];
 		    	var notificationBlock = $(this).children("field[name='notificationPriority']")[0];
-				var soundBlock = $(this).children("field[name='notificationSound']")[0];
+			var soundBlock = $(this).children("field[name='notificationSound']")[0];
+			var subsystemBlock = $(this).children("field[name='notificationSubsystem']")[0];
 		    	var sFieldText = $(subjectBlock).find("field[name='TEXT']")[0];
 
-				var sTT=GetValueText(subjectBlock,$(subjectBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
-				var bTT=GetValueText(bodyBlock,$(bodyBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
+			var sTT=GetValueText(subjectBlock,$(subjectBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
+			var bTT=GetValueText(bodyBlock,$(bodyBlock).children("block:first").attr("type")).replace(/\,/g, ' ');
 				
 		    	var pTT=$(notificationBlock).text();
-				var aTT=$(soundBlock).text();
+			var aTT=$(soundBlock).text();
+			var subTT=$(subsystemBlock).text();
 		    	// message separator here cannot be # like in scripts, changed to $..
 		    	// also removed commas as we need to separate commandArray later.
-	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'$'+aTT+'"';
+	        	var setString = 'commandArray["SendNotification"]="'+sTT+'$'+bTT+'$'+pTT+'$'+aTT+'$'+subTT+'"';
 	        	setArray.push(setString);		      	
 		    }
 		    else if ($(this).attr('type') == 'send_email') {
@@ -457,6 +466,18 @@
 		    	// also removed commas as we need to separate commandArray later.
 	        	var setString = 'commandArray["SendSMS"]="'+sSubject+'"';
 	        	setArray.push(setString);		      	
+		    }
+		    else if ($(this).attr('type') == 'start_script') {
+				var pathBlock = $(this).children("field[name='TextPath']")[0];
+				var sPath = $(pathBlock).text().replace(/\,/g, ' ');
+
+				var paramBlock = $(this).children("field[name='TextParam']")[0];
+				var sParam = $(paramBlock).text().replace(/\,/g, ' ');
+
+				// message separator here cannot be # like in scripts, changed to $..
+				// also removed commas as we need to separate commandArray later.
+				var setString = 'commandArray["StartScript"]="'+sPath+'$'+sParam+'"';
+				setArray.push(setString);		      	
 		    }
 		    else if ($(this).attr('type') == 'open_url') {
 		    	var urlBlock = $(this).find("value[name='urlToOpen']")[0];
@@ -511,6 +532,13 @@
 	        	setString += '="'+ $(fieldB).text()+'" AFTER ' + $(fieldC).text().replace(/\,/g, ' '); 
 	        	setArray.push(setString);
 		    }		    
+		    else if ($(this).attr('type') == 'setpointvariables') {
+			   	var fieldA = $(this).find("field[name='SetPoint']")[0];
+			   	var fieldB = $(this).find("field[name='NUM']")[0];
+	        	var setString = "commandArray[SetSetpoint:"+$(fieldA).text()+"]";
+	        	setString += '="'+$(fieldB).text()+'"'; 
+	        	setArray.push(setString);
+		    }		    
 		  });
 		  var conditionArray = [];
 		  conditionArray.push(boolString);
@@ -546,8 +574,15 @@
 								$("#blockId").html(id);
 							}
 							else {
+								if (data.result[0].interpreter == 'dzVents') {
+									editor.getSession().setMode("ace/mode/lua");
+									$("#eventType").val(data.result[0].type).prop('disabled', true);
+								}
+								else {
+									editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
+									$("#eventType").val(data.result[0].type).prop('disabled', false);
+								}
 								editor.setValue("");
-								editor.getSession().setMode("ace/mode/" + data.result[0].interpreter.toLowerCase());
 								editor.setValue(data.result[0].xmlstatement);
 								editor.gotoLine(1);
 								editor.scrollToLine(1, true, true, function () {});
@@ -630,9 +665,12 @@
 	  }
 	  
 	function new_block() {
+			var eventInterpreter = $("#interpreter").val().toLowerCase();
 		$("#blockId").html("");
 		Blockly.mainWorkspace.clear();
 		editor.setValue("");
+		$("#eventType").val("All");
+		$("#eventType").prop('disabled', false);
 		$("#eventName").val("");
 		$("#savedEvents").val("");
 		$("#interpreter").prop('disabled', false);
@@ -641,14 +679,18 @@
 			ResizeBlockyWindow();
 		}
 		else {
-			editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+				if (eventInterpreter == "dzvents") {
+					eventInterpreter = "lua";
+					$("#eventType").prop('disabled', true);
+				}
+				editor.getSession().setMode("ace/mode/" + eventInterpreter);
 			$.ajax({
 				url: "json.htm?type=events&param=new&interpreter="+$("#interpreter").val()+"&eventtype="+$("#eventType").val(), 
 				async: false, 
 				dataType: 'json',
 				success: function(data) {
 					if (typeof data.template != 'undefined') {
-						editor.getSession().setMode("ace/mode/" + $("#interpreter").val().toLowerCase());
+						editor.getSession().setMode("ace/mode/" + eventInterpreter);
 						editor.setValue(data.template);
 						editor.gotoLine(1);
 					}
@@ -707,6 +749,85 @@
 
 				var isActive = 0;
 				if ($('#eventActive').is(':checked')) {isActive = 1};
+/*				
+				$http({
+					method: 'POST',
+					url: 'event_create.webem',
+					headers: {
+						'Content-Type': 'multipart/form-data'
+					},
+					data: {
+						name: encodeURIComponent(eventName),
+						interpreter: encodeURIComponent($("#interpreter").val()),
+						eventtype: encodeURIComponent($("#eventType").val()),
+						xml: encodeURIComponent(blockXml),
+						logicarray: encodeURIComponent(logicArray),
+						eventid: id,
+						eventstatus: isActive+editorTheme
+					},
+					transformRequest: function (data, headersGetter) {
+						var formData = new FormData();
+						angular.forEach(data, function (value, key) {
+							formData.append(key, value);
+						});
+						var headers = headersGetter();
+						delete headers['Content-Type'];
+						return formData;
+					}
+				})
+				.success(function (data) {
+					alert(data);
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})
+				.error(function (data, status) {
+					bootbox.alert("Save aborted!")
+				});
+*/
+				var pdata="name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme;
+				$.post("event_create.webem", pdata, function(data) {
+					if (typeof data != 'undefined') {
+						if (data.status=="OK") {
+							generate_noty('information', '<b>Event saved:<br>'+eventName, 2000);
+						}
+						if (data.status=="ERR") {
+							generate_noty('warning', '<b>Error while saving:<br>'+eventName, 2000);
+						}
+						load_blocks();
+						var selIndex = 0;
+						$('#savedEvents option').each(function(){
+							if (this.text == eventName)
+								$("#savedEvents").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+						selIndex = 0;
+						$('#interpreter option').each(function(){
+							if (this.text == eventInterpreter)
+								$("#interpreter").prop("selectedIndex",selIndex);
+							selIndex++;
+						});
+					}
+				})				
+/*				
 				$.ajax({
 					url : "json.htm?type=events&param=create&name="+encodeURIComponent(eventName)+"&interpreter="+encodeURIComponent($("#interpreter").val())+"&eventtype="+encodeURIComponent($("#eventType").val())+"&xml="+encodeURIComponent(blockXml)+"&logicarray="+encodeURIComponent(logicArray)+"&eventid="+id+"&eventstatus="+isActive+editorTheme, 
 					async: false, 
@@ -735,6 +856,7 @@
 						}
 					}
 				});
+*/				
 			}
 			else {
 				bootbox.alert("Save aborted!")
@@ -881,7 +1003,7 @@
    			<block type="text"></block>
    			<block type="open_url"></block>
    			<block type="url_text"></block>
-   	
+   			<block type="start_script"></block>
    		</category>
    		<category name="Security">
    			<block type="security_status"></block>
@@ -934,6 +1056,12 @@
 		   	<category name="Cameras">
 			   	<block type="cameravariables"></block>
 		   	</category>
+		   	<category name="SetPoints">
+			   	<block type="setpointvariables"></block>
+		   	</category>
+		   	<category name="ZWave Alarms">
+			   	<block type="zwavealarms"></block>
+		   	</category>
 		</category>
     </xml>
     <div id="maindiv" class="container-fluid">
@@ -966,10 +1094,11 @@
 					<label for="eventName">Event name:</label><br>
 					<input type="input" id="eventName" name="eventName" oninput="SetSaveButton();" onchange="SetSaveButton();" style="width: 12em; padding: .2em;" class="text ui-widget-content ui-corner-all" /><br>
 					<p>
-					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">
-					  <option selected="selected">Blockly</option>
-					  <option>Lua</option>
-					  <option>Python</option>
+					<select name="interpreter" id="interpreter" class="ui-widget-content ui-corner-all" onchange="new_block();" style="width: 12em; padding: .2em; margin-top: 0.4em;">	
+						<option selected="selected">Blockly</option>
+						<option>Lua</option>
+						<option>dzVents</option>
+						<option>Python</option>
 					</select>
 					<p>
 					<select name="eventType" id="eventType" class="ui-widget-content ui-corner-all" style="width: 12em; padding: .2em;">

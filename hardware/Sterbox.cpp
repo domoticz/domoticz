@@ -11,9 +11,7 @@
 
 //http://sterbox.eu/index.php/sterbox
 
-extern CSQLHelper m_sql;
-
-#define STERBOX_POLL_INTERVAL 10
+#define STERBOX_POLL_INTERVAL 8
 
 CSterbox::CSterbox(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &username, const std::string &password) :
 m_szIPAddress(IPAddress),
@@ -126,11 +124,6 @@ bool CSterbox::WriteToHardware(const char *pdata, const unsigned char length)
 			_log.Log(LOG_ERROR, "Sterbox: Protocol Error sending relay command to: %s", m_szIPAddress.c_str());
 			return false;
 		}
-		if (sResult.find("<title>SterBox_State</title>") == std::string::npos)
-		{
-			_log.Log(LOG_ERROR, "Sterbox: Result Error sending relay command to: %s", m_szIPAddress.c_str());
-			return false;
-		}
 		std::string strhex = szURL.str();
 		_log.Log(LOG_STATUS, "Sterbox: sending relay command to: %s", strhex.c_str());
 
@@ -224,11 +217,6 @@ void CSterbox::GetMeterDetails()
 	std::string tmpstr2;
 	std::string tmpinp;
 	tmpstr = results[0];
-	if (tmpstr.find("<title>SterBox_State</title>") != std::string::npos)
-	{
-		_log.Log(LOG_ERROR, "Sterbox: Error getting status");
-		return;
-	}
 	size_t ii;
 	size_t jj;
 	int pos1;

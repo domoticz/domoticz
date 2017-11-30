@@ -1,46 +1,23 @@
-/*  (Dev)   -  (Pi)
+/*
+(Dev)   -  (Pi)
 SDA     -  SDA
 SCL     -  SCL
 GND     -  GND
 VCC     -  3.3V
 
-This code is compatible with bmp085 & bmp180
+This code supports:
+- BMP085
+- BMP180
+- PCF8574, PCF8574A
+- HTU21D
+- TSL2561
 
-Note: Check your pin-out
-Note: Make sure you connect the PI's 3.3 V line to the BMP085/180 boards Vcc 'Vin' line not the 3.3v 'OUT'
+PS there are better density and QNH formulas.
 
-How to compile, @ command line type
-
-gcc -Wall -o bmp180dev3 ./bmp180dev3.c -lm
-
-the '-lm' is required for 'math.h'
-
-for constants such as O_RWRD or I2C_M_RD checkout i2c.h & i2c-dev.h
-this also contains the definition of 'struct i2c_msg' so if you want to see what is
-possible check it out.
-also have a look at
-
->>>>>  https://www.kernel.org/doc/Documentation/i2c/i2c-protocol <<<<<<<<<< NB! read it
-
-
-In general communication functions return an integer < 0 on failure 0 for success and > 0 if a 'handle'
-is being returned.
-
-Conversion functions return a double
-
-PS there are better density and QNH formulae.
-
-Use as you see fit.
-
-Eric Maasdorp 2014-08-30
-
-PS !!!!!!
-I have found quite a few examples of similar code but all had a problem with
-overclocked pi's resulting in corrupted results typically 5-15 lost samples per 6 hours
-based on a 5 minute sample interval.  My method poles for conversion completion.
-
-and does not require smbus or wire libs
-
+Authors:
+- GizMoCuz
+- Eric Maasdorp
+- Ondrej Lycka (ondrej.lycka@seznam.cz)
 */
 
 #include "stdafx.h"
@@ -48,7 +25,7 @@ and does not require smbus or wire libs
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <unistd.h>
@@ -65,6 +42,8 @@ and does not require smbus or wire libs
 #define round(a) ( int ) ( a + .5 )
 
 #define I2C_READ_INTERVAL 30
+#define I2C_SENSOR_READ_INTERVAL 30
+#define I2C_IO_EXPANDER_READ_INTERVAL 1
 
 #define sleepms(ms)  usleep((ms)*1000)
 // BMP085 & BMP180 Specific code
@@ -77,32 +56,58 @@ and does not require smbus or wire libs
 #define BMPx8x_RetryDelay        2     //min delay for temp 4+2=6ms, max 4+2*20=44ms for pressure
 //Will stop waiting if conversion is complete
 
+// BME280 Specific code
+#define BMEx8x_I2CADDR				0x76
+#define BMEx8x_ChipVersion			0xD0
+#define BMEx8x_Data					0xF7
+#define BMEx8x_CtrlMeas				0xF4
+#define BMEx8x_Config				0xF5
+
+#define BMEx8x_Hum_MSB				0xFD
+#define BMEx8x_Hum_LSB				0xFE
+
+#define BMEx8x_OverSampling_Temp	2
+#define BMEx8x_OverSampling_hum		3
+#define BMEx8x_OverSampling_Mode	1
+#define BMEx8x_OverSampling_Control	BMEx8x_OverSampling_Temp<<5 | BMEx8x_OverSampling_hum<<2 | BMEx8x_OverSampling_Mode
+
+
 const unsigned char BMPx8x_OverSampling = 3;
 // HTU21D registers
-#define HTU21D_ADDRESS							0x40    /* I2C address */
-#define HTU21D_USER_REGISTER_WRITE					0xE6    /* Write user register*/
-#define HTU21D_USER_REGISTER_READ					0xE7    /* Read  user register*/
-#define HTU21D_SOFT_RESET									0xFE    /* Soft Reset (takes 15ms). Switch sensor OFF & ON again. All registers set to default exept heater bit. */
-#define HTU21D_TEMP_COEFFICIENT						-0.15   /* Temperature coefficient (from 0deg.C to 80deg.C) */
-#define HTU21D_CRC8_POLYNOMINAL						0x13100 /* CRC8 polynomial for 16bit CRC8 x^8 + x^5 + x^4 + 1 */
-#define HTU21D_TRIGGER_HUMD_MEASURE_HOLD		0xE5  /* Trigger Humidity Measurement. Hold master (SCK line is blocked) */
-#define HTU21D_TRIGGER_TEMP_MEASURE_HOLD		0xE3  /* Trigger Temperature Measurement. Hold master (SCK line is blocked) */
-#define HTU21D_TRIGGER_HUMD_MEASURE_NOHOLD	0xF5   /* Trigger Humidity Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring) */
-#define HTU21D_TRIGGER_TEMP_MEASURE_NOHOLD	0xF3   /* Trigger Temperature Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring) */
-#define HTU21D_TEMP_DELAY									70   /* Maximum required measuring time for a complete temperature read */
-#define HTU21D_HUM_DELAY										36   /* Maximum required measuring time for a complete humidity read */
+#define HTU21D_ADDRESS							0x40	// I2C address
+#define HTU21D_USER_REGISTER_WRITE				0xE6	// Write user register
+#define HTU21D_USER_REGISTER_READ				0xE7	// Read  user register
+#define HTU21D_SOFT_RESET						0xFE	// Soft Reset (takes 15ms). Switch sensor OFF & ON again. All registers set to default exept heater bit.
+#define HTU21D_TEMP_COEFFICIENT					-0.15	// Temperature coefficient (from 0deg.C to 80deg.C)
+#define HTU21D_CRC8_POLYNOMINAL					0x13100	// CRC8 polynomial for 16bit CRC8 x^8 + x^5 + x^4 + 1
+#define HTU21D_TRIGGER_HUMD_MEASURE_HOLD		0xE5	// Trigger Humidity Measurement. Hold master (SCK line is blocked)
+#define HTU21D_TRIGGER_TEMP_MEASURE_HOLD		0xE3	// Trigger Temperature Measurement. Hold master (SCK line is blocked)
+#define HTU21D_TRIGGER_HUMD_MEASURE_NOHOLD		0xF5	// Trigger Humidity Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring)
+#define HTU21D_TRIGGER_TEMP_MEASURE_NOHOLD		0xF3	// Trigger Temperature Measurement. No Hold master (allows other I2C communication on a bus while sensor is measuring)
+#define HTU21D_TEMP_DELAY						70		// Maximum required measuring time for a complete temperature read
+#define HTU21D_HUM_DELAY						36		// Maximum required measuring time for a complete humidity read
 
-I2C::I2C(const int ID, const int Mode1)
+// TSL2561 registers
+#define TSL2561_ADDRESS		0x39    // I2C address
+#define TSL2561_INIT		0x03	// start integrations
+#define TSL2561_Channel0	0xAC	// IR+Visible lux
+#define TSL2561_Channel1	0xAE	// IR only lux
+
+// PCF8574 and PCF8574A (8-bit I/O expander for I2C bus)
+#define PCF8574_ID_ADD 0x4000   // base pseudo random DeviceID for PCF8574 devices
+
+const char* szI2CTypeNames[] = {
+	"I2C_Unknown",
+	"I2C_BMP085/180",
+	"I2C_HTU21D",
+	"I2C_TSL2561",
+	"I2C_PCF8574",
+	"I2C_BME280",
+};
+
+I2C::I2C(const int ID, const _eI2CType DevType, const int Port):
+m_dev_type(DevType)
 {
-	switch (Mode1)
-	{
-	case 1:
-		device = "BMP085";
-		break;
-	case 2:
-		device = "HTU21D";
-		break;
-	}
 
 	m_stoprequested = false;
 	m_HwdID = ID;
@@ -119,11 +124,8 @@ I2C::~I2C()
 
 bool I2C::StartHardware()
 {
-#ifndef __arm__
-	return false;
-#endif
 	m_stoprequested = false;
-	if (device == "BMP085")
+	if ((m_dev_type == I2CTYPE_BMP085)|| (m_dev_type == I2CTYPE_BME280))
 	{
 		m_minuteCount = 0;
 		m_firstRound = true;
@@ -150,54 +152,124 @@ bool I2C::StopHardware()
 
 bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	return false;
+	//Giz: Could the author of this function please check his/her spelling!
+	if (m_dev_type != I2CTYPE_PCF8574)
+		return false;
+
+	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
+	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
+		/*
+		_log.Log(LOG_NORM,"GPIO: packetlength %d", pCmd->LIGHTING2.packetlength);
+		_log.Log(LOG_NORM,"GPIO: packettype %d", pCmd->LIGHTING2.packettype);
+		_log.Log(LOG_NORM,"GPIO: subtype %d", pCmd->LIGHTING2.subtype);
+		_log.Log(LOG_NORM,"GPIO: seqnbr %d", pCmd->LIGHTING2.seqnbr);
+		_log.Log(LOG_NORM,"GPIO: id1 %d", pCmd->LIGHTING2.id1);
+		_log.Log(LOG_NORM,"GPIO: id2 %d", pCmd->LIGHTING2.id2);
+		_log.Log(LOG_NORM,"GPIO: id3 %d", pCmd->LIGHTING2.id3);
+		_log.Log(LOG_NORM,"GPIO: id4 %d", pCmd->LIGHTING2.id4);
+		_log.Log(LOG_NORM,"GPIO: unitcode %d", pCmd->LIGHTING2.unitcode); // in DB columb "Unit" used for identify number switch on board
+		_log.Log(LOG_NORM,"GPIO: cmnd %d", pCmd->LIGHTING2.cmnd);
+		_log.Log(LOG_NORM,"GPIO: level %d", pCmd->LIGHTING2.level);
+		*/
+		unsigned char id1=pCmd->LIGHTING2.id1;
+		unsigned char id2=pCmd->LIGHTING2.id2;
+		unsigned char id3=pCmd->LIGHTING2.id3;
+		unsigned char id4=pCmd->LIGHTING2.id4;
+		int ID=(id1<<24)|(id2<<16)|(id3<<8)|id4;
+		unsigned char Unit = pCmd->LIGHTING2.unitcode;
+		unsigned char  value = pCmd->LIGHTING2.cmnd;
+		/*
+		_log.Log(LOG_NORM,"GPIO: ID %d", ID);
+		_log.Log(LOG_NORM,"GPIO: Unit %d", Unit);
+		_log.Log(LOG_NORM,"GPIO: new value %d", value);
+		*/
+		// check my serverd i2c_addr (form Unit I can get i2c_addres of switch)
+		unsigned char i2c_address=PCF8574_get_i2c_addr_from_Unit(Unit);
+		/*
+		_log.Log(LOG_NORM,"GPIO: my served i2c address %d", i2c_addr);
+		_log.Log(LOG_NORM,"GPIO: i2c address from Unit %d", i2c_address);
+		*/
+		if (i2c_address != i2c_addr) return false; //actulaty is served PCF8574 with another i2c address
+		//check ID if is for PCF8574 (my rule, from Unit may get ID and reverse)
+		unsigned char pin_number=PCF8574_get_pin_number_from_Unit(Unit);
+		if ( (PCF8574_ID_ADD+i2c_address*256+pin_number) != ID ) return false; //not for PCF8574
+		/* _log.Log(LOG_NORM,"GPIO: Write value %d to pin %d ,i2c address %d", value, pin_number,i2c_addr ); */
+		value=~value&0x01; // inversion value domoticz on=1, off=0, bat I use PCF8574 pin active pin=0, no active pin=1
+		if (PCF8574_WritePin( pin_number, value)<0) return false; // goto relay exute write to switch (pin)
+		else return true;
+	}
+	else {
+		_log.Log(LOG_NORM,"GPIO: WriteToHardware packet type %d or subtype %d unknown", pCmd->LIGHTING1.packettype, pCmd->LIGHTING1.subtype);
+		return false;
+	}
 }
 
 void I2C::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = I2C_READ_INTERVAL - 5;
-	_log.Log(LOG_STATUS, "%s: Worker started...", device.c_str());
+	int sec_counter = 0;
+	_log.Log(LOG_STATUS, "%s: Worker started...", szI2CTypeNames[m_dev_type]);
+
+	if (m_dev_type == I2CTYPE_TSL2561)
+	{
+		TSL2561_Init();
+	}
+
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(500);
+		sleep_milliseconds(100);
 		if (m_stoprequested)
 			break;
 		msec_counter++;
-		if (msec_counter == 2)
+		if (msec_counter == 10)
 		{
 			msec_counter = 0;
 			sec_counter++;
 			if (sec_counter % 12 == 0) {
 				m_LastHeartbeat = mytime(NULL);
 			}
-			if (sec_counter % I2C_READ_INTERVAL == 0)
+			try
 			{
-				try
+				if (sec_counter % I2C_IO_EXPANDER_READ_INTERVAL == 0)
 				{
-					if (device == "BMP085")
+					if (m_dev_type == I2CTYPE_PCF8574)
 					{
-						bmp_ReadSensorDetails();
+						PCF8574_ReadChipDetails();
 					}
-					else if (device == "HTU21D")
+				}
+				if (sec_counter % I2C_SENSOR_READ_INTERVAL == 0)
+				{
+					if (m_dev_type == I2CTYPE_BMP085)
+					{
+						bmp_Read_BMP_SensorDetails();
+					}
+					else if (m_dev_type == I2CTYPE_HTU21D)
 					{
 						HTU21D_ReadSensorDetails();
 					}
+					else if (m_dev_type == I2CTYPE_TSL2561)
+					{
+						TSL2561_ReadSensorDetails();
+					}
+					else if (m_dev_type == I2CTYPE_BME280)
+					{
+						bmp_Read_BME_SensorDetails();
+					}
 				}
-				catch (...)
-				{
-					_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", device.c_str());
-				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", szI2CTypeNames[m_dev_type]);
 			}
 		}
 	}
-	_log.Log(LOG_STATUS, "%s: Worker stopped...", device.c_str());
+	_log.Log(LOG_STATUS, "%s: Worker stopped...", szI2CTypeNames[m_dev_type]);
 }
 
 //returns true if it could be opened
 bool I2C::i2c_test(const char *I2CBusName)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return false;
 #else
 	int fd;
@@ -212,27 +284,133 @@ bool I2C::i2c_test(const char *I2CBusName)
 // Returns a file id for the port/bus
 int I2C::i2c_Open(const char *I2CBusName)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int fd;
 	//Open port for reading and writing
 	if ((fd = open(I2CBusName, O_RDWR)) < 0)
 	{
-		_log.Log(LOG_ERROR, "%s: Failed to open the i2c bus!...", device.c_str());
-		_log.Log(LOG_ERROR, "%s: Check to see if you have a bus: %s", device.c_str(), I2CBusName);
-		_log.Log(LOG_ERROR, "%s: We might only be able to access this as root user", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Failed to open the i2c bus!...", szI2CTypeNames[m_dev_type]);
+		_log.Log(LOG_ERROR, "%s: Check to see if you have a bus: %s", szI2CTypeNames[m_dev_type], I2CBusName);
+		_log.Log(LOG_ERROR, "%s: We might only be able to access this as root user", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
 	return fd;
 #endif
 }
 
-// BMP085 & BMP180 Specific code
+// PCF8574 and PCF8574A
+
+void I2C::PCF8574_ReadChipDetails()
+{	
+#ifndef HAVE_LINUX_I2C
+	return;
+#else
+	char buf = 0;
+	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return;
+	}
+	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
+	buf=~buf; // I use inversion value for active pin (0=on, 1=off) beside domoticz (1=on, 0=off)
+	for (char pin_number=0; pin_number<8; pin_number++){ // to process read byte from i2c
+		int DeviceID = PCF8574_create_DeviceID(i2c_addr, pin_number);
+		unsigned char Unit = PCF8574_create_Unit(i2c_addr, pin_number);
+		char pin_mask=0x01<<pin_number;
+		bool value = (buf & pin_mask) != 0;
+		SendSwitch(DeviceID, Unit, 255, value, 0, ""); // update switch
+		// parameters of function SendSwitch: 
+		//	( NodeID , ChildID , BatteryLevel , bOn , Level , default name )
+		// equivalent structure LIGHTING2 :
+		//	( NodeID->id1,id2,id3,id4 , ChildID->unitcode , BatteryLevel->? , bOn->cmd , Level , defaultname->? , packettype=pTypeLighting2 , subtype=sTypeAC )
+		// equivalent DB cloumb in DeviceStatus table:
+		//	( NodeID->DeviceID , ChildID->Unit , BatteryLevel->BatteryLevel, bOn->nValue , Level->?LastLevel, defaultname->Name , Type=pTypeLighting2 , SubType=sTypeAC )
+		// my human name parameters of function SendSwitch:
+		//	( DeviceID, Unit , BatteryLevel, on-off , ?level? , name )
+		// send new value to switch records
+	}
+	close(fd);
+#endif
+}
+
+char I2C::PCF8574_get_pin_number_from_Unit(unsigned char unit)
+{
+	// unit from list devices contain number of reading bit and i2c address of chip
+	// bit0-3 -> number of reding bit
+	return unit & 0x07;
+}
+
+char I2C::PCF8574_get_i2c_addr_from_Unit(unsigned char unit)
+{
+	// unit from list devices contain number of reading bit and i2c address of chip
+	// bit4-6 -> contain A0,A1,A2 part of 7-bit i2c address ->	0|1|0|0|A2|A1|A0 for type PCF8574
+	//								0|1|1|1|A2|A1|A0 for type PCF8574A
+	// bit 7 -> type of chip 0 = PCF8574, 1 = PCF8574A (different fixed pard of i2c address)
+	unsigned char i2c_address= (unit >> 4) & 0x07;
+	if ((unit & 0x80)==0)	i2c_address=0x20 |i2c_address; // addr = 00100XXX (XXX is |A2|A1|A0|)
+	else			i2c_address=0x38 |i2c_address; // addr = 00111XXX (XXX is |A2|A1|A0|)
+	return i2c_address;
+}
+
+int I2C::PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask)
+{
+	return PCF8574_ID_ADD+i2c_address*256+pin_mask;
+}
+
+unsigned char I2C::PCF8574_create_Unit(unsigned char i2c_address, char pin)
+{
+	// 8-bit i2c_address and number of pin (4bit) code to one 8-bit number used in DeviceStatus table as columb Unit who representative one switch.
+	// It is possible because i2c_address is separated two parts. One volitale (3-bit) in chip documentation signify as A2,A1,A0 a second fixed (5-bit).
+	// Fixed part must be 00100 for PCF8574 or 00111 for PCF8574A.
+	// finally bit mapping:
+	//  |      7     | 6  | 5  | 4  | 3 | 2 | 1 | 0 |bit
+	//  | 0-PCF8574  | A2 | A1 | A0 |  pin number   |
+	//  | 1-PCF8574A |    |    |    |               |
+	char volitale = (i2c_address & 0x07)<<4; // first 3 bit of i2c address (voiled part i2c address for PCF8574 chip) 4x rotate
+	unsigned char fixed = (i2c_address & 0x38)<<4; // last 5 bit of i2c address (fixed part i2c address for PCF8574 chip) 4x rotate => 0x80 for PCF8574A or 0x00 for PCF8574
+	return ( fixed | volitale | pin );
+}
+
+char I2C::PCF8574_WritePin(char pin_number,char  value)
+{	
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	_log.Log(LOG_NORM, "GPIO: WRITE TO PCF8574 pin:%d, value: %d, i2c_address:%d", pin_number, value, i2c_addr);
+	char pin_mask=0x01<<pin_number; // create pin mask from pin number
+	char buf_act = 0;
+	char buf_new = 0;
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "GPIO: %s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return -1;
+	}
+	if ( readByteI2C(fd, &buf_act, i2c_addr) < 0 ) return -2;
+	lseek(fd,0,SEEK_SET); // after read back file cursor to begin (prepare to write to begin)
+	//_log.Log(LOG_NORM, "GPIO: actual value byte %d", buf_act);
+	if (value==1) buf_new = buf_act | pin_mask;	//prepare new value by combinate current value, mask and new value
+	else buf_new = buf_act & ~pin_mask;
+	if (buf_new!=buf_act) { // value change
+		//_log.Log(LOG_NORM, "GPIO: new value byte %d", buf_new);
+		if (writeByteI2C(fd, buf_new, i2c_addr) < 0 ) {
+			_log.Log(LOG_ERROR, "GPIO: %s: Error write to device!...", szI2CTypeNames[m_dev_type]);
+			return -3;
+		}
+	}
+	//else _log.Log(LOG_NORM, "GPIO: No change");
+	close(fd);
+	//_log.Log(LOG_NORM, "WRITE ON SEAHU DEVICE n.%d value %d is OK", gpioId, value);
+	return 1;
+#endif
+}
+
+// BMP085, BMP180, HTU and TSL common code
 
 int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRead)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int rc;
@@ -244,19 +422,37 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 	struct i2c_msg htu_read_reg[1] = {
 		{ HTU21D_ADDRESS, I2C_M_RD, bytesToRead, devValues }
 	};
+	struct i2c_msg tsl_read_reg[2] = {
+		{ TSL2561_ADDRESS, 0, 1, &startReg },
+		{ TSL2561_ADDRESS, I2C_M_RD, bytesToRead, devValues }
+	};
+	struct i2c_msg bme_read_reg[2] = {
+		{ BMEx8x_I2CADDR, 0, 1, &startReg },
+		{ BMEx8x_I2CADDR, I2C_M_RD, bytesToRead, devValues }
+	};
 
 	//Build a register read command
 	//Requires a one complete message containing a command
-	//and anaother complete message for the reply
-	if (device == "BMP085")
+	//and another complete message for the reply
+	if (m_dev_type == I2CTYPE_BMP085)
 	{
 		messagebuffer.nmsgs = 2;                  //Two message/action
 		messagebuffer.msgs = bmp_read_reg;            //load the 'read__reg' message into the buffer
 	}
-	else if (device == "HTU21D")
+	else if (m_dev_type == I2CTYPE_HTU21D)
 	{
 		messagebuffer.nmsgs = 1;
 		messagebuffer.msgs = htu_read_reg;            //load the 'read__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_TSL2561)
+	{
+		messagebuffer.nmsgs = 2;
+		messagebuffer.msgs = tsl_read_reg;            //load the 'read__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_BME280)
+	{
+		messagebuffer.nmsgs = 2;                  //Two message/action
+		messagebuffer.msgs = bme_read_reg;            //load the 'read__reg' message into the buffer
 	}
 
 	rc = ioctl(fd, I2C_RDWR, &messagebuffer); //Send the buffer to the bus and returns a send status
@@ -270,7 +466,7 @@ int I2C::ReadInt(int fd, uint8_t *devValues, uint8_t startReg, uint8_t bytesToRe
 
 int I2C::WriteCmd(int fd, uint8_t devAction)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	int rc;
@@ -280,10 +476,16 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		{ BMPx8x_I2CADDR, 0, 2, datatosend }
 	};
 	struct i2c_msg htu_write_reg[1] = {
-		{ HTU21D_ADDRESS, 0, 2, datatosend }
+		{ HTU21D_ADDRESS, 0, 1, datatosend }
+	};
+	struct i2c_msg tsl_write_reg[1] = {
+		{ TSL2561_ADDRESS, 0, 1, datatosend }
+	};
+	struct i2c_msg bme_write_reg[1] = {
+		{ BMEx8x_I2CADDR, 0, 2, datatosend }
 	};
 
-	if (device == "BMP085")
+	if (m_dev_type == I2CTYPE_BMP085)
 	{
 		datatosend[0] = BMPx8x_CtrlMeas;
 		datatosend[1] = devAction;
@@ -291,12 +493,27 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 		//Requires one complete message containing a reg address and command
 		messagebuffer.msgs = bmp_write_reg;           //load the 'write__reg' message into the buffer
 	}
-	else if (device == "HTU21D")
+	else if (m_dev_type == I2CTYPE_HTU21D)
 	{
 		datatosend[0] = devAction;
 		//Build a register write command
 		//Requires one complete message containing a reg address and command
 		messagebuffer.msgs = htu_write_reg;           //load the 'write__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_TSL2561)
+	{
+		datatosend[0] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		messagebuffer.msgs = tsl_write_reg;           //load the 'write__reg' message into the buffer
+	}
+	else if (m_dev_type == I2CTYPE_BME280)
+	{
+		datatosend[0] = BMEx8x_CtrlMeas;
+		datatosend[1] = devAction;
+		//Build a register write command
+		//Requires one complete message containing a reg address and command
+		messagebuffer.msgs = bme_write_reg;           //load the 'write__reg' message into the buffer
 	}
 
 	messagebuffer.nmsgs = 1;                  //One message/action
@@ -307,6 +524,45 @@ int I2C::WriteCmd(int fd, uint8_t devAction)
 	return 0;
 #endif
 }
+
+char I2C::readByteI2C(int fd, char *byte, char i2c_addr)
+{
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	// set I2C address to will be communicate (first address = chip on base board)
+	if (ioctl(fd, I2C_SLAVE_FORCE, i2c_addr) < 0) {
+		_log.Log(LOG_ERROR, "%s: Failed to acquire bus access and/or talk to slave with address %d", szI2CTypeNames[m_dev_type], i2c_addr);
+		return -1;
+	}
+	//read from I2C device
+	if (read(fd,byte,1) != 1) {
+		_log.Log(LOG_ERROR, "%s: Failed to read from the i2c bus with address %d", szI2CTypeNames[m_dev_type], i2c_addr);
+		return -2;
+	}
+	return 1;
+#endif
+}
+
+char I2C::writeByteI2C(int fd, char byte, char i2c_addr)
+{
+#ifndef HAVE_LINUX_I2C
+	return -1;
+#else
+	// set I2C address to will be communicate (first address = chip on base board)
+	if (ioctl(fd, I2C_SLAVE_FORCE, i2c_addr) < 0) {
+		_log.Log(LOG_ERROR, "%s: Failed to acquire bus access and/or talk to slave with address %d", szI2CTypeNames[m_dev_type], i2c_addr);
+		return -1;
+	}
+	//write to I2C device
+	if (write(fd,&byte,1) != 1) {
+		_log.Log(LOG_ERROR, "%s: Failed write to the i2c bus with address %d", szI2CTypeNames[m_dev_type], i2c_addr);
+		return -2;
+	}
+	return 1;
+#endif
+}
+
 
 // HTU21D functions
 int I2C::HTU21D_checkCRC8(uint16_t data)
@@ -329,7 +585,7 @@ int I2C::HTU21D_checkCRC8(uint16_t data)
 
 int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	uint16_t rawHumidity;
@@ -345,7 +601,7 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 	Checksum = rValues[2];
 	if (HTU21D_checkCRC8(rawHumidity) != Checksum)
 	{
-		_log.Log(LOG_ERROR, "%s: Incorrect humidity checksum!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Incorrect humidity checksum!...", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
 	rawHumidity ^= 0x02;
@@ -356,7 +612,7 @@ int I2C::HTU21D_GetHumidity(int fd, float *Hum)
 
 int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	uint16_t rawTemperature;
@@ -364,19 +620,19 @@ int I2C::HTU21D_GetTemperature(int fd, float *Temp)
 	uint8_t Checksum;
 
 	if (WriteCmd(fd, HTU21D_TRIGGER_TEMP_MEASURE_HOLD) != 0) {
-		_log.Log(LOG_ERROR, "%s: Error writing I2C!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error writing I2C!...", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
 	sleepms(HTU21D_TEMP_DELAY);
 	if (ReadInt(fd, rValues, 0, 3) != 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading I2C!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error reading I2C!...", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
 	rawTemperature = ((rValues[0] << 8) | rValues[1]);
 	Checksum = rValues[2];
 	if (HTU21D_checkCRC8(rawTemperature) != Checksum)
 	{
-		_log.Log(LOG_ERROR, "%s: Incorrect temperature checksum!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Incorrect temperature checksum!...", szI2CTypeNames[m_dev_type]);
 		return -1;
 	}
 	*Temp = -46.85 + 0.002681 * (float)rawTemperature;
@@ -388,22 +644,28 @@ void I2C::HTU21D_ReadSensorDetails()
 {
 	float temperature, humidity;
 
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	temperature = 21.3f;
 	humidity = 45;
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
 #else
 	int fd = i2c_Open(m_ActI2CBus.c_str());
 	if (fd < 0) {
-		_log.Log(LOG_ERROR, "%s: Error opening device!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
 		return;
 	}
 	if (HTU21D_GetTemperature(fd, &temperature) < 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", szI2CTypeNames[m_dev_type]);
 		close(fd);
 		return;
 	}
 	if (HTU21D_GetHumidity(fd, &humidity) < 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading humidity!...", device.c_str());
+		_log.Log(LOG_ERROR, "%s: Error reading humidity!...", szI2CTypeNames[m_dev_type]);
 		close(fd);
 		return;
 	}
@@ -415,10 +677,77 @@ void I2C::HTU21D_ReadSensorDetails()
 	SendTempHumSensor(1, 255, temperature, round(humidity), "TempHum");
 }
 
+// TSL2561 functions
+void I2C::TSL2561_Init()
+{
+#ifdef HAVE_LINUX_I2C
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return;
+	}
+	if (WriteCmd(fd, TSL2561_INIT) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error initializing device!...", szI2CTypeNames[m_dev_type]);
+	}
+	close(fd);
+#endif
+}
+
+void I2C::TSL2561_ReadSensorDetails()
+{
+	float lux;
+#ifndef HAVE_LINUX_I2C
+	lux = 1984;
+	#ifndef _DEBUG
+		_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
+		return;
+	#else
+		_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+	#endif
+#else
+	uint8_t rValues[2];
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return;
+	}
+	if (ReadInt(fd, rValues, TSL2561_Channel0, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading ch0!...", szI2CTypeNames[m_dev_type]);
+		close(fd);
+		return;
+	}
+	float ch0 = rValues[1] * 256.0 + rValues[0];
+	if (ReadInt(fd, rValues, TSL2561_Channel1, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading ch1!...", szI2CTypeNames[m_dev_type]);
+		close(fd);
+		return;
+	}
+	close(fd);
+	float ch1 = rValues[1] * 256.0 + rValues[0];
+
+	// Real Lux calculation for T,FN and CL packages
+	float ratio = 0;
+	if (ch0 != 0) ratio = ch1/ch0;
+	if (ratio >= 0 && ratio < 0.50)
+		lux = ch0 * (0.0304 - 0.062 * pow(ch1 / ch0, 1.4));
+	else if (ratio >= 0.5 && ratio < 0.61)
+		lux = 0.0224*ch0 - 0.031*ch1;
+	else if (ratio >= 0.61 && ratio < 0.8)
+		lux = 0.0128*ch0 - 0.0153*ch1;
+	else if (ratio >= 0.8 && ratio < 1.3)
+		lux = 0.00146*ch0 - 0.00112*ch1;
+	else
+		lux = 0;
+	// final scaling with default gain
+	lux *= 16;
+#endif
+	SendLuxSensor(0, 0, 255, lux, "Lux");
+}
+
 // BMP085 functions
 int I2C::bmp_Calibration(int fd)
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 	uint8_t rValue[22];
 	//printf("Entering Calibration\n");
 	if (ReadInt(fd, rValue, 0xAA, 22) == 0)
@@ -455,7 +784,7 @@ int I2C::bmp_Calibration(int fd)
 
 int I2C::bmp_WaitForConversion(int fd)
 {
-#ifdef __arm__
+#ifdef HAVE_LINUX_I2C
 	uint8_t rValues[3];
 	int counter = 0;
 	//Delay can now be reduced by checking that bit 5 of Ctrl_Meas(0xF4) == 0
@@ -473,7 +802,7 @@ int I2C::bmp_WaitForConversion(int fd)
 // Value returned will be in hPa
 int I2C::bmp_GetPressure(int fd, double *Pres)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	unsigned int up;
@@ -486,7 +815,7 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 	//clock error ie 26 * 1000/700 or 38 ms
 	//sleepms (BMPx8x_minDelay + (4<<BMPx8x_OverSampling));  //39ms at oversample = 3
 
-	//Code is now 'turbo' overclock independent
+	//Code is now 'turbo' over clock independent
 	sleepms(BMPx8x_minDelay);
 	if (bmp_WaitForConversion(fd) != 0) return -1;
 
@@ -527,14 +856,14 @@ int I2C::bmp_GetPressure(int fd, double *Pres)
 // Value returned will be in units of 0.1 deg C
 int I2C::bmp_GetTemperature(int fd, double *Temp)
 {
-#ifndef __arm__
+#ifndef HAVE_LINUX_I2C
 	return -1;
 #else
 	unsigned int ut;
 	uint8_t rValues[2];
 
 	if (WriteCmd(fd, BMPx8x_TempConversion) != 0) return -1;
-	//Code is now 'turbo' overclock independent
+	//Code is now 'turbo' over clock independent
 	sleepms(BMPx8x_minDelay);
 	if (bmp_WaitForConversion(fd) != 0) return -1;
 
@@ -678,48 +1007,9 @@ int I2C::bmp_CalculateForecast(const float pressure)
 		return FC_BMP085_UNKNOWN; // Unknown
 }
 
-void I2C::bmp_ReadSensorDetails()
+int I2C::CalculateForcast(const float pressure)
 {
-	double temperature, pressure;
-	double altitude;
-
-#ifndef __arm__
-	temperature = 21.3;
-	pressure = 1021.22;
-	altitude = 10.0;
-#else
-	int fd = i2c_Open(m_ActI2CBus.c_str());
-	if (fd < 0)
-		return;
-	if (bmp_Calibration(fd) < 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", device.c_str());
-		close(fd);
-		return;
-	}
-	if (bmp_GetTemperature(fd, &temperature) < 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", device.c_str());
-		close(fd);
-		return;
-	}
-	if (bmp_GetPressure(fd, &pressure) < 0) {
-		_log.Log(LOG_ERROR, "%s: Error reading pressure!...", device.c_str());
-		close(fd);
-		return;
-	}
-	close(fd);
-	altitude = bmp_altitude(pressure);
-#endif
-
-	_tTempBaro tsensor;
-	tsensor.id1 = 1;
-	tsensor.temp = float(temperature);
-	tsensor.baro = float(pressure);
-	tsensor.altitude = float(altitude);
-
-	//this is probably not good, need to take the rising/falling of the pressure into account?
-	//any help would be welcome!
-
-	int forecast = bmp_CalculateForecast(((float)pressure) * 10.0f);
+	int forecast = bmp_CalculateForecast(pressure);
 	if (forecast != m_LastForecast)
 	{
 		m_LastForecast = forecast;
@@ -761,6 +1051,262 @@ void I2C::bmp_ReadSensorDetails()
 		break;
 		}
 	}
-	tsensor.forecast = m_LastSendForecast;
+	return m_LastSendForecast;
+}
+
+void I2C::bmp_Read_BMP_SensorDetails()
+{
+	double temperature, pressure;
+	double altitude;
+
+#ifndef HAVE_LINUX_I2C
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
+	temperature = 21.3;
+	pressure = 1021.22;
+	altitude = 10.0;
+#else
+	int fd = i2c_Open(m_ActI2CBus.c_str());
+	if (fd < 0)
+		return;
+	if (bmp_Calibration(fd) < 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading sensor data!...", szI2CTypeNames[m_dev_type]);
+		close(fd);
+		return;
+	}
+	if (bmp_GetTemperature(fd, &temperature) < 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading temperature!...", szI2CTypeNames[m_dev_type]);
+		close(fd);
+		return;
+	}
+	if (bmp_GetPressure(fd, &pressure) < 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading pressure!...", szI2CTypeNames[m_dev_type]);
+		close(fd);
+		return;
+	}
+	close(fd);
+	altitude = bmp_altitude(pressure);
+#endif
+
+	_tTempBaro tsensor;
+	tsensor.id1 = 1;
+	tsensor.temp = float(temperature);
+	tsensor.baro = float(pressure);
+	tsensor.altitude = float(altitude);
+
+	//this is probably not good, need to take the rising/falling of the pressure into account?
+	//any help would be welcome!
+
+	tsensor.forecast = CalculateForcast(((float)pressure) * 10.0f);
 	sDecodeRXMessage(this, (const unsigned char *)&tsensor, NULL, 255);
+}
+
+bool I2C::readBME280ID(const int fd, int &ChipID, int &Version)
+{
+	uint8_t rValues[2];
+	if (ReadInt(fd, rValues, BMEx8x_ChipVersion, 2) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error reading BME ChipVersion", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	ChipID = rValues[0];
+	Version = rValues[1];
+	return true;
+}
+
+int16_t getShort(uint8_t *data, int index)
+{
+	// return two bytes from data as a signed 16-bit value
+	return uint16_t((data[index + 1] << 8) + data[index]);
+}
+
+uint16_t getUShort(uint8_t *data, int index)
+{
+	//return two bytes from data as an unsigned 16-bit value
+	return uint16_t(data[index + 1] << 8) + data[index];
+}
+
+int8_t getChar(uint8_t *data, int index)
+{
+	// return one byte from data as a signed char
+	int result = data[index];
+	if (result > 127)
+		result -= 256;
+	return (int8_t)result;
+}
+
+uint8_t getUChar(uint8_t *data, int index)
+{
+	// return one byte from data as an unsigned char
+	return data[index];
+}
+
+bool I2C::readBME280All(const int fd, float &temp, float &pressure, int &humidity)
+{
+	if (WriteCmd(fd, BMEx8x_OverSampling_Control) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Writing to I2C register", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	uint8_t cal1[24] = { 0 };
+	uint8_t cal2[1] = { 0 };
+	uint8_t cal3[7] = { 0 };
+	if (ReadInt(fd, cal1, 0x88, 24) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 1", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	if (ReadInt(fd, cal2, 0xA1, 1) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 2", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+	if (ReadInt(fd, cal3, 0xE1, 7) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading calibration data 3", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	// Convert byte data to word values
+	uint16_t dig_T1 = getUShort(cal1, 0);
+	int16_t dig_T2 = getShort(cal1, 2);
+	int16_t dig_T3 = getShort(cal1, 4);
+
+	uint16_t dig_P1 = getUShort(cal1, 6);
+	int16_t dig_P2 = getShort(cal1, 8);
+	int16_t dig_P3 = getShort(cal1, 10);
+	int16_t dig_P4 = getShort(cal1, 12);
+	int16_t dig_P5 = getShort(cal1, 14);
+	int16_t dig_P6 = getShort(cal1, 16);
+	int16_t dig_P7 = getShort(cal1, 18);
+	int16_t dig_P8 = getShort(cal1, 20);
+	int16_t dig_P9 = getShort(cal1, 22);
+
+	uint8_t dig_H1 = getUChar(cal2, 0);
+	int16_t dig_H2 = getShort(cal3, 0);
+	uint8_t dig_H3 = getUChar(cal3, 2);
+
+	int dig_H4 = getChar(cal3, 3);
+	dig_H4 = (dig_H4 << 24) >> 20;
+	dig_H4 = dig_H4 | (getChar(cal3, 4) & 0x0F);
+
+	int dig_H5 = getChar(cal3, 5);
+	dig_H5 = (dig_H5 << 24) >> 20;
+	dig_H5 = dig_H5 | (getUChar(cal3, 4) >> 4 & 0x0F);
+
+	int8_t dig_H6 = getChar(cal3, 6);
+
+	// Read temperature/pressure/humidity
+	uint8_t data[8] = { 0 };
+	if (ReadInt(fd, data, BMEx8x_Data, 8) != 0) {
+		_log.Log(LOG_ERROR, "%s: Error Reading sensor data", szI2CTypeNames[m_dev_type]);
+		return false;
+	}
+
+	int pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4);
+	int temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4);
+	int hum_raw = (data[6] << 8) | data[7];
+
+	// Refine temperature
+	double var1 = ((((temp_raw >> 3) - (dig_T1 << 1)))*(dig_T2)) >> 11;
+	double var2 = (((((temp_raw >> 4) - (dig_T1)) * ((temp_raw >> 4) - (dig_T1))) >> 12) * (dig_T3)) >> 14;
+	double t_fine = var1 + var2;
+	temp = float((int(t_fine * 5) + 128) >> 8);
+	temp /= 100.0f;
+
+	// Refine pressure and adjust for temperature
+	var1 = t_fine / 2.0 - 64000.0;
+	var2 = var1 * var1 * dig_P6 / 32768.0;
+	var2 = var2 + var1 * dig_P5 * 2.0;
+	var2 = var2 / 4.0 + dig_P4 * 65536.0;
+	var1 = (dig_P3 * var1 * var1 / 524288.0 + dig_P2 * var1) / 524288.0;
+	var1 = (1.0 + var1 / 32768.0) * dig_P1;
+	double dpressure;
+	if (var1 == 0)
+		dpressure = 0;
+	else
+	{
+		dpressure = 1048576.0 - pres_raw;
+		dpressure = ((dpressure - var2 / 4096.0) * 6250.0) / var1;
+		var1 = dig_P9 * dpressure * dpressure / 2147483648.0;
+		var2 = dpressure * dig_P8 / 32768.0;
+		dpressure = dpressure + (var1 + var2 + dig_P7) / 16.0;
+	}
+	pressure = float(dpressure) / 100.0f;
+
+	// Refine humidity
+	double dhumidity = t_fine - 76800.0;
+	dhumidity = (hum_raw - (dig_H4 * 64.0 + dig_H5 / 16384.0 * dhumidity)) * (dig_H2 / 65536.0 * (1.0 + dig_H6 / 67108864.0 * dhumidity * (1.0 + dig_H3 / 67108864.0 * dhumidity)));
+	dhumidity = dhumidity * (1.0 - dig_H1 * dhumidity / 524288.0);
+	if (dhumidity > 100)
+		dhumidity = 100;
+	else if (dhumidity < 0)
+		dhumidity = 0;
+	humidity = round(dhumidity);
+	return true;
+}
+
+void I2C::bmp_Read_BME_SensorDetails()
+{
+	float temperature, pressure;
+	int humidity;
+
+#ifndef HAVE_LINUX_I2C
+#ifndef _DEBUG
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!...", szI2CTypeNames[m_dev_type]);
+	return;
+#else
+	_log.Log(LOG_ERROR, "%s: I2C is unsupported on this architecture!... Debug: just adding a value", szI2CTypeNames[m_dev_type]);
+#endif
+	temperature = 21.3f;
+	pressure = 1021.22f;
+	humidity = 70;
+#else
+	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
+	if (fd < 0) {
+		_log.Log(LOG_ERROR, "%s: Error opening device!...", szI2CTypeNames[m_dev_type]);
+		return;
+	}
+
+	if (!readBME280All(fd, temperature, pressure, humidity))
+	{
+		close(fd);
+		return;
+	}
+	close(fd);
+#endif
+	int forecast = CalculateForcast(((float)pressure) * 10.0f);
+	//We are using the TempHumBaro Float type now, convert the forecast
+	int nforecast = wsbaroforcast_some_clouds;
+	if (pressure <= 980)
+		nforecast = wsbaroforcast_heavy_rain;
+	else if (pressure <= 995)
+	{
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+	}
+	else if (pressure >= 1029)
+		nforecast = wsbaroforcast_sunny;
+	switch (forecast)
+	{
+	case bmpbaroforecast_sunny:
+		nforecast = wsbaroforcast_sunny;
+		break;
+	case bmpbaroforecast_cloudy:
+		nforecast = wsbaroforcast_cloudy;
+		break;
+	case bmpbaroforecast_thunderstorm:
+		nforecast = wsbaroforcast_heavy_rain;
+		break;
+	case bmpbaroforecast_rain:
+		if (temperature > 1)
+			nforecast = wsbaroforcast_rain;
+		else
+			nforecast = wsbaroforcast_snow;
+		break;
+	}
+
+	SendTempHumBaroSensorFloat(1, 255, temperature, humidity, pressure, nforecast, "TempHumBaro");
 }

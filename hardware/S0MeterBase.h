@@ -18,13 +18,13 @@ class S0MeterBase : public CDomoticzHardwareBase
 		int m_PacketsSinceLastPulseChange;
 		bool m_firstTime;
 	};
-	friend class S0MeterSerial;
 public:
 	S0MeterBase(void);
 	~S0MeterBase(void);
 	std::string m_szSerialPort;
 	unsigned int m_iBaudRate;
-private:
+protected:
+	void InitBase();
 	void ParseData(const unsigned char *pData, int Len);
 	void ParseLine();
 	void SendMeter(unsigned char ID, double musage, double mtotal);

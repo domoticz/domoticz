@@ -1,0 +1,84 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.config text
+*.plist text
+*.proj text
+*.settings text
+*.vcproj text
+*.xml text
+*.am text
+*.appcache text
+*.bat text
+*.bor text
+*.c text
+*.check_cache text
+*.cmake text
+*.cmakein text
+*.com text
+*.conf text
+configure text
+*.cpp text
+*.cs text
+*.css text
+*.cxx text
+*.def text
+*.default text
+*.dsp text
+*.gcc text
+*.h text
+*.hpp text
+*.html text
+*.in text
+*.includecache text
+*.inl text
+*.internal text
+*.iss text
+*.js text
+*.less text
+*.log text
+*.lua text
+*.Lua text
+*.make text
+*.map text
+*.marks text
+*.md text
+*.msc text
+*.pem text
+*.pl text
+*.prefs text
+*.py text
+*.Python text
+*.rc text
+*.rst text
+*.rules text
+*.sh text
+i*.svg text
+Makefile text
+*.supp text
+*.svg text
+*.txt text
+*.xml text
+*.yml text
+*.example text
+html5.appcache text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+*.dsp text eol=crlf
+*.vcproj text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.cur binary
+*.eot binary
+*.gif binary
+*.gz binary
+*.ico binary
+*.jpg binary
+*.mp3 binary
+*.png binary
+*.swf binary
+*.ttf binary
+*.wav binary

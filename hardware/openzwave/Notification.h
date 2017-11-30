@@ -64,19 +64,19 @@ namespace OpenZWave
 	     */
 		enum NotificationType
 		{
-			Type_ValueAdded = 0,					/**< A new node value has been added to OpenZWave's list. These notifications occur after a node has been discovered, and details of its command classes have been received.  Each command class may generate one or more values depending on the complexity of the item being represented.  */
+			Type_ValueAdded = 0,				/**< A new node value has been added to OpenZWave's list. These notifications occur after a node has been discovered, and details of its command classes have been received.  Each command class may generate one or more values depending on the complexity of the item being represented.  */
 			Type_ValueRemoved,					/**< A node value has been removed from OpenZWave's list.  This only occurs when a node is removed. */
 			Type_ValueChanged,					/**< A node value has been updated from the Z-Wave network and it is different from the previous value. */
-			Type_ValueRefreshed,					/**< A node value has been updated from the Z-Wave network. */
-			Type_Group,						/**< The associations for the node have changed. The application should rebuild any group information it holds about the node. */
+			Type_ValueRefreshed,				/**< A node value has been updated from the Z-Wave network. */
+			Type_Group,							/**< The associations for the node have changed. The application should rebuild any group information it holds about the node. */
 			Type_NodeNew,						/**< A new node has been found (not already stored in zwcfg*.xml file) */
 			Type_NodeAdded,						/**< A new node has been added to OpenZWave's list.  This may be due to a device being added to the Z-Wave network, or because the application is initializing itself. */
 			Type_NodeRemoved,					/**< A node has been removed from OpenZWave's list.  This may be due to a device being removed from the Z-Wave network, or because the application is closing. */
-			Type_NodeProtocolInfo,					/**< Basic node information has been receievd, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
+			Type_NodeProtocolInfo,				/**< Basic node information has been received, such as whether the node is a listening device, a routing device and its baud rate and basic, generic and specific types. It is after this notification that you can call Manager::GetNodeType to obtain a label containing the device description. */
 			Type_NodeNaming,					/**< One of the node names has changed (name, manufacturer, product). */
 			Type_NodeEvent,						/**< A node has triggered an event.  This is commonly caused when a node sends a Basic_Set command to the controller.  The event value is stored in the notification. */
-			Type_PollingDisabled,					/**< Polling of a node has been successfully turned off by a call to Manager::DisablePoll */
-			Type_PollingEnabled,					/**< Polling of a node has been successfully turned on by a call to Manager::EnablePoll */
+			Type_PollingDisabled,				/**< Polling of a node has been successfully turned off by a call to Manager::DisablePoll */
+			Type_PollingEnabled,				/**< Polling of a node has been successfully turned on by a call to Manager::EnablePoll */
 			Type_SceneEvent,					/**< Scene Activation Set received */
 			Type_CreateButton,					/**< Handheld controller button event created */
 			Type_DeleteButton,					/**< Handheld controller button event deleted */
@@ -85,15 +85,15 @@ namespace OpenZWave
 			Type_DriverReady,					/**< A driver for a PC Z-Wave controller has been added and is ready to use.  The notification will contain the controller's Home ID, which is needed to call most of the Manager methods. */
 			Type_DriverFailed,					/**< Driver failed to load */
 			Type_DriverReset,					/**< All nodes and values for this driver have been removed.  This is sent instead of potentially hundreds of individual node and value notifications. */
-			Type_EssentialNodeQueriesComplete,			/**< The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages. */
-			Type_NodeQueriesComplete,				/**< All the initialisation queries on a node have been completed. */
-			Type_AwakeNodesQueried,					/**< All awake nodes have been queried, so client application can expected complete data for these nodes. */
-			Type_AllNodesQueriedSomeDead,				/**< All nodes have been queried but some dead nodes found. */
-			Type_AllNodesQueried,					/**< All nodes have been queried, so client application can expected complete data. */
-			Type_Notification,					/**< An error has occured that we need to report. */
-			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after recieving this call */
+			Type_EssentialNodeQueriesComplete,	/**< The queries on a node that are essential to its operation have been completed. The node can now handle incoming messages. */
+			Type_NodeQueriesComplete,			/**< All the initialization queries on a node have been completed. */
+			Type_AwakeNodesQueried,				/**< All awake nodes have been queried, so client application can expected complete data for these nodes. */
+			Type_AllNodesQueriedSomeDead,		/**< All nodes have been queried but some dead nodes found. */
+			Type_AllNodesQueried,				/**< All nodes have been queried, so client application can expected complete data. */
+			Type_Notification,					/**< An error has occurred that we need to report. */
+			Type_DriverRemoved,					/**< The Driver is being removed. (either due to Error or by request) Do Not Call Any Driver Related Methods after receiving this call */
 			Type_ControllerCommand,				/**< When Controller Commands are executed, Notifications of Success/Failure etc are communicated via this Notification
-												  * Notification::GetEvent returns Driver::ControllerCommand and Notification::GetNotification returns Driver::ControllerState */
+												  * Notification::GetEvent returns Driver::ControllerState and Notification::GetNotification returns Driver::ControllerError if there was a error */
 			Type_NodeReset						/**< The Device has been reset and thus removed from the NodeList in OZW */
 		};
 
@@ -104,9 +104,9 @@ namespace OpenZWave
 		 */
 		enum NotificationCode
 		{
-			Code_MsgComplete = 0,					/**< Completed messages */
-			Code_Timeout,						/**< Messages that timeout will send a Notification with this code. */
-			Code_NoOperation,					/**< Report on NoOperation message sent completion  */
+			Code_MsgComplete = 0,			/**< Completed messages */
+			Code_Timeout,					/**< Messages that timeout will send a Notification with this code. */
+			Code_NoOperation,				/**< Report on NoOperation message sent completion  */
 			Code_Awake,						/**< Report when a sleeping node wakes up */
 			Code_Sleep,						/**< Report when a node goes to sleep */
 			Code_Dead,						/**< Report when a node is presumed dead */

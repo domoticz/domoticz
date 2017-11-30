@@ -2,6 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include <iostream>
+#include "hardwaretypes.h"
 
 class CNefitEasy : public CDomoticzHardwareBase
 {
@@ -25,6 +26,7 @@ private:
 
 	std::string m_LastDisplayCode;
 	std::string m_LastBoilerStatus;
+	bool m_bClockMode;
 
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
@@ -39,8 +41,13 @@ private:
 	bool GetFlowTemp();
 	bool GetPressure();
 	bool GetDisplayCode();
+	bool GetGasUsage();
+
+	uint32_t m_lastgasusage;
+	P1Gas	m_p1gas;
 
 	void SetUserMode(bool bSetUserModeClock);
+	void SetHotWaterMode(bool bTurnOn);
 
 	//XMPP stuff
 	bool ConnectToXMPP(const std::string &IPAddress, const int PortNumber);

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Yale Push Button Lever Lock (YRL210)
+http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 
+-->
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" size="1" genre="config" instance="1" index="1" label="Audio Mode" value="3">
+			<Help>Disable the door sensor alarm function.</Help>
+			<Item label="Off" value="1" />
+			<Item label="On" value="3" />
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
+			<Help></Help>
+			<Item label="On" value="0" />
+			<Item label="Off" value="255" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Re-lock Time" size="1" min="5" max="255" units="seconds" value="30">
+			<Help>seconds; after successful code entry and unit unlocks, it will automatically re-lock after specified time (30 = default value)</Help>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="4" label="Wrong Code Entry Limit" min="1" max="7" value="5">
+			<Help>
+			The number of invalid code entries lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
+			</Help>
+			<Item label="1" value="1" />
+			<Item label="2" value="2" />
+			<Item label="3" value="3" />
+			<Item label="4" value="4" />
+			<Item label="5" value="5" />
+			<Item label="6" value="6" />
+			<Item label="7" value="7" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Shutdown Time" size="1" min="5" max="255" units="seconds" value="30">
+			<Help>number of seconds unit will be inoperable after number of wrong code entries is exceeded (30 = default)</Help>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="8" label="Operating Mode" min="0" max="2" value="1">
+			<Help>
+			The number of invalid code entries lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
+			</Help>
+			<Item label="Normal" value="0" />
+			<Item label="Vacation" value="1" />
+			<Item label="Privacy" value="2" />			
+		</Value>
+	</CommandClass>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
+		</TriggerRefreshValue>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>			
+		</Associations>
+	</CommandClass>
+</Product>

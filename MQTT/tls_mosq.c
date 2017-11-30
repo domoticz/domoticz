@@ -14,7 +14,7 @@ Contributors:
    Roger Light - initial implementation and documentation.
 */
 
-#ifdef WWW_ENABLE_SSL
+#ifdef WITH_TLS
 
 #ifdef WIN32
 #  include <winsock2.h>
@@ -96,31 +96,6 @@ int mosquitto__cmp_hostname_wildcard(char *certname, const char *hostname)
 		return strcasecmp(certname, hostname);
 	}
 }
-#ifdef WIN32
-int inet_pton_old_windows(int af, const char *src, void *dst)
-{
-	struct sockaddr_storage ss;
-	int size = sizeof(ss);
-	char src_copy[INET6_ADDRSTRLEN + 1];
-
-	ZeroMemory(&ss, sizeof(ss));
-	/* stupid non-const API */
-	strncpy(src_copy, src, INET6_ADDRSTRLEN + 1);
-	src_copy[INET6_ADDRSTRLEN] = 0;
-
-	if (WSAStringToAddress(src_copy, af, NULL, (struct sockaddr *)&ss, &size) == 0) {
-		switch (af) {
-		case AF_INET:
-			*(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
-			return 1;
-		case AF_INET6:
-			*(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
-			return 1;
-		}
-	}
-	return 0;
-}
-#endif
 
 /* This code is based heavily on the example provided in "Secure Programming
  * Cookbook for C and C++".
@@ -140,10 +115,8 @@ int _mosquitto_verify_certificate_hostname(X509 *cert, const char *hostname)
 	int ipv4_ok;
 
 #ifdef WIN32
-//	ipv6_ok = InetPton(AF_INET6, hostname, &ipv6_addr);
-//	ipv4_ok = InetPton(AF_INET, hostname, &ipv4_addr);
-	ipv6_ok = inet_pton_old_windows(AF_INET6, hostname, &ipv6_addr);
-	ipv4_ok = inet_pton_old_windows(AF_INET, hostname, &ipv4_addr);
+	ipv6_ok = InetPton(AF_INET6, hostname, &ipv6_addr);
+	ipv4_ok = InetPton(AF_INET, hostname, &ipv4_addr);
 #else
 	ipv6_ok = inet_pton(AF_INET6, hostname, &ipv6_addr);
 	ipv4_ok = inet_pton(AF_INET, hostname, &ipv4_addr);

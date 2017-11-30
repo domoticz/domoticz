@@ -194,7 +194,7 @@ void Meteostick::ParseData(const unsigned char *pData, int Len)
 	}
 }
 
-void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
+void Meteostick::SendTempBaroSensorInt(const unsigned char Idx, const float Temp, const float Baro, const std::string &defaultname)
 {
 	//Calculate Pressure
 	float altitude = 188.0f;	//Should be custom defined for each user
@@ -205,25 +205,7 @@ void Meteostick::SendTempBaroSensor(const unsigned char Idx, const float Temp, c
 	float dExponent = 0.03416f / dTempGradient;
 	float dPressure = Baro / pow(dBasis,dExponent);
 
-	_tTempBaro tsensor;
-	tsensor.id1 = Idx;
-	tsensor.temp = Temp;
-	tsensor.baro = dPressure;
-	tsensor.altitude = float(altitude);
-
-	//this is probably not good, need to take the rising/falling of the pressure into account?
-	//any help would be welcome!
-
-	tsensor.forecast = baroForecastNoInfo;
-	if (tsensor.baro < 1000)
-		tsensor.forecast = baroForecastRain;
-	else if (tsensor.baro < 1020)
-		tsensor.forecast = baroForecastCloudy;
-	else if (tsensor.baro < 1030)
-		tsensor.forecast = baroForecastPartlyCloudy;
-	else
-		tsensor.forecast = baroForecastSunny;
-	sDecodeRXMessage(this, (const unsigned char *)&tsensor, defaultname.c_str(), 255);
+	SendTempBaroSensor(Idx, 255, Temp, dPressure, defaultname);
 }
 
 void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const float Speed, const int Direction, const std::string &defaultname)
@@ -279,22 +261,6 @@ void Meteostick::SendWindSensor(const unsigned char Idx, const float Temp, const
 	tsen.WIND.chilll = (BYTE)(dWindChill);
 
 	sDecodeRXMessage(this, (const unsigned char *)&tsen.WIND, defaultname.c_str(), 255);
-}
-
-void Meteostick::SendUVSensor(const unsigned char Idx, const float UV, const std::string &defaultname)
-{
-	RBUF tsen;
-	memset(&tsen, 0, sizeof(RBUF));
-	tsen.UV.packetlength = sizeof(tsen.UV) - 1;
-	tsen.UV.packettype = pTypeUV;
-	tsen.UV.subtype = sTypeUV1;
-	tsen.UV.battery_level = 9;
-	tsen.UV.rssi = 12;
-	tsen.UV.id1 = 0;
-	tsen.UV.id2 = Idx;
-
-	tsen.UV.uv = (BYTE)round(UV * 10);
-	sDecodeRXMessage(this, (const unsigned char *)&tsen.UV, defaultname.c_str(), 255);
 }
 
 void Meteostick::SendLeafWetnessRainSensor(const unsigned char Idx, const unsigned char Channel, const int Wetness, const std::string &defaultname)
@@ -388,7 +354,7 @@ void Meteostick::ParseLine()
 			float temp = static_cast<float>(atof(results[1].c_str()));
 			float baro = static_cast<float>(atof(results[2].c_str()));
 
-			SendTempBaroSensor(0, temp, baro, "Meteostick Temp+Baro");
+			SendTempBaroSensorInt(0, temp, baro, "Meteostick Temp+Baro");
 		}
 		break;
 	case 'W':
@@ -469,7 +435,7 @@ void Meteostick::ParseLine()
 		{
 			unsigned char ID = (unsigned char)atoi(results[1].c_str());
 			float UV = static_cast<float>(atof(results[2].c_str()));
-			SendUVSensor(ID, UV, "UV");
+			CDomoticzHardwareBase::SendUVSensor(0, ID, 255, UV, "UV");
 		}
 		break;
 	case 'L':

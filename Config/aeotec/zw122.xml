@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Aeotec ZW122 Water Sensor 6
+http://products.z-wavealliance.org/products/2437
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Basic get not supported -->
+	<CommandClass id="32" getsupported="false"/>
+	<!-- COMMAND_CLASS_BINARY_SENSOR. This class is in the list reported by the device, but it does not respond to requests-->
+	<CommandClass id="48" action="remove"/>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" genre="config" instance="1" index="2" label="Waking up for 10 minutes when re-power on" min="0" max="1" size="1" value="0">
+			<Help>Enable/Disable waking up for 10 minutes when re-power on (battery mode) the Water Sensor.</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="8" label="Timeout of awake after the Wake Up CC is sent out" min="8" max="127" units="seconds" value="30" size="1">
+			<Help>
+				Set the timeout of awake after the Wake Up CC is sent out.
+				Available rang is 8 to 127 seconds.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="9" label="Current power mode" min="0" max="258" size="2" value="0" read_only="true">
+			<Help>Report the current power mode and the product state for battery power mode</Help>
+			<Item label="USB power, sleeping mode after re-power on" value="0"/>
+			<Item label="USB power, keep awake for 10 minutes after re-power on" value="1"/>
+			<Item label="USB power, always awake state" value="2"/>
+			<Item label="Battery power, sleeping mode after re-power on" value="256"/>
+			<Item label="Battery power, keep awake for 10 minutes after re-power on" value="257"/>
+			<Item label="Battery power, always awake state" value="258"/>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="10" label="Alarm time for the Buzzer" min="655360" max="2147483647" value="1968650" size="4">
+			<Help>
+				Set the alarm time for the Buzzer when the sensor is triggered.
+				1 to 255 Repeated cycle of Buzzer alarm.
+				256 to 65535 the time of Buzzer keeping ON state (MSB).
+				65536 to 2147483647 The time of Buzzer keeping OFF state.
+			</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="39" label="Set the low battery value" min="10" max="50" value="20" units="%" size="1">
+			<Help>10% to 50%</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="48" label="Sensor report" min="0" max="1" size="1" value="1">
+			<Help>Enable/disable the sensor report</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="49" label="Upper limit value" size="4" min="65536" max="2147483647" value="26214400">
+			<Help>
+				Set the upper limit value (overheat).
+				0 Celsius unit
+				1 Fahrenheit unit
+				65536 to 2147483647 Temperature value.
+				Default: 0x01900000 => 40.0C
+			</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="50" label="Lower limit value" size="4" min="65536" max="2147483647" value="0">
+			<Help>
+				Set the lower limit value (under heat).
+				0 Celsius unit
+				1 Fahrenheit unit
+				65536 to 2147483647 Temperature value
+			</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="57" label="Recover limit value of temperature sensor" min="100" max="4080" value="5120" size="2">
+			<Help>
+				Set the recover limit value of temperature sensor.
+				Note:
+				1. When the current measurement less than or equal (Upper limit - Recover limit), the upper limit report is enabled and then it would send out a sensor report when the next measurement is more than the upper limit.
+				After that the upper limit report would be disabled again until the measurement less than or equal (Upper limit - Recover limit).
+				2. When the current measurement greater than or equal (Lower limit + Recover limit), the lower limit report is enabled and then it would send out a sensor report when the next measurement is less than the lower limit.
+				After that the lower limit report would be disabled again until the measurement >= (Lower limit + Recover limit).
+				3. High byte is the recover limit value. Low byte is the unit (0x00=Celsius, 0x01=Fahrenheit).
+				4. Recover limit range: 1.0 to 25.5 C/F (0x0100 to 0xFF00 or 0x0101 to 0xFF01).
+				E.g. The default recover limit value is 2.0 C/F (0x1400/0x1401), when the measurement is less than (Upper limit - 2), the upper limit report would be enabled one time or when the measurement is more than (Lower limit + 2), the lower limit report would be enabled one time.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="64" label="Unit of the automatic temperature report" min="0" max="1" size="1" value="0">
+			<Help>Set the default unit of the automatic temperature report in parameter 101-103</Help>
+			<Item label="Celsius" value="0"/>
+			<Item label="Fahrenheit" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="84" label="Get the state of tilt sensor" min="0" max="1" size="1" value="0" read_only="true">
+			<Help>Get the state of tilt sensor</Help>
+			<Item label="Horizontal" value="0"/>
+			<Item label="Vertical" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="86" label="Buzzer" min="0" max="1" size="1" value="1">
+			<Help>Enable/ disable the buzzer.</Help>
+			<Item label="Disabled" value="0"/>
+			<Item label="Enabled" value="1"/>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="87" label="Sensor is triggered the buzzer will alarm" size="1" min="0" max="55" value="55">
+			<Help>
+				To set which sensor is triggered the buzzer will alarm.
+				1 If the Water leak is triggered, the buzzer will alarm.
+				2 If the vibration is triggered, the buzzer will alarm.
+				4 If the tilt sensor is triggered, the buzzer will alarm.
+				16 If the under heat is triggered, the buzzer will alarm.
+				32 If the overheat is triggered, the buzzer will alarm.
+				Note: if the value = 1+2+4+16+32=55, which means if any sensor is triggered, the buzzer will alarm.
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="88" label="Probe 1 Basic Set on grp 3" min="0" max="2" size="1" value="0">
+			<Help>To set which value of the Basic Set will be sent to the associated nodes in association Group 3 when the Sensor probe 1 is triggered.</Help>
+			<Item label="Send nothing" value="0"/>
+			<Item label="Presence/absence of water 0xFF/0x00" value="1"/>
+			<Item label="Presence/absence of water 0x00/0xFF" value="2"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="89" label="Probe 2 Basic Set on grp 4" min="0" max="2" size="1" value="0">
+			<Help>To set which value of the Basic Set will be sent to the associated nodes in association Group 4 when the Sensor probe 2 is triggered.</Help>
+			<Item label="Send nothing" value="0"/>
+			<Item label="Presence/absence of water 0xFF/0x00" value="1"/>
+			<Item label="Presence/absence of water 0x00/0xFF" value="2"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="94" label="Battery report selection" min="0" max="1" size="1" value="0">
+			<Help>To set which power source level is reported via the Battery CC.</Help>
+			<Item label="USB power level" value="0"/>
+			<Item label="CR123A battery level" value="1"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="101" label="Unsolicited report" size="1" min="0" max="3" value="3">
+			<Help>
+				To set what unsolicited report would be sent to the Lifeline group.
+			</Help>
+			<Item label="Send Nothing" value="0"/>
+			<Item label="Battery Report" value="1"/>
+			<Item label="Multilevel sensor report for temperature" value="2"/>
+			<Item label="Battery Report and Multilevel sensor report for temperature" value="3"/>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="111" label="Unsolicited report interval time" size="4" min="5" max="2678400" units="seconds" value="3600">
+			<Help>
+				To set the interval time of sending reports in Report group 1
+			</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="135" label="Water leak event report selection" min="0" max="3" size="1" value="1">
+			<Help>To set which sensor report can be sent when the water leak event is triggered and if the receiving device is a non-multichannel device.</Help>
+			<Item label="Send nothing" value="0"/>
+			<Item label="Send notification report to association group 1" value="1"/>
+			<Item label="Send configuration 0x88 report to association group 2" value="2"/>
+			<Item label="Send notification report to association group 1 and Send configuration 0x88 report to association group 2" value="3"/>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="136" label="Report Type to Send" size="1" min="0" max="2" value="0" read_only="true">
+			<Help>
+				When the parameter 0x87 is set to 2 or 3, it can get the sensor probes status through this configuration value.
+			</Help>
+			<Item label="Absence of water is triggered by probe 1 and 2" value="0"/>
+			<Item label="Presence of water is triggered by probe 1" value="1"/>
+			<Item label="Presence of water is triggered by probe 2" value="2"/>
+			<Item label="Presence of water is triggered by probe 1 and 2" value="3"/>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="201" label="Temperature sensor calibration" size="2" value="0">
+			<Help>
+				Temperature calibration (the available value range is [-128, 127] or [-12.8C, 12.7C]).
+				Note:
+				1. High byte is the calibration value. Low byte is the unit (0x00=Celsius, 0x01=Fahrenheit).
+				2. The calibration value (high byte) contains one decimal point. E.g.
+				if the value is set to 20 (0x1400), the calibration value is 2.0 C (EU/AU version) or if the value is set to 20 (0x1401), the calibration value is 2.0 F(US version).
+				3. The calibration value (high byte) = standard value - measure value.
+				E.g. If measure value =25.3C and the standard value = 23.2C, so the calibration value= 23.2C - 25.3C= -2.1C (0xEB).
+				If the measure value =30.1C and the standard value = 33.2C, so the calibration value= 33.2C - 30.1C=3.1C (0x1F).
+			</Help>
+		</Value>
+		<Value type="list" genre="config" index="252" label="Lock/Unlock Configuration" min="0" max="1" size="1" value="0">
+			<Help>Lock/ unlock all configuration parameters</Help>
+			<Item label="Unlock" value="0"/>
+			<Item label="Lock" value="1"/>
+		</Value>
+		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+			<Help>Reset to factory defaults</Help>
+			<Item label="Normal" value="0"/>
+			<Item label="Reset to factory default setting" value="1"/>
+			<Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+		</Value>
+	</CommandClass>
+
+	<!-- Map endpoints to instances -->
+	<CommandClass id="96" mapping="endpoints"/>
+	<CommandClass id="142" ForceInstances="true"/>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="4">
+			<Group index="1" max_associations="5" label="Lifeline"/>
+			<Group index="2" max_associations="5" label="Send the configuration parameter 0x88"/>
+			<Group index="3" max_associations="5" label="Send Basic Set when the Sensor probe 1 is triggered"/>
+			<Group index="4" max_associations="5" label="Send Basic Set when the Sensor probe 2 is triggered"/>
+		</Associations>
+	</CommandClass>
+
+</Product>

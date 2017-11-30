@@ -5,7 +5,6 @@
 #include "hardwaretypes.h"
 #include "../main/localtime_r.h"
 #include "../main/WebServerHelper.h"
-#include "../json/json.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../httpclient/HTTPClient.h"
@@ -117,16 +116,18 @@ bool CAtagOne::StopHardware()
 std::string GetFirstDeviceID(const std::string &shtml)
 {
 	std::string sResult = shtml;
-	// <tr onclick="javascript:changeDeviceAndRedirect('/Home/Index/{0}','6808-1401-3109_15-30-001-544');">
-	size_t tpos = sResult.find("javascript:changeDeviceAndRedirect(");
+	// Evsdd - Updated string due to webpage change
+	// Original format: <tr onclick="javascript:changeDeviceAndRedirect('/Home/Index/{0}','6808-1401-3109_15-30-001-544');">
+	// New format: "/Home/Index/6808-1401-3109_15-30-001-544"
+	size_t tpos = sResult.find("/Home/Index");
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos);
-	tpos = sResult.find(",'");
+	tpos = sResult.find("x/");
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(tpos + 2);
-	tpos = sResult.find("');");
+	tpos = sResult.find("\"");
 	if (tpos == std::string::npos)
 		return "";
 	sResult = sResult.substr(0, tpos);
@@ -274,7 +275,7 @@ bool CAtagOne::GetOutsideTemperatureFromDomoticz(float &tvalue)
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << m_OutsideTemperatureIdx;
-	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, 0, "");
+	m_webservers.GetJSonDevices(tempjson, "", "temp", "ID", sstr.str(), "", "", true, false, false, 0, "");
 
 	size_t tsize = tempjson.size();
 	if (tsize < 1)
@@ -426,7 +427,7 @@ void CAtagOne::GetMeterDetails()
 	Json::Value root2;
 	Json::Reader jReader;
 	bool ret = jReader.parse(sResult, root2);
-	if (!ret)
+	if ((!ret) || (!root2.isObject()))
 	{
 		_log.Log(LOG_ERROR, "AtagOne: Invalid/no data received...");
 		return;

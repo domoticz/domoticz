@@ -1,20 +1,122 @@
-Version 3.xxxx (March xx 2016)
+Version 3.8153 (July 30h 2017)
+- Fixed: Camera Editor, will now always refresh thumbnail in table
+- Fixed: Devices could become invisible when a scene/group was added to the 'hidden devices' room plan with the same idx
+- Fixed: JSon float/nan value, solved by upgrading JSonCPP
+- Fixed: OZW, when a value is updated and the sensor did not exists before (for example a kWh sensor), it is created (saves a restart)
+- Fixed: Daemonize compatible with Systemd forking type
+- Changed: Blinds T5 till T13 new DeviceID generation, could cause new sensors
+- Changed: Lessen rounding errors for computed energy
+- Changed: Minimized On/Off/Script execution time
+- Changed: SolarEdgeAPI, now only needs API Key
+- Changed: Support symlinks for plugin and theme directories
+- Changed: Switch type 'Door Lock' renamed to 'Door Contact'
+- Changed: Temperature Only charts will not display the Humidity axis
+- Changed: Wind Direction Graph, if sensor does not supports 'Gust', the 'Speed' value is used
+- Changed: Updated OpenZWave (and configuration files)
+- Implemented: Added a new parameter to disable the logging of event script triggers 'Script event triggered: ...'
+- Implemented: AppLamp/LimitLess bridge V6.0 RGBW/RGBWW
+- Implemented: Blinds T1 till T13 new supports the Stop button
+- Implemented: Blockly/Lua Set SetPoint option
+- Implemented: Devices, Log icon for Blinds
+- Implemented: Dummy Hardware, Temp+Baro
+- Implemented: Estonian Language support (big thanks to Kuido)
+- Implemented: EvohomeWeb support (Thanks to Gordon3!)
+- Implemented: General/Text sensor now able to be shared
+- Implemented: I2C BME280 sensor (temp+hum+baro)
+- Implemented: I2C for non arm systems
+- Implemented: InfluxDB Data push
+- Implemented: Latvian Language support (big thanks to Edgars)
+- Implemented: Netatmo Home Coach support
+- Implemented: Notification for Dummy Soil/Moisture sensor
+- Implemented: Notification for Dummy Temp/Hum/Baro sensor
+- Implemented: Notification for Alert Sensor via udevice JSON call
+- Implemented: Onkyo AV Receiver (Thanks to dwmw2!)
+- Implemented: Option to replace an Meter device
+- Implemented: OZW, Added support for Atmospheric Pressure sensor
+- Implemented: Python Plugin System
+- Implemented: RFXtrx Lucci Fan implemented
+- Implemented: RFXtrx RFY2 protocol implemented
+- Implemented: RFXtrx Kangtai / Cotech implemented
+- Implemented: RTL433 (Thanks to Petri Ahone!)
+- Implemented: SolarEdgeAPI, support for multiple inverters
+- Implemented: Support for Ble Box hardware
+- Implemented: Support for different usage/return costs for electricity
+- Implemented: Support for Intergas InComfort LAN2RF Gateway
+- Implemented: Support for Open Weather Map
+- Implemented: Support for Open Web Net
+- Implemented: Support for XiaomiGateway Gateway
+- Implemented: Support for YeeLight
+- Implemented: Support for Youless LS120
+- Implemented: Switch type 'Door Lock'
+- Implemented: SysFS GPIO (Thanks to hvbommel/jvandenbroek!)
+- Implemented: Teleinfo : Added a switch indicating the current cost slot
+- Implemented: Timer Plan editor
+- Removed: Razberry ZWave handling method. Existing users need to migrate to OpenZWave
+
+Version 3.5878 (November 10th 2016)
+- Fixes and various improvements
+
+Version 3.5837 (October 30th 2016)
+- Fixed: Blockly/Lua, FOR and RANDOM are now again in minutes
+- Changed: Shortlog charts for Temperature, Current and Smartlog are now using a spline
+- Changed: Lua/Blockly, Notifications are now not blocking
+
+Version 3.5834 (October 29th 2016)
+- Implemented: TSL2561 illuminance I2C sensor (ldrolez)
+- Implemented: AccuWeather support
+- Implemented: Air Quality graph, Avarage and Previous month/year
 - Implemented: Atag One Thermostat support
 - Implemented: Blockly/Lua Camera device, to send camera snapshots with subject after xx seconds
 - Implemented: Blockly upgraded to latest version (fixed and cleaned some code as well), this fixes problem with long sensor lists
+- Implemented: Blockly, option to excecute a script in the DO statement
 - Implemented: Custom Sensor
+- Implemented: Denkovi Smartden with LAN Interface
 - Implemented: Devices Tab, Log icon for Pressure
 - Implemented: Dust Sensor (ug/m3)
-- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature
+- Implemented: Error Log, option to send error logs by email
+- Implemented: Hourly rainrate for all rain sensors
+- Implemented: MySensors, Implemented Acknowledge Timeout per Child sensor
+- Implemented: MySensors, S_WATER_QUALITY, water PH
+- Implemented: MySensors, S_WATER_QUALITY, water ORP redox potential in mV
+- Implemented: MySensors, S_WATER_QUALITY, water electric conductivity S/cm (microSiemens/cm)
+- Implemented: MySensors, S_POWER, Reactive power: volt-ampere reactive (var)
+- Implemented: MySensors, S_POWER, Apparent power: volt-ampere (VA)
+- Implemented: MySensors, S_POWER, Ratio of real power to apparent power: floating point value in the range [-1,..,1]
+- Implemented: Nefit Easy, User Mode (as switch, On=Clock, Off=Manual), Flow Temperature, Hot Water Mode
+- Implemented: Notifications, custom notification text helpers $name and $value
 - Implemented: OpenZWave, Aeotec ZWave+ USB Controller, Enable/Disable blinking mode (@Schmart, Thanks for the magic codes!)
 - Implemented: OpenZWave, Node table, now also displays Manufacturer, Product ID and Product Type
+- Implemented: OpenZWave, When including Thermostat Setpoints, the zwave Label will be used as Name by default
+- Implemented: RFXMeter, Option to specify meter offset
+- Implemented: P1 Electra Report, Now also displaying the counters for Return
+- Implemented: RFLink: Displaying firmware version in the hardware setup
 - Implemented: RFXCom, Blinds T12 (Confexx)
+- Implemented: S0 Meter TCP
+- Changed: I2C sensors grouping (ldrolez)
+- Changed: ETH-8020, ignoring return message as it always returns (no more Success message)
+- Changed: EventSystem, weather/rain value is now the rain-rate
+- Changed: Forecast.io to DarkSky
+- Changed: OpenZWave, Better support for Thermostat Modes
 - Changed: Stable ID generation for Philips Hue scenes (you need to delete all scenes and restart the hue hardware or domoticz)
+- Changed: TE923, Rain counter devided by 2
+- Changed: Waterflow sensor, now uses Node+Child as ID (for example 0x0801)
+- Changed: Wind Direction graph (now does not display directions when speed was equal to zero)
 - Fixed: Better handling of white listed commands/urls
+- Fixed: Blockly, fixed extra quote when setting a user variable string value
 - Fixed: Database backup is now only possible for admin users
 - Fixed: Double checking command rights
+- Fixed: Dummy, Creating a new sensor always used the same id
+- Fixed: Dummy, when new sensor is created, Add it to the EventSystem
 - Fixed: Fix Off Delay not handled for Selector switch (#538).
 - Fixed: Fix On/Off delays not saved on the selector switch edit form (#532).
+- Fixed: Logitech Harmony, Ping request now working as well for firmware 4.10.30 (Herman)
+- Fixed: KMTronic, did not work in timers/groups/scenes
+- Fixed: Manual Light/Switch, when created, Add it to the EventSystem
+- Fixed: Wind Speed/Gust graph, Plotbands
+- Fixed: Added grid lines to percentage/lux/general graphs
+- Updated: AngularJS 1.5.8
+- Updated: Highcharts 4.2.6
+- Updated: SQLite3 v3.13.0
 
 Version 3.4834 (March 2nd 2016)
 - Implemented: Blockly, now possible to use expressions in notifications/email/SMS like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
@@ -105,7 +207,6 @@ Version 3.4834 (March 2nd 2016)
 - Fixed: Fix webserver initialization failure if the local network interface is not IPv6 (due to wrong initialization sequence).
 - Fixed: Fix abandoned connections not removed because the method connection_manager::check_timeout is never called [Security/Performance].
 - Updated: OpenZWave, configuration files
-- Updated: SQLite3 v3.11.0.
 - Updated: SQLite3 v3.11.1.
 
 Version 2.3530 (November 1th 2015)

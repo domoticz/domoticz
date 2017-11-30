@@ -158,6 +158,7 @@ CPanasonicNode::CPanasonicNode(const int pHwdID, const int PollIntervalsec, cons
 	m_stoprequested = false;
 	m_Busy = false;
 	m_Stoppable = false;
+	m_PowerOnSupported = false;
 
 	m_HwdID = pHwdID;
 	m_DevID = atoi(pID.c_str());
@@ -294,7 +295,7 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 		socket.close();
 		if (handleConnect(socket, *iter, error)) 
 		{
-			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected.'.", m_Name.c_str());
+			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Connected.", m_Name.c_str());
 			break;
 		}
 		else
@@ -302,19 +303,19 @@ std::string CPanasonicNode::handleWriteAndRead(std::string pMessageToSend)
 	}
 	if (error)
 	{
-		if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Error trying to connect.'.", m_Name.c_str());
+		if (DEBUG_LOGGING) _log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Error trying to connect.", m_Name.c_str());
 		socket.close();
 		return "ERROR";
 	}
 
 	boost::array<char, 512> _Buffer;
 	size_t request_length = std::strlen(pMessageToSend.c_str());
-	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping write.'.", m_Name.c_str());
+	if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping write.", m_Name.c_str());
 	
 	try
 	{
 		boost::asio::write(socket, boost::asio::buffer(pMessageToSend.c_str(), request_length));
-		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping read.'.", m_Name.c_str());
+		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Attemping read.", m_Name.c_str());
 		size_t reply_length = boost::asio::read(socket, boost::asio::buffer(_Buffer, request_length));
 		//_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Error code: (%i).'.", m_Name.c_str(),error);
 		socket.close();
@@ -337,13 +338,40 @@ int CPanasonicNode::handleMessage(std::string pMessage)
 	int iPosEnd = 0;
 	std::string begin(">");
 	std::string end("<");
+	std::string ResponseOK("HTTP/1.1 200");
+	std::string ResponseOff("HTTP/1.1 400");
 
 	if (pMessage == "ERROR" || pMessage == "")
 	{
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) handleMessage passed error or empty string!", m_Name.c_str());
 		return -1;
 	}
-		
+
+	// Look for a 200 response as this indicates that the TV was ok with last command.
+	iPosBegin = pMessage.find(ResponseOK);
+	if (iPosBegin != std::string::npos)
+	{
+		if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) Last command response OK", m_Name.c_str());
+	}
+
+	iPosBegin = 0;
+
+	// Look for a 400 response as this indicates that the TV supports powering on.
+	iPosBegin = pMessage.find(ResponseOff);
+	if (iPosBegin != std::string::npos)
+	{
+		if (!m_PowerOnSupported)
+		{
+			if (DEBUG_LOGGING) _log.Log(LOG_NORM, "Panasonic Plugin: (%s) TV Supports Powering on by Network", m_Name.c_str());
+			m_PowerOnSupported = true;
+		}
+	}
+
+	// Reset for next Search
+	bFound = false;
+	iPosBegin = 0;
+	iPosEnd = 0;
+
 	while (!bFound)
 	{
 		iPosBegin = pMessage.find(begin, iPosBegin);
@@ -490,10 +518,10 @@ void CPanasonicNode::SendCommand(const std::string &command)
 {
 	std::string	sPanasonicCall = "";
 	
-	if (m_CurrentStatus.Status() == MSTAT_OFF)
+	if (m_CurrentStatus.Status() == MSTAT_OFF && !m_PowerOnSupported)
 	{
 		// no point trying to send a command if we know the device is off
-		// no network on Panasonic TV's when it's in the off state
+		// if we get a 400 response when TV is off then Power toggle can be sent
 		_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) Device is Off, cannot send command.", m_Name.c_str());
 		return;
 	}
@@ -521,7 +549,7 @@ void CPanasonicNode::SendCommand(const std::string &command)
 	else if (command == "inputtv")
 		sPanasonicCall = buildXMLStringNetCtl("TV-ONOFF");
 	else if (command == "inputav")
-		sPanasonicCall = buildXMLStringNetCtl("AV-ONOFF");
+		sPanasonicCall = buildXMLStringNetCtl("CHG_INPUT-ONOFF");
 	else if (command == "Red")
 		sPanasonicCall = buildXMLStringNetCtl("RED-ONOFF");
 	else if (command == "Green")
@@ -584,11 +612,16 @@ void CPanasonicNode::SendCommand(const std::string &command)
 		sPanasonicCall = buildXMLStringNetCtl("STTL-ONOFF");
 	else if (command == "On" || command == "on")
 	{
-		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Can't use command: '%s'.", m_Name.c_str(), command.c_str());
-		// Workaround to get the plugin to reset device status, otherwise the UI goes out of sync with plugin
-		m_CurrentStatus.Clear();
-		m_CurrentStatus.Status(MSTAT_UNKNOWN);
-		UpdateStatus(true);
+		if (m_PowerOnSupported)
+			sPanasonicCall = buildXMLStringNetCtl("POWER-ONOFF");
+		else
+		{
+			_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Can't use command: '%s'.", m_Name.c_str(), command.c_str());
+			// Workaround to get the plugin to reset device status, otherwise the UI goes out of sync with plugin
+			m_CurrentStatus.Clear();
+			m_CurrentStatus.Status(MSTAT_UNKNOWN);
+			UpdateStatus(true);
+		}
 	}
 	else
 		_log.Log(LOG_NORM, "Panasonic Plugin: (%s) Unknown command: '%s'.", m_Name.c_str(), command.c_str());
@@ -910,7 +943,7 @@ void CPanasonic::UnloadNodes()
 	m_ios.stop();	// stop the service if it is running
 	sleep_milliseconds(100);
 
-	while ((!m_pNodes.empty()) || (!m_ios.stopped()) && (iRetryCounter < 15))
+	while (((!m_pNodes.empty()) || (!m_ios.stopped())) && (iRetryCounter < 15))
 	{
 		std::vector<boost::shared_ptr<CPanasonicNode> >::iterator itt;
 		for (itt = m_pNodes.begin(); itt != m_pNodes.end(); ++itt)
@@ -965,7 +998,10 @@ namespace http {
 		void CWebServer::Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
-				return;//Only admin user allowed
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid == "")
 				return;
@@ -1003,8 +1039,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
@@ -1039,8 +1075,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1071,8 +1107,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1106,8 +1142,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");
@@ -1135,8 +1171,8 @@ namespace http {
 		{
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string hwid = request::findValue(&req, "idx");

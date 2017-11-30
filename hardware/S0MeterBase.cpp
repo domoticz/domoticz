@@ -40,6 +40,45 @@ S0MeterBase::S0MeterBase(void)
 	}
 }
 
+void S0MeterBase::InitBase()
+{
+	m_meters[0].m_type = 0;
+	m_meters[1].m_type = 0;
+	m_meters[2].m_type = 0;
+	m_meters[3].m_type = 0;
+	m_meters[4].m_type = 0;
+	m_meters[0].m_pulse_per_unit = 1000.0;
+	m_meters[1].m_pulse_per_unit = 1000.0;
+	m_meters[2].m_pulse_per_unit = 1000.0;
+	m_meters[3].m_pulse_per_unit = 1000.0;
+	m_meters[4].m_pulse_per_unit = 1000.0;
+
+	//Get settings from the database
+	std::string Settings("");
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID==%d)", m_HwdID);
+	if (!result.empty())
+	{
+		Settings = result[0][0];
+	}
+
+	std::vector<std::string> splitresults;
+	StringSplit(Settings, ";", splitresults);
+	if (splitresults.size() == 10)
+	{
+		m_meters[0].m_type = atoi(splitresults[0].c_str());
+		m_meters[0].m_pulse_per_unit = atof(splitresults[1].c_str());
+		m_meters[1].m_type = atoi(splitresults[2].c_str());
+		m_meters[1].m_pulse_per_unit = atof(splitresults[3].c_str());
+		m_meters[2].m_type = atoi(splitresults[4].c_str());
+		m_meters[2].m_pulse_per_unit = atof(splitresults[5].c_str());
+		m_meters[3].m_type = atoi(splitresults[6].c_str());
+		m_meters[3].m_pulse_per_unit = atof(splitresults[7].c_str());
+		m_meters[4].m_type = atoi(splitresults[8].c_str());
+		m_meters[4].m_pulse_per_unit = atof(splitresults[9].c_str());
+	}
+}
+
 
 S0MeterBase::~S0MeterBase(void)
 {
@@ -355,16 +394,14 @@ namespace http {
 			redirect_uri = "/index.html";
 			if (session.rights != 2)
 			{
-				//No admin user, and not allowed to be here
-				return;
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
 			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx == "") {
 				return;
 			}
-
-			std::stringstream szAddress;
 
 			std::string S0M1Type = request::findValue(&req, "S0M1Type");
 			std::string S0M2Type = request::findValue(&req, "S0M2Type");
@@ -378,14 +415,15 @@ namespace http {
 			std::string M4PulsesPerHour = request::findValue(&req, "M4PulsesPerHour");
 			std::string M5PulsesPerHour = request::findValue(&req, "M5PulsesPerHour");
 
-			szAddress <<
+			std::stringstream szExtra;
+			szExtra <<
 				S0M1Type << ";" << M1PulsesPerHour << ";" <<
 				S0M2Type << ";" << M2PulsesPerHour << ";" <<
 				S0M3Type << ";" << M3PulsesPerHour << ";" <<
 				S0M4Type << ";" << M4PulsesPerHour << ";" <<
 				S0M5Type << ";" << M5PulsesPerHour;
 
-			m_sql.safe_query("UPDATE Hardware SET Address='%q' WHERE (ID='%q')", szAddress.str().c_str(), idx.c_str());
+			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID='%q')", szExtra.str().c_str(), idx.c_str());
 			m_mainworker.RestartHardware(idx);
 		}
 	}
