@@ -421,7 +421,7 @@ describe('device', function()
 			assert.is_same(12.5, device.setPoint)
 
 			device.updateSetPoint(14)
-			assert.is_same({ { ['SetSetPoint:1'] = '14 TRIGGER'} }, commandArray)
+			assert.is_same({ { ['SetSetPoint:1'] = '14'} }, commandArray)
 
 		end)
 

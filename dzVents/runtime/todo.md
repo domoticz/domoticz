@@ -6,3 +6,5 @@ setpoint stuff EvoHome
 onkyo device
 
 version in doc for new api methods.
+pass options to timedcommand instead of
+{ 'after', 'for', 'random', 'trigger' } or something like that.

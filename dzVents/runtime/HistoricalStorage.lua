@@ -442,11 +442,11 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	end
 
 	function self.delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
-		local res = _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+		local res, reffrom, refto = _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
 		if (res == nil) then
-			return default
+			return default, default, default
 		end
-		return res
+		return res, reffrom, refto
 	end
 
 	function _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
@@ -484,7 +484,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			return nil
 		end
 
-		return tonumber(referenceValue - value)
+		return tonumber(referenceValue - value), tonumber(referenceValue), tonumber(value)
 	end
 
 	function self.deltaSince(timeAgo, smoothRange, default)
@@ -494,7 +494,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			return self.delta(1, index, smoothRange, default)
 		end
 
-		return default
+		return default, default, default
 	end
 
 	function self.deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)
@@ -508,7 +508,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			return self.delta2(1, index, smoothRangeFrom, smoothRangeTo, default)
 		end
 
-		return default
+		return default, default, default
 	end
 
 
