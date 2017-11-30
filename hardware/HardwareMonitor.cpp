@@ -543,9 +543,9 @@ void CHardwareMonitor::RunWMIQuery(const char* qTable, const std::string &qType)
 	float CHardwareMonitor::GetProcessMemUsage()
 	{
 		pid_t pid = getpid();
-		std::stringstream sPid;
-		sPid << pid;
-		std::ifstream mfile("/proc/" + sPid.str() + "/status");
+		std::stringstream ssPidfile;
+		ssPidfile << "/proc/" << pid << "/status";
+		std::ifstream mfile(ssPidfile.str().c_str());
 		if (!mfile.is_open())
 			return -1;
 		uint32_t VmRSS = -1;
