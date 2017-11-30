@@ -33,7 +33,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 120
+#define DB_VERSION 122
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2320,6 +2320,99 @@ bool CSQLHelper::OpenDatabase()
 					_log.Log(LOG_ERROR, "EventSystem: (%d) Could not remove %s, please remove manually!", returncode, errorPath.c_str());
 			}
 		}
+		if (dbversion < 121)
+		{
+			// incorrect call to hardware class from mainworker: move Evohome installation parameters from Mode5 to unused Mode3
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					safe_query("UPDATE Hardware SET Mode3='%q', Mode5='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
+				}
+			}
+		}
+
+		if (dbversion < 122)
+		{
+			//Patch for Darksky ozone sensor
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> > result2;
+			std::vector<std::vector<std::string> > result3;
+			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_DarkSky << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeGeneral << ") AND (SubType=" << (int)sTypeSolarRadiation << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery2.str());
+
+					std::vector<std::vector<std::string> >::const_iterator itt2;
+					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+					{
+						sd = *itt2;
+
+						//Change device type
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeCustom << ", DeviceID='00000100', Options='1;DU' WHERE (ID=" << sd[0] << ")";
+						query(szQuery2.str());
+
+						//change log
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "SELECT Value, Date FROM Meter WHERE ([DeviceRowID]=" << sd[0] << ")";
+						result3 = query(szQuery2.str());
+
+						std::vector<std::vector<std::string> >::const_iterator itt3;
+						for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+						{
+							std::vector<std::string> sd3 = *itt3;
+							szQuery2.clear();
+							szQuery2.str("");
+							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << (float)atof(sd3[0].c_str())/10.0f << ", '" << sd3[1] << "')";
+							query(szQuery2.str());
+						}
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "DELETE FROM Meter WHERE ([DeviceRowID]=" << sd[0] << ")";
+						query(szQuery2.str());
+
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "SELECT Value1, Value2, Value3, Date FROM MultiMeter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
+						result3 = query(szQuery2.str());
+
+						for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+						{
+							std::vector<std::string> sd3 = *itt3;
+							szQuery2.clear();
+							szQuery2.str("");
+							float percentage_min = (float)atof(sd3[0].c_str()) / 10.0f;
+							float percentage_max = (float)atof(sd3[1].c_str()) / 10.0f;
+							float percentage_avg = (float)atof(sd3[2].c_str()) / 10.0f;
+							szQuery2 << "INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) VALUES (" << sd[0] << ", " << percentage_min << ", " << percentage_max << ", " << percentage_avg << ", '" << sd3[3] << "')";
+							query(szQuery2.str());
+						}
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "DELETE FROM Meter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
+						query(szQuery2.str());
+					}
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3051,7 +3144,7 @@ void CSQLHelper::Do_Work()
 				sstr << itt->_idx;
 				std::string idx = sstr.str();
 				float fValue = (float)atof(itt->_sValue.c_str());
-				m_mainworker.SetSetPoint(idx, fValue);
+				m_mainworker.SetSetPoint(idx, fValue, itt->_command, itt->_sUntil);
 			}
 			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
 			{
@@ -7270,7 +7363,7 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 	{
 		if (eventtrigger)
 			m_mainworker.m_eventsystem.SetEventTrigger(idx, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, szLastUpdate);
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, -1, szLastUpdate);
 	}
 	return true;
 }
@@ -7702,12 +7795,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
-	if (idx < 1) {
-		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
-		return false;
-	}
-
+std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap) {
 	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
@@ -7727,14 +7815,25 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 		}
 		options.assign(ssoptions.str());
 	}
-	if (options.empty() && (count > 0)) {
-		_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+
+	return options;
+}
+
+bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+	if (idx < 1) {
+		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
 		return false;
 	}
-	if (options.empty()) {
+
+	if (optionsMap.empty()) {
 		//_log.Log(LOG_STATUS, "DEBUG : removing options on device %" PRIu64 "", idx);
 		safe_query("UPDATE DeviceStatus SET Options = null WHERE (ID==%" PRIu64 ")", idx);
 	} else {
+		std::string options = FormatDeviceOptions(optionsMap);
+		if (options.empty()) {
+			_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+			return false;
+		}
 		//_log.Log(LOG_STATUS, "DEBUG : setting options '%s' on device %" PRIu64 "", options.c_str(), idx);
 		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%" PRIu64 ")", options.c_str(), idx);
 	}

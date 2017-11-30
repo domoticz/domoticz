@@ -19,10 +19,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
+#define round(a) ( int ) ( a + .5 )
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
+	extern boost::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
@@ -104,10 +105,16 @@ namespace Plugins {
 		{
 			m_bConnecting = false;
 
-			delete m_Resolver;
-			m_Resolver = NULL;
-			delete m_Socket;
-			m_Socket = NULL;
+			if (m_Resolver)
+			{
+				delete m_Resolver;
+				m_Resolver = NULL;
+			}
+			if (m_Socket)
+			{
+				delete m_Socket;
+				m_Socket = NULL;
+			}
 
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
@@ -284,7 +291,7 @@ namespace Plugins {
 		{
 			if ((e.value() != 2) && 
 				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation cancelled
+				(e.value() != 125) &&	// Operation canceled
 				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
@@ -368,6 +375,168 @@ namespace Plugins {
 		{
 			delete m_Acceptor;
 		}
+	};
+
+	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+	{
+		delete m_Resolver;
+		m_Resolver = NULL;
+
+		if (!err)
+		{
+			m_Context = new boost::asio::ssl::context(boost::asio::ssl::context::sslv23);
+			m_Context->set_verify_mode(boost::asio::ssl::verify_peer);
+			m_Context->set_default_verify_paths();
+
+			m_TLSSock = new boost::asio::ssl::stream<boost::asio::ip::tcp::socket&>(*m_Socket, *m_Context);
+			m_TLSSock->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
+
+			//m_TLSSock->set_verify_mode(boost::asio::ssl::verify_peer);
+			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
+			//m_TLSSock->set_verify_callback(boost::asio::ssl::rfc2818_verification(m_IP.c_str()));
+			m_TLSSock->set_verify_callback(boost::bind(&CPluginTransportTCPSecure::VerifyCertificate, this, _1, _2));
+			try
+			{
+				m_TLSSock->handshake(ssl_socket::client);
+
+				m_bConnected = true;
+				m_tLastSeen = time(0);
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CPluginTransportTCP::handleRead, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+				{
+					ios.reset();
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+				}
+			}
+			catch (boost::system::system_error se)
+			{
+				_log.Log(LOG_ERROR, "Plugin: TLS Handshake Exception: '%s' connecting to '%s:%s'", se.what(), m_IP.c_str(), m_Port.c_str());
+
+				delete m_Context;
+				m_Context = NULL;
+
+				delete m_TLSSock;
+				m_TLSSock = NULL;
+
+				if (m_Socket)
+				{
+					delete m_Socket;
+					m_Socket = NULL;
+				}
+
+				m_bConnecting = false;
+			}
+		}
+
+		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		PluginMessageQueue.push(Message);
+
+		m_bConnecting = false;
+	}
+
+	bool CPluginTransportTCPSecure::VerifyCertificate(bool preverified, boost::asio::ssl::verify_context& ctx)
+	{
+		// The verify callback can be used to check whether the certificate that is
+		// being presented is valid for the peer. For example, RFC 2818 describes
+		// the steps involved in doing this for HTTPS. Consult the OpenSSL
+		// documentation for more details. Note that the callback is called once
+		// for each certificate in the certificate chain, starting from the root
+		// certificate authority.
+
+		// In this example we will simply print the certificate's subject name.
+		char subject_name[256];
+		X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
+		X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
+		_log.Log(LOG_NORM, "Plugin: TLS Certificate found: '%s'", subject_name);
+
+		//return preverified;
+		return true;
+	}
+
+	void CPluginTransportTCPSecure::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
+	{
+		if (!e)
+		{
+			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			m_tLastSeen = time(0);
+			m_iTotalBytes += bytes_transferred;
+
+			//ready for next read
+			if (m_TLSSock)
+				m_TLSSock->async_read_some(boost::asio::buffer(m_Buffer, sizeof m_Buffer),
+					boost::bind(&CPluginTransportTCPSecure::handleRead,
+						this,
+						boost::asio::placeholders::error,
+						boost::asio::placeholders::bytes_transferred));
+		}
+		else
+		{
+			if ((e.value() != 2) &&
+				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+				(e.value() != 125) &&	// Operation canceled
+				(e != boost::asio::error::operation_aborted) &&
+				(e.value() != 1236))	// local disconnect cause by hardware reload
+				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
+
+			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(pDisconnectedEvent);
+			}
+			m_bDisconnectQueued = true;
+		}
+	}
+
+	void CPluginTransportTCPSecure::handleWrite(const std::vector<byte>& pMessage)
+	{
+		if (m_TLSSock && m_Socket)
+		{
+			try
+			{
+				m_TLSSock->write_some(boost::asio::buffer(pMessage, pMessage.size()));
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "%s: Socket error during 'write_some' operation: %d bytes", __func__, pMessage.size());
+			}
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "%s: Data not sent to NULL socket.", __func__);
+		}
+	}
+
+	bool CPluginTransportTCPSecure::handleDisconnect()
+	{
+		CPluginTransportTCP::handleDisconnect();
+
+		if (m_TLSSock)
+		{
+			delete m_TLSSock;
+			m_TLSSock = NULL;
+		}
+
+		if (m_Context)
+		{
+			delete m_Context;
+			m_Context = NULL;
+		}
+
+		return true;
+	}
+
+	CPluginTransportTCPSecure::~CPluginTransportTCPSecure()
+	{
+		handleDisconnect();
 	};
 
 	bool CPluginTransportUDP::handleListen()
@@ -454,7 +623,7 @@ namespace Plugins {
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
 
-			// Make sure only the only Message objects are refering to Connection so that it is cleaned up right after plugin onMessage
+			// Make sure only the only Message objects are referring to Connection so that it is cleaned up right after plugin onMessage
 			Py_DECREF(pConnection);
 
 			// Set up listener again
@@ -464,7 +633,7 @@ namespace Plugins {
 		{
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 125) &&	// Operation canceled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
@@ -550,7 +719,6 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
-			//m_bConnected = true;
 			m_IP = endpoint_iterator->endpoint().address().to_string();
 
 			// Listen will fail (10022 - bad parameter) unless something has been sent(?)
@@ -634,7 +802,7 @@ namespace Plugins {
 			}
 
 		}
-		else if (ec != boost::asio::error::operation_aborted)  // Timer cancelled by message arriving
+		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
 			_log.Log(LOG_ERROR, "Plugin: %s: %d, %s", __func__, ec.value(), ec.message().c_str());
 		}
@@ -644,6 +812,8 @@ namespace Plugins {
 	{
 		if (!ec)
 		{
+			double	dElapsedTime = clock() - m_Clock;
+			int		iMsElapsed = round(dElapsedTime);
 			ipv4_header*	pIPv4 = (ipv4_header*)&m_Buffer;
 			icmp_header*	pICMP = (icmp_header*)(&m_Buffer[0] + 20);
 			std::string		sAddress;
@@ -668,7 +838,7 @@ namespace Plugins {
 					m_Timer->cancel();
 				}
 
-				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
+				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer, (iMsElapsed ? iMsElapsed : 1));
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -685,7 +855,7 @@ namespace Plugins {
 		{
 			if ((ec.value() != 2) &&
 				(ec.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(ec.value() != 125) &&	// Operation cancelled
+				(ec.value() != 125) &&	// Operation canceled
 				(ec.value() != boost::asio::error::operation_aborted) &&	// Abort due to shutdown during disconnect
 				(ec.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Receive From Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
@@ -709,7 +879,7 @@ namespace Plugins {
 		{
 			CConnection*	pConnection = (CConnection*)this->m_pConnection;
 			std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
-			_log.Log(LOG_ERROR, "(%s) Transport not initialised, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
+			_log.Log(LOG_ERROR, "(%s) Transport not initialized, write directive to '%s' ignored. Connectionless transport should be Listening.", pConnection->pPlugin->Name.c_str(), sConnection.c_str());
 		}
 
 		// Reset timeout if one is set or set one
@@ -729,7 +899,7 @@ namespace Plugins {
 #else
 		echo_request.identifier(::getpid());
 #endif
-		echo_request.sequence_number(m_SequenceNo++);
+		echo_request.sequence_number(++m_SequenceNo);
 		compute_checksum(echo_request, pMessage.begin(), pMessage.end());
 
 		// Encode the request packet.
@@ -738,7 +908,8 @@ namespace Plugins {
 		std::string	 sData(pMessage.begin(), pMessage.end());
 		os << echo_request << sData;
 
-		// Send the request
+		// Send the request and mark the time
+		m_Clock = clock();
 		m_Socket->send_to(request_buffer.data(), m_Endpoint);
 	}
 

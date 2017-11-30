@@ -307,7 +307,7 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#devicescontent\', \'ShowDevices\');">';
 							}
 							else if ((item.Type.indexOf("Temp") == 0) || (item.Type.indexOf("Thermostat") == 0) || (item.Type.indexOf("Humidity") == 0)) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
+								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');">';
 							}
 							else if (item.SubType == "Voltage") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');">';

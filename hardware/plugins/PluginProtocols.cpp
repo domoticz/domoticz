@@ -729,6 +729,12 @@ namespace Plugins {
 					Py_XDECREF((PyObject*)pIcmpDict);
 
 					icmp_header*	pICMP = (icmp_header*)(&Message->m_Buffer[0] + 20);
+					if ((pICMP->type() == icmp_header::echo_reply) && (Message->m_ElapsedMs >= 0))
+					{
+						pObj = Py_BuildValue("I", Message->m_ElapsedMs);
+						PyDict_SetItemString(pDataDict, "ElapsedMs", pObj);
+						Py_DECREF(pObj);
+					}
 
 					pObj = Py_BuildValue("b", pICMP->type());
 					PyDict_SetItemString(pIcmpDict, "Type", pObj);

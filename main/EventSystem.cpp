@@ -2367,8 +2367,25 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		else if (deviceName.find("SetSetpoint:") == 0)
 		{
 			int idx = atoi(deviceName.substr(12).c_str());
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, doWhat));
-			actionsDone = true;
+			std::string temp, mode, until;
+			std::vector<std::string> aParam;
+			StringSplit(doWhat, "#", aParam);
+			switch (aParam.size()) {
+			case 3:
+				until = ParseBlocklyString(aParam[2]);
+			case 2:
+				mode = ParseBlocklyString(aParam[1]);
+			case 1:
+				temp = ParseBlocklyString(aParam[0]);
+				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+				actionsDone = true;
+				break;
+
+			default:
+				//Invalid
+				_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, not enough parameters!");
+				break;
+			}
 			continue;
 		}
 		else if (deviceName.find("SendEmail") != std::string::npos)
@@ -3473,10 +3490,27 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	else if (lCommand.find("SetSetPoint:") == 0)
 	{
 		std::string SetPointIdx = lCommand.substr(12);
-		std::string SetPointValue = lua_tostring(lua_state, -1);
+		std::string luaString = lua_tostring(lua_state, -1);
+		std::string temp, mode, until;
+		std::vector<std::string> aParam;
+		int idx;
+		StringSplit(luaString, "#", aParam);
+		switch (aParam.size()) {
+		case 3:
+			until = aParam[2];
+		case 2:
+			mode = aParam[1];
+		case 1:
+			idx = atoi(SetPointIdx.c_str());
+			temp = aParam[0];
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+			break;
 
-		int idx = atoi(SetPointIdx.c_str());
-		m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, SetPointValue));
+		default:
+			//Invalid
+			_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, incorrect parameters!");
+			return false;
+		}
 	}
 	else
 	{
@@ -4173,7 +4207,6 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 				if (fLevel > 100)
 					fLevel = 100;
 				ilevel = int(fLevel);
-				if (ilevel > 0) { ilevel++; }
 			} else if (switchtype == STYPE_Selector) {
 				// llevel cannot be get without sValue so level is getting from percentageLevel
 				ilevel = percentageLevel;
