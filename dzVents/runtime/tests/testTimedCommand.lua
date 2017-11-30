@@ -340,7 +340,7 @@ describe('timed commands', function()
 
 		end)
 
-		it('#tag should return proper function when called random', function()
+		it('should return proper function when called random', function()
 			local res = cmd.withinMin(10)
 
 			assert.is_function(res.silent)
