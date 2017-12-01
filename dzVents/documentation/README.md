@@ -7,19 +7,18 @@
 Documentation for dzVents 2.3.0 can be found [here](https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md).
 
 # About dzVents 2.4.0
-dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
+dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And ... **it is 100% Lua**! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
 Let's start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
 
     return {
-    	active = true,
     	on = {
     		devices = {
 	    		'Room switch'
     		}
     	},
     	execute = function(domoticz, roomSwitch)
-    		if (roomSwitch.state == 'On' and domoticz.devices('Living room').temperature > 18) then
+    		if (roomSwitch.active and domoticz.devices('Living room').temperature > 18) then
     			domoticz.devices('Another switch').switchOn()
     			domoticz.notify('This rocks!',
     			                'Turns out that it is getting warm here',
@@ -32,12 +31,11 @@ Or you have a timer script that should be executed every 10 minutes, but only on
 
 
     return {
-    	active = true,
     	on = {
     		timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
     	},
     	execute = function(domoticz)
-    		-- check timse of the day
+    		-- check time of the day
     		if (domoticz.time.isDayTime and domoticz.variables('myVar').value == 10) then
     			domoticz.variables('anotherVar').set(15)
     			--activate my scene
@@ -52,7 +50,6 @@ Or you have a timer script that should be executed every 10 minutes, but only on
 Or you want to detect a humidity rise within the past 5 minutes:
 
     return {
-    	active = true,
     	on = {
 	    	timer = {'every 5 minutes'}
     	},
