@@ -353,7 +353,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 						else
 						{
-							uint8_t percentage = output->LIGHTING2.level * 255 / 15;
+							uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
 
 							char value[4];
 							sprintf(value, "%x", percentage);
@@ -390,7 +390,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 						else
 						{
-							uint8_t percentage = output->LIGHTING2.level * 255 / 15;
+							uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
 
 							char value[4];
 							sprintf(value, "%x", percentage);
