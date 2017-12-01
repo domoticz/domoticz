@@ -16,6 +16,74 @@
 
 #define RETRY_DELAY 30
 
+
+struct eiscp_packet {
+	uint32_t magic;
+	uint32_t hdr_size;
+	uint32_t data_size;
+	uint8_t version;
+	uint8_t reserved[3];
+	char start;
+	char dest;
+	char message[2];
+};
+
+// Do not change except to append to these, or you break compatibility.
+enum DevNr {
+	ID_MVL = 0,
+	ID_ZVL,
+	ID_VL3,
+	ID_VL4,
+	ID_PWR,
+	ID_ZPW,
+	ID_PW3,
+	ID_PW4,
+	ID_SLI,
+	ID_SLZ,
+	ID_SL3,
+	ID_SL4,
+	ID_HDO,
+};
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+static struct {
+	const char *iscpCmd;
+	const char *iscpMute;
+	const char *name;
+	int switchType;
+	int subtype;
+	int customImage;
+	const char *options;
+} switch_types[] = {
+	{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
+	{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
+	{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
+	{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
+	{ "PWR", NULL, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
+	{ "ZPW", NULL, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
+	{ "PW3", NULL, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
+	{ "PW4", NULL, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
+	{ "SLI", NULL, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
+	{ "SLZ", NULL, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
+	{ "SL2", NULL, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
+	{ "SL3", NULL, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
+	{ "HDO", NULL, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
+};
+
+static struct {
+	const char *iscpCmd;
+	const char *name;
+} text_types[] = {
+	{ "NAL", "Album name" },
+	{ "NAT", "Artist name" },
+	{ "NTI", "Title name" },
+	{ "NTM", "Playback time" },
+	{ "NTR", "Track info" },
+};
+
+#define IS_END_CHAR(x) ((x) == 0x1a)
+
+
 OnkyoAVTCP::OnkyoAVTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
 m_szIPAddress(IPAddress)
 {
@@ -26,6 +94,12 @@ m_szIPAddress(IPAddress)
 	m_retrycntr = RETRY_DELAY;
 	m_pPartialPkt = NULL;
 	m_PPktLen = 0;
+
+	// Ooops, changing Device ID was a mistake. Fix up migration for Main/Z2 power switches from
+	// the 3.8153 release. Don't change IDs again!
+	for (int i = ID_PWR; i < ID_PW3; i++)
+		m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%08X' WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (SwitchType==%d) AND (SubType==%d)",
+				 i, m_HwdID, i - 2, switch_types[i].switchType, switch_types[i].subtype);
 }
 
 OnkyoAVTCP::~OnkyoAVTCP(void)
@@ -152,72 +226,6 @@ void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 	else
 		_log.Log(LOG_ERROR, "OnkyoAVTCP: %s", error.message().c_str());
 }
-
-struct eiscp_packet {
-	uint32_t magic;
-	uint32_t hdr_size;
-	uint32_t data_size;
-	uint8_t version;
-	uint8_t reserved[3];
-	char start;
-	char dest;
-	char message[2];
-};
-
-enum DevNr {
-	ID_MVL = 0,
-	ID_ZVL,
-	ID_VL3,
-	ID_VL4,
-	ID_PWR,
-	ID_ZPW,
-	ID_PW3,
-	ID_PW4,
-	ID_SLI,
-	ID_SLZ,
-	ID_SL3,
-	ID_SL4,
-	ID_HDO,
-};
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-static struct {
-	const char *iscpCmd;
-	const char *iscpMute;
-	const char *name;
-	int switchType;
-	int subtype;
-	int customImage;
-	const char *options;
-} switch_types[] = {
-	{ "MVL", "AMT", "Master volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
-	{ "ZVL", "ZMT", "Zone 2 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
-	{ "VL3", "MT3", "Zone 3 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
-	{ "VL4", "MT4", "Zone 4 volume", STYPE_Dimmer, sSwitchGeneralSwitch, 8, NULL },
-	{ "PWR", NULL, "Master power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
-	{ "ZPW", NULL, "Zone 2 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
-	{ "PW3", NULL, "Zone 3 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
-	{ "PW4", NULL, "Zone 4 power", STYPE_OnOff, sSwitchGeneralSwitch, 5, NULL },
-	{ "SLI", NULL, "Master selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
-	{ "SLZ", NULL, "Zone 2 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
-	{ "SL2", NULL, "Zone 3 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
-	{ "SL3", NULL, "Zone 4 selector", STYPE_Selector, sSwitchTypeSelector, 5, NULL },
-	{ "HDO", NULL, "HDMI Output", STYPE_Selector, sSwitchTypeSelector, 5, "SelectorStyle:0;LevelNames:Off|Main|Sub|Main+Sub;LevelOffHidden:true;LevelActions:00|01|02|03" },
-};
-
-static struct {
-	const char *iscpCmd;
-	const char *name;
-} text_types[] = {
-	{ "NAL", "Album name" },
-	{ "NAT", "Artist name" },
-	{ "NTI", "Title name" },
-	{ "NTM", "Playback time" },
-	{ "NTR", "Track info" },
-};
-
-#define IS_END_CHAR(x) ((x) == 0x1a)
-
 
 bool OnkyoAVTCP::WriteToHardware(const char *pdata, const unsigned char length)
 {
