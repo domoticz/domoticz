@@ -1,5 +1,3 @@
-local TimedCommand = require('TimedCommand')
-
 return {
 
 	baseType = 'device',

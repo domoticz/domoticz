@@ -741,6 +741,9 @@ Note that if you do not find your specific device type here you can always inspe
  - **lux**: *Number*. Lux level for light sensors.
  - **updateLux(lux)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
+#### Onkyo receiver
+ - **onkyoEISCPCommand(command)**. *Function*. <sup>2.4.0</sup> Sends an EISP command to the Onkyo receiver.
+
 #### OpenTherm gateway
  - **setPoint**: *Number*.
  - **updateSetPoint(setPoint)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1746,6 +1749,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added historical data helper `delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)` to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
 - Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
+- Added device adapter for Onkyo receiver hardware.
 
 
 ##[2.3.0]

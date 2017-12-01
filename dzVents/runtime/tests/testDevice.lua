@@ -560,6 +560,7 @@ describe('device', function()
 					"kodiSetVolume",
 					"kodiStop",
 					"kodiSwitchOff",
+					'onkyoEISCPCommand',
 					"open",
 					"pause",
 					"play",
@@ -997,6 +998,22 @@ describe('device', function()
 				{ ["myDevice"] = "Play Playlist myList TRIGGER" },
 				{ ["myDevice"] = "Play Favorites 30 TRIGGER" },
 			}, commandArray)
+		end)
+
+		it('should detect a onky device', function()
+			local commandArray = {}
+
+			domoticz.openURL = function(url)
+				return table.insert(commandArray, url)
+			end
+
+			local device = getDevice(domoticz, {
+				['name'] = 'myDevice',
+				['hardwareType'] = 'Onkyo AV Receiver (LAN)',
+			})
+
+			device.onkyoEISCPCommand('mycommand')
+			assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=onkyoeiscpcommand&idx=1&action=mycommand'}, commandArray)
 		end)
 
 		describe('Switch', function()

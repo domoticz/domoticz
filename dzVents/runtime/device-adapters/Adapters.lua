@@ -18,6 +18,7 @@ local deviceAdapters = {
 	'leafwetness_device',
 	'logitech_media_server_device',
 	'lux_device',
+	'onkyo_device',
 	'opentherm_gateway_device',
 	'p1_smartmeter_device',
 	'percentage_device',

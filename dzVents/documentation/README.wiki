@@ -750,6 +750,10 @@ Note that if you do not find your specific device type here you can always inspe
 * '''lux''': ''Number''. Lux level for light sensors.
 * '''updateLux(lux)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
+==== Onkyo receiver ====
+
+* '''onkyoEISCPCommand(command)'''. ''Function''. Sends an EISP command to the Onkyo receiver.
+
 ==== OpenTherm gateway ====
 
 * '''setPoint''': ''Number''.
@@ -1859,6 +1863,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added historical data helper <code>delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)</code> to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
 * Added historical data helper <code>deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)</code>. This will use the oldest data value when the data set is shorter than timeAgo.
 * Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
+* Added device adapter for Onkyo receiver hardware.
 
 == [2.3.0] ==
 
