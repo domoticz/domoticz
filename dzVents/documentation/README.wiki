@@ -8,19 +8,16 @@ Documentation for dzVents 2.3.0 can be found [https://github.com/domoticz/domoti
 
 = About dzVents 2.4.0 =
 
-dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts.
+dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And ... '''it is 100% Lua'''! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
 Let's start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
 
 <pre>return {
-    active = true,
     on = {
-        devices = {
-            'Room switch'
-        }
+        devices = { 'Room switch'}
     },
     execute = function(domoticz, roomSwitch)
-        if (roomSwitch.state == 'On' and domoticz.devices('Living room').temperature &gt; 18) then
+        if (roomSwitch.active and domoticz.devices('Living room').temperature &gt; 18) then
             domoticz.devices('Another switch').switchOn()
             domoticz.notify('This rocks!',
                             'Turns out that it is getting warm here',
@@ -31,12 +28,11 @@ Let's start with an example. Say you have a switch that when activated, it shoul
 Or you have a timer script that should be executed every 10 minutes, but only on weekdays, and have it do something with some user variables and only during daytime:
 
 <pre>return {
-    active = true,
     on = {
         timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
     },
     execute = function(domoticz)
-        -- check timse of the day
+        -- check time of the day
         if (domoticz.time.isDayTime and domoticz.variables('myVar').value == 10) then
             domoticz.variables('anotherVar').set(15)
             --activate my scene
@@ -50,7 +46,6 @@ Or you have a timer script that should be executed every 10 minutes, but only on
 Or you want to detect a humidity rise within the past 5 minutes:
 
 <pre>return {
-    active = true,
     on = {
         timer = {'every 5 minutes'}
     },
@@ -125,7 +120,7 @@ In order for your scripts to work with dzVents, they have to be turned into a Lu
         end
     end
 }</pre>
-Simply said, if you want to turn your existing script into a script that can be used with dzVents, you put it inside the ''execute'' function and define at least one ''on-trigger'' (more on that later).
+Simply said, the <code>on</code>-part defines the trigger and the <code>execute</code> part is what should be done if the trigger matches with the current Domoticz event. So all your logic is inside the <code>execute</code> function.
 
 == Sections in the script ==
 
@@ -150,29 +145,29 @@ Each dzVents event script has this structure:
 }</pre>
 === active = true/false (optional) ===
 
-If <code>active = false</code>, then the script is not activated: dzVents will ignore the script completely. If you don't have <code>active</code> specified, <code>true</code> is assumed (default value). This is handy if you write scripts using Domoticz' internal script editor, as it has its own way of activating and deactivating scripts.
+If <code>active = false</code>, then the script is not activated: ''dzVents will ignore the script completely''. If you don't have <code>active</code> specified, <code>true</code> is assumed (default value). If you write scripts with Domoticz' internal script editor then you don't need this part as the editor has its own way of enabling and disabling scripts.
 
 So, <code>active</code> can either be:
 
-* '''true''': the script file will be processed.
+* '''true''': (default) the script file will be processed.
 * '''false''': the script file is ignored.
 * '''function(domoticz) ... end''': A function returning <code>true</code> or <code>false</code>. The function will receive the domoticz object with all the information about your domoticz instance: <code>active = function(domoticz) .... end</code>. For example you could check for a Domoticz variable or switch and prevent the script from being executed. '''However, be aware that for ''every script'' in your scripts folder, this active function will be called, every cycle!! Therefore, it is better to put all your logic in the execute function instead of in the active function.'''
 
 === on = { ... } ===
 
-The <code>on</code> section holds all the events/'''triggers''' that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the <code>execute</code> part of the script is executed by dzVents. The <code>on</code> section has five kinds of subsections that ''can all be used simultaneously'' :
+The <code>on</code> section tells dzVents ''when'' the execute function has to be executed. It holds all the events/'''triggers''' that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the <code>execute</code> part of the script is executed by dzVents. The <code>on</code> section has five kinds of subsections that ''can all be used simultaneously'' :
 
 ==== devices = { ... } ====
 
-A list of device-names or indexes. Each device can be:
+A list of device-names or indexes. If a device in your system was changed (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. Each device can be:
 
 * The name of your device between string quotes. '''You can use the asterisk (*) wild-card here e.g. <code>PIR_*</code> or <code>*_PIR</code>'''. E.g.: <code>devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }</code>
 * The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). Note that idx is a number;
-* The name or idx of your device followed by a time constraint, such as: <code>['myDevice']  = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
+* The name or idx of your device followed by a time constraint, such as: <code>['myDevice']  = { 'at 15:*', 'at 22:* on sat, sun' }</code> The script will be executed if <code>myDevice</code> was changed, '''and''' it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [[#timer_trigger_rules|time trigger rules]].
 
 ==== scenes = { ... } ====
 
-A list of one or more scene-names or indexes. The same rules as devices apply.
+A list of one or more scene-names or indexes. The same rules as devices apply. So if your scene is listed in this table then the executed function will be triggered, e.g.: <code>on = { scenes = { 'myScene', 'anotherScene' } },</code>.
 
 ==== groups = { ...} ====
 
@@ -180,7 +175,7 @@ A list of one or more group-names or indexes. The same rules as devices apply.
 
 ==== timer = { ... } ====
 
-A list of one ore more time 'rules' like <code>every minute</code> or <code>at 17:*</code>. See [[#timer_trigger_rules|''timer'' trigger rules]].
+A list of one ore more time 'rules' like <code>every minute</code> or <code>at 17:*</code>. See [[#timer_trigger_rules|''timer'' trigger rules]]. If any or the rules matches with the current time/date then your execute function is called. E.g.: <code>on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }</code>.
 
 ==== variables = { ... } ====
 
@@ -198,7 +193,7 @@ If the security state in Domoticz changes and it matches with any of the states 
 
 ==== httpResponses = { ...} <sup>2.4.0</sup> ====
 
-A list of one or more http callback triggers. Use this in conjunction with <code>domoticz.openURL()</code> where you will provide Domoticz with the callback trigger. See ... for more information about making '''and''' handling asynchronous http requests with dzVents.
+A list of one or more http callback triggers. Use this in conjunction with <code>domoticz.openURL()</code> where you will provide Domoticz with the callback trigger. See [[Asynchronous_HTTP_requests|Asynchronous HTTP requests]] for more information.
 
 === execute = function('''domoticz, item, triggerInfo''') ... end ===
 
@@ -359,7 +354,7 @@ Suppose you have a group holding all the lights in your house, and you want to s
         domoticz.groups('All lights').switchOff()
     end
 }</pre>
-=== Asynchronous HTTP Request and handling ===
+=== Asynchronous HTTP Request and handling <sup>2.4.0</sup> ===
 
 Suppose you have some external web service that will tell you what the current energy consumption is and you want that information in Domoticz:
 
@@ -406,68 +401,67 @@ Let's say you have a script that checks the status of a lamp and is triggered by
 }</pre>
 == ''timer'' trigger rules ==
 
-There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm) :
+There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
 
-<pre>on = {
-    timer = {
-        'every minute',              -- causes the script to be called every minute
-        'every other minute',        -- minutes: xx:00, xx:02, xx:04, ..., xx:58
-        'every &lt;xx&gt; minutes',        -- starting from xx:00 triggers every xx minutes
-                                     -- (0 &gt; xx &lt; 60)
-        'every hour',                -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
-        'every other hour',          -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
-        'every &lt;xx&gt; hours',          -- starting from 00:00, triggers every xx
-                                     -- hours (0 &gt; xx &lt; 24)
-        'at 13:45',                  -- specific time
-        'at *:45',                   -- every 45th minute in the hour
-        'at 15:*',                   -- every minute between 15:00 and 16:00
-        'at 12:45-21:15',            -- between 12:45 and 21:15. You cannot use '*'!
-        'at 19:30-08:20',            -- between 19:30 and 8:20 then next day
-        'at 13:45 on mon,tue',       -- at 13:45 only on Mondays and Tuesdays (english)
-        'on mon,tue',                -- on Mondays and Tuesdays
-        'every hour on sat',         -- you guessed it correctly
-        'at sunset',                 -- uses sunset/sunrise info from Domoticz
-        'at sunrise',
-        'at sunset on sat,sun',
-        'xx minutes before sunset',
-        'xx minutes after sunset',
-        'xx minutes before sunrise',
-        'xx minutes after sunrise'   -- guess ;-)
-        'between aa and bb'          -- aa/bb can be a time stamp like 15:44
-                                     -- aa/bb can be sunrise/sunset
-                                     -- aa/bb can be 'xx minutes before/after
-                                        sunrise/sunset'
-        'at nighttime',              -- between sunset and sunrise
-        'at daytime',                -- between sunrise and sunset
-        'at daytime on mon,tue',     -- between sunrise and sunset
-                                        only on Mondays and Tuesdays
-        'in week 12,44'              -- (2.4.0) in week 12 or 44
-        'in week 20-25,33-47'        -- (2.4.0) between week 20
-                                        and 25 or week 33 and 47
-        'in week -12, 33-'           -- (2.4.0) week &lt;= 12 or week &gt;= 33
-        'every odd week',
-        'every even week',           -- (2.4.0) odd or even numbered weeks
-        'on 23/11',                  -- (2.4.0) on 23rd of november (dd/mm)
-        'on 23/11-25/12',            -- (2.4.0) between 23/11 and 25/12
-        'on 2/3-18/3',11/8,10/10-14/10',
-        'on */2,15/*',               -- (2.4.0) every day in February or
-                                     -- every 15th day of the month
-        'on -3/4,4/7-',              -- (2.4.0) before 3/4 or after 4/7
+<pre>    on = {
+        timer = {
+            'every minute',              -- causes the script to be called every minute
+            'every other minute',        -- minutes: xx:00, xx:02, xx:04, ..., xx:58
+            'every &lt;xx&gt; minutes',        -- starting from xx:00 triggers every xx minutes
+                                         -- (0 &gt; xx &lt; 60)
+            'every hour',                -- 00:00, 01:00, ..., 23:00  (24x per 24hrs)
+            'every other hour',          -- 00:00, 02:00, ..., 22:00  (12x per 24hrs)
+            'every &lt;xx&gt; hours',          -- starting from 00:00, triggers every xx
+                                         -- hours (0 &gt; xx &lt; 24)
+            'at 13:45',                  -- specific time
+            'at *:45',                   -- every 45th minute in the hour
+            'at 15:*',                   -- every minute between 15:00 and 16:00
+            'at 12:45-21:15',            -- between 12:45 and 21:15. You cannot use '*'!
+            'at 19:30-08:20',            -- between 19:30 and 8:20 then next day
+            'at 13:45 on mon,tue',       -- at 13:45 only on Mondays and Tuesdays (english)
+            'on mon,tue',                -- on Mondays and Tuesdays
+            'every hour on sat',         -- you guessed it correctly
+            'at sunset',                 -- uses sunset/sunrise info from Domoticz
+            'at sunrise',
+            'at sunset on sat,sun',
+            'xx minutes before sunset',
+            'xx minutes after sunset',
+            'xx minutes before sunrise',
+            'xx minutes after sunrise'   -- guess ;-)
+            'between aa and bb'          -- aa/bb can be a time stamp like 15:44
+                                         -- aa/bb can be sunrise/sunset
+                                         -- aa/bb can be 'xx minutes before/after
+                                            sunrise/sunset'
+            'at nighttime',              -- between sunset and sunrise
+            'at daytime',                -- between sunrise and sunset
+            'at daytime on mon,tue',     -- between sunrise and sunset
+                                            only on Mondays and Tuesdays
+            'in week 12,44'              -- (2.4.0) in week 12 or 44
+            'in week 20-25,33-47'        -- (2.4.0) between week 20
+                                            and 25 or week 33 and 47
+            'in week -12, 33-'           -- (2.4.0) week &lt;= 12 or week &gt;= 33
+            'every odd week',
+            'every even week',           -- (2.4.0) odd or even numbered weeks
+            'on 23/11',                  -- (2.4.0) on 23rd of november (dd/mm)
+            'on 23/11-25/12',            -- (2.4.0) between 23/11 and 25/12
+            'on 2/3-18/3',11/8,10/10-14/10',
+            'on */2,15/*',               -- (2.4.0) every day in February or
+                                         -- every 15th day of the month
+            'on -3/4,4/7-',              -- (2.4.0) before 3/4 or after 4/7
 
-        -- or if you want to go really wild and combine them:
-        'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
-        'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue on 20/5-18/8'
+            -- or if you want to go really wild and combine them:
+            'at nighttime at 21:32-05:44 every 5 minutes on sat, sun',
+            'every 10 minutes between 20 minutes before sunset and 30 minutes after sunrise on mon,fri,tue on 20/5-18/8'
 
-        -- or just do it yourself:
-        function(domoticz)
-            -- you can use domoticz.time to get the current time
-            -- note that this function is called every minute!
-            -- custom code that either returns true or false
-            ...
-        end
-   },</pre>
-}
-
+            -- or just do it yourself:
+            function(domoticz)
+                -- you can use domoticz.time to get the current time
+                -- note that this function is called every minute!
+                -- custom code that either returns true or false
+                ...
+            end
+       },
+   }</pre>
 The timer events are triggered every minute. If such a trigger occurs, dzVents will scan all timer-based events and will evaluate the timer rules. So, if you have a rule <code>on mon</code> then the script will be executed ''every minute'' but only on Monday.
 
 Be mindful of the logic if using multiple types of timer triggers. It may not make sense to combine a trigger for a specific or instantaneous time with a trigger for a span or sequence of times (like 'at sunset' with 'every 6 minutes') in the same construct. Similarly, <code>'between aa and bb'</code> only makes sense with instantaneous times for <code>aa</code> and <code>bb</code>.
@@ -752,7 +746,7 @@ Note that if you do not find your specific device type here you can always inspe
 
 ==== Onkyo receiver ====
 
-* '''onkyoEISCPCommand(command)'''. ''Function''. Sends an EISP command to the Onkyo receiver.
+* '''onkyoEISCPCommand(command)'''. ''Function''. <sup>2.4.0</sup> Sends an EISP command to the Onkyo receiver.
 
 ==== OpenTherm gateway ====
 

@@ -13,9 +13,7 @@ Let's start with an example. Say you have a switch that when activated, it shoul
 
     return {
     	on = {
-    		devices = {
-	    		'Room switch'
-    		}
+    		devices = { 'Room switch'}
     	},
     	execute = function(domoticz, roomSwitch)
     		if (roomSwitch.active and domoticz.devices('Living room').temperature > 18) then
@@ -125,7 +123,7 @@ In order for your scripts to work with dzVents, they have to be turned into a Lu
         end
     }
 
-Simply said, if you want to turn your existing script into a script that can be used with dzVents, you put it inside the *execute* function and define at least one *on-trigger* (more on that later).
+Simply said, the `on`-part defines the trigger and the `execute` part is what should be done if the trigger matches with the current Domoticz event. So all your logic is inside the `execute` function.
 
 ## Sections in the script
 Each dzVents event script has this structure:
@@ -150,34 +148,34 @@ return {
 ```
 
 ### active = true/false (optional)
-If `active = false`, then the script is not activated: dzVents will ignore the script completely. If you don't have `active` specified, `true` is assumed (default value). This is handy if you write scripts using Domoticz' internal script editor, as it has its own way of activating and deactivating scripts.
+If `active = false`, then the script is not activated: *dzVents will ignore the script completely*. If you don't have `active` specified, `true` is assumed (default value). If you write scripts with Domoticz' internal script editor then you don't need this part as the editor has its own way of enabling and disabling scripts.
 
 So, `active` can either be:
 
- - **true**: the script file will be processed.
+ - **true**: (default) the script file will be processed.
  - **false**: the script file is ignored.
  - **function(domoticz) ... end**: A function returning `true` or `false`. The function will receive the domoticz object with all the information about your domoticz instance: `active = function(domoticz) .... end`. For example you could check for a Domoticz variable or switch and prevent the script from being executed. **However, be aware that for *every script* in your scripts folder, this active function will be called, every cycle!! Therefore, it is better to put all your logic in the execute function instead of in the active function.**
 
 ### on = { ... }
-The `on` section holds all the events/**triggers** that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the `execute` part of the script is executed by dzVents.
+The `on` section tells dzVents *when* the execute function has to be executed. It holds all the events/**triggers** that are monitored by dzVents. If any of the events or triggers match with the current event coming from Domoticz, then the `execute` part of the script is executed by dzVents.
 The `on` section has five kinds of subsections that *can all be used simultaneously* :
 
 #### devices = { ... }
-A list of device-names or indexes. Each device can be:
+A list of device-names or indexes. If a device in your system was changed (e.g. switch was triggered or a new temperature was received) and it is listed in this section then the execute function is executed. Each device can be:
 
  - The name of your device between string quotes. **You can use the asterisk (\*) wild-card here e.g. `PIR_*` or `*_PIR`**.  E.g.: `devices = { 'myDevice', 'anotherDevice', 123, 'pir*' }`
  - The index (idx) of your device (as the name may change, the index will usually stay the same, the index can be found in the devices section in Domoticz). Note that idx is a number;
  - The name or idx of your device followed by a time constraint, such as:
-    `['myDevice']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if `myDevice` was changed, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend.
+    `['myDevice']  = { 'at 15:*', 'at 22:* on sat, sun' }` The script will be executed if `myDevice` was changed, **and** it is either between 15:00 and 16:00 or between 22:00 and 23:00 in the weekend. See [time trigger rules](#timer_trigger_rules).
 
 #### scenes = { ... }
- A list of one or more scene-names or indexes. The same rules as devices apply.
+ A list of one or more scene-names or indexes. The same rules as devices apply. So if your scene is listed in this table then the executed function will be triggered, e.g.: `on = { scenes = { 'myScene', 'anotherScene' } },`.
 
 #### groups = { ...}
 A list of one or more group-names or indexes. The same rules as devices apply.
 
 #### timer = { ... }
-A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules).
+A list of one ore more time 'rules' like `every minute` or `at 17:*`. See [*timer* trigger rules](#timer_trigger_rules). If any or the rules matches with the current time/date then your execute function is called. E.g.: `on = { timer = { 'between 30 minutes before sunset and 30 minutes after sunrise' } }`.
 
 #### variables = { ... }
 A list of one or more user variable-names as defined in Domoticz ( *Setup > More options > User variables*). If any of the variables listed here changes, the script is executed.
@@ -192,7 +190,7 @@ A list of one or more of these security states:
 If the security state in Domoticz changes and it matches with any of the states listed here, the script will be executed. See `/path/to/domoticz/scripts/dzVents/examples/templates/security.lua` for an example see [Security Panel](#Security_Panel) for information about how to create a security panel device.
 
 #### httpResponses = { ...} <sup>2.4.0</sup>
-A list of  one or more http callback triggers. Use this in conjunction with `domoticz.openURL()` where you will provide Domoticz with the callback trigger.  See ... for more information about making **and** handling asynchronous http requests with dzVents.
+A list of  one or more http callback triggers. Use this in conjunction with `domoticz.openURL()` where you will provide Domoticz with the callback trigger.  See [Asynchronous HTTP requests](Asynchronous_HTTP_requests) for more information.
 
 ### execute = function(**domoticz, item, triggerInfo**) ... end
 When all the above conditions are met (active == true and the on section has at least one matching rule), then this `execute` function is called. This is the heart of your script. The function has three parameters:
@@ -361,7 +359,7 @@ return {
 }
 ```
 
-### Asynchronous HTTP Request and handling
+### Asynchronous HTTP Request and handling <sup>2.4.0</sup>
 Suppose you have some external web service that will tell you what the current energy consumption is and you want that information in Domoticz:
 ```
 return {
@@ -407,10 +405,10 @@ return {
 }
 ```
 
-
 ## *timer* trigger rules
-There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm) :
+There are several options for time triggers. It is important to know that Domoticz timer events only trigger once every minute, so one minute is the smallest interval for your timer scripts. However, dzVents gives you many options to have full control over when and how often your timer scripts are called (all times are in 24hr format and all dates in dd/mm):
 
+```
     on = {
 	    timer = {
 			'every minute',              -- causes the script to be called every minute
@@ -470,6 +468,7 @@ There are several options for time triggers. It is important to know that Domoti
 	        end
 	   },
    }
+```
 
 The timer events are triggered every minute. If such a trigger occurs, dzVents will scan all timer-based events and will evaluate the timer rules. So, if you have a rule `on mon` then the script will be executed *every minute* but only on Monday.
 
