@@ -601,7 +601,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == (WHO_TEMPERATURE_CONTROL+500)))
+	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == WHO_TEMPERATURE_CONTROL))
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -745,10 +745,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_TEMPERATURE_CONTROL:
 			if (!iter->IsMeasureFrame())
 			{
-				if (iter->IsNormalFrame())
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
-				else
-					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
 				return;
 			}
              // 4: this is a openwebnet termoregulation update/poll messagge, setup devname
@@ -761,11 +758,11 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
 				devname += " Valves";
-				UpdateSwitch(WHO_TEMPERATURE_CONTROL+500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				UpdateSwitch(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT2);
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:
 				devname += " Actuator";
-				UpdateSwitch(WHO_TEMPERATURE_CONTROL+500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				UpdateSwitch(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT3);
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
 				devname += " Setpoint";
@@ -1088,7 +1085,9 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
                     break;
             }
             break;
-		case sSwitchContactT1: // Dry Contact / IR Detection /  Termo valves-actuator
+		case sSwitchContactT1: // Dry Contact / IR Detection
+		case sSwitchContactT2: // Termo valves contact status
+		case sSwitchContactT3: // Termo actuator contact status			
 			return(false); // can't write a contact
         case pTypeThermostat:
             // Test Thermostat subtype
