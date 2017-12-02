@@ -32,11 +32,11 @@ private:
 		std::string sValue;
 	};
 	float RandomTime(const int randomTime);
-	bool IterateTable(lua_State *lua_state, const int tIndex, int index, std::vector<_tLuaTableValues> &vLuaTable);
 	bool OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 
 	std::string m_version;
 };

@@ -91,7 +91,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 					break;
 				}
 				extraHeaders += "!#" + itt2->name + ": " + itt2->sValue;
-				if (itt != vLuaTable.end())
+				if (itt != vLuaTable.end() - 1)
 					itt++;
 			}
 		}
@@ -256,7 +256,7 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 	std::vector<_tLuaTableValues> vLuaTable;
-	IterateTable(lua_state, tIndex, 0, vLuaTable);
+	IterateTable(lua_state, tIndex, vLuaTable);
 	if (vLuaTable.size() > 0)
 	{
 		if (lCommand == "OpenURL")
@@ -274,17 +274,14 @@ bool CdzVents::processLuaCommand(lua_State *lua_state, const std::string &filena
 	return scriptTrue;
 }
 
-bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, std::vector<_tLuaTableValues> &vLuaTable)
+void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable)
 {
 	_tLuaTableValues item;
 	item.isTable = false;
-	static int indexCount;
-	indexCount = index;
 
 	lua_pushnil(lua_state);
 	while (lua_next(lua_state, tIndex) != 0)
 	{
-		indexCount++;
 		item.type = TYPE_UNKNOWN;
 		item.isTable = false;
 		item.tIndex = tIndex;
@@ -308,7 +305,7 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 			item.isTable = true;
 			item.tIndex += 2;
 			vLuaTable.push_back(item);
-			IterateTable(lua_state, item.tIndex, indexCount, vLuaTable);
+			IterateTable(lua_state, item.tIndex, vLuaTable);
 		}
 		else if (std::string(luaL_typename(lua_state, -1)) == "string")
 		{
@@ -330,6 +327,7 @@ bool CdzVents::IterateTable(lua_State *lua_state, const int tIndex, int index, s
 		}
 		if (!item.isTable && item.type != TYPE_UNKNOWN)
 			vLuaTable.push_back(item);
+
 		lua_pop(lua_state, 1);
 	}
 }
