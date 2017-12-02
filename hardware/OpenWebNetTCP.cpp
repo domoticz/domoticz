@@ -437,9 +437,7 @@ void COpenWebNetTCP::UpdateTemp(const int who, const int where, float fval, cons
     SendTempSensor(cnode, BatteryLevel, fval, devname);
 }
 
-/**
-Insert/Update SetPoint device
-**/
+
 void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, const char *devname)
 {
 	int cnode = ((who << 12) & 0xF000) | (where & 0xFF); //setpoint zone (1 - 99)
@@ -601,7 +599,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == WHO_TEMPERATURE_CONTROL))
+	else if (who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION)
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -755,14 +753,6 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			{
 			case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:
 				UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
-				break;
-			case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
-				devname += " Valves";
-				UpdateSwitch(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT2);
-				break;
-			case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:
-				devname += " Actuator";
-				UpdateSwitch(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT3);
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
 				devname += " Setpoint";
@@ -1085,9 +1075,8 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
                     break;
             }
             break;
-		case sSwitchContactT1: // Dry Contact / IR Detection
-		case sSwitchContactT2: // Termo valves contact status
-		case sSwitchContactT3: // Termo actuator contact status			
+		case sSwitchContactT1:
+			// Dry Contact / IR Detection
 			return(false); // can't write a contact
         case pTypeThermostat:
             // Test Thermostat subtype
