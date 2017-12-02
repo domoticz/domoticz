@@ -158,13 +158,13 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[16];
+			char szLocalTime[21];
 			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[16];
+			char szLocalTimeUtc[21];
 			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[16];
+			char szLocalTimeMs[21];
 			sprintf(szLocalTimeMs, "%llu", localTime*1000);
-			char szLocalTimeUtcMs[16];
+			char szLocalTimeUtcMs[21];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
