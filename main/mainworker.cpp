@@ -12865,6 +12865,21 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	if (pHardware)
 	{
 		std::vector<std::vector<std::string> > result;
+
+		if (pHardware->HwdType == HTYPE_PythonPlugin)
+		{
+#ifdef ENABLE_PYTHON
+			int hindex=FindDomoticzHardware(HardwareID);
+			if (hindex == -1)
+			{
+				_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
+				return false;
+			}
+			((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(unit, "udevice",  static_cast<float>(atof(sValue.c_str())));
+#endif
+			return true;
+		}
+
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HardwareID, DeviceID.c_str(), unit, devType, subType);
