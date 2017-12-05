@@ -1359,10 +1359,10 @@ void CEventSystem::UnlockEventQueueThread()
 void CEventSystem::EventQueueThread()
 {
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
+	_tEventQueue item;
 
 	while (!m_stoprequested)
 	{
-		_tEventQueue item;
 		bool hasPopped = m_eventqueue.timed_wait_and_pop<boost::posix_time::milliseconds>(item, boost::posix_time::milliseconds(5000));
 
 		if (!hasPopped)
