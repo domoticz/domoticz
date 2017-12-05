@@ -18,11 +18,13 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
-		function device.setKelvin(kelvin)
-			local url
-			url = domoticz.settings['Domoticz url'] ..
-					'/json.htm?type=command&param=setkelvinlevel&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
-			return domoticz.openURL(url)
+		if (device.deviceSubType == 'RGBWW') then
+			function device.setKelvin(kelvin)
+				local url
+				url = domoticz.settings['Domoticz url'] ..
+						'/json.htm?type=command&param=setkelvinlevel&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
+				return domoticz.openURL(url)
+			end
 		end
 
 		function device.setWhiteMode()

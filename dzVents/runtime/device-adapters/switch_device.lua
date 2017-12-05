@@ -1,5 +1,4 @@
 local TimedCommand = require('TimedCommand')
-local TIMED_OPTIONS = require('TimedCommandOptions')
 
 return {
 
@@ -76,7 +75,7 @@ return {
 		end
 
 		function device.switchOn()
-			return TimedCommand(domoticz, device.name, 'On', 'device', device.state, TIMED_OPTIONS.DEVICE)
+			return TimedCommand(domoticz, device.name, 'On', 'device', device.state)
 		end
 
 		function device.switchOff()

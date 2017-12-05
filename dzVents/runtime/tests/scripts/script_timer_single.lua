@@ -6,7 +6,7 @@ return {
 	},
 	execute = function(domoticz, timer, triggerInfo)
 		if (timer.isTimer) then
-			domoticz.notify('Me', timer.trigger .. ' ' .. triggerInfo.type .. ' ' .. triggerInfo.trigger)
+			domoticz.notify('Me', timer.trigger .. ' ' .. triggerInfo.type .. ' ' .. triggerInfo.trigger .. ' ' .. triggerInfo.scriptName)
 		end
 		return 'script_timer_table'
 	end

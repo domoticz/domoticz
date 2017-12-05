@@ -234,6 +234,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
 		- domoticz.EVENT_TYPE_VARIABLE)
 		- domoticz.EVENT_TYPE_HTTPRESPONSE <sup>2.4.0</sup>
  2. **trigger**: the timer rule that triggered the script if the script was called due to a timer event, or the security state that triggered the security trigger rule. See [below](#timer_trigger_rules) for the possible timer trigger rules.
+ 3. **scriptName**: the name of the current script.
 
 #### Tip: rename the parameters to better fit your needs
 The names of the execute parameters are actually something you can change to your convenience. For instance, if you only have one trigger for a specific switch device, you can rename `item` it to `switch`. Or if you think `domoticz` is too long you can rename it to `d` or `dz` (might save you a lot of typing and may make your code more readable):
@@ -769,10 +770,10 @@ See switch below.
  - **rainRate**: *Number*
  - **updateRain(rate, counter)**: *Function*. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
 
-#### RGBW / Lighting Limitless/Applamp
+#### RGBW(W) / Lighting Limitless/Applamp
  - **decreaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **increaseBrightness()**: *Function*. <sup>2.4.0</sup> Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **setKelvin(Kelvin)**: *Function*. <sup>2.4.0</sup> Sets Kelvin level of the light. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **setKelvin(Kelvin)**: *Function*. <sup>2.4.0</sup> Sets Kelvin level of the light (For RGBWW devices only). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setNightMode()**: *Function*. <sup>2.4.0</sup> Sets the lamp to night mode. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setRGB(red, green, blue)**: *Function*. <sup>2.4.0</sup> Set the lamps RGB color. Values are from 0-255. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setWhiteMode()**: *Function*. <sup>2.4.0</sup> Sets the lamp to white mode. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
@@ -1746,6 +1747,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
 - Added device adapter for Onkyo receiver hardware.
+- Added `scriptName` to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
 
 
 ##[2.3.0]

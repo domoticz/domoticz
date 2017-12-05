@@ -169,7 +169,7 @@ describe('Event dispatching', function()
 		assert.is_same({
 			{ ["onscript1"] = "Off" },
 			{ ['Scene:scene 2'] = 'On' },
-			{ ["SendNotification"] = "Me#every minute timer every minute#0#pushover##" },
+				{ ["SendNotification"] = 'Me#every minute timer every minute script_timer_single#0#pushover##' },
 			{ ["Scene:scene 1"] = "On" }
 		}, main)
 	end)

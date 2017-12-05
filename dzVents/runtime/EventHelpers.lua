@@ -125,6 +125,7 @@ local function EventHelpers(domoticz, mainMethod)
 	local function getEventInfo(eventHandler, mode)
 		local res = {}
 		res.type = mode
+		res.scriptName = eventHandler.name
 		if (eventHandler.trigger ~= nil) then
 			res.trigger = eventHandler.trigger
 		end

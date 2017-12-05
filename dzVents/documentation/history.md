@@ -15,6 +15,7 @@
 - Added historical data helper `deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)`. This will use the oldest data value when the data set is shorter than timeAgo.
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
 - Added device adapter for Onkyo receiver hardware.
+- Added `scriptName` to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
 
 [2.3.0]
 

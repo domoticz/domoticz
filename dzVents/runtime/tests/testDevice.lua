@@ -1212,6 +1212,7 @@ describe('device', function()
 			local device = getDevice(domoticz, {
 				['name'] = 'myRGBW',
 				['state'] = 'Set Kelvin Level',
+				['subType'] = 'RGBWW',
 				['type'] = 'Lighting Limitless/Applamp'
 			})
 
