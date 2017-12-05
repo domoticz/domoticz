@@ -3606,7 +3606,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 
 	if (DeviceRowIdx != -1)
 	{
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', Used=1 WHERE (ID==%" PRIu64 ")", devname.c_str(), DeviceRowIdx);
+		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
 		m_mainworker.m_eventsystem.GetCurrentStates();
 	}
 
@@ -3865,15 +3865,18 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			return -1; //We do not allow new devices
 		}
 
-		devname = "Unknown";
+		if (devname == "")
+		{
+			devname = "Unknown";
+		}
 
 		safe_query(
 			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
-			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q')",
+			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q','%q')",
 			HardwareID,
 			ID,unit,devType,subType,
 			signallevel,batterylevel,
-			nValue,sValue);
+			nValue,sValue, devname);
 
 		//Get new ID
 		result = safe_query(

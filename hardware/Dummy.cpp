@@ -75,7 +75,7 @@ namespace http {
 			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
 				return;
 
-			uint16_t fullType = (uint16_t)atoi(ssensortype.c_str());
+			unsigned int fullType = std::stoul(ssensortype, nullptr, 16);
 
 			int SensorType = fullType >> 8;
 			int SensorSubType = fullType & 0xFF;
