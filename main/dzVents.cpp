@@ -75,11 +75,8 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); itt++)
 	{
-		if (itt->isTable && itt->sValue == "headers")
+		if (itt->isTable && itt->sValue == "headers" && itt != vLuaTable.end() - 1)
 		{
-			if (itt == vLuaTable.end())
-				break;
-
 			int tIndex = itt->tIndex;
 			itt++;
 			std::vector<_tLuaTableValues>::const_iterator itt2;
