@@ -238,13 +238,16 @@ bool CdzVents::CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValu
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
 	if (type == "device")
+	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
+		m_sql.AddTaskItem(tItem, true);
+		tItem._ItemType = TITEM_UPDATEDEVICE;
+	}
 	else if (type == "scene")
 		tItem._ItemType = TITEM_SWITCHCMD_SCENE;
-	else if (type == "updatedevice")
-		tItem._ItemType = TITEM_UPDATEDEVICE;
 	else if (type == "variable")
 		tItem._ItemType = TITEM_SET_VARIABLE;
+
 
 	m_sql.AddTaskItem(tItem, true);
 	return true;
