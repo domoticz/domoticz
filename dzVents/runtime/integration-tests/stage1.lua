@@ -840,6 +840,7 @@ local testText = function(name)
 	})
 
 	dev.updateText("Oh my Darwin, what a lot of tests!").afterSec(3)
+	dev.updateText("This change should not happen").afterSec(10) -- is cancelled in vdCancelledRepeatSwitch
 	tstMsg('Test text device', res)
 	return res
 end

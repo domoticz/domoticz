@@ -6,8 +6,3 @@ tests ok
 
 setpoint stuff EvoHome
 sethue, setcolbrightness
-
-
-
-add current scriptname
-add split utils function

@@ -103,6 +103,10 @@ return {
 					type = 'device',
 					idx = data.id
 				})
+				domoticz.sendCommand('Cancel', {
+					type = 'updatedevice',
+					idx = data.id
+				})
 			end
 
 			device.isDevice = true
