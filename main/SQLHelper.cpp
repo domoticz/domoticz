@@ -3871,12 +3871,12 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 		}
 
 		safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
 			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q','%q')",
 			HardwareID,
 			ID,unit,devType,subType,
 			signallevel,batterylevel,
-			nValue,sValue, devname);
+			nValue,sValue, devname.c_str());
 
 		//Get new ID
 		result = safe_query(
