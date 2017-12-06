@@ -566,6 +566,7 @@ describe('device', function()
 					"pause",
 					"play",
 					"playFavorites",
+					"setDiscoMode",
 					"setKelvin",
 					'setNightMode',
 					'setRGB',
@@ -1241,6 +1242,11 @@ describe('device', function()
 			commandArray = {}
 			device.setRGB(255, 0, 0)
 			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+
+			commandArray = {}
+			device.setDiscoMode(8)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=discomodenum8&idx=1' }, commandArray)
+
 
 			device = getDevice(domoticz, {
 				['name'] = 'myRGBW',
