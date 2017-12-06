@@ -242,7 +242,6 @@ describe('device', function()
 			device.cancelQueuedCommands()
 			assert.is_same({
 				{ ['Cancel'] = { idx = 1, type = 'device' } },
-				{ ['Cancel'] = { idx = 1, type = 'updatedevice' } }
 			 }, commandArray)
 		end)
 
