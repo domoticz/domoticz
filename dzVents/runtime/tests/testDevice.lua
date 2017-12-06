@@ -1266,17 +1266,6 @@ describe('device', function()
 				['type'] = 'Lighting Limitless/Applamp'
 			})
 
-			local switched = false
-			device.switchOn = function()
-				switched = true
-			end
-			assert.is_false(device.active)
-			commandArray = {}
-			device.setKelvin(5500)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setkelvinlevel&idx=1&kelvin=5500' }, commandArray)
-			assert.is_true(switched)
-
-
 		end)
 
 		describe('Kodi', function()

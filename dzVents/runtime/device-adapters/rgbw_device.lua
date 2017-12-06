@@ -21,9 +21,6 @@ return {
 		if (device.deviceSubType == 'RGBWW') then
 			function device.setKelvin(kelvin)
 				local url
-				if (not device.active) then
-					device.switchOn()
-				end
 				url = domoticz.settings['Domoticz url'] ..
 						'/json.htm?type=command&param=setkelvinlevel&idx=' .. device.id .. '&kelvin=' .. tonumber(kelvin)
 				return domoticz.openURL(url)
