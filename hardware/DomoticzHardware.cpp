@@ -723,18 +723,19 @@ void CDomoticzHardwareBase::SendWaterflowSensor(const int NodeID, const int Chil
 
 void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float Dust, const std::string &defaultname, const std::string &defaultLabel)
 {
-	std::vector<std::vector<std::string> > result;
-	char szTmp[30];
-	sprintf(szTmp, "0000%02X%02X", NodeID, ChildID);
-	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
-		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCustom));
-	bool bDoesExists = !result.empty();
 
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeCustom;
 	gDevice.id = ChildID;
 	gDevice.intval1 = (NodeID << 8) | ChildID;
 	gDevice.floatval1 = Dust;
+
+	char szTmp[9];
+	sprintf(szTmp, "%08X", gDevice.intval1);
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeCustom));
+	bool bDoesExists = !result.empty();
 
 	if (bDoesExists)
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel);
@@ -1023,7 +1024,7 @@ int CDomoticzHardwareBase::CalculateBaroForecast(const double pressure)
 
 	m_baro_minuteCount++;
 
-	if (m_baro_minuteCount < 36) //if time is less than 35 min 
+	if (m_baro_minuteCount < 36) //if time is less than 35 min
 		return wsbaroforcast_unknown; // Unknown, more time needed
 	else if (m_dP_dt < (-0.25))
 		return wsbaroforcast_heavy_rain; // Quickly falling LP, Thunderstorm, not stable
