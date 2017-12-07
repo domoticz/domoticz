@@ -1051,18 +1051,24 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (temperature != "") {
 							float temp = (float)atoi(temperature.c_str());
 							temp = temp / 100;
-							m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
+							if (temp < 99) {
+								m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
+							}
 						}
 						if (humidity != "") {
 							int hum = atoi(humidity.c_str());
 							hum = hum / 100;
-							m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
+							if (hum > 1) {
+								m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
+							}
 						}
 						if (name == "Xiaomi Aqara Weather") {
 							std::string pressure = root2["pressure"].asString();
 							int pres = atoi(pressure.c_str());
 							pres = pres / 100;
-							m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
+							if (pres > 1) {
+								m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
+							}
 						}
 					}
 					else if (name == "Xiaomi RGB Gateway") {
