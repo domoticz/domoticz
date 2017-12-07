@@ -110,7 +110,7 @@ namespace http {
 			}
 		}
 
-		void CWebServer::RType_CreateSensor(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::RType_CreateDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
