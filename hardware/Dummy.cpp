@@ -72,16 +72,49 @@ namespace http {
 			std::string ssensorname = request::findValue(&req, "sensorname");
 			std::string ssensortype = request::findValue(&req, "sensortype");
 			std::string soptions = request::findValue(&req, "sensoroptions");
-			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
+
+			std::string ssensormappedtype = request::findValue(&req, "sensormappedtype");
+
+			std::string devicetype = request::findValue(&req, "devicetype");
+			std::string devicesubtype = request::findValue(&req, "devicesubtype");
+
+			if ((idx == "") || (ssensorname.empty()))
 				return;
 
-			uint16_t fullType;
-			std::stringstream ss;
-			ss << std::hex << ssensortype;
-			ss >> fullType;
+			unsigned int type;
+			unsigned int subType;
 
-			int SensorType = fullType >> 8;
-			int SensorSubType = fullType & 0xFF;
+			if (!ssensortype.empty())
+			{ // old bahavior (deprecated)
+				type = atoi(ssensortype.c_str());
+				subType = 0;
+			}
+			else
+			{
+				if (!ssensormappedtype.empty())
+				{ // for creating dummy from web (for example ssensormappedtype=0xF401)
+					uint16_t fullType;
+					std::stringstream ss;
+					ss << std::hex << ssensormappedtype;
+					ss >> fullType;
+
+					type = fullType >> 8;
+					subType = fullType & 0xFF;
+				}
+				else
+				if (!devicetype.empty() && !devicesubtype.empty())
+				{ // for creating device (type=x&subtype=y) from json api or code
+					uint16_t fullType;
+					std::stringstream ss;
+					ss << std::hex << ssensortype;
+					ss >> fullType;
+
+					type = atoi(devicetype.c_str());
+					subType = atoi(devicesubtype.c_str());
+				}
+				else
+					return;
+			}
 
 			int HwdID = atoi(idx.c_str());
 
@@ -101,7 +134,7 @@ namespace http {
 			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
 			m_sql.m_bAcceptNewHardware = true;
 
-			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, SensorType, SensorSubType, ssensorname, nid, soptions);
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, subType, ssensorname, nid, soptions);
 
 			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
 

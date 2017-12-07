@@ -4561,7 +4561,7 @@ define(['app'], function (app) {
 						$.ajax({
 							url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
-							"&sensortype=" + SensorType +
+							"&sensormappedtype=" + SensorType +
 							extraSendData,
 							async: false,
 							dataType: 'json',
