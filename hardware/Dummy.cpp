@@ -60,7 +60,7 @@ bool CDummy::WriteToHardware(const char *pdata, const unsigned char length)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::RType_CreateVirtualSensor(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			if (session.rights != 2)
 			{
@@ -71,6 +71,55 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensorname = request::findValue(&req, "sensorname");
 			std::string ssensortype = request::findValue(&req, "sensortype");
+			std::string soptions = request::findValue(&req, "sensoroptions");
+
+			if ((idx == "") || (ssensortype.empty()) || (ssensorname.empty()))
+				return;
+
+			unsigned int type = atoi(ssensortype.c_str());
+
+			int HwdID = atoi(idx.c_str());
+
+			//Make a unique number for ID
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
+
+			unsigned long nid = 1; //could be the first device ever
+
+			if (result.size() > 0)
+			{
+				nid = atol(result[0][0].c_str()) + 1;
+			}
+			unsigned long vs_idx = nid; // OTO keep idx to be returned before masking
+			nid += 82000;
+
+			bool bPrevAcceptNewHardware = m_sql.m_bAcceptNewHardware;
+			m_sql.m_bAcceptNewHardware = true;
+
+			uint64_t DeviceRowIdx = m_sql.CreateDevice(HwdID, type, 0, ssensorname, nid, soptions);
+
+			m_sql.m_bAcceptNewHardware = bPrevAcceptNewHardware;
+
+			if (DeviceRowIdx != -1)
+			{
+				root["status"] = "OK";
+				root["title"] = "CreateVirtualSensor";
+				std::stringstream ss;
+				ss << vs_idx;
+				root["idx"] = ss.str().c_str();
+			}
+		}
+
+		void CWebServer::RType_CreateSensor(WebEmSession & session, const request& req, Json::Value &root)
+		{
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string idx = request::findValue(&req, "idx");
+			std::string ssensorname = request::findValue(&req, "sensorname");
 			std::string soptions = request::findValue(&req, "sensoroptions");
 
 			std::string ssensormappedtype = request::findValue(&req, "sensormappedtype");
@@ -84,37 +133,24 @@ namespace http {
 			unsigned int type;
 			unsigned int subType;
 
-			if (!ssensortype.empty())
-			{ // old bahavior (deprecated)
-				type = atoi(ssensortype.c_str());
-				subType = 0;
+			if (!ssensormappedtype.empty())
+			{ // for creating dummy from web (for example ssensormappedtype=0xF401)
+				uint16_t fullType;
+				std::stringstream ss;
+				ss << std::hex << ssensormappedtype;
+				ss >> fullType;
+
+				type = fullType >> 8;
+				subType = fullType & 0xFF;
 			}
 			else
-			{
-				if (!ssensormappedtype.empty())
-				{ // for creating dummy from web (for example ssensormappedtype=0xF401)
-					uint16_t fullType;
-					std::stringstream ss;
-					ss << std::hex << ssensormappedtype;
-					ss >> fullType;
-
-					type = fullType >> 8;
-					subType = fullType & 0xFF;
-				}
-				else
 				if (!devicetype.empty() && !devicesubtype.empty())
-				{ // for creating device (type=x&subtype=y) from json api or code
-					uint16_t fullType;
-					std::stringstream ss;
-					ss << std::hex << ssensortype;
-					ss >> fullType;
-
+				{ // for creating any device (type=x&subtype=y) from json api or code
 					type = atoi(devicetype.c_str());
 					subType = atoi(devicesubtype.c_str());
 				}
 				else
 					return;
-			}
 
 			int HwdID = atoi(idx.c_str());
 
@@ -141,12 +177,13 @@ namespace http {
 			if (DeviceRowIdx != -1)
 			{
 				root["status"] = "OK";
-				root["title"] = "CreateVirtualSensor";
+				root["title"] = "CreateSensor";
 				std::stringstream ss;
 				ss << vs_idx;
 				root["idx"] = ss.str().c_str();
 			}
 		}
+
 	}
 }
 

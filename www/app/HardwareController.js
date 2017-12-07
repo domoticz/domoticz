@@ -4559,7 +4559,7 @@ define(['app'], function (app) {
 							extraSendData = "&sensoroptions=1;" + encodeURIComponent(AxisLabel);
 						}
 						$.ajax({
-							url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
+							url: "json.htm?type=createsensor&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
 							"&sensormappedtype=" + SensorType +
 							extraSendData,
