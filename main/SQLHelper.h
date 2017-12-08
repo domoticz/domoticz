@@ -78,14 +78,16 @@ struct _tTaskItem
 
 	}
 
-	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const std::string &DevParams, const bool bEventTrigger)
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_UPDATEDEVICE;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = idx;
-		tItem._sValue = DevParams;
-		tItem._nValue = bEventTrigger ? 1 : 0;
+		tItem._nValue = nValue;
+		tItem._sValue = sValue;
+		tItem._HardwareID = Protected ? 1 : 0;
+		tItem._switchtype = bEventTrigger ? 1 : 0;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;

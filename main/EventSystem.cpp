@@ -3382,8 +3382,27 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else if (lCommand == "UpdateDevice")
 	{
-		std::string	luaString = lua_tostring(lua_state, -1);
-		UpdateDevice(luaString, false);
+		std::vector<std::string> strarray;
+		StringSplit(lua_tostring(lua_state, -1), "|", strarray);
+		if (strarray.size() < 2 || strarray.size() > 4)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: UpdateDevice, invalid parameters!");
+			return false;
+		}
+		int nValue = -1;
+		uint8_t Protected;
+		uint64_t idx;
+		std::string sValue;
+		std::stringstream ssIdx(strarray[0]);
+		ssIdx >> idx;
+		if (strarray.size() > 1 && !strarray[1].empty())
+			nValue = atoi(strarray[1].c_str());
+		if (strarray.size() > 2 && !strarray[2].empty())
+			sValue = strarray[2];
+		if (strarray.size() > 3 && !strarray[3].empty())
+			Protected = atoi(strarray[3].c_str());
+
+		UpdateDevice(idx, nValue, sValue, (Protected ? true : false), false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3470,27 +3489,13 @@ void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 	}
 }
 
-void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventTrigger)
+void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
 {
-	std::vector<std::string> strarray;
-	StringSplit(DevParams, "|", strarray);
-	if (strarray.size() < 2 || strarray.size() > 4)
-		return; //Invalid!
-	std::string idx = strarray[0];
-	int nValue = -1;
-	std::string sValue;
-	std::string Protected;
-	if (strarray.size() > 1 && !strarray[1].empty())
-		nValue = atoi(strarray[1].c_str());
-	if (strarray.size() > 2 && !strarray[2].empty())
-		sValue = strarray[2];
-	if (strarray.size() > 3 && !strarray[3].empty())
-		Protected = strarray[3];
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate FROM DeviceStatus WHERE (ID=='%q')",
-		idx.c_str());
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
+		idx);
+	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
 
@@ -3511,29 +3516,25 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			db_nValue = nValue;
 		if (!sValue.empty())
 			db_sValue = sValue;
-		if (!Protected.empty())
-			db_Protected = atoi(Protected.c_str());
 		if (nValue != -1 || !sValue.empty())
 			db_LastUpdate = szLastUpdate;
 
-		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', Protected=%d, LastUpdate='%s' WHERE (ID=='%s')",
+		db_Protected = Protected ? 1 : 0;
+
+		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', Protected=%d, LastUpdate='%s' WHERE (ID=='%" PRIu64 "')",
 			db_nValue,
 			db_sValue.c_str(),
 			db_Protected,
 			db_LastUpdate.c_str(),
-			idx.c_str());
+			idx);
 
 		if ((nValue == -1) && (sValue.empty()))
 			return;
 
-		uint64_t ulIdx = 0;
-		std::stringstream s_str(idx);
-		s_str >> ulIdx;
-
 		int devType = atoi(dtype.c_str());
 		int subType = atoi(dsubtype.c_str());
 
-		UpdateSingleState(ulIdx, dname, nValue, sValue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
+		UpdateSingleState(idx, dname, nValue, sValue.c_str(), devType, subType, dswitchtype, szLastUpdate, dlastlevel, options);
 
 		//Check if we need to log this event
 		switch (devType)
@@ -3575,9 +3576,12 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 				break;
 			//Add Lighting log
 			if (nValue != -1)
-				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", ulIdx, nValue, !sValue.empty() ? sValue.c_str() : "0");
+				m_sql.safe_query("INSERT INTO LightingLog (DeviceRowID, nValue, sValue) VALUES ('%" PRIu64 "', '%d', '%q')", idx, nValue, !sValue.empty() ? sValue.c_str() : "0");
 			break;
 		}
+
+		std::stringstream sIdx;
+		sIdx << idx;
 
 		//Check if it's a setpoint device, and if so, set the actual setpoint
 		if (
@@ -3586,21 +3590,23 @@ void CEventSystem::UpdateDevice(const std::string &DevParams, const bool bEventT
 			)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending SetPoint to device....");
-			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(sValue.c_str())));
+			m_mainworker.SetSetPoint(sIdx.str(), static_cast<float>(atof(sValue.c_str())));
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Mode to device....");
-			m_mainworker.SetZWaveThermostatMode(idx, nValue);
+			m_mainworker.SetZWaveThermostatMode(sIdx.str(), nValue);
 		}
 		else if ((devType == pTypeGeneral) && (subType == sTypeZWaveThermostatFanMode) && nValue != -1)
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
-			m_mainworker.SetZWaveThermostatFanMode(idx, nValue);
+			m_mainworker.SetZWaveThermostatFanMode(sIdx.str(), nValue);
 		}
 		if (bEventTrigger)
-			ProcessDevice(0, ulIdx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname, 0);
+			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname, 0);
 	}
+	else
+		_log.Log(LOG_ERROR, "EventSystem: UpdateDevice IDX %" PRIu64 " not found!", idx);
 }
 
 void CEventSystem::OpenURL(const std::string &URL)
