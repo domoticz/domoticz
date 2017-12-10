@@ -8418,6 +8418,9 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 		{
 			//Retrieve last total from current record
 			int nValue;
+			subType = sTypeKwh; // sensor type changed during recording
+			devType = pTypeGeneral; // Device reported as General and not Energy
+			Unit = 1; // in decode_general() Unit is set to 1
 			std::string sValue;
 			struct tm LastUpdateTime;
 			if (!m_sql.GetLastValue(HwdID, ID.c_str(), Unit, devType, subType, nValue, sValue, LastUpdateTime))
