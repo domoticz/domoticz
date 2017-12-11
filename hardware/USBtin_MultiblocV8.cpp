@@ -48,7 +48,7 @@ History :
 
 #define SHIFT_TYPE_TRAME        17 
 #define SHIFT_INDEX_MODULE      7
-#define SHIFT_CODAGE_MODULE     3 
+#define SHIFT_CODAGE_MODULE     3
 #define SHIFT_SRES_MODULE       0
 
 #define type_ALIVE_FRAME            0
@@ -105,16 +105,25 @@ History :
 #define type_SFSP_CAPTEUR_1BS       514
 #define type_SFSP_CAPTEUR_4BS       515
 #define type_SFSP_SYNCHRO           516
+#define type_SFSP_LearnCommand      517
+
+#define BLOC_NORMAL_STATES			0x00
+#define BLOC_STATES_OFF				0x01
+#define BLOC_STATES_RESET			0x02
+#define BLOC_STATES_LEARNING		0x03
+#define BLOC_STATES_LEARNING_STOP	0x04
+#define	BLOC_STATES_CLEARING		0x05
 
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 // REFERENCE INDEX
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#define BLOC_DOMOTICZ                   0x01
 #define BLOC_SFSP_M                     0x14
 #define BLOC_SFSP_E                     0x15
 
 std::string NomRefBloc[45]={
-	"FACADE_1",
-	"FACADE_2",
+	"UNDEFINED",
+	"DOMOTICZ",
 	"NAVIGRAPH_VER",
 	"NAVIGRAPH_HOR",
 	"NAVIGRAPH_HOR_RTC",
@@ -174,6 +183,8 @@ USBtin_MultiblocV8::~USBtin_MultiblocV8(){
 bool USBtin_MultiblocV8::StartThread()
 {
 	m_stoprequested = false;
+	//Id Base for manual creation switch from domoticz...
+	V8switch_id_base = (type_SFSP_SWITCH<<SHIFT_TYPE_TRAME)+(1<<SHIFT_INDEX_MODULE)+(0<<SHIFT_CODAGE_MODULE)+0;
 	min_counter = (60*5);
 	min_counter2 = (3600*6);
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&USBtin_MultiblocV8::Do_Work, this)));
@@ -252,6 +263,12 @@ void USBtin_MultiblocV8::Do_Work()
 				BlocList_CheckBloc();
 			}
 		}
+		
+		if( BOOL_SendPushOffSwitch ){ //if a Send push off switch is request
+			BOOL_SendPushOffSwitch = false;
+			USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(Sid_PushOff_ToSend,CodeTouchePushOff_ToSend);
+		}
+		
 	}
 }
 
@@ -316,6 +333,8 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	unsigned long SwitchId = (bufferdata[0]<<24)+(bufferdata[1]<<16)+(bufferdata[2]<<8)+bufferdata[3];
 	std::string defaultname=" ";
 	
+	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, bufferdata[4] );
+	
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
 	lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
@@ -336,6 +355,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 		lcmd.LIGHTING2.id4 = bufferdata[3]&0xff;
 		defaultname = "Wireless switch";
 	}
+	
 	int CodeNumber = bufferdata[4]&0x7F;
 	lcmd.LIGHTING2.unitcode = CodeNumber;
 	if( bufferdata[4]&0x80 ) lcmd.LIGHTING2.cmnd = light2_sOn;
@@ -406,6 +426,17 @@ void  USBtin_MultiblocV8::BlocList_GetInfo(const unsigned char RefBloc, const ch
 						SendRequest(Rqid);
 						Rqid= (type_STATE_S_TOR_5_TO_6<<SHIFT_TYPE_TRAME)+ BlocList_CAN[i].BlocID;
 						SendRequest(Rqid);
+						//Créates 2 switch for Learning and Clearing switches store into blocs
+						
+						std::string defaultname = NomRefBloc[RefBloc].c_str();
+						std::string defaultnamenormal = defaultname + " LEARN EXIT";
+						std::string defaultnamelearn = defaultname + " LEARN";
+						std::string defaultnameclear = defaultname + " CLEAR";
+						
+						sID += (type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME);
+						SendSwitch(sID, BLOC_STATES_LEARNING_STOP, 255, false, 0, defaultnamenormal.c_str() ); //only push command
+						SendSwitch(sID, BLOC_STATES_LEARNING, 255, false, 0, defaultnamelearn.c_str() ); //only push command
+						SendSwitch(sID, BLOC_STATES_CLEARING, 255, false, 0, defaultnameclear.c_str() ); //only push command
 						break;
 				}
 				break;
@@ -470,7 +501,7 @@ void USBtin_MultiblocV8::Traitement_Trame_Vie(const unsigned char RefBloc, const
 }
 
 //check if an output has changed...
-bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int LightingType,int OutputNumber,int CdeReceive,int CommandPWM,int LevelReceive){
+bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bool CdeReceive,int LevelReceive){
 	char szDeviceID[10];
 	int i;
 	bool returnvalue = true;
@@ -490,25 +521,25 @@ bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int LightingType,in
 		}
 	}
 	
-	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Unit==%d)", 
-			m_HwdID, szDeviceID, LightingType, OutputNumber); //Unit = 1 = sortie n°1
+	result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d==%d) AND (Unit==%d)", 
+			m_HwdID, szDeviceID,pTypeLighting2,sTypeAC, OutputNumber); //Unit = 1 = sortie n°1
 		if(!result.empty() && !ForceUpdate ){ //if output exist in db and no forceupdate
 			//check if we have a change, if not do not update it
 			int nvalue = atoi(result[0][1].c_str());
 			//_log.Log(LOG_NORM,"MultiblocV8: Output 1 nvalue : %d ",nvalue);
-			if ( (!CdeReceive) && (nvalue == 0) ) returnvalue = false;
+			if ( (!CdeReceive) && (nvalue == 0) ) returnvalue = false; //still off, nothing to do
 			else{
-				//Check Level
+				//Check Level changed
 				int slevel = atoi(result[0][2].c_str());
 				//_log.Log(LOG_NORM,"MultiblocV8: Output 1 slevel : %d ",slevel);
-				if (CommandPWM && (slevel == LevelReceive) ) returnvalue = false;
+				if( (slevel == LevelReceive) ) returnvalue = false;
 			}
 		}
 	return returnvalue;
 }
 
 //store information outputs new states...
-void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,int Comandeonoff,int CommandPWM,int Level ){
+void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool Comandeonoff,int Level ){
 	double rlevel = (15.0 / 255)*Level;
 	int level = int(rlevel);
 	//Extract the RefBloc Type
@@ -523,11 +554,10 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,int 
 	lcmd.LIGHTING2.id2 = (sID>>16)&0xff;
 	lcmd.LIGHTING2.id3 = (sID>>8)&0xff;
 	lcmd.LIGHTING2.id4 = sID&0xff;
-	if ( ( Comandeonoff & 0x01 ) ) lcmd.LIGHTING2.cmnd = light2_sOn;
-	else lcmd.LIGHTING2.cmnd = light2_sOff;
-	//Si état PWM actif /if PWM active :
-	if( ( CommandPWM & 0x01 ) ) lcmd.LIGHTING2.cmnd =  light2_sSetLevel;
 	
+	if ( Comandeonoff == true ) lcmd.LIGHTING2.cmnd = light2_sOn;
+	else lcmd.LIGHTING2.cmnd = light2_sOff;
+		
 	lcmd.LIGHTING2.unitcode = OutputNumber & 0xff; //SubUnit;	//output number
 	lcmd.LIGHTING2.level = level; //level_value;		
 	lcmd.LIGHTING2.filler = 2;
@@ -549,67 +579,79 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 	//char Subtype = 0;
 	int level_value = 0;
 	unsigned long sID = (FrameType<<SHIFT_TYPE_TRAME)+(RefeBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
-	int OutputCde;
-	int OutputPWM;
+	bool OutputCde;
+	//bool OutputPWM;
 	
 	switch(FrameType){
 		case type_STATE_S_TOR_1_TO_2:
-			OutputCde = (bufferdata[2] & 0x01);
-			OutputPWM = ((bufferdata[2]>>4) & 0x01);
+			if(bufferdata[2] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,1,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 1,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,1,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 1,OutputCde,level_value );
 			}
 			
-			OutputCde = (bufferdata[6] & 0x01);
-			OutputPWM = ((bufferdata[6]>>4) & 0x01);
+			if(bufferdata[6] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,2,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 2,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,2,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 2,OutputCde,level_value );
 			}
 			break;
 			
 		case type_STATE_S_TOR_3_TO_4:
-			OutputCde = (bufferdata[2] & 0x01);
-			OutputPWM = ((bufferdata[2]>>4) & 0x01);
+			if(bufferdata[2] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,3,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 3,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,3,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 3,OutputCde,level_value );
 			}
 			
-			OutputCde = (bufferdata[6] & 0x01);
-			OutputPWM = ((bufferdata[6]>>4) & 0x01);
+			if(bufferdata[6] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,4,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 4,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,4,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 4,OutputCde,level_value );
 			}
 			break;
 			
 		case type_STATE_S_TOR_5_TO_6:
-			OutputCde = (bufferdata[2] & 0x01);
-			OutputPWM = ((bufferdata[2]>>4) & 0x01);
+			if(bufferdata[2] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,5,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 5,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,5,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 5,OutputCde,level_value );
 			}
 			
-			OutputCde = (bufferdata[6] & 0x01);
-			OutputPWM = ((bufferdata[6]>>4) & 0x01);
+			if(bufferdata[6] & 0x01) OutputCde = true;
+			else OutputCde = false;
+			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
+			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
 			level_value /= 16;
 			if( level_value > 15 ) level_value = 15;
-			if( CheckOutputChange(sID,pTypeLighting2,6,OutputCde,OutputPWM,level_value) == true ) { //on met à jours si nécessaire !
-				OutputNewStates( sID, 6,OutputCde,OutputPWM,level_value );
+			if( CheckOutputChange(sID,6,OutputCde,level_value) == true ) { //on met à jours si nécessaire !
+				OutputNewStates( sID, 6,OutputCde,level_value );
 			}
 			break;
 	}
@@ -643,11 +685,14 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 	if( packettype == pTypeLighting2 )
 	{
 		//light command
-		unsigned long sID_EnBase;
+		long sID_EnBase;
 		// Récupère l'info ID stockée qui contient l'identifiation Rebloc+Codage+Ssréseau du bloc)
 		// retreive the ID information of the blocs :
 		sID_EnBase = (pSen->LIGHTING2.id1<<24)+(pSen->LIGHTING2.id2<<16)+(pSen->LIGHTING2.id3<<8)+(pSen->LIGHTING2.id4);
 		int FrameType =  ( sID_EnBase & MSK_TYPE_TRAME) >> SHIFT_TYPE_TRAME;
+		int ReferenceBloc = ( sID_EnBase & MSK_INDEX_MODULE ) >> SHIFT_INDEX_MODULE;
+		int Codage = ( sID_EnBase & MSK_CODAGE_MODULE ) >> SHIFT_CODAGE_MODULE;
+		int Ssreseau = ( sID_EnBase & MSK_SRES_MODULE ) >> SHIFT_SRES_MODULE;
 		// on est autorisé à envoyer les commandes STOR uniquement si le thread est actif
 		if( m_thread ){
 			//pour envoyer une commande STOR : // for sending STOR Frame :
@@ -672,11 +717,11 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					fLevel=255.0f;
 				iLevel=int(fLevel);
 				
-				if( pSen->LIGHTING2.cmnd == light2_sOn ){
-					Command = 0x01;
-				}
-				else if( pSen->LIGHTING2.cmnd == light2_sSetLevel ){
+				if( pSen->LIGHTING2.cmnd == light2_sSetLevel ){
 					Command = 0x11; //ON + SetLevel
+				}
+				else if( pSen->LIGHTING2.cmnd == light2_sOn ){
+					Command = 0x01;
 				}
 				else{ //Off...
 					Command = 0;
@@ -696,8 +741,59 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 			else if( FrameType == type_SFSP_SWITCH ){ 
 				//Pas d'envoi des switch créé sur réception de trames, ce sont des switch réel
 				//no sending frame for switch created by the CAN, they are real switch not virtual ! it's like enocean
-				_log.Log(LOG_ERROR,"MultiblocV8: Can not switch with this DeviceID,this is not a virtual switch...");
-				return false;
+				//this is a switch created in domoticz, so send it on the CanBus !
+				if( ReferenceBloc == BLOC_DOMOTICZ && Codage == 0 && Ssreseau == 0 ){
+					if( pSen->LIGHTING2.cmnd == light2_sOn || pSen->LIGHTING2.cmnd == light2_sOff ){
+						//use directly the baseId to send a "push on" command, the send "push off" is automatic:
+						unsigned char CodeTouche = (pSen->LIGHTING2.unitcode);
+						Sid_PushOff_ToSend = sID_EnBase;
+						CodeTouchePushOff_ToSend = CodeTouche;
+						CodeTouche |= 0x80; //send a "push ON" command
+						USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(sID_EnBase,CodeTouche);
+						BOOL_SendPushOffSwitch = true; //Auto push off switch because it works like EnOcean (Press and Released info on one switch).
+						return true;
+					}
+					else if( pSen->LIGHTING2.cmnd == light2_sSetLevel ){
+						//to do : if user set the level we must send the command By Outpu direct command and not by SFSP Frame
+						_log.Log(LOG_ERROR,"MultiblocV8: Dimmer level not yet supported !");
+						return false;
+					}
+				}
+				else{ 
+					_log.Log(LOG_ERROR,"MultiblocV8: Can not switch with this DeviceID,this is not a virtual switch...");
+					return false;	
+				}
+			}
+			else if( FrameType == type_COMMANDE_ETAT_BLOC ){ //specific command send to blocs
+				if( ReferenceBloc == BLOC_SFSP_M || ReferenceBloc == BLOC_SFSP_E ){
+					//on each "push on" switch send a bloc command starting with learn on OUTPUT 1
+					//to OUTPUT 6 and return to Normal State Bloc.
+					//In learning mode the output return states : ON + BLINK(1sec) ON but we can't show this in domoticz on a SWITCH
+					//So we can show it in the log message (OUTPUT+n° + LEARN MODE) !
+					unsigned char Commande = (pSen->LIGHTING2.unitcode);
+					switch(Commande){
+						default :
+						case BLOC_STATES_LEARNING_STOP :
+							CommandBlocToSend = BLOC_STATES_LEARNING_STOP;
+						break;
+						case BLOC_STATES_LEARNING	:
+							CommandBlocToSend = BLOC_STATES_LEARNING;
+						break;
+						case BLOC_STATES_CLEARING	:
+							CommandBlocToSend = BLOC_STATES_CLEARING;
+						break;
+					}
+					//sID_EnBase + commande 
+					USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(sID_EnBase,CommandBlocToSend);
+					if( Commande == BLOC_STATES_LEARNING ){
+						USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(sID_EnBase,0); //
+					}
+					return true;
+				}
+				else{
+					_log.Log(LOG_ERROR,"MultiblocV8: Error Command BLoc not allowed !");
+					return false;
+				}
 			}
 		}
 		else{
@@ -706,4 +802,54 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 	}
 	return false;
 }
+
+void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend,char CodeTouche){
+	char szDeviceID[10];
+	char DataToSend[16];
+	sprintf(szDeviceID,"%08X",(unsigned int)sID_ToSend);
+	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
+	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId 
+	sprintf(DataToSend,"%02X",(unsigned char)CodeTouche);
+	std::string szTrameToSend = "T"; //
+	szTrameToSend += szDeviceID;
+	szTrameToSend += "5";		 //DLC always to 5 for SFSP_SWITCH Frame
+	szTrameToSend += "00000001"; //always set to 1 because it's an internal switch (from domoticz)
+	szTrameToSend += DataToSend; //contain data code + send On information
+	//if( BOOL_DebugInMultiblocV8 == true ) _log.Log(LOG_NORM,"MultiblocV8: Sending Frame: %s ",szTrameToSend.c_str() );
+	writeFrame(szTrameToSend);
+}
+
+void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID_ToSend,char Commande){
+	char szDeviceID[10];
+	char DataToSend[16];
+	sprintf(szDeviceID,"%08X",(unsigned int)sID_ToSend);
+	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
+	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId 
+	sprintf(DataToSend,"%02X",(unsigned char)Commande);
+	std::string szTrameToSend = "T"; //
+	szTrameToSend += szDeviceID;
+	szTrameToSend += "1";		 //DLC always to 5 for SFSP_SWITCH Frame
+	szTrameToSend += DataToSend; //contain data code + send On information
+	//if( BOOL_DebugInMultiblocV8 == true ) 
+	_log.Log(LOG_NORM,"MultiblocV8: Sending BlocState command: %s ",szTrameToSend.c_str() );
+	writeFrame(szTrameToSend);
+}
+
+void USBtin_MultiblocV8::USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend,char Commande){
+	char szDeviceID[10];
+	char DataToSend[16];
+	unsigned long sID = (type_CMD_S_TOR<<SHIFT_TYPE_TRAME)+ (baseID_ToSend&(MSK_INDEX_MODULE+MSK_CODAGE_MODULE+MSK_SRES_MODULE));
+	sprintf(szDeviceID,"%08X",(unsigned int)sID);
+	//unsigned int DevIdOnCan = 0x00000001; //on the CAN a wired Input always send a DevId at 0x01 on a u32
+	//differ from a real wireless EnOcean receive switch send directly its (u32)DeviceId 
+	sprintf(DataToSend,"%02X",(unsigned char)Commande);
+	std::string szTrameToSend = "T"; //
+	szTrameToSend += szDeviceID;
+	szTrameToSend += "1";		 //DLC always to 5 for SFSP_SWITCH Frame
+	szTrameToSend += DataToSend; //contain data code + send On information
+	//if( BOOL_DebugInMultiblocV8 == true ) 
+	_log.Log(LOG_NORM,"MultiblocV8: Sending SFSP learn command: %s ",szTrameToSend.c_str() );
+	writeFrame(szTrameToSend);
+}
+
 

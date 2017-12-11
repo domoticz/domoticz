@@ -17,6 +17,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		void StopThread();
 		bool StartThread();
 		bool m_stoprequested;
+		unsigned long V8switch_id_base;
 		
 	private:
 		boost::shared_ptr<boost::thread> m_thread;
@@ -28,7 +29,12 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		int min_counter2;
 		bool BOOL_TaskAGo;
 		bool BOOL_TaskRqStorGo;
-							
+		bool BOOL_SendPushOffSwitch;
+		int Sid_PushOff_ToSend;
+		char CodeTouchePushOff_ToSend;
+		
+		char CommandBlocToSend;
+		
 		struct
 		{
 			long BlocID;
@@ -57,9 +63,13 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		void Traitement_E_ANA_Recu(const unsigned int FrameType,const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8]);
 		void Traitement_SFSP_Switch_Recu(const unsigned int FrameType,const unsigned char RefBloc, const char Codage, const char Ssreseau, unsigned int bufferdata[8]);
 		
-		bool CheckOutputChange(unsigned long sID,int LightingType,int OutputNumber,int CdeReceive,int CommandPWM,int LevelReceive);
-		void OutputNewStates(unsigned long sID,int OutputNumber,int Comandeonoff,int CommandPWM,int Level );
+		bool CheckOutputChange(unsigned long sID,int OutputNumber,bool CdeReceive,int LevelReceive);
+		void OutputNewStates(unsigned long sID,int OutputNumber,bool Comandeonoff,int Level );
 		
 		void BlocList_GetInfo(const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int bufferdata[8]);
+		
+		void USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend,char CodeTouche);
+		void USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID_ToSend,char Commande);
+		void USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend,char Commande);
 };
 

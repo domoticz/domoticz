@@ -30,7 +30,8 @@ public:
 	~USBtin();
 	std::string m_szSerialPort;
 	void Restart();
-	
+	unsigned int Bus_CANType;
+	unsigned long switch_id_base;
 	
 private:
 	bool StartHardware();
@@ -44,7 +45,7 @@ private:
 	int BelErrorCount;
 	char m_bufferUSBtin[390]; //buffer capable de stocker 15 trames en 1 fois
 	int m_bufferpos;
-	unsigned int Bus_CANType;
+	
 	bool BOOL_Debug; //1 = activ
 	
 	boost::asio::serial_port_base::parity m_iOptParity;

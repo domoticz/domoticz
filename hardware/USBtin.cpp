@@ -172,7 +172,10 @@ void USBtin::Do_Work()
 						break;
 					case 5 : //openning can port :
 						//Activate the good CAN Layer :
-						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ ManageThreadV8(true);}
+						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ 
+							ManageThreadV8(true);
+							switch_id_base = V8switch_id_base;
+						}
 						OpenCanPort();
 						EtapeInitCan++;
 						break;
