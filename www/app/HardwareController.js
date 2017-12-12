@@ -5583,8 +5583,8 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divsolaredgeapi").show();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
