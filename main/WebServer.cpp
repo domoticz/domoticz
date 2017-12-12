@@ -584,7 +584,8 @@ namespace http {
 			RegisterRType("addscene", boost::bind(&CWebServer::RType_AddScene, this, _1, _2, _3));
 			RegisterRType("deletescene", boost::bind(&CWebServer::RType_DeleteScene, this, _1, _2, _3));
 			RegisterRType("updatescene", boost::bind(&CWebServer::RType_UpdateScene, this, _1, _2, _3));
-			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateVirtualSensor, this, _1, _2, _3));
+			RegisterRType("createvirtualsensor", boost::bind(&CWebServer::RType_CreateMappedSensor, this, _1, _2, _3));
+			RegisterRType("createdevice", boost::bind(&CWebServer::RType_CreateDevice, this, _1, _2, _3));
 
 			RegisterRType("createevohomesensor", boost::bind(&CWebServer::RType_CreateEvohomeSensor, this, _1, _2, _3));
 			RegisterRType("bindevohome", boost::bind(&CWebServer::RType_BindEvohome, this, _1, _2, _3));
