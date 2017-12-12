@@ -1,0 +1,658 @@
+/* THIS MAKES 3 ITEMS AT THE TOP OF EACH CATEGORY TWICE AS BIG  */
+
+@media all and (min-width: 768px){
+    
+    /*  increasing container height  */
+    
+    #dashcontent h2 + div.divider:nth-child(-n+2) .span4:nth-child(-n+3){
+        /*height:143px!important; /* the height without lastUpdate*/
+        /*height:163px!important;*//* let's let the item take care of it itself.*.
+        padding:0;
+        /*margin-bottom: 20px;*/
+        background-color:transparent;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .item,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr{
+        display:block;
+        height:143px;
+        min-height: 143px;
+        border-bottom-left-radius: 0!important;
+        border-bottom-right-radius: 0!important;        
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item{
+        margin-bottom:25px;
+    }
+    
+    /*  Bigtext changes  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus #itemtablesmall tr #bigtext{
+        top:-25px;
+        font-weight: bold;
+        right:10px;
+        text-align: right;
+        left:auto;
+        float:right;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext{
+        float: none;
+        font-size: 25px;
+        text-align: left;
+        width: 63%;
+        max-width: 63%;
+        /*top: 36px;*/
+        left:37%;
+        top: 38%;
+        display: flex;
+        align-items: center;
+        flex-direction: row;            
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span{
+        width:100%;
+        overflow-x:hidden;
+        height:100px;
+        line-height: 30px;
+        font-size: 30px;
+        background-color: transparent;  
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+
+    }    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span{
+        font-size: 25px;
+    }   
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item:not(.withstatus) #itemtablesmall tr #bigtext > span > span:first-of-type{padding-right:10px;}
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #bigtext{
+        display:inline-block;
+        float:right;
+        right:10px; 
+        text-align: right;
+        left:auto;
+        top:-26px;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #bigtext{
+        display:inline-block;
+        float:right;
+        text-align: right;
+        right:10px; 
+        left:auto;
+        top:-26px;
+    }
+
+    #dashTemperature h2 + div.divider .span4:nth-child(-n+3) #bigtext > span > span:not(:first-of-type){padding-left:7px;}
+    
+
+/*  put status instead of bigtext on the items that have extra status data  */    
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status{
+        float: none;
+        font-size: 18px;
+        text-align: left;
+        width: 63%;
+        /*top: 36px;*/
+        left:37%;
+        top: 38%;
+        display: flex;
+        align-items: center;
+        flex-direction: column; 
+        justify-content: center;
+        background-color:transparent;
+        position:relative;
+        border:0;
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader tr #status{left:0;top:0;}
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount3 tr #status,    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount4 tr #status{font-size:17px;}    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount5 tr #status{font-size:16px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount6 tr #status{font-size:15px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount7 tr #status{font-size:14px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount8 tr #status{font-size:13px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount9 tr #status{font-size:12px;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus.statuscount10 tr #status{font-size:11px;}
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper{
+        width:100%;
+        min-height:100px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        flex-grow: 1;
+        justify-content: space-around;
+        align-items: center;
+        min-height: 108px;
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > img{box-shadow: none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status > span.wrapper > span{
+        box-shadow:inset 0px -2px 1px -1px rgba(50, 50, 50, 0.1);
+        padding: 3px 10px 0 5px;
+        line-height: 1em;
+        height:auto;
+        width:80%;
+        width:calc(100% - 30px);
+        white-space: normal;
+        background:none;
+        background-image:none;
+    }
+    
+    
+    
+        /*  must... reset ... crazyness.. that I built  */
+
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
+        float: none!important;   
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{ 
+        display:flex!important;
+        padding:0;
+        border:none;
+        position:relative;
+        height:0;
+        overflow:visible;
+        width:auto;
+        top: 37px;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{float:right!important;}
+    
+    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3:after{
+        display:none!important;
+        border:none;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3 img{
+        border:none!important;
+        padding:2px;
+        box-sizing: border-box;
+        width: 100%;
+        height: auto;
+    }    
+    
+    
+    
+    
+    /*  image repositioning  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3{
+        border-radius:2px;
+        overflow:visible;    
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img:hover,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img:hover,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img:hover,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3 img:hover{
+        border-radius: 5px;
+        transition: none;
+    }    
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3 img{
+        /*width:60px;
+        height:60px;*/
+        display:block;
+        border-radius:0;
+        width:100%;        
+        height:auto;
+        box-shadow: none;
+        top:38%;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img img:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1 img:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img2 img:after,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img3 img:after{
+        display:none;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1{
+        width: 30%;
+        /*top: 14px;*/
+        position: relative;        
+        left: 5%;
+        top: 38%;
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmall tr #img1 img{
+        width: 100%;
+        height: auto;
+        max-width: 80px;
+        box-shadow: none;
+        margin-left: auto;      
+    }
+        
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1{
+        right:10%;  
+        top: 55px; /* was 38% */
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2{
+        right:50%;
+        margin-right:-25px!important;
+        top: 55px; /*top: 38%;*/
+        display: flex;
+        align-items: center;
+        flex-direction: row;    
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img3{
+        float:left!important;
+        left:10%;
+        top: 55px;  /* top: 38%;*/
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img1 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon tr #img2 img{
+        /*width:20%;
+        height:20%;*/
+        max-width:60px!important;
+        max-height:60px!important;
+        margin: 0 auto;
+        height:auto;
+        width:100%;
+        border:none!important;
+        border-right:none!important;
+        box-sizing: border-box;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1{
+        float:none!important;
+        width:35%;
+        max-width:80px;
+        left:10%;
+        top: 38%;
+        height: 0;
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2{
+        width:35%;
+        max-width:80px;
+        right:10%;
+        top: 38%;
+        height: 0;
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img1 img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalldoubleicon tr #img2 img{
+        width:100%;
+        height:auto;
+    }
+
+    
+    /*  status content  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td > div.dimslider {
+        top: 110px;
+        border:0;
+        height:0;
+        box-shadow:none;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td > div.dimslider .ui-slider-handle{
+        top: -23px;
+        width: 40px;
+        height: 40px;
+        background-size: 80% 80%;
+        left: 10px;
+        margin-left: -20px;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .dimslider .ui-slider-range {
+        height: 108px;
+        top: -110px;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels {
+        left:0;
+        top:0;
+        height:0;
+        width:100%;
+        margin:0!important;
+        font-size:150%;
+        border-radius:3px;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-buttonset .ui-button{
+        font-size:130%;
+        height: auto;     
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels  .ui-buttonset{
+        height:108px;
+        z-index:1;
+        top:0px;
+        display: flex;
+        flex-flow: row wrap; 
+        align-items: stretch; 
+        margin-right:0;           
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-selectmenu-button{
+        left: 35%;
+        width: 65%!important;
+        top: 30px!important;
+        height: 60px;
+        box-shadow:none;
+        background-image:none;
+        background-color:#d4e1ee;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-selectmenu-button .ui-selectmenu-text{
+        /*height:100%;
+        padding: 15px 0 15px 10px!important;
+        background-color: rgba(196,209,238,1);
+        text-align: left;*/
+        
+        padding-left: 10px!important;
+        box-sizing: border-box;
+        background-color:transparent;
+        justify-content: flex-start;
+        box-shadow: inset 0px -1px 20px -1px rgba(50, 50, 50, 0.1);
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels .ui-selectmenu-button .ui-icon ui-icon-triangle-1-s{
+        height:55px;
+        padding:20px 0 0 0;
+        transform: scale(2); 
+    }
+
+    /* An example of what we can do with the new CSS! Yay! */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.SelectorSwitch #bigtext,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.SelectorSwitch #img{display:none!important}
+    
+    .ui-draggable-dragging{
+        z-index:4;
+    }
+ 
+
+    /*  Normal status. */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusNormal{box-shadow:none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusNormal td#name{
+        background-color: transparent;
+        -moz-box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        -webkit-box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        box-shadow:  2px 4px 18px 0px rgba(50, 50, 50, 0.2);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;    
+    }
+
+    /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected{box-shadow:none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected td#name{
+        background-color: transparent;
+        -moz-box-shadow:  0 6px 8px -2px #A4B1EE;
+        -webkit-box-shadow:  0 6px 8px -2px #A4B1EE;
+        box-shadow: 0 6px 8px -2px #A4B1EE;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;    
+    }
+
+    /*
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusProtected tr:after {
+        content : "";
+        display: block;
+        position: relative;
+        top: 0;
+        right: 3px;
+        float:right;
+        background: url(/images/lock_closed.png) no-repeat center center; 
+        -webkit-background-size: 16px;
+        -moz-background-size: 16px;
+        -o-background-size: 16px;
+        background-size: 16px;
+        width: 32px;
+        height: 32px;
+        opacity : 0.6;
+        z-index: 1;
+    }*/
+    
+    /*  Adds little icons to show current status of items, instead of the default box-shadow solution. */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout{box-shadow:none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusTimeout td#name{
+        background-color: transparent;
+        -moz-box-shadow: 0 5px 8px -4px #DF2D3A;
+        -webkit-box-shadow: 0 5px 8px -4px #DF2D3A;
+        box-shadow: 0 5px 8px -4px #DF2D3A;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;    
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery{box-shadow:none}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery td#name{
+        background-color: transparent;    
+        -moz-box-shadow:  0 2px 4px -2px #dcdf2d;
+        -webkit-box-shadow:  0 2px 4px -2px #dcdf2d;
+        box-shadow:  0 2px 4px -2px #dcdf2d;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.statusLowBattery tr:after {
+        content : "";
+        display: block;
+        position: relative;
+        top: 0px;
+        right: 5px;
+        float:right;
+        background: url(/images/battery-low.png) no-repeat center center; 
+        -webkit-background-size: 20px;
+        -moz-background-size: 20px;
+        -o-background-size: 20px;
+        background-size: 20px;
+        width: 32px;
+        height: 32px;
+        opacity : 0.5;
+        z-index: 1;
+    }
+
+    
+    /* content changes  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #name{
+        padding:10px!important;
+        height:35px!important;
+        display:block;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item tr .widget{position: relative;top:-20px}
+    
+
+/*  showing the last update data  */
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate{
+        top: 108px;
+        position: relative;
+        left: 0;
+        height:20px;
+        width: 100%;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate > span{
+        display:inline-block;
+        height:20px;
+        padding: 4px 10px 2px 10px!important;
+        background-color: #D4E1EE;
+        box-shadow: 2px -4px 18px 0px rgba(50, 50, 50, 0.2);
+        width:100%;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+    }    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) #itemtablesmalltrippleicon #lastupdate{
+        top:108px;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr #img1{
+        float:none!important;
+    }
+    
+    
+    /*  new features  */
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Percentage td.overlay{
+        display:block;
+        overflow:visible;
+        width:100%;
+        height:0;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz{
+        position:relative;
+        top:55px;
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz div,
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz div.highcharts-container{height:50px!important}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) td.dataviz svg{
+        padding-top:10px;
+        height:50px;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Percentage td.overlay > div{
+        height:100%;
+        min-height:108px;
+        background-color: rgba(255,255,255,0.3);
+        box-shadow: inset -5px 0 16px -3px rgba(255,255,255,0.4);
+    }
+    
+    
+    
+    /*  barometer  */
+    
+    /*
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny #name{background-image:none!important; background-color: rgba(250,250,250,0.1)!important;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item#Sunny tr{
+        background: url('/images/sunny.png') no-repeat right!important; 
+        background-color: rgba(250,250,250,0.1)!important;
+        background-size: cover!important;
+    }
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Wind #name{background-image:none!important; background-color: rgba(250,250,250,0.1)!important;}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.Wind tr{
+        background: url('/images/rainy.png') no-repeat right!important; 
+        background-color: rgba(250,250,250,0.1)!important;
+        background-size: cover!important;
+    }*/
+    
+    
+    /*  Rain meter easter egg  */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #itemtablesmall tr #img{
+        left:40%;
+        left: calc(50% - 40px);
+        top: 30px;
+        height: 36px;
+        position: absolute;
+        background: url(/images/rain48.png) no-repeat;
+        background-size: 80px;
+    }
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #img:before {
+        animation: rainy_rain .7s infinite linear;
+        content: '';
+        background: #CCCCCC;
+        border-radius: 50%;
+        display: block;
+        height: 6px;
+        width: 3px;
+        opacity: 0.3;
+        transform: scale(.6);
+        /*transform: translate(-32px, -25px);*/
+    }
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.Rain.statusNormal #img img{display:none}
+    
+    
+    /*  MERGED ITEMS */
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus td#status{width:100%;}    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount4 td#status > .wrapper > img{height:24px;width:24px;}
+   
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount5 td#status > .wrapper > img{height:16px;width:16px;top:8px}
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.bandleader.withstatus.statuscount5 td#status > .wrapper > span {width:calc(50% - 16px);font-size:14px;padding: 0 0 0 5px}
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) div.item.withstatus tr #status
+
+}   /* closing of the media query  */
+
+
+
+
+@media only screen and (min-width: 1200px){
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) .selectorlevels {
+        top: 0px;
+    }
+}
+
+/*
+@media all and (min-width: 900px){
+    
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr{min-height:153px;}
+    
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#name{}
+
+
+    #dashcontent h2 + div.divider .span4:nth-child(-n+3) tr td#lastupdate{
+        height: 10px;
+        padding: 0px 10px 0px 10px!important;
+        top: 30px;
+        background-image:none;
+        background-color:transparent;
+    }
+
+}
+
+*/
+

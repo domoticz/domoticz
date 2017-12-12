@@ -1,0 +1,48 @@
+/* Creates thinner items on really wide screens */
+
+@media all and (min-width:1800px){ 
+    
+    /* Thinner items */
+    
+    #dashcontent .selectorlevels{
+        top:7px;
+        left: 190px;
+        width: 35%;
+        width: calc(100% - 245px);
+        margin-top:0!important;
+        position:relative;
+        height:0;
+    }
+    
+    #dashcontent .selectorlevels .ui-buttonset{
+        height:55px;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: stretch;
+        margin-right:0;
+        top:-62px;
+    }
+    
+    #dashcontent .selectorlevels .ui-selectmenu-button{
+        top: -62px!important;
+        height:55px;
+    }
+    
+    #dashcontent .ui-selectmenu-button{
+        position:relative;
+        right:-1px;
+        top:16px;
+        width:100%!important;
+    }
+    
+    #dashcontent .ui-selectmenu-button span.ui-selectmenu-text{
+        text-align:right;
+        background-color:#D4E1EE;
+        align-content:flex-end;
+    }
+    
+    /*#dashcontent .ui-selectmenu-button .ui-state-default .ui-icon{
+        filter: contrast(0);
+    }*/
+    
+}    

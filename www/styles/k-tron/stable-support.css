@@ -1,0 +1,31 @@
+/*  this is some extra CSS to make this theme work on the stable and on the non-development beta builds of Domoticz. */
+
+body .divider .span3 table tbody tr td#name,
+body .divider .span4 table tbody tr td#name{
+    padding: 13px 0 0 35px;
+    font-size: 15px;
+    height:40px; 
+    border:none;
+    margin-bottom:0!important;
+}
+
+body table tr td:last-of-type{margin-top:0!important;}
+
+body table tr td:last-of-type a.btnsmall{padding:0px 5px 0 0;}
+
+body .divider table tbody tr{margin-bottom:15px!important;}
+
+
+body table#itemtable tr td:first-child + td + td + td + td + td + td{padding-left:0!important;}
+
+@media screen and (max-width: 980px) and (min-width: 768px){
+    
+    #name, 
+    #dashcontent #name {
+        padding-top:10px!important;
+    }
+    
+    #bigtext {text-align: right;}
+
+    #dashcontent #bigtext {left:-50px}
+}
