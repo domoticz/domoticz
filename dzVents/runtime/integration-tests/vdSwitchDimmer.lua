@@ -36,7 +36,7 @@ local testDimmer = function(name)
 	local res = true
 	res = res and checkAttributes(dev, {
 		['level'] = 75,
-		["lastLevel"] = 33,
+		["lastLevel"] = 34,
 	})
 
 	tstMsg('Test dimmer lastLevel', res)
