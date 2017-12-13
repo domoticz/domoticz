@@ -8380,20 +8380,11 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 
 void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-	char szTmp[100];
-	unsigned char devType = pTypeENERGY;
 	unsigned char subType = pResponse->ENERGY.subtype;
-	std::string ID;
-	sprintf(szTmp, "%08X", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-	ID = szTmp;
-	unsigned char Unit = 0;
-	unsigned char cmnd = 0;
 	unsigned char SignalLevel = pResponse->ENERGY.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->ENERGY.battery_level & 0x0F);
 
-	long instant;
-
-	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
+	long instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
 
 	double total = (
 		double(pResponse->ENERGY.total1) * 0x10000000000ULL +
@@ -8408,11 +8399,16 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	{
 		if (total == 0)
 		{
+			char szTmp[20];
+			std::string ID;
+			sprintf(szTmp, "%08X", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+			ID = szTmp;
+
 			//Retrieve last total from current record
 			int nValue;
 			subType = sTypeKwh; // sensor type changed during recording
-			devType = pTypeGeneral; // Device reported as General and not Energy
-			Unit = 1; // in decode_general() Unit is set to 1
+			unsigned char devType = pTypeGeneral; // Device reported as General and not Energy
+			unsigned char Unit = 1; // in decode_general() Unit is set to 1
 			std::string sValue;
 			struct tm LastUpdateTime;
 			if (!m_sql.GetLastValue(HwdID, ID.c_str(), Unit, devType, subType, nValue, sValue, LastUpdateTime))
