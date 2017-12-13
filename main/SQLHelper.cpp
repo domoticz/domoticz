@@ -3392,9 +3392,6 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	case pTypeRFXMeter:
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 10, 255, 0, "0", devname);
 		break;
-	case pTypeRAIN:
-		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
-		break;
 	case pTypeUsage:
 	case pTypeLux:
 	case pTypeP1Gas:
