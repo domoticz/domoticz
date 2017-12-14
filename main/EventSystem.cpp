@@ -2731,6 +2731,14 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	int intRise = getSunRiseSunSetMinutes("Sunrise");
 	int intSet = getSunRiseSunSetMinutes("Sunset");
+	int intSunAtSouth = getSunRiseSunSetMinutes("SunAtSouth");
+	int intCivTwilightStart = getSunRiseSunSetMinutes("CivTwilightStart");
+	int intCivTwilightEnd = getSunRiseSunSetMinutes("CivTwilightEnd");
+	int intNautTwilightStart = getSunRiseSunSetMinutes("NautTwilightStart");
+	int intNautTwilightEnd = getSunRiseSunSetMinutes("NautTwilightEnd");
+	int intAstrTwilightStart = getSunRiseSunSetMinutes("AstrTwilightStart");
+	int intAstrTwilightEnd = getSunRiseSunSetMinutes("AstrTwilightEnd");
+	int intDayLength = getSunRiseSunSetMinutes("DayLength");
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 	time_t now = mytime(NULL);
@@ -2740,7 +2748,13 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+	if (intRise == intSet == 0) {
+		if (intDayLength == 0)
+			nightTimeBool = true; // Sun below horizon in the space of 24 hours
+		else
+			dayTimeBool = true; // Sun above horizon in the space of 24 hours
+	}
+	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
 		dayTimeBool = true;
 	}
 	else {
@@ -2759,6 +2773,30 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunsetInMinutes");
 	lua_pushnumber(lua_state, intSet);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "SunAtSouthInMinutes");
+	lua_pushnumber(lua_state, intSunAtSouth);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "DayLengthInMinutes");
+	lua_pushnumber(lua_state, intDayLength);
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
@@ -4132,27 +4170,27 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 {
 	std::vector<std::string> strarray;
-	std::vector<std::string> sunRisearray;
-	std::vector<std::string> sunSetarray;
+	std::vector<std::string> hourMinItem;
 
 	if (!m_mainworker.m_LastSunriseSet.empty())
 	{
 		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-		StringSplit(strarray[0], ":", sunRisearray);
-		StringSplit(strarray[1], ":", sunSetarray);
 
-		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
-		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
+		if (what == "Sunrise") StringSplit(strarray[0], ":", hourMinItem);
+		else if (what == "Sunset") StringSplit(strarray[1], ":", hourMinItem);
+		else if (what == "SunAtSouth") StringSplit(strarray[2], ":", hourMinItem);
+		else if (what == "CivTwilightStart") StringSplit(strarray[3], ":", hourMinItem);
+		else if (what == "CivTwilightEnd") StringSplit(strarray[4], ":", hourMinItem);
+		else if (what == "NautTwilightStart") StringSplit(strarray[5], ":", hourMinItem);
+		else if (what == "NautTwilightEnd") StringSplit(strarray[6], ":", hourMinItem);
+		else if (what == "AstrTwilightStart") StringSplit(strarray[7], ":", hourMinItem);
+		else if (what == "AstrTwilightEnd") StringSplit(strarray[8], ":", hourMinItem);
+		else if (what == "DayLength") StringSplit(strarray[9], ":", hourMinItem);
+		else StringSplit(strarray[1], ":", hourMinItem); // Keep compatibility with previous code
 
-		if (what == "Sunrise") {
-			return sunRiseInMinutes;
-		}
-		else {
-			return sunSetInMinutes;
-		}
-
+		int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
+		return intMins;
 	}
-
 	return 0;
 }
 

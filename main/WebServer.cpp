@@ -6579,7 +6579,7 @@ namespace http {
 				{
 					std::vector<std::string> strarray;
 					StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-					if (strarray.size() == 2)
+					if (strarray.size() == 10)
 					{
 						struct tm loctime;
 						time_t now = mytime(NULL);
@@ -6593,6 +6593,14 @@ namespace http {
 						root["ServerTime"] = szTmp;
 						root["Sunrise"] = strarray[0];
 						root["Sunset"] = strarray[1];
+						root["SunAtSouth"] = strarray[2];
+						root["CivTwilightStart"] = strarray[3];
+						root["CivTwilightEnd"] = strarray[4];
+						root["NautTwilightStart"] = strarray[5];
+						root["NautTwilightEnd"] = strarray[6];
+						root["AstrTwilightStart"] = strarray[7];
+						root["AstrTwilightEnd"] = strarray[8];
+						root["DayLength"] = strarray[9];
 					}
 				}
 			}
@@ -7964,13 +7972,21 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-				if (strarray.size() == 2)
+				if (strarray.size() == 10)
 				{
 					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
 					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
+					root["SunAtSouth"] = strarray[2];
+					root["CivTwilightStart"] = strarray[3];
+					root["CivTwilightEnd"] = strarray[4];
+					root["NautTwilightStart"] = strarray[5];
+					root["NautTwilightEnd"] = strarray[6];
+					root["AstrTwilightStart"] = strarray[7];
+					root["AstrTwilightEnd"] = strarray[8];
+					root["DayLength"] = strarray[9];
 				}
 			}
 
@@ -11013,7 +11029,7 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-				if (strarray.size() == 2)
+				if (strarray.size() == 10)
 				{
 					char szTmp[100];
 					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
@@ -11021,6 +11037,14 @@ namespace http {
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
+					root["SunAtSouth"] = strarray[2];
+					root["CivTwilightStart"] = strarray[3];
+					root["CivTwilightEnd"] = strarray[4];
+					root["NautTwilightStart"] = strarray[5];
+					root["NautTwilightEnd"] = strarray[6];
+					root["AstrTwilightStart"] = strarray[7];
+					root["AstrTwilightEnd"] = strarray[8];
+					root["DayLength"] = strarray[9];
 				}
 			}
 		}
