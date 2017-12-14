@@ -131,7 +131,7 @@
 #include "../hardware/USBtin.h"
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/EnphaseAPI.h"
-
+#include "../hardware/eHouseTCP.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -760,6 +760,10 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_MQTT:
 		//LAN
 		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
+		break;
+	case HTYPE_eHouseTCP:	
+		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
+		pHardware = new eHouseTCP(ID, Address, Port, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_FRITZBOX:
 		//LAN
@@ -8376,20 +8380,11 @@ void MainWorker::decode_Current(const int HwdID, const _eHardwareTypes HwdType, 
 
 void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
-	char szTmp[100];
-	unsigned char devType = pTypeENERGY;
 	unsigned char subType = pResponse->ENERGY.subtype;
-	std::string ID;
-	sprintf(szTmp, "%d", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
-	ID = szTmp;
-	unsigned char Unit = 0;
-	unsigned char cmnd = 0;
 	unsigned char SignalLevel = pResponse->ENERGY.rssi;
 	unsigned char BatteryLevel = get_BateryLevel(HwdType, false, pResponse->ENERGY.battery_level & 0x0F);
 
-	long instant;
-
-	instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
+	long instant = (pResponse->ENERGY.instant1 * 0x1000000) + (pResponse->ENERGY.instant2 * 0x10000) + (pResponse->ENERGY.instant3 * 0x100) + pResponse->ENERGY.instant4;
 
 	double total = (
 		double(pResponse->ENERGY.total1) * 0x10000000000ULL +
@@ -8404,8 +8399,16 @@ void MainWorker::decode_Energy(const int HwdID, const _eHardwareTypes HwdType, c
 	{
 		if (total == 0)
 		{
+			char szTmp[20];
+			std::string ID;
+			sprintf(szTmp, "%08X", (pResponse->ENERGY.id1 * 256) + pResponse->ENERGY.id2);
+			ID = szTmp;
+
 			//Retrieve last total from current record
 			int nValue;
+			subType = sTypeKwh; // sensor type changed during recording
+			unsigned char devType = pTypeGeneral; // Device reported as General and not Energy
+			unsigned char Unit = 1; // in decode_general() Unit is set to 1
 			std::string sValue;
 			struct tm LastUpdateTime;
 			if (!m_sql.GetLastValue(HwdID, ID.c_str(), Unit, devType, subType, nValue, sValue, LastUpdateTime))
@@ -11815,12 +11818,12 @@ bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, c
 		return SwitchLightInt(sd, switchcmd, level, hue, false);
 }
 
-bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until)
+bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, const std::string &newMode, const std::string &until)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
-		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1 FROM DeviceStatus WHERE (ID == '%q')",
+		"SELECT HardwareID, DeviceID,Unit,Type,SubType,SwitchType,StrParam1,ID FROM DeviceStatus WHERE (ID == '%q')",
 		idx.c_str());
 	if (result.size() < 1)
 		return false;
@@ -11834,6 +11837,17 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 	if (pHardware == NULL)
 		return false;
+
+	if (pHardware->HwdType != HTYPE_EVOHOME_SCRIPT && pHardware->HwdType != HTYPE_EVOHOME_SERIAL && pHardware->HwdType != HTYPE_EVOHOME_WEB && pHardware->HwdType != HTYPE_EVOHOME_TCP)
+		return SetSetPointInt(sd, TempValue);
+
+	int nEvoMode = 0;
+	if (newMode == "PermanentOverride" || newMode.empty())
+		nEvoMode = CEvohomeBase::zmPerm;
+	else if (newMode == "TemporaryOverride")
+		nEvoMode = CEvohomeBase::zmTmp;
+
+	//_log.Log(LOG_TRACE, "Set point %s %f '%s' '%s'", idx.c_str(), TempValue, newMode.c_str(), until.c_str());
 
 	unsigned long ID;
 	std::stringstream s_strid;
@@ -11861,8 +11875,8 @@ bool MainWorker::SetSetPoint(const std::string &idx, const float TempValue, cons
 			tsen.EVOHOME2.zone = Unit;//controller is 0 so let our zones start from 1...
 		tsen.EVOHOME2.updatetype = CEvohomeBase::updSetPoint;//setpoint
 		tsen.EVOHOME2.temperature = static_cast<int16_t>((dType == pTypeEvohomeWater) ? TempValue : TempValue*100.0f);
-		tsen.EVOHOME2.mode = newMode;
-		if (newMode == CEvohomeBase::zmTmp)
+		tsen.EVOHOME2.mode = nEvoMode;
+		if (nEvoMode == CEvohomeBase::zmTmp)
 			CEvohomeDateTime::DecodeISODate(tsen.EVOHOME2, until.c_str());
 		WriteToHardware(HardwareID, (const char*)&tsen, sizeof(tsen.EVOHOME2));
 
@@ -11986,7 +12000,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		}
 		else if (pHardware->HwdType == HTYPE_EVOHOME_SCRIPT || pHardware->HwdType == HTYPE_EVOHOME_SERIAL || pHardware->HwdType == HTYPE_EVOHOME_WEB || pHardware->HwdType == HTYPE_EVOHOME_TCP)
 		{
-			SetSetPoint(sd[7], TempValue, CEvohomeBase::zmPerm, "");
+			SetSetPoint(sd[7], TempValue, "PermanentOverride", "");
 		}
 		else if (pHardware->HwdType == HTYPE_IntergasInComfortLAN2RF)
 		{
@@ -12850,6 +12864,21 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	if (pHardware)
 	{
 		std::vector<std::vector<std::string> > result;
+
+		if (pHardware->HwdType == HTYPE_PythonPlugin)
+		{
+#ifdef ENABLE_PYTHON
+			int hindex=FindDomoticzHardware(HardwareID);
+			if (hindex == -1)
+			{
+				_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
+				return false;
+			}
+			((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(unit, "udevice",  static_cast<float>(atof(sValue.c_str())));
+#endif
+			return true;
+		}
+
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HardwareID, DeviceID.c_str(), unit, devType, subType);
