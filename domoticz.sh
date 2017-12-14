@@ -11,20 +11,34 @@
 
 # Do NOT "set -e"
 
+SCRIPT=$(readlink -f "$0")
+BASENAME=$(dirname ${SCRIPT})
+
+USERNAME=pi
+HTTP_PORT=8080
+HTTPS_PORT=443
+DAEMON_OPT="-daemon"
+
+echo "Using BASE '${BASENAME}'"
+
+if [ -f ${BASENAME}/local.settings ];
+then 
+  . ${BASENAME}/local.settings
+fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 DESC="Domoticz Home Automation System"
 NAME=domoticz
-USERNAME=pi
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
-DAEMON=/home/$USERNAME/domoticz/$NAME
-DAEMON_ARGS="-daemon"
-#DAEMON_ARGS="$DAEMON_ARGS -daemonname $NAME -pidfile $PIDFILE"
-DAEMON_ARGS="$DAEMON_ARGS -www 8080"
-DAEMON_ARGS="$DAEMON_ARGS -sslwww 443"
-#DAEMON_ARGS="$DAEMON_ARGS -log /tmp/domoticz.txt"
-#DAEMON_ARGS="$DAEMON_ARGS -syslog"
+#DAEMON=/home/$USERNAME/domoticz/$NAME
+DAEMON=${BASENAME}/${NAME}
+DAEMON_ARGS="${DAEMON_OPT}"
+#DAEMON_ARGS="$DAEMON_ARGS -daemonname ${NAME} -pidfile ${PIDFILE}"
+DAEMON_ARGS="$DAEMON_ARGS -www ${HTTP_PORT}"
+DAEMON_ARGS="$DAEMON_ARGS -sslwww ${HTTPS_POST}"
+DAEMON_ARGS="$DAEMON_ARGS ${LOG_OPTIONS}"
+
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
