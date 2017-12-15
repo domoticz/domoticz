@@ -235,6 +235,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
 # '''type''': the type of the the event that triggered the execute function, either: - domoticz.EVENT_TYPE_TIMER, - domoticz.EVENT_TYPE_DEVICE, - domoticz.EVENT_TYPE_SECURITY, - domoticz.EVENT_TYPE_SCENE,<br />
 - domoticz.EVENT_TYPE_GROUP - domoticz.EVENT_TYPE_VARIABLE) - domoticz.EVENT_TYPE_HTTPRESPONSE <sup>2.4.0</sup>
 # '''trigger''': the timer rule that triggered the script if the script was called due to a timer event, or the security state that triggered the security trigger rule. See [[#timer_trigger_rules|below]] for the possible timer trigger rules.
+# '''scriptName''': the name of the current script.
 
 ==== Tip: rename the parameters to better fit your needs ====
 
@@ -567,7 +568,9 @@ Using a reducer to count all devices that are switched on:
 end, 0) -- 0 is the initial value for the accumulator</pre>
 === Constants ===
 
-The domoticz object has these constants available for use in your code e.g. <code>domoticz.LOG_INFO</code>:
+The domoticz object has these constants available for use in your code e.g. <code>domoticz.LOG_INFO</code>.
+
+'''IMPORTANT: you have to prefix these constants with <code>domoticz.&lt;constant&gt;</code>''':
 
 * '''ALERTLEVEL_GREY''', '''ALERTLEVEL_GREEN''', '''ALERTLEVEL_ORANGE''', '''ALERTLEVEL_RED''', '''ALERTLEVEL_YELLOW''': for updating text sensors.
 * '''BASETYPE_DEVICE''', '''BASETYPE_SCENE''', '''BASETYPE_GROUP''', '''BASETYPE_VARIABLE''', '''BASETYPE_SECURITY''', '''BASETYPE_TIMER''', '''BASETYPE_HTTP_RESPONSE''': indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: <code>if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end</code>.
@@ -783,11 +786,12 @@ See switch below.
 * '''rainRate''': ''Number''
 * '''updateRain(rate, counter)''': ''Function''. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 
-==== RGBW / Lighting Limitless/Applamp ====
+==== RGBW(W) / Lighting Limitless/Applamp ====
 
 * '''decreaseBrightness()''': ''Function''. <sup>2.4.0</sup> Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''increaseBrightness()''': ''Function''. <sup>2.4.0</sup> Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
-* '''setKelvin(Kelvin)''': ''Function''. <sup>2.4.0</sup> Sets Kelvin level of the light. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setDiscoMode(modeNum)''': ''Function''. <sup>2.4.0</sup> Activate disco mode, <code>1 =&lt; modeNum &lt;= 9</code>. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
+* '''setKelvin(Kelvin)''': ''Function''. <sup>2.4.0</sup> Sets Kelvin level of the light (For RGBWW devices only). Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setNightMode()''': ''Function''. <sup>2.4.0</sup> Sets the lamp to night mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setRGB(red, green, blue)''': ''Function''. <sup>2.4.0</sup> Set the lamps RGB color. Values are from 0-255. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
 * '''setWhiteMode()''': ''Function''. <sup>2.4.0</sup> Sets the lamp to white mode. Supports [[#Command_options_.28delay.2C_duration.2C_event_triggering.29|command options]].
@@ -968,7 +972,7 @@ end</pre>
 
 * '''afterHour(hours), afterMin(minutes), afterSec(seconds)''': ''Function''. Activates the command after a certain number of hours, minutes or seconds.
 * '''cancelQueuedCommands()''': ''Function''. <sup>2.4.0</sup> Cancels queued commands. E.g. you switch on a device after 10 minutes: <code>myDevice.switchOn().afterMin(10)</code>. Within those 10 minutes you can cancel that command by calling: <code>myDevice.cancelQueuedCommands()</code>.
-* '''checkFirst()''': ''Function''. Checks if the current state of the device is different than the desired new state. If the target state is the same, no command is sent. If you do <code>mySwitch.switchOn().checkFirst()</code>, then no switch command is sent if the switch is already on. This command only works with switch-like devices. It is not available for toggle and dim commands, either.
+* '''checkFirst()''': ''Function''. Checks if the '''current''' state of the device is different than the desired new state. If the target state is the same, no command is sent. If you do <code>mySwitch.switchOn().checkFirst()</code>, then no switch command is sent if the switch is already on. This command only works with switch-like devices. It is not available for toggle and dim commands, either.
 * '''forHour(hours), forMin(minutes), forSec(seconds)''': ''Function''. Activates the command for the duration of hours, minutes or seconds. See table below for applicability.
 * '''withinHour(hours), withinMin(minutes), withinSec(seconds)''': ''Function''. Activates the command within a certain period (specified in hours, minutes or seconds) ''randomly''. See table below for applicability.
 * '''silent()''': ''Function''. No follow-up events will be triggered: <code>mySwitch.switchOff().silent()</code>.
@@ -1858,6 +1862,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added historical data helper <code>deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)</code>. This will use the oldest data value when the data set is shorter than timeAgo.
 * Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
 * Added device adapter for Onkyo receiver hardware.
+* Added <code>scriptName</code> to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
 
 == [2.3.0] ==
 
