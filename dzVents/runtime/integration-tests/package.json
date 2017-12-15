@@ -4,6 +4,7 @@
   "description": "dzVents test http server",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "express": "^4.16.2"
   },
   "devDependencies": {},
