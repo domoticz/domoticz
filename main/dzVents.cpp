@@ -133,57 +133,37 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 
 bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
-	std::string luaString, szIdx, nValue, sValue, Protected;
-	uint64_t ulIdx;
+	std::string sValue;
+	uint64_t idx = -1;
+	int nValue;
 	float delayTime = 0;
-	bool bEventTrigger = false;
+	bool bEventTrigger = false, Protected = false;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); itt++)
 	{
 		if (itt->type == TYPE_INTEGER)
 		{
-			std::stringstream ss;
-			ss << itt->iValue;
 			if (itt->name == "idx")
-			{
-				ulIdx = static_cast<uint64_t>(itt->iValue);
-				szIdx = ss.str();
-			}
+				idx = static_cast<uint64_t>(itt->iValue);
 			else if (itt->name == "nValue")
-				nValue = ss.str();
+				nValue = itt->iValue;
 			else if (itt->name == "protected")
-				Protected = ss.str();
+				Protected = itt->iValue ? true : false;
 			else if (itt->name == "_random")
 				delayTime = RandomTime(itt->iValue);
 			else if (itt->name == "_after")
 				delayTime = static_cast<float>(itt->iValue);
 		}
-		else if (itt->type == TYPE_STRING)
-		{
-			if (itt->name == "sValue")
-				sValue = itt->sValue;
-		}
+		else if (itt->type == TYPE_STRING && itt->name == "sValue")
+			sValue = itt->sValue;
 		else if (itt->type == TYPE_BOOLEAN && itt->name == "_trigger")
-				bEventTrigger = true;
+			bEventTrigger = true;
 	}
-	if (szIdx.empty())
+	if (idx == -1)
 		return false;
 
-	luaString = szIdx + "|";
-
-	if (!nValue.empty())
-		luaString += nValue;
-
-	luaString += "|";
-	if (!sValue.empty())
-		luaString += sValue;
-
-	luaString += "|";
-	if (!Protected.empty())
-		luaString += Protected;
-
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, ulIdx, luaString, bEventTrigger));
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger), false);
 	return true;
 }
 

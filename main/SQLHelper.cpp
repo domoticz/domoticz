@@ -3196,7 +3196,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
 			{
-				m_mainworker.m_eventsystem.UpdateDevice(itt->_sValue, itt->_nValue ? true : false);
+				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, (itt->_HardwareID ? true : false), (itt->_switchtype ? true : false));
 			}
 
 			++itt;
@@ -3383,6 +3383,262 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 		_log.Log(LOG_ERROR, "SQL Query(\"%s\") : %s", szQuery.c_str(), error.c_str());
 	return results;
 }
+
+uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions)
+{
+	uint64_t DeviceRowIdx = -1;
+	char ID[20];
+	sprintf(ID, "%lu", nid);
+
+	switch (SensorType)
+	{
+
+	case pTypeTEMP:
+	case pTypeWEIGHT:
+	case pTypeUV:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+		break;
+	case pTypeRAIN:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0", devname);
+		break;
+	case pTypeTEMP_BARO:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;1038.0;0;188.0", devname);
+		break;
+	case pTypeHUM:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 50, "1", devname);
+		break;
+	case pTypeTEMP_HUM:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;50;1", devname);
+		break;
+	case pTypeTEMP_HUM_BARO:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;50;1;1010;1", devname);
+		break;
+	case pTypeRFXMeter:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 10, 255, 0, "0", devname);
+		break;
+	case pTypeUsage:
+	case pTypeLux:
+	case pTypeP1Gas:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+		break;
+	case pTypeP1Power:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0;0;0;0;0", devname);
+		break;
+	case pTypeAirQuality:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, devname);
+		break;
+	case pTypeCURRENT:
+		//Current/Ampere 
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname);
+		break;
+	case pTypeThermostat: //Thermostat Setpoint 
+	{
+		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+		sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "20.5", devname);
+		break;
+	}
+
+	case pTypeGeneral:
+	{
+		switch (SensorSubType)
+		{
+		case sTypePressure: //Pressure (Bar) 
+		case sTypePercentage: //Percentage 
+		case sTypeWaterflow: //Waterflow 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+		}
+		break;
+		case sTypeCounterIncremental:		//Counter Incremental 
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+			break;
+		case sTypeVoltage:		//Voltage 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.000", devname);
+		}
+		break;
+		case sTypeTextStatus:		//Text 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "Hello World", devname);
+		}
+		break;
+		case sTypeAlert:		//Alert 
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "No Alert!", devname);
+			break;
+		case sTypeSoundLevel:		//Sound Level 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "65", devname);
+		}
+		break;
+		case sTypeBaro:		//Barometer (hPa) 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1021.34;0", devname);
+		}
+		break;
+		case sTypeVisibility:		//Visibility (km) 
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "10.3", devname);
+			break;
+		case sTypeDistance:		//Distance (cm) 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "123.4", devname);
+		}
+		break;
+		case sTypeSoilMoisture:		//Soil Moisture 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 3, devname);
+		}
+		break;
+		case sTypeLeafWetness:		//Leaf Wetness 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 2, devname);
+		}
+		break;
+		case sTypeKwh:		//kWh 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0;0.0", devname);
+		}
+		break;
+		case sTypeCurrent:		//Current (Single) 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "6.4", devname);
+		}
+		break;
+		case sTypeSolarRadiation:		//Solar Radiation 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1.0", devname);
+		}
+		break;
+		case sTypeCustom:			//Custom 
+		{
+			if (!soptions.empty())
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+				if (DeviceRowIdx != -1)
+				{
+					//Set the Label
+					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
+				}
+			}
+			break;
+		}
+		}
+		break;
+	}
+
+	case pTypeWIND:
+	{
+		switch (SensorSubType)
+		{
+		case sTypeWIND1:			// sTypeWIND1
+		case sTypeWIND4:			//Wind + Temp + Chill 
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;N;0;0;0;0", devname);
+			break;
+		}
+		break;
+	}
+
+	case pTypeGeneralSwitch:
+	{
+		switch (SensorSubType)
+		{
+		case sSwitchGeneralSwitch:		//Switch 
+		{
+			sprintf(ID, "%08lX", nid);
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "100", devname);
+		}
+		break;
+		case sSwitchTypeSelector:		//Selector Switch 
+		{
+			unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+			unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+			unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+			unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+			sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to selector
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
+				//Set default device options
+				m_sql.SetDeviceOptions(DeviceRowIdx, BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
+			}
+		}
+		break;
+		}
+		break;
+	}
+
+	case pTypeLimitlessLights:
+	{
+		switch (SensorSubType)
+		{
+		case sTypeLimitlessRGB:		//RGB switch 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
+			}
+		}
+		break;
+		case sTypeLimitlessRGBW:		//RGBW switch 
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
+			}
+		}
+		break;
+		}
+		break;
+	}
+	}
+
+	if (DeviceRowIdx != -1)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
+		m_mainworker.m_eventsystem.GetCurrentStates();
+	}
+
+	return DeviceRowIdx;
+}
+
 
 uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
@@ -3635,14 +3891,18 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			return -1; //We do not allow new devices
 		}
 
-		devname="Unknown";
+		if (devname == "")
+		{
+			devname = "Unknown";
+		}
+
 		safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
-			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q')",
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
+			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q','%q')",
 			HardwareID,
 			ID,unit,devType,subType,
 			signallevel,batterylevel,
-			nValue,sValue);
+			nValue,sValue, devname.c_str());
 
 		//Get new ID
 		result = safe_query(

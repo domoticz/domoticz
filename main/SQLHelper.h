@@ -78,14 +78,16 @@ struct _tTaskItem
 
 	}
 
-	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const std::string &DevParams, const bool bEventTrigger)
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_UPDATEDEVICE;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = idx;
-		tItem._sValue = DevParams;
-		tItem._nValue = bEventTrigger ? 1 : 0;
+		tItem._nValue = nValue;
+		tItem._sValue = sValue;
+		tItem._HardwareID = Protected ? 1 : 0;
+		tItem._switchtype = bEventTrigger ? 1 : 0;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -366,6 +368,8 @@ public:
 	std::string UpdateUserVariable(const std::string &idx, const std::string &varname, const std::string &vartype, const std::string &varvalue, const bool eventtrigger);
 	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
+
+	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
 
 	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;

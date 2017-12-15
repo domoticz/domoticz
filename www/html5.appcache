@@ -1,6 +1,10 @@
 CACHE MANIFEST
 
+<<<<<<< HEAD
 # ref 1465
+=======
+# ref 1467
+>>>>>>> upstream/development
 
 CACHE:
 # CSS
