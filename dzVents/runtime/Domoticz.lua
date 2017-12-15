@@ -217,12 +217,13 @@ local function Domoticz(settings)
 				_subSystem = ''
 			end
 		end
-		self.sendCommand('SendNotification', subject
+		local data = subject
 				.. '#' .. message
 				.. '#' .. tostring(priority)
 				.. '#' .. tostring(sound)
 				.. '#' .. tostring(extra)
-				.. '#' .. tostring(_subSystem))
+				.. '#' .. tostring(_subSystem)
+		self.sendCommand('SendNotification', data)
 	end
 
 	-- have domoticz send an email

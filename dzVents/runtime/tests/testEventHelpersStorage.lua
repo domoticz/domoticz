@@ -663,6 +663,8 @@ describe('event helper storage', function()
 
 			hs = HS()
 			assert.is_same(0, hs.avg(1,10))
+
+			assert.is_same(0, hs.avg())
 		end)
 
 		it('should return average over a time period', function()

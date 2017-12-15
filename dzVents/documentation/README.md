@@ -580,7 +580,9 @@ Using a reducer to count all devices that are switched on:
 
 
 ### Constants
-The domoticz object has these constants available for use in your code e.g. `domoticz.LOG_INFO`:
+The domoticz object has these constants available for use in your code e.g. `domoticz.LOG_INFO`.
+
+**IMPORTANT:  you have to prefix these constants with `domoticz.<constant>`**:
 
  - **ALERTLEVEL_GREY**, **ALERTLEVEL_GREEN**, **ALERTLEVEL_ORANGE**, **ALERTLEVEL_RED**, **ALERTLEVEL_YELLOW**: for updating text sensors.
  - **BASETYPE_DEVICE**, **BASETYPE_SCENE**, **BASETYPE_GROUP**, **BASETYPE_VARIABLE**, **BASETYPE_SECURITY**, **BASETYPE_TIMER**, **BASETYPE_HTTP_RESPONSE**: indicators for the various object types that are passed as the second parameter to the execute function. E.g. you can check if an object is a device object: `if (item.baseType == domoticz.BASETYPE_DEVICE) then ... end`.
