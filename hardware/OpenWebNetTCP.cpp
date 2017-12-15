@@ -599,7 +599,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == (WHO_TEMPERATURE_CONTROL + 500)))
+	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == (WHO_TEMPERATURE_CONTROL + 500)) || (who == (WHO_TEMPERATURE_CONTROL + 600)))
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -759,7 +759,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
 				devname += " Valves";
-				UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:
 				devname += " Actuator";
