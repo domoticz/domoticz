@@ -44,6 +44,10 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
+	
+	float m_LimitlessRGBWcHueState;
+	bool m_LimitlessRGBWisWhiteState;
+	int m_LimitlessRGBWbrightnessState;
 
 	bool StartHardware();
 	bool StopHardware();

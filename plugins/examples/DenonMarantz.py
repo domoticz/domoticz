@@ -6,7 +6,7 @@
 #   Mode4 ("Sources") needs to have '|' delimited names of sources that the Denon knows about.  The Selector can be changed afterwards to any  text and the plugin will still map to the actual Denon name.
 #
 """
-<plugin key="Denon4306" version="3.1.5" name="Denon/Marantz Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
+<plugin key="Denon4306" version="3.2.0" name="Denon/Marantz Amplifier" author="dnpwwo" wikilink="" externallink="http://www.denon.co.uk/uk">
     <description>
 Denon (& Marantz) AVR Plugin.<br/><br/>
 &quot;Sources&quot; need to have '|' delimited names of sources that the Denon knows about from the technical manual.<br/>
@@ -129,15 +129,15 @@ class BasePlugin:
             if (Description.find("Only one usage of each socket address") > 0):
                 Domoticz.Log(Connection.Address+":"+Connection.Port+" is busy, waiting.")
             else:
-                Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port)
-                Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port+" with error: "+Description)
+                Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port+" with error: "+Description)
             self.DenonConn = None
             self.powerOn = False
-            self.SyncDevices()
+            self.SyncDevices(1)
 
     def onMessage(self, Connection, Data):
         strData = Data.decode("utf-8", "ignore")
         Domoticz.Debug("onMessage called with Data: '"+str(strData)+"'")
+        self.oustandingPings = 0
 
         try:
             # Beacon messages to find the amplifier
@@ -153,13 +153,11 @@ class BasePlugin:
                         Domoticz.Log("'Unknown' Receiver discovered successfully at address: "+Connection.Address)
                 else:
                     try:
-                        Domoticz.Log("Discovery message for Type: '"+dictAMXB['SDKClass']+"', '"+dictAMXB['Make']+", "+dictAMXB['Model']+"' seen at address: "+Connection.Address)
+                        Domoticz.Log("Discovery message for Class: '"+dictAMXB['SDKClass']+"', Make '"+dictAMXB['Make']+"', Model '"+dictAMXB['Model']+"' seen at address: "+Connection.Address)
                     except KeyError:
                         Domoticz.Log("Discovery message '"+str(strData)+"' seen at address: "+Connection.Address)
             # Otherwise handle amplifier
             else:
-                self.oustandingPings = 0
-
                 strData = strData.strip()
                 action = strData[0:2]
                 detail = strData[2:]
@@ -240,7 +238,7 @@ class BasePlugin:
                 else:
                     if (self.ignoreMessages.find(action) < 0):
                         Domoticz.Debug("Unknown message '"+action+"' ignored.")
-                self.SyncDevices()
+                self.SyncDevices(0)
         except Exception as inst:
             Domoticz.Error("Exception in onMessage, called with Data: '"+str(strData)+"'")
             Domoticz.Error("Exception detail: '"+str(inst)+"'")
@@ -345,6 +343,7 @@ class BasePlugin:
 
     def onDisconnect(self, Connection):
         Domoticz.Error("Disconnected from: "+Connection.Address+":"+Connection.Port)
+        self.SyncDevices(1)
         return
 
     def onHeartbeat(self):
@@ -365,34 +364,36 @@ class BasePlugin:
             self.lastHeartbeat = datetime.datetime.now()
 
     def handleConnect(self):
+        self.SyncDevices(1)
         self.DenonConn = None
         if Parameters["Mode1"] == "Discover":
+            Domoticz.Log("Using auto-discovery mode to detect receiver as specified in parameters.")
             self.DenonConn = Domoticz.Connection(Name="Beacon", Transport="UDP/IP", Address="239.255.250.250", Port=str(9131))
             self.DenonConn.Listen()
         else:
             self.DenonConn = Domoticz.Connection(Name="Telnet", Transport="TCP/IP", Protocol="Line", Address=Parameters["Address"], Port=Parameters["Port"])
             self.DenonConn.Connect()
     
-    def SyncDevices(self):
+    def SyncDevices(self, TimedOut):
         if (self.powerOn == False):
-            UpdateDevice(1, 0, "Off")
-            UpdateDevice(2, 0, "0")
-            UpdateDevice(3, 0, str(abs(self.mainVolume1)))
-            UpdateDevice(4, 0, "0")
-            UpdateDevice(5, 0, str(abs(self.zone2Volume)))
-            UpdateDevice(6, 0, "0")
-            UpdateDevice(7, 0, str(abs(self.zone3Volume)))
+            UpdateDevice(1, 0, "Off", TimedOut)
+            UpdateDevice(2, 0, "0", TimedOut)
+            UpdateDevice(3, 0, str(abs(self.mainVolume1)), TimedOut)
+            UpdateDevice(4, 0, "0", TimedOut)
+            UpdateDevice(5, 0, str(abs(self.zone2Volume)), TimedOut)
+            UpdateDevice(6, 0, "0", TimedOut)
+            UpdateDevice(7, 0, str(abs(self.zone3Volume)), TimedOut)
         else:
-            UpdateDevice(1, 1, "On")
-            UpdateDevice(2, self.mainSource if self.mainOn else 0, str(self.mainSource if self.mainOn else 0))
-            if (self.mainVolume1 <= 0 or self.mainOn == False): UpdateDevice(3, 0, str(abs(self.mainVolume1)))
-            else: UpdateDevice(3, 2, str(self.mainVolume1))
-            UpdateDevice(4, self.zone2Source if self.zone2On else 0, str(self.zone2Source if self.zone2On else 0))
-            if (self.zone2Volume <= 0 or self.zone2On == False): UpdateDevice(5, 0, str(abs(self.zone2Volume)))
-            else: UpdateDevice(5, 2, str(self.zone2Volume))
-            UpdateDevice(6, self.zone3Source if self.zone3On else 0, str(self.zone3Source if self.zone3On else 0))
-            if (self.zone3Volume <= 0 or self.zone3On == False): UpdateDevice(7, 0, str(abs(self.zone3Volume)))
-            else: UpdateDevice(7, 2, str(self.zone3Volume))
+            UpdateDevice(1, 1, "On", TimedOut)
+            UpdateDevice(2, self.mainSource if self.mainOn else 0, str(self.mainSource if self.mainOn else 0), TimedOut)
+            if (self.mainVolume1 <= 0 or self.mainOn == False): UpdateDevice(3, 0, str(abs(self.mainVolume1)), TimedOut)
+            else: UpdateDevice(3, 2, str(self.mainVolume1), TimedOut)
+            UpdateDevice(4, self.zone2Source if self.zone2On else 0, str(self.zone2Source if self.zone2On else 0), TimedOut)
+            if (self.zone2Volume <= 0 or self.zone2On == False): UpdateDevice(5, 0, str(abs(self.zone2Volume)), TimedOut)
+            else: UpdateDevice(5, 2, str(self.zone2Volume), TimedOut)
+            UpdateDevice(6, self.zone3Source if self.zone3On else 0, str(self.zone3Source if self.zone3On else 0), TimedOut)
+            if (self.zone3Volume <= 0 or self.zone3On == False): UpdateDevice(7, 0, str(abs(self.zone3Volume)), TimedOut)
+            else: UpdateDevice(7, 2, str(self.zone3Volume), TimedOut)
         return
         
 global _plugin
@@ -422,11 +423,11 @@ def onHeartbeat():
     global _plugin
     _plugin.onHeartbeat()
 
-def UpdateDevice(Unit, nValue, sValue):
+def UpdateDevice(Unit, nValue, sValue, TimedOut):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
-        if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue):
-            Devices[Unit].Update(nValue, str(sValue))
+        if (Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue) or (Devices[Unit].TimedOut != TimedOut):
+            Devices[Unit].Update(nValue=nValue, sValue=str(sValue), TimedOut=TimedOut)
             Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 

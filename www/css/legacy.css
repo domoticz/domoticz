@@ -357,7 +357,7 @@ width: 100%;
 body table#itemtablesmall tbody tr {
 	display: block;
 	width: 98%;
-	height: 66px;
+	min-height: 66px;
 	padding: 5px 5px 5px 5px;
 	margin: 2px 100% 5px 0;
 	border-style: none;

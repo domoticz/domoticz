@@ -1034,7 +1034,7 @@ namespace Plugins {
 	void CPlugin::ConnectionProtocol(CDirectiveBase * pMess)
 	{
 		ProtocolDirective*	pMessage = (ProtocolDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pProtocol)
 		{
 			delete pConnection->pProtocol;
@@ -1045,9 +1045,9 @@ namespace Plugins {
 		if (sProtocol == "Line") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
 		else if (sProtocol == "XML") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
 		else if (sProtocol == "JSON") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-		else if (sProtocol == "HTTP")
+		else if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
 		{
-			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP();
+			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP(sProtocol == "HTTPS");
 			pProtocol->AuthenticationDetails(m_Username, m_Password);
 			pConnection->pProtocol = (CPluginProtocol*)pProtocol;
 		}
@@ -1058,12 +1058,22 @@ namespace Plugins {
 	void CPlugin::ConnectionConnect(CDirectiveBase * pMess)
 	{
 		ConnectDirective*	pMessage = (ConnectDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
 			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
 			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
@@ -1072,10 +1082,14 @@ namespace Plugins {
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, (PyObject*)pConnection, sAddress, pConnection->Baud);
 		}
@@ -1102,12 +1116,22 @@ namespace Plugins {
 	void CPlugin::ConnectionListen(CDirectiveBase * pMess)
 	{
 		ListenDirective*	pMessage = (ListenDirective*)pMess;
-		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
 
 		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
 		{
 			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
 			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
@@ -1116,17 +1140,22 @@ namespace Plugins {
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
-			pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, "", sPort);
 		}
 		else if (sTransport == "UDP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
 		else if (sTransport == "ICMP/IP")
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
 		}
@@ -1155,11 +1184,6 @@ namespace Plugins {
 		ReadMessage*	pMessage = (ReadMessage*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 
-		if (!pConnection->pProtocol)
-		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-			pConnection->pProtocol = new CPluginProtocol();
-		}
 		pConnection->pProtocol->ProcessInbound(pMessage);
 	}
 
@@ -1203,12 +1227,6 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
-		}
-
-		if (!pConnection->pProtocol)
-		{
-			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
-			pConnection->pProtocol = new CPluginProtocol();
 		}
 
 		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
@@ -1464,6 +1482,31 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
+	}
+
+	bool CPlugin::HasNodeFailed(const int Unit)
+	{
+		if (!m_DeviceDict)	return true;
+
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+		while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &value))
+		{
+			long iKey = PyLong_AsLong(key);
+			if (iKey == -1 && PyErr_Occurred())
+			{
+				PyErr_Clear();
+				return false;
+			}
+
+			if (iKey == Unit)
+			{
+				CDevice*	pDevice = (CDevice*)value;
+				return (pDevice->TimedOut != 0);
+			}
+		}
+
+		return false;
 	}
 
 

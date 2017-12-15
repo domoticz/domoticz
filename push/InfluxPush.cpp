@@ -110,11 +110,11 @@ void CInfluxPush::DoInfluxPush()
 				if (int(strarray.size()) >= delpos)
 				{
 					std::string rawsendValue = strarray[delpos - 1].c_str();
-					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, metertype);
+					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
 			}
 			else
-				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
+				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
 			if (sendValue !="") {
 				std::string szKey;

@@ -14,6 +14,7 @@
             <Item label="Enabled" value="1"/>
         </Value>
     </CommandClass>
+    <CommandClass id="96" mapping="endpoints"/>
     <CommandClass id="142" ForceInstances="true"/>
     <!-- Association Groups -->
     <CommandClass id="133">

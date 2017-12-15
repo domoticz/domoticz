@@ -398,13 +398,10 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
+			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
 			if (radiation>=0.0f)
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeSolarRadiation;
-				gdevice.floatval1=radiation;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
 			}
 		}
 	}
