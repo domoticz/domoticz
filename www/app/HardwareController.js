@@ -4511,7 +4511,7 @@ define(['app'], function (app) {
 		function OnDummySensorTypeChange() {
 			var stype = $("#dialog-createsensor #sensortype option:selected").val();
 			$("#dialog-createsensor #sensoraxis").val("");
-			if (stype == 1004) {
+			if (stype == 0xF31F) {
 				$("#dialog-createsensor #vsensoraxis").show();
 			}
 			else {
@@ -4550,7 +4550,7 @@ define(['app'], function (app) {
 							return;
 						}
 						var extraSendData = "";
-						if (SensorType == 1004) {
+                        if (SensorType == 0xF31F) {
 							var AxisLabel = $("#dialog-createsensor #sensoraxis").val();
 							if (AxisLabel == "") {
 								ShowNotify($.t('Please enter a Axis Label!'), 2500, true);
@@ -4559,9 +4559,9 @@ define(['app'], function (app) {
 							extraSendData = "&sensoroptions=1;" + encodeURIComponent(AxisLabel);
 						}
 						$.ajax({
-							url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
+							url: "json.htm?type=createdevice&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
-							"&sensortype=" + SensorType +
+							"&sensormappedtype=" + SensorType +
 							extraSendData,
 							async: false,
 							dataType: 'json',
@@ -5583,8 +5583,8 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divsolaredgeapi").show();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
