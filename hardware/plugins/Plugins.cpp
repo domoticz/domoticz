@@ -693,10 +693,17 @@ namespace Plugins {
 			}
 
 			// loop on stop to be processed
-			int scounter = 0;
-			while (m_bIsStarted && (scounter++ < 50))
+			while (m_bIsStarted)
 			{
-				sleep_milliseconds(100);
+				int scounter = 0;
+				while (m_bIsStarted && (scounter++ < 50))
+				{
+					sleep_milliseconds(100);
+				}
+				if (m_bIsStarted)
+				{
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, waiting.", Name.c_str());
+				}
 			}
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());

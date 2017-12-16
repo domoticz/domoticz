@@ -384,23 +384,26 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	// Separate the Stop() from the device removal from the vector.
+	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
+	CDomoticzHardwareBase *pOrgDevice = NULL;
 	{
-		CDomoticzHardwareBase *pOrgDevice = *itt;
-		if (pOrgDevice == pHardware) {
-			try
-			{
-				pOrgDevice->Stop();
-				delete pOrgDevice;
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::vector<CDomoticzHardwareBase*>::iterator itt;
+		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		{
+			pOrgDevice = *itt;
+			if (pOrgDevice == pHardware) {
 				m_hardwaredevices.erase(itt);
+				break;
 			}
-			catch (...)
-			{
-			}
-			return;
 		}
+	}
+
+	if (pOrgDevice == pHardware)
+	{
+		pOrgDevice->Stop();
+		delete pOrgDevice;
 	}
 }
 
