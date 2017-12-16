@@ -2729,16 +2729,16 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[item.reason].c_str(), filename.c_str());
 #endif
 
-	int intRise = getSunRiseSunSetMinutes("Sunrise");
-	int intSet = getSunRiseSunSetMinutes("Sunset");
-	int intSunAtSouth = getSunRiseSunSetMinutes("SunAtSouth");
-	int intCivTwilightStart = getSunRiseSunSetMinutes("CivTwilightStart");
-	int intCivTwilightEnd = getSunRiseSunSetMinutes("CivTwilightEnd");
-	int intNautTwilightStart = getSunRiseSunSetMinutes("NautTwilightStart");
-	int intNautTwilightEnd = getSunRiseSunSetMinutes("NautTwilightEnd");
-	int intAstrTwilightStart = getSunRiseSunSetMinutes("AstrTwilightStart");
-	int intAstrTwilightEnd = getSunRiseSunSetMinutes("AstrTwilightEnd");
-	int intDayLength = getSunRiseSunSetMinutes("DayLength");
+	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
+	int intSet = m_mainworker.m_SunRiseSetMins[1];
+	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
+	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
+	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
+	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
+	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
+	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
+	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
+	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 	time_t now = mytime(NULL);
@@ -4169,27 +4169,20 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 {
-	std::vector<std::string> strarray;
-	std::vector<std::string> hourMinItem;
-
-	if (!m_mainworker.m_LastSunriseSet.empty())
+	if (m_mainworker.m_SunRiseSetMins.size() > 0)
 	{
-		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-
-		if (what == "Sunrise") StringSplit(strarray[0], ":", hourMinItem);
-		else if (what == "Sunset") StringSplit(strarray[1], ":", hourMinItem);
-		else if (what == "SunAtSouth") StringSplit(strarray[2], ":", hourMinItem);
-		else if (what == "CivTwilightStart") StringSplit(strarray[3], ":", hourMinItem);
-		else if (what == "CivTwilightEnd") StringSplit(strarray[4], ":", hourMinItem);
-		else if (what == "NautTwilightStart") StringSplit(strarray[5], ":", hourMinItem);
-		else if (what == "NautTwilightEnd") StringSplit(strarray[6], ":", hourMinItem);
-		else if (what == "AstrTwilightStart") StringSplit(strarray[7], ":", hourMinItem);
-		else if (what == "AstrTwilightEnd") StringSplit(strarray[8], ":", hourMinItem);
-		else if (what == "DayLength") StringSplit(strarray[9], ":", hourMinItem);
-		else StringSplit(strarray[1], ":", hourMinItem); // Keep compatibility with previous code
-
-		int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
-		return intMins;
+		int ordinalNum = 1; // Defaults to Sunset to keep compatibility with previous code
+		if (what == "Sunrise") ordinalNum = 0;
+		else if (what == "Sunset") ordinalNum = 1; // For clarity
+		else if (what == "SunAtSouth") ordinalNum = 2;
+		else if (what == "CivTwilightStart") ordinalNum = 3;
+		else if (what == "CivTwilightEnd") ordinalNum = 4;
+		else if (what == "NautTwilightStart") ordinalNum = 5;
+		else if (what == "NautTwilightEnd") ordinalNum = 6;
+		else if (what == "AstrTwilightStart") ordinalNum = 7;
+		else if (what == "AstrTwilightEnd") ordinalNum = 8;
+		else if (what == "DayLength") ordinalNum = 9;
+		return m_mainworker.m_SunRiseSetMins[ordinalNum];
 	}
 	return 0;
 }

@@ -224,6 +224,7 @@ MainWorker::MainWorker()
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
+	m_SunRiseSetMins.clear();
 	m_DayLength = "";
 
 	m_bHaveDownloadedDomoticzUpdate = false;
@@ -556,17 +557,24 @@ bool MainWorker::GetSunSettings()
 	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
 	asttwend = szRiseSet;
 
-	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend);
-	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunrise.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
+	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
 		m_DayLength = daylength;
 		m_LastSunriseSet = riseset;
-		_log.Log(LOG_NORM, riseset.c_str());
 
+		// Now store all the time stamps e.g. "08:42;09:12" etc, found in m_LastSunriseSet into
+		// a new vector after that we've first converted them to minutes after midnight.
+		std::vector<std::string> strarray;
+		std::vector<std::string> hourMinItem;
+		StringSplit(m_LastSunriseSet, ";", strarray);
 
-
-
+		for(std::vector<std::string>::iterator it = strarray.begin(); it != strarray.end(); ++it) {
+			StringSplit(*it, ":", hourMinItem);
+			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
+			m_SunRiseSetMins.push_back(intMins);
+		}
 
 		if (sunrise == sunset)
 			if (m_DayLength == "00:00:00")
