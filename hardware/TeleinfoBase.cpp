@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.cpp
 Author : Blaise Thauvin
-Version : 1.5
+Version : 1.6
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -16,6 +16,7 @@ History :
 1.3 2017-04-01 : Added RateLimit
 1.4 2017-04-13 : Added DataTimeout
 1.5 2017-04-20 : Fix bug affecting "demain" for white days
+1.6 2017-12-17 : Fix bug affecting meters not providing PAPP, thanks to H. Lertouani
 */
 
 #include "stdafx.h"
@@ -87,8 +88,10 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		_log.Log(LOG_ERROR,"(s) TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", Name.c_str(), rank);
 		return;
 	}
-	rank = rank -1;				 // Now it is 0 to 3
-
+	rank = rank -1;	// Now it is 0 to 3
+    
+    //_log.Log(LOG_ERROR,"PAPP: %i, withPAPP: %i, IINST: %i, pAlertPAPP: %i, triphase: %i", teleinfo.PAPP, teleinfo.withPAPP, teleinfo.IINST, teleinfo.pAlertPAPP);
+    
 	// Guess if we are running with one phase or three
 	// some devices like EcoDevices always send all variables so presence/absence of IINSTx is not significant
 	// Also, EcoDevices always sends the same value for IINST and IINST1, so check must be done on IINST2 and IINST3
@@ -96,7 +99,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		teleinfo.triphase  = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if ((teleinfo.PAPP == 0) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
+	if ((teleinfo.withPAPP == 0) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
 		teleinfo.PAPP = (teleinfo.triphase ? (teleinfo.IINST1 + teleinfo.IINST2 + teleinfo.IINST3) : (teleinfo.IINST)) * 230;
 
 	if (teleinfo.PTEC.substr(0,2) == "TH")
@@ -142,10 +145,10 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	// Process only if maximum time between updates (5mn) has been reached or power consumption changed
 	// If it did not, then alerts and intensity have not changed either
 	#ifdef DEBUG_TeleinfoBase
-	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
+	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last, ));
 	#endif
 	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
-	{
+    {
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
 		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
@@ -338,3 +341,4 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		}
 	}
 }
+
