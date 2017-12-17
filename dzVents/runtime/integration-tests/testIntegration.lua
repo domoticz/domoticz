@@ -116,7 +116,7 @@ describe('Integration test', function ()
 		TestTools.removeFSScript('some_module.lua')
 		TestTools.removeFSScript('global_data.lua')
 		TestTools.removeFSScript('httpResponseScript.lua')
-		-- TestTools.removeDataFile('__data_global_data.lua')
+		TestTools.removeDataFile('__data_global_data.lua')
 		TestTools.removeDataFile('__data_secArmedAway.lua')
 	end)
 
