@@ -1394,6 +1394,7 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
 		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
+			boost::unique_lock<boost::shared_mutex> processdeviceMutexLock(m_processdeviceMutex);
 			_tEventQueue item;
 			item.reason = REASON_DEVICE;
 			item.DeviceID = ulDevID;

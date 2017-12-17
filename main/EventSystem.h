@@ -180,6 +180,7 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
+	boost::shared_mutex m_processdeviceMutex;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
