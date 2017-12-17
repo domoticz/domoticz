@@ -28,6 +28,7 @@ class CEvohomeWeb : public CEvohomeBase
 		Json::Value *installationInfo;
 		Json::Value *status;
 		Json::Value schedule;
+		std::string hdtemp;
 	};
 
 	struct temperatureControlSystem
@@ -76,7 +77,7 @@ private:
 	bool SetDHWState(const char *pdata);
 
 	// evohome client library - don't ask about naming convention - these are imported from another project
-	bool login(std::string user, std::string password);
+	bool login(const std::string &user, const std::string &password);
 	bool user_account();
 
 	void get_gateways(int location);
@@ -94,8 +95,9 @@ private:
 	bool get_schedule(std::string zoneId);
 	std::string get_next_switchpoint(temperatureControlSystem* tcs, int zone);
 	std::string get_next_switchpoint(zone* hz);
-	std::string get_next_switchpoint(Json::Value schedule);
-	std::string get_next_switchpoint_ex(Json::Value schedule, std::string &current_setpoint);
+	std::string get_next_switchpoint(Json::Value &schedule);
+	std::string get_next_switchpoint_ex(Json::Value &schedule, std::string &current_setpoint);
+
 
 	bool set_system_mode(std::string systemId, int mode);
 	bool set_temperature(std::string zoneId, std::string temperature, std::string time_until);
@@ -137,6 +139,9 @@ private:
 	uint8_t m_gatewayId;
 	uint8_t m_systemId;
 	double m_awaysetpoint;
+	bool m_showhdtemps;
+	uint8_t m_hdprecision;
+	int m_wdayoff;
 
 
 	static const uint8_t m_dczToEvoWebAPIMode[7];
@@ -146,10 +151,16 @@ private:
 	Json::Value m_j_fi;
 	Json::Value m_j_stat;
 
-	std::map<std::string, std::string> m_auth_info;
-	std::map<std::string, std::string> m_account_info;
+	std::string m_evouid;
 	std::map<int, location> m_locations;
 
 	temperatureControlSystem* m_tcs;
+
+	// Evohome v1 API
+	std::string m_v1uid;
+	std::vector<std::string> m_v1SessionHeaders;
+
+	bool v1_login(const std::string &user, const std::string &password);
+	void get_v1_temps();
 };
 

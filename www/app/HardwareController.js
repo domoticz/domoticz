@@ -154,6 +154,7 @@ define(['app'], function (app) {
 				}
 				if (text.indexOf("sysfs GPIO") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+					Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -880,6 +881,9 @@ define(['app'], function (app) {
 					UseFlags = UseFlags | 2;
 				}
 
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
+
 				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
@@ -1124,13 +1128,15 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("sysfs GPIO") >= 0) {
 				Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+				Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype="
 					+ hardwaretype
 					+ "&name=" + encodeURIComponent(name)
 					+ "&enabled=" + bEnabled
 					+ "&datatimeout=" + datatimeout
-					+ "&Mode1=" + Mode1,
+					+ "&Mode1=" + Mode1
+					+ "&Mode2=" + Mode2,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1699,6 +1705,9 @@ define(['app'], function (app) {
 				{
 					UseFlags = UseFlags | 2;
 				}
+
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
 
 				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
 				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
@@ -5002,6 +5011,7 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("sysfs GPIO") >= 0) {
 							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure").prop("checked", data["Mode1"] == 1);
+							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("USB") >= 0 || data["Type"].indexOf("Teleinfo EDF") >= 0) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -5170,9 +5180,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
 							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
 							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
+							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
 
 							var Location = parseInt(data["Mode5"]);
-							for (var i=0;i<10;i++){
+							for (var i=1;i<10;i++){
 								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
 								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
@@ -5237,6 +5248,58 @@ define(['app'], function (app) {
 					ShowNotify($.t('Problem registrating with the Philips Hue bridge!'), 2500, true);
 				}
 			});
+		}
+
+		//credits: http://www.netlobo.com/url_query_string_javascript.html
+		function gup(url, name) {
+			name = name.replace(/[[]/, "\[").replace(/[]]/, "\]");
+			var regexS = "[\?&]" + name + "=([^&#]*)";
+			var regex = new RegExp(regexS);
+			var results = regex.exec(url);
+			if (results == null)
+				return "";
+			else
+				return results[1];
+		}
+
+		function validateToonToken(token) {
+			alert(code);
+		}
+
+		OnAuthenticateToon = function () {
+			var pwidth = 800;
+			var pheight = 600;
+
+			var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+			var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+			var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+			var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+			var left = ((width / 2) - (pwidth / 2)) + dualScreenLeft;
+			var top = ((height / 2) - (pheight / 2)) + dualScreenTop;
+
+			var REDIRECT = 'http://127.0.0.1/domoticiz_toon';
+			var CLIENT_ID = '7gQMPclYzm8haCHAgdvjq1yILLwa';
+			var _url = 'https://api.toonapi.com/authorize?response_type=code&redirect_uri=' + REDIRECT + '&client_id=' + CLIENT_ID;
+			//_url = "http://127.0.0.1:8081/11";
+			var win = window.open(_url, "windowtoonaith", 'scrollbars=yes, width=' + pwidth + ', height=' + pheight + ', left=' + left + ', top=' + top);
+			if (window.focus) {
+				win.focus();
+			}
+			var pollTimer = window.setInterval(function () {
+				if (win.closed !== false) { // !== is required for compatibility with Opera
+					window.clearInterval(pollTimer);
+				}
+				else if (win.document.URL.indexOf(REDIRECT) != -1) {
+					window.clearInterval(pollTimer);
+					console.log(win.document.URL);
+					var url = win.document.URL;
+					var code = gup(url, 'code');
+					win.close();
+					validateToonToken(code);
+				}
+			}, 200);
 		}
 
 		UpdateHardwareParamControls = function () {

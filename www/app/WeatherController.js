@@ -87,7 +87,7 @@ define(['app'], function (app) {
 			var id = "";
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=weather&used=true&order=Name&lastupdate=" + $.LastUpdateTime,
+				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -133,7 +133,7 @@ define(['app'], function (app) {
 			$('#modal').show();
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=weather&used=true&order=Name",
+				url: "json.htm?type=devices&filter=weather&used=true&order=[Order]",
 				async: false,
 				dataType: 'json',
 				success: function (data) {

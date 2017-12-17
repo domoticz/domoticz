@@ -12,6 +12,7 @@ namespace Plugins {
 		std::string		m_Port;
 
 		bool			m_bDisconnectQueued;
+		bool			m_bConnecting;
 		bool			m_bConnected;
 		long			m_iTotalBytes;
 		time_t			m_tLastSeen;
@@ -21,7 +22,7 @@ namespace Plugins {
 		PyObject*		m_pConnection;
 
 	public:
-		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0)
+		CPluginTransport(int HwdID, PyObject* pConnection) : m_HwdID(HwdID), m_pConnection(pConnection), m_bConnecting(false), m_bConnected(false), m_bDisconnectQueued(false), m_iTotalBytes(0)
 		{
 			Py_INCREF(m_pConnection);
 		};
@@ -31,11 +32,12 @@ namespace Plugins {
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&) = 0;
 		virtual	bool		handleDisconnect() { return false; };
-		~CPluginTransport()
+		virtual ~CPluginTransport()
 		{
 			Py_DECREF(m_pConnection);
 		}
 
+		bool				IsConnecting() { return m_bConnecting; };
 		bool				IsConnected() { return m_bConnected; };
 		time_t				LastSeen() { return m_tLastSeen; };
 		virtual bool		ThreadPoolRequired() { return false; };
@@ -66,6 +68,7 @@ namespace Plugins {
 		virtual	bool		handleDisconnect();
 		virtual bool		ThreadPoolRequired() { return true; };
 		boost::asio::ip::tcp::socket& Socket() { return *m_Socket; };
+		~CPluginTransportTCP();
 
 	protected:
 		boost::asio::ip::tcp::resolver	*m_Resolver;

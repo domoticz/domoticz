@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Motion Sensor HS1MS-Z
+http://products.z-wavealliance.org/products/1801
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="3">
+            <Group index="1" max_associations="5" label="Notification" auto="false"/>
+            <Group index="2" max_associations="5" label="LifeLine" auto="true"/>
+            <Group index="3" max_associations="5" label="Binary Sensor"/>
+        </Associations>
+    </CommandClass>
+</Product>
+

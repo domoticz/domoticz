@@ -1,7 +1,7 @@
 #pragma once
-//#include "../main/RFXtrx.h" 
+//#include "../main/RFXtrx.h"
 #include "DomoticzHardware.h"
-#if defined WIN32 
+#if defined WIN32
 	// for windows system info
 	#include <wbemidl.h>
 	#pragma comment(lib, "wbemuuid.lib")
@@ -17,7 +17,7 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	double m_lastquerytime;
-	void Do_Work();	
+	void Do_Work();
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 	void FetchData();
@@ -32,13 +32,16 @@ private:
 	void ExitWMI();
 	bool IsOHMRunning();
 	void RunWMIQuery(const char* qTable, const std::string &qType);
-	IWbemLocator *m_pLocator; 
+	IWbemLocator *m_pLocator;
 	IWbemServices *m_pServicesOHM;
 	IWbemServices *m_pServicesSystem;
 #elif defined (__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-	void FetchUnixData();
+	void FetchUnixCPU();
+	void FetchUnixMemory();
+	void FetchUnixDisk();
 	long long m_lastloadcpu;
 	int m_totcpu;
+	std::string m_dfcommand;
 #endif
 };
 

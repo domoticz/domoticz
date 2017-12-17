@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Leviton DZPD3-2BW, http://products.z-wavealliance.org/products/1958
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="Fade On Time" units="" min="0" max="253" size="1" value="2">
+			<Help>The amount of time to take to fade the lights from off to on.  A value of zero is instant (no fade), values between 1 and 127 represent 1 to 127 seconds, and values from 128 to 253 represent from 1 to 126 minutes.</Help>
+			<Item label="Instant On" value="0" />
+		</Value>
+		<Value type="byte" index="2" genre="config" label="Fade Off Time" units="" min="0" max="253" size="1" value="2">
+			<Help>The amount of time to take to fade the lights from on to off.  A value of zero is instant (no fade), values between 1 and 127 represent 1 to 127 seconds, and values from 128 to 253 represent from 1 to 126 minutes.</Help>
+			<Item label="Instant Off" value="0" />
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Minimum Light Level" units="" min="0" max="100" size="1" value="10">
+			<Help>Smallest dimming value permitted.</Help>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="Maximum Light Level" units="" min="0" max="100" size="1" value="100">
+			<Help>Largest dimming value permitted.</Help>
+		</Value>
+		<Value type="list" index="7" genre="config" label="Locator LED Status" units="" min="0" max="255" size="1" value="255">
+			<Help>Change the mode of the LED to Status Mode where the LED is illuminated when the load is On, Locator Mode where the LED is illuminated when the Load is Off, or turns off the LED completely for any other setting values.</Help>
+			<Item label="LED Off" value="0" />
+			<Item label="Status Mode" value="254" />
+			<Item label="Locator Mode" value="255" />
+		</Value>
+		<Value type="list" index="8" genre="config" label="Load Type" units="" min="0" max="2" size="1" value="0">
+			<Help>Specify the type of load that this dimmer controls.</Help>
+			<Item label="Incandescent" value="0" />
+			<Item label="LED" value="1" />
+			<Item label="CFL" value="2" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline" />
+		</Associations>
+	</CommandClass>
+	<CommandClass id="134" classgetsupported="false" />
+</Product>

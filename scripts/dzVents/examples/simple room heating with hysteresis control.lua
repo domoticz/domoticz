@@ -11,9 +11,13 @@ local LOGGING = true
 
 return {
 	on = {
-		['timer'] = 'every minute',
-		TEMPERATURE_SENSOR,
-		SETPOINT_DEVICE
+		['timer'] = {
+			'every minute',
+		},
+		devices = {
+			TEMPERATURE_SENSOR,
+			SETPOINT_DEVICE
+		}
 	},
 	data = {
 		temperatureReadings = { history = true, maxItems = SMOOTH_FACTOR }
@@ -23,17 +27,17 @@ return {
 
 		local avgTemp
 		local temperatureReadings = domoticz.data.temperatureReadings
+		local sensor = domoticz.devices(TEMPERATURE_SENSOR)
+		local current = sensor.temperature
+		local boiler = domoticz.devices(BOILER_DEVICE)
+		local setpoint = domoticz.devices(SETPOINT_DEVICE)
 
 		-- first check if the sensor got a new reading or the setpoint was changed:
 		if (triggerInfo.type == domoticz.EVENT_TYPE_DEVICE) then
 
-			local sensor = domoticz.devices[TEMPERATURE_SENSOR]
-
-			if (sensor.changed and sensor.attributeChanged('temperature')) then
+			if (sensor.changed) then
 				-- sensor just reported a new reading
 				-- add it to the readings table
-
-				local current = sensor.temperature
 
 				if (current ~= 0 and current ~= nil) then
 					temperatureReadings.add(current)
@@ -43,7 +47,7 @@ return {
 					return
 				end
 
-			elseif (domoticz.devices[SETPOINT_DEVICE].changed) then
+			elseif (domoticz.devices(SETPOINT_DEVICE).changed) then
 				-- a new setpoint was set
 				if LOGGING then domoticz.log('Setpoint was set to ' .. device.state) end
 			else
@@ -53,10 +57,6 @@ return {
 		end
 
 		-- now determine what to do
-
-		local boiler = domoticz.devices[BOILER_DEVICE]
-		local setpoint = domoticz.devices[SETPOINT_DEVICE]
-
 		if (setpoint.state == nil or setpoint.state == 'Off') then
 			boiler.switchOff()
 			return -- we're done here
@@ -70,7 +70,7 @@ return {
 
 		-- don't use the current reading but average it out over
 		-- the past <SMOOTH_FACTOR> readings (data smoothing) to get rid of noise, wrong readings etc
-		local avgTemp = temperatureReadings.avg(1, SMOOTH_FACTOR)
+		local avgTemp = temperatureReadings.avg(1, SMOOTH_FACTOR, current) -- fallback to current when history is empty
 
 		if LOGGING then
 			domoticz.log('Average: ' .. avgTemp, domoticz.LOG_INFO)

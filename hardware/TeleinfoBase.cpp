@@ -148,7 +148,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
-		//Send data at mamximum rate specified in settings, and at least every 5mn minus 10s as a grace period for the watchdog
+		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
 		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 290))
 		{
 			teleinfo.last = atime;
