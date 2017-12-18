@@ -224,6 +224,8 @@ MainWorker::MainWorker()
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
+	m_SunRiseSetMins.clear();
+	m_DayLength = "";
 
 	m_bHaveDownloadedDomoticzUpdate = false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;
@@ -384,23 +386,26 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	// Separate the Stop() from the device removal from the vector.
+	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
+	CDomoticzHardwareBase *pOrgDevice = NULL;
 	{
-		CDomoticzHardwareBase *pOrgDevice = *itt;
-		if (pOrgDevice == pHardware) {
-			try
-			{
-				pOrgDevice->Stop();
-				delete pOrgDevice;
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::vector<CDomoticzHardwareBase*>::iterator itt;
+		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		{
+			pOrgDevice = *itt;
+			if (pOrgDevice == pHardware) {
 				m_hardwaredevices.erase(itt);
+				break;
 			}
-			catch (...)
-			{
-			}
-			return;
 		}
+	}
+
+	if (pOrgDevice == pHardware)
+	{
+		pOrgDevice->Stop();
+		delete pOrgDevice;
 	}
 }
 
@@ -524,19 +529,76 @@ bool MainWorker::GetSunSettings()
 
 	std::string sunrise;
 	std::string sunset;
+	std::string daylength;
+	std::string sunatsouth;
+	std::string civtwstart;
+	std::string civtwend;
+	std::string nauttwstart;
+	std::string nauttwend;
+	std::string asttwstart;
+	std::string asttwend;
 
 	char szRiseSet[30];
 	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
 	sunrise = szRiseSet;
 	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
 	sunset = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.DaylengthHours, sresult.DaylengthMins);
+	daylength = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
+	sunatsouth = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
+	civtwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
+	civtwend = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
+	nauttwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
+	nauttwend = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
+	asttwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
+	asttwend = szRiseSet;
 
-	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
-	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunrise.size() - 3); //make a short version
+	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
+		m_DayLength = daylength;
 		m_LastSunriseSet = riseset;
-		_log.Log(LOG_NORM, "Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
+
+		// Now store all the time stamps e.g. "08:42;09:12" etc, found in m_LastSunriseSet into
+		// a new vector after that we've first converted them to minutes after midnight.
+		std::vector<std::string> strarray;
+		std::vector<std::string> hourMinItem;
+		StringSplit(m_LastSunriseSet, ";", strarray);
+
+		for(std::vector<std::string>::iterator it = strarray.begin(); it != strarray.end(); ++it) {
+			StringSplit(*it, ":", hourMinItem);
+			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
+			m_SunRiseSetMins.push_back(intMins);
+		}
+
+		if (sunrise == sunset)
+			if (m_DayLength == "00:00:00")
+				_log.Log(LOG_NORM, "Sun below horizon in the space of 24 hours");
+			else
+				_log.Log(LOG_NORM, "Sun above horizon in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Sunrise: %s SunSet: %s", sunrise.c_str(), sunset.c_str());
+		_log.Log(LOG_NORM, "Day length: %s Sun at south: %s", daylength.c_str(), sunatsouth.c_str());
+		if (civtwstart == civtwend)
+			_log.Log(LOG_NORM, "There is no civil twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Civil twilight start: %s Civil twilight end: %s", civtwstart.c_str(), civtwend.c_str());
+		if (nauttwstart == nauttwend)
+			_log.Log(LOG_NORM, "There is no nautical twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Nautical twilight start: %s Nautical twilight end: %s", nauttwstart.c_str(), nauttwend.c_str());
+		if (asttwstart == asttwend)
+			_log.Log(LOG_NORM, "There is no astronomical twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Astronomical twilight start: %s Astronomical twilight end: %s", asttwstart.c_str(), asttwend.c_str());
 
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
