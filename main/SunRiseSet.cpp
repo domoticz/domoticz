@@ -93,7 +93,7 @@
 #define astronomical_twilight(year,month,day,lon,lat,start,end)  \
 		__sunriset__( year, month, day, lon, lat, -18.0, 0, start, end )
 
-boost::posix_time::time_duration get_utc_offset() {
+double SunRiseSet::get_utc_offset() {
 	using namespace boost::posix_time;
 
 	// boost::date_time::c_local_adjustor uses the C-API to adjust a
@@ -103,7 +103,8 @@ boost::posix_time::time_duration get_utc_offset() {
 	const ptime utc_now = second_clock::universal_time();
 	const ptime now = local_adj::utc_to_local(utc_now);
 
-	return now - utc_now;
+	boost::posix_time::time_duration uoffset=now - utc_now;
+	return((double)(uoffset.ticks()/3600000000LL));
 }
 
 bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults &result)
@@ -128,10 +129,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	result.month=month;
 	result.day=day;
 
-	boost::posix_time::time_duration uoffset=get_utc_offset();
-	double timezone=(double)(uoffset.ticks()/3600000000LL);
-	// Assuming we now got the diff in hours and minutes here. Do we?
-
+	double timezone = get_utc_offset();
 	double daylen; //, civlen, nautlen, astrlen;
 	double rise, set, civ_start, civ_end, naut_start, naut_end, astr_start, astr_end;
 	int rs, civ, naut, astr;
@@ -155,6 +153,11 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	result.SunAtSouthMin = modf((rise+set)/2.0, &_tmpH)*60+0,5;
 	result.SunAtSouthHour = _tmpH;
 
+	result.evtInfo.push_back(rs);
+	result.evtInfo.push_back(civ);
+	result.evtInfo.push_back(naut);
+	result.evtInfo.push_back(astr);
+
 	switch(rs) {
 		case 0:
 			result.SunRiseMin = modf(rise, &_tmpH)*60+0.5;
@@ -172,6 +175,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 			break;
 	}
 
+	result.evtInfo[1] = civ;
 	switch(civ) {
 		case 0:
 			civ_start = UtcToLocal(civ_start, timezone);
@@ -191,6 +195,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 			break;
 	}
 
+	result.evtInfo[2] = naut;
 	switch(naut) {
 		case 0:
 			naut_start = UtcToLocal(naut_start, timezone);
@@ -210,6 +215,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 			break;
 	}
 
+	result.evtInfo[3] = astr;
 	switch(astr) {
 		case 0:
 			astr_start = UtcToLocal(astr_start, timezone);

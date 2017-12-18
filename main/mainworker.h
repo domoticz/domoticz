@@ -141,6 +141,7 @@ public:
 	std::string m_LastSunriseSet;
 	std::vector<int> m_SunRiseSetMins;
 	std::string m_DayLength;
+	std::vector<double> m_LatLong;
 	std::vector<std::string> m_webthemes;
 	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
 

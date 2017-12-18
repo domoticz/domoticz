@@ -564,6 +564,8 @@ bool MainWorker::GetSunSettings()
 	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
+		m_LatLong.push_back(dLatitude);
+		m_LatLong.push_back(dLongitude);
 		m_DayLength = daylength;
 		m_LastSunriseSet = riseset;
 
@@ -579,6 +581,8 @@ bool MainWorker::GetSunSettings()
 			m_SunRiseSetMins.push_back(intMins);
 		}
 
+		if (not (dLatitude == 0 and dLongitude == 0))
+			_log.Log(LOG_NORM, "Location latitude: %f, longitude: %f", dLatitude, dLongitude);
 		if (sunrise == sunset)
 			if (m_DayLength == "00:00:00")
 				_log.Log(LOG_NORM, "Sun below horizon in the space of 24 hours");
