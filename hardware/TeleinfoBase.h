@@ -17,7 +17,7 @@ History :
 
 #pragma once
 
-#include <iosfwd>
+#include <iostream>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -72,13 +72,13 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			uint32_t pAlertColor;
 			uint32_t pAlertEJP;
 			uint32_t pAlertDemain;
-            uint32_t withPAPP;    //For meters with no PAPP
 			std::string rate;
 			std::string tariff;
 			std::string color;
-			time_t   last;
+			time_t  last;
 			bool    triphase;
-			int    CRCmode1;	 // really a bool, but with a special "un-initialized state"
+			bool    withPAPP; 	//For meters with no PAPP
+			int     CRCmode1;	// really a bool, but with a special "un-initialized state"
 			_tTeleinfo()
 			{
 				ISOUSC = 0;
@@ -112,7 +112,7 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
-                withPAPP = 0;
+                		withPAPP = false;
 				CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
 			}
 		} Teleinfo;
@@ -169,4 +169,3 @@ English
 				PAPP     apparent power (VA)
 				MOTDETAT status code
 */
-

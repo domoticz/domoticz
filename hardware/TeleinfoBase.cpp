@@ -88,9 +88,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		_log.Log(LOG_ERROR,"(s) TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", Name.c_str(), rank);
 		return;
 	}
-	rank = rank -1;	// Now it is 0 to 3
-    
-    //_log.Log(LOG_ERROR,"PAPP: %i, withPAPP: %i, IINST: %i, pAlertPAPP: %i, triphase: %i", teleinfo.PAPP, teleinfo.withPAPP, teleinfo.IINST, teleinfo.pAlertPAPP);
+	rank = rank -1;			// Now it is 0 to 3
     
 	// Guess if we are running with one phase or three
 	// some devices like EcoDevices always send all variables so presence/absence of IINSTx is not significant
@@ -99,7 +97,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		teleinfo.triphase  = true;
 
 	// PAPP only exist on some meter versions. If not present, we can approximate it as (current x 230V)
-	if ((teleinfo.withPAPP == 0) && ((teleinfo.IINST > 0) || (teleinfo.IINST1 > 0) || (teleinfo.IINST2 > 0) || (teleinfo.IINST3 > 0)))
+	if (teleinfo.withPAPP == false)
 		teleinfo.PAPP = (teleinfo.triphase ? (teleinfo.IINST1 + teleinfo.IINST2 + teleinfo.IINST3) : (teleinfo.IINST)) * 230;
 
 	if (teleinfo.PTEC.substr(0,2) == "TH")
@@ -148,7 +146,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last, ));
 	#endif
 	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
-    {
+    	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
 		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
@@ -341,4 +339,3 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		}
 	}
 }
-
