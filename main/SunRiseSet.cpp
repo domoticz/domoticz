@@ -149,7 +149,7 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	rise = UtcToLocal(rise, timezone);
 	set = UtcToLocal(set, timezone);
-	result.SunAtSouthHour = (int)(rise+set)/2.0;
+	result.SunAtSouthHour = (int)((rise+set)/2.0);
 	result.SunAtSouthMin  = (int)(((rise+set)/2.0-(int)(rise+set)/2.0)*60+0.5);
 
 	result.evtInfo.push_back(rs);
