@@ -6581,29 +6581,25 @@ namespace http {
 				if ((dLatitude != 0.0) && (dLongitude != 0.0)) {
 					// A valid latitude in Signed degrees format must be between -90.0 and 90.0,
 					// and valid longitude may range from -180.0 to 180.0.
-					if ((dLatitude >= -90.0 and dLatitude <= 90.0) and (dLongitude >= -180.0 and dLongitude <= 180.0)) {
+					if (((dLatitude >= -90.0) && (dLatitude <= 90.0)) && ((dLongitude >= -180.0) && (dLongitude <= 180.0))) {
 						reqLocation = true;
 					}
 				}
 				if (!customDate.empty()) {
-					struct tm tm;
-					if (strptime(customDate.c_str(), "%Y-%m-%d", &tm))
+					year = 0, month = 0, day = 0;
+					sscanf(customDate.c_str(), "%4d-%2d-%2d", &year, &month, &day);
+					if ((year > 1800) && (year < 2100) && ((month > 0) && (month < 13)) && ((day > 0) && (day < 31)))
 					{
-						year = tm.tm_year + 1900;
-						month = tm.tm_mon + 1;
-						day = tm.tm_mday;
 						// Valid year range for the function we use is 1801-2099
-						if (year > 1800 and year < 2100) {
-							unsigned short monthlen[]={31,28,31,30,31,30,31,31,30,31,30,31};
-							if (year and month and day and month<13)
-								if (((!(year%4) && (year%100)) || !(year%400)) && month==2)
-									monthlen[1]++;
-							if (day<=monthlen[month-1])
-							{
-								reqDate = true;
-								sprintf(szTmp, "%04d-%02d-%02d", year, month, day);
-								sunCalcDate = szTmp;
-							}
+						unsigned short monthlen[]={31,28,31,30,31,30,31,31,30,31,30,31};
+						if (year && month && day && (month<13))
+							if (((!(year%4) && (year%100)) || !(year%400)) && month==2)
+								monthlen[1]++;
+						if (day<=monthlen[month-1])
+						{
+							reqDate = true;
+							sprintf(szTmp, "%04d-%02d-%02d", year, month, day);
+							sunCalcDate = szTmp;
 						}
 					}
 				 }
@@ -6637,7 +6633,7 @@ namespace http {
 				std::string sLongitude = szTmp;
 				root["UtcOffset"] = SunRiseSet::get_utc_offset();
 
-				if (reqDate or reqLocation)
+				if (reqDate || reqLocation)
 				{
 					SunRiseSet::_tSubRiseSetResults sresult;
 					SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
