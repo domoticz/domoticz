@@ -139,9 +139,8 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 	//nautlen = day_nautical_twilight_length(year,month,day,longit,latit);
 	//astrlen = day_astronomical_twilight_length(year,month,day,longit,latit);
 
-	double _tmpH;
-	result.DaylengthMins = modf(daylen, &_tmpH)*60+0.5;
-	result.DaylengthHours = _tmpH;
+	result.DaylengthHours = (int)daylen;
+	result.DaylengthMins  = (int)((daylen-(int)daylen)*60+0.5);
 
 	rs = sun_rise_set(year, month, day, longit, latit, &rise, &set);
 	civ = civil_twilight(year, month, day, longit, latit, &civ_start, &civ_end);
@@ -150,8 +149,8 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	rise = UtcToLocal(rise, timezone);
 	set = UtcToLocal(set, timezone);
-	result.SunAtSouthMin = modf((rise+set)/2.0, &_tmpH)*60+0,5;
-	result.SunAtSouthHour = _tmpH;
+	result.SunAtSouthHour = (int)(rise+set)/2.0;
+	result.SunAtSouthMin  = (int)(((rise+set)/2.0-(int)(rise+set)/2.0)*60+0.5);
 
 	result.evtInfo.push_back(rs);
 	result.evtInfo.push_back(civ);
@@ -160,10 +159,10 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 
 	switch(rs) {
 		case 0:
-			result.SunRiseMin = modf(rise, &_tmpH)*60+0.5;
-			result.SunRiseHour = _tmpH;
-			result.SunSetMin = modf(set, &_tmpH)*60+0.5;
-			result.SunSetHour = _tmpH;
+			result.SunRiseHour = (int)rise;
+			result.SunRiseMin  = (int)((rise-(int)rise)*60+0.5);
+			result.SunSetHour = (int)set;
+			result.SunSetMin  = (int)((set-(int)set)*60+0.5);
 			break;
 		case +1:
 		case -1:
@@ -180,10 +179,10 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		case 0:
 			civ_start = UtcToLocal(civ_start, timezone);
 			civ_end = UtcToLocal(civ_end, timezone);
-			result.CivilTwilightStartMin = modf(civ_start, &_tmpH)*60+0.5;
-			result.CivilTwilightStartHour = _tmpH;
-			result.CivilTwilightEndMin = modf(civ_end, &_tmpH)*60+0.5;
-			result.CivilTwilightEndHour = _tmpH;
+			result.CivilTwilightStartHour = (int)civ_start;
+			result.CivilTwilightStartMin  = (int)((civ_start-(int)civ_start)*60+0.5);
+			result.CivilTwilightEndHour = (int)civ_end;
+			result.CivilTwilightEndMin  = (int)((civ_end-(int)civ_end)*60+0.5);
 			break;
 		case +1:
 		case -1:
@@ -200,10 +199,10 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		case 0:
 			naut_start = UtcToLocal(naut_start, timezone);
 			naut_end = UtcToLocal(naut_end, timezone);
-			result.NauticalTwilightStartMin = modf(naut_start, &_tmpH)*60+0.5;
-			result.NauticalTwilightStartHour = _tmpH;
-			result.NauticalTwilightEndMin = modf(naut_end, &_tmpH)*60+0.5;
-			result.NauticalTwilightEndHour = _tmpH;
+			result.NauticalTwilightStartHour = (int)naut_start;
+			result.NauticalTwilightStartMin  = (int)((naut_start-(int)naut_start)*60+0.5);
+			result.NauticalTwilightEndHour = (int)naut_end;
+			result.NauticalTwilightEndMin  = (int)((naut_end-(int)naut_end)*60+0.5);
 			break;
 		case +1:
 		case -1:
@@ -220,10 +219,10 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 		case 0:
 			astr_start = UtcToLocal(astr_start, timezone);
 			astr_end = UtcToLocal(astr_end, timezone);
-			result.AstronomicalTwilightStartMin = modf(astr_start, &_tmpH)*60+0.5;
-			result.AstronomicalTwilightStartHour = _tmpH;
-			result.AstronomicalTwilightEndMin = modf(astr_end, &_tmpH)*60+0.5;
-			result.AstronomicalTwilightEndHour = _tmpH;
+			result.AstronomicalTwilightStartHour = (int)astr_start;
+			result.AstronomicalTwilightStartMin  = (int)((astr_start-(int)astr_start)*60+0.5);
+			result.AstronomicalTwilightEndHour = (int)astr_end;
+			result.AstronomicalTwilightEndMin  = (int)((astr_end-(int)astr_end)*60+0.5);
 			break;
 		case +1:
 		case -1:

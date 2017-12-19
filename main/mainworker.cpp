@@ -581,7 +581,7 @@ bool MainWorker::GetSunSettings()
 			m_SunRiseSetMins.push_back(intMins);
 		}
 
-		if (not (dLatitude == 0 and dLongitude == 0))
+		if (!((dLatitude == 0.0) and (dLongitude == 0.0)))
 			_log.Log(LOG_NORM, "Location latitude: %f, longitude: %f", dLatitude, dLongitude);
 		if (sunrise == sunset)
 			if (m_DayLength == "00:00:00")
