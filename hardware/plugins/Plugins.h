@@ -69,6 +69,7 @@ namespace Plugins {
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
+		void	SendCommand(const int Unit, const std::string &command, const int nValue, const std::string &sValue);
 			
 		bool	HasNodeFailed(const int Unit);
 

@@ -132,28 +132,46 @@ namespace Plugins {
 		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Unit = Unit;
-			m_fLevel = -273.15f;
+			m_fLevel = 0;
 			m_Command = Command;
 			m_iLevel = level;
 			m_iHue = hue;
+			m_iType = 0;
 		};
 		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Unit = Unit;
 			m_fLevel = level;
 			m_Command = Command;
-			m_iLevel = -1;
-			m_iHue = -1;
+			m_iLevel = 0;
+			m_iHue = 0;
+			m_iType = 1;
+		};
+		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int nValue, const std::string& sValue) : CCallbackBase(pPlugin, "onCommand")
+		{
+			m_Unit = Unit;
+			m_fLevel = 0;
+			m_Command = Command;
+			m_iLevel = nValue;
+			m_iHue = 0;
+                        m_sValue = sValue;
+			m_iType = 2;
 		};
 		std::string				m_Command;
+		std::string				m_sValue;
 		int						m_iHue;
 		int						m_iLevel;
 		float					m_fLevel;
+		int					m_iType;
 
 		virtual void Process()
 		{
 			PyObject*	pParams;
-			if (m_fLevel != -273.15f)
+			if (m_iType == 2)
+                        {
+				pParams = Py_BuildValue("isiis", m_Unit, m_Command.c_str(), m_iLevel, 0, m_sValue.c_str());
+                        }
+			else if (m_iType == 1)
 			{
 				pParams = Py_BuildValue("isfi", m_Unit, m_Command.c_str(), m_fLevel, 0);
 			}
