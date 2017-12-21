@@ -4,6 +4,8 @@
 #include "../main/Helper.h"
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
+#include "../httpclient/HTTPClient.h"
+#include "../httpclient/UrlEncode.h"
 
 #include <iostream>
 
@@ -142,20 +144,14 @@ void Comm5Serial::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
-		msec_counter++;
-		if (msec_counter == 5)
-		{
+		m_LastHeartbeat = mytime(NULL);
+		sleep_milliseconds(40);
+		if (msec_counter++ >= 100) {
 			msec_counter = 0;
-
-			sec_counter++;
-			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
-			}
+			querySensorState();
 		}
 	}
+
 	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Serial Worker stopped...");
 }
 
