@@ -9,7 +9,7 @@ local _ = require 'lodash'
 
 local fsScripts = {'scriptTestEventState.lua'}
 
-describe('Integration test', function ()
+describe('Test event state', function ()
 
 	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK
 

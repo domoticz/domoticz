@@ -12,6 +12,7 @@ local scriptSourcePath = './'
 local scriptTargetPath = '../../../scripts/dzVents/scripts/'
 local generatedScriptTargetPath = '../../../scripts/dzVents/generated_scripts/'
 local dataTargetPath = '../../../scripts/dzVents/data/'
+local DUMMY_HW = 15
 
 local function DomoticzTestTools(port, debug)
 
@@ -26,8 +27,6 @@ local function DomoticzTestTools(port, debug)
         url = BASE_URL,
         apiUrl = API_URL
     }
-
-
 
     function self.getScriptSourcePath(name)
     	return scriptSourcePath .. name
@@ -86,6 +85,11 @@ local function DomoticzTestTools(port, debug)
     	local idx = json.idx
     	return ok, idx, json, result, respcode, respheaders, respstatus
     end
+
+	function self.createDummyHardware()
+		local ok, dummyIdx = self.createHardware('dummy', DUMMY_HW)
+		return ok, dummyIdx
+	end
 
     function self.createVirtualDevice(hw, name, type, options)
     	-- type=createvirtualsensor&idx=2&sensorname=s1&sensortype=6
@@ -348,6 +352,29 @@ local function DomoticzTestTools(port, debug)
     	return ok, result, respcode, respheaders, respstatus
 
     end
+
+	function self.reset()
+		local ok = true
+		ok = ok and self.deleteAllDevices()
+		ok = ok and self.deleteAllVariables()
+		ok = ok and self.deleteAllHardware()
+		ok = ok and self.deleteAllScripts()
+		ok = ok and self.initSettings()
+		return ok
+	end
+
+	function self.installFSScripts(scripts)
+		for i,script in pairs(scripts) do
+			self.createFSScript(script)
+		end
+	end
+
+	function self.cleanupFSScripts(scripts)
+		for i,script in pairs(scripts) do
+			self.removeFSScript(script)
+			self.removeDataFile('__data_' .. script)
+		end
+	end
 
     function self.setDisarmed()
     	-- http://localhost:8080/json.htm?type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b

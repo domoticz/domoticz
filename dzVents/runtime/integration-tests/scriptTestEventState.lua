@@ -28,7 +28,7 @@ return {
 		end
 
 		if (item.name == 'vdRepeatSwitch') then
-			--socket.sleep(3)
+			socket.sleep(3)
 			dz.data.states = dz.data.states  .. item.state
 		end
 
