@@ -88,7 +88,7 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		_log.Log(LOG_ERROR,"(s) TeleinfoBase: Invalid rank passed to function (%i), must be between 1 and 4", Name.c_str(), rank);
 		return;
 	}
-	rank = rank -1;			// Now it is 0 to 3
+	rank = rank -1;		// Now it is 0 to 3
     
 	// Guess if we are running with one phase or three
 	// some devices like EcoDevices always send all variables so presence/absence of IINSTx is not significant
@@ -143,10 +143,10 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 	// Process only if maximum time between updates (5mn) has been reached or power consumption changed
 	// If it did not, then alerts and intensity have not changed either
 	#ifdef DEBUG_TeleinfoBase
-	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last, ));
+	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
 	#endif
 	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
-    	{
+	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
 		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
