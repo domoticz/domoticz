@@ -128,7 +128,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorbitfield;
