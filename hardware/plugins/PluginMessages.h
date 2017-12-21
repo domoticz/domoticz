@@ -169,7 +169,7 @@ namespace Plugins {
 			PyObject*	pParams;
 			if (m_iType == 2)
                         {
-				pParams = Py_BuildValue("isiis", m_Unit, m_Command.c_str(), m_iLevel, 0, m_sValue.c_str());
+				pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_sValue.c_str());
                         }
 			else if (m_iType == 1)
 			{
