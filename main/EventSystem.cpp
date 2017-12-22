@@ -2748,7 +2748,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if (intRise == intSet == 0) {
+	if (intRise == 0 && intSet == 0) {
 		if (intDayLength == 0)
 			nightTimeBool = true; // Sun below horizon in the space of 24 hours
 		else
