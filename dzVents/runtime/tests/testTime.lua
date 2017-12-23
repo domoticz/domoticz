@@ -45,6 +45,7 @@ describe('Time', function()
 				tostring(localPast.sec) .. ms
 		localT = Time(localRaw, false)
 
+
 	end)
 
 	after_each(function()
@@ -338,6 +339,25 @@ describe('Time', function()
 			assert.is_same(now.year, t.year)
 			assert.is_same(now.day, t.day)
 			assert.is_same(now.month, t.month)
+
+		end)
+
+		it('should have negatives minutesAgo when time is in the future', function()
+
+			local localFuture = os.date('*t', os.time() + 546564)
+
+			local futureRaw =  tostring(localFuture.year) .. '-' ..
+					tostring(localFuture.month) .. '-' ..
+					tostring(localFuture.day) .. ' ' ..
+					tostring(localFuture.hour) .. ':' ..
+					tostring(localFuture.min) .. ':' ..
+					tostring(localFuture.sec)
+			local t = Time(futureRaw, false)
+
+			assert.is_same(-9109, t.minutesAgo)
+			assert.is_same(-546564, t.secondsAgo)
+			assert.is_same(-151, t.hoursAgo)
+			assert.is_same(-6, t.daysAgo)
 
 		end)
 	end)

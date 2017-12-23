@@ -155,7 +155,16 @@ local function Time(sDate, isUTC, _testMS)
 		sec= now.sec
 	}
 
-	local msDiff, secDiff, minDiff, hourDiff, dayDiff = getDiffParts(os.difftime(tToday, dDate), ms, getMS())
+	local msDiff, secDiff, minDiff, hourDiff, dayDiff, cmp = getDiffParts(os.difftime(tToday, dDate), ms, getMS())
+
+	if (cmp > 0) then
+		-- time is in the future so the xxAgo items should be negative
+		msDiff = -msDiff
+		secDiff = -secDiff
+		minDiff = -minDiff
+		hourDiff = -hourDiff
+		dayDiff = -dayDiff
+	end
 
 	if (isUTC) then
 		localTime = os.date('*t', os.time(time) + getTimezone())
