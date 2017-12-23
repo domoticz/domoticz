@@ -3,7 +3,7 @@
 #           Author:     Dnpwwo, 2017
 #
 """
-<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.0.1">
+<plugin key="ICMP" name="Pinger (ICMP)" author="dnpwwo" version="3.0.3">
     <description>
 ICMP Pinger Plugin.<br/><br/>
 Specify comma delimted addresses (IP or DNS names) of devices that are to be pinged.<br/>
@@ -79,7 +79,7 @@ class IcmpDevice:
 class BasePlugin:
     icmpConn = None
     icmpList = []
-    nextDev = 1
+    nextDev = 0
  
     def onStart(self):
         if Parameters["Mode6"] != "Normal":
@@ -153,8 +153,11 @@ class BasePlugin:
                     UpdateDevice(Device, 0, "Off", TimedOut)
                     break
             self.icmpConn = None
-    
-        Domoticz.Debug("Heartbeating '"+self.icmpList[self.nextDev]+"'")
+
+        try:
+            Domoticz.Debug("Heartbeating '"+self.icmpList[self.nextDev]+"'")
+        except IndexError:
+            Domoticz.Log("Exception: IndexError, nextDev is '"+str(self.nextDev)+"', size of icmpList is '"+str(len(self.icmpList))+"'")
         self.icmpConn = IcmpDevice(self.icmpList[self.nextDev])
         self.nextDev += 1
         if (self.nextDev >= len(self.icmpList)):

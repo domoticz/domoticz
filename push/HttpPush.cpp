@@ -50,7 +50,7 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 }
 
 void CHttpPush::DoHttpPush()
-{			
+{
 	std::string httpUrl = "";
 	std::string httpData = "";
 	std::string httpHeaders= "";
@@ -118,13 +118,13 @@ void CHttpPush::DoHttpPush()
 			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[16];
+			char szLocalTime[21];
 			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[16];
+			char szLocalTimeUtc[21];
 			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[16];
+			char szLocalTimeMs[21];
 			sprintf(szLocalTimeMs, "%llu", localTime*1000);
-			char szLocalTimeUtcMs[16];
+			char szLocalTimeUtcMs[21];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
@@ -150,7 +150,7 @@ void CHttpPush::DoHttpPush()
 			std::string lunit = getUnit(delpos, metertype);
 			std::string lType = RFX_Type_Desc(dType,1);
 			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
-			
+
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
 

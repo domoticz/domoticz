@@ -32,6 +32,9 @@
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
 extern std::string szWWWFolder;
+extern std::string szAppVersion;
+extern std::string szAppHash;
+extern std::string szAppDate;
 
 namespace Plugins {
 
@@ -693,10 +696,17 @@ namespace Plugins {
 			}
 
 			// loop on stop to be processed
-			int scounter = 0;
-			while (m_bIsStarted && (scounter++ < 50))
+			while (m_bIsStarted)
 			{
-				sleep_milliseconds(100);
+				int scounter = 0;
+				while (m_bIsStarted && (scounter++ < 50))
+				{
+					sleep_milliseconds(100);
+				}
+				if (m_bIsStarted)
+				{
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, waiting.", Name.c_str());
+				}
 			}
 
 			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
@@ -944,6 +954,10 @@ namespace Plugins {
 					ADD_STRING_TO_DICT(pParamsDict, "Mode4", sd[10]);
 					ADD_STRING_TO_DICT(pParamsDict, "Mode5", sd[11]);
 					ADD_STRING_TO_DICT(pParamsDict, "Mode6", sd[12]);
+
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzVersion", szAppVersion);
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzHash", szAppHash);
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzBuildTime", szAppDate);
 
 					// Remember these for use with some protocols
 					m_Username = sd[4];
