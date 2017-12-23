@@ -180,7 +180,6 @@ private:
 
 	std::vector<_tEventTrigger> m_eventtrigger;
 	bool m_bEnabled;
-	boost::shared_mutex m_processdeviceMutex;
 	boost::shared_mutex m_devicestatesMutex;
 	boost::shared_mutex m_eventsMutex;
 	boost::shared_mutex m_uservariablesMutex;
@@ -219,7 +218,7 @@ private:
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	void UpdateLastUpdate(const _tEventQueue &item);
+	void UpdateLastUpdate(const uint64_t deviceID, const uint8_t lastLevel, const std::string &lastUpdate);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);

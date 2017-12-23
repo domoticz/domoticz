@@ -1108,47 +1108,18 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	m_eventqueue.push(item);
 }
 
-void CEventSystem::UpdateLastUpdate(const _tEventQueue &item)
+void CEventSystem::UpdateLastUpdate(const uint64_t deviceID, const uint8_t lastLevel, const std::string &lastUpdate)
 {
-	if (item.lastUpdate.empty() && !item.lastLevel)
-		return;
+	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
 
-	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(item.lastUpdate);
-
-	if (item.reason == REASON_DEVICE)
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(deviceID);
+	if (itt != m_devicestates.end())
 	{
-		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-		std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(item.DeviceID);
-		if (itt != m_devicestates.end())
-		{
-
-			_tDeviceStatus replaceitem = itt->second;
-			replaceitem.lastUpdate = l_lastUpdate;
-			replaceitem.lastLevel = item.lastLevel;
-			itt->second = replaceitem;
-		}
-	}
-	else if (item.reason == REASON_SCENEGROUP)
-	{
-		boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
-		std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(item.DeviceID);
-		if (itt != m_scenesgroups.end())
-		{
-			_tScenesGroups replaceitem = itt->second;
-			replaceitem.lastUpdate = l_lastUpdate;
-			itt->second = replaceitem;
-		}
-	}
-	else if (item.reason == REASON_USERVARIABLE)
-	{
-		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-		std::map<uint64_t, _tUserVariable>::iterator itt = m_uservariables.find(item.varId);
-		if (itt != m_uservariables.end())
-		{
-			_tUserVariable replaceitem = itt->second;
-			replaceitem.lastUpdate = l_lastUpdate;
-			itt->second = replaceitem;
-		}
+		_tDeviceStatus replaceitem = itt->second;
+		replaceitem.lastUpdate = l_lastUpdate;
+		replaceitem.lastLevel = lastLevel;
+		itt->second = replaceitem;
 	}
 }
 
@@ -1229,21 +1200,19 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 		else
 			replaceitem.scenesgroupValue = "Mixed";
 
-		bool bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
-		if (!bEventTrigger)
-			replaceitem.lastUpdate = lastUpdate;
-
+		replaceitem.lastUpdate = lastUpdate;
 		itt->second = replaceitem;
 
-		if (bEventTrigger)
+		if (GetEventTrigger(ulDevID, REASON_SCENEGROUP, true))
 		{
 			_tEventQueue item;
 			item.nValueWording = replaceitem.scenesgroupValue;
 			item.reason = REASON_SCENEGROUP;
 			item.DeviceID = ulDevID;
-			item.devname = replaceitem.scenesgroupName;
-			item.nValue = nValue;
 			item.varId = 0;
+			item.nValue = nValue;
+			item.devname = replaceitem.scenesgroupName;
+			item.sValue = replaceitem.scenesgroupValue;
 			item.lastUpdate = lastUpdate;
 			item.trigger = NULL;
 			m_eventqueue.push(item);
@@ -1272,18 +1241,19 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		if (varType != -1)
 			replaceitem.variableType = varType;
 
-		if (!GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
-			replaceitem.lastUpdate = lastUpdate;
-		else
+		replaceitem.lastUpdate = lastUpdate;
+		itt->second = replaceitem;
+
+		if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 		{
 			_tEventQueue item;
 			item.reason = REASON_USERVARIABLE;
 			item.DeviceID = 0;
 			item.varId = ulDevID;
+			item.sValue = varValue;
 			item.lastUpdate = lastUpdate;
 			m_eventqueue.push(item);
 		}
-		itt->second = replaceitem;
 	}
 }
 
@@ -1370,10 +1340,11 @@ void CEventSystem::EventQueueThread()
 
 		if (m_stoprequested)
 			break;
-
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "EventSystem: \n DeviceID => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n varId => %" PRIu64 "\n lastUpdate => %s\n lastLevel => %d\n",
+			item.DeviceID, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.varId, item.lastUpdate.c_str(), item.lastLevel);
+#endif
 		EvaluateEvent(item);
-		if (item.DeviceID || item.varId)
-			UpdateLastUpdate(item);
 	}
 }
 
@@ -1392,20 +1363,27 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		std::vector<std::string> sd = result[0];
 		_eSwitchType switchType = (_eSwitchType)atoi(sd[1].c_str());
 		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][4].c_str());
+
 		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
-			boost::unique_lock<boost::shared_mutex> processdeviceMutexLock(m_processdeviceMutex);
 			_tEventQueue item;
+			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+			if (itt != m_devicestates.end())
+			{
+				item.lastLevel = itt->second.lastLevel;
+				item.lastUpdate = itt->second.lastUpdate;
+			}
+			devicestatesMutexLock.unlock();
 			item.reason = REASON_DEVICE;
 			item.DeviceID = ulDevID;
+			item.varId = 0;
 			item.devname = devname;
 			item.nValue = nValue;
 			item.sValue = sValue;
 			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
-			item.varId = 0;
-			item.lastUpdate = sd[2];
-			item.lastLevel = atoi(sd[3].c_str());
 			item.trigger = NULL;
+			UpdateLastUpdate(ulDevID, atoi(sd[3].c_str()), sd[2]);
 			m_eventqueue.push(item);
 		}
 		else
@@ -3055,7 +3033,7 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
 	{
-		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason));
+		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason), item.nValue, item.lastLevel, item.sValue, item.nValueWording, item.lastUpdate);
 		if (item.reason == REASON_URL)
 			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
 	}
