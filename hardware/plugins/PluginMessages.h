@@ -169,15 +169,15 @@ namespace Plugins {
 			PyObject*	pParams;
 			if (m_iType == 2)
                         {
-				pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_sValue.c_str());
+				pParams = Py_BuildValue("isi{s:s}", m_Unit, m_Command.c_str(), m_iLevel, "svalue", m_sValue.c_str());
                         }
 			else if (m_iType == 1)
 			{
-				pParams = Py_BuildValue("isfi", m_Unit, m_Command.c_str(), m_fLevel, 0);
+				pParams = Py_BuildValue("isf", m_Unit, m_Command.c_str(), m_fLevel);
 			}
 			else
 			{
-				pParams = Py_BuildValue("isii", m_Unit, m_Command.c_str(), m_iLevel, m_iHue);
+				pParams = Py_BuildValue("isi{s:i}", m_Unit, m_Command.c_str(), m_iLevel, "hue", m_iHue);
 			}
 			Callback(pParams);
 		};
