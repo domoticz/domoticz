@@ -705,7 +705,34 @@ namespace Plugins {
 				}
 				if (m_bIsStarted)
 				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, waiting.", Name.c_str());
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, flushing event queue...", Name.c_str());
+
+					// Copy the event queue to a temporary one, then copy back the events for other plugins
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
+					while (!PluginMessageQueue.empty())
+						PluginMessageQueue.pop();
+
+					while (!TempMessageQueue.empty())
+					{
+						CPluginMessageBase* FrontMessage = TempMessageQueue.front();
+						TempMessageQueue.pop();
+						if (FrontMessage->m_pPlugin == this)
+						{
+							// log events that will not be processed
+							CCallbackBase* pCallback = dynamic_cast<CCallbackBase*>(FrontMessage);
+							if (pCallback)
+								_log.Log(LOG_ERROR, "(%s) Callback event '%s' (Python call '%s') discarded.", Name.c_str(), FrontMessage->Name(), pCallback->PythonName());
+							else
+								_log.Log(LOG_ERROR, "(%s) Non-callback event '%s' discarded.", Name.c_str(), FrontMessage->Name());
+						}
+						else
+						{
+							// Message is for a different plugin so requeue it
+							PluginMessageQueue.push(FrontMessage);
+						}
+					}
+					m_bIsStarted = false;
 				}
 			}
 
