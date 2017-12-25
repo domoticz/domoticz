@@ -131,55 +131,58 @@ namespace Plugins {
 	public:
 		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
 		{
+                        PyObject* pObj;
 			m_Unit = Unit;
-			m_fLevel = 0;
 			m_Command = Command;
 			m_iLevel = level;
-			m_iHue = hue;
-			m_iType = 0;
+                        m_iType = 0;
+                        m_pDataDict = PyDict_New();
+			if (m_pDataDict) {
+                                pObj = Py_BuildValue("i", hue);
+				PyDict_SetItemString(m_pDataDict, "hue", pObj);
+                                Py_DECREF(pObj);
+                        }
 		};
 		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
+                        PyObject* pObj;
 			m_Unit = Unit;
-			m_fLevel = level;
 			m_Command = Command;
-			m_iLevel = 0;
-			m_iHue = 0;
-			m_iType = 1;
+			m_fLevel = level;
+                        m_iType = 1;
+                        m_pDataDict = PyDict_New();
 		};
 		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int nValue, const std::string& sValue) : CCallbackBase(pPlugin, "onCommand")
 		{
+                        PyObject* pObj;
 			m_Unit = Unit;
-			m_fLevel = 0;
 			m_Command = Command;
 			m_iLevel = nValue;
-			m_iHue = 0;
-                        m_sValue = sValue;
-			m_iType = 2;
+                        m_iType = 0;
+                        m_pDataDict = PyDict_New();
+			if (m_pDataDict) {
+                                pObj = Py_BuildValue("s", sValue.c_str());
+				PyDict_SetItemString(m_pDataDict, "svalue", pObj);
+                                Py_DECREF(pObj);
+                        }
 		};
-		std::string				m_Command;
-		std::string				m_sValue;
-		int						m_iHue;
-		int						m_iLevel;
-		float					m_fLevel;
-		int					m_iType;
+		PyObject* m_pDataDict;
+                std::string				m_Command;
+		int					m_iLevel;
+                float                                   m_fLevel;
+                int                                     m_iType;
 
 		virtual void Process()
 		{
 			PyObject*	pParams;
-			if (m_iType == 2)
-                        {
-				pParams = Py_BuildValue("isi{s:s}", m_Unit, m_Command.c_str(), m_iLevel, "svalue", m_sValue.c_str());
+                        if (m_iType == 0) {
+                            pParams = Py_BuildValue("isiO", m_Unit, m_Command.c_str(), m_iLevel, m_pDataDict);
                         }
-			else if (m_iType == 1)
-			{
-				pParams = Py_BuildValue("isf", m_Unit, m_Command.c_str(), m_fLevel);
-			}
-			else
-			{
-				pParams = Py_BuildValue("isi{s:i}", m_Unit, m_Command.c_str(), m_iLevel, "hue", m_iHue);
-			}
+                        else {
+                            pParams = Py_BuildValue("isfO", m_Unit, m_Command.c_str(), m_fLevel, m_pDataDict);
+                        }
 			Callback(pParams);
+			Py_XDECREF(m_pDataDict);
 		};
 	};
 
