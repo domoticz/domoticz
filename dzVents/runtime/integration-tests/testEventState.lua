@@ -11,20 +11,27 @@ local fsScripts = {'scriptTestEventState.lua'}
 
 describe('Test event state', function ()
 
-	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK
+	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK, varIdx, scSwitchIdx
 
 	setup(function()
 		local ok = TestTools.reset()
 		assert.is_true(ok)
 		ok, dummyIdx = TestTools.createDummyHardware('dummy')
-		ok, idx = TestTools.createVirtualDevice(dummyIdx, 'vdRepeatSwitch', 6)
+		TestTools.createVirtualDevice(dummyIdx, 'vdRepeatSwitch', 6)
 		ok, vdScriptStartIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptStart', 6)
-		ok, vdScriptEndIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptEnd', 6)
-		ok, vdScriptOKIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptOK', 6)
+		TestTools.createVirtualDevice(dummyIdx, 'vdDelay', 6)
+		TestTools.createVirtualDevice(dummyIdx, 'vdScriptEnd', 6)
+		TestTools.createVirtualDevice(dummyIdx, 'vdScriptOK', 6)
+		TestTools.createVariable('varInt', 0, 0)
+		ok, scSwitchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSilentSwitch1', 6)
+		TestTools.createVirtualDevice(dummyIdx, 'vdTempHumBaro', 84)
+
+		TestTools.createScene('scScene')
+		TestTools.addSceneDevice(sceneIdx, scSwitchIdx)
 
 		TestTools.installFSScripts(fsScripts)
 
-		socket.sleep(1)
+
 	end)
 
 	teardown(function()
@@ -41,13 +48,14 @@ describe('Test event state', function ()
 	describe('Start the tests', function()
 
 		it('Should all just work fine', function()
+			socket.sleep(2) -- make sure the first lastUpdate check is at least 2 seconds ago
 			local ok = TestTools.switch(vdScriptStartIdx, 'On')
 			assert.is_true(ok)
 		end)
 
 		it('Should have succeeded', function()
 
-			socket.sleep(18) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(16) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local ok = false
 			local vdOKDevice
