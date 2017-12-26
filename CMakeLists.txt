@@ -152,6 +152,97 @@ IF (INCLUDE_SPI)
 	ENDIF (HAVE_LINUX_SPI_H)
 ENDIF (INCLUDE_SPI)
 
+
+# Depending on available packages, JavaScript files stored in plain format can
+# be minified (or uglyfied...), ie: removing all useless caracters as spaces, CRs, tabs...
+# and variables names shortened to one caracter in order to minimize memeory footprint and increase 
+# global performance. We use uglifyjs (which does not compress in anyway despite its name...)
+# Do it only if not compiling in debug mode
+
+
+# Buil list of JS files in www dir and subdirs to be compressed and minified on install
+file(GLOB_RECURSE js_in_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/www/" *.js)
+
+option(MINIFY_JS "Minify JavaScript files" YES)
+unset(UGLY CACHE)
+unset(GZIP CACHE)
+unset (PARAM CACHE)
+#find_program(UGLY uglifyjs)
+find_program(GZIP gzip)
+
+set(PARAM "-c")
+
+# Both uglifyjs and gzip are available, we are not in debug mode
+IF(UGLY AND GZIP)
+    message(STATUS "uglifyjs and gzip found, JS files will be minified and compressed before install.")
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        set(jsgz "${jsmin}.gz")
+        add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${UGLY}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" "${PARAM}" --comment -o "${jsmin}"
+            COMMAND ${GZIP}
+            ARGS -f -q -k "${jsmin}" 
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+	    RENAME ${jsfile}.gz
+        )
+        set(js_out_files ${js_out_files} ${jsgz})
+    endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
+
+# uglifyjs not available, gzip available. 
+ELSEIF((NOT UGLY) AND GZIP) 
+    message(WARNING "uglifyjs is disabled, JS files will be compressed but not minified")
+    foreach(jsfile ${js_in_files})
+        set(jsgz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min.gz")
+        add_custom_command(OUTPUT ${jsgz}
+            COMMAND ${GZIP}
+            ARGS -f -q -k -S .min.gz "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        install(FILES ${jsgz}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+	     RENAME ${jsfile}.gz
+        )
+        set(js_out_files ${js_out_files} ${jsgz})
+    endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
+
+# uglifyjs available, gzip not found
+ELSEIF(UGLY AND (NOT GZIP))
+    message(WARNING "uglifyjs found, gzip not found, JS files will be minified but not compressed before install.")
+    foreach(jsfile ${js_in_files})
+        set(jsmin "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}.min")
+        add_custom_command(OUTPUT ${jsmin}
+            COMMAND ${UGLY}
+            ARGS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}" ${PARAM} --comment -o "${jsmin}"
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}"
+        )
+        install(FILES ${jsmin}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+            RENAME ${jsfile}
+        )
+        set(js_out_files ${js_out_files} ${jsmin})
+    endforeach(jsfile)
+    add_custom_target(optimiseJS ALL DEPENDS ${js_out_files})
+    add_dependencies(optimiseJS revisiontag)
+
+# uglifyjs and gzip both not available, default case
+ELSE()
+    message(WARNING "uglifyjs and gzip not available, installing JavaScript file un-modified")
+    foreach(jsfile ${js_in_files})
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/www/${jsfile}
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/www/"
+        )
+        set(js_out_files ${js_out_files} ${jsfile})
+    endforeach(jsfile)
+ENDIF()
+
 #set(CMAKE_EXE_LINKER_FLAGS "-static")
 
 # Macro for setting up precompiled headers. Usage:
@@ -370,6 +461,7 @@ hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
+hardware/RAVEn.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
@@ -400,17 +492,16 @@ hardware/Tellstick.cpp
 hardware/Thermosmart.cpp
 hardware/ToonThermostat.cpp
 hardware/VolcraftCO20.cpp
-hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
+hardware/XiaomiGateway.cpp
+hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
 hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
-hardware/Yeelight.cpp
-hardware/XiaomiGateway.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
@@ -470,7 +561,7 @@ add_executable(domoticz ${domoticz_SRCS})
 
 # explicitly say that the executable depends on the revisiontag
 add_dependencies(domoticz revisiontag)
-
+add_dependencies(domoticz optimiseJS)
 
 ## Link libraries
 
@@ -693,7 +784,7 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX} PATTERN "*.js" EXCLUDE PATTERN "*.min" EXCLUDE PATTERN "*.min.gz" EXCLUDE)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_INSTALL_PREFIX})

@@ -49,7 +49,23 @@ echo "Success, making beta...";
 cp -f appversion.h ${version_file}
 cp -f History.txt ${history_file}
 
-# Generate the archive
+##############################################
+# Cleaning JavaScript files in directory WWW #
+##############################################
+
+# Remove all source .js files as they should now be compressed
+find www -name *.js -exec rm '{}' \;
+
+# Remove all intermediate files ending in .min
+find www -name *.min -exec rm '{}' \;
+
+# Rename files from *.js.min.gz to *.js.gz before inclusion to archive
+find . -name '*.min.gz' -exec sh -c 'mv "$0" "${0%.min.gz}.gz"' {} \;
+
+########################
+# Generate the archive #
+########################
+
 echo "Generating Archive: ${archive_file}..."
 
 if [ -f ${archive_file} ];
