@@ -456,7 +456,7 @@ int mkdir_deep(const char *szDirName, int secattr)
 
 double ConvertToCelsius(const double Fahrenheit)
 {
-	return (Fahrenheit-32.0)/1.8;
+	return (Fahrenheit-32.0) * 0.5556;
 }
 
 double ConvertToFahrenheit(const double Celsius)
@@ -478,7 +478,7 @@ double ConvertTemperature(const double tValue, const unsigned char tSign)
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode)
 {
 	std::vector<std::string> ret;
 
@@ -502,9 +502,9 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 			}
 			/* close */
 #ifdef WIN32
-			_pclose(fp);
+			returncode = _pclose(fp);
 #else
-			pclose(fp);
+			returncode = pclose(fp);
 #endif
 		}
 	}
@@ -869,4 +869,33 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 
   /* Return 1 if result is negative. */
   return x->tv_sec < y->tv_sec;
+}
+
+const char *szInsecureArgumentOptions[] = {
+	"import",
+	"socket",
+	"process",
+	"os",
+	"|",
+	";",
+	"&",
+	"$",
+	"<",
+	">",
+	NULL
+};
+
+bool IsArgumentSecure(const std::string &arg)
+{
+	std::string larg(arg);
+	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
+
+	int ii = 0;
+	while (szInsecureArgumentOptions[ii] != NULL)
+	{
+		if (larg.find(szInsecureArgumentOptions[ii]) != std::string::npos)
+			return false;
+		ii++;
+	}
+	return true;
 }

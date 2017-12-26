@@ -158,7 +158,7 @@ void CHttpPush::DoHttpPush()
 			if (sendValue.find(";")!=std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
-				if (int(strarray.size())>=delpos)
+				if (int(strarray.size())>=delpos && delpos > 0)
 				{
 					std::string rawsendValue = strarray[delpos-1].c_str();
 					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false,metertype);
@@ -218,7 +218,7 @@ void CHttpPush::DoHttpPush()
 				}
 
 				if (httpMethodInt == 0) {			// GET
-					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
+					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
 					}
@@ -234,13 +234,13 @@ void CHttpPush::DoHttpPush()
 							ExtraHeaders.push_back(ExtraHeaders2[i]);
 						}
 					}
-					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
+					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
 					}
 				}
 				else if(httpMethodInt == 2) {		// PUT
-					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult))
+					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
 					}

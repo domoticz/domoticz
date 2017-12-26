@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SQLHelper.h"
 #include <iostream>     /* standard I/O functions                         */
+#include <iomanip>
 #include "RFXtrx.h"
 #include "RFXNames.h"
 #include "localtime_r.h"
@@ -31,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 114
+#define DB_VERSION 116
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -626,6 +627,7 @@ const char *sqlCreateMobileDevices =
 "[ID] INTEGER PRIMARY KEY, "
 "[Active] BOOLEAN DEFAULT false, "
 "[Name] VARCHAR(100) DEFAULT '',"
+"[DeviceType] VARCHAR(100) DEFAULT '',"
 "[SenderID] TEXT NOT NULL,"
 "[UUID] TEXT NOT NULL, "
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
@@ -644,10 +646,12 @@ CSQLHelper::CSQLHelper(void)
 	m_ActiveTimerPlan=0;
 	m_windunit=WINDUNIT_MS;
 	m_tempunit=TEMPUNIT_C;
+	m_weightunit=WEIGHTUNIT_KG;
 	SetUnitsAndScale();
 	m_bAcceptHardwareTimerActive=false;
 	m_iAcceptHardwareTimerCounter=0;
 	m_bDisableEventSystem = false;
+	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bPreviousAcceptNewHardware = false;
 
@@ -2218,22 +2222,61 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-                if (dbversion < 114)
-                {
-                        //Set default values for new parameters in EcoDevices and Teleinfo EDF
-                        std::stringstream szQuery1, szQuery2;
-						szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES ;
-                        query(szQuery1.str());
-                        szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter ;
-                        query(szQuery2.str());
-                }
-
+		if (dbversion < 114)
+		{
+			//Set default values for new parameters in EcoDevices and Teleinfo EDF
+			std::stringstream szQuery1, szQuery2;
+			szQuery1 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 60 WHERE Type =" << HTYPE_ECODEVICES;
+			query(szQuery1.str());
+			szQuery2 << "UPDATE Hardware SET Mode1 = 0, Mode2 = 0, Mode3 = 60 WHERE Type =" << HTYPE_TeleinfoMeter;
+			query(szQuery2.str());
+		}
+		if (dbversion < 115)
+		{
+			//Patch for Evohome Web
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			szQuery2 << "SELECT ID, Name, Mode1, Mode2, Mode3, Mode4, Mode5 FROM Hardware WHERE([Type]==" << HTYPE_EVOHOME_WEB << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string lowerName="fitbit";
+					for (uint8_t i = 0; i < 6; i++)
+						lowerName[i] = sd[1][i] | 0x20;
+					if (lowerName == "fitbit")
+						safe_query("DELETE FROM Hardware WHERE ID=%s", sd[0].c_str());
+					else
+					{
+						int newParams = (sd[3]=="0") ? 0 : 1;
+						if (sd[4]=="1")
+							newParams += 2;
+						if (sd[5]=="1")
+							newParams += 4;
+						m_sql.safe_query("UPDATE Hardware SET Mode2=%d, Mode3=%s, Mode4=0, Mode5=0 WHERE ID=%s", newParams, sd[6].c_str(), sd[0].c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET StrParam1='' WHERE HardwareID=%s", sd[0].c_str());
+					}
+				}
+			}
+		}
+		if (dbversion < 116)
+		{
+			//Patch for GCM/FCM
+			safe_query("UPDATE MobileDevices SET Active=1");
+			if (!DoesColumnExistsInTable("DeviceType", "MobileDevices"))
+			{
+				query("ALTER TABLE MobileDevices ADD COLUMN [DeviceType] VARCHAR(100) DEFAULT ('')");
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
 		//place here actions that needs to be performed on new databases
 		query("INSERT INTO Plans (Name) VALUES ('$Hidden Devices')");
-		// Add hardawre for internal use
+		// Add hardware for internal use
 		m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, Address, Port, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) VALUES ('Domoticz Internal',1, %d,'',1,'','',0,0,0,0,0,0)", HTYPE_DomoticzInternal);
 	}
 	UpdatePreferencesVar("DB_Version",DB_VERSION);
@@ -2243,7 +2286,7 @@ bool CSQLHelper::OpenDatabase()
 	std::string sValue;
 	if (!GetPreferencesVar("Title", sValue))
         {
-                UpdatePreferencesVar("Title", "Domoticz"); 
+                UpdatePreferencesVar("Title", "Domoticz");
         }
         if ((!GetPreferencesVar("LightHistoryDays", nValue)) || (nValue==0))
 	{
@@ -2461,6 +2504,15 @@ bool CSQLHelper::OpenDatabase()
 		m_tempunit=(_eTempUnit)nValue;
 
 	}
+	if (!GetPreferencesVar("WeightUnit", nValue))
+	{
+		UpdatePreferencesVar("WeightUnit", (int)WEIGHTUNIT_KG);
+	}
+	else
+	{
+		m_weightunit=(_eWeightUnit)nValue;
+
+	}
 	SetUnitsAndScale();
 
 	if (!GetPreferencesVar("SecStatus", nValue))
@@ -2555,6 +2607,19 @@ bool CSQLHelper::OpenDatabase()
 		nValue = 0;
 	}
 	m_bDisableEventSystem = (nValue==1);
+
+	nValue = 0;
+	if (!GetPreferencesVar("DisableDzVentsSystem", nValue))
+	{
+		UpdatePreferencesVar("DisableDzVentsSystem", 0);
+		nValue = 0;
+	}
+	m_bDisableDzVentsSystem = (nValue == 1);
+
+	if (!GetPreferencesVar("DzVentsLogLevel", nValue))
+	{
+		UpdatePreferencesVar("DzVentsLogLevel", 3);
+	}
 
 	nValue = 1;
 	if (!GetPreferencesVar("LogEventScriptTrigger", nValue))
@@ -2811,13 +2876,13 @@ void CSQLHelper::Do_Work()
 				//start script
 				_log.Log(LOG_STATUS, "Executing script: %s", itt->_ID.c_str());
 #ifdef WIN32
-				ShellExecute(NULL,"open",itt->_ID.c_str(),itt->_sValue.c_str(),NULL,SW_SHOWNORMAL);
+				ShellExecute(NULL, "open", itt->_ID.c_str(), itt->_sValue.c_str(), NULL, SW_SHOWNORMAL);
 #else
-				std::string lscript=itt->_ID + " " + itt->_sValue;
-				int ret=system(lscript.c_str());
+				std::string lscript = itt->_ID + " " + itt->_sValue;
+				int ret = system(lscript.c_str());
 				if (ret != 0)
 				{
-					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d",itt->_ID.c_str(), ret);
+					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", itt->_ID.c_str(), ret);
 				}
 #endif
 			}
@@ -3427,7 +3492,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			StringSplit(result[0][5].c_str(), ";", parts);
 			nEnergy = static_cast<float>(strtof(parts[0].c_str(), NULL)*interval / 3600 + strtof(parts[1].c_str(), NULL)); //Rob: whats happening here... strtof ?
 			StringSplit(sValue, ";", parts);
-			sprintf(sCompValue, "%s;%.0f", parts[0].c_str(), nEnergy);
+			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
 	        //~ use different update queries based on the device type
@@ -3540,8 +3605,15 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			bool bIsLightSwitchOn=IsLightSwitchOn(lstatus);
 			std::string slevel = sd[6];
 
-			if (((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255)) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
+			if ((bIsLightSwitchOn) && (llevel != 0) && (llevel != 255) ||
+				(switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
+				if (((switchtype == STYPE_BlindsPercentage) ||
+					(switchtype == STYPE_BlindsPercentageInverted)) &&
+					(nValue == light2_sOn))
+				{
+						llevel = 100;
+				}
 				//update level for device
 				safe_query(
 					"UPDATE DeviceStatus SET LastLevel='%d' WHERE (ID = %" PRIu64 ")",
@@ -6526,11 +6598,22 @@ void CSQLHelper::SetUnitsAndScale()
 		m_tempsign="C";
 		m_tempscale=1.0f;
 	}
-	if (m_tempunit==TEMPUNIT_F)
+    else if (m_tempunit==TEMPUNIT_F)
 	{
 		m_tempsign="F";
 		m_tempscale=1.0f; // *1.8 + 32
 	}
+
+    if(m_weightunit == WEIGHTUNIT_KG)
+    {
+        m_weightsign="kg";
+        m_weightscale=1.0f;
+    }
+    else if(m_weightunit == WEIGHTUNIT_LB)
+    {
+        m_weightsign="lb";
+        m_weightscale=2.20462f;
+    }
 }
 
 bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction, const std::string &OffAction)
@@ -7004,6 +7087,10 @@ void CSQLHelper::FixDaylightSaving()
 std::string CSQLHelper::DeleteUserVariable(const std::string &idx)
 {
 	safe_query("DELETE FROM UserVariables WHERE (ID=='%q')", idx.c_str());
+	if (!m_bDisableEventSystem)
+	{
+		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+	}
 
 	return "OK";
 
@@ -7037,7 +7124,10 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 		vId_str >> vId;
 		m_mainworker.m_eventsystem.ProcessUserVariable(vId);
 	}
-
+	if (!m_bDisableEventSystem)
+	{
+		m_mainworker.m_eventsystem.GetCurrentUserVariables();
+	}
 
 	return "OK";
 
@@ -7066,15 +7156,25 @@ std::string CSQLHelper::UpdateUserVariable(const std::string &idx, const std::st
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
-
+	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
 		"UPDATE UserVariables SET Name='%q', ValueType='%d', Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == '%q')",
 		varname.c_str(),
 		typei,
-		CURLEncode::URLDecode(varvalue.c_str()).c_str(),
+		szVarValue.c_str(),
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx.c_str()
 		);
+	if (!m_bDisableEventSystem)
+	{
+		std::stringstream ssLastUpdate;
+		std::stringstream vId_str(idx);
+		uint64_t vId;
+		vId_str >> vId;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
+		m_mainworker.m_eventsystem.UpdateUserVariable(vId, varname, szVarValue, typei, ssLastUpdate.str());
+	}
 	if (eventtrigger) {
 		std::stringstream vId_str(idx);
 		uint64_t vId;
@@ -7089,13 +7189,22 @@ bool CSQLHelper::SetUserVariable(const uint64_t idx, const std::string &varvalue
 	time_t now = mytime(NULL);
 	struct tm ltime;
 	localtime_r(&now, &ltime);
+	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	safe_query(
 		"UPDATE UserVariables SET Value='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (ID == %" PRIu64 ")",
-		CURLEncode::URLDecode(varvalue.c_str()).c_str(),
+		szVarValue.c_str(),
 		ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 		idx
 		);
-	if (eventtrigger) {
+	if (!m_bDisableEventSystem)
+	{
+		std::stringstream ssLastUpdate;
+		ssLastUpdate << (ltime.tm_year + 1900) << "-" << std::setw(2) << std::setfill('0') << (ltime.tm_mon + 1) << "-" << std::setw(2) << std::setfill('0') << ltime.tm_mday
+		<< " " << std::setw(2) << std::setfill('0') << ltime.tm_hour << ":" << std::setw(2) << std::setfill('0') << ltime.tm_min << ":" << std::setw(2) << std::setfill('0') << ltime.tm_sec;
+		m_mainworker.m_eventsystem.UpdateUserVariable(idx, "", szVarValue, 0, ssLastUpdate.str());
+	}
+	if (eventtrigger)
+	{
 		m_mainworker.m_eventsystem.ProcessUserVariable(idx);
 	}
 	return true;

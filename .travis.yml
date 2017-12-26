@@ -70,7 +70,6 @@ matrix:
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
-      - brew install boost-python|| true
       - brew install libusb
       - brew install libusb-compat
       - brew install zlib || true

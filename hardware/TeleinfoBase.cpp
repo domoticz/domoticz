@@ -139,17 +139,17 @@ void CTeleinfoBase::ProcessTeleinfo(const std::string &name, int rank, Teleinfo 
 		rate_alert = 3;
 	}
 
-	// Process only if maximum time between updates has been reached or power consumption changed
+	// Process only if maximum time between updates (5mn) has been reached or power consumption changed
 	// If it did not, then alerts and intensity have not changed either
 	#ifdef DEBUG_TeleinfoBase
 	_log.Log(LOG_NORM,"(%s) TeleinfoBase called. Power changed: %s, last update %.f sec", Name.c_str(), (teleinfo.pAlertPAPP != teleinfo.PAPP)?"true":"false", difftime(atime, teleinfo.last));
 	#endif
-	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
+	if ((teleinfo.pAlertPAPP != teleinfo.PAPP) || (difftime(atime, teleinfo.last) >= 290))
 	{
 		teleinfo.pAlertPAPP = teleinfo.PAPP;
 
-		//Send data at mamximum rate specified in settings, and at least 10sec less that Data Timeout
-		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= (m_iDataTimeout -10)))
+		//Send data at mamximum rate specified in settings, and at least every 5mn (minus 10s as a grace period for the watchdog)
+		if ((difftime(atime, teleinfo.last) >= m_iRateLimit) || (difftime(atime, teleinfo.last) >= 290))
 		{
 			teleinfo.last = atime;
 			m_p1power.usagecurrent = teleinfo.PAPP;

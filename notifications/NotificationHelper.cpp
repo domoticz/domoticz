@@ -84,7 +84,7 @@ bool CNotificationHelper::SendMessage(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, -100, std::string(""), bFromNotification);
 }
 
 bool CNotificationHelper::SendMessageEx(
@@ -94,11 +94,20 @@ bool CNotificationHelper::SendMessageEx(
 	const std::string &Subject,
 	const std::string &Text,
 	const std::string &ExtraData,
-	const int Priority,
+	int Priority,
 	const std::string &Sound,
 	const bool bFromNotification)
 {
 	bool bRet = false;
+	bool bThread = true;
+
+	if (Priority == -100)
+	{
+		Priority = 0;
+		bThread = false;
+		bRet = true;
+	}
+
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
@@ -114,11 +123,15 @@ bool CNotificationHelper::SendMessageEx(
 		ActiveSystems[*itt] = 1;
 	}
 
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)
+	{
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
-		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured()))
+		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+			if (bThread)
+				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+			else
+				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
 	return bRet;
@@ -246,14 +259,15 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 			bool bCustomMessage = false;
 			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
-			if (m_sql.m_tempunit == TEMPUNIT_F)
-			{
-				//Convert to Celsius
-				svalue = (svalue / 1.8f) - 32.0f;
-			}
 			if ((ntype == signtemp) && (bHaveTemp))
 			{
 				//temperature
+				if (m_sql.m_tempunit == TEMPUNIT_F)
+				{
+					//Convert to Celsius
+					svalue = static_cast<float>(ConvertToCelsius(svalue));
+				}
+
 				if (temp > 30.0) szExtraData += "Image=temp-gt-30|";
 				else if (temp > 25.0) szExtraData += "Image=temp-25-30|";
 				else if (temp > 20.0) szExtraData += "Image=temp-20-25|";

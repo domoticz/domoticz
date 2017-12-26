@@ -97,17 +97,17 @@ ELSE(USE_BUILTIN_SQLITE)
   ENDIF(SQLite_FOUND)
 ENDIF(USE_BUILTIN_SQLITE)
 
-option(USE_PYTHON_PLUGINS "Use Python Plugins" YES)
-IF(USE_PYTHON_PLUGINS)
+option(USE_PYTHON "Use Python for Plugins and Event-Scripts" YES)
+IF(USE_PYTHON)
   find_package(PythonLibs 3.4)
   IF(PYTHONLIBS_FOUND)
     MESSAGE(STATUS "Python3 includes found at: ${PYTHON_INCLUDE_PATH}")
     INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-    add_definitions(-DUSE_PYTHON_PLUGINS)
+    add_definitions(-DENABLE_PYTHON)
   ELSE(PYTHONLIBS_FOUND)
-    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON_PLUGINS=NO or sudo apt-get install python3-dev)")
+    MESSAGE(FATAL_ERROR "Python3 not found on your system, use USE_PYTHON=NO or sudo apt-get install python3-dev)")
   ENDIF(PYTHONLIBS_FOUND)
-ENDIF(USE_PYTHON_PLUGINS)
+ENDIF(USE_PYTHON)
 
 SET(EXECUTABLE_OUTPUT_PATH "" CACHE INTERNAL
   "Where to put the executables for Domoticz"
@@ -295,7 +295,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch -Wno-parentheses-equality -Wno-deprecated-declarations -Wno-tautological-compare -Wno-unused-value -Wno-comment -Wno-unsequenced -Wno-logical-op-parentheses -Wno-literal-conversion")
   ENDIF()
-
+  IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  ENDIF()
   IF(CMAKE_COMPILER_IS_GNUCXX)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
@@ -352,6 +354,8 @@ main/CmdLine.cpp
 main/Camera.cpp
 main/domoticz.cpp
 main/EventSystem.cpp
+main/EventsPythonModule.cpp
+main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/localtime_r.cpp
 main/Logger.cpp
@@ -402,9 +406,11 @@ hardware/EcoDevices.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
 hardware/Ec3kMeterTCP.cpp
-hardware/evohome.cpp
+hardware/EvohomeBase.cpp
+hardware/EvohomeScript.cpp
+hardware/EvohomeSerial.cpp
+hardware/EvohomeWeb.cpp
 hardware/ETH8020.cpp
-hardware/Fitbit.cpp
 hardware/FritzboxTCP.cpp
 hardware/GoodweAPI.cpp
 hardware/Gpio.cpp
@@ -435,6 +441,7 @@ hardware/NefitEasy.cpp
 hardware/Nest.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
+hardware/OnkyoAVTCP.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNetTCP.cpp
 hardware/OpenWebNetUSB.cpp
@@ -464,6 +471,7 @@ hardware/RFLinkTCP.cpp
 hardware/RFXBase.cpp
 hardware/RFXComSerial.cpp
 hardware/RFXComTCP.cpp
+hardware/Rtl433.cpp
 hardware/S0MeterBase.cpp
 hardware/S0MeterSerial.cpp
 hardware/S0MeterTCP.cpp
@@ -474,7 +482,7 @@ hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
-hardware/SysfsGPIO.cpp
+hardware/SysfsGpio.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -557,46 +565,12 @@ add_dependencies(domoticz optimiseJS)
 
 ## Link libraries
 
-option(USE_PYTHON "Use Python as a scripting language" NO)
-if(USE_PYTHON)
-  FIND_PACKAGE(PythonLibs)
-  IF(PYTHONLIBS_FOUND)
-    MESSAGE(STATUS "Python libraries found at: ${PYTHON_LIBRARIES}")
-    MESSAGE(STATUS "Python includes found at: ${PYTHON_INCLUDE_PATH}")
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  else()
-    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-  ENDIF(PYTHONLIBS_FOUND)
-
-  FIND_PACKAGE(PythonInterp)
-  IF(PYTHONINTERP_FOUND)
-    MESSAGE(STATUS "Python interpreter found at: ${PYTHON_EXECUTABLE}")
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-    LIST(APPEND ADDITIONAL_LIBS ${PYTHON_LIBRARIES})
-    MESSAGE(STATUS "Python as scripting languages: ENABLED")
-    IF(PYTHONLIBS_FOUND)
-      add_definitions(-DENABLE_PYTHON)
-      add_definitions(-DPYTHON_EXE=${PYTHON_EXECUTABLE})
-      target_link_libraries(domoticz ${PYTHON_LIBRARIES})
-    ELSE()
-      MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-    ENDIF(PYTHONLIBS_FOUND)
-
-  else()
-    MESSAGE(FATAL_ERROR "Python not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install python-dev')")
-  ENDIF(PYTHONINTERP_FOUND)
-endif(USE_PYTHON)
-
 option(USE_STATIC_BOOST "Build with static BOOST libraries" YES)
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_BOOST})
 set(Boost_USE_MULTITHREADED ON)
 unset(Boost_INCLUDE_DIR CACHE)
 unset(Boost_LIBRARY_DIRS CACHE)
-IF(USE_PYTHON AND PYTHONLIBS_FOUND)
-  find_package(Boost REQUIRED COMPONENTS thread date_time system python)
-else()
-  find_package(Boost REQUIRED COMPONENTS thread date_time system)
-endif(USE_PYTHON AND PYTHONLIBS_FOUND)
+find_package(Boost REQUIRED COMPONENTS thread date_time system)
 
 if(USE_STATIC_BOOST)
    message(STATUS "Linking against boost static libraries")
@@ -733,28 +707,12 @@ else()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
-find_path(WiringPi wiringPi.h)
-IF(WiringPi)
-  message(STATUS "WiringPi include was found in ${WiringPi}...")
-  find_library(WIRINGPI_LIBRARY NAMES libwiringPi.a)
-  IF(WIRINGPI_LIBRARY)
-    message(STATUS "WiringPi library was found in ${WIRINGPI_LIBRARY}...")
-    add_definitions(-DWITH_GPIO)
-    target_link_libraries(domoticz ${WIRINGPI_LIBRARY})
-  else()
-    message(STATUS "==== WiringPi library not found. GPIO support disabled.")
-  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-  ENDIF()
-else()
-  message(STATUS "==== WiringPi include file (wiringPi.h) not found. GPIO support disabled.")
-  message(STATUS "==== (Please follow http://wiringpi.com/download-and-install/ if you want to use GPIO.)")
-ENDIF(WiringPi)
 
 IF(EXISTS /sys/class/gpio)
-	message(STATUS "Sysfs GPIO available")
-	add_definitions(-DWITH_SYSFS_GPIO)
+  message(STATUS "GPIO is available")
+  add_definitions(-DWITH_GPIO)
 ELSE()
-	message(STATUS "Sysfs GPIO not available")
+  message(STATUS "GPIO is not available")
 ENDIF()
 
 
@@ -772,6 +730,8 @@ endif (TELLDUSCORE_INCLUDE)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  target_link_libraries(domoticz ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 else()
   target_link_libraries(domoticz -lrt ${Boost_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} pthread ${LUA_LIBRARIES} ${MQTT_LIBRARIES} ${SQLite_LIBRARIES} ${CMAKE_DL_LIBS} ${TELLDUS_LIBRARIES} ${EXECINFO_LIBRARIES})
 ENDIF()

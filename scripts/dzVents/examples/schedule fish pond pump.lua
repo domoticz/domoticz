@@ -13,7 +13,7 @@ return {
 
 	execute = function(domoticz)
 
-		local pump = domoticz.devices['Pond']
+		local pump = domoticz.devices('Pond')
 		pump.toggleSwitch()
 
 	end
