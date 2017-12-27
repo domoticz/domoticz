@@ -22,7 +22,7 @@ public:
 		I2CTYPE_MCP23017
 	};
 
-	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
+	explicit I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1);
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
@@ -93,8 +93,11 @@ private:
 	void TSL2561_ReadSensorDetails();
 	void TSL2561_Init();
 	
-	// PCF8574
+	// PCF8574, MCP23017
 	unsigned char	i2c_addr;
+	bool 			invert_data;
+	
+	// PCF8574
 	void			PCF8574_ReadChipDetails();
 	char			PCF8574_WritePin(char pin_number,char  value);
 	char 			readByteI2C(int fd, char *byte, char i2c_addr);
@@ -103,8 +106,9 @@ private:
 	// MCP23017
 	void 			MCP23017_Init();
 	void			MCP23017_ReadChipDetails();
-	int			MCP23017_WritePin(char pin_number,char  value);
+	int				MCP23017_WritePin(char pin_number,char  value);
 	int 			I2CWriteReg16(int fd, uint8_t reg, uint16_t value);
 	int		 		I2CReadReg16(int fd, unsigned char reg, i2c_data *data);
 
+	
 };

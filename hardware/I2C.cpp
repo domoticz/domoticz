@@ -145,19 +145,27 @@ const char* szI2CTypeNames[] = {
 	"I2C_MCP23017",
 };
 
-I2C::I2C(const int ID, const _eI2CType DevType, const int Port):
+I2C::I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1):
 m_dev_type(DevType)
 {
 	if ((m_dev_type == I2CTYPE_PCF8574) || (m_dev_type == I2CTYPE_MCP23017)) {
-		i2c_addr = Port;
+		
+		unsigned short i2c_addr =  (unsigned short)atoi(Address.c_str());
+		if (Mode1 == 0) invert_data=false;
+		else 			invert_data=true;
 	}
 
 	m_stoprequested = false;
 	m_HwdID = ID;
-	m_ActI2CBus = "/dev/i2c-1";
-	if (!i2c_test(m_ActI2CBus.c_str()))
-	{
-		m_ActI2CBus = "/dev/i2c-0";
+	if ( SerialPort!="" ){ // use enterd port
+		m_ActI2CBus = SerialPort;
+	}
+	else { // autodetec port
+		m_ActI2CBus = "/dev/i2c-1";
+		if (!i2c_test(m_ActI2CBus.c_str()))
+		{
+			m_ActI2CBus = "/dev/i2c-0";
+		}
 	}
 }
 
@@ -206,9 +214,11 @@ bool I2C::WriteToHardware(const char *pdata, const unsigned char length)
 	if ((pCmd->LIGHTING2.packettype == pTypeLighting2)) {
 		unsigned char pin_number = pCmd->LIGHTING2.unitcode; // in DB column "Unit" is used for identify pin number
 		unsigned char  value = pCmd->LIGHTING2.cmnd;
-#ifdef INVERT_PCF8574_MCP23017
-		value = ~value & 0x01; // Invert Status
-#endif
+//#ifdef INVERT_PCF8574_MCP23017
+		if (invert_data == true) {
+			value = ~value & 0x01; // Invert Status
+		}
+//#endif
 		if (m_dev_type == I2CTYPE_PCF8574) {
 			if (PCF8574_WritePin(pin_number, value) < 0)
 				return false;
@@ -334,9 +344,11 @@ void I2C::PCF8574_ReadChipDetails()
 	int fd = i2c_Open(m_ActI2CBus.c_str()); // open i2c
 	if (fd < 0) return; // Error opening i2c device!
 	if ( readByteI2C(fd, &buf, i2c_addr) < 0 ) return; //read from i2c
-#ifdef INVERT_PCF8574_MCP23017
-	buf=~buf; // Invert Status
-#endif
+//#ifdef INVERT_PCF8574_MCP23017
+	if (invert_data==true) {
+		buf=~buf; // Invert Status
+	}
+//#endif
 	for (char pin_number=0; pin_number<8; pin_number++){
 		int DeviceID = (i2c_addr << 8) + pin_number; // DeviceID from i2c_address and pin_number
 		unsigned char Unit = pin_number;

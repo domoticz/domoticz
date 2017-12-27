@@ -131,13 +131,21 @@ define(['app'], function (app) {
 					hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				}
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
+				if (text1.indexOf("I2C sensor") >= 0) {
+					var i2cpath = $("#hardwareparamsi2clocal #i2cpath").val();
+					var i2caddress = "";
+					var i2cinvert = "";
+					Mode1 = "";
+				}
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
-					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
-					var port = "&port=" + encodeURIComponent(i2caddress);
+					i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
+					Mode1 = encodeURIComponent(i2cinvert);
 				}
 				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
-					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
-					var port = "&port=" + encodeURIComponent(i2caddress);
+					i2caddress = $("#hardwareparami2caddress #i2caddress").val();
+					i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
+					Mode1 = encodeURIComponent(i2cinvert);
 				}
 				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 					var gpiodebounce = $("#hardwareparamsgpio #gpiodebounce").val();
@@ -162,12 +170,13 @@ define(['app'], function (app) {
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&address=" + encodeURIComponent(i2caddress) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
 					"&Mode1=" + Mode1 + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6 +
-					port,
+					"&port=" + encodeURIComponent(i2cpath),
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -1214,21 +1223,27 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("I2C ") >= 0 && text.indexOf("I2C sensor PIO 8bit expander PCF8574") < 0) {
+			else if (text.indexOf("I2C ") >= 0 ) {
 				hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
-				var port = "";
+				var i2cpath = $("#hardwareparamsi2clocal #i2cpath").val();
+				var i2caddress = "";
+				
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
-					var port = "&port=" + encodeURIComponent(i2caddress);
+					var i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
+					
 				}
 				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
-					var port = "&port=" + encodeURIComponent(i2caddress);
+					var i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
 				}
 
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout + port,
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&address=" + encodeURIComponent(i2caddress) +
+					"&port=" + encodeURIComponent(i2cpath) +
+					"&Mode1=" + encodeURIComponent(i2cinvert),
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4797,9 +4812,6 @@ define(['app'], function (app) {
 							else if ((item.Type == 7) || (item.Type == 11)) {
 								SerialName = "USB";
 							}
-							else if ((item.Type == 13) || (item.Type == 71) || (item.Type == 85) || (item.Type == 96)) {
-								SerialName = "I2C";
-							}
 							else if ((item.Type == 14) || (item.Type == 25) || (item.Type == 28) || (item.Type == 30) || (item.Type == 34)) {
 								SerialName = "WWW";
 							}
@@ -4826,9 +4838,6 @@ define(['app'], function (app) {
 							else {
 								SerialName = item.SerialPort;
 								intport = jQuery.inArray(item.SerialPort, $scope.SerialPortStr);
-							}
-							if (item.Type == 93 || item.Type == 109) {
-								SerialName = "I2C-" + SerialName;
 							}
 
 							var enabledstr = $.t("No");
@@ -4978,6 +4987,13 @@ define(['app'], function (app) {
 							}
 
 							var dispAddress = item.Address;
+							if ((item.Type == 13) || (item.Type == 71) || (item.Type == 85) || (item.Type == 96)) {
+								dispAddress = "I2C";
+							}
+							else if (item.Type == 93 || item.Type == 109) {
+								dispAddress = "I2C-" + dispAddress;
+							}
+							
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Username": item.Username,
@@ -5434,6 +5450,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divgoodweweb").hide();
 			$("#hardwarecontent #divi2clocal").hide();
 			$("#hardwarecontent #divi2caddress").hide();
+			$("#hardwarecontent #divi2cinvert").hide();
 			$("#hardwarecontent #divpollinterval").hide();
 			$("#hardwarecontent #divpythonplugin").hide();
 			$("#hardwarecontent #divrelaynet").hide();
@@ -5467,12 +5484,15 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divi2caddress").hide();
+				$("#hardwarecontent #divi2cinvert").hide();
 				var text1 = $("#hardwarecontent #divi2clocal #hardwareparamsi2clocal #comboi2clocal option:selected").text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 					$("#hardwarecontent #divi2caddress").show();
+					$("#hardwarecontent #divi2cinvert").show();
 				}
 				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					$("#hardwarecontent #divi2caddress").show();
+					$("#hardwarecontent #divi2cinvert").show();
 				}
 			}
 			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
