@@ -5085,11 +5085,14 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("I2C ") >= 0) {
 							$("#hardwareparamsi2clocal #comboi2clocal").val(jQuery.inArray(data["Type"], $.myglobals.HardwareI2CStr));
+							$("#hardwareparamsi2clocal #i2cpath").val(data["Port"]);
 							if (data["Type"].indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
-								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
+								$("#hardwareparami2caddress #i2caddress").val(data["Address"]);
+								$("#hardwareparami2cinvert #i2cinvert").prop("checked", data["Mode1"] == 1);
 							}
 							else if (data["Type"].indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
-								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
+								$("#hardwareparami2caddress #i2caddress").val(data["Address"]);
+								$("#hardwareparami2cinvert #i2cinvert").prop("checked", data["Mode1"] == 1);
 							}
 						}
 						else if ((data["Type"].indexOf("GPIO") >= 0) && (data["Type"].indexOf("sysfs GPIO") == -1)) {
