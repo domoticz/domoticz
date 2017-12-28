@@ -84,7 +84,7 @@
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
-#include "../hardware/NestOAuthApi.h"
+#include "../hardware/NestOAuthAPI.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
