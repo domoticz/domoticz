@@ -18,7 +18,7 @@
 
 #ifndef WIN32
 #include <unistd.h>
-#include <netinet/in.h>	
+#include <netinet/in.h>
 #include <sys/ioctl.h>
 #else
 #include <io.h>
@@ -331,7 +331,7 @@ void eHouseTCP::UpdateCMToSQL(unsigned char AddrH, unsigned char AddrL, unsigned
 
 		size = 3;
 		//deb((char*) & "Dimm", ECM.CMB.DIMM, sizeof(ECM.CMB.DIMM));
-		//PWM Dimmers      
+		//PWM Dimmers
 		for (i = 0; i < size; i++)
 		{
 			curr = (ECM->CMB.DIMM[i]);
@@ -521,7 +521,7 @@ void eHouseTCP::UpdateLanToSQL(unsigned char AddrH, unsigned char AddrL, unsigne
 		}
 
 		size = 3;
-		//PWM Dimmers      
+		//PWM Dimmers
 		for (i = 0; i < size; i++)
 		{
 			curr = (eHERMs[index]->eHERM.Dimmers[i]);
@@ -802,7 +802,7 @@ void eHouseTCP::UpdateWiFiToSQL(unsigned char AddrH, unsigned char AddrL, unsign
 		}
 
 		size = 4;
-		//PWM Dimmers      
+		//PWM Dimmers
 		for (i = 0; i < size; i++)
 		{
 			curr = (eHWIFIs[index]->eHWIFI.Dimmers[i]);
@@ -954,7 +954,7 @@ void eHouseTCP::UpdateRS485ToSQL(unsigned char AddrH, unsigned char AddrL, unsig
 		}
 
 		size = 3;
-		//PWM Dimmers      
+		//PWM Dimmers
 		for (i = 0; i < size; i++)
 		{
 			curr = (eHRMs[index]->eHERM.Dimmers[i]);
@@ -1200,7 +1200,7 @@ void eHouseTCP::CalculateAdc2(char index)
 		eHERMs[index]->eHERM.ADCL[field] = adcl;
 		eHERMs[index]->eHERM.ADC[field] = ivalue;
 
-		//    Mod =eHEn[index].Mod[field];    
+		//    Mod =eHEn[index].Mod[field];
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
@@ -1309,7 +1309,7 @@ void eHouseTCP::CalculateAdcWiFi(char index)
 		eHWIFIs[index]->eHWIFI.ADCL[field] = adcl;
 		eHWIFIs[index]->eHWIFI.ADC[field] = ivalue;
 
-		//    Mod =eHWIFIn[index].Mod[field];    
+		//    Mod =eHWIFIn[index].Mod[field];
 			//temp=-273.16+(temp*5000)/(1023*10);
 		adcvalue *= CalibrationV;
 		adcvalue += OffsetV;
@@ -1501,7 +1501,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	//char GetLine[255];
 	char PGMs[500];
 	char Name[80];
-	char tmp[80];
+	char tmp[96];
 	int i;
 	if (data[3] != 'n') return;
 	if (data[4] != '0') return;
@@ -1510,7 +1510,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 	else if (data[1] == 2) nr = STATUS_ARRAYS_SIZE; //for EM
 	else nr = data[2] % STATUS_ARRAYS_SIZE;			//addrl for RM
 
-	GetIndex = 7;             //Ignore binary control fields 
+	GetIndex = 7;             //Ignore binary control fields
 	GetSize = nbytes;         //size of whole packet
 	GetStr(data);			//addr combined
 	GetStr(data);			//addr h
@@ -1648,7 +1648,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	//addrl =data[2]; //binary coded not used - for eHouse UDP protocol compatibility
 	int i;
 	char Name[80];
-	char tmp[80];
+	char tmp[96];
 	char PGMs[500u];
 
 	memset(PGMs, 0, sizeof(PGMs));
@@ -1656,7 +1656,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	if (data[3] != 'n') return;   //not names
 	if (data[4] != '1') return;   //other controller type than ERM
 	unsigned char nr = (data[2] - INITIAL_ADDRESS_LAN) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-	GetIndex = 7;             //Ignore binary control fields 
+	GetIndex = 7;             //Ignore binary control fields
 	GetSize = nbytes;         //size of whole packet
 	GetStr(data);           //addr combined
 	GetStr(data);			//addr h
@@ -1681,7 +1681,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 	}
 
 	GetStr(data);// #ADC CFG;
-	for (i = 0; i < sizeof(eHEn[nr]->ADCs) / sizeof(eHEn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
+	for (i = 0; i < sizeof(eHEn[nr]->ADCs) / sizeof(eHEn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently
 	{
 		GetStr(data);
 		eHEn[nr]->ADCConfig[i] = GetLine[0] - '0';
@@ -1787,7 +1787,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	//addrl =data[2]; //binary coded not used - for eHouse UDP protocol compatibility
 	int i;
 	char Name[80];
-	char tmp[80];
+	char tmp[96];
 	char PGMs[500u];
 
 	memset(PGMs, 0, sizeof(PGMs));
@@ -1795,7 +1795,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	if (data[3] != 'n') return;   //not names
 	if (data[4] != '2') return;   //other controller type than ERM
 	unsigned char nr = (data[2] - INITIAL_ADDRESS_LAN) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-	GetIndex = 7;					//Ignore binary control fields 
+	GetIndex = 7;					//Ignore binary control fields
 	GetSize = nbytes;				//size of whole packet
 	GetStr(data);				//addr combined
 	GetStr(data);				//addr h
@@ -1819,7 +1819,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 	}
 
 	GetStr(data);		// #ADC CFG;
-	for (i = 0; i < sizeof(ECMn->ADCs) / sizeof(ECMn->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
+	for (i = 0; i < sizeof(ECMn->ADCs) / sizeof(ECMn->ADCs[0]); i++)          //ADC Config (sensor type) not used currently
 	{
 		GetStr(data);
 		ECMn->ADCConfig[i] = GetLine[0] - '0';
@@ -1925,7 +1925,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	//addrl =data[2]; //binary coded not used - for eHouse UDP protocol compatibility
 	int i;
 	char Name[80];
-	char tmp[80];
+	char tmp[96];
 	char PGMs[500u];
 
 	memset(PGMs, 0, sizeof(PGMs));
@@ -1933,7 +1933,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	if (data[3] != 'n') return;   //not names
 	if (data[4] != '3') return;   //other controller type than ERM
 	unsigned char nr = 0;			//(data[2]-INITIAL_ADDRESS_LAN)%STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-	GetIndex = 7;					//Ignore binary control fields 
+	GetIndex = 7;					//Ignore binary control fields
 	GetSize = nbytes;				//size of whole packet
 	GetStr(data);				//addr combined
 	GetStr(data);				//addr h
@@ -1966,7 +1966,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	}
 
 	GetStr(data);// #ADC CFG;
-	for (i = 0; i < sizeof(eHouseProN->ADCs) / sizeof(eHouseProN->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
+	for (i = 0; i < sizeof(eHouseProN->ADCs) / sizeof(eHouseProN->ADCs[0]); i++)          //ADC Config (sensor type) not used currently
 	{
 		GetStr(data);
 		//eHouseProN.ADCType[i] =GetLine[0]-'0';
@@ -2125,14 +2125,14 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	//addrl =data[2]; //binary coded not used - for eHouse UDP protocol compatibility
 	int i;
 	char Name[80];
-	//char tmp[80];
-	//char PGMs[500u];    
+	//char tmp[96];
+	//char PGMs[500u];
 	//memset(PGMs, 0, sizeof(PGMs));
 	gettype(data[1], data[2]);
 	if (data[3] != 'n') return;   //not names
 	if (data[4] != '4') return;   //other controller type than ERM
 	unsigned char nr = (data[2] - INITIAL_ADDRESS_WIFI) % STATUS_ARRAYS_SIZE;  //limited - overlap if more than 32
-	GetIndex = 7;					//Ignore binary control fields 
+	GetIndex = 7;					//Ignore binary control fields
 	GetSize = nbytes;				//size of whole packet
 	GetStr(data);				//addr combined
 	GetStr(data);				//addr h
@@ -2156,7 +2156,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 	}
 
 	GetStr(data);		// #ADC CFG;
-	for (i = 0; i < sizeof(eHWIFIn[nr]->ADCs) / sizeof(eHWIFIn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently 
+	for (i = 0; i < sizeof(eHWIFIn[nr]->ADCs) / sizeof(eHWIFIn[nr]->ADCs[0]); i++)          //ADC Config (sensor type) not used currently
 	{
 		GetStr(data);
 		eHWIFIn[nr]->ADCConfig[i] = GetLine[0] - '0';
@@ -2261,7 +2261,7 @@ for (i = 0; i < sizeof(eHEn[nr].) / sizeof(eHEn[nr].Zones[0]); i++)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// UDP listener service - listen up broadcast from Ethernet, WiFi eHouse controllers and 
+// UDP listener service - listen up broadcast from Ethernet, WiFi eHouse controllers and
 // eHouse1 via CommManager (under CM supervision)
 // Infinite loop - run in separate Thread
 // Update eHE[] status matrix of structures for Ethernet eHouse controllers
@@ -2318,7 +2318,7 @@ void eHouseTCP::Do_Work()
 	unsigned long opt = 0;
 	//#else
 	//	char opt = 0;
-	//	status 
+	//	status
 	//#endif
 	int comm = 0;
 	int ressock = 0;
@@ -2453,7 +2453,7 @@ void eHouseTCP::Do_Work()
 				if (eH1(udp_status[1], udp_status[2]))
 					eh1 = 1;
 			}
-			else	//recover multiple packets for Slow links (eg. Internet)			
+			else	//recover multiple packets for Slow links (eg. Internet)
 			{
 				int len = 0;
 				nbytes = recv(TCPSocket, (char *)&udp_status, 4, 0);
@@ -2477,7 +2477,7 @@ void eHouseTCP::Do_Work()
 						continue;
 					}
 					else
-						if (nbytes < 0)									//SOCKET ERROR 
+						if (nbytes < 0)									//SOCKET ERROR
 						{
 							if (m_stoprequested)					//real termination - end LOOP
 							{
@@ -2526,7 +2526,7 @@ void eHouseTCP::Do_Work()
 		}
 
 		if (nbytes == 0) continue;
-		if (nbytes < 0)									//SOCKET ERROR 
+		if (nbytes < 0)									//SOCKET ERROR
 		{
 			if (m_stoprequested)					//real termination - end LOOP
 			{
@@ -2570,11 +2570,11 @@ void eHouseTCP::Do_Work()
 				_log.Log(LOG_STATUS, "[%s NAMES: 192.168.%d.%d ] ", LogPrefix, udp_status[1], udp_status[2]);
 				if ((eHEnableAutoDiscovery))
 				{
-					//if (!TESTTEST) 
+					//if (!TESTTEST)
 					GetUDPNamesLAN(udp_status, nbytes);
-					//if (!TESTTEST) 
+					//if (!TESTTEST)
 					GetUDPNamesCM(udp_status, nbytes);
-					//if (!TESTTEST) 
+					//if (!TESTTEST)
 					if (eHEnableProDiscovery) GetUDPNamesPRO(udp_status, nbytes);
 					//if (!TESTTEST)
 					GetUDPNamesRS485(udp_status, nbytes);
@@ -2585,7 +2585,7 @@ void eHouseTCP::Do_Work()
 			else
 			{   //eHouse PRO  status
 				sum = 0;
-				sum2 = ((unsigned int)udp_status[nbytes - 2]) << 8;   //get sent checksum                
+				sum2 = ((unsigned int)udp_status[nbytes - 2]) << 8;   //get sent checksum
 				sum2 += udp_status[nbytes - 1];
 				unsigned int iii;
 				for (iii = 0; iii < nbytes - 2u; iii++)               //calculate local checksum
@@ -2603,7 +2603,7 @@ void eHouseTCP::Do_Work()
 					devaddrh = ipaddrh = udp_status[4];
 					devaddrl = ipaddrl = udp_status[5];
 				}
-				//debu(devaddrh, devaddrl, 0, nbytes, sum, sum2, udp_status[0]); 
+				//debu(devaddrh, devaddrl, 0, nbytes, sum, sum2, udp_status[0]);
 				if (((sum & 0xffff) == (sum2 & 0xffff)) || (ViaTCP))        //if valid then perform
 				{
 					ProSize = MAXMSG;// nbytes - 4;
@@ -2630,7 +2630,7 @@ void eHouseTCP::Do_Work()
 		{										//size more than 0
 			sum = 0;
 			sum2 = ((unsigned int)udp_status[nbytes - 2]);
-			sum2 = sum2 << 8;							//get sent checksum                
+			sum2 = sum2 << 8;							//get sent checksum
 			sum2 += udp_status[nbytes - 1];
 			for (i = 0; i < nbytes - 2; i++)               //calculate local checksum
 			{
@@ -2765,7 +2765,7 @@ void eHouseTCP::Do_Work()
 							UpdateCMToSQL(devaddrh, devaddrl, 0);
 						}
 						CloudStatusChanged = 0;
-						//CalculateAdcCM();                                        
+						//CalculateAdcCM();
 						eHEStatusReceived++;
 					}
 					else    //Not CM
@@ -2787,7 +2787,7 @@ void eHouseTCP::Do_Work()
 
 										{
 											memcpy(&eHERMs[eHEIndex]->data[0], &udp_status, 24); //control, dimmers
-											memcpy(&eHERMs[eHEIndex]->eHERM.ADC[0], &udp_status[STATUS_ADC_ETH], 32);//adcs 
+											memcpy(&eHERMs[eHEIndex]->eHERM.ADC[0], &udp_status[STATUS_ADC_ETH], 32);//adcs
 											memcpy(&eHERMs[eHEIndex]->eHERM.Outs[0], &udp_status[STATUS_OUT_I2C], 5);
 											memcpy(&eHERMs[eHEIndex]->eHERM.Inputs[0], &udp_status[STATUS_INPUTS_I2C], 3);
 											//memcpy(&eHERMs[eHEIndex].eHERM.ADC, &udp_status[STATUS_INPUTS_I2C]
@@ -2929,7 +2929,7 @@ void eHouseTCP::Do_Work()
 														AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
 														AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
 														nr_of_ch = aindex;
-														//        PerformADC();       //Perform Adc measurement process    
+														//        PerformADC();       //Perform Adc measurement process
 //                                                                    AuraN[aindex]->TextStatus[0] = 0;
 													}
 
@@ -2984,7 +2984,7 @@ void eHouseTCP::Do_Work()
 											adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
 											adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
 											adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set                                                        
+											adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
 											break;
 										case 4:
 											AuraDev[aindex]->WINDOW_UNPROOF = 1;
@@ -3041,7 +3041,7 @@ void eHouseTCP::Do_Work()
 										if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsB: %lx\t", (long unsigned int) adcs[aindex]->flagsb);
 										AuraDev[aindex]->LQI = AuraN[aindex]->BinaryStatus[i++];
 										if (DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", AuraDev[aindex]->LQI);
-										AuraN[aindex]->BinaryStatusLength = AuraN[aindex]->BinaryStatus[0];//nbytes;           
+										AuraN[aindex]->BinaryStatusLength = AuraN[aindex]->BinaryStatus[0];//nbytes;
 										AuraN[aindex]->TCPQuery++;
 										AuraN[aindex]->StatusTimeOut = 15u;
 										UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
@@ -3067,7 +3067,7 @@ void eHouseTCP::Do_Work()
 
 		}
 	}
-	//close(connected); 
+	//close(connected);
 	if (ViaTCP)
 	{
 		char dta[2];

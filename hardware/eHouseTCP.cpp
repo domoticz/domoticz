@@ -55,8 +55,8 @@ h l O nr
 #include "../main/SQLHelper.h"
 
 #define OPTA_CLR_DB					0x1		//Clear Domoticz DBs on start (for test of device discovery - other devices will also be deleted)
-#define OPTA_FORCE_TCP				0x2		//Force TCP/IP instead of UDP for LAN connection 
-#define OPTA_DEBUG					0x4		//Debug Info 
+#define OPTA_FORCE_TCP				0x2		//Force TCP/IP instead of UDP for LAN connection
+#define OPTA_DEBUG					0x4		//Debug Info
 #define OPTA_DETECT_TCP_PACKETS		0x8		//Perform Multiple TCP Packages
 
 #define EHOUSE_TEMP_POLL_INTERVAL_MS 120*1000 	// 120 sec
@@ -71,7 +71,7 @@ void eHouseTCP::InitStructs(void)
 	int to = EHOUSE_WIFI_MAX + 1;
 	for (i = 0; i < to; i++)
 	{
-		(eHWIFIs[i]) = NULL;		//full wifi status 
+		(eHWIFIs[i]) = NULL;		//full wifi status
 		(eHWIFIPrev[i]) = NULL;		//full wifi status previous for detecting changes
 		(eHWIFIn[i]) = NULL;			//names of i/o for WiFi controllers
 		(eHWiFi[i]) = NULL;
@@ -363,7 +363,7 @@ void eHouseTCP::UpdateSQLStatus(int devh, int devl, int devtype, int code, int n
 			{
 				lastlevel = nValue;
 				_state = 2;
-				sprintf(state, "%d", (nValue * 15) / 100);
+				sprintf(state, "%d", static_cast<uint8_t>((nValue * 15) / 100));
 			}
 		result = m_sql.safe_query("UPDATE DeviceStatus  SET nValue=%d, sValue='%q', LastLevel=%d, LastUpdate='%q' WHERE (HardwareID==%d) AND (DeviceID=='%q')",
 			_state, state, lastlevel, szLastUpdate, m_HwdID, IDX);
@@ -620,7 +620,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		}
 	}
 	if (status == 6)	//challenge received from Ethernet eHouse controllers
-	{				// only Hashed password with VendorCode available for OpenSource						
+	{				// only Hashed password with VendorCode available for OpenSource
 		challange[6] = (challange[0] ^ PassWord[0] ^ VendorCode[0]);
 		challange[7] = (challange[1] ^ PassWord[1] ^ VendorCode[1]);
 		challange[8] = (challange[2] ^ PassWord[2] ^ VendorCode[2]);
@@ -683,7 +683,7 @@ int eHouseTCP::ConnectTCP(unsigned int IP)
 		return -1;
 		}*/
 		//after connection change timeout
-		//after connection change 
+		//after connection change
 
 	if (setsockopt(TCPSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)) < 0)   //Set socket Read operation Timeout
 	{
@@ -976,7 +976,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			unsigned int adcvalue = (int)round(temp);
 			ev[3] = 0;	//nr ==0
-			ev[4] = 3;	//set value                        
+			ev[4] = 3;	//set value
 			ev[5] = adcvalue / 10;
 			ev[6] = adcvalue % 10;
 			adcvalue += 5;
@@ -1168,7 +1168,7 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		return true;
 	}
-	////////////////////////////////////////////////////////////////////////////////        
+	////////////////////////////////////////////////////////////////////////////////
 
 	if ((output->ICMND.packettype == pTypeGeneralSwitch) && (output->ICMND.subtype == sSwitchTypeAC))
 	{
