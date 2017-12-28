@@ -184,10 +184,9 @@ enum _eHardwareTypes {
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
 	HTYPE_SysfsGpio,			//102
-	HTYPE_Rtl433,                           //103
+	HTYPE_Rtl433,               //103
 	HTYPE_OnkyoAVTCP,			//104
-	HTYPE_SysfsGPIO,			//102
-	HTYPE_Nest_OAuthAPI,		//103
+	HTYPE_Nest_OAuthAPI,		//105
 	HTYPE_END
 };
 
