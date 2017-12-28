@@ -459,9 +459,6 @@
     <Filter Include="Devices\SysfsGPIO">
       <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\NestOAuthAPI">
-      <UniqueIdentifier>{defd3c2e-ea16-4ca4-92fc-0ccb8f4530e3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\RTL_433">
       <UniqueIdentifier>{0e8b8072-43d4-44a2-b5de-8a4eb7887d1c}</UniqueIdentifier>
     </Filter>
@@ -476,6 +473,9 @@
     </Filter>
     <Filter Include="Devices\Teleinfo\TeleinfoSerial">
       <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{ffbf52fd-5521-44ad-8f29-e37c7b5fce23}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -2026,9 +2026,6 @@
     <ClInclude Include="..\hardware\SysfsGPIO.h">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\NestOAuthAPI.h">
-      <Filter>Devices\NestOAuthAPI</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2043,6 +2040,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\OnkyoAVTCP.h">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2712,9 +2712,6 @@
     <ClCompile Include="..\hardware\SysfsGPIO.cpp">
       <Filter>Devices\SysfsGPIO</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
-      <Filter>Devices\NestOAuthAPI</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\EvohomeScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2729,6 +2726,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
