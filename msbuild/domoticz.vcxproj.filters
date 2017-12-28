@@ -189,6 +189,9 @@
     <Filter Include="Devices\Nest">
       <UniqueIdentifier>{358e4bcd-21c6-47e5-b7e3-7d9bbb9b4e90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{defd3c2e-ea16-4ca4-92fc-0ccb8f4530e3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\Thermosmart">
       <UniqueIdentifier>{21b14472-4757-4ef4-b27f-107a322f5ef3}</UniqueIdentifier>
     </Filter>
@@ -1849,6 +1852,9 @@
     <ClInclude Include="..\hardware\Nest.h">
       <Filter>Devices\Nest</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
     <ClInclude Include="..\main\concurrent_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -2720,6 +2726,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
       <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -204,6 +204,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },

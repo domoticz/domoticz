@@ -645,6 +645,38 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
+			    var productid = $("#hardwarecontent #divnestoauthapi #productid").val();
+			    var productsecret = $("#hardwarecontent #divnestoauthapi #productsecret").val();
+			    var productpin = $("#hardwarecontent #divnestoauthapi #productpin").val();
+
+			    if (apikey == "" && (productid == "" || productsecret == "" || productpin == "")) {
+			        ShowNotify($.t('Please enter an API Key or a combination of Product Id, Product Secret and PIN!'), 2500, true);
+			        return;
+			    }
+
+			    var extra = btoa(productid) + "|" + btoa(productsecret) + "|" + btoa(productpin);
+			    console.log("Updating extra1: " + extra);
+
+			    $.ajax({
+			        url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+                       "&username=" + encodeURIComponent(apikey) +
+                       "&name=" + encodeURIComponent(name) +
+                       "&enabled=" + bEnabled +
+                       "&idx=" + idx +
+                       "&extra=" + extra +
+                       "&datatimeout=" + datatimeout,
+			        async: false,
+			        dataType: 'json',
+			        success: function (data) {
+			            RefreshHardwareTable();
+			        },
+			        error: function () {
+			            ShowNotify($.t('Problem updating hardware!'), 2500, true);
+			        }
+			    });
+			}
 			else if (text.indexOf("SBFSpot") >= 0) {
 				var configlocation = $("#hardwarecontent #divlocation #location").val();
 				if (configlocation == "") {
@@ -695,7 +727,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0)
@@ -1609,6 +1641,37 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    var apikey = $("#hardwarecontent #divnestoauthapi #apikey").val();
+			    var productid = $("#hardwarecontent #divnestoauthapi #productid").val();
+			    var productsecret = $("#hardwarecontent #divnestoauthapi #productsecret").val();
+			    var productpin = $("#hardwarecontent #divnestoauthapi #productpin").val();
+
+			    if (apikey == "" && (productid == "" || productsecret == "" || productpin == "")) {
+			        ShowNotify($.t('Please enter an API Key or a combination of Product Id, Product Secret and PIN!'), 2500, true);
+			        return;
+			    }
+
+			    var extra = btoa(productid) + "|" + btoa(productsecret) + "|" + btoa(productpin);
+			    console.log("Updating extra2: " + extra);
+
+			    $.ajax({
+			        url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+                       "&name=" + encodeURIComponent(name) +
+                       "&username=" + encodeURIComponent(apikey) +
+                       "&enabled=" + bEnabled +
+                       "&extra=" + extra +
+                       "&datatimeout=" + datatimeout,
+			        async: false,
+			        dataType: 'json',
+			        success: function (data) {
+			            RefreshHardwareTable();
+			        },
+			        error: function () {
+			            ShowNotify($.t('Problem adding hardware!'), 2500, true);
+			        }
+			    });
+			}
 			else if (text.indexOf("Toon") >= 0) {
 				var username = $("#hardwarecontent #divlogin #username").val();
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
@@ -1634,7 +1697,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0) ||
@@ -5107,6 +5170,18 @@ define(['app'], function (app) {
 						else if (data["Type"].indexOf("SolarEdge via") >= 0) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
 						}
+						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
+						    //console.log(data);
+						    $("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
+
+						    var tmp = data["Extra"];
+						    var tmparray = tmp.split("|");
+						    if (tmparray.length == 3) {
+						        $("#hardwarecontent #divnestoauthapi #productid").val(atob(tmparray[0]));
+						        $("#hardwarecontent #divnestoauthapi #productsecret").val(atob(tmparray[1]));
+						        $("#hardwarecontent #divnestoauthapi #productpin").val(atob(tmparray[2]));
+						    }
+						}
 						else if (data["Type"].indexOf("Toon") >= 0) {
 							$("#hardwarecontent #hardwareparamsenecotoon #agreement").val(data["Mode1"]);
 						}
@@ -5147,7 +5222,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("Eco Devices") >= 0) ||
 							(data["Type"].indexOf("Toon") >= 0) ||
 							(data["Type"].indexOf("Atag") >= 0) ||
-							(data["Type"].indexOf("Nest Th") >= 0) ||
+							(data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") === -1) ||
 							(data["Type"].indexOf("PVOutput") >= 0) ||
 							(data["Type"].indexOf("ETH8020") >= 0) ||
 							(data["Type"].indexOf("Daikin") >= 0) ||
@@ -5326,6 +5401,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
+			$("#hardwarecontent #divnestoauthapi").hide();
 			$("#hardwarecontent #divenecotoon").hide();
 			$("#hardwarecontent #div1wire").hide();
 			$("#hardwarecontent #divgoodweweb").hide();
@@ -5466,6 +5542,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}
+			else if (text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") >= 0) {
+			    $("#hardwarecontent #divnestoauthapi").show();
+			    $("#hardwarecontent #divremote").hide();
+			    $("#hardwarecontent #divserial").hide();
+			    $("#hardwarecontent #divunderground").hide();
+			    $("#hardwarecontent #divhttppoller").hide();
+			    $("#hardwarecontent #divlogin").hide();
+			}
 			else if (text.indexOf("Toon") >= 0) {
 				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divenecotoon").show();
@@ -5487,7 +5571,7 @@ define(['app'], function (app) {
 			else if (
 				(text.indexOf("ICY") >= 0) ||
 				(text.indexOf("Atag") >= 0) ||
-				(text.indexOf("Nest Th") >= 0) ||
+				(text.indexOf("Nest Th") >= 0 && text.indexOf("OAuth") === -1) ||
 				(text.indexOf("PVOutput") >= 0) ||
 				(text.indexOf("Netatmo") >= 0) ||
 				(text.indexOf("Thermosmart") >= 0)
