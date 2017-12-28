@@ -123,8 +123,9 @@ define(['app'], function (app) {
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
 				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs gpio") >= 0)
-			) {
+				(text.indexOf("sysfs GPIO") >= 0)
+				)
+			 {
 				// if hardwaretype == 1000 => I2C sensors grouping
 				if (hardwaretype == 1000) {
 					hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
@@ -134,7 +135,7 @@ define(['app'], function (app) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var port = "&port=" + encodeURIComponent(i2caddress);
 				}
-				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1)) {
+				if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 					var gpiodebounce = $("#hardwareparamsgpio #gpiodebounce").val();
 					var gpioperiod = $("#hardwareparamsgpio #gpioperiod").val();
 					var gpiopollinterval = $("#hardwareparamsgpio #gpiopollinterval").val();
@@ -150,6 +151,10 @@ define(['app'], function (app) {
 					Mode1 = gpiodebounce;
 					Mode2 = gpioperiod;
 					Mode3 = gpiopollinterval;
+				}
+				if (text.indexOf("sysfs GPIO") >= 0) {
+					Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+					Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -241,10 +246,6 @@ define(['app'], function (app) {
 
 				if (text.indexOf("S0 Meter") >= 0) {
 					extra = $.devExtra;
-				}
-
-				if (text.indexOf("P1 Smart Meter") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
-					Mode2 = $("#hardwarecontent #divcrcp1 #disablecrcp1").prop("checked") ? 0 : 1;
 				}
 
 				$.ajax({
@@ -886,6 +887,60 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+
+				var Pollseconds = parseInt($("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val());
+				if ( Pollseconds < 10 ) {
+					Pollseconds = 60;
+				}
+
+				var UseFlags = 0;
+				if ($("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked"))
+				{
+					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
+					UseFlags = UseFlags | 4;
+				}
+
+				if (!$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked")) // reverted value - default 0 is true
+				{
+					UseFlags = UseFlags | 1;
+				}
+
+				if ($("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked"))
+				{
+					UseFlags = UseFlags | 2;
+				}
+
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
+
+				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
+				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
+				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
+
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype + 
+					"&username=" + encodeURIComponent(username) + 
+					"&password=" + encodeURIComponent(password) + 
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + 
+					"&idx=" + idx +	
+					"&datatimeout=" + datatimeout + 
+					"&Mode1=" + Pollseconds + 
+					"&Mode2=" + UseFlags +
+					"&Mode5=" + evo_installation,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 		}
 
 		AddHardware = function () {
@@ -986,7 +1041,20 @@ define(['app'], function (app) {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
-			}
+			} else if (text.indexOf("Rtl433 RTL-SDR receiver") >= 0) {
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+		        }
 			else if (
 				(text.indexOf("LAN") >= 0 &&
 					text.indexOf("YouLess") == -1 &&
@@ -1043,8 +1111,7 @@ define(['app'], function (app) {
 				(text.indexOf("Tellstick") >= 0) ||
 				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs gpio") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0)
 			) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + "&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
@@ -1058,7 +1125,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("GPIO") >= 0) {
+			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				var gpiodebounce = $("#hardwarecontent #hardwareparamsgpio #gpiodebounce").val();
 				var gpioperiod = $("#hardwarecontent #hardwareparamsgpio #gpioperiod").val();
 				var gpiopollinterval = $("#hardwarecontent #hardwareparamsgpio #gpiopollinterval").val();
@@ -1085,6 +1152,27 @@ define(['app'], function (app) {
 					dataType: 'json',
 					success: function (data) {
 						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("sysfs GPIO") >= 0) {
+				Mode1 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure').prop("checked") ? 1 : 0;
+				Mode2 = $('#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce').val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype="
+					+ hardwaretype
+					+ "&name=" + encodeURIComponent(name)
+					+ "&enabled=" + bEnabled
+					+ "&datatimeout=" + datatimeout
+					+ "&Mode1=" + Mode1
+					+ "&Mode2=" + Mode2,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+					RefreshHardwareTable();
 					},
 					error: function () {
 						ShowNotify($.t('Problem adding hardware!'), 2500, true);
@@ -1159,7 +1247,6 @@ define(['app'], function (app) {
 						ratelimitp1 = "0";
 					}
 					Mode3 = ratelimitp1;
-
 				}
 				if (text.indexOf("Teleinfo EDF") >= 0) {
 					var baudrate = $("#hardwarecontent #divbaudrateteleinfo #combobaudrateteleinfo option:selected").val();
@@ -1176,7 +1263,6 @@ define(['app'], function (app) {
 						ratelimitp1 = "60";
 					}
 					Mode3 = ratelimitp1;
-
 				}
 
 				$.ajax({
@@ -1648,6 +1734,59 @@ define(['app'], function (app) {
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&username=" + encodeURIComponent(username) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
+				var Pollseconds = parseInt($("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val());
+				if ( Pollseconds < 10 ) {
+					Pollseconds = 60;
+				}
+
+				var UseFlags = 0;
+				if ($("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked"))
+				{
+					$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked", 1);
+					UseFlags = UseFlags | 4;
+				}
+
+				if (!$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked")) // reverted value - default 0 is true
+				{
+					UseFlags = UseFlags | 1;
+				}
+
+				if ($("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked"))
+				{
+					UseFlags = UseFlags | 2;
+				}
+
+				var Precision = parseInt($("#hardwarecontent #divevohomeweb #comboevoprecision").val());
+				UseFlags += Precision;
+
+				var evo_installation = $("#hardwarecontent #divevohomeweb #comboevolocation").val()*4096;
+				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevogateway").val()*256;
+				evo_installation = evo_installation + $("#hardwarecontent #divevohomeweb #comboevotcs").val()*16;
+
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
+					"&username=" + encodeURIComponent(username) + 
+					"&password=" + encodeURIComponent(password) + 
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled + 
+					"&idx=" + idx +	
+					"&datatimeout=" + datatimeout + 
+					"&Mode1=" + Pollseconds + 
+					"&Mode2=" + UseFlags +
+					"&Mode5=" + evo_installation,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -4765,7 +4904,7 @@ define(['app'], function (app) {
 								HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateRFLinkDevices(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create RFLink Devices") + '</span>';
 							}
 							else if (HwTypeStr.indexOf("Evohome") >= 0) {
-								if (HwTypeStr.indexOf("script") >= 0)
+								if (HwTypeStr.indexOf("via") >= 0)
 									HwTypeStr += ' <span class="label label-info lcursor" onclick="CreateEvohomeSensors(' + item.idx + ',\'' + item.Name + '\');">' + $.t("Create Devices") + '</span>';
 								else {
 									HwTypeStr += ' <span class="label label-info lcursor" onclick="BindEvohome(' + item.idx + ',\'' + item.Name + '\',\'Relay\');">Bind Relay</span>';
@@ -4913,8 +5052,7 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
-							(data["Type"].indexOf("sysfs gpio") >= 0)
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
 						) {
 							//nothing to be set
 						}
@@ -4929,10 +5067,14 @@ define(['app'], function (app) {
 								$("#hardwareparami2caddress #i2caddress").val(data["Port"].substring(4));
 							}
 						}
-						else if (data["Type"].indexOf("GPIO") >= 0) {
+						else if ((data["Type"].indexOf("GPIO") >= 0) && (data["Type"].indexOf("sysfs GPIO") == -1)) {
 							$("#hardwareparamsgpio #gpiodebounce").val(data["Mode1"]);
 							$("#hardwareparamsgpio #gpioperiod").val(data["Mode2"]);
 							$("#hardwareparamsgpio #gpiopollinterval").val(data["Mode3"]);
+						}
+						else if (data["Type"].indexOf("sysfs GPIO") >= 0) {
+							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsautoconfigure").prop("checked", data["Mode1"] == 1);
+							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("USB") >= 0 || data["Type"].indexOf("Teleinfo EDF") >= 0) {
 							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
@@ -5099,12 +5241,38 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
+						if (data["Type"].indexOf("Evohome via Web") >= 0) {
+							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
+
+							var Pollseconds = parseInt(data["Mode1"]);
+							if ( Pollseconds < 10 ) {
+								Pollseconds = 60;
+							}
+							$("#hardwarecontent #divevohomeweb #updatefrequencyevohomeweb").val(Pollseconds);
+
+							var UseFlags = parseInt(data["Mode2"]);
+							$("#hardwarecontent #divevohomeweb #disableautoevohomeweb").prop("checked",((UseFlags & 1) ^ 1));
+							$("#hardwarecontent #divevohomeweb #showscheduleevohomeweb").prop("checked",((UseFlags & 2) >>> 1));
+							$("#hardwarecontent #divevohomeweb #showlocationevohomeweb").prop("checked",((UseFlags & 4) >>> 2));
+							$("#hardwarecontent #divevohomeweb #comboevoprecision").val((UseFlags & 24));
+
+							var Location = parseInt(data["Mode5"]);
+							for (var i=1;i<10;i++){
+								$("#hardwarecontent #divevohomeweb #comboevolocation")[0].options[i]=new Option(i,i);
+								$("#hardwarecontent #divevohomeweb #comboevogateway")[0].options[i]=new Option(i,i);
+								$("#hardwarecontent #divevohomeweb #comboevotcs")[0].options[i]=new Option(i,i);
+							}
+							$("#hardwarecontent #divevohomeweb #comboevolocation").val(Location >>> 12);
+							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
+							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
+						}
 
 						// Handle plugins generically.  If the plugin requires a data field it will have been created on page load.
 						if (data["Type"] == "PLUGIN") {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Username").val(data["Username"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Password").val(data["Password"]);
-							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Address").val(data["Address"]);
+							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Address").val(data["Address"])
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Port").val(data["IntPort"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #SerialPort").val(data["Port"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode1").val(data["Mode1"]);
@@ -5157,6 +5325,58 @@ define(['app'], function (app) {
 			});
 		}
 
+		//credits: http://www.netlobo.com/url_query_string_javascript.html
+		function gup(url, name) {
+			name = name.replace(/[[]/, "\[").replace(/[]]/, "\]");
+			var regexS = "[\?&]" + name + "=([^&#]*)";
+			var regex = new RegExp(regexS);
+			var results = regex.exec(url);
+			if (results == null)
+				return "";
+			else
+				return results[1];
+		}
+
+		function validateToonToken(token) {
+			alert(code);
+		}
+
+		OnAuthenticateToon = function () {
+			var pwidth = 800;
+			var pheight = 600;
+
+			var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
+			var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
+
+			var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+			var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+			var left = ((width / 2) - (pwidth / 2)) + dualScreenLeft;
+			var top = ((height / 2) - (pheight / 2)) + dualScreenTop;
+
+			var REDIRECT = 'http://127.0.0.1/domoticiz_toon';
+			var CLIENT_ID = '7gQMPclYzm8haCHAgdvjq1yILLwa';
+			var _url = 'https://api.toonapi.com/authorize?response_type=code&redirect_uri=' + REDIRECT + '&client_id=' + CLIENT_ID;
+			//_url = "http://127.0.0.1:8081/11";
+			var win = window.open(_url, "windowtoonaith", 'scrollbars=yes, width=' + pwidth + ', height=' + pheight + ', left=' + left + ', top=' + top);
+			if (window.focus) {
+				win.focus();
+			}
+			var pollTimer = window.setInterval(function () {
+				if (win.closed !== false) { // !== is required for compatibility with Opera
+					window.clearInterval(pollTimer);
+				}
+				else if (win.document.URL.indexOf(REDIRECT) != -1) {
+					window.clearInterval(pollTimer);
+					console.log(win.document.URL);
+					var url = win.document.URL;
+					var code = gup(url, 'code');
+					win.close();
+					validateToonToken(code);
+				}
+			}, 200);
+		}
+
 		UpdateHardwareParamControls = function () {
 			$("#hardwarecontent #hardwareparamstable #enabled").prop('disabled', false);
 			$("#hardwarecontent #hardwareparamstable #hardwarename").prop('disabled', false);
@@ -5168,6 +5388,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lblusername").show();
 
 			$("#hardwarecontent #divevohome").hide();
+			$("#hardwarecontent #divevohomeweb").hide();
 			$("#hardwarecontent #divbaudratemysensors").hide();
 			$("#hardwarecontent #divbaudratep1").hide();
 			$("#hardwarecontent #divbaudrateteleinfo").hide();
@@ -5190,17 +5411,16 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divpythonplugin").hide();
 			$("#hardwarecontent #divrelaynet").hide();
 			$("#hardwarecontent #divgpio").hide();
+			$("#hardwarecontent #divsysfsgpio").hide();
 
-			if (
-				(text.indexOf("TE923") >= 0) ||
+			if ((text.indexOf("TE923") >= 0) ||
 				(text.indexOf("Volcraft") >= 0) ||
 				(text.indexOf("Dummy") >= 0) ||
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Yeelight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs gpio") >= 0)
-			) {
+				(text.indexOf("Arilux AL-LC0x") >= 0))
+			 {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
@@ -5221,14 +5441,21 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divi2caddress").show();
 				}
 			}
-			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs gpio") == -1)) {
+			else if ((text.indexOf("GPIO") >= 0) && (text.indexOf("sysfs GPIO") == -1)) {
 				$("#hardwarecontent #divgpio").show();
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
-
+			}
+			else if (text.indexOf("sysfs GPIO") >= 0) {
+				$("#hardwarecontent #divsysfsgpio").show();
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
 			}
 			else if (text.indexOf("USB") >= 0 || text.indexOf("Teleinfo EDF") >= 0) {
 				if (text.indexOf("Evohome") >= 0) {
@@ -5445,6 +5672,14 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divserial").hide();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
+			}
+			else if (text.indexOf("Evohome via Web") >= 0) {
+				$("#hardwarecontent #divevohomeweb").show();
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").show();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}

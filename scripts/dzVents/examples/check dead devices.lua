@@ -8,16 +8,18 @@ local devicesToCheck = {
 return {
 	active = true,
 	on = {
-		['timer'] = 'every 5 minutes'
+		['timer'] = {
+			'every 5 minutes'
+		}
 	},
 	execute = function(domoticz)
 
-		local message
+		local message = ""
 
 		for i, deviceToCheck in pairs(devicesToCheck) do
 			local name = deviceToCheck['name']
 			local threshold = deviceToCheck['threshold']
-			local minutes = domoticz.devices[name].lastUpdate.minutesAgo
+			local minutes = domoticz.devices(name).lastUpdate.minutesAgo
 
 			if ( minutes > threshold) then
 				message = message .. 'Device ' ..

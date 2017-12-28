@@ -1186,6 +1186,38 @@
                 </tr>
 			</table>
 		</div>
+        <div id="divsysfsgpio">
+            <br>
+            <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
+                </tr>
+				<tr valign="top">
+					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
+					<td><select id="sysfsdebounce" style="width:110" class="combobox ui-corner-all">
+						<option data-i18n="Default" value="50">default</option>
+						<option data-i18n="1 msec" value="1">1 msec</option>						
+						<option data-i18n="2 msec" value="2">2 msec</option>						
+						<option data-i18n="5 msec" value="5">5 msec</option>						
+						<option data-i18n="10 msec" value="10">10 msec</option>
+						<option data-i18n="25 msec" value="25">25 msec</option>
+						<option data-i18n="50 msec" value="50">50 msec</option>
+						<option data-i18n="75 msec" value="75">75 msec</option>						
+						<option data-i18n="100 msec" value="100">100 msec</option>
+						<option data-i18n="150 msec" value="150">150 msec</option>
+						<option data-i18n="200 msec" value="200">200 msec</option>
+						<option data-i18n="250 msec" value="250">250 msec</option>
+						<option data-i18n="300 msec" value="300">300 msec</option>					
+						<option data-i18n="350 msec" value="350">350 msec</option>					
+						<option data-i18n="400 msec" value="400">400 msec</option>					
+						<option data-i18n="450 msec" value="450">450 msec</option>					
+						<option data-i18n="500 msec" value="500">500 msec</option>										
+					</select>
+					</td>
+				</tr>				
+            </table>
+        </div>
         <div id="divevohome">
 			<br>
 			<table class="display" id="hardwareparamsevohome" border="0" cellpadding="0" cellspacing="20">      
@@ -1557,6 +1589,71 @@
 				</tr>
 			</table>
 		</div>
+		<div id="divevohomeweb" style="display:none;">
+			<br />
+			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">      
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblupdfreqevohomeweb"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
+					</td>
+					<td><input type="text" id="updatefrequencyevohomeweb" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all"  value="60"/>&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br />
+						<span data-i18n="This sets the interval between status requests.">This sets the interval between status requests.</span><br />
+						<strong><font class="warning-text"><span data-i18n="If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!">If you set this to less than 60 seconds you may be in violation of Honeywell's usage terms and have your account suspended!</span></font></strong>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblautoevohomeweb" for="name"><span data-i18n="Synchronize installation">Synchronize installation</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><br />
+						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblschedevohomeweb" for="name"><span data-i18n="Show schedule">Show schedule</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><br />
+						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Show location">Show location</span>: </label>
+					</td>
+					<td>
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb">
+						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Select location">Select location</span>: </label>
+					</td>
+					<td>
+						<select id="comboevolocation" name="comboevolocation" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevogateway" name="comboevogateway" class="combobox ui-corner-all"><option value="0">0</option></select>,
+						<select id="comboevotcs" name="comboevotcs" class="combobox ui-corner-all"><option value="0">0</option></select>
+						<span data-i18n="(keep at [0,0,0] if you only have one Evohome installation)">(keep at [0,0,0] if you only have one Evohome installation)</span><br />&nbsp;<br />
+					</td>
+				</tr>
+
+				<tr valign="top">
+					<td align="right" style="width:110px">
+						<label id="lblprecisionevohomeweb" for="name"><span data-i18n="Temperature precision">Temperature precision</span>: </label>
+					</td>
+					<td><select id="comboevoprecision" style="width:200px" class="combobox ui-corner-all">
+						<option selected="selected" value="0">Same as controller (quickest)</option>
+						<option value="8">1 decimal</option>
+						<option value="24">2 decimals</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<div>
 			<br>
 			<table border="0" cellpadding="0" cellspacing="14">
@@ -1598,6 +1695,7 @@
 					<option value="85" data-i18n="Rain">Rain</option>
 					<option value="241" data-i18n="RGB Switch">RGB Switch</option>
 					<option value="1003" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="93" data-i18n="Scale">Scale (Weight)</option>
 					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
 					<option value="15" data-i18n="Soil Moisture">Soil Moisture</option>
 					<option value="20" data-i18n="Solar Radiation">Solar Radiation</option>
@@ -1606,6 +1704,7 @@
 					<option value="80" data-i18n="Temperature">Temperature</option>
 					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
 					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="247" data-i18n="Temp+Baro">Temp+Baro</option>
 					<option value="5" data-i18n="Text">Text</option>
 					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
 					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>

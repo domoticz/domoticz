@@ -3,7 +3,9 @@ return {
 	active = true,
 
 	on = {
-		'PIR_*' -- all my motion detectors' name start with PIR_
+		devices = {
+			'PIR_*' -- all my motion detectors' name start with PIR_
+		}
 	},
 
 	execute = function(domoticz, detector)

@@ -1962,6 +1962,14 @@ define(['app'], function (app) {
 				option.attr('value', item.idx).text(item.name);
 				$("#combogpio").append(option);
 			});
+
+			RefreshSysfsGpioComboArray();
+			$("#combosysfsgpio").html("");
+			$.each($.ComboSysfsGpio, function (i, item) {
+				var option = $('<option />');
+				option.attr('value', item.idx).text(item.name);
+				$("#combosysfsgpio").append(option);
+            });
 		}
 
 		RefreshHardwareComboArray = function () {
@@ -1993,6 +2001,25 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
 							$.ComboGpio.push({
+								idx: item.idx,
+								name: item.Name
+							});
+						});
+					}
+				}
+			});
+		}
+
+		RefreshSysfsGpioComboArray = function () {
+			$.ComboSysfsGpio = [];
+			$.ajax({
+				url: "json.htm?type=command&param=getsysfsgpio",
+				async: false,
+				dataType: 'json',
+				success: function (data) {
+					if (typeof data.result != 'undefined') {
+						$.each(data.result, function (i, item) {
+							$.ComboSysfsGpio.push({
 								idx: item.idx,
 								name: item.Name
 							});
@@ -2081,7 +2108,7 @@ define(['app'], function (app) {
 			var id = "";
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=Name&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -2248,13 +2275,13 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Blinds Percentage") {
 									isdimmer = true;
-									if (item.Status == 'Closed') {
-										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
-									}
-									else {
+									if (item.Status == 'Open') {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+									}
+									else {
+										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
+										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
 								}
 								else if (item.SwitchType == "Blinds Percentage Inverted") {
@@ -2263,7 +2290,7 @@ define(['app'], function (app) {
 										img = '<img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
-									else {
+									else if ((item.Status == 'Open') || (item.Status.indexOf('Set ') == 0)) {
 										img = '<img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 										img2 = '<img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48">';
 									}
@@ -2603,7 +2630,7 @@ define(['app'], function (app) {
 			var j = 0;
 
 			$.ajax({
-				url: "json.htm?type=devices&filter=light&used=true&order=Name&plan=" + window.myglobals.LastPlanSelected,
+				url: "json.htm?type=devices&filter=light&used=true&order=[Order]&plan=" + window.myglobals.LastPlanSelected,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -2845,13 +2872,13 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Blinds Percentage") {
 								bIsDimmer = true;
-								if (item.Status == 'Closed') {
-									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
-								}
-								else {
+								if (item.Status == 'Open') {
 									xhtm += '\t      <td id="img"><img src="images/blindsopen48sel.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 									xhtm += '\t      <td id="img2"><img src="images/blinds48.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+								}
+								else {
+									xhtm += '\t      <td id="img"><img src="images/blindsopen48.png" title="' + $.t("Open Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
+									xhtm += '\t      <td id="img2"><img src="images/blinds48sel.png" title="' + $.t("Close Blinds") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48"></td>\n';
 								}
 							}
 							else if (item.SwitchType == "Blinds Percentage Inverted") {
@@ -3371,6 +3398,9 @@ define(['app'], function (app) {
 			else if (lighttype == 68) {
 				//Do nothing. GPIO uses a custom form
 			}
+			else if (lighttype == 69) {
+				//Do nothing. SysfsGpio uses a custom form
+			}
 			else if (lighttype == 7) {
 				tothousecodes = 16;
 				totunits = 8;
@@ -3471,6 +3501,7 @@ define(['app'], function (app) {
 			$("#dialog-addmanuallightdevice #blindsparams").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_enocean").hide();
 			$("#dialog-addmanuallightdevice #lightingparams_gpio").hide();
+			$("#dialog-addmanuallightdevice #lightingparams_sysfsgpio").hide();
 			$("#dialog-addmanuallightdevice #homeconfortparams").hide();
 			$("#dialog-addmanuallightdevice #fanparams").hide();
 			$("#dialog-addmanuallightdevice #openwebnetparamsBus").hide();
@@ -3528,6 +3559,16 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2params").hide();
 				$("#dialog-addmanuallightdevice #lighting3params").hide();
 				$("#dialog-addmanuallightdevice #lightingparams_gpio").show();
+			}
+			else if (lighttype == 69) {
+				//SysfsGpio
+				$("#dialog-addmanuallightdevice #lightparams_enocean #comboid  >option").remove();
+				$("#dialog-addmanuallightdevice #lightparams_enocean #combounitcode  >option").remove();
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").show();
+				$("#dialog-addmanuallightdevice #lighting3params").hide();
+				$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide()
+				$("#dialog-addmanuallightdevice #lightingparams_sysfsgpio").show();
 			}
 			else if ((lighttype >= 200) && (lighttype < 300)) {
 				//Blinds
@@ -3733,8 +3774,17 @@ define(['app'], function (app) {
 			}
 			else if (lighttype == 68) {
 				//GPIO
-				mParams += "&id=GPIO&unitcode=" + $("#dialog-addmanuallightdevice #lightingparams_gpio #combogpio option:selected").val();
+                mParams += "&id=GPIO&unitcode=" + $("#dialog-addmanuallightdevice #lightingparams_gpio #combogpio option:selected").val();
 			}
+			else if (lighttype == 69) {
+				//SysfsGpio
+                ID =
+                    $("#dialog-addmanuallightdevice #lightparams2 #combocmd1 option:selected").text() +
+                    $("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text() +
+                    $("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text() +
+                    $("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text();
+                mParams += "&id=" + ID + "&unitcode=" + $("#dialog-addmanuallightdevice #lightingparams_sysfsgpio #combosysfsgpio option:selected").val();
+            }
 			else if ((lighttype < 20) || (lighttype == 101)) {
 				mParams += "&housecode=" + $("#dialog-addmanuallightdevice #lightparams1 #combohousecode option:selected").val();
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #lightparams1 #combounitcode option:selected").val();
@@ -3783,7 +3833,7 @@ define(['app'], function (app) {
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
 				var ID = ("0002" + ("0000" + appID.toString(16)).slice(-4)); // WHO_AUTOMATION
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 401) {
@@ -3791,7 +3841,7 @@ define(['app'], function (app) {
 				var appID = parseInt($("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd1 option:selected").val() +
 					$("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd2 option:selected").val());
 				var ID = ("0001" + ("0000" + appID.toString(16)).slice(-4)); // WHO_LIGHTING
-				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware 
+				var unitcode = $("#dialog-addmanuallightdevice #openwebnetparamsBus #combocmd3 option:selected").val();//TODO : handle bus id (interface) in hardware
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
 			else if (lighttype == 402) {

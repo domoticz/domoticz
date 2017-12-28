@@ -678,9 +678,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	unsigned char tSign = m_sql.m_tempsign[0];
 	if (tSign == 'F')
 	{
-		//Maybe this should be done in the main app, so all other devices will also do this
-		//Convert to Celsius
-		tempDest = (tempDest - 32.0f) / 1.8f;
+		tempDest = static_cast<float>(ConvertToCelsius(tempDest));
 	}
 
 	Json::Value root;
@@ -690,7 +688,7 @@ void CNest::SetSetpoint(const int idx, const float temp)
 	std::string sResult;
 
 	std::string sURL = m_TransportURL + NEST_SET_SHARED + m_thermostats[iThermostat].Serial;
-	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult, true, true))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting setpoint!");
 		m_bDoLogin = true;
@@ -730,7 +728,7 @@ bool CNest::SetAway(const unsigned char Idx, const bool bIsAway)
 	std::string sResult;
 
 	std::string sURL = m_TransportURL + NEST_SET_STRUCTURE + m_thermostats[iThermostat].StructureID;
-	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult, true, true))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting away mode!");
 		m_bDoLogin = true;
@@ -775,7 +773,7 @@ bool CNest::SetManualEcoMode(const unsigned char Idx, const bool bIsManualEcoMod
 		return false;
 
 	std::string sURL = m_TransportURL + NEST_SET_DEVICE + m_thermostats[iThermostat].Serial;
-	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	if (!HTTPClient::POST(sURL, root.toStyledString(), ExtraHeaders, sResult, true, true))
 	{
 		_log.Log(LOG_ERROR, "Nest: Error setting manual eco mode!");
 		m_bDoLogin = true;

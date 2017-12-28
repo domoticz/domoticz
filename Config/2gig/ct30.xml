@@ -31,7 +31,7 @@
       <Item label="Disable" value="0"/>
       <Item label="Enable" value="1"/>
     </Value>
-    <Value type="short" index="4" genre="config" label="C-Wire/Battery Status" read_only="true" units="" min="0" max="31" value="0" size="1">
+    <Value type="short" index="4" genre="config" label="C-Wire/Battery Status" read_only="true" units="" min="0" max="31" value="0" size="2">
       <Help>
         Read-only parameter
         1 -> C-Wire
@@ -80,7 +80,7 @@
       <Item label="Fast" value="1"/>
       <Item label="Economy" value="2"/>
     </Value>
-    <Value type="short" index="10" genre="config" label="Temperature Reporting Filter" units="F" min="0" max="124" value="124" size="1">
+    <Value type="short" index="10" genre="config" label="Temperature Reporting Filter" units="F" min="0" max="124" value="124" size="2">
       <Help>
         The Temperature Reporting Filter configuration command sets upper and lower bounds of the ambient temperature reporting. The thermostat will not report ambient temperature changes if the ambient temperature falls between these bounds. For example, if the upper bound is 80F and the lower bound is 60F, the thermostat will not send SENSOR_MULTI_LEVEL_REPORTS for ambient temperature values between 60F and 80F. The thermostat will only send ambient temperature changes if the
         thermostat has been added to an association group (see Command Class Association) and the temperature reporting threshold is non-zero (see Temperature Reporting Threshold).

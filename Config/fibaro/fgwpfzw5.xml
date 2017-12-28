@@ -96,7 +96,7 @@
 			<Item label="All alarms" value="63" />
 		</Value>
 
-		<Value type="short" genre="config" instance="1" index="31" label="Response to alarm frames" value="0" min="0" max="50" size="1">
+		<Value type="short" genre="config" instance="1" index="31" label="Response to alarm frames" value="0" min="0" max="50" size="2">
 			<Help>This parameter defines how the Wall Plug will respond to alarms (device's status change). In case of values 1 or 2 the Wall Plug is operating normally and LED ring signals an alarm through time defined in parameter 32 or until the alarm is cancelled. In case of values 5 to 50 the Wall Plug does not report status change, power changes, ignores BASIC SET command frames. After time defined in parameter 32 or after the alarm cancellation, connected device is set to the previous state.. 0- no reaction 1-turn connected device on 2-turn connected device off 5-50(0,5-50,0s step 0,1s)-cyclically change device state with set period. Default setting:0-no reaction</Help>
 		</Value>
 

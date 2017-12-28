@@ -179,6 +179,7 @@
 #define sSwitchTypeRFCustom			0x72
 #define sSwitchTypeYW_Sensor		0x73
 #define sSwitchTypeLegrandcad		0x74
+#define sSwitchTypeSysfsGpio		0x75
 
 //Switch commands
 #define gswitch_sOff				0x00

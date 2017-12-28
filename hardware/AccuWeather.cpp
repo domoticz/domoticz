@@ -98,7 +98,7 @@ void CAccuWeather::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 600 == 0)
+		if (sec_counter % 1800 == 0) //50 free calls a day.. thats not much guy's!
 		{
 			if (m_LocationKey.empty())
 			{
