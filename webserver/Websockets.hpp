@@ -42,7 +42,7 @@ namespace http {
 
 		class CWebsocket {
 		public:
-			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, CWebsocketHandler *_handler);
+			CWebsocket(boost::function<void(const std::string &packet_data)> _MyWrite, cWebem *_webEm, boost::function<void(const std::string &packet_data)> _WSWrite);
 			~CWebsocket();
 			virtual boost::tribool parse(const uint8_t *begin, size_t size, size_t &bytes_consumed, bool &keep_alive);
 			virtual void SendClose(const std::string &packet_data);
@@ -59,7 +59,7 @@ namespace http {
 			bool start_new_packet;
 			opcodes last_opcode;
 			std::string OUR_PING_ID;
-			CWebsocketHandler *handler;
+			CWebsocketHandler handler;
 			boost::function<void(const std::string &packet_data)> MyWrite;
 		};
 

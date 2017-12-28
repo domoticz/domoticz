@@ -4559,9 +4559,9 @@ define(['app'], function (app) {
 							extraSendData = "&sensoroptions=1;" + encodeURIComponent(AxisLabel);
 						}
 						$.ajax({
-							url: "json.htm?type=createvirtualsensor&idx=" + $.devIdx +
+							url: "json.htm?type=createdevice&idx=" + $.devIdx +
 							"&sensorname=" + encodeURIComponent(SensorName) +
-							"&sensortype=" + SensorType +
+							"&sensormappedtype=" + SensorType +
 							extraSendData,
 							async: false,
 							dataType: 'json',
@@ -5583,8 +5583,8 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divsolaredgeapi").show();
 				$("#hardwarecontent #divremote").hide();
 				$("#hardwarecontent #divserial").hide();
-				$("#hardwarecontent #divremote").show();
-				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 			}

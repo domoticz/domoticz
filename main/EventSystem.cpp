@@ -2729,8 +2729,16 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[item.reason].c_str(), filename.c_str());
 #endif
 
-	int intRise = getSunRiseSunSetMinutes("Sunrise");
-	int intSet = getSunRiseSunSetMinutes("Sunset");
+	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
+	int intSet = m_mainworker.m_SunRiseSetMins[1];
+	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
+	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
+	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
+	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
+	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
+	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
+	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
+	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 	time_t now = mytime(NULL);
@@ -2740,7 +2748,13 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+	if (intRise == 0 && intSet == 0) {
+		if (intDayLength == 0)
+			nightTimeBool = true; // Sun below horizon in the space of 24 hours
+		else
+			dayTimeBool = true; // Sun above horizon in the space of 24 hours
+	}
+	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
 		dayTimeBool = true;
 	}
 	else {
@@ -2759,6 +2773,30 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunsetInMinutes");
 	lua_pushnumber(lua_state, intSet);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "SunAtSouthInMinutes");
+	lua_pushnumber(lua_state, intSunAtSouth);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "DayLengthInMinutes");
+	lua_pushnumber(lua_state, intDayLength);
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
@@ -4131,28 +4169,21 @@ void CEventSystem::WWWGetItemStates(std::vector<_tDeviceStatus> &iStates)
 
 int CEventSystem::getSunRiseSunSetMinutes(const std::string &what)
 {
-	std::vector<std::string> strarray;
-	std::vector<std::string> sunRisearray;
-	std::vector<std::string> sunSetarray;
-
-	if (!m_mainworker.m_LastSunriseSet.empty())
+	if (m_mainworker.m_SunRiseSetMins.size() > 0)
 	{
-		StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-		StringSplit(strarray[0], ":", sunRisearray);
-		StringSplit(strarray[1], ":", sunSetarray);
-
-		int sunRiseInMinutes = (atoi(sunRisearray[0].c_str()) * 60) + atoi(sunRisearray[1].c_str());
-		int sunSetInMinutes = (atoi(sunSetarray[0].c_str()) * 60) + atoi(sunSetarray[1].c_str());
-
-		if (what == "Sunrise") {
-			return sunRiseInMinutes;
-		}
-		else {
-			return sunSetInMinutes;
-		}
-
+		int ordinalNum = 1; // Defaults to Sunset to keep compatibility with previous code
+		if (what == "Sunrise") ordinalNum = 0;
+		else if (what == "Sunset") ordinalNum = 1; // For clarity
+		else if (what == "SunAtSouth") ordinalNum = 2;
+		else if (what == "CivTwilightStart") ordinalNum = 3;
+		else if (what == "CivTwilightEnd") ordinalNum = 4;
+		else if (what == "NautTwilightStart") ordinalNum = 5;
+		else if (what == "NautTwilightEnd") ordinalNum = 6;
+		else if (what == "AstrTwilightStart") ordinalNum = 7;
+		else if (what == "AstrTwilightEnd") ordinalNum = 8;
+		else if (what == "DayLength") ordinalNum = 9;
+		return m_mainworker.m_SunRiseSetMins[ordinalNum];
 	}
-
 	return 0;
 }
 

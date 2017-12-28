@@ -943,44 +943,43 @@ define(['app'], function (app) {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
 										bigtext = item.CounterToday;
 									}
-									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
+									status =  $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
 								}
 								else if (item.Type == "Current") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
-									status = item.Data;
 									if (typeof item.CounterToday != 'undefined') {
-										status += ', ' + $.t("Today") + ': ' + item.CounterToday;
+										status += $.t("Today") + ': ' + item.CounterToday;
 									}
 								}
 								else if (item.SubType == "Percentage") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Fan") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Air Quality") {
-									status = item.Data + " (" + item.Quality + ")";
+									status = item.Quality;
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Soil Moisture") {
-									status = item.Data + " (" + item.Desc + ")";
+									status = item.Desc;
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Custom Sensor") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Leaf Wetness") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Text") {
@@ -993,19 +992,19 @@ define(['app'], function (app) {
 									img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
 								}
 								else if (item.Type == "Lux") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Weight") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Usage") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 								else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-									status = item.Data + '\u00B0 ' + $scope.config.TempSign;
+									status = "";
 									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.Type == "Radiator 1") {
@@ -1013,16 +1012,16 @@ define(['app'], function (app) {
 									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.SubType == "Thermostat Clock") {
-									status = item.Data;
+									status = "";
 								}
 								else if (item.SubType == "Thermostat Mode") {
-									status = item.Data;
+									status = "";
 								}
 								else if (item.SubType == "Thermostat Fan Mode") {
-									status = item.Data;
+									status = "";
 								}
 								else if (item.SubType == "Waterflow") {
-									status = item.Data;
+									status = "";
 									bigtext = item.Data;
 								}
 
@@ -1031,7 +1030,7 @@ define(['app'], function (app) {
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv != 0) {
-										status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
+										status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
 										if (item.UsageDeliv.charAt(0) != 0) {
 											if (parseInt(item.Usage) != 0) {
 												bigtext += ', -' + item.UsageDeliv;
@@ -1251,12 +1250,12 @@ define(['app'], function (app) {
 									status = item.Counter;
 								}
 								else {
-									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
+									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
 								}
 							}
 							else if (item.Type == "Current") {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
@@ -1265,42 +1264,41 @@ define(['app'], function (app) {
 								else {
 									xhtm += 'current48.png" height="48" width="48"></td>\n';
 								}
-								status = item.Data;
 								if (typeof item.CounterToday != 'undefined') {
-									status += ', ' + $.t("Today") + ': ' + item.CounterToday;
+									status += $.t("Today") + ': ' + item.CounterToday;
 								}
 							}
 							else if (item.Type == "Air Quality") {
 								xhtm += 'air48.png" height="48" width="48"></td>\n';
-								status = item.Data + " (" + item.Quality + ")";
+								status = item.Quality;
 							}
 							else if (item.SubType == "Custom Sensor") {
 								xhtm += item.Image + '48_On.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Soil Moisture") {
 								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
-								status = item.Data + " (" + item.Desc + ")";
+								status = item.Desc;
 							}
 							else if (item.SubType == "Percentage") {
 								xhtm += 'Percentage48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Fan") {
 								xhtm += 'Fan48_On.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Leaf Wetness") {
 								xhtm += 'leaf48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Distance") {
 								xhtm += 'visibility48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Text") {
 								xhtm += 'text48.png" height="48" width="48"></td>\n';
@@ -1312,47 +1310,47 @@ define(['app'], function (app) {
 							}
 							else if (item.SubType == "Pressure") {
 								xhtm += 'gauge48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.Type == "Lux") {
 								xhtm += 'lux48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.Type == "Weight") {
 								xhtm += 'scale48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.Type == "Usage") {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
 								xhtm += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-								status = item.Data + '\u00B0 ' + $scope.config.TempSign;
+								status = "";
 							}
 							else if (item.SubType == "Thermostat Clock") {
 								xhtm += 'clock48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Thermostat Mode") {
 								xhtm += 'mode48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
 								xhtm += 'mode48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Sound Level") {
 								xhtm += 'Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							else if (item.SubType == "Waterflow") {
 								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
-								status = item.Data;
+								status = "";
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
 								if (item.CounterDeliv != 0) {
-									status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
+									status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
 								}
 							}
 							xhtm +=
