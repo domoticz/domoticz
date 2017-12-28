@@ -7,27 +7,24 @@ local socket = require("socket")
 
 local _ = require 'lodash'
 
-local fsScripts = {'scriptTestEventState.lua'}
+local fsScripts = {'scriptSelectorSwitch.lua'}
 
-describe('Test event state', function ()
+describe('Test if selector switch afterSec() works', function ()
 
-	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK, varIdx, scSwitchIdx, vdScriptOKIdx
+	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK, switchIdx
 
 	setup(function()
 		local ok = TestTools.reset()
 		assert.is_true(ok)
 		ok, dummyIdx = TestTools.createDummyHardware('dummy')
-		TestTools.createVirtualDevice(dummyIdx, 'vdRepeatSwitch', 6)
+
+		ok, switchIdx = TestTools.createVirtualDevice(dummyIdx, 'vdSelectorSwitch', 1002)
+
 		ok, vdScriptStartIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptStart', 6)
-		TestTools.createVirtualDevice(dummyIdx, 'vdDelay', 6)
 		TestTools.createVirtualDevice(dummyIdx, 'vdScriptEnd', 6)
 		ok, vdScriptOKIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptOK', 6)
-		TestTools.createVariable('varInt', 0, 0)
-		ok, scSwitchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSilentSwitch1', 6)
-		TestTools.createVirtualDevice(dummyIdx, 'vdTempHumBaro', 84)
 
-		TestTools.createScene('scScene')
-		TestTools.addSceneDevice(sceneIdx, scSwitchIdx)
+		TestTools.switchSelector(switchIdx, 10)
 
 		TestTools.installFSScripts(fsScripts)
 
@@ -55,7 +52,7 @@ describe('Test event state', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(16) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(5) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local ok = false
 			local vdOKDevice

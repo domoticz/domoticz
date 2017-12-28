@@ -306,6 +306,15 @@ local function DomoticzTestTools(port, debug)
     	return ok
     end
 
+
+	function self.switchSelector(idx, level)
+    	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
+    	local url = "type=command&param=switchlight&switchcmd=Set%20Level&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+    	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+    	return ok
+    end
+
+
     function self.switchGroup(idx, cmd)
     	--http://localhost:8080/json.htm?type=command&param=switchscene&idx=2&switchcmd=On&passcode=
     	local url = "type=command&param=switchscene&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
