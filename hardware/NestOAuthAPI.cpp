@@ -704,7 +704,7 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse JSON data or no data received.");
-		return false;
+		return "";
 	}
 	if (root.size() == 0)
 	{
