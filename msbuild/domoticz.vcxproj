@@ -442,7 +442,6 @@
     <ClInclude Include="..\hardware\FritzboxTCP.h" />
     <ClInclude Include="..\hardware\Gpio.h" />
     <ClInclude Include="..\hardware\GpioPin.h" />
-    <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\Rtl433.h" />
     <ClInclude Include="..\hardware\SysfsGpio.h" />
     <ClInclude Include="..\hardware\HarmonyHub.h" />
@@ -470,6 +469,7 @@
     <ClInclude Include="..\hardware\MySensorsMQTT.h" />
     <ClInclude Include="..\hardware\NefitEasy.h" />
     <ClInclude Include="..\hardware\Nest.h" />
+    <ClInclude Include="..\hardware\NestOAuthAPI.h" />
     <ClInclude Include="..\hardware\Netatmo.h" />
     <ClInclude Include="..\hardware\OnkyoAVTCP.h" />
     <ClInclude Include="..\hardware\OpenWeatherMap.h" />
@@ -691,7 +691,6 @@
     <ClCompile Include="..\hardware\GoodweAPI.cpp" />
     <ClCompile Include="..\hardware\Gpio.cpp" />
     <ClCompile Include="..\hardware\GpioPin.cpp" />
-    <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\Rtl433.cpp" />
     <ClCompile Include="..\hardware\SysfsGpio.cpp" />
     <ClCompile Include="..\hardware\HarmonyHub.cpp" />
@@ -719,6 +718,7 @@
     <ClCompile Include="..\hardware\MySensorsMQTT.cpp" />
     <ClCompile Include="..\hardware\NefitEasy.cpp" />
     <ClCompile Include="..\hardware\Nest.cpp" />
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp" />
     <ClCompile Include="..\hardware\Netatmo.cpp" />
     <ClCompile Include="..\hardware\OnkyoAVTCP.cpp" />
     <ClCompile Include="..\hardware\OpenWeatherMap.cpp" />
