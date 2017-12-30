@@ -1599,8 +1599,6 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 lua_State *CEventSystem::CreateBlocklyLuaState()
 {
 	lua_State *lua_state = luaL_newstate();
-	if (lua_state == NULL)
-		return NULL;
 
 	// load Lua libraries
 	static const luaL_Reg lualibs[] =
