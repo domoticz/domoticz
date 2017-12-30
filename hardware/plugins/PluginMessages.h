@@ -9,6 +9,8 @@ typedef unsigned char byte;
 
 namespace Plugins {
 
+	extern boost::mutex PythonMutex;			// controls access to Python
+
 	class CPluginMessageBase
 	{
 	public:
@@ -61,10 +63,15 @@ namespace Plugins {
 	{
 	protected:
 		std::string	m_Callback;
+		virtual void ProcessLocked() = 0;
 	public:
 		CCallbackBase(CPlugin* pPlugin, std::string Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
 		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
-		virtual void Process() { throw "Base callback class Handle called."; };
+		void Process()
+		{
+			boost::lock_guard<boost::mutex> l(PythonMutex);
+			ProcessLocked();
+		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 	};
 
@@ -72,7 +79,8 @@ namespace Plugins {
 	{
 	public:
 		StartCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStart") { m_Name = __func__; };
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			m_pPlugin->Start();
 			Callback(NULL);
@@ -83,7 +91,8 @@ namespace Plugins {
 	{
 	public:
 		HeartbeatCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onHeartbeat") { m_Name = __func__; };
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			Callback(NULL);
 		};
@@ -96,7 +105,8 @@ namespace Plugins {
 		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
 		int						m_Status;
 		std::string				m_Text;
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, m_Text.c_str()));  // 0 is success else socket failure code
 		};
@@ -125,7 +135,8 @@ namespace Plugins {
 	{
 	public:
 		DisconnectMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			Callback(Py_BuildValue("(O)", m_pConnection));  // 0 is success else socket failure code
 		};
@@ -157,7 +168,8 @@ namespace Plugins {
 		int						m_iLevel;
 		float					m_fLevel;
 
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			PyObject*	pParams;
 			if (m_fLevel != -273.15f)
@@ -194,7 +206,8 @@ namespace Plugins {
 		std::vector<byte>		m_Buffer;
 		PyObject*				m_Data;
 
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			PyObject*	pParams = NULL;
 
@@ -245,7 +258,8 @@ namespace Plugins {
 		std::string				m_Sound;
 		std::string				m_ImageFile;
 
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			PyObject*	pParams = Py_BuildValue("ssssiss", m_Name.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
 			Callback(pParams);
@@ -256,7 +270,8 @@ namespace Plugins {
 	{
 	public:
 		StopMessage(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStop") { m_Name = __func__; };
-		virtual void Process()
+	protected:
+		virtual void ProcessLocked()
 		{
 			Callback(NULL);
 			m_pPlugin->Stop();

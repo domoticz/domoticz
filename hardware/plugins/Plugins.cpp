@@ -38,11 +38,11 @@ extern std::string szAppDate;
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
+	extern boost::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
-	boost::mutex PythonMutex;		// only used during startup when multiple threads could use Python
+	boost::mutex PythonMutex;			// controls access to Python
 
 	//
 	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
@@ -936,7 +936,6 @@ namespace Plugins {
 
 	bool CPlugin::Start()
 	{
-		boost::lock_guard<boost::mutex> l(PythonMutex);
 		try
 		{
 			PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
@@ -1363,7 +1362,7 @@ namespace Plugins {
 	{
 		try
 		{
-			boost::lock_guard<boost::mutex> l(PythonMutex);
+			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
 			if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 			if (m_PyModule && sHandler.length())
 			{
