@@ -2,6 +2,7 @@
 #include "mainworker.h"
 #include "RFXNames.h"
 #include "EventSystem.h"
+#include "dzVents.h"
 #include "Helper.h"
 #include "SQLHelper.h"
 #include "Logger.h"
@@ -189,7 +190,8 @@ void CEventSystem::LoadEvents()
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-	m_dzvents.LoadEvents();
+	CdzVents* dzvents = CdzVents::GetInstance();
+	dzvents->LoadEvents();
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
@@ -310,12 +312,18 @@ std::string CEventSystem::LowerCase(std::string sResult)
 
 void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 {
+	item.JsonMapString.clear();
+	item.JsonMapFloat.clear();
+	item.JsonMapInt.clear();
+	item.JsonMapBool.clear();
+
 	Json::Value tempjson;
 	std::stringstream sstr;
 	sstr << ulDevID;
 
 	m_webservers.GetJSonDevices(tempjson, "", "", "", sstr.str(), "", "", true, false, false, 0, "");
 	Json::ArrayIndex rsize = tempjson["result"].size();
+
 	if (rsize > 0)
 	{
 		uint8_t index = 0;
@@ -1108,21 +1116,6 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	m_eventqueue.push(item);
 }
 
-void CEventSystem::UpdateLastUpdate(const uint64_t deviceID, const uint8_t lastLevel, const std::string &lastUpdate)
-{
-	std::string l_lastUpdate;		l_lastUpdate.reserve(30);		l_lastUpdate.assign(lastUpdate);
-
-	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(deviceID);
-	if (itt != m_devicestates.end())
-	{
-		_tDeviceStatus replaceitem = itt->second;
-		replaceitem.lastUpdate = l_lastUpdate;
-		replaceitem.lastLevel = lastLevel;
-		itt->second = replaceitem;
-	}
-}
-
 bool CEventSystem::GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger)
 {
 	boost::unique_lock<boost::shared_mutex> eventtriggerMutexLock(m_eventtriggerMutex);
@@ -1367,14 +1360,6 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 		if (GetEventTrigger(ulDevID, REASON_DEVICE, true))
 		{
 			_tEventQueue item;
-			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
-			if (itt != m_devicestates.end())
-			{
-				item.lastLevel = itt->second.lastLevel;
-				item.lastUpdate = itt->second.lastUpdate;
-			}
-			devicestatesMutexLock.unlock();
 			item.reason = REASON_DEVICE;
 			item.DeviceID = ulDevID;
 			item.varId = 0;
@@ -1383,7 +1368,22 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			item.sValue = sValue;
 			item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, sValue, devType, subType, switchType, "", 255, options);
 			item.trigger = NULL;
-			UpdateLastUpdate(ulDevID, atoi(sd[3].c_str()), sd[2]);
+			boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			std::map<uint64_t, _tDeviceStatus>::iterator itt = m_devicestates.find(ulDevID);
+			if (itt != m_devicestates.end())
+			{
+				item.lastLevel = itt->second.lastLevel;
+				item.lastUpdate = itt->second.lastUpdate;
+				item.JsonMapString = itt->second.JsonMapString;
+				item.JsonMapInt = itt->second.JsonMapInt;
+				item.JsonMapFloat = itt->second.JsonMapFloat;
+				item.JsonMapBool = itt->second.JsonMapBool;
+
+				_tDeviceStatus replaceitem = itt->second;
+				replaceitem.lastUpdate = sd[2];
+				replaceitem.lastLevel = atoi(sd[3].c_str());
+				itt->second = replaceitem;
+			}
 			m_eventqueue.push(item);
 		}
 		else
@@ -1415,20 +1415,21 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
+		CdzVents* dzvents = CdzVents::GetInstance();
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
-		if (m_dzvents.m_bdzVentsExist)
-			EvaluateLua(item, m_dzvents.m_runtimeDir + "dzVents.lua", "");
+		if (dzvents->m_bdzVentsExist)
+			EvaluateLua(item, dzvents->m_runtimeDir + "dzVents.lua", "");
 		else
 		{
-			DirectoryListing(FileEntries, m_dzvents.m_scriptsDir, false, true);
+			DirectoryListing(FileEntries, dzvents->m_scriptsDir, false, true);
 			for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
 			{
 				filename = *itt;
 				if (filename.length() > 4 &&
 					filename.compare(filename.length() - 4, 4, ".lua") == 0)
 				{
-					EvaluateLua(item, m_dzvents.m_runtimeDir + "dzVents.lua", "");
+					EvaluateLua(item, dzvents->m_runtimeDir + "dzVents.lua", "");
 					break;
 				}
 			}
@@ -3031,11 +3032,13 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 
 	ExportDeviceStatesToLua(lua_state);
 
-	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
+	CdzVents* dzvents = CdzVents::GetInstance();
+	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
 	{
-		m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason), item.nValue, item.lastLevel, item.sValue, item.nValueWording, item.lastUpdate);
+		//m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason), item.nValue, item.lastLevel, item.sValue, item.nValueWording, item.lastUpdate);
+		dzvents->ExportDomoticzDataToLua(lua_state, item);
 		if (item.reason == REASON_URL)
-			m_dzvents.ProcessHttpResponse(lua_state, item.vData, item.sValue, item.nValueWording);
+			dzvents->ProcessHttpResponse(lua_state, item);
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -3130,8 +3133,8 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
-	if (!m_sql.m_bDisableDzVentsSystem && filename == m_dzvents.m_runtimeDir + "dzVents.lua")
-		m_dzvents.SetGlobalVariables(lua_state, static_cast<int>(item.reason));
+	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
+		dzvents->SetGlobalVariables(lua_state, item.reason);
 
 	lua_setglobal(lua_state, "globalvariables");
 
@@ -3244,6 +3247,7 @@ void CEventSystem::luaStop(lua_State *L, lua_Debug *ar)
 
 bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const std::string &filename)
 {
+	CdzVents* dzvents = CdzVents::GetInstance();
 	bool scriptTrue = false;
 	lua_pushnil(lua_state); // first key
 	while (lua_next(lua_state, tIndex) != 0)
@@ -3258,7 +3262,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else if (!m_sql.m_bDisableDzVentsSystem && lua_istable(lua_state, -1) && std::string(luaL_typename(lua_state, -2)) == "string")
 		{
-			scriptTrue = m_dzvents.processLuaCommand(lua_state, filename, tIndex);
+			scriptTrue = dzvents->processLuaCommand(lua_state, filename, tIndex);
 		}
 		else
 		{

@@ -19,8 +19,6 @@ extern "C" {
 #include "LuaCommon.h"
 #include "concurrent_queue.h"
 
-#include "dzVents.h"
-
 class CEventSystem : public CLuaCommon
 {
 	friend class CdzVents;
@@ -49,7 +47,6 @@ class CEventSystem : public CLuaCommon
 		float fRepeatSec;
 		bool bEventTrigger;
 	};
-
 public:
 	enum _eReason
 	{
@@ -137,8 +134,6 @@ public:
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
 
-	CdzVents m_dzvents;
-
 private:
 	enum _eJsonType
 	{
@@ -174,6 +169,10 @@ private:
 		std::string lastUpdate;
 		uint8_t lastLevel;
 		std::vector<std::string> vData;
+		std::map<uint8_t, int> JsonMapInt;
+		std::map<uint8_t, float> JsonMapFloat;
+		std::map<uint8_t, bool> JsonMapBool;
+		std::map<uint8_t, std::string> JsonMapString;
 		queue_element_trigger* trigger;
 	};
 	concurrent_queue<_tEventQueue> m_eventqueue;
@@ -218,7 +217,6 @@ private:
 	void WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat);
 	bool ScheduleEvent(int deviceID, std::string Action, bool isScene, const std::string &eventName, int sceneType);
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
-	void UpdateLastUpdate(const uint64_t deviceID, const uint8_t lastLevel, const std::string &lastUpdate);
 	lua_State *CreateBlocklyLuaState();
 
 	std::string ParseBlocklyString(const std::string &oString);
@@ -226,6 +224,7 @@ private:
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
+
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
 

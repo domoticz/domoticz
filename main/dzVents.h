@@ -1,30 +1,24 @@
+#pragma once
+#include "EventSystem.h"
+
 class CdzVents
 {
 public:
 	CdzVents(void);
 	~CdzVents(void);
+	static CdzVents* GetInstance() { return &m_dzvents; }
 	const std::string GetVersion();
-	// use int for reason until C++11 is used (forward declare enum)
-	void ExportDomoticzDataToLua(
-		lua_State *lua_state,
-		const uint64_t deviceID,
-		const uint64_t varID,
-		const int reason,
-		const int nValue,
-		const uint8_t lastLevel,
-		const std::string &sValue,
-		const std::string &nValueWording,
-		const std::string &lastUpdate
-		);
-	void SetGlobalVariables(lua_State *lua_state, const int reason);
+	void ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem::_tEventQueue &item);
+	void SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eReason reason);
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
-	void ProcessHttpResponse(lua_State *lua_state, const std::vector<std::string> &item, const std::string &sValue, const std::string &nValueWording);
+	void ProcessHttpResponse(lua_State *lua_state, const CEventSystem::_tEventQueue &item);
 
 	std::string m_scriptsDir, m_runtimeDir;
 	bool m_bdzVentsExist;
 
 private:
+	static CdzVents m_dzvents;
 	enum _eType
 	{
 		TYPE_UNKNOWN,	// 0
@@ -41,6 +35,7 @@ private:
 		std::string name;
 		std::string sValue;
 	};
+
 	float RandomTime(const int randomTime);
 	bool OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
