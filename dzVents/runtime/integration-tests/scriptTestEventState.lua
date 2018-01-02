@@ -100,7 +100,7 @@ return {
 				print('Error: ' .. dz.data.varStates)
 				ok = false
 			end
-			if (dz.data.temp ~= '101010WetStable202020DrySunny303030NormalCloudy404040ComfortableUnstable') then
+			if (dz.data.temp ~= '101010Wet202020Dry303030Normal303030Comfortable') then
 				print('Error: ' .. dz.data.temp)
 				ok = false
 			end
@@ -136,7 +136,7 @@ return {
 			if (dz.data.temp ~= '') then
 				dz.data.tempSecs = dz.data.tempSecs .. tostring(item.lastUpdate.secondsAgo)
 			end
-			dz.data.temp = dz.data.temp  .. item.temperature .. item.humidity .. item.barometer .. item.humidityStatus .. item.forecastString
+			dz.data.temp = dz.data.temp  .. item.temperature .. item.humidity .. item.barometer .. item.humidityStatus
 		end
 
 	end
