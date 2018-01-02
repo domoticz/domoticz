@@ -12770,18 +12770,17 @@ void MainWorker::HandleLogNotifications()
 
 	std::stringstream sstr;
 	std::list<CLogger::_tLogLineStruct>::const_iterator itt;
-	std::string sTopic, sTitle;
+	std::string sTopic;
 
-	m_sql.GetPreferencesVar("Title", sTitle);
-        if (_loglines.size() > 1)
+	if (_loglines.size() > 1)
 	{
-		sTopic = sTitle + ": Multiple errors received in the last 5 minutes";
+		sTopic = "Domoticz: Multiple errors received in the last 5 minutes";
 		sstr << "Multiple errors received in the last 5 minutes:<br><br>";
 	}
 	else
 	{
 		itt = _loglines.begin();
-		sTopic = sTitle + ": " + itt->logmessage;
+		sTopic = "Domoticz: " + itt->logmessage;
 	}
 
 	for (itt = _loglines.begin(); itt != _loglines.end(); ++itt)
