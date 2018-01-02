@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
+#include <iostream>
 
 class CETH8020 : public CDomoticzHardwareBase
 {

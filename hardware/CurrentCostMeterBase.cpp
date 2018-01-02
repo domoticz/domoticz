@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CurrentCostMeterBase.h"
-#include "hardwaretypes.h"
 
 CurrentCostMeterBase::CurrentCostMeterBase(void) :
 	m_tempuratureCounter(0)

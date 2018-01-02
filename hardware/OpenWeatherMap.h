@@ -4,7 +4,7 @@
 // by Fantom (szczukot@poczta.onet.pl)
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
+#include <iostream>
 
 class COpenWeatherMap : public CDomoticzHardwareBase
 {

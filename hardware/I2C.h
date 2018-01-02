@@ -2,12 +2,6 @@
 
 #include "DomoticzHardware.h"
 
-typedef union _i2c_data
-{
-  uint8_t  byte[2] ;
-  uint16_t word ;
-} i2c_data;
-
 class I2C : public CDomoticzHardwareBase
 {
 public:
@@ -18,8 +12,7 @@ public:
 		I2CTYPE_HTU21D,
 		I2CTYPE_TSL2561,
 		I2CTYPE_PCF8574,
-		I2CTYPE_BME280,
-		I2CTYPE_MCP23017
+		I2CTYPE_BME280
 	};
 
 	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
@@ -96,15 +89,11 @@ private:
 	// PCF8574
 	unsigned char	i2c_addr;
 	void			PCF8574_ReadChipDetails();
+	char			PCF8574_get_pin_number_from_Unit(unsigned char unit);
+	char			PCF8574_get_i2c_addr_from_Unit(unsigned char unit);
+	int				PCF8574_create_DeviceID(unsigned char i2c_address,unsigned char pin_mask);
+	unsigned char	PCF8574_create_Unit(unsigned char i2c_address, char pin);
 	char			PCF8574_WritePin(char pin_number,char  value);
 	char 			readByteI2C(int fd, char *byte, char i2c_addr);
 	char 			writeByteI2C(int fd, char byte, char i2c_addr);
-
-	// MCP23017
-	void 			MCP23017_Init();
-	void			MCP23017_ReadChipDetails();
-	int			MCP23017_WritePin(char pin_number,char  value);
-	int 			I2CWriteReg16(int fd, uint8_t reg, uint16_t value);
-	int		 		I2CReadReg16(int fd, unsigned char reg, i2c_data *data);
-
 };

@@ -202,12 +202,13 @@ void CDenkoviSmartdenLan::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
+	int pos1;
 	int Idx = -1;
 
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = results[ii];
-		size_t pos1 = tmpstr.find("<Relay");
+		pos1 = tmpstr.find("<Relay");
 		if (pos1 != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(pos1 + strlen("<Relay"));

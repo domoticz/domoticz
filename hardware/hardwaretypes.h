@@ -180,10 +180,6 @@
 #define sSwitchTypeYW_Sensor		0x73
 #define sSwitchTypeLegrandcad		0x74
 #define sSwitchTypeSysfsGpio		0x75
-#define sSwitchTypeHager			0x76
-#define sSwitchTypeFaber			0x77
-#define sSwitchTypeDrayton			0x78
-#define sSwitchTypeV2Phoenix		0x79
 
 //Switch commands
 #define gswitch_sOff				0x00
@@ -448,7 +444,6 @@ typedef struct _tGeneralSwitch {
 		level = 0;
 		battery_level = 255;
 		rssi = 12;
-		cmnd = 0;
 	}
 } GeneralSwitch;
 
@@ -490,7 +485,6 @@ typedef struct _tP1Gas {
 		type = pTypeP1Gas;
 		subtype = sTypeP1Gas;
 		ID = 1;
-		gasusage = 0;
 	}
 } P1Gas;
 

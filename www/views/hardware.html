@@ -180,8 +180,8 @@
                 <th width="150" align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Description">Description</th>
                 <th width="120" align="center" data-i18n="Manufacturer">Manufacturer</th>
-                <th width="70" align="center" data-i18n="ID">ID</th>
-                <th width="70" align="center" data-i18n="Type">Type</th>
+                <th width="80" align="center" data-i18n="ID">ID</th>
+                <th width="80" align="center" data-i18n="Type">Type</th>
                 <th width="150" align="left" data-i18n="Last Seen">Last Seen</th>
                 <th width="50" align="left" data-i18n="EnablePolling">Enable Polling</th>
                 <th width="50" align="left" data-i18n="Status">Status</th>
@@ -208,8 +208,8 @@
 			<td><input type="text" id="nodename" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
 		</tr>
 		<tr id="trEnablePolling">
-			<td align="right" style="width:80px"><span data-i18n="EnablePolling"></span>:</td>
-			<td><input type="checkbox" id="EnablePolling"><label for="EnablePolling"/></td>
+			<td align="right" style="width:80px"><label for="EnablePolling"><span data-i18n="EnablePolling"></span>:</label></td>
+			<td><input type="checkbox" id="EnablePolling"></td>
 		</tr>
 	</table>
 	<br>
@@ -240,7 +240,7 @@
 	<br />
 	Please note, removing a code can take a while on battery operated devices.<br />
 	To quickly force the hardware to remove the code (after pressing the remove button)<br />
-	use the tamper switch on the back to wake up the device.
+	Use the tamper switch on the back to wake up the device.
 	<input type="hidden" id="idx" name="nodeidx" value="-1">
 </div>
 
@@ -322,8 +322,8 @@
 	<div id="trChildSettings">
 		<table id="mchildsettings" border="0" cellpadding="0" cellspacing="0" width="100%">
 			<tr>
-				<td align="right" style="width:120px"><span data-i18n="Ack"></span>:</td>
-				<td><input type="checkbox" id="Ack"/><label for="Ack"/></td>
+				<td align="right" style="width:120px"><label for="Ack"><span data-i18n="Ack"></span>:</label></td>
+				<td><input type="checkbox" id="Ack" /></td>
 			</tr>
 			<tr>
 				<td align="right"><label for="Ack"><span data-i18n="Ack Timeout"></span>:</label></td>
@@ -667,6 +667,7 @@
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td>
+                <a class="btnstyle3-dis" id="nodeupdate" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
                 <a class="btnstyle3-dis" id="nodedelete" data-i18n="Delete">Delete</a>&nbsp;&nbsp;&nbsp;
             </td>
             <td align="right" style="width:200px">
@@ -773,9 +774,9 @@
 <form id="settings">
 	<table>
 		<tr>
-			<td align="left" style="width:150px"><input type="checkbox" id="Keeloq" name="Keeloq">&nbsp;<label for="Keeloq">Keeloq</label></td>
-			<td align="left" style="width:160px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
-			<td align="left" style="width:180px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
+			<td align="left" style="width:120px"><input type="checkbox" id="Keeloq" name="Keeloq">&nbsp;<label for="Keeloq">Keeloq</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="undecon" name="undecon">&nbsp;<label for="undecon">undec on</label></td>
+			<td align="left" style="width:150px"><input type="checkbox" id="BlindT1T2T3T4" name="BlindT1T2T3T4">&nbsp;<label for="BlindT1T2T3T4">Blind T1/T2/T3/T4</label></td>
 			<td align="left" style="width:150px"><input type="checkbox" id="Visonic" name="Visonic">&nbsp;<label for="Visonic">Visonic</label></td>
 		</tr>
 		<tr>
@@ -837,9 +838,9 @@
 <form id="settings">
 	<table>
 		<tr>
-			<td align="left" style="width:160px"><font color="yellow">868.30MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.30MHz</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.30MHz FSK</font></td>
-			<td align="left" style="width:170px"><font color="yellow">868.35MHz</font></td>
+			<td align="left" style="width:150px"><font color="yellow">868.35MHz</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.35MHz FSK</font></td>
 			<td align="left" style="width:150px"><font color="yellow">868.95MHz</font></td>
 		</tr>
@@ -853,7 +854,7 @@
 		<tr>
 			<td></td>
 			<td style="vertical-align:top;"><input type="checkbox" id="Hideki" name="Hideki">&nbsp;<label for="Hideki">Hideki<br>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Cresta<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Honeywell<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Irox<br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Mebux<br>
@@ -1063,8 +1064,8 @@
 		<br>
 		<table class="display" id="hardwareparamstable" border="0" cellpadding="0" cellspacing="20">
 			<tr>
-				<td align="right" style="width:80px"><span data-i18n="Enabled"></span>:</td>
-				<td><input type="checkbox" id="enabled" checked><label for="enabled"/></td>
+				<td align="right" style="width:80px"><label for="enabled"><span data-i18n="Enabled"></span>:</label></td>
+				<td><input type="checkbox" id="enabled" checked></td>
 			</tr>
 			<tr>
 				<td align="right" style="width:110px"><label for="hardwarename"><span data-i18n="Name"></span>:</label></td>
@@ -1141,32 +1142,6 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divusbtin">
-			<br>
-			<table class="display" id="hardwareparamsusbtin" border="0" cellpadding="0" cellspacing="20">      
-                <tr valign="top">
-                    <td align="right" style="width:110px"><label><span data-i18n="Multibloc V8">Multibloc V8</span>:</label></td>
-                    <td>
-					    <input type="checkbox" id="activateMultiblocV8" checked="checked" name="activateMultiblocV8"><label for="activateMultiblocV8"/><br />
-					</td>
-				</tr>
-				<tr valign="top">
-                    <td align="right" style="width:110px"><label><span data-i18n="Free Can">Free Can</span>:</label></td>
-                    <td>
-					    <input type="checkbox" id="activateCanFree" checked="checked" name="activateCanFree"><label for="activateCanFree"/><br />
-					</td>
-				</tr>
-				<tr>
-					<td align="right" style="width:110px"><label id="lbldebugusbtin" for="name"><span data-i18n="Mode Debug">Mode Debug</span>: </label></td>
-                    <td>
-                        <select id="combodebugusbtin" style="width:210px" class="combobox ui-corner-all">
-                            <option value="0">False</option>
-                            <option value="1">True</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-		</div>
 		<div id="divi2clocal">
 			<br>
 			<table class="display" id="hardwareparamsi2clocal" border="0" cellpadding="0" cellspacing="20">
@@ -1215,8 +1190,8 @@
             <br>
             <table class="display" id="hardwareparamssysfsgpio" border="0" cellpadding="0" cellspacing="20">
                 <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Auto configure devices">Auto configure devices</span>:</td>
-                    <td><input type="checkbox" id="sysfsautoconfigure" checked/><label for="sysfsautoconfigure"/></td>
+                    <td align="right" style="width:110px"><label><span data-i18n="Auto configure devices">Auto configure devices</span>:</label></td>
+                    <td><input type="checkbox" id="sysfsautoconfigure" checked > </td>
                 </tr>
 				<tr valign="top">
 					<td align="right" style="width:110px"><label for="sysfsdebounce"><span data-i18n="sysfsdebounce">Debounce</span>:</label></td>
@@ -1325,22 +1300,15 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divevohometcp">
-			<br>
-			<table class="display" id="hardwareparamsevohometcp" border="0" cellpadding="0" cellspacing="20">
-				<tr>
-					<td align="right" style="width:110px"><label><span data-i18n="Controller ID (hex)">Controller ID (hex)</span>:</label></td>
-					<td><input type="text" id="controlleridevohometcp" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
-				</tr>
-			</table>
-		</div>
 		<div id="divcrcp1">
 			<table class="display" id="hardwareparamscrcp1" border="0" cellpadding="0" cellspacing="20">
 				<tr valign="top">
-					<td align="right" style="width:110px"><span data-i18n="CRC message validation">CRC message validation</span>:</td>
+					<td align="right" style="width:110px"><label id="lblcrcp1" for="name"><span data-i18n="CRC message validation">CRC message validation</span>: </label></td>
 					<td>
-						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1"><label for="disablecrcp1"/><br />
-						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span><br />
+						<input type="checkbox" id="disablecrcp1" checked="checked" name="disablecrcp1">
+						<br />
+						<span data-i18n="Using CRC message validation prevents incorrect data from entering the Domoticz database.">Using CRC message validation prevents incorrect data from entering the Domoticz database.</span>
+						<br />
 						<strong><font class="warning-text"><span data-i18n="Should normally not be disabled!"></span></font></strong>
 					</td>
 				</tr>
@@ -1410,15 +1378,15 @@
             <br>
             <table class="display" id="hardwareparamsrelaynet" border="0" cellpadding="0" cellspacing="20">
                 <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Poll inputs">Poll inputs</span>:</td>
-                    <td><input type="checkbox" id="relaynetpollinputs" checked><label for="relaynetpollinputs"/></td>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll inputs">Poll inputs</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollinputs" checked></td>
                 </tr>
                 <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Poll relays">Poll relays</span>:</td>
-                    <td><input type="checkbox" id="relaynetpollrelays" checked><label for="relaynetpollrelays"/></td>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll relays">Poll relays</span>:</label></td>
+                    <td><input type="checkbox" id="relaynetpollrelays" checked></td>
                 </tr>
                 <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Poll interval">Poll interval</span>:</td>
+                    <td align="right" style="width:110px"><label><span data-i18n="Poll interval">Poll interval</span>:</label></td>
                     <td><input type="text" id="relaynetpollinterval" style="width: 25px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="5" /> &nbsp; Seconds </td>
                 </tr>
                 <tr>
@@ -1428,32 +1396,6 @@
                 <tr>
                     <td align="right" style="width:110px"><label><span data-i18n="Relay count">Relay count</span>:</label></td>
                     <td><input type="text" id="relaynetrelaycount" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="8" /></td>
-                </tr>
-            </tr>
-            </table>
-        </div>
-        <div id="divehouse">
-            <br>
-            <table class="display" id="hardwareparamsehouse" border="0" cellpadding="0" cellspacing="20">
-                <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Auto Discovery">Auto Discovery</span>:</td>
-                    <td><input type="checkbox" id="ehouseautodiscovery" checked><label for="ehouseautodiscovery"/></td>
-                </tr>
-                <tr>
-                    <td align="right" style="width:110px"><span data-i18n="Alarm Inputs">Alarm Inputs</span>:</td>
-                    <td><input type="checkbox" id="ehouseaddalarmin"><label for="ehouseaddalarmin"/></td>
-                </tr>
-                <tr>
-                    <td align="right" style="width:110px"><span data-i18n="eHousePRO Enable">eHousePRO Enable</span>:</td>
-                    <td><input type="checkbox" id="ehouseprodiscovery"><label for="ehouseprodiscovery"/></td>
-                </tr>
-                <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Option A">Option A</span>:</label></td>
-                    <td><input type="text" id="ehouseopts" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" /></td>
-                </tr>
-                <tr>
-                    <td align="right" style="width:110px"><label><span data-i18n="Option B">Option B</span>:</label></td>
-                    <td><input type="text" id="ehouseopts2" style="width: 15px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0" /></td>
                 </tr>
             </tr>
             </table>
@@ -1597,20 +1539,6 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divrtl433">
-			<br>
-			<table class="display" id="hardwareparamsrtl433" border="0" cellpadding="0" cellspacing="20">
-				<tr valign="top">
-					<td align="right" style="width:110px"><label id="lblcmdline" for="cmdline"><span data-i18n="rtl_433 parameters">rtl_433 parameters</span>:</label></td>
-					<td><input type="text" id="rtl433cmdline" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all" />
-					<br />
-					Add extra parameteres to rtl_433 command line. You may for instance :<ul>
-					<li>specify device number (if you have more than one) : -d 1</li>
-					<li>specify other frequencies and hop time : -f 433.92e6 -f 868.24e6 -H 60 </li></ul>
-					Be careful not to conflict with the options affecting output.</td>
-				</tr>
-			</table>
-		</div>
 		<div id="divmysensorsmqtt">
 			<br>
 			<table class="display" id="hardwareparamsmysensorsmqtt" border="0" cellpadding="0" cellspacing="20">
@@ -1635,7 +1563,7 @@
 		</div>
 		<div id="divevohomeweb" style="display:none;">
 			<br />
-			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">
+			<table class="display" id="hardwareparamsevohomeweb" border="0" cellpadding="0" cellspacing="20">      
 				<tr valign="top">
 					<td align="right" style="width:110px">
 						<label id="lblupdfreqevohomeweb"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
@@ -1646,23 +1574,29 @@
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px"><span data-i18n="Synchronize installation">Synchronize installation</span>:</td>
+					<td align="right" style="width:110px">
+						<label id="lblautoevohomeweb" for="name"><span data-i18n="Synchronize installation">Synchronize installation</span>: </label>
+					</td>
 					<td>
-						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><label for="disableautoevohomeweb"/><br />
+						<input type="checkbox" id="disableautoevohomeweb" checked="checked" name="disableautoevohomeweb"><br />
 						<span data-i18n="When enabled this will automatically register and keep your zone names in sync with the Evohome controller.">When enabled this will automatically register and keep your zone names in sync with the Evohome controller.</span><br />
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px"><span data-i18n="Show schedule">Show schedule</span>:</td>
+					<td align="right" style="width:110px">
+						<label id="lblschedevohomeweb" for="name"><span data-i18n="Show schedule">Show schedule</span>: </label>
+					</td>
 					<td>
-						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><label for="showscheduleevohomeweb"/><br />
+						<input type="checkbox" id="showscheduleevohomeweb" name="showscheduleevohomeweb"><br />
 						<span data-i18n="When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.">When enabled this will show the next scheduled switch point when in Auto (FollowSchedule) mode.</span><br />
 					</td>
 				</tr>
 				<tr valign="top">
-					<td align="right" style="width:110px"><span data-i18n="Show location">Show location</span>:</td>
+					<td align="right" style="width:110px">
+						<label id="lblshowlocevohomeweb" for="name"><span data-i18n="Show location">Show location</span>: </label>
+					</td>
 					<td>
-						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb"><label for="showlocationevohomeweb"/>
+						<input type="checkbox" id="showlocationevohomeweb" name="showlocationevohomeweb">
 						<span data-i18n="(implies synchronize installation)">(implies synchronize installation)</span><br />&nbsp;<br />
 					</td>
 				</tr>
@@ -1713,45 +1647,45 @@
 				<td align="right" ><label for="sensortype"><span data-i18n="Sensor Type"></span>: </label></td>
 				<td>
 				<select id="sensortype" style="width:250px" class="combobox ui-corner-all">
-					<option value="0xF901" data-i18n="Air Quality">Air Quality</option>
-					<option value="0xF316" data-i18n="Alert">Alert</option>
-					<option value="0x5901" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
-					<option value="0xF317" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
-					<option value="0xF31A" data-i18n="Barometer">Barometer</option>
-					<option value="0x7100" data-i18n="Counter">Counter</option>
-					<option value="0xF31C" data-i18n="Counter Incremental">Counter Incremental</option>
-					<option value="0xF31F" data-i18n="Custom Sensor">Custom Sensor</option>
-					<option value="0xF31B" data-i18n="Distance">Distance</option>
-					<option value="0xF31D" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
-					<option value="0xFB02" data-i18n="Gas">Gas</option>
-					<option value="0x5101" data-i18n="Humidity">Humidity</option>
-					<option value="0xF304" data-i18n="Leaf Wetness">Leaf Wetness</option>
-					<option value="0xF601" data-i18n="Lux">Lux</option>
-					<option value="0xFA01" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
-					<option value="0xF306" data-i18n="Percentage">Percentage</option>
-					<option value="0xF309" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
-					<option value="0x5503" data-i18n="Rain">Rain</option>
-					<option value="0xF102" data-i18n="RGB Switch">RGB Switch</option>
-					<option value="0xF101" data-i18n="RGBW Switch">RGBW Switch</option>
-					<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
-					<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
-					<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>
-					<option value="0xF302" data-i18n="Solar Radiation">Solar Radiation</option>
-					<option value="0xF318" data-i18n="Sound Level">Sound Level</option>
-					<option value="0xF449" data-i18n="Switch">Switch</option>
-					<option value="0x5005" data-i18n="Temperature">Temperature</option>
-					<option value="0x5201" data-i18n="Temp+Hum">Temp+Hum</option>
-					<option value="0x5401" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
-                    <option value="0xF701" data-i18n="Temp+Baro">Temp+Baro</option>
-					<option value="0xF313" data-i18n="Text">Text</option>
-					<option value="0xF201" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
-					<option value="0xF801" data-i18n="Usage (Electric)">Usage (Electric)</option>
-					<option value="0x5701" data-i18n="UV">UV</option>
-					<option value="0xF301" data-i18n="Visibility">Visibility</option>
-					<option value="0xF308" data-i18n="Voltage">Voltage</option>
-					<option value="0xF31E" data-i18n="Waterflow">Waterflow</option>
-					<option value="0x5601" data-i18n="Wind">Wind</option>
-					<option value="0x5604" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
+					<option value="249" data-i18n="Air Quality">Air Quality</option>
+					<option value="7" data-i18n="Alert">Alert</option>
+					<option value="9" data-i18n="Ampere (3 Phase)">Ampere (3 Phase)"</option>
+					<option value="19" data-i18n="Ampere (1 Phase)">Ampere (1 Phase)</option>
+					<option value="11" data-i18n="Barometer">Barometer</option>
+					<option value="113" data-i18n="Counter">Counter</option>
+					<option value="14" data-i18n="Counter Incremental">Counter Incremental</option>
+					<option value="1004" data-i18n="Custom Sensor">Custom Sensor</option>
+					<option value="13" data-i18n="Distance">Distance</option>
+					<option value="18" data-i18n="Electric (Instant+Counter)">Electric (Instant+Counter)</option>
+					<option value="3" data-i18n="Gas">Gas</option>
+					<option value="81" data-i18n="Humidity">Humidity</option>
+					<option value="16" data-i18n="Leaf Wetness">Leaf Wetness</option>
+					<option value="246" data-i18n="Lux">Lux</option>
+					<option value="250" data-i18n="P1 Smart Meter (Electric)">P1 Smart Meter (Electric)</option>
+					<option value="2" data-i18n="Percentage">Percentage</option>
+					<option value="1" data-i18n="Pressure (Bar)">Pressure (Bar)</option>
+					<option value="85" data-i18n="Rain">Rain</option>
+					<option value="241" data-i18n="RGB Switch">RGB Switch</option>
+					<option value="1003" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="93" data-i18n="Scale">Scale (Weight)</option>
+					<option value="1002" data-i18n="Selector Switch">Selector Switch</option>
+					<option value="15" data-i18n="Soil Moisture">Soil Moisture</option>
+					<option value="20" data-i18n="Solar Radiation">Solar Radiation</option>
+					<option value="10" data-i18n="Sound Level">Sound Level</option>
+					<option value="6" data-i18n="Switch">Switch</option>
+					<option value="80" data-i18n="Temperature">Temperature</option>
+					<option value="82" data-i18n="Temp+Hum">Temp+Hum</option>
+					<option value="84" data-i18n="Temp+Hum+Baro">Temp+Hum+Baro</option>
+                    <option value="247" data-i18n="Temp+Baro">Temp+Baro</option>
+					<option value="5" data-i18n="Text">Text</option>
+					<option value="8" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
+					<option value="248" data-i18n="Usage (Electric)">Usage (Electric)</option>
+					<option value="87" data-i18n="UV">UV</option>
+					<option value="12" data-i18n="Visibility">Visibility</option>
+					<option value="4" data-i18n="Voltage">Voltage</option>
+					<option value="1000" data-i18n="Waterflow">Waterflow</option>
+					<option value="86" data-i18n="Wind">Wind</option>
+					<option value="1001" data-i18n="Wind+Temp+Chill">Wind+Temp+Chill</option>
 				</select>
 				</td>
 			</tr>

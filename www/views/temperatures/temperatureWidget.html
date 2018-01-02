@@ -1,0 +1,57 @@
+    <section>
+        <table id="itemtablenotype" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td id="name" ng-style="ctrl.nbackcolor()" ng-bind="ctrl.item.Name"></td>
+                <td id="bigtext" class="ng-cloak">
+                    <span ng-show="ctrl.displayTemp()">{{ctrl.item.Temp}}&#176; {{ctrl.tempsign}}</span>
+                    <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{ctrl.item.SetPoint}}&#176; {{ctrl.tempsign}})</span>
+                    <span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
+                    <img ng-show="ctrl.displayState()" height="12" ng-src="images/evohome/{{ctrl.item.State}}.png">
+                    <img ng-show="ctrl.displayHeat()" height="15" ng-src="images/evohome/{{ctrl.imgHeat()}}.png">
+
+                    <span ng-show="ctrl.displayHumidity() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
+                    <span ng-show="ctrl.displayHumidity()">{{ctrl.item.Humidity}}%</span>
+
+                    <span ng-show="ctrl.displayChill() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
+                    <span ng-show="ctrl.displayChill()">{{ctrl.item.Chill}}&#176; {{ctrl.tempsign}}</span>
+                </td>
+                <td id="img"><img ng-src="images/{{ctrl.image()}}" height="48" width="48"></td>
+                <td id="status" class="ng-cloak">
+                    <!-- NB : weird comments to avoid unwanted spaces due to new line -->
+                    <span ng-show="ctrl.displaySetPoint()" data-i18n="Set Point">Set Point</span><span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">: {{ctrl.item.SetPoint}}&#176; {{ctrl.tempsign}}, </span><span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">: Off, </span><!--
+                    --><span ng-show="ctrl.displayState()" data-i18n="State">State</span><span ng-show="ctrl.displayState()">: {{ctrl.item.State}}, </span><span ng-show="ctrl.displayMode()" data-i18n="Mode">Mode</span><span ng-show="ctrl.displayMode()">: {{ctrl.EvoDisplayTextMode()}}</span><!--
+                    --><span ng-show="ctrl.displayUntil()">, </span><!--
+                    --><span ng-show="ctrl.displayUntil()" data-i18n="Until">Until</span><span ng-show="ctrl.displayUntil()">: {{ctrl.dtUntil()}} </span><!--
+                    --><span ng-show="ctrl.displayHumidityStatus()">{{ctrl.HumidityStatus()}}</span><!--
+                    --><span ng-show="(ctrl.displayMode() || ctrl.displayHumidityStatus()) && ctrl.displayBarometer()">, </span><!--
+                    --><span ng-show="ctrl.displayBarometer()" data-i18n="Barometer">Barometer</span><span ng-show="ctrl.displayBarometer()">: {{ctrl.item.Barometer}} hPa</span><!--
+                    --><span ng-show="ctrl.displayForecast()">, </span><!--
+                    --><span ng-show="ctrl.displayForecast()" data-i18n="Prediction">Prediction</span><span ng-show="ctrl.displayForecast()">: </span><span ng-show="ctrl.displayForecast()">{{ctrl.ForecastStr()}}</span><br ng-show="ctrl.displayForecast()"><!--
+                    --><span ng-show="ctrl.displayDirection()">{{ctrl.item.Direction}} {{ctrl.item.DirectionStr}}, </span><span ng-show="ctrl.displayDirection()" data-i18n="Speed">Speed</span><span ng-show="ctrl.displayDirection()">: {{ctrl.item.Speed}} {{ctrl.windsign}}</span><!--
+                    --><span ng-show="ctrl.displayGust()">, </span><!--
+                    --><span ng-show="ctrl.displayGust()" data-i18n="Gust">Gust</span><span ng-show="ctrl.displayGust()">: {{ctrl.item.Gust}} {{ctrl.windsign}}</span><!--
+                    --><span ng-show="(ctrl.displayMode() || ctrl.displayHumidityStatus()) && !ctrl.displayForecast() && ctrl.displayDewPoint()">, </span><!--
+                    --><span ng-show="ctrl.displayDewPoint()" data-i18n="Dew Point">Dew Point</span><span ng-show="ctrl.displayDewPoint()">: {{ctrl.item.DewPoint}}&#176; {{ctrl.tempsign}}</span>
+                </td>
+                <td id="lastupdate" ng-bind="ctrl.item.LastUpdate"></td>
+                <td>
+                    <img ng-show="ctrl.item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
+                    <img ng-show="ctrl.item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+                    &nbsp;&nbsp;
+                    <a class="btnsmall" ng-click="ctrl.ShowLog()" data-i18n="Log">Log</a>
+
+                    <span has-permission="Admin">
+                        <a ng-show="ctrl.item.Type=='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDeviceSmall()" data-i18n="Edit">Edit</a>
+                        <a ng-show="ctrl.item.Type!='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDevice()" data-i18n="Edit">Edit</a>
+
+                        <a ng-show="ctrl.item.Notifications=='true'" ng-click="ctrl.ShowNotifications()" class="btnsmall-sel" data-i18n="Notifications">Notifications</a>
+                        <a ng-show="ctrl.item.Notifications!='true'" ng-click="ctrl.ShowNotifications()" class="btnsmall" data-i18n="Notifications">Notifications</a>
+                    </span>
+
+                    <a ng-show="ctrl.item.forecast_url" class="btnsmall" ng-click="ctrl.ShowForecast('#tempcontent', 'ShowTemps')" data-i18n="Forecast">Forecast</a>
+                    <a ng-show="ctrl.item.SetPoint" id="set" class="btnsmall" ng-click="ctrl.EditSetPoint('ShowTemps')" data-i18n="Set">Set</a>
+                    <a ng-show="ctrl.item.State" id="set" class="btnsmall" ng-click="ctrl.EditState('ShowTemps')" data-i18n="Set">Set</a>
+                </td>
+            </tr>
+        </table>
+    </section>

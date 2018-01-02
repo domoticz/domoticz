@@ -1,5 +1,5 @@
 #pragma once
-#include <iosfwd>
+#include <string>
 #include <vector>
 
 class HTTPClient
@@ -11,9 +11,6 @@ public:
 	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut = -1);
 
 	static bool GETBinaryToFile(const std::string &url, const std::string &outputfile);
-
-	static bool GETSingleLine(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned = false);
-	static bool GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut = -1);
 
 	//POST functions, postdata looks like: "name=john&age=123&country=this"
 	static bool POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect=true, const bool bIgnoreNoDataReturned = false);
@@ -38,7 +35,6 @@ public:
 private:
 	static void SetGlobalOptions(void *curlobj);
 	static bool CheckIfGlobalInitDone();
-	static void LogError(void *curlobj);
 	//our static variables
 	static bool m_bCurlGlobalInitialized;
 	static bool m_bVerifyHost;

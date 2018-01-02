@@ -1,7 +1,8 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
+#include <iostream>
+#include "hardwaretypes.h"
 
 class CAnnaThermostat : public CDomoticzHardwareBase
 {

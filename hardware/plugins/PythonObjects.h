@@ -5,6 +5,8 @@
 
 namespace Plugins {
 
+	void PythonObjectsInit();
+
 	typedef struct {
 		PyObject_HEAD
 		int			ImageID;
@@ -99,7 +101,6 @@ namespace Plugins {
 		int			Image;
 		PyObject*	Options;
 		int			Used;
-		int			TimedOut;
 		CPlugin*	pPlugin;
 	} CDevice;
 
@@ -127,7 +128,6 @@ namespace Plugins {
 		{ "LastUpdate", T_OBJECT, offsetof(CDevice, LastUpdate), READONLY, "Last update timestamp" },
 		{ "Options", T_OBJECT, offsetof(CDevice, Options), READONLY, "Device options" },
 		{ "Used", T_INT, offsetof(CDevice, Used), READONLY, "Numeric device Used flag" },
-		{ "TimedOut", T_INT, offsetof(CDevice, TimedOut), READONLY, "Is the device marked as timed out" },
 		{ NULL }  /* Sentinel */
 	};
 

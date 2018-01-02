@@ -373,7 +373,7 @@ COpenZWave::NodeInfo* COpenZWave::GetNodeInfo(const unsigned int homeID, const i
 {
 	for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 	{
-		if ((it->homeId == homeID) && (it->nodeId == nodeID))
+		if ((it->m_homeId == homeID) && (it->m_nodeId == nodeID))
 		{
 			return &(*it);
 		}
@@ -528,11 +528,10 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		}
 		// Add the new node to our list
 		NodeInfo nodeInfo;
-		nodeInfo.homeId = _homeID;
-		nodeInfo.nodeId = _nodeID;
-		nodeInfo.polled = false;
+		nodeInfo.m_homeId = _homeID;
+		nodeInfo.m_nodeId = _nodeID;
+		nodeInfo.m_polled = false;
 		nodeInfo.HaveUserCodes = false;
-		nodeInfo.IsPlus = m_pManager->IsNodeZWavePlus(_homeID, _nodeID);
 		nodeInfo.Application_version = 0;
 		nodeInfo.szType = m_pManager->GetNodeType(_homeID, _nodeID);
 		nodeInfo.iVersion = m_pManager->GetNodeVersion(_homeID, _nodeID);
@@ -555,7 +554,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		else
 			nodeInfo.eState = NTSATE_UNKNOWN;
 
-		nodeInfo.LastSeen = m_updateTime;
+		nodeInfo.m_LastSeen = m_updateTime;
 		m_nodes.push_back(nodeInfo);
 		m_LastIncludedNode = _nodeID;
 		m_LastIncludedNodeType = nodeInfo.szType;
@@ -573,7 +572,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		// Remove the node from our list
 		for (std::list<NodeInfo>::iterator it = m_nodes.begin(); it != m_nodes.end(); ++it)
 		{
-			if ((it->homeId == _homeID) && (it->nodeId == _nodeID))
+			if ((it->m_homeId == _homeID) && (it->m_nodeId == _nodeID))
 			{
 				m_nodes.erase(it);
 				DeleteNode(_homeID, _nodeID);
@@ -612,7 +611,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			}
 
 			nodeInfo->Instances[instance][commandClass].Values.push_back(vID);
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 			if (commandClass == COMMAND_CLASS_USER_CODE)
 			{
@@ -628,7 +627,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 
 			// Add the new value to our list
 			UpdateNodeScene(vID, static_cast<int>(_notification->GetSceneId()));
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
 		break;
@@ -644,7 +643,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				{
 					nodeInfo->Instances[instance][commandClass].Values.erase(it);
 					nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-					nodeInfo->LastSeen = m_updateTime;
+					nodeInfo->m_LastSeen = m_updateTime;
 					break;
 				}
 			}
@@ -660,7 +659,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
 			nodeInfo->eState = NSTATE_AWAKE;
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 			UpdateValue(vID);
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
 		}
@@ -751,7 +750,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		// One of the node's association groups has changed
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_NodeEvent:
@@ -764,21 +763,21 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 			nodeInfo->eState = NSTATE_AWAKE;
 			UpdateNodeEvent(vID, static_cast<int>(_notification->GetEvent()));
 			nodeInfo->Instances[instance][commandClass].m_LastSeen = m_updateTime;
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingDisabled:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->polled = false;
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_polled = false;
+			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_PollingEnabled:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
 		{
-			nodeInfo->polled = true;
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_polled = true;
+			nodeInfo->m_LastSeen = m_updateTime;
 		}
 		break;
 	case OpenZWave::Notification::Type_DriverFailed:
@@ -809,7 +808,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 		if ((_nodeID == 0) || (_nodeID == 255))
 			return;
 		m_bNeedSave = true;
-		NodeQueried(_homeID, _nodeID);
+		NodeQueried(_nodeID);
 		break;
 	case OpenZWave::Notification::Type_NodeNaming:
 		if (NodeInfo* nodeInfo = GetNodeInfo(_homeID, _nodeID))
@@ -825,7 +824,7 @@ void COpenZWave::OnZWaveNotification(OpenZWave::Notification const* _notificatio
 				AddNode(_homeID, _nodeID, nodeInfo);
 				m_bHaveLastIncludedNodeInfo = !product_name.empty();
 			}
-			nodeInfo->LastSeen = m_updateTime;
+			nodeInfo->m_LastSeen = m_updateTime;
 			m_bNeedSave = true;
 		}
 		break;
@@ -1196,14 +1195,6 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		}
 	}
 	if (!pDevice)
-	{
-		//Try to find Binary type
-		if ((value == 0) || (value == 255))
-		{
-			pDevice = FindDevice(nodeID, instanceID, 0, COMMAND_CLASS_SWITCH_BINARY, ZWaveBase::ZDTYPE_SWITCH_NORMAL);
-		}
-	}
-	if (!pDevice)
 		pDevice = FindDevice(nodeID, instanceID, 0);
 	if (!pDevice)
 	{
@@ -1217,10 +1208,8 @@ bool COpenZWave::SwitchLight(const int nodeID, const int instanceID, const int c
 		if (pDevice->Manufacturer_id == 0x010f)
 		{
 			if (
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) || //223
-				((pDevice->Product_id == 0x3000) && (pDevice->Product_type == 0x0203)) || //223
-				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403)) || //213
-				((pDevice->Product_id == 0x2000) && (pDevice->Product_type == 0x0403))    //213
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0203)) ||
+				((pDevice->Product_id == 0x1000) && (pDevice->Product_type == 0x0403))
 				)
 			{
 				//Special case for the Fibaro FGS213/223
@@ -3771,7 +3760,7 @@ void COpenZWave::SetNodeName(const unsigned int homeID, const int nodeID, const 
 	m_pManager->SetNodeName(homeID, nodeID, NodeName);
 }
 
-void COpenZWave::EnableDisableNodePolling(const int nodeID)
+void COpenZWave::EnableDisableNodePolling(int NodeID)
 {
 	int intervalseconds = 60;
 	m_sql.GetPreferencesVar("ZWavePollInterval", intervalseconds);
@@ -3780,15 +3769,15 @@ void COpenZWave::EnableDisableNodePolling(const int nodeID)
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT PollTime FROM ZWaveNodes WHERE (HardwareID==%d) AND (NodeID==%d)",
-		m_HwdID, nodeID);
+		m_HwdID, NodeID);
 	if (result.size() < 1)
 		return;
 	int PollTime = atoi(result[0][0].c_str());
 
 	if (PollTime > 0)
-		EnableNodePoll(m_controllerID, nodeID, PollTime);
+		EnableNodePoll(m_controllerID, NodeID, PollTime);
 	else
-		DisableNodePoll(m_controllerID, nodeID);
+		DisableNodePoll(m_controllerID, NodeID);
 }
 
 void COpenZWave::SetClock(const int nodeID, const int instanceID, const int commandClass, const int day, const int hour, const int minute)
@@ -3924,14 +3913,10 @@ std::string COpenZWave::GetSupportedThermostatFanModes(const unsigned long ID)
 	return retstr;
 }
 
-void COpenZWave::NodeQueried(const unsigned int homeID, const int nodeID)
+void COpenZWave::NodeQueried(int NodeID)
 {
-	NodeInfo *pNode = GetNodeInfo(homeID, nodeID);
-	if (pNode == NULL)
-		return;
 	//All nodes have been queried, enable/disable node polling
-	pNode->IsPlus = m_pManager->IsNodeZWavePlus(homeID, nodeID);
-	EnableDisableNodePolling(nodeID);
+	EnableDisableNodePolling(NodeID);
 }
 
 bool COpenZWave::RequestNodeConfig(const unsigned int homeID, const int nodeID)
@@ -4508,11 +4493,9 @@ namespace http {
 						root["result"][ii]["Product_name"] = pNode->Product_name;
 						root["result"][ii]["State"] = pOZWHardware->GetNodeStateString(homeID, nodeID);
 						root["result"][ii]["HaveUserCodes"] = pNode->HaveUserCodes;
-						root["result"][ii]["IsPlus"] = pNode->IsPlus;
-						
 						char szDate[80];
 						struct tm loctime;
-						localtime_r(&pNode->LastSeen, &loctime);
+						localtime_r(&pNode->m_LastSeen, &loctime);
 						strftime(szDate, 80, "%Y-%m-%d %X", &loctime);
 
 						root["result"][ii]["LastUpdate"] = szDate;

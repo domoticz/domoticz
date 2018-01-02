@@ -213,7 +213,6 @@ public:
 			batValue = 255;
 			presType = S_UNKNOWN;
 			useAck = false;
-			ackTimeout = 0;
 		}
 		std::vector<_eSetType> GetChildValueTypes()
 		{

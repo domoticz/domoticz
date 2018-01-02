@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include <iosfwd>
+#include <iostream>
 #include "ASyncTCP.h"
 #include "ZiBlueBase.h"
 

@@ -9,6 +9,7 @@
 #include "../webserver/cWebem.h"
 
 #include <string>
+#include <algorithm>
 #include <iostream>
 #include <boost/bind.hpp>
 

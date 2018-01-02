@@ -7,7 +7,7 @@
 
 enum _eSwitchType
 {
-	STYPE_OnOff = 0,					//0
+	STYPE_OnOff=0,					//0
 	STYPE_Doorbell,					//1
 	STYPE_Contact,					//2
 	STYPE_Blinds,					//3
@@ -32,7 +32,7 @@ enum _eSwitchType
 
 enum _eMeterType
 {
-	MTYPE_ENERGY = 0,			//0
+	MTYPE_ENERGY=0,			//0
 	MTYPE_GAS,				//1
 	MTYPE_WATER,			//2
 	MTYPE_COUNTER,			//3
@@ -43,7 +43,7 @@ enum _eMeterType
 
 enum _eTimerType
 {
-	TTYPE_BEFORESUNRISE = 0,
+	TTYPE_BEFORESUNRISE=0,
 	TTYPE_AFTERSUNRISE,
 	TTYPE_ONTIME,
 	TTYPE_BEFORESUNSET,
@@ -57,26 +57,12 @@ enum _eTimerType
 	TTYPE_MONTHLY_WD,
 	TTYPE_YEARLY,
 	TTYPE_YEARLY_WD,
-	TTYPE_BEFORESUNATSOUTH,
-	TTYPE_AFTERSUNATSOUTH,
-	TTYPE_BEFORECIVTWSTART,
-	TTYPE_AFTERCIVTWSTART,
-	TTYPE_BEFORECIVTWEND,
-	TTYPE_AFTERCIVTWEND,
-	TTYPE_BEFORENAUTTWSTART,
-	TTYPE_AFTERNAUTTWSTART,
-	TTYPE_BEFORENAUTTWEND,
-	TTYPE_AFTERNAUTTWEND,
-	TTYPE_BEFOREASTTWSTART,
-	TTYPE_AFTERASTTWSTART,
-	TTYPE_BEFOREASTTWEND,
-	TTYPE_AFTERASTTWEND,
 	TTYPE_END
 };
 
 enum _eTimerCommand
 {
-	TCMD_ON = 0,
+	TCMD_ON=0,
 	TCMD_OFF
 };
 
@@ -91,12 +77,11 @@ enum _eMediaStatus
 	MSTAT_PHOTO,
 	MSTAT_PLAYING,
 	MSTAT_DISCONNECTED,
-	MSTAT_SLEEPING,
 	MSTAT_UNKNOWN
 };
 
 enum _eHardwareTypes {
-	HTYPE_RFXtrx315 = 0,			//0
+	HTYPE_RFXtrx315=0,			//0
 	HTYPE_RFXtrx433,			//1
 	HTYPE_RFXLAN,				//2
 	HTYPE_Domoticz,				//3
@@ -171,7 +156,7 @@ enum _eHardwareTypes {
 	HTYPE_AtagOne,				//72
 	HTYPE_Sterbox,				//73
 	HTYPE_HTTPPOLLER,			//74
-	HTYPE_EVOHOME_WEB,			//75
+	HTYPE_EVOHOME_WEB,	//75
 	HTYPE_RAVEn,	    		//76
 	HTYPE_S0SmartMeterTCP,		//77
 	HTYPE_DenkoviSmartdenLan,	//78
@@ -199,20 +184,14 @@ enum _eHardwareTypes {
 	HTYPE_RelayNet,				//100
 	HTYPE_KMTronicUDP,			//101
 	HTYPE_SysfsGpio,			//102
-	HTYPE_Rtl433,				//103
+	HTYPE_Rtl433,                           //103
 	HTYPE_OnkyoAVTCP,			//104
-	HTYPE_DenkoviSmartdenIPInOut,	//105
-	HTYPE_EVOHOME_TCP,			//106
-	HTYPE_USBtinGateway,		//107
-	HTYPE_EnphaseAPI,			//108
-	HTYPE_RaspberryMCP23017,	//109
-	HTYPE_eHouseTCP,			//110
 	HTYPE_END
 };
 
 enum _eNotificationTypes
 {
-	NTYPE_TEMPERATURE = 0,
+	NTYPE_TEMPERATURE=0,
 	NTYPE_HUMIDITY,
 	NTYPE_RAIN,
 	NTYPE_UV,
@@ -240,8 +219,7 @@ enum _eNotificationTypes
 	NTYPE_STOPPED,
 	NTYPE_PLAYING,
 	NTYPE_VALUE,
-	NTYPE_LASTUPDATE,
-	NTYPE_SLEEPING
+	NTYPE_LASTUPDATE
 };
 
 const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum);
@@ -290,7 +268,7 @@ bool GetLightCommand(
 	std::string switchcmd,
 	unsigned char &cmd,
 	const std::map<std::string, std::string> & options
-);
+	);
 
 bool IsLightSwitchOn(const std::string &lstatus);
 

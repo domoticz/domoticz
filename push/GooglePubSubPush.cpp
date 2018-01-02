@@ -158,13 +158,13 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[21];
+			char szLocalTime[16];
 			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[21];
+			char szLocalTimeUtc[16];
 			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[21];
+			char szLocalTimeMs[16];
 			sprintf(szLocalTimeMs, "%llu", localTime*1000);
-			char szLocalTimeUtcMs[21];
+			char szLocalTimeUtcMs[16];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
@@ -201,12 +201,12 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				if (int(strarray.size())>=delpos)
 				{
 					std::string rawsendValue = strarray[delpos-1].c_str();
-					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false, dType, dSubType, metertype);
+					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false,metertype);
 				}
 			}
 			else
 			{
-				sendValue = ProcessSendValue(sendValue,delpos,nValue,false, dType, dSubType, metertype);
+				sendValue = ProcessSendValue(sendValue,delpos,nValue,false,metertype);
 			}
 			ltargetDeviceId+="_";
 			ltargetDeviceId+=ldelpos;

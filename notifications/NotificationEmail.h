@@ -20,9 +20,9 @@ private:
 	std::string _EmailFrom;
 	std::string _EmailTo;
 	std::string _EmailServer;
-	int			_EmailPort;
+	int _EmailPort;
 	std::string _EmailUsername;
 	std::string _EmailPassword;
-	int			_UseEmailInNotifications;
-	int			_EmailAsAttachment;
+	int _UseEmailInNotifications;
+	int _EmailAsAttachment;
 };

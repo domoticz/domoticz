@@ -556,11 +556,11 @@ define(['app'], function (app) {
 		};
 
 	}])
-		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
+		.directive('dztemperaturewidget', ['$location', function ($location) {
 			return {
 				priority: 0,
 				restrict: 'E',
-				templateUrl: 'views/temperature_widget.html',
+				templateUrl: 'views/temperatures/temperatureWidget.html',
 				scope: {},
 				bindToController: {
 					item: '=',
@@ -584,9 +584,21 @@ define(['app'], function (app) {
 						}
 					};
 
-					ctrl.nbackstyle = function () {
-						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-						return backgroundClass;
+					ctrl.nbackcolor = function () {
+						var nbackcolor = "#D4E1EE";
+						if (item.HaveTimeout == true) {
+							nbackcolor = "#DF2D3A";
+						}
+						else {
+							var BatteryLevel = parseInt(item.BatteryLevel);
+							if (BatteryLevel != 255) {
+								if (BatteryLevel <= 10) {
+									nbackcolor = "#DDDF2D";
+								}
+							}
+						}
+						nbackcolor = EvoSetPointColor(item, ctrl.sHeatMode(), nbackcolor);
+						return { 'background-color': nbackcolor };
 					};
 
 					// TODO use angular isDefined
@@ -703,15 +715,11 @@ define(['app'], function (app) {
 					};
 
 					ctrl.ShowLog = function () {
-						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
-						$('#temptophtm').hide();
-						return ShowTempLog('#tempcontent', "ShowTemps", item.idx, escape(item.Name), escape(item.Type));
+						$location.url('/Temperature/' + ctrl.item.idx + '/Log');
 					};
 
 					ctrl.ShowNotifications = function () {
-						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
-						$('#temptophtm').hide();
-						return ShowNotifications(item.idx, escape(item.Name), '#tempcontent', 'ShowTemps');
+						$location.url('/Temperature/' + ctrl.item.idx + '/Notifications');
 					};
 
 					$element.i18n();

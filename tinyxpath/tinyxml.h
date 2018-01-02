@@ -45,7 +45,7 @@ distribution.
 
 #ifdef TIXML_USE_STL
 	#include <string>
- 	#include <iosfwd>
+ 	#include <iostream>
 	#include <sstream>
 	#define TIXML_STRING		std::string
 #else

@@ -49,9 +49,6 @@ public:
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 	bool IsLogTimestampsEnabled();
 
-	void EnableLogThreadIDs(const bool bEnableThreadIDs);
-	bool IsLogThreadIDsEnabled();
-
 	void SetFilterString(std::string &Filter);
 	bool isTraceEnabled();
 	bool TestFilter(const char *cbuffer);
@@ -76,7 +73,6 @@ private:
 	std::deque<_tLogLineStruct> m_notification_log;
 	bool m_bInSequenceMode;
 	bool m_bEnableLogTimestamps;
-	bool m_bEnableLogThreadIDs;
 	bool m_bEnableErrorsToNotificationSystem;
 	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;

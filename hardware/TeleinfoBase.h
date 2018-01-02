@@ -17,7 +17,7 @@ History :
 
 #pragma once
 
-#include <iosfwd>
+#include <iostream>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 

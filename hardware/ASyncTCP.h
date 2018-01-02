@@ -1,13 +1,9 @@
 #pragma once
 
-#include <stddef.h>                        // for size_t
-#include <boost/asio/deadline_timer.hpp>   // for deadline_timer
-#include <boost/asio/io_service.hpp>       // for io_service
-#include <boost/asio/ip/tcp.hpp>           // for tcp, tcp::endpoint, tcp::s...
-#include <boost/smart_ptr/shared_ptr.hpp>  // for shared_ptr
-#include <exception>                       // for exception
-#include <iosfwd>                        // for string
-namespace boost { namespace system { class error_code; } }
+#include <string>
+#include <iostream>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 typedef boost::shared_ptr<class ASyncTCP> ASyncTCPRef;
 

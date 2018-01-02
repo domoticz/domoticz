@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iosfwd>
+#include <deque>
+#include <iostream>
 #include "ASyncTCP.h"
 #include "S0MeterBase.h"
 

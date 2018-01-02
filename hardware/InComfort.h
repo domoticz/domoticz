@@ -9,7 +9,7 @@
 // - Slow changing values were not updated. Forcing an update every 15 minutes.
 
 #include "DomoticzHardware.h"
-#include <iosfwd>
+#include <iostream>
 #include "hardwaretypes.h"
 
 class CInComfort : public CDomoticzHardwareBase

@@ -53,13 +53,14 @@ Version history
 #define RELEASE_RT2 29
 
 CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, 
-	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit):
-m_szIPAddress(IPAddress),
-m_username(username),
-m_password(password)
+	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit)
+
 {
 	m_HwdID = ID;
+	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
+	m_username = username;
+	m_password = password;
 	m_stoprequested = false;
 	m_iModel = model;
         

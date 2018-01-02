@@ -158,7 +158,7 @@ define(['app'], function (app) {
 			$('#linkparamstable #linkupdate').attr("class", "btnstyle3-dis");
 			$('#linkparamstable #linkdelete').attr("class", "btnstyle3-dis");
 
-		  var oTable = $('#iflinktable').dataTable();
+		  var oTable = $('#linktable').dataTable();
 		  oTable.fnClearTable();
 		  $.ajax({
 			 url: "json.htm?type=command&param=getinfluxlinks",
@@ -219,7 +219,7 @@ define(['app'], function (app) {
 		ShowLinks = function()
 		{
 			$('#influxmain').i18n();
-			var oTable = $('#iflinktable').dataTable( {
+			var oTable = $('#linktable').dataTable( {
 			  "sDom": '<"H"lfrC>t<"F"ip>',
 			  "oTableTools": {
 				"sRowSelect": "single"

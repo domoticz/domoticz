@@ -43,8 +43,5 @@ private:
 	int m_totcpu;
 	std::string m_dfcommand;
 #endif
-#if defined (__linux__)
-	float GetProcessMemUsage();
-#endif
 };
 

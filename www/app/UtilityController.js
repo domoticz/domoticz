@@ -941,70 +941,74 @@ define(['app'], function (app) {
 
 								if (typeof item.Counter != 'undefined') {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
+										status = item.Counter;
 										bigtext = item.CounterToday;
 									}
-									status =  $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									else {
+										status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
+									}
 								}
 								else if (item.Type == "Current") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
+									status = item.Data;
 									if (typeof item.CounterToday != 'undefined') {
-										status += $.t("Today") + ': ' + item.CounterToday;
+										status += ', ' + $.t("Today") + ': ' + item.CounterToday;
 									}
 								}
 								else if (item.SubType == "Percentage") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Fan") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Air Quality") {
-									status = item.Quality;
+									status = item.Data + " (" + item.Quality + ")";
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Soil Moisture") {
-									status = item.Desc;
+									status = item.Data + " (" + item.Desc + ")";
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Custom Sensor") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Leaf Wetness") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "Distance") || (item.SubType == "A/D") || (item.SubType == "Pressure") || (item.SubType == "Sound Level")) {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.SubType == "Text") {
-									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+									status = item.Data;
 								}
 								else if (item.SubType == "Alert") {
-									status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+									status = item.Data;
 									var aLevel = item.Level;
 									if (aLevel > 4) aLevel = 4;
 									img = '<img src="images/Alert48_' + aLevel + '.png" height="48" width="48">';
 								}
 								else if (item.Type == "Lux") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Weight") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if (item.Type == "Usage") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 								else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
-									status = "";
+									status = item.Data + '\u00B0 ' + $scope.config.TempSign;
 									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.Type == "Radiator 1") {
@@ -1012,16 +1016,16 @@ define(['app'], function (app) {
 									bigtext = item.Data + '\u00B0 ' + $scope.config.TempSign;
 								}
 								else if (item.SubType == "Thermostat Clock") {
-									status = "";
+									status = item.Data;
 								}
 								else if (item.SubType == "Thermostat Mode") {
-									status = "";
+									status = item.Data;
 								}
 								else if (item.SubType == "Thermostat Fan Mode") {
-									status = "";
+									status = item.Data;
 								}
 								else if (item.SubType == "Waterflow") {
-									status = "";
+									status = item.Data;
 									bigtext = item.Data;
 								}
 
@@ -1030,7 +1034,7 @@ define(['app'], function (app) {
 								}
 								if (typeof item.CounterDeliv != 'undefined') {
 									if (item.CounterDeliv != 0) {
-										status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
+										status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 										if (item.UsageDeliv.charAt(0) != 0) {
 											if (parseInt(item.Usage) != 0) {
 												bigtext += ', -' + item.UsageDeliv;
@@ -1042,9 +1046,25 @@ define(['app'], function (app) {
 									}
 								}
 
-								var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-								$(id).removeClass('statusNormal').removeClass('statusProtected').removeClass('statusTimeout').removeClass('statusLowBattery');
-								$(id).addClass(backgroundClass);
+								var nbackcolor = "#D4E1EE";
+								if (item.Protected == true) {
+									nbackcolor = "#A4B1EE";
+								}
+								if (item.HaveTimeout == true) {
+									nbackcolor = "#DF2D3A";
+								}
+								else {
+									var BatteryLevel = parseInt(item.BatteryLevel);
+									if (BatteryLevel != 255) {
+										if (BatteryLevel <= 10) {
+											nbackcolor = "#DDDF2D";
+										}
+									}
+								}
+								var obackcolor = rgb2hex($(id + " #name").css("background-color"));
+								if (obackcolor != nbackcolor) {
+									$(id + " #name").css("background-color", nbackcolor);
+								}
 
 								if ($(id + " #status").html() != status) {
 									$(id + " #bigtext").html(bigtext);
@@ -1154,15 +1174,28 @@ define(['app'], function (app) {
 								htmlcontent += '<div class="row divider">\n';
 								bHaveAddedDevider = true;
 							}
-							var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 
 							var xhtm =
-								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
+								'\t<div class="span4" id="' + item.idx + '">\n' +
 								'\t  <section>\n' +
 								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
-
-							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
+							var nbackcolor = "#D4E1EE";
+							if (item.Protected == true) {
+								nbackcolor = "#A4B1EE";
+							}
+							if (item.HaveTimeout == true) {
+								nbackcolor = "#DF2D3A";
+							}
+							else {
+								var BatteryLevel = parseInt(item.BatteryLevel);
+								if (BatteryLevel != 255) {
+									if (BatteryLevel <= 10) {
+										nbackcolor = "#DDDF2D";
+									}
+								}
+							}
+							xhtm += '\t      <td id="name" style="background-color: ' + nbackcolor + ';">' + item.Name + '</td>\n';
 							xhtm += '\t      <td id="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
@@ -1250,12 +1283,12 @@ define(['app'], function (app) {
 									status = item.Counter;
 								}
 								else {
-									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									status = item.Counter + ', ' + $.t("Today") + ': ' + item.CounterToday;
 								}
 							}
 							else if (item.Type == "Current") {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
@@ -1264,93 +1297,94 @@ define(['app'], function (app) {
 								else {
 									xhtm += 'current48.png" height="48" width="48"></td>\n';
 								}
+								status = item.Data;
 								if (typeof item.CounterToday != 'undefined') {
-									status += $.t("Today") + ': ' + item.CounterToday;
+									status += ', ' + $.t("Today") + ': ' + item.CounterToday;
 								}
 							}
 							else if (item.Type == "Air Quality") {
 								xhtm += 'air48.png" height="48" width="48"></td>\n';
-								status = item.Quality;
+								status = item.Data + " (" + item.Quality + ")";
 							}
 							else if (item.SubType == "Custom Sensor") {
 								xhtm += item.Image + '48_On.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Soil Moisture") {
 								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
-								status = item.Desc;
+								status = item.Data + " (" + item.Desc + ")";
 							}
 							else if (item.SubType == "Percentage") {
 								xhtm += 'Percentage48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Fan") {
 								xhtm += 'Fan48_On.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Leaf Wetness") {
 								xhtm += 'leaf48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Distance") {
 								xhtm += 'visibility48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if ((item.SubType == "Voltage") || (item.SubType == "Current") || (item.SubType == "A/D")) {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Text") {
 								xhtm += 'text48.png" height="48" width="48"></td>\n';
-								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+								status = item.Data;
 							}
 							else if (item.SubType == "Alert") {
 								xhtm += 'Alert48_' + item.Level + '.png" height="48" width="48"></td>\n';
-								status = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+								status = item.Data;
 							}
 							else if (item.SubType == "Pressure") {
 								xhtm += 'gauge48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.Type == "Lux") {
 								xhtm += 'lux48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.Type == "Weight") {
 								xhtm += 'scale48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.Type == "Usage") {
 								xhtm += 'current48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (((item.Type == "Thermostat") && (item.SubType == "SetPoint")) || (item.Type == "Radiator 1")) {
 								xhtm += 'override.png" class="lcursor" onclick="ShowSetpointPopup(event, ' + item.idx + ', RefreshUtilities, ' + item.Protected + ', ' + item.Data + ');" height="48" width="48" ></td>\n';
-								status = "";
+								status = item.Data + '\u00B0 ' + $scope.config.TempSign;
 							}
 							else if (item.SubType == "Thermostat Clock") {
 								xhtm += 'clock48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Thermostat Mode") {
 								xhtm += 'mode48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Thermostat Fan Mode") {
 								xhtm += 'mode48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Sound Level") {
 								xhtm += 'Speaker48_On.png" class="lcursor" onclick="ShowGeneralGraph(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'' + item.SubType + '\');" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							else if (item.SubType == "Waterflow") {
 								xhtm += 'moisture48.png" height="48" width="48"></td>\n';
-								status = "";
+								status = item.Data;
 							}
 							if (typeof item.CounterDeliv != 'undefined') {
 								if (item.CounterDeliv != 0) {
-									status += '<br>' + $.t("Return") + ': ' + $.t("Today") + ': ' + item.CounterDelivToday + ', ' + item.CounterDeliv;
+									status += '<br>' + $.t("Return") + ': ' + item.CounterDeliv + ', ' + $.t("Today") + ': ' + item.CounterDelivToday;
 								}
 							}
 							xhtm +=
@@ -1454,7 +1488,7 @@ define(['app'], function (app) {
 							}
 							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');" data-i18n="Log">Log</a> ';
+									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';
@@ -1466,7 +1500,7 @@ define(['app'], function (app) {
 							}
 							else if (item.Type == "Radiator 1") {
 								if (permissions.hasPermission("Admin")) {
-									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');" data-i18n="Log">Log</a> ';
+									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" onclick="ShowSetpointTimers(' + item.idx + ',\'' + escape(item.Name) + '\');" data-i18n="Timers">Timers</a> ';

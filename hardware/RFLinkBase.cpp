@@ -130,10 +130,6 @@ const _tRFLinkStringIntHelper rfswitches[] =
 	{ "YW_Sensor", sSwitchTypeYW_Sensor },
 	{ "LEGRANDCAD", sSwitchTypeLegrandcad },
 	{ "SysfsGpio", sSwitchTypeSysfsGpio },
-	{ "Hager", sSwitchTypeHager },
-	{ "Faber", sSwitchTypeFaber },
-	{ "Drayton", sSwitchTypeDrayton },
-	{ "V2Phoenix", sSwitchTypeV2Phoenix },
 	{ "", -1 }
 };
 
@@ -352,14 +348,13 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else {		// RFLink Milight extension
 		_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
-      /*
-		_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
-		_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
-		_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
-		_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
-		_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
-		_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
-        */
+
+		//_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
+		//_log.Log(LOG_ERROR, "RFLink: subtype: %d", pLed->subtype);		// rgbw/rgb/white?
+		//_log.Log(LOG_ERROR, "RFLink: id: %d", pLed->id);				// id
+		//_log.Log(LOG_ERROR, "RFLink: unit: %d", pLed->dunit);			// unit 0=All, 1=Group1,2=Group2,3=Group3,4=Group4
+		//_log.Log(LOG_ERROR, "RFLink: command: %d", pLed->command);		// command
+		//_log.Log(LOG_ERROR, "RFLink: value: %d", pLed->value);			// brightness/color value
 		bool bSendOn = false;
 
 		const int m_LEDType = pLed->type;
@@ -376,7 +371,8 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetRGBColour:
 			{
-            int iHue = ((pLed->value)+0x20) & 0xFF;  //Milight color offset correction
+			//Milight colorfix
+			int iHue = ((255 - pLed->value) + 108) & 0xFF;
 			m_colorbright = m_colorbright & 0xff;
 			m_colorbright = (((unsigned char) iHue) << 8) + m_colorbright;
 			switchcmnd = "COLOR";
@@ -410,10 +406,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			bSendOn = true;
 		    }
 			break;
-		case Limitless_NightMode:
-			switchcmnd = "ALLOFF";
-			bSendOn = true;
-			break;
+
 		// need work:
 		case Limitless_SetBrightUp:
 			switchcmnd = "BRIGHT";
@@ -717,7 +710,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	bool bHaveCurrent = false; float current = 0;
 	bool bHaveCurrent2 = false; float current2 = 0;
 	bool bHaveCurrent3 = false; float current3 = 0;
-	bool bHaveWeight = false; float weight = 0;
 	bool bHaveImpedance = false; float impedance = 0;
 	bool bHaveSwitch = false; int switchunit = 0;
 	bool bHaveSwitchCmd = false; std::string switchcmd = ""; int switchlevel = 0;
@@ -890,17 +882,11 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 			bHaveCurrent3 = true;
 			current3 = float(iTemp) / 10.0f;
 		}
-		else if (results[ii].find("WEIGHT") != std::string::npos)
-		{
-			iTemp = RFLinkGetHexStringValue(results[ii]);
-			bHaveWeight = true;
-			weight = float(iTemp) *100;			// weight in grams
-		}
 		else if (results[ii].find("IMPEDANCE") != std::string::npos)
 		{
 			iTemp = RFLinkGetHexStringValue(results[ii]);
-			bHaveImpedance = true;
-			impedance = float(iTemp) / 10.0f;
+			bHaveCurrent = true;
+			current = float(iTemp) / 10.0f;
 		}
 		else if (results[ii].find("SWITCH") != std::string::npos)
 		{
@@ -1030,11 +1016,6 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 	{
 		SendCurrentSensor(ID, BatteryLevel, current, 0, 0, tmp_Name);
 	}
-	if (bHaveWeight)
-	{
-		SendCustomSensor(Node_ID, Child_ID, BatteryLevel, weight, "Weight", "g");
-	}
-
 	if (bHaveImpedance)
 	{
 		SendPercentageSensor(Node_ID, Child_ID, BatteryLevel, impedance, tmp_Name);

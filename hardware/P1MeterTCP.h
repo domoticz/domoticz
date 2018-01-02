@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iosfwd>
+#include <deque>
+#include <iostream>
 #include "P1MeterBase.h"
 
 class P1MeterTCP: public P1MeterBase

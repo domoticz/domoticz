@@ -1,6 +1,6 @@
 #pragma once
 #ifndef NOCLOUD
-#include <iosfwd>
+#include <iostream>
 #include <queue>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -15,7 +15,6 @@
 #include "connection_manager.hpp"
 #include "../main/Logger.h"
 #include "../hardware/DomoticzTCP.h"
-#include "WebsocketHandler.h"
 
 namespace tcp {
 	namespace server {
@@ -61,17 +60,12 @@ namespace http {
 
 			void ReadMore();
 
-			void WebsocketGetRequest();
-			bool parse_response(const char *data, size_t len);
-			std::string websocket_key;
-			std::string compute_accept_header(const std::string &websocket_key);
-			std::string SockWriteBuf;
 			void MyWrite(pdu_type type, CValueLengthPart &parameters);
-			void WS_Write(long handlerid, const std::string &packet_data);
 			void SocketWrite(ProxyPdu *pdu);
+			std::vector<boost::asio::const_buffer> _writebuf;
+			ProxyPdu *writePdu;
 			/// make sure we only write one packet at a time
 			boost::mutex writeMutex;
-			bool write_in_progress;
 			void LoginToService();
 
 			PDUPROTO(PDU_REQUEST)
@@ -84,10 +78,6 @@ namespace http {
 			PDUPROTO(PDU_SERV_RECEIVE)
 			PDUPROTO(PDU_SERV_SEND)
 			PDUPROTO(PDU_SERV_ROSTERIND)
-			PDUPROTO(PDU_WS_OPEN)
-			PDUPROTO(PDU_WS_CLOSE)
-			PDUPROTO(PDU_WS_RECEIVE)
-
 			void GetRequest(const std::string &originatingip, boost::asio::mutable_buffers_1 _buf, http::server::reply &reply_);
 			void SendServDisconnect(const std::string &token, int reason);
 
@@ -110,16 +100,10 @@ namespace http {
 			void handle_timeout(const boost::system::error_code& error);
 			/// timeouts (persistent and other) connections in seconds
 			int timeout_;
-			enum status {
-				status_connecting,
-				status_httpmode,
-				status_connected
-			} connection_status;
+			bool b_Connected;
 
 			// is protected by writeMutex
 			std::queue<ProxyPdu *> writeQ;
-			/// websocket stuff
-			std::map<long, CWebsocketHandler *> websocket_handlers;
 		};
 
 		class CProxyManager : public boost::enable_shared_from_this<CProxyManager> {

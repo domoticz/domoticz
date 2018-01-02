@@ -110,7 +110,7 @@
 // tell the compiler to shut up
 #pragma warning(disable:4786)
 
-//#include <iosfwd> // you may need this
+//#include <iostream> // you may need this
 #include <map>
 #include <string>
 #include <vector>

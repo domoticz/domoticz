@@ -102,7 +102,6 @@ define(['app'], function (app) {
 			img.src = 'images/nebula.jpg';
 		};
 
-		$("#aboutcontent").i18n();
 		$scope.init();
 
 		$scope.$on('$destroy', function () {

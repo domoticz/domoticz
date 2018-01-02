@@ -8,15 +8,12 @@ namespace Plugins {
 	{
 	protected:
 		std::vector<byte>	m_sRetainedData;
-		bool				m_Secure;
 
 	public:
-		CPluginProtocol() : m_Secure(false) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);
 		virtual int					Length() { return m_sRetainedData.size(); };
-		virtual bool				Secure() { return m_Secure; };
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
@@ -40,7 +37,7 @@ namespace Plugins {
 	class CPluginProtocolHTTP : CPluginProtocol
 	{
 	private:
-		std::string		m_Status;
+		int				m_Status;
 		int				m_ContentLength;
 		void*			m_Headers;
 		std::string		m_Username;
@@ -50,19 +47,14 @@ namespace Plugins {
 
 		void			ExtractHeaders(std::string*	pData);
 	public:
-		CPluginProtocolHTTP(bool Secure) : m_ContentLength(0), m_Headers(NULL), m_Chunked(false), m_RemainingChunk(0) { m_Secure = Secure; };
+		CPluginProtocolHTTP() : m_Status(0), m_ContentLength(0), m_Headers(NULL), m_Chunked(false) {};
 		virtual void				ProcessInbound(const ReadMessage* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
-		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
+		void						AuthenticationDetails(std::string Username, std::string Password)
 		{
 			m_Username = Username;
 			m_Password = Password;
 		};
-	};
-
-	class CPluginProtocolICMP : CPluginProtocol
-	{
-		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
 	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?

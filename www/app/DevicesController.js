@@ -202,7 +202,7 @@ define(['app'], function (app) {
 								item.BatteryLevel = 255;
 							}
 							var itemSubIcons = "";
-							var itemChecker = '<input type="checkbox" class="noscheck" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="' + item.idx + '" />';
+							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="' + item.idx + '" />';
 							var TypeImg = item.TypeImg;
 							var itemImage = '<img src="images/' + TypeImg + '.png" width="16" height="16">';
 							if (TypeImg.indexOf("Alert") == 0) {
@@ -307,7 +307,7 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#devicescontent\', \'ShowDevices\');">';
 							}
 							else if ((item.Type.indexOf("Temp") == 0) || (item.Type.indexOf("Thermostat") == 0) || (item.Type.indexOf("Humidity") == 0)) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');">';
+								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
 							}
 							else if (item.SubType == "Voltage") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');">';

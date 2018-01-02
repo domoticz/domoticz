@@ -3,7 +3,7 @@
 // are changed infrequently
 //
 #if defined WIN32
-	#include <SDKDDKVer.h>
+	#include "targetver.h"
 #endif
 
 

@@ -94,14 +94,6 @@ define(['app'], function (app) {
 					}
 					extraparams = "PushbulletAPI=" + PushbulletAPI;
 					break;
-                                case "telegram":
-                                        var TelegramAPI = encodeURIComponent($("#telegramtable #TelegramAPI").val());
-                                        if (TelegramAPI == "") {
-                                                ShowNotify($.t('Please enter the API key!...'), 3500, true);
-                                                return;
-                                        }
-                                        extraparams = "TelegramAPI=" + TelegramAPI;
-                                        break;
 				case "pushsafer":
 					var PushsaferAPI = encodeURIComponent($("#pushsafertable #PushsaferAPI").val());
 					var PushsaferImage = encodeURIComponent($("#pushsafertable #PushsaferImage").val());
@@ -297,15 +289,6 @@ define(['app'], function (app) {
 					if (typeof data.PushbulletAPI != 'undefined') {
 						$("#pushbullettable #PushbulletAPI").val(data.PushbulletAPI);
 					}
-                                        if (typeof data.TelegramEnabled != 'undefined') {
-                                                $("#telegramtable #TelegramEnabled").prop('checked', data.TelegramEnabled == 1);
-                                        }
-                                        if (typeof data.TelegramAPI != 'undefined') {
-                                                $("#telegramtable #TelegramAPI").val(data.TelegramAPI);
-                                        }
-                                        if (typeof data.TelegramChat != 'undefined') {
-                                                $("#telegramtable #TelegramChat").val(data.TelegramChat);
-                                        }
 					if (typeof data.PushsaferEnabled != 'undefined') {
 						$("#pushsafertable #PushsaferEnabled").prop('checked', data.PushsaferEnabled == 1);
 					}
@@ -499,9 +482,6 @@ define(['app'], function (app) {
 					if (typeof data.UseAutoBackup != 'undefined') {
 						$("#autobackuptable #enableautobackup").prop('checked', data.UseAutoBackup == 1);
 					}
-					if (typeof data.EmailEnabled != 'undefined') {
-						$("#emailtable #EmailEnabled").prop('checked', data.EmailEnabled == 1);
-					}
 					if (typeof data.EmailFrom != 'undefined') {
 						$("#emailtable #EmailFrom").val(data.EmailFrom);
 					}
@@ -602,11 +582,12 @@ define(['app'], function (app) {
 						$("#acceptnewhardwaretable #ShowUpdateEffect").prop('checked', data.ShowUpdateEffect == 1);
 					}
 
-					if (typeof data.EnableEventScriptSystem != 'undefined') {
-						$("#eventsystemtable #EnableEventScriptSystem").prop('checked', data.EnableEventScriptSystem == 1);
+					if (typeof data.DisableEventScriptSystem != 'undefined') {
+						$("#eventsystemtable #DisableEventScriptSystem").prop('checked', data.DisableEventScriptSystem == 1);
 					}
                     if (typeof data.DisableDzVentsSystem != 'undefined') {
-                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 0);
+						
+                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 1);
                     }
                     if (typeof data.DzVentsLogLevel != 'undefined') {
                         $("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);
@@ -680,12 +661,6 @@ define(['app'], function (app) {
 					}
 					if (typeof data.SendErrorsAsNotification != 'undefined') {
 						$("#emailtable #SendErrorsAsNotification").prop('checked', data.SendErrorsAsNotification == 1);
-					}
-					if (typeof data.IFTTTEnabled != 'undefined') {
-						$("#ifttttable #IFTTTEnabled").prop('checked', data.IFTTTEnabled == 1);
-					}
-					if (typeof data.IFTTTAPI != 'undefined') {
-						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
 					}
 				}
 			});

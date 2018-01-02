@@ -236,6 +236,8 @@ void CDarkSky::GetMeterDetails()
 
 	//Wind
 	int wind_degrees=-1;
+	float wind_mph=-1;
+	float wind_gust_mph=-1;
 	float windspeed_ms=0;
 	float windgust_ms=0;
 	float wind_temp=temp;
@@ -254,8 +256,9 @@ void CDarkSky::GetMeterDetails()
 			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
 			{
+				wind_mph=temp_wind_mph;
 				//convert to m/s
-				windspeed_ms=temp_wind_mph*0.44704f;
+				windspeed_ms=wind_mph*0.44704f;
 			}
 		}
 	}
@@ -266,8 +269,9 @@ void CDarkSky::GetMeterDetails()
 			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
 			{
+				wind_gust_mph=temp_wind_gust_mph;
 				//convert to m/s
-				windgust_ms=temp_wind_gust_mph*0.44704f;
+				windgust_ms=wind_gust_mph*0.44704f;
 			}
 		}
 	}
@@ -398,10 +402,13 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
+			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
 			if (radiation>=0.0f)
 			{
-				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
+				_tGeneralDevice gdevice;
+				gdevice.subtype=sTypeSolarRadiation;
+				gdevice.floatval1=radiation;
+				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
 			}
 		}
 	}

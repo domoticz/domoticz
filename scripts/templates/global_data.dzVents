@@ -1,17 +1,20 @@
 -- this scripts holds all the globally persistent variables and helper functions
--- see the documentation in the wiki
+-- avaible in your scripts
+
+-- use like this in your scripts:
+-- domoticz.globalData.myGlobalPersistentVar = 40
+-- domoticz.helpers.myHelper()
+
 -- NOTE:
 -- THERE CAN BE ONLY ONE global_data SCRIPT
 
 return {
-	-- global persistent data
 	data = {
-		myGlobalVar = { initial = 12 }
+		myGlobalPersistentVar = { initial = 10 },
+		myGlobalPersistentVarWithHistory = { history = true, maxItems = 10 },
 	},
-
-	-- global helper functions
 	helpers = {
-		myHelperFunction = function(domoticz)
+		myHelper = function()
 			-- code
 		end
 	}

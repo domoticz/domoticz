@@ -7,21 +7,21 @@ language: cpp
 cache:
   - apt
 
-#update-alternatives:
-#  - install /usr/bin/gcc gcc /usr/bin/gcc-6 50
-#  - install /usr/bin/g++ g++ /usr/bin/g++-6 50
+update-alternatives:
+  - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
+  - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
 
 sources:
   - trusty
 
 # What to install before the build
 before_install:
-  - eval "${MATRIX_EVAL}"
   # Domoticz needs the full history to be able to calculate the version string
   - git fetch --unshallow
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   # - ln -s open-zwave open-zwave-read-only
+
 
 # Build matrix definition
 # * Two builds
@@ -33,10 +33,9 @@ matrix:
   - os: linux
     dist: trusty
     sudo: required
-    compiler: gcc
-    env: 
-          - TARGET_ARCHITECTURE=x86_64
-          - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    compiler:
+      - gcc
+    env: TARGET_ARCHITECTURE=x86_64
     addons:
       apt:
         sources:
@@ -44,8 +43,8 @@ matrix:
           - ubuntu-toolchain-r-test
           - boost-latest
         packages:
-          - gcc-6
-          - g++-6
+          - gcc-4.9
+          - g++-4.9
           - libboost1.55-all-dev
           - cmake
           - cmake-data
@@ -60,14 +59,14 @@ matrix:
           - libdigest-sha-perl
           - python3-dev
     script:
-      - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
+      - (cd open-zwave-read-only; wget https://github.com/OpenZWave/open-zwave/pull/1125.patch; patch -p1 < 1125.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=open-zwave-read-only
       - make
   # Apple OSX
   - os: osx
-    osx_image: xcode8.3
-    #compiler:
-    #  - gcc
+    osx_image: xcode6.2
+    compiler:
+      - gcc
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
@@ -81,13 +80,15 @@ matrix:
       - brew linkapps python3
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
-      - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
+      - which python3
+      - cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib
       - make
+
 
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
+  - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/
   - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
   - cp History.txt history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt
@@ -96,5 +97,5 @@ deploy:
   provider: script
   script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
-    branch: development
+    branch: master
     repo: domoticz/domoticz

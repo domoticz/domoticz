@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iosfwd>
+#include <deque>
+#include <iostream>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 
@@ -11,8 +12,6 @@ public:
 	~OnkyoAVTCP(void);
 	bool isConnected(){ return mIsConnected; };
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	bool SendPacket(const char *pdata);
-	bool SendPacket(const char *pCmd, const char *pArg);
 
 public:
 	// signals
@@ -23,12 +22,10 @@ private:
 	bool StopHardware();
 	unsigned char *m_pPartialPkt;
 	int m_PPktLen;
+	bool SendPacket(const char *pdata);
 	void ReceiveMessage(const char *pData, int Len);
 	void ReceiveSwitchMsg(const char *pData, int Len, bool muting, int ID);
-	bool ReceiveXML(const char *pData, int Len);
-	void EnsureSwitchDevice(int Unit, const char *options = NULL);
-	std::string BuildSelectorOptions(const std::string & names, const std::string & ids);
-
+	
  protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;

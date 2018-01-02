@@ -274,6 +274,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 		}
+		return;
 	}
 	else if (szCommand == "setcolbrightnessvalue")
 	{
@@ -319,6 +320,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 		}
+		return;
 	}
 	else if (szCommand == "switchscene")
 	{
@@ -327,12 +329,13 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["switchcmd"].isString())
 			goto mqttinvaliddata;
 		std::string switchcmd = root["switchcmd"].asString();
-		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
+		if ((switchcmd != "On") && (switchcmd != "Off"))
 			goto mqttinvaliddata;
 		if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
 		}
+		return;
 	}
 	else if (szCommand == "setuservariable")
 	{
@@ -342,6 +345,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
 	}
 	else if (szCommand == "addlogmessage")
 	{
@@ -351,6 +355,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		std::string msg = root["message"].asString();
 		_log.Log(LOG_STATUS, "MQTT MSG: %s", msg.c_str());
+		return;
 	}
 	else if (szCommand == "sendnotification")
 	{
@@ -383,11 +388,13 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
+		return;
 	}
 	else if (szCommand == "getdeviceinfo")
 	{
 		int HardwareID = atoi(result[0][0].c_str());
 		SendDeviceInfo(HardwareID, idx, "request device", NULL);
+		return;
 	}
 	else if (szCommand == "getsceneinfo")
 	{
@@ -398,7 +405,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		_log.Log(LOG_ERROR, "MQTT: Unknown command received: %s", szCommand.c_str());
 		return;
 	}
-	return;
 mqttinvaliddata:
 	_log.Log(LOG_ERROR, "MQTT: Invalid data received!");
 }
@@ -639,10 +645,11 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 
 void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 {
-	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result, result2;
 	result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID==%" PRIu64 ") ORDER BY [Order]", SceneIdx);
 	if (result.empty())
 		return;
+	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::vector<std::string> sd = result[0];
 
 	std::string sName = sd[1];
