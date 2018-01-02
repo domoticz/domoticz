@@ -58,60 +58,6 @@ namespace Plugins {
 		};
 	};
 
-	// Base callback message class
-	class CCallbackBase : public CPluginMessageBase
-	{
-	protected:
-		std::string	m_Callback;
-		virtual void ProcessLocked() = 0;
-	public:
-		CCallbackBase(CPlugin* pPlugin, std::string Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
-		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
-		void Process()
-		{
-			boost::lock_guard<boost::mutex> l(PythonMutex);
-			ProcessLocked();
-		};
-		virtual const char* PythonName() { return m_Callback.c_str(); };
-	};
-
-	class StartCallback : public CCallbackBase
-	{
-	public:
-		StartCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStart") { m_Name = __func__; };
-	protected:
-		virtual void ProcessLocked()
-		{
-			m_pPlugin->Start();
-			Callback(NULL);
-		};
-	};
-
-	class HeartbeatCallback : public CCallbackBase
-	{
-	public:
-		HeartbeatCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onHeartbeat") { m_Name = __func__; };
-	protected:
-		virtual void ProcessLocked()
-		{
-			Callback(NULL);
-		};
-	};
-
-	class ConnectedMessage : public CCallbackBase, public CHasConnection
-	{
-	public:
-		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
-		ConnectedMessage(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
-		int						m_Status;
-		std::string				m_Text;
-	protected:
-		virtual void ProcessLocked()
-		{
-			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, m_Text.c_str()));  // 0 is success else socket failure code
-		};
-	};
-
 	class ReadMessage : public CPluginMessageBase, public CHasConnection
 	{
 	public:
@@ -131,10 +77,64 @@ namespace Plugins {
 		};
 	};
 
-	class DisconnectMessage : public CCallbackBase, public CHasConnection
+	// Base callback message class
+	class CCallbackBase : public CPluginMessageBase
+	{
+	protected:
+		std::string	m_Callback;
+		virtual void ProcessLocked() = 0;
+	public:
+		CCallbackBase(CPlugin* pPlugin, std::string Callback) : CPluginMessageBase(pPlugin), m_Callback(Callback) {};
+		virtual void Callback(PyObject* pParams) { if (m_Callback.length()) m_pPlugin->Callback(m_Callback, pParams); };
+		void Process()
+		{
+			boost::lock_guard<boost::mutex> l(PythonMutex);
+			ProcessLocked();
+		};
+		virtual const char* PythonName() { return m_Callback.c_str(); };
+	};
+
+	class onStartCallback : public CCallbackBase
 	{
 	public:
-		DisconnectMessage(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
+		onStartCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStart") { m_Name = __func__; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			m_pPlugin->Start();
+			Callback(NULL);
+		};
+	};
+
+	class onHeartbeatCallback : public CCallbackBase
+	{
+	public:
+		onHeartbeatCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onHeartbeat") { m_Name = __func__; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			Callback(NULL);
+		};
+	};
+
+	class onConnectCallback : public CCallbackBase, public CHasConnection
+	{
+	public:
+		onConnectCallback(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection) { m_Name = __func__; };
+		onConnectCallback(CPlugin* pPlugin, PyObject* Connection, const int Code, const std::string Text) : CCallbackBase(pPlugin, "onConnect"), CHasConnection(Connection), m_Status(Code), m_Text(Text) { m_Name = __func__; };
+		int						m_Status;
+		std::string				m_Text;
+	protected:
+		virtual void ProcessLocked()
+		{
+			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, m_Text.c_str()));  // 0 is success else socket failure code
+		};
+	};
+
+	class onDisconnectCallback : public CCallbackBase, public CHasConnection
+	{
+	public:
+		onDisconnectCallback(CPlugin* pPlugin, PyObject* Connection) : CCallbackBase(pPlugin, "onDisconnect"), CHasConnection(Connection) { m_Name = __func__; };
 	protected:
 		virtual void ProcessLocked()
 		{
@@ -142,10 +142,10 @@ namespace Plugins {
 		};
 	};
 
-	class CommandMessage : public CCallbackBase
+	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
 			m_Unit = Unit;
@@ -154,7 +154,7 @@ namespace Plugins {
 			m_iLevel = level;
 			m_iHue = hue;
 		};
-		CommandMessage(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
 			m_Unit = Unit;
@@ -184,21 +184,21 @@ namespace Plugins {
 		};
 	};
 
-	class ReceivedMessage : public CCallbackBase, public CHasConnection
+	class onMessageCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
+		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
 		{
 			m_Name = __func__;
 			m_Buffer.reserve(Buffer.length());
 			m_Buffer.assign((const byte*)Buffer.c_str(), (const byte*)Buffer.c_str()+Buffer.length());
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
+		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, const std::vector<byte>& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
 		{
 			m_Name = __func__;
 			m_Buffer = Buffer;
 		};
-		ReceivedMessage(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
+		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, PyObject*	pData) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection)
 		{
 			m_Name = __func__;
 			m_Data = pData;
@@ -228,10 +228,10 @@ namespace Plugins {
 		}
 	};
 
-	class NotificationMessage : public CCallbackBase
+	class onNotificationCallback : public CCallbackBase
 	{
 	public:
-		NotificationMessage(CPlugin* pPlugin,
+		onNotificationCallback(CPlugin* pPlugin,
 							const std::string& Subject,
 							const std::string& Text,
 							const std::string& Name,
@@ -266,10 +266,10 @@ namespace Plugins {
 		};
 	};
 
-	class StopMessage : public CCallbackBase
+	class onStopCallback : public CCallbackBase
 	{
 	public:
-		StopMessage(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStop") { m_Name = __func__; };
+		onStopCallback(CPlugin* pPlugin) : CCallbackBase(pPlugin, "onStop") { m_Name = __func__; };
 	protected:
 		virtual void ProcessLocked()
 		{

@@ -42,10 +42,10 @@ namespace Plugins {
 		// If the Python CConecction object reference count ever drops to one the the connection is out of scope so shut it down
 		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
 		{
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				PluginMessageQueue.push(onDisconnectCallback);
 			}
 			m_bDisconnectQueued = true;
 		}
@@ -83,7 +83,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -117,7 +117,7 @@ namespace Plugins {
 			}
 
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
@@ -149,7 +149,7 @@ namespace Plugins {
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
+		onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
 
@@ -186,7 +186,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -239,7 +239,7 @@ namespace Plugins {
 				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
 				PluginMessageQueue.push(pMessage);
 				//  and signal connection
-				ConnectedMessage*	Message = new ConnectedMessage(pConnection->pPlugin, (PyObject*)pConnection, err.value(), err.message());
+				onConnectCallback*	Message = new onConnectCallback(pConnection->pPlugin, (PyObject*)pConnection, err.value(), err.message());
 				PluginMessageQueue.push(Message);
 			}
 
@@ -326,6 +326,11 @@ namespace Plugins {
 
 	bool CPluginTransportTCP::handleDisconnect()
 	{
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		{
+			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
+		}
+
 		m_tLastSeen = time(0);
 		if (m_bConnected)
 		{
@@ -431,7 +436,7 @@ namespace Plugins {
 			}
 		}
 
-		ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
+		onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		PluginMessageQueue.push(Message);
 
@@ -447,13 +452,16 @@ namespace Plugins {
 		// for each certificate in the certificate chain, starting from the root
 		// certificate authority.
 
-		// In this example we will simply print the certificate's subject name.
 		char subject_name[256];
 		X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 		X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-		_log.Log(LOG_NORM, "Plugin: TLS Certificate found: '%s'", subject_name);
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		{
+			_log.Log(LOG_NORM, "(%s): TLS Certificate found '%s'", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), subject_name);
+		}
 
-		//return preverified;
+		// TODO: Add some certificate checking
+
 		return true;
 	}
 
@@ -519,6 +527,11 @@ namespace Plugins {
 	{
 		CPluginTransportTCP::handleDisconnect();
 
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		{
+			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
+		}
+
 		if (m_TLSSock)
 		{
 			delete m_TLSSock;
@@ -574,7 +587,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//	_log.Log(LOG_ERROR, "Plugin: Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -641,10 +654,10 @@ namespace Plugins {
 			if (!m_bDisconnectQueued)
 			{
 				m_bDisconnectQueued = true;
-				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(DisconnectMessage);
+					PluginMessageQueue.push(onDisconnectCallback);
 				}
 			}
 		}
@@ -732,10 +745,10 @@ namespace Plugins {
 		}
 		else
 		{
-			DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
+				PluginMessageQueue.push(onDisconnectCallback);
 			}
 		}
 	}
@@ -782,7 +795,7 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			_log.Log(LOG_ERROR, "%s Exception: '%s' failed connecting to '%s'", __func__, e.what(), m_IP.c_str());
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;
@@ -863,10 +876,10 @@ namespace Plugins {
 			if (!m_bDisconnectQueued)
 			{
 				m_bDisconnectQueued = true;
-				DisconnectDirective*	DisconnectMessage = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(DisconnectMessage);
+					PluginMessageQueue.push(onDisconnectCallback);
 				}
 			}
 		}
@@ -976,15 +989,15 @@ namespace Plugins {
 				m_tLastSeen = time(0);
 				m_bConnected = isOpen();
 
-				ConnectedMessage*	Message = NULL;
+				onConnectCallback*	Message = NULL;
 				if (m_bConnected)
 				{
-					Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully.");
+					Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully.");
 					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
 				}
 				else
 				{
-					Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details.");
+					Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details.");
 				}
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -992,7 +1005,7 @@ namespace Plugins {
 		}
 		catch (std::exception& e)
 		{
-			ConnectedMessage*	Message = new ConnectedMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
+			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 			return false;

@@ -678,16 +678,16 @@ namespace Plugins {
 						// Tell transport to disconnect if required
 						if (pPluginTransport)
 						{
-							DisconnectDirective*	DisconnectMessage = new DisconnectDirective(this, pPluginTransport->Connection());
+							DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(this, pPluginTransport->Connection());
 							boost::lock_guard<boost::mutex> l(PluginMutex);
-							PluginMessageQueue.push(DisconnectMessage);
+							PluginMessageQueue.push(onDisconnectCallback);
 						}
 					}
 				}
 				else
 				{
 					// otherwise just signal stop
-					StopMessage*	Message = new StopMessage(this);
+					onStopCallback*	Message = new onStopCallback(this);
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(Message);
@@ -766,7 +766,7 @@ namespace Plugins {
 			if (!--scounter)
 			{
 				//	Add heartbeat to message queue
-				HeartbeatCallback*	Message = new HeartbeatCallback(this);
+				onHeartbeatCallback*	Message = new onHeartbeatCallback(this);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -882,7 +882,7 @@ namespace Plugins {
 			}
 
 			//	Add start command to message queue
-			StartCallback*	Message = new StartCallback(this);
+			onStartCallback*	Message = new onStartCallback(this);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
@@ -1122,6 +1122,11 @@ namespace Plugins {
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			if (!sPort.length())
+			{
+				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
+				return;
+			}
 			if (!pConnection->pProtocol->Secure())
 				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			else
@@ -1341,7 +1346,7 @@ namespace Plugins {
 
 			// inform the plugin
 			{
-				DisconnectMessage*	Message = new DisconnectMessage(this, (PyObject*)pConnection);
+				onDisconnectCallback*	Message = new onDisconnectCallback(this, (PyObject*)pConnection);
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(Message);
 			}
@@ -1349,7 +1354,7 @@ namespace Plugins {
 			// Plugin exiting and all connections have disconnect messages queued
 			if (m_stoprequested && !m_Transports.size()) 
 			{
-				StopMessage*	Message = new StopMessage(this);
+				onStopCallback*	Message = new onStopCallback(this);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -1507,7 +1512,7 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const int hue)
 	{
 		//	Add command to message queue
-		CommandMessage*	Message = new CommandMessage(this, Unit, command, level, hue);
+		onCommandCallback*	Message = new onCommandCallback(this, Unit, command, level, hue);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -1517,7 +1522,7 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)
 	{
 		//	Add command to message queue
-		CommandMessage*	Message = new CommandMessage(this, Unit, command, level);
+		onCommandCallback*	Message = new onCommandCallback(this, Unit, command, level);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -1791,7 +1796,7 @@ namespace Plugins {
 
 		//	Add command to message queue for every plugin
 		boost::lock_guard<boost::mutex> l(PluginMutex);
-		NotificationMessage*	Message = new NotificationMessage(m_pPlugin, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
+		onNotificationCallback*	Message = new onNotificationCallback(m_pPlugin, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
 		PluginMessageQueue.push(Message);
 
 		return true;
