@@ -154,9 +154,11 @@
         
         bool PythonEventsStop() {
             if (m_PyInterpreter) {
-                PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+				boost::lock_guard<boost::mutex> l(PythonMutex);
+				PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+				m_PyInterpreter = NULL;
                 _log.Log(LOG_STATUS, "EventSystem - Python stopped...");
                 return true;
             } else
@@ -170,7 +172,6 @@
                 // _log.Log(LOG_STATUS, "Python Event System: Module found");
                 return pModule;
             } else {
-                _log.Log(LOG_STATUS, "Python EventSystem: Module not found - Trying to initialize.");
                 Plugins::PyRun_SimpleStringFlags("import DomoticzEvents", NULL);
                 pModule = PyState_FindModule(&DomoticzEventsModuleDef);
 
@@ -202,7 +203,8 @@
 
            if (Plugins::Py_IsInitialized()) {
                
-               if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+			   boost::lock_guard<boost::mutex> l(PythonMutex);
+			   if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
                
                /*{
                    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");
@@ -240,10 +242,10 @@
                    // Mutex
                    // boost::shared_lock<boost::shared_mutex> devicestatesMutexLock1(m_devicestatesMutex);
 
-                   typedef std::map<uint64_t, CEventSystem::_tDeviceStatus>::iterator it_type;
-                   for (it_type iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
+                   std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator it_type;
+                   for (it_type = m_devicestates.begin(); it_type != m_devicestates.end(); ++it_type)
                    {
-                       CEventSystem::_tDeviceStatus sitem = iterator->second;
+                       CEventSystem::_tDeviceStatus sitem = it_type->second;
                        // object deviceStatus = domoticz_module.attr("Device")(sitem.ID, sitem.deviceName, sitem.devType, sitem.subType, sitem.switchtype, sitem.nValue, sitem.nValueWording, sitem.sValue, sitem.lastUpdate);
                        // devices[sitem.deviceName] = deviceStatus;
 
@@ -337,9 +339,9 @@
                    // This doesn't work
                    // boost::unique_lock<boost::shared_mutex> uservariablesMutexLock2 (m_uservariablesMutex);
 
-                   typedef std::map<uint64_t, CEventSystem::_tUserVariable>::iterator it_var;
-                   for (it_var iterator = m_uservariables.begin(); iterator != m_uservariables.end(); ++iterator) {
-                       CEventSystem::_tUserVariable uvitem = iterator->second;
+                   std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
+                   for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
+                       CEventSystem::_tUserVariable uvitem = it_var->second;
                        Plugins::PyDict_SetItemString(m_uservariablesDict, uvitem.variableName.c_str(), Plugins::PyUnicode_FromString(uvitem.variableValue.c_str()));
                    }
 

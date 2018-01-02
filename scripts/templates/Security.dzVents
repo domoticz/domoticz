@@ -1,0 +1,10 @@
+return {
+	on = {
+		security = {
+			domoticz.SECURITY_ARMEDAWAY,
+		}
+	},
+	execute = function(domoticz, _nil, info)
+		domoticz.log('Security was triggered by ' .. info.trigger, domoticz.LOG_INFO)
+	end
+}

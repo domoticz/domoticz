@@ -48,6 +48,7 @@ namespace Plugins {
 		int		PollInterval(int Interval = -1);
 		void	Notifier(std::string Notifier = "");
 		void	AddConnection(CPluginTransport*);
+		void RemoveConnection(CPluginTransport*);
 
 		bool	Initialise();
 		bool	LoadSettings();
@@ -68,6 +69,8 @@ namespace Plugins {
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
+			
+		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
 		std::string			m_Username;

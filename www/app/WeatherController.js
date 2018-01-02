@@ -444,7 +444,7 @@ define(['app'], function (app) {
 			}
 		});
 	}])
-		.directive('dzweatherwidget', function () {
+		.directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -464,20 +464,9 @@ define(['app'], function (app) {
 					var ctrl = this;
 					var item = ctrl.item;
 
-					ctrl.nbackcolor = function () {
-						var nbackcolor = "#D4E1EE";
-						if (item.HaveTimeout == true) {
-							nbackcolor = "#DF2D3A";
-						}
-						else {
-							var BatteryLevel = parseInt(item.BatteryLevel);
-							if (BatteryLevel != 255) {
-								if (BatteryLevel <= 10) {
-									nbackcolor = "#DDDF2D";
-								}
-							}
-						}
-						return { 'background-color': nbackcolor };
+					ctrl.nbackstyle = function () {
+						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+						return backgroundClass;
 					};
 
 					ctrl.displayBarometer = function () {
@@ -625,5 +614,5 @@ define(['app'], function (app) {
 
 				}
 			};
-		});
+		}]);
 });

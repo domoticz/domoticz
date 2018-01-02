@@ -2,7 +2,7 @@
 
 #include "DomoticzHardware.h"
 #include <deque>
-#include <iostream>
+#include <iosfwd>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 

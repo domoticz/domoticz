@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
-#include <iostream>
+#include <iosfwd>
 #include "hardwaretypes.h"
 
 #define BUFFER_SIZE								2*1024*1024

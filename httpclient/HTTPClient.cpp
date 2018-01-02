@@ -35,6 +35,22 @@ size_t write_curl_data_file(void *contents, size_t size, size_t nmemb, void *use
 	return realsize;
 }
 
+size_t write_curl_data_single_line(void *contents, size_t size, size_t nmemb, void *userp)
+{
+	size_t realsize = size * nmemb;
+	std::vector<unsigned char>* pvHTTPResponse = (std::vector<unsigned char>*)userp;
+	size_t ii=0;
+	while (ii< realsize)
+	{
+		unsigned char *pData = (unsigned char*)contents + ii;
+		if ((pData[0] == '\n') || (pData[0] == '\r'))
+			return 0;
+		pvHTTPResponse->push_back(pData[0]);
+		ii++;
+	}
+	return realsize;
+}
+
 bool HTTPClient::CheckIfGlobalInitDone()
 {
 	if (!m_bCurlGlobalInitialized)
@@ -95,6 +111,42 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
 	m_sUserAgent = useragent;
 }
 
+void HTTPClient::LogError(void *curlobj)
+{
+#ifndef _DEBUG
+	if (_log.isTraceEnabled())
+#endif
+	{
+		long response_code;
+		CURL *curl = (CURL *)curlobj;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+		switch (response_code)
+		{
+		case 400:
+			_log.Log(LOG_TRACE, "HTTP 400: Bad Request");
+			break;
+		case 401:
+			_log.Log(LOG_TRACE, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
+			break;
+		case 403:
+			_log.Log(LOG_TRACE, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
+			break;
+		case 404:
+			_log.Log(LOG_TRACE, "HTTP 404: Not Found");
+			break;
+		case 500:
+			_log.Log(LOG_TRACE, "HTTP 500: Internal Server Error");
+			break;
+		case 503:
+			_log.Log(LOG_TRACE, "HTTP 503: Service Unavailable");
+			break;
+		default:
+			_log.Log(LOG_TRACE, "HTTP return code is: %i", response_code);
+			break;
+		}
+	}
+}
+
 bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
 {
 	try
@@ -134,37 +186,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 
 		if (res == CURLE_HTTP_RETURNED_ERROR)
 		{
-#ifndef _DEBUG
-			if (_log.isTraceEnabled())
-#endif
-			{
-				long response_code;
-				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-				switch (response_code)
-				{
-				case 400:
-					_log.Log(LOG_TRACE, "HTTP 400: Bad Request");
-					break;
-				case 401:
-					_log.Log(LOG_TRACE, "HTTP 401: Unauthorized. Authentication is required, has failed or has not been provided");
-					break;
-				case 403:
-					_log.Log(LOG_TRACE, "HTTP 403: Forbidden. The request is valid, but the server is refusing action");
-					break;
-				case 404:
-					_log.Log(LOG_TRACE, "HTTP 404: Not Found");
-					break;
-				case 500:
-					_log.Log(LOG_TRACE, "HTTP 500: Internal Server Error");
-					break;
-				case 503:
-					_log.Log(LOG_TRACE, "HTTP 503: Service Unavailable");
-					break;
-				default:
-					_log.Log(LOG_TRACE, "HTTP return code is: %i", response_code);
-					break;
-				}
-			}
+			LogError(curl);
 		}
 
 		curl_easy_cleanup(curl);
@@ -179,6 +201,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 	{
 		return false;
 	}
+	return false;
 }
 
 bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outputfile)
@@ -214,6 +237,67 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 	{
 		return false;
 	}
+}
+
+bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const int TimeOut)
+{
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
+		CURL *curl = curl_easy_init();
+		if (!curl)
+			return false;
+
+		CURLcode res;
+		SetGlobalOptions(curl);
+		if (TimeOut != -1)
+		{
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+		}
+
+		struct curl_slist *headers = NULL;
+		if (ExtraHeaders.size() > 0)
+		{
+			std::vector<std::string>::const_iterator itt;
+			for (itt = ExtraHeaders.begin(); itt != ExtraHeaders.end(); ++itt)
+			{
+				headers = curl_slist_append(headers, (*itt).c_str());
+			}
+		}
+
+		if (headers != NULL)
+		{
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		}
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_single_line);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
+		res = curl_easy_perform(curl);
+
+		if (res == CURLE_HTTP_RETURNED_ERROR)
+		{
+			LogError(curl);
+		}
+
+		curl_easy_cleanup(curl);
+
+		if (headers != NULL) {
+			curl_slist_free_all(headers); /* free the header list */
+		}
+		if (
+			(res == CURLE_WRITE_ERROR) && 
+			(!response.empty())
+			)
+			res = CURLE_OK;
+		return (res == CURLE_OK);
+	}
+	catch (...)
+	{
+		return false;
+	}
+	return false;
 }
 
 bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const bool bFollowRedirect)
@@ -399,6 +483,23 @@ bool HTTPClient::GET(const std::string &url, const std::vector<std::string> &Ext
 	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
 	return true;
 }
+
+bool HTTPClient::GETSingleLine(const std::string &url, std::string &response, const bool bIgnoreNoDataReturned)
+{
+	response = "";
+	std::vector<unsigned char> vHTTPResponse;
+	std::vector<std::string> ExtraHeaders;
+	if (!GETBinarySingleLine(url, ExtraHeaders, vHTTPResponse))
+		return false;
+	if (!bIgnoreNoDataReturned)
+	{
+		if (vHTTPResponse.empty())
+			return false;
+	}
+	response.insert(response.begin(), vHTTPResponse.begin(), vHTTPResponse.end());
+	return true;
+}
+
 
 bool HTTPClient::POST(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::string &response, const bool bFollowRedirect, const bool bIgnoreNoDataReturned)
 {

@@ -1,0 +1,664 @@
+
+/* Moving the main menu to the side of the screen */
+
+/* the animations have been disabled for now, as they seemed to interfere with smooth operation. */
+
+
+
+/*This media query is there until Domoticz has a 'mobile' tag in the body, so that we know if a user is on a mobile phone. */
+@media screen and (min-width : 480px){
+
+    
+    /*  LOGO  */
+
+    .navbar a.brand {
+        /*display:block!important;
+        margin: 0;
+        padding:0;*/
+        z-index:1120;
+        height:30px;
+        /*background-color: #eee;*/
+        overflow:visible;
+        position:relative;
+        top:7px;
+        left:10px;
+        
+    }
+
+    .navbar .container .brand img{
+        margin:0;
+        float: left;
+    }
+
+    .navbar:hover .container .brand{
+		max-width: 190px;
+        width:100%;
+    }
+
+	.navbar .container .brand h1{
+        /*opacity:0;*/
+        display:none;
+        margin-left: 0px;
+        margin-top: 0px;
+        /*transition: all 0.1s linear; */
+        /*position:fixed;
+        top:55px;
+        z-index:1000;*/
+    }
+
+    .navbar:hover .container .brand h1{
+        /*opacity:100;*/
+        display:inline;
+        margin-left: 0px;
+        margin-top: 0px;
+        /*transform: translate(20px);  */  
+    /*    transition: all 0.3s ease;*/
+    }
+
+    .brand h2{
+        /*display:none!important;*/
+        /*position: initial!important;*/
+        /*margin:15px 0 0 110px!important;*/
+        visibility: hidden;
+        opacity:0;
+        display:none;
+        margin-left: 130px;
+        margin-top: -44px;
+        /*text-decoration: none!important;
+        border-bottom:0!important;*/
+    }
+
+    .navbar:hover .brand h2{
+        display:inline;
+        visibility:visible;
+        opacity:100;
+        /*padding: 10px 10px 0 0;
+        text-decoration: none!important;*/
+    }
+
+    
+
+    /*  MAIN RESETS AND GENERAL NAVBAR SETTINGS */
+
+
+    .bannercontent{padding-top:0px;}
+
+    .navbar *{
+        width:auto;
+        padding:0;
+        margin:0;
+        text-align:left!important;
+        border-radius:0;
+    }    
+
+    #holder{
+        width: calc(100% - 76px);
+        left: 54px;
+        }
+
+    .navbar{
+        width:auto;
+        height:100%;
+        box-shadow: 0 2px 10px 2px rgba(50,50,50,0.2);
+        position:fixed;
+        overflow:visible;
+        background-color:#eee;
+        padding:0;
+        }
+
+    .navbar:hover{
+        box-shadow: 20px 0px 1000px 3200px rgba(50,50,50,0.3)
+    }
+
+    .navbar .nav{
+        float:none;
+    }
+
+    .navbar-fixed-top{
+        right:auto;
+        margin:0;
+    }
+
+    .navbar .nav .dropdown-menu{padding:0}
+
+    .navbar .navbar-inner{
+        padding:0;
+        height:100%;
+        background-color:transparent;
+    }    
+
+    .navbar .container {
+        width:auto;
+        height:100%;
+    }
+
+    .navbar #appnavbar{
+        width:auto; 
+        height:100%;
+        clear:both;
+
+        list-style-type:none;
+        margin:0;
+        padding:0;
+        text-align:left;
+        /*
+        background-color:#ddd;
+        background: rgb(221,221,221); 
+        background: -moz-linear-gradient(left, rgba(221,221,221,1) 0%, rgba(229,229,229,1) 50%, rgba(221,221,221,1) 100%); 
+        background: -webkit-linear-gradient(left, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); 
+        background: linear-gradient(to right, rgba(221,221,221,1) 0%,rgba(229,229,229,1) 50%,rgba(221,221,221,1) 100%); 
+        */
+    }
+
+    /*.navbar:hover #appnavbar{background-image:none;}*/
+
+    .navbar .nav > li,
+    .navbar .nav > li a{
+        background-color: transparent;    
+    }
+
+    .navbar li.divider{display:none;}
+
+
+    .clDashboard{
+        border-radius:0;
+        border-top:1px solid white;
+    }
+
+    .navbar .divider-vertical{
+        display:none!important;
+    }
+
+    #appnavbar li{
+        float:left;
+        clear:left;
+        width:100%;
+    }
+
+    #appnavbar li a,
+    .navbar .nav li a{
+        left:6px;
+        padding-right:6px;
+        white-space: normal;
+        line-height: 1em;
+    }
+    
+    #appnavbar > li > a{padding-left:10px;padding-right:10px;}
+
+    .navbar #appnavbar > li > a > img{
+        margin:0px;
+        height:32px;
+        width:32px;
+        /*image-rendering: -moz-crisp-edges;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: -o-crisp-edges;
+        image-rendering: -webkit-optimize-contrast;
+        -ms-interpolation-mode: nearest-neighbor;
+        filter: contrast(1);
+        image-rendering: pixelated;   */ 
+    }
+
+    .navbar:hover #appnavbar > li > a > img{ /* hover */
+        margin-right:15px;
+    }
+
+    .navbar #appnavbar > li > a > span{
+        display:inline-block!important;
+        width:0!important;
+        height:0!important;
+        padding:0;
+        top:-15px;
+        padding:0;
+        opacity:0;
+        overflow:hidden;
+    /*    transition: opacity 0.3s linear;*/
+    }
+
+    .navbar:hover #appnavbar > li > a > span{ /* hover */
+        display:inline-block!important;    
+        width:auto!important;
+        height:auto!important;
+        padding:0 10px 0 0px;
+        opacity:100;
+        overflow:hidden;
+    /*    transition: opacity 0.3s linear;*/
+    }
+
+
+    #appnavbar > li.dropdown > a > b.caret{
+        display:none;
+    }  
+    
+    #appnavbar:hover > li.dropdown > a > b.caret,
+    .navbar:hover #appnavbar > li.dropdown > a > b.caret{
+        display:block;
+        -ms-transform: rotate(270deg);
+        -webkit-transform: rotate(270deg);
+        transform: rotate(270deg);
+        margin-bottom:7px;
+    }  
+
+
+    /*  DROPDOWNS  */
+
+    /* note to self: ul.dropdown-menu = ul.pull-right */
+
+    .navbar ul.dropdown-menu{
+        position:fixed;
+        top:0px;
+        height:100%;
+        z-index:9;
+        flex-wrap: wrap;
+        border-radius:0;    
+        width:180px!important;
+        margin:0;
+        border:0;
+        /*display:block!important;*/ /* Useful for debugging, keeps the menu open */
+    }
+    
+    #appnavbar ul.dropdown-menu a img {
+        margin:15px;
+        height:32px;
+        width:32px;
+    }
+
+    .navbar ul.dropdown-menu li{ 
+        background-color:#eee;
+    }
+
+    /*
+    .navbar ul.dropdown-menu li a{
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar ul.dropdown-menu li span{
+        top:0;
+        flex-grow: 1;
+    }*/
+
+
+    .navbar li a{
+        display: flex;
+        align-items: center;
+    }
+
+    .navbar li span{
+        top:0;
+        flex-grow: 1;
+    }
+
+
+    .navbar .dropdown-submenu > a:after{
+    border-left-color:#999;
+    transform: scale(1.2,1.2);
+    }
+
+
+    /* first tier */
+    #appnavbar > li > .dropdown-menu.pull-right{ /* .dropdown-menu.pull-right */
+        left:52px!important;
+        /*right:auto!important;*/
+        height:100%;
+        /*height:calc(100% + 5px);
+        top:-5px; */
+        /*flex-direction:column-reverse;
+        justify-content: flex-end;
+        flex-wrap: wrap!important;  */
+        box-shadow: none;
+        border-left:none;
+        border-radius: 0;
+    }
+
+    /*.navbar:hover #appnavbar > li > .dropdown-menu.pull-right{
+        display:flex;
+    }*/
+
+    #appnavbar > li > .dropdown-menu.pull-right:after{display:none}
+
+    .navbar .nav > li > .dropdown-menu.pull-right{
+        left:58px!important;
+        right:auto!important;
+    }
+
+    #mHardware{border-top:1px solid white;}
+
+    #appnavbar .dropdown-menu li a{
+        -webkit-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
+        -moz-box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
+        box-shadow: inset 0px 1px 1px 0px rgba(0, 0, 0, 0.05);
+        height:30px;
+    }
+
+
+    /* second tier */
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+        height:100%;
+        right:auto!important;
+        top:0;
+        display:block;
+        /*
+        flex-direction:column;
+        flex-wrap: wrap!important;
+        justify-content:flex-start;*/
+        box-shadow: none;
+        border-left:1px solid #fff;
+        left: 225px!important;
+        border-radius: 0;
+    }
+
+    
+    .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+        display:block
+    }  
+    /*
+    .navbar:hover .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+        display:block
+    }  
+    */
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li{
+        /*flex-grow: 1;*/
+    }
+
+    .navbar:hover .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+    }
+
+    .navbar .pull-right > li > .dropdown-menu .dropdown-menu, 
+    .navbar .nav > li > .dropdown-menu.pull-right .dropdown-menu{
+        border-left:1px solid white;
+        /*flex-wrap: wrap!important;  */  
+    }
+
+
+    .navbar #appnavbar > li > .dropdown-menu > li.dropdown-submenu > a  {
+        display:none!important; /* these buttons are no longer needed */
+        text-align:right;
+    }
+    
+    /*  FLIP HARDWARE IMAGE - just for fun*/
+    /*
+    #appnavbar #cHardware img {
+        -moz-transform: scaleY(-1);
+        -o-transform: scaleY(-1);
+        -webkit-transform: scaleY(-1);
+        transform: scaleY(-1);
+        filter: FlipV;
+        -ms-filter: "FlipV";
+    }
+    *
+
+
+    /* third tier */
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
+        position: absolute;
+        left: 178px;
+        flex-wrap: wrap;
+        /*align-items: center;*/
+        align-content: center;
+        border-radius:0;
+    }
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right li a{
+        width: 100%;
+        min-height: 30px;
+        padding: 10px;
+        margin-bottom:1px;
+        /*-webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2)!important;
+        box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2)!important;*/
+    }
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu:hover > .dropdown-menu.pull-right{
+        display:flex;
+    }
+
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu:hover > a:after{
+        border-left-color:#0066cc;
+        transform: scale(1.4,1.4);
+        /*transition: all 0.5s ease;  */  
+    }
+
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right li{
+
+    }
+
+    
+    
+
+    /* EXPERIMENT - forcing the third tier to always be open on mobile devices. */
+
+    body#mobile .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
+        display:block;
+    }
+
+    
+
+    /* and then only undo all that for the rare times that we know for sure the device is not mobile/tablet.*/
+    
+    /*
+    body#notMobile .navbar #appnavbar > li.open > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left > li.dropdown-submenu > .dropdown-menu.pull-right{
+        display:initial;
+        top:0;
+        height:100%;
+    }
+    
+    body#notMobile .navbar #appnavbar #cDataPush + ul.dropdown-menu.pull-right{
+        height:100%;
+        top:0;
+    }
+    */
+    
+    
+    
+    
+    
+    
+    
+} /*  closing the hiding for small screens. */
+
+
+
+
+/* The following media queries allow the menu to scale independently in both X and Y axis. */
+
+/*
+@media all and (min-width : 769px){
+
+    #holder{
+        width: calc(100% - 83px);
+        left: 73px;
+    }
+    
+    .navbar #appnavbar > li > a > img,
+    #appnavbar a img{
+        margin-left:10px;
+        margin-right:10px;
+    }
+    
+    #appnavbar > li > a{
+        padding-left:10px!important;
+        padding-right:10px!important;
+    }      
+    
+    #appnavbar{
+        top:60px;
+    }    
+    
+    .navbar .container .brand{
+        top:20px;
+        height:60px;
+    }
+    
+    .navbar:hover #appnavbar > li > a > span {
+        padding-right:10px;
+    }
+    
+    .navbar:hover .container .brand h1{
+        opacity:100;
+        transform: translate(0px);    
+    }
+    
+    #appnavbar > li.open > .dropdown-menu.pull-right{
+        left:64px!important;
+    }
+    .navbar .nav > li > .dropdown-menu.pull-right > li.dropdown-submenu > .dropdown-menu.pull-left{
+        left:243px!important;
+    }  
+    
+}*/ 
+/*  225  */
+
+
+
+
+/*  A little vertical shrinking on short screens */
+@media all and (max-height: 690px) and (min-width : 480px) {
+    #appnavbar a img{ 
+        margin-top:5px!important;
+        margin-bottom:5px!important;        
+    }    
+
+    #appnavbar li a {
+        padding-top:0!important;
+        padding-bottom:0px!important; 
+        /*padding: 0px 5px 0px 5px!important;*/
+    }
+}
+
+
+/*  Somemore vertical vertical shrinking  */
+@media all and (max-height: 590px) and (min-width : 480px)  {
+    #appnavbar a img{
+        margin-top:1px!important;
+        margin-bottom:1px!important;
+    }
+    #appnavbar li a {
+        padding-top:0;
+        padding-bottom: 0px; /*padding: 0px 5px 0px 5px!important;*/
+    }
+    
+    #appnavbar .dropdown-menu li a{height:30px}
+}
+
+\
+/*  for very short screens  */
+@media all and (max-height: 480px) and (min-width : 480px){
+    
+    /*
+    .navbar .container .brand img{left:11px;}
+    .navbar:hover .container .brand h2 {left:10px}
+    */
+    
+    #appnavbar a img{
+        margin-top:0px!important;  
+        margin-bottom:0px!important;         
+    }
+    
+    #appnavbar {top:30px; overflow:auto;}    
+    #appnavbar .dropdown-menu{
+        top:0;
+        padding-top:0;
+    }
+    
+    #appnavbar .dropdown-menu li a{height:auto;}
+/*    
+    #appnavbar > li > a {
+        padding: 0px 10px!important;
+    }
+    
+    #appnavbar  li  a {
+        padding: 0px 10px!important;
+    }*/
+    
+    /*#appnavbar > li > a > span {
+        padding: 0 10px 0px 0px;
+    }*/
+    
+    .clDashboard{display:none}
+    
+}
+
+
+@media all and (max-width: 479px){
+    
+    .navbar-fixed-top .navbar-inner, 
+    .navbar-static-top .navbar-inner {
+        padding: 0px 00px 0 0;
+        display:flex;
+    }
+    
+}
+
+/*  FIXES  */
+
+/* width sometimes stays stuck after dragging */
+
+
+/* The floorplan doesn't like a side menu.. */
+
+
+#floorplancontent{
+    top: 10px!important;
+}
+
+#floorplancontent #fpwrapper SVG{
+    transform: scale(0.95, 0.95);
+}
+
+/*  Blockly doesn't like a side menu..  */
+
+#IMain{
+    margin-left:35px;
+    transform: scale(0.9, 0.9);
+}
+
+
+
+
+@media all and (min-width: 768px){
+    
+    .navbar #appnavbar{top:21px;}
+    
+    #appnavbar > li > .dropdown-menu.pull-right{padding-top:50px;}
+
+}
+
+
+
+/*  This is important. It makes room for the side-menu. It does this by completely taking over from Bootstrap. */
+
+@media all and (min-width: 768px) and (max-width: 1300px){
+
+    #main-view > .container {width:100%!important}
+   
+    div.ui-draggable:not(.ui-dialog),
+    .span4{
+        width:calc(100% / 3 - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
+
+    
+    
+    #main-view > .container {width:100%}
+}
+
+
+@media all and (min-width: 768px) and (max-width: 900px){
+
+    /*  Overrides the rule above, to go from 3 columns to 2 columns on narrower screens if the new CSS3 flexible display is available. */
+
+    .CSS3 div.ui-draggable,
+    .CSS3 .span4 {
+        width:calc(50% - 20px)!important;
+        -webkit-box-sizing: content-box;
+        -moz-box-sizing: content-box;
+        box-sizing: content-box;    
+    }
+    
+}
