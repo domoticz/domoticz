@@ -1183,6 +1183,7 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 
 	boost::unique_lock<boost::shared_mutex> scenesgroupsMutexLock(m_scenesgroupsMutex);
 	std::map<uint64_t, _tScenesGroups>::iterator itt = m_scenesgroups.find(ulDevID);
+	bool bEventTrigger = true;
 	if (itt != m_scenesgroups.end())
 	{
 		_tScenesGroups replaceitem = itt->second;
@@ -1192,11 +1193,8 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			replaceitem.scenesgroupValue = "On";
 		else
 			replaceitem.scenesgroupValue = "Mixed";
-
-		replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
-		if (GetEventTrigger(ulDevID, REASON_SCENEGROUP, true))
+		bEventTrigger = GetEventTrigger(ulDevID, REASON_SCENEGROUP, true);
+		if (bEventTrigger)
 		{
 			_tEventQueue item;
 			item.nValueWording = replaceitem.scenesgroupValue;
@@ -1206,13 +1204,14 @@ bool CEventSystem::UpdateSceneGroup(const uint64_t ulDevID, const int nValue, co
 			item.nValue = nValue;
 			item.devname = replaceitem.scenesgroupName;
 			item.sValue = replaceitem.scenesgroupValue;
-			item.lastUpdate = lastUpdate;
+			item.lastUpdate = itt->second.lastUpdate;
 			item.trigger = NULL;
 			m_eventqueue.push(item);
-			return true;
 		}
+		replaceitem.lastUpdate = lastUpdate;
+		itt->second = replaceitem;
 	}
-	return false;
+	return bEventTrigger;
 }
 
 
@@ -1234,9 +1233,6 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 		if (varType != -1)
 			replaceitem.variableType = varType;
 
-		replaceitem.lastUpdate = lastUpdate;
-		itt->second = replaceitem;
-
 		if (GetEventTrigger(ulDevID, REASON_USERVARIABLE, false))
 		{
 			_tEventQueue item;
@@ -1244,9 +1240,12 @@ void CEventSystem::UpdateUserVariable(const uint64_t ulDevID, const std::string 
 			item.DeviceID = 0;
 			item.varId = ulDevID;
 			item.sValue = varValue;
-			item.lastUpdate = lastUpdate;
+			item.lastUpdate = itt->second.lastUpdate;
 			m_eventqueue.push(item);
 		}
+		replaceitem.lastUpdate = lastUpdate;
+		itt->second = replaceitem;
+
 	}
 }
 
