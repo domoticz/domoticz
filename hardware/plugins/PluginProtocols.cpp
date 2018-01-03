@@ -31,7 +31,7 @@ namespace Plugins {
 	void CPluginProtocol::ProcessInbound(const ReadMessage* Message)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
-		ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer);
+		onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(RecvMessage);
@@ -76,7 +76,7 @@ namespace Plugins {
 		if (m_sRetainedData.size())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-			ReceivedMessage*	RecvMessage = new ReceivedMessage(pPlugin, pConnection, m_sRetainedData);
+			onMessageCallback*	RecvMessage = new onMessageCallback(pPlugin, pConnection, m_sRetainedData);
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(RecvMessage);
@@ -97,7 +97,7 @@ namespace Plugins {
 		int iPos = sData.find_first_of('\r');		//  Look for message terminator 
 		while (iPos != std::string::npos)
 		{
-			ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos]));
+			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos]));
 			{
 				boost::lock_guard<boost::mutex> l(PluginMutex);
 				PluginMessageQueue.push(RecvMessage);
@@ -128,7 +128,7 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sData);
+					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData);
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
@@ -140,7 +140,7 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sMessage);
+				onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
@@ -195,7 +195,7 @@ namespace Plugins {
 				if (iPos != std::string::npos)
 				{
 					int iEnd = iPos + m_Tag.length() + 3;
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, sData.substr(0, iEnd));
+					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData.substr(0, iEnd));
 					{
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
@@ -353,7 +353,7 @@ namespace Plugins {
 							Py_DECREF(pObj);
 						}
 
-						ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, pDataDict);
+						onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
 						boost::lock_guard<boost::mutex> l(PluginMutex);
 						PluginMessageQueue.push(RecvMessage);
 						m_sRetainedData.clear();
@@ -398,7 +398,7 @@ namespace Plugins {
 									Py_DECREF(pObj);
 								}
 
-								ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, pDataDict);
+								onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
 								boost::lock_guard<boost::mutex> l(PluginMutex);
 								PluginMessageQueue.push(RecvMessage);
 								m_sRetainedData.clear();
@@ -466,7 +466,7 @@ namespace Plugins {
 						Py_DECREF(pObj);
 					}
 
-					ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, DataDict);
+					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, DataDict);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(RecvMessage);
 					m_sRetainedData.clear();
@@ -808,7 +808,7 @@ namespace Plugins {
 
 		if (pDataDict)
 		{
-			ReceivedMessage*	RecvMessage = new ReceivedMessage(Message->m_pPlugin, Message->m_pConnection, pDataDict);
+			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(RecvMessage);
 		}

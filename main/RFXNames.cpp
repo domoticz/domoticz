@@ -127,6 +127,20 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
 		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
+		{ TTYPE_BEFORESUNATSOUTH, "Before Sun at South" },
+		{ TTYPE_AFTERSUNATSOUTH, "After Sun at South" },
+		{ TTYPE_BEFORECIVTWSTART, "Before Civil Twilight Start" },
+		{ TTYPE_AFTERCIVTWSTART, "After Civil Twiligt Start" },
+		{ TTYPE_BEFORECIVTWEND, "Before Civil Twilight End" },
+		{ TTYPE_AFTERCIVTWEND, "After Civil Twiligt End" },
+		{ TTYPE_BEFORENAUTTWSTART, "Before Nautical Twilight Start" },
+		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twiligt Start" },
+		{ TTYPE_BEFORENAUTTWEND, "Before Nautical Twilight End" },
+		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twiligt End" },
+		{ TTYPE_BEFOREASTTWSTART, "Before Astronomical Twilight Start" },
+		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twiligt Start" },
+		{ TTYPE_BEFOREASTTWEND, "Before Astronomical Twilight End" },
+		{ TTYPE_AFTERASTTWEND, "After Astronomical Twiligt End" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);

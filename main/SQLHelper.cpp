@@ -3395,8 +3395,10 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 
 	case pTypeTEMP:
 	case pTypeWEIGHT:
-	case pTypeUV:
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+		break;
+	case pTypeUV:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0", devname);
 		break;
 	case pTypeRAIN:
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0", devname);
