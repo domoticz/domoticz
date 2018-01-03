@@ -29,7 +29,7 @@
 #define _FatalErrorException_H
 
 #include <stdexcept>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 #include <sstream>
 

@@ -201,7 +201,7 @@ bool RelayNet::StopHardware()
 		disconnect();
 	}
 
-	try 
+	try
 	{
 		if (m_thread)
 		{
@@ -223,19 +223,11 @@ bool RelayNet::StopHardware()
 
 bool RelayNet::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	bool bOk = true;
-
 #if RELAYNET_USE_HTTP
-
-	bOk = WriteToHardwareHttp(pdata);
-
+	return WriteToHardwareHttp(pdata);
 #else
-
-	bOk = WriteToHardwareTcp(pdata);
-
+	return WriteToHardwareTcp(pdata);
 #endif
-
-	return bOk;
 }
 
 //===========================================================================
@@ -605,7 +597,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (!m_skip_relay_update && m_relay_count && (m_poll_relays || m_setup_devices))
 	{
-		for (int i=1; i <= m_relay_count ; i++)
+		for (uint16_t i=1; i <= m_relay_count ; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "RELAYON %d", i);
 			sChkstr = cTemp;
@@ -627,7 +619,7 @@ void RelayNet::ProcessRelaycardDump(char* Dump)
 
 	if (m_input_count && (m_poll_inputs || m_setup_devices))
 	{
-		for (int i = 1; i <= m_input_count; i++)
+		for (uint16_t i = 1; i <= m_input_count; i++)
 		{
 			snprintf(&cTemp[0], sizeof(cTemp), "IH %d", i);
 			sChkstr = cTemp;
@@ -673,8 +665,8 @@ void RelayNet::ParseData(const unsigned char *pData, int Len)
 
 //===========================================================================
 //
-//	Alternate way of turning relays on/off using HTTP. 
-//	Currently not used. 
+//	Alternate way of turning relays on/off using HTTP.
+//	Currently not used.
 //
 bool RelayNet::WriteToHardwareHttp(const char *pdata)
 {
@@ -702,7 +694,6 @@ bool RelayNet::WriteToHardwareHttp(const char *pdata)
 		std::stringstream 			sLogin;
 		std::string 				sAccessToken;
 		std::stringstream			sURL;
-		std::stringstream 			szPostData;
 		std::vector<std::string>	ExtraHeaders;
 		std::string 				sResult;
 		int 						relay = pSen->LIGHTING2.unitcode;

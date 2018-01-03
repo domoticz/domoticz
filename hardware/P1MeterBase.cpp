@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "P1MeterBase.h"
 #include "hardwaretypes.h"
+#include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
@@ -85,7 +86,6 @@ Match matchlist[] = {
 
 P1MeterBase::P1MeterBase(void)
 {
-	Init();
 }
 
 
@@ -133,6 +133,19 @@ void P1MeterBase::Init()
 	m_gastimestamp="";
 	m_gasclockskew=0;
 	m_gasoktime=0;
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT Value FROM UserVariables WHERE (Name='P1GasMeterChannel')");
+	if (!result.empty())
+	{
+		std::string s_gasmbuschannel = result[0][0];
+		if ((s_gasmbuschannel.length()==1) && (s_gasmbuschannel[0]>0x30) && (s_gasmbuschannel[0]<0x35)) // value must be a single digit number between 1 and 4
+		{
+			m_gasmbuschannel=(char)s_gasmbuschannel[0];
+			m_gasprefix[2]=m_gasmbuschannel;
+			_log.Log(LOG_STATUS,"P1 Smart Meter: Gas meter M-Bus channel %c enforced by 'P1GasMeterChannel' user variable", m_gasmbuschannel);
+		}
+	}
 }
 
 bool P1MeterBase::MatchLine()

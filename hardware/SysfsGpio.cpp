@@ -323,7 +323,6 @@ void CSysfsGpio::EdgeDetectThread()
 	depending on the input switch behavior.
 	*/
 
-	int retval = 0;
 	ssize_t nb;
 	fd_set tmp_fds;
 	timeval tv;
@@ -360,12 +359,11 @@ void CSysfsGpio::EdgeDetectThread()
 		tv.tv_sec = 1;	// Set select timeout to 1 second.
 		tv.tv_usec = 0;
 		memcpy(&tmp_fds, &m_rfds, sizeof(tmp_fds));
-		int value = -1;
 
 		//-------------------------------------------------------------------
 		//	Wait for GPIO interrupt.
 		//
-		retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
+		int retval = select(m_maxfd + 1, NULL, NULL, &tmp_fds, &tv);
 
 		if (m_stoprequested)
 		{
@@ -385,7 +383,7 @@ void CSysfsGpio::EdgeDetectThread()
 					(m_saved_state[i].direction == GPIO_IN) &&
 					(m_saved_state[i].edge != GPIO_EDGE_NONE)))
 				{
-					value = GpioReadFd(m_saved_state[i].edge_fd);
+					int value = GpioReadFd(m_saved_state[i].edge_fd);
 					GpioSaveState(i, value);
 					FD_CLR(m_saved_state[i].edge_fd, &tmp_fds);
 					GpioWrite(m_saved_state[i].edge_fd, 1);
@@ -676,8 +674,7 @@ void CSysfsGpio::UpdateDomoticzDatabase()
 
 			if (!result.empty())
 			{
-				vector<string> sd = result[0];
-
+				//vector<string> sd = result[0];
 				m_saved_state[i].value = GpioRead(m_saved_state[i].pin_number, "value");
 
 				m_sql.safe_query(
@@ -699,8 +696,6 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 	{
 		if ((m_saved_state[i].direction == GPIO_IN) && (m_saved_state[i].value != -1))
 		{
-			bool	updateDatabase = false;
-			bool	log_db_change = false;
 			int		state = GPIO_LOW;
 
 			if (m_saved_state[i].active_low)
@@ -720,6 +715,8 @@ void CSysfsGpio::UpdateDomoticzInputs(bool forceUpdate)
 
 			if ((m_saved_state[i].db_state != state) || (forceUpdate))
 			{
+				bool	updateDatabase = false;
+				bool	log_db_change = false;
 				vector< vector<string> > result = m_sql.safe_query("SELECT nValue,Used FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 					m_HwdID,
 					m_saved_state[i].pin_number);
@@ -800,11 +797,9 @@ void CSysfsGpio::UpdateDeviceID(int pin)
 	{
 		/* Existing pin was found */
 
-		string sdeviceid;
-		int id1, id2, id3, id4;
-
 		if (m_saved_state[index].id_valid == -1)
 		{
+			string sdeviceid;
 			vector< vector<string> > result = m_sql.safe_query("SELECT DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)",
 				m_HwdID,
 				pin);
@@ -935,7 +930,6 @@ int CSysfsGpio::GpioRead(int gpio_pin, const char *param)
 	char value_str[GPIO_MAX_VALUE_SIZE];
 	int fd;
 	int bytecount = -1;
-	int retval = -1;
 
 	snprintf(path, GPIO_MAX_PATH, "%s%d/%s", GPIO_PATH, gpio_pin, param);
 	fd = open(path, O_RDONLY);
@@ -960,7 +954,6 @@ int CSysfsGpio::GpioRead(int gpio_pin, const char *param)
 int CSysfsGpio::GpioReadFd(int fd)
 {
 	int bytecount = -1;
-	int retval = -1;
 	char value_str[GPIO_MAX_VALUE_SIZE];
 
 	if (fd == -1)

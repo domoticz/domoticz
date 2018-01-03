@@ -163,7 +163,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_se
 		mosq->id[1] = 'o';
 		mosq->id[2] = 's';
 		mosq->id[3] = 'q';
-		mosq->id[4] = '/';
+		mosq->id[4] = '_';
 
 		for(i=5; i<23; i++){
 			mosq->id[i] = (rand()%73)+48;

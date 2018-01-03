@@ -91,7 +91,7 @@ _e1WireFamilyType ToFamily(const std::string& str);
 
 
 #define DEVICE_ID_SIZE  6
-void DeviceIdToByteArray(std::string deviceId,/*out*/unsigned char* byteArray);
+void DeviceIdToByteArray(const std::string &deviceId,/*out*/unsigned char* byteArray);
 std::string ByteArrayToDeviceId(const unsigned char* byteArray);
 
 unsigned char Crc16(const unsigned char* byteArray,size_t arraySize);

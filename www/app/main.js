@@ -14,7 +14,8 @@ require.config({
 		'ngDraggable': '../js/ngDraggable',
 		'ui.bootstrap': '../js/ui-bootstrap.min',
 		'angular.directives-round-progress': '../js/angular-round-progress-directive',
-		'angular.scrollglue': '../js/angular-scrollglue'
+		'angular.scrollglue': '../js/angular-scrollglue',
+		'angular-websocket': '../js/angular-websocket'
 	},
 	shim: {
 		'angularAMD': ['angular'],
@@ -30,6 +31,7 @@ require.config({
 		'ngDraggable': ['angular'],
 		'angular.directives-round-progress': ['angular'],
 		'angular.scrollglue': ['angular'],
+		'angular-websocket': ['angular']
 	},
 	deps: ['app']
 });

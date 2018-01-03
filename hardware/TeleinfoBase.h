@@ -2,7 +2,7 @@
 Domoticz Software : http://domoticz.com/
 File : TeleinfoBase.h
 Author : Blaise Thauvin
-Version : 1.5
+Version : 1.4
 Description : This class is used by various Teleinfo hardware decoders to process and display data
 		  It is currently used by EcoDevices, TeleinfoSerial
 		  Detailed information on the Teleinfo protocol can be found at (version 5, 16/03/2015)
@@ -13,11 +13,11 @@ History :
 1.0 2017-03-15 : Release candidate
 1.3 2017-04-01 : Added RateLimit
 1.4 2017-04-13 : Added DataTimeout
-1.5 2017-12-17 : Added  for meters lacking PAPP, thanks to H. Louertani*/
+*/
 
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -75,10 +75,9 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 			std::string rate;
 			std::string tariff;
 			std::string color;
-			time_t  last;
+			time_t   last;
 			bool    triphase;
-			bool    withPAPP; 	//For meters with no PAPP
-			int     CRCmode1;	// really a bool, but with a special "un-initialized state"
+			int    CRCmode1;	 // really a bool, but with a special "un-initialized state"
 			_tTeleinfo()
 			{
 				ISOUSC = 0;
@@ -112,7 +111,6 @@ class CTeleinfoBase : public CDomoticzHardwareBase
 				pAlertDemain = 10;
 				last = 0;
 				triphase = false;
-                		withPAPP = false;
 				CRCmode1 = 255;	 // means "bool not initialized yet", will be when running CRC Check for the first time
 			}
 		} Teleinfo;

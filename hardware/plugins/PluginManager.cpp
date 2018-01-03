@@ -5,6 +5,8 @@
 //
 #ifdef ENABLE_PYTHON
 
+#include <tinyxml.h>
+
 #include "PluginManager.h"
 #include "Plugins.h"
 #include "PluginMessages.h"
@@ -17,7 +19,6 @@
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "../json/json.h"
-#include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 #ifdef WIN32
 #	include <direct.h>
@@ -74,6 +75,8 @@ namespace Plugins {
 		m_bEnabled = false;
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
+		m_InitialPythonThread = NULL;
+		m_thread = NULL;
 	}
 
 	CPluginSystem::~CPluginSystem(void)
@@ -246,8 +249,10 @@ namespace Plugins {
 
 		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
 
+		// Create initial IO Service thread
 		ios.reset();
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+
 		while (!m_stoprequested)
 		{
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it

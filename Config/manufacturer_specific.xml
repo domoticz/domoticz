@@ -9,6 +9,8 @@
 		<Product type="1e12" id="015e" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
+		<Product type="6402" id="0100" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
+		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
 	</Manufacturer>
@@ -183,6 +185,7 @@
 		<Product type="0002" id="0000" name="Yale Touchscreen Deadbolt (YRD220)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0002" id="0209" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="8002" id="0600" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
+		<Product type="8002" id="1000" name="Yale Key Free Touchscreen Deadbolt (YRD446)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0002" id="0800" name="Yale Touchscreen Deadbolt (YRD120)" config="assa_abloy/TouchDeadbolt.xml" />
 		<Product type="0003" id="0409" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
 		<Product type="0003" id="0800" name="Yale Push Button Lever Lock (YRL210)" config="assa_abloy/PushButtonLever.xml"/>
@@ -228,6 +231,7 @@
 		<Product type="0020" id="0001" name="Energy Switch plus" config="BeNext/EnergySwitch.xml"/>
 		<Product type="0021" id="0001" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 		<Product type="0021" id="0100" name="Heating Control" config="BeNext/HeatingControl.xml"/>
+		<Product type="0021" id="0102" name="Heating Control" config="BeNext/HeatingControl.xml"/>
 		<Product type="002f" id="0100" name="P1 Dongle" config="BeNext/P1dongle.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002c" name="BeSafer">
@@ -310,6 +314,16 @@
 	</Manufacturer>
 	<Manufacturer id="0050" name="Digital 5">
 	</Manufacturer>
+	<Manufacturer id="021f" name="Dome">
+		<Product type="0003" id="0002" name="Water Shut-Off Valve" config="dome/0002.xml"/>
+		<Product type="0003" id="0083" name="Motion Detector" config="dome/0083.xml"/>
+		<Product type="0003" id="0085" name="Leak Sensor" config="dome/0085.xml"/>
+		<Product type="0003" id="0086" name="Mouser" config="dome/0086.xml"/>
+		<Product type="0003" id="0087" name="On/Off Plug-In Switch" config="dome/0087.xml"/>
+		<Product type="0003" id="0088" name="Siren" config="dome/0088.xml"/>
+		<Product type="0003" id="0101" name="Door/Window Sensor" config="dome/0101.xml"/>
+		<Product type="0003" id="0201" name="Door/Window Sensor Pro" config="dome/0201.xml"/>
+	</Manufacturer>
 	<Manufacturer id="020e" name="Domitech">
 		<Product type="4c42" id="3134" name="Smart LED Retrofit Kit ZE27EU" config="domitech/ze27eu.xml"/>
 		<Product type="4c42" id="3135" name="Smart LED Light Bulb ZB22UK" config="domitech/zb22uk.xml"/>
@@ -334,9 +348,9 @@
 	<Manufacturer id="014a" name="Ecolink">
 		<Product type="0001" id="0001" name="Motion Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0001" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
-		<Product type="0004" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
 		<Product type="0001" id="0003" name="Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0004" id="0001" name="Motion Detector" config="ecolink/motion.xml"/>
+		<Product type="0004" id="0002" name="Door/Window Sensor" config="ecolink/doorwindow.xml"/>
 		<Product type="0004" id="0003" name="Garage Door Tilt Sensor" config="ecolink/sensor.xml"/>
 		<Product type="0005" id="000f" name="FireFighter" config="ecolink/firefighter.xml"/>
 	</Manufacturer>
@@ -511,16 +525,29 @@
 	<Manufacturer id="0137" name="Followgood">
 		<Product type="3001" id="0002" name="SWZ-1002 Binary Power Switch"/>
 	</Manufacturer>
+	<Manufacturer id="0207" name="Forest Group Nederland B.V.">
+		<Product type="0027" id="0100" name="Shuttle L Z-Wave" config="forest/fs2z5232000002.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0084" name="FortrezZ">
+		<Product type="0013" id="0210" name="WWA-01AA - Wireless Water and Freeze Alarm" />
 		<Product type="0021" id="010a" name="WWA-02 Water and Temperature Alarm" config="fortrezz/wwa02.xml"/>
+		<Product type="0023" id="0109" name="WWA-02 Water and Temperature Alarm" config="fortrezz/wwa02.xml"/>
+		<Product type="0213" id="020c" name="WV-01 Automated Water Shut-Off Valve" config="fortrezz/wv01.xml"/>
 		<Product type="0241" id="0300" name="WV-01 Automated Water Shut-Off Valve" config="fortrezz/wv01.xml"/>
+		<Product type="0243" id="0216" name="WV-01 Automated Water Shut-Off Valve" config="fortrezz/wv01.xml"/>
 		<Product type="0311" id="0109" name="SSA1 / SSA2 - Siren/Strobe Light Alarm" config="fortrezz/ssa2.xml"/>
 		<Product type="0311" id="010b" name="SSA1 / SSA2 - Siren/Strobe Light Alarm" config="fortrezz/ssa2.xml"/>
+		<Product type="0313" id="0107" name="SSA1 / SSA2 - Siren/Strobe Light Alarm" config="fortrezz/ssa2.xml"/>
 		<Product type="0313" id="010b" name="SSA2 - Siren/Strobe Light Alarm" config="fortrezz/ssa2.xml"/>
 		<Product type="0331" id="010b" name="SSA3 - Siren/Strobe Light Alarm" config="fortrezz/ssa3.xml"/>
 		<Product type="0341" id="0205" name="SSA3 - Siren/Strobe Light Alarm" config="fortrezz/ssa3.xml"/>
-		<Product type="0453" id="0110" name="MIMOlite Wireless Interface/Bridge Module" config="fortrezz/mimolite.xml"/>
-		<Product type="0453" id="0111" name="MIMOlite Wireless Interface/Bridge Module" config="fortrezz/mimolite.xml"/>
+		<Product type="0343" id="0205" name="SSA3 - Siren/Strobe Light Alarm" config="fortrezz/ssa3.xml"/>
+		<Product type="0451" id="0111" name="MIMOlite" config="fortrezz/mimolite.xml"/>
+		<Product type="0453" id="0110" name="MIMOlite" config="fortrezz/mimolite.xml"/>
+		<Product type="0453" id="0111" name="MIMOlite" config="fortrezz/mimolite.xml"/>
+		<Product type="0463" id="0204" name="MIMO2+" config="fortrezz/mimo2plus.xml"/>
+		<Product type="0473" id="0110" name="FMI Flow Meter" config="fortrezz/fmi.xml"/>
+		<Product type="0513" id="0111" name="GDC1 Siren/Strobe Light Alarm"/>
 	</Manufacturer>
 	<Manufacturer id="0110" name="Frostdale">
 		<Product type="2411" id="0001" name="Nanogrid: FDN2nxx light switch - where n is 1, 2, 3 or 4 buttons"/>
@@ -541,9 +568,12 @@
 		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
+		<Product type="4944" id="3130" name="14295 In-Wall Smart Toggle Dimmer" config="ge/14295-dimmer-toggle.xml"/>
 		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
 		<Product type="494d" id="3034" name="26933 Smart Motion Dimmer" config="ge/26933-motion-dimmer.xml"/>
 		<Product type="4952" id="3036" name="14291 In-Wall Smart Switch" config="ge/14291-switch.xml"/>
+		<Product type="4952" id="3037" name="14292 In-Wall Smart Toggle Switch" config="ge/14292-toggle-switch.xml"/>
+		<Product type="4952" id="3038" name="14293 In-Wall Smart Toggle Switch" config="ge/14292-toggle-switch.xml"/>
 		<Product type="5250" id="3030" name="45603 Plugin Appliance Module"/>
 		<Product type="5250" id="3130" name="45604 Outdoor Module"/>
 		<Product type="4f50" id="3031" name="12720 Outdoor Smart Switch"/>
@@ -554,7 +584,10 @@
 		<Product type="4952" id="3032" name="12722 On/Off Relay Switch" config="ge/relay.xml"/>
 		<Product type="4952" id="3033" name="12727 In-Wall Smart Switch (Toggle)"/>
 		<Product type="4953" id="3032" name="32563 Hinge Pin Smart Door Sensor" config="ge/hinge-pin.xml"/>
+		<Product type="5052" id="3031" name="12719 Plug-in Smart Switch" config="ge/12719-plugin-switch.xml"/>
 		<Product type="5052" id="3033" name="14282 Plug-In Two-Outlet Smart Switch" config="ge/14282-plugin-switch.xml"/>
+		<Product type="6363" id="3533" name="ZW4001 In-Wall Decora Style On/Off Relay Switch" config="ge/zw4001-switch.xml"/>
+		<Product type="4c42" id="3031" name="ZW7101 Smart LED Light Bulb ZE26I" config="ge/ze26i.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0014" name="GoControl">
 		<Product type="5442" id="5436" name="GC-TBZ48L Battery Powered Z-Wave Plus Thermostat" config="gocontrol/GC-TBZ48L.xml" />
@@ -646,6 +679,11 @@
 		<Product type="0001" id="0002" name="RAone SmartPower Wall Appliance Module"/>
 		<Product type="0001" id="0001" name="RAone SmartDimmer Wall Dimmer Module"/>
 	</Manufacturer>
+	<Manufacturer id="0312" name="Inovelli">
+		<Product type="b211" id="241c" name="NZW36 Smart Plug-In Module (1 Channel)" config="inovelli/simple_module.xml"/>
+		<Product type="b221" id="251c" name="NZW37 Smart Plug-In Module (2 Channel)" config="inovelli/simple_module.xml"/>
+		<Product type="b212" id="271c" name="NZW39 Smart Plug (Dimmer)" config="inovelli/simple_module.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0006" name="Intel">
 	</Manufacturer>
 	<Manufacturer id="001c" name="IntelliCon">
@@ -723,6 +761,7 @@
 		<Product type="4450" id="3030" name="PD300Z-2 Plug-in Dimmer Module" config="linear/PD300Z-2.xml"/>
 		<Product type="4457" id="3034" name="WD500Z-1 Wall Dimmer Switch" config="linear/WD500Z-1.xml"/>
 		<Product type="4457" id="3331" name="WD1000Z-1 Wall Dimmer Switch"/>
+		<Product type="4744" id="3030" name="GD00Z-4 Garage Door Opener Remote Controller"/>
 		<Product type="4754" id="3038" name="LB60Z-1 Dimmable LED Light Bulb" config="linear/LB60Z-1.xml"/>
 		<Product type="5246" id="3133" name="FS20Z Isolated Contact Fixture Module"/>
 		<Product type="5250" id="3030" name="PS15Z-2 Plug-in Appliance Module"/>
@@ -731,6 +770,7 @@
 		<Product type="5343" id="3132" name="WA00Z-1 Scene Switch" config="linear/WA00Z-1.xml"/>
 		<Product type="5457" id="3033" name="WT00Z-1 3-Way Wall Accessory Switch" config="linear/WT00Z-1.xml"/>
 		<Product type="5442" id="5431" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
+		<Product type="5442" id="5436" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
 	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
 		<Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
@@ -804,6 +844,8 @@
 		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
 		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
+		<Product type="0003" id="108b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
+		<Product type="0003" id="108c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0178" name="Nexia">
 		<!-- full name in Z-wave database: Ingersoll Rand - Nexia Home Intelligence -->
@@ -857,6 +899,7 @@
 		<Product type="0003" id="0002" name="Danalock Circle/Square" config="polycontrol/doorlock.xml"/>
 		<Product type="0001" id="0001" name="Polylock" config="polycontrol/polylock.xml"/>
 		<Product type="0008" id="0002" name="Danalock V2 BTZE" config="polycontrol/doorlock.xml"/>
+		<Product type="0009" id="0001" name="Danalock V3 BTZE" config="polycontrol/doorlockv3.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0154" name="Popp">
 		<Product type="0001" id="0001" name="123658 Plug-in Switch plus Power Meter" config="popp/123658.xml"/>
@@ -949,6 +992,7 @@
 		<Product type="8000" id="0002" name="ZFM-80" config="remotec/zfm-80.xml" />
 		<Product type="0200" id="8031" name="ZTS-110" config="remotec/zts-110.xml" />
 		<Product type="0202" id="8031" name="ZTS-110" config="remotec/zts-110.xml" />
+		<Product type="0200" id="8170" name="ZTS-500US" config="remotec/zts-500.xml" />
 	</Manufacturer>
 	<Manufacturer id="0010" name="RCS">
 		<Product type="0001" id="0002" name="TZ43 Thermostat" config="rcs/therm0009.xml" />
@@ -1028,6 +1072,9 @@
 	</Manufacturer>
 	<Manufacturer id="006b" name="Tricklestar">
 	</Manufacturer>
+	<Manufacturer id="0330" name="Tronika">
+		<Product type="0003" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" config="tronika/zsc01d.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0049" name="Twisthink">
 	</Manufacturer>
 	<Manufacturer id="0080" name="Vero Duco">
@@ -1053,6 +1100,7 @@
 	</Manufacturer>
 	<Manufacturer id="0109" name="Vision">
 		<Product type="1001" id="0101" name="ZU1401 Z-Wave USB Stick"/>
+		<Product type="1001" id="0104" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="1001" id="0105" name="ZU1401 Z-Wave USB Stick"/>
 		<Product type="2001" id="0101" name="ZD2102 US Door/Window Sensor" config="vision/zd2102.xml"/>
 		<Product type="2001" id="0102" name="ZD2102 AU Door/Window Sensor" config="vision/zd2102.xml"/>
@@ -1067,6 +1115,7 @@
 		<Product type="2003" id="0301" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
 		<Product type="2003" id="0302" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
 		<Product type="2003" id="0306" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
+		<Product type="2003" id="0307" name="ZS5101 Shock and Vibration Sensor" config="vision/zs5101eu.xml"/>
 		<Product type="2004" id="0403" name="ZS6101 Smoke Detector"/>
 		<Product type="2005" id="0503" name="ZM1601 Battery Operated Siren" config="vision/zm1601eu.xml"/>
 		<Product type="2005" id="0505" name="ZM1601 Battery Operated Siren" config="vision/zm1601eu.xml"/>
@@ -1084,10 +1133,12 @@
 		<Product type="2012" id="1203" name="ZR1202 Repeater"/>
 		<Product type="2014" id="1401" name="ZL7101 Plug-in Dimmer Module"/>
 		<Product type="2017" id="1717" name="ZL7432 In-Wall Switch, Dual Relay"/>
+		<Product type="201a" id="1aa4" name="ZL7261 Plug-in Power Monitor" config="vision/zl7261.xml"/>
 		<Product type="201c" id="1c01" name="ZF5201 Flood sensor" config="vision/zf5201.xml"/>
 		<Product type="201f" id="1f10" name="ZD2201 Multisensor 4in1" config="vision/zd2201.xml"/>
 		<Product type="201f" id="1f20" name="ZD2301 Multisensor 4in1" config="vision/zd2301.xml"/>
 		<Product type="2021" id="2101" name="ZP3111 Multisensor 4in1" config="vision/zp3111.xml"/>
+		<Product type="2022" id="2201" name="ZD2105US-5 Recessed Door/Window Sensor" config="vision/zd2105us5.xml"/>
 		<Product type="3001" id="0104" name="ZM1602 Main Operated Siren"/>
 	</Manufacturer>
 	<Manufacturer id="004a" name="Visualize">
@@ -1168,9 +1219,11 @@
 	<Manufacturer id="0131" name="Zipato">
 		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
 		<Product type="0002" id="0003" name="Bulb 2" config="zipato/RGBBulb2.xml"/>
+		<Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>
 		<Product type="6131" id="4501" name="Zipato Mini Keypad" config="zipato/MiniKeypad.xml" />
 		<Product type="2001" id="0106" name="VS-ZD2102 Door/Window Sensor" config="zipato/vszd2102.xml" />
 		<Product type="2002" id="0205" name="ZP3102-EU Multisensor Duo" config="zipato/zp3102.xml"/>
+		<Product type="201f" id="1f20" name="ZD2301 Multisensor 4in1" config="vision/zd2301.xml"/>
 		<Product type="8002" id="1000" name="Smart Smoke Sensor HS1SA-Z" config="heiman/HS1SA-Z.xml"/>
 		<Product type="8003" id="1000" name="Combustible Gas Sensor HS1CG-Z" config="heiman/HS1CG-Z.xml"/>
 		<Product type="8004" id="1000" name="Water Leakage Sensor HS1WL-Z" config="heiman/HS1WL-Z.xml"/>
@@ -1179,14 +1232,23 @@
 	<Manufacturer id="027a" name="Zooz">
 		<Product type="0003" id="0082" name="ZSE08 Contact Sensor" config="zooz/zse08.xml" />
 		<Product type="0003" id="0083" name="ZSE09 Mini Sensor" config="zooz/zse09.xml" />
+		<Product type="b112" id="1f1c" name="ZEN22 Dimmer V2" config="zooz/zen22v2.xml"/>
+		<Product type="0003" id="0085" name="ZSE30 Water Sensor" config="zooz/zse30.xml" />
 		<Product type="0003" id="0087" name="ZEN07 Mini Plug" config="zooz/zen07.xml" />
 		<Product type="2021" id="2101" name="ZSE40 4-in-1 sensor" config="zooz/zse40.xml" />
 		<Product type="0003" id="0088" name="ZSE33 Smart Chime" config="zooz/zse33.xml" />
+		<Product type="0101" id="000a" name="ZEN06" config="zooz/zen06.xml"/>
+		<Product type="b111" id="251c" name="ZEN23 Toggle Switch V2" config="zooz/zen23.xml" />
 	</Manufacturer>
 	<Manufacturer id="015d" name="Zooz">
 		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />
+		<Product type="0111" id="231c" name="ZEN21 Switch" config="zooz/zen21.xml"/>
+		<Product type="0112" id="241c" name="ZEN22 Dimmer" config="zooz/zen22.xml"/>
 		<Product type="1111" id="1e1c" name="ZEN23 Toggle Switch" config="zooz/zen23.xml" />
 		<Product type="0111" id="1f1c" name="ZEN24 Dimmer Switch" config="zooz/zen24.xml" />
+	</Manufacturer>
+	<Manufacturer id="0315" name="Z Wave Products Inc.">
+    		<Product type="4447" id="3034" name="WD-100" config="zwp/WD-100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0021" name="Zykronix">
 	</Manufacturer>

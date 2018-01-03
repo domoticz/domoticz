@@ -64,12 +64,12 @@ public:
 	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
-	bool SwitchScene(const uint64_t idx, const std::string &switchcmd);
+	bool SwitchScene(const uint64_t idx, std::string switchcmd);
 	void CheckSceneCode(const uint64_t DevRowIdx, const unsigned char dType, const unsigned char dSubType, const int nValue, const char* sValue);
 	bool DoesDeviceActiveAScene(const uint64_t DevRowIdx, const int Cmnd);
 
 	bool SetSetPoint(const std::string &idx, const float TempValue);
-	bool SetSetPoint(const std::string &idx, const float TempValue, const int newMode, const std::string &until);
+	bool SetSetPoint(const std::string &idx, const float TempValue, const std::string &newMode, const std::string &until);
 	bool SetSetPointInt(const std::vector<std::string> &sd, const float TempValue);
 	bool SetThermostatState(const std::string &idx, const int newState);
 	bool SetClock(const std::string &idx, const std::string &clockstr);
@@ -139,6 +139,8 @@ public:
 
 	tcp::server::CTCPServer m_sharedserver;
 	std::string m_LastSunriseSet;
+	std::vector<int> m_SunRiseSetMins;
+	std::string m_DayLength;
 	std::vector<std::string> m_webthemes;
 	std::map<unsigned short, _tWindCalculationStruct> m_wind_calculator;
 
