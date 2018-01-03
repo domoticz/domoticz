@@ -18,7 +18,7 @@ public:
 	bool m_bdzVentsExist;
 
 private:
-	static CdzVents m_dzvents;
+
 	enum _eType
 	{
 		TYPE_UNKNOWN,	// 0
@@ -43,5 +43,6 @@ private:
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 
+	static CdzVents m_dzvents;
 	std::string m_version;
 };
