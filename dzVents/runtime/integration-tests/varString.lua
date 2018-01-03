@@ -24,6 +24,8 @@ end
 
 local testLastUpdate = function(trigger)
 	-- check if trigger.lastUpdate is older than the current time
+	print(dz.time.raw)
+	print(trigger.lastUpdate.raw)
 	local now = dz.time.secondsSinceMidnight
 	local results = (trigger.lastUpdate.secondsSinceMidnight < now)
 

@@ -66,6 +66,7 @@ local function DomoticzTestTools(port, debug)
     	local _json = table.concat(response)
 
     	local json = jsonParser:decode(_json)
+
     	local ok = json.status == 'OK'
 
         if (debug and not ok) then
@@ -76,6 +77,8 @@ local function DomoticzTestTools(port, debug)
             _.print(debug.traceback())
             _.print('--------------')
         end
+
+
     	return ok, json, result, respcode, respheaders, respstatus
     end
 
@@ -126,10 +129,12 @@ local function DomoticzTestTools(port, debug)
     end
 
     function self.createVariable(name, type, value)
+		-- todo, encode value
     	--type=command&param=saveuservariable&vname=myint&vtype=0&vvalue=1
     	local url = "type=command&param=saveuservariable&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
 
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
+
     	local idx = json.idx
 
     	return ok, idx, json, result, respcode, respheaders, respstatus
