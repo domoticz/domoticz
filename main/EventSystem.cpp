@@ -3758,8 +3758,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		}
 	}
 
-	if ( previousState.substr( 0, 9 ) == "Set Level" ) {
-		previousState = previousState.substr(0, 9);
+	if ( previousState.substr( 0, 9 ) == "Set Level" || previousState.substr( 0, 5 ) == "Level") {
+		previousState = "Set Level";
 	} else if ( previousState.substr( 0, 10 ) == "Set Volume" ) {
 		previousState = previousState.substr(0, 10);
 	}

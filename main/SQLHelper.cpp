@@ -3428,10 +3428,10 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, devname);
 		break;
 	case pTypeCURRENT:
-		//Current/Ampere 
+		//Current/Ampere
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname);
 		break;
-	case pTypeThermostat: //Thermostat Setpoint 
+	case pTypeThermostat: //Thermostat Setpoint
 	{
 		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -3447,95 +3447,95 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sTypePressure: //Pressure (Bar) 
-		case sTypePercentage: //Percentage 
-		case sTypeWaterflow: //Waterflow 
+		case sTypePressure: //Pressure (Bar)
+		case sTypePercentage: //Percentage
+		case sTypeWaterflow: //Waterflow
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
 		}
 		break;
-		case sTypeCounterIncremental:		//Counter Incremental 
+		case sTypeCounterIncremental:		//Counter Incremental
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
 			break;
-		case sTypeVoltage:		//Voltage 
+		case sTypeVoltage:		//Voltage
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.000", devname);
 		}
 		break;
-		case sTypeTextStatus:		//Text 
+		case sTypeTextStatus:		//Text
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "Hello World", devname);
 		}
 		break;
-		case sTypeAlert:		//Alert 
+		case sTypeAlert:		//Alert
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "No Alert!", devname);
 			break;
-		case sTypeSoundLevel:		//Sound Level 
+		case sTypeSoundLevel:		//Sound Level
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "65", devname);
 		}
 		break;
-		case sTypeBaro:		//Barometer (hPa) 
+		case sTypeBaro:		//Barometer (hPa)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1021.34;0", devname);
 		}
 		break;
-		case sTypeVisibility:		//Visibility (km) 
+		case sTypeVisibility:		//Visibility (km)
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "10.3", devname);
 			break;
-		case sTypeDistance:		//Distance (cm) 
+		case sTypeDistance:		//Distance (cm)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "123.4", devname);
 		}
 		break;
-		case sTypeSoilMoisture:		//Soil Moisture 
+		case sTypeSoilMoisture:		//Soil Moisture
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 3, devname);
 		}
 		break;
-		case sTypeLeafWetness:		//Leaf Wetness 
+		case sTypeLeafWetness:		//Leaf Wetness
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 2, devname);
 		}
 		break;
-		case sTypeKwh:		//kWh 
+		case sTypeKwh:		//kWh
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0;0.0", devname);
 		}
 		break;
-		case sTypeCurrent:		//Current (Single) 
+		case sTypeCurrent:		//Current (Single)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "6.4", devname);
 		}
 		break;
-		case sTypeSolarRadiation:		//Solar Radiation 
+		case sTypeSolarRadiation:		//Solar Radiation
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1.0", devname);
 		}
 		break;
-		case sTypeCustom:			//Custom 
+		case sTypeCustom:			//Custom
 		{
 			if (!soptions.empty())
 			{
@@ -3559,7 +3559,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		switch (SensorSubType)
 		{
 		case sTypeWIND1:			// sTypeWIND1
-		case sTypeWIND4:			//Wind + Temp + Chill 
+		case sTypeWIND4:			//Wind + Temp + Chill
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;N;0;0;0;0", devname);
 			break;
 		}
@@ -3570,13 +3570,13 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sSwitchGeneralSwitch:		//Switch 
+		case sSwitchGeneralSwitch:		//Switch
 		{
 			sprintf(ID, "%08lX", nid);
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "100", devname);
 		}
 		break;
-		case sSwitchTypeSelector:		//Selector Switch 
+		case sSwitchTypeSelector:		//Selector Switch
 		{
 			unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 			unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -3601,7 +3601,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sTypeLimitlessRGB:		//RGB switch 
+		case sTypeLimitlessRGB:		//RGB switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -3613,7 +3613,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			}
 		}
 		break;
-		case sTypeLimitlessRGBW:		//RGBW switch 
+		case sTypeLimitlessRGBW:		//RGBW switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -6766,7 +6766,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 		while (itt != m_background_task_queue.end())
 		{
 			if (_log.isTraceEnabled())
-				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
