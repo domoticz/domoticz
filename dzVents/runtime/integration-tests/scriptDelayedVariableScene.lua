@@ -21,25 +21,53 @@ return {
 			'vdScriptStart',
 			'vdScriptEnd',
 		},
-		variables = { 'var' }
+		variables = { 'var' },
+		scenes = { 'scScene' }
+	},
+	data = {
+		varOk = {initial = false},
+		sceneOk = {initial = false}
 	},
 	execute = function(dz, item)
 
 		local var = dz.variables('var')
+		local scene = dz.scenes('scScene')
 
 		if (item.name == 'vdScriptStart') then
+
 			if (not testLastUpdate(dz, var, 2)) then
 				-- oops
 				return
 			end
+
+			if (not testLastUpdate(dz, scene, 2)) then
+				-- oops
+				return
+			end
+
 			var.set('Zork is a dork').afterSec(2)
+			scene.switchOn().afterSec(3)
 			dz.devices('vdScriptEnd').switchOn().afterSec(4)
+
+		end
+
+		if (item.name == 'vdScriptEnd') then
+			if (dz.data.varOk and dz.data.sceneOk) then
+				dz.devices('vdScriptOK').switchOn()
+			end
 		end
 
 		if (item.isVariable) then
 			local res = testLastUpdate(dz, item, 4)
 			if (res) then
-				dz.devices('vdScriptOK').switchOn()
+				dz.data.varOk = true
+			end
+		end
+
+		if (item.isScene) then
+			local res = testLastUpdate(dz, item, 5)
+			if (res) then
+				dz.data.sceneOk = true
 			end
 		end
 	end

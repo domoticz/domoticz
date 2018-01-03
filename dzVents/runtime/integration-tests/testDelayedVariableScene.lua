@@ -7,11 +7,11 @@ local socket = require("socket")
 
 local _ = require 'lodash'
 
-local fsScripts = {'scriptDelayedVariable.lua'}
+local fsScripts = {'scriptDelayedVariableScene.lua'}
 
 describe('Test if selector switch afterSec() works', function ()
 
-	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK, switchIdx
+	local vdScriptStartIdx, vdScriptEndIdx, vdScriptOK, switchIdx, scSwitchIdx
 
 	setup(function()
 		local ok = TestTools.reset()
@@ -23,6 +23,11 @@ describe('Test if selector switch afterSec() works', function ()
 		ok, vdScriptStartIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptStart', 6)
 		TestTools.createVirtualDevice(dummyIdx, 'vdScriptEnd', 6)
 		ok, vdScriptOKIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptOK', 6)
+
+		ok, scSwitchIdx = TestTools.createVirtualDevice(dummyIdx, 'sceneSilentSwitch1', 6)
+
+		TestTools.createScene('scScene')
+		TestTools.addSceneDevice(sceneIdx, scSwitchIdx)
 
 		TestTools.installFSScripts(fsScripts)
 
