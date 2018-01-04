@@ -944,6 +944,26 @@ Many dzVents device methods support extra options, like controlling a delay or a
 
 Note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do; if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
+**Important note when using forXXX()**: Let's say you have a light that is triggered by a motion detector.  Currently the light is `Off` and you do this: `light.switchOn().forMin(5)`. What happens inside Domoticz is this:  at t<sub>0</sub> Domoticz issues the `switchOn()` command and schedules a command to restore the **current** state at t<sub>5</sub> which is `Off`. So at t<sub>5</sub> it will switch the light off.
+
+If, however, *before the scheduled `switchOff()` happens at t<sub>5</sub>*, new motion is detected and you send this command again at t<sub>2</sub> then something unpredictable may seem to happen: *the light is never turned off!* This is what happens:
+
+At t<sub>2</sub> Domoticz receives the `switchOn().forMin(5)` command again. It sees a scheduled command at t<sub>5</sub> and deletes that command (it is within the new interval). Then Domoticz performs the (unnecessary, it's already on) `switchOn()` command. Then it checks the current state of the light which is `On`!! and schedules a command to return to that state at t<sub>2+5</sub>=t<sub>7</sub>. So, at t<sub>7</sub> the light is switched on again. And there you have it: the light is not switched off and never will be because future commands will always be checked against the current on-state.
+
+That's just how it works and you will have to deal with it in your script. So, instead of simply re-issuing `switchOn().forMin(5)` you have to check the switch's state first:
+```
+if (light.active) then
+	light.switchOff().afterMin(5)
+else
+	light.switchOn().forMin(5)
+end
+```
+or
+```
+light.switchOff().checkFirst().afterMin(5)
+light.switchOn().checkFirst().forMin(5)
+```
+
 ####Availability
 Some options are not available to all commands. All the options are available to device switch-like commands like `myDevice.switchOff()`, `myGroup.switchOn()` or `myBlinds.open()`.  For updating (usually Dummy ) devices like a text device `myTextDevice.updateText('zork')` you can only use `silent()`.
 
@@ -1751,6 +1771,8 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
 - Added device adapter for Onkyo receiver hardware.
 - Added `scriptName` to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
+- Fixed bug in Domoticz where using forXXX() with selector switches didn't always work.
+- Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
 
 
 ##[2.3.0]
