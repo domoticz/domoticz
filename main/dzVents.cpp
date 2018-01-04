@@ -8,7 +8,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-extern std::string szUserDataFolder;
+extern std::string szUserDataFolder, szWebRoot;
 extern http::server::CWebServerHelper m_webservers;
 
 CdzVents CdzVents::m_dzvents;
@@ -428,6 +428,9 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eRe
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_listening_port");
 	lua_pushstring(lua_state, m_webservers.our_listener_port.c_str());
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "domoticz_webroot");
+	lua_pushstring(lua_state, szWebRoot.c_str());
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "domoticz_start_time");
 	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szStartTime.c_str());
