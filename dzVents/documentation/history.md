@@ -16,6 +16,8 @@
 - Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness and discoMode. See the documentation.
 - Added device adapter for Onkyo receiver hardware.
 - Added `scriptName` to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
+- Fixed bug in Domoticz where using forXXX() with selector switches didn't always work.
+- Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
 
 [2.3.0]
 
