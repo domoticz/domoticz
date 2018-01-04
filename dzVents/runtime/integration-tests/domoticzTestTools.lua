@@ -14,11 +14,16 @@ local generatedScriptTargetPath = '../../../scripts/dzVents/generated_scripts/'
 local dataTargetPath = '../../../scripts/dzVents/data/'
 local DUMMY_HW = 15
 
-local function DomoticzTestTools(port, debug)
+local function DomoticzTestTools(port, debug, webroot)
 
     if (port == nil) then port = 8080 end
 
     local BASE_URL = 'http://localhost:' .. port
+
+	if (webroot ~= '' and webroot ~= nil) then
+		BASE_URL = BASE_URL .. '/' .. webroot
+	end
+
     local API_URL = BASE_URL .. '/json.htm?'
 
 

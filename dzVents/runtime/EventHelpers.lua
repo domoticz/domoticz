@@ -32,6 +32,11 @@ local function EventHelpers(domoticz, mainMethod)
 		['Domoticz url'] = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
 	}
 
+	local webRoot = globalvariables['domoticz_webroot']
+	if (webRoot ~= '' and webRoot ~= nil) then
+		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. tostring(webRoot)
+	end
+
 	_G.logLevel = settings['Log level']
 
 	if (domoticz == nil) then
