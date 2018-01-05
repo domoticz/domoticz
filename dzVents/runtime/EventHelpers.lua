@@ -783,6 +783,7 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		domoticz.changedScenes().forEach(function(scene)
+			print(1111, scene.name)
 			processItem(scene, 'Scene')
 		end)
 
@@ -850,16 +851,20 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local httpResponseScripts = self.getHTTPResponseHandlers()
 
-		local response =_G.httpresponse
-		local callback = response.callback
+		local responses =_G.httpresponse
 
-		local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
+		for i, respsone in pairs(responses) do
 
-		if (scriptsToExecute ~= nil) then
-			utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
-			self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+			local callback = response.callback
+
+			local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
+
+			if (scriptsToExecute ~= nil) then
+				utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+				self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+			end
+
 		end
-
 
 		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray

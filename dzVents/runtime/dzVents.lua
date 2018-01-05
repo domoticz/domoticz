@@ -1,7 +1,7 @@
 local TESTMODE = true
 
 local currentPath = globalvariables['script_path'] -- should be path/to/domoticz/scripts/dzVents
-local triggerReason = globalvariables['script_reason']
+--local triggerReason = globalvariables['script_reason']
 
 _G.scriptsFolderPath = currentPath .. 'scripts' -- global
 _G.generatedScriptsFolderPath = currentPath .. 'generated_scripts' -- global
@@ -31,23 +31,35 @@ end
 commandArray = {}
 
 utils.log('dzVents version: 2.4.0', utils.LOG_DEBUG)
-utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
+--utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
 
-if triggerReason == "time" then
+local isTimeEvent = globalvariables['isTimeEvent']
+
+if (isTimeEvent) then
 	commandArray = helpers.dispatchTimerEventsToScripts()
-elseif triggerReason == "device" then
-	commandArray = helpers.dispatchDeviceEventsToScripts()
-elseif triggerReason == "uservariable" then
-	commandArray = helpers.dispatchVariableEventsToScripts()
-elseif triggerReason == 'security' then
-	commandArray = helpers.dispatchSecurityEventsToScripts()
-elseif triggerReason == 'scenegroup' then
-	commandArray = helpers.dispatchSceneGroupEventsToScripts()
-elseif triggerReason == 'url' then
-	commandArray = helpers.dispatchHTTPResponseEventsToScripts()
 else
-	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_ERROR)
+	helpers.dispatchDeviceEventsToScripts()
+	helpers.dispatchSecurityEventsToScripts())
+	helpers.dispatchSceneGroupEventsToScripts())
+	helpers.dispatchHTTPResponseEventsToScripts())
+	commandArray = helpers.domoticz.commandArray
 end
+
+-- if triggerReason == "time" then
+-- 	commandArray = helpers.dispatchTimerEventsToScripts()
+-- elseif triggerReason == "device" then
+-- 	commandArray = helpers.dispatchDeviceEventsToScripts()
+-- elseif triggerReason == "uservariable" then
+-- 	commandArray = helpers.dispatchVariableEventsToScripts()
+-- elseif triggerReason == 'security' then
+-- 	commandArray = helpers.dispatchSecurityEventsToScripts()
+-- elseif triggerReason == 'scenegroup' then
+-- 	commandArray = helpers.dispatchSceneGroupEventsToScripts()
+-- elseif triggerReason == 'url' then
+-- 	commandArray = helpers.dispatchHTTPResponseEventsToScripts()
+-- else
+-- 	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_ERROR)
+-- end
 
 if (TESTMODE) then
 	helpers.dumpCommandArray(commandArray, true)
