@@ -33,6 +33,34 @@ float CdzVents::RandomTime(const int randomTime)
 	return ((float)(rand() / (RAND_MAX / randomTime)));
 }
 
+void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+{
+	int index = 1;
+	int secstatus = 0;
+	std::string secstatusw = "";
+	lua_createtable(lua_state, 0, 0);
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+	for (itt = items.begin(); itt != items.end(); itt++)
+	{
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_SECURITY)
+		{
+			m_sql.GetPreferencesVar("SecStatus", secstatus);
+			if (itt->nValue == 1)
+				secstatusw = "Armed Home";
+			else if (itt->nValue == 2)
+				secstatusw = "Armed Away";
+			else
+				secstatusw = "Disarmed";
+
+			lua_pushnumber(lua_state, (lua_Number)index);
+			lua_pushstring(lua_state, secstatusw.c_str());
+			lua_rawset(lua_state, -3);
+			index++;
+		}
+	}
+	lua_setglobal(lua_state, "securityupdates");
+}
+
 void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int index = 1;

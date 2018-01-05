@@ -1113,6 +1113,7 @@ void CEventSystem::WWWUpdateSecurityState(int securityStatus)
 	item.reason = REASON_SECURITY;
 	item.DeviceID = 0;
 	item.varId = 0;
+	item.nValue = m_SecStatus;
 	m_eventqueue.push(item);
 }
 
@@ -3096,15 +3097,22 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
 	{
 		dzvents->ExportDomoticzDataToLua(lua_state, items);
+		bool reasonURL = false;
+		bool reasonSecurity = false;
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
 			if (itt->reason == REASON_URL)
-			{
-				dzvents->ProcessHttpResponse(lua_state, items);
-				break;
-			}
+				reasonURL = true;
+
+			if (itt->reason == REASON_SECURITY)
+				reasonSecurity = true;
 		}
+		if (reasonURL)
+			dzvents->ProcessHttpResponse(lua_state, items);
+
+		if (reasonSecurity)
+			dzvents->ProcessSecurity(lua_state, items);
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);

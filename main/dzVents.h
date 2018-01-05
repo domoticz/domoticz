@@ -13,6 +13,7 @@ public:
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 
 	std::string m_scriptsDir, m_runtimeDir;
 	bool m_bdzVentsExist;
