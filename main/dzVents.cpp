@@ -35,43 +35,52 @@ float CdzVents::RandomTime(const int randomTime)
 
 void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
+	int index = 1;
 	int statusCode;
+
+	lua_createtable(lua_state, 0, 0);
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
 	{
-		lua_createtable(lua_state, 0, 0);
-		lua_pushstring(lua_state, "headers");
-		lua_createtable(lua_state, (int)itt->vData.size(), 0);
-		if (itt->vData.size() > 0)
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_URL)
 		{
-			std::vector<std::string>::const_iterator itt2;
-			for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; itt2++)
+			lua_pushnumber(lua_state, (lua_Number)index);
+			lua_createtable(lua_state, 0, 0);
+			lua_pushstring(lua_state, "headers");
+			lua_createtable(lua_state, (int)itt->vData.size(), 0);
+			if (itt->vData.size() > 0)
 			{
-				size_t pos = (*itt2).find(": ");
-				if (pos != std::string::npos)
+				std::vector<std::string>::const_iterator itt2;
+				for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; itt2++)
 				{
-					lua_pushstring(lua_state, (*itt2).substr(0, pos).c_str());
-					lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
-					lua_rawset(lua_state, -3);
+					size_t pos = (*itt2).find(": ");
+					if (pos != std::string::npos)
+					{
+						lua_pushstring(lua_state, (*itt2).substr(0, pos).c_str());
+						lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
+						lua_rawset(lua_state, -3);
+					}
 				}
+				// last item in vector is always the status code
+				itt2 = itt->vData.end() - 1;
+				std::stringstream ss(*itt2);
+				ss >> statusCode;
 			}
-			// last item in vector is always the status code
-			itt2 = itt->vData.end() - 1;
-			std::stringstream ss(*itt2);
-			ss >> statusCode;
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "statusCode");
+			lua_pushnumber(lua_state, (lua_Number)statusCode);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "data");
+			lua_pushstring(lua_state, itt->sValue.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "callback");
+			lua_pushstring(lua_state, itt->nValueWording.c_str());
+			lua_rawset(lua_state, -3);
+			lua_settable(lua_state, -3); // number entry
+			index++;
 		}
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "statusCode");
-		lua_pushnumber(lua_state, (lua_Number)statusCode);
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "data");
-		lua_pushstring(lua_state, itt->sValue.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "callback");
-		lua_pushstring(lua_state, itt->nValueWording.c_str());
-		lua_rawset(lua_state, -3);
-		lua_setglobal(lua_state, "httpresponse");
 	}
+	lua_setglobal(lua_state, "httpresponse");
 }
 
 bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
@@ -387,7 +396,7 @@ void CdzVents::LoadEvents()
 	}
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eReason reason)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	std::stringstream lua_DirT;
 
@@ -401,8 +410,18 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eRe
 	lua_pushstring(lua_state, "script_path");
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "script_reason");
-	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szReason[reason].c_str());
+	bool timeEvent = false;
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+	for (itt = items.begin(); itt != items.end(); itt++)
+	{
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_TIME)
+		{
+			timeEvent = true;
+			break;
+		}
+	}
+	lua_pushstring(lua_state, "isTimeEvent");
+	lua_pushboolean(lua_state, timeEvent);
 	lua_rawset(lua_state, -3);
 
 	char szTmp[10];

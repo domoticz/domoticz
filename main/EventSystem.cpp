@@ -3096,8 +3096,15 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
 	{
 		dzvents->ExportDomoticzDataToLua(lua_state, items);
-		if (item.reason == REASON_URL)
-			dzvents->ProcessHttpResponse(lua_state, items);
+		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+		for (itt = items.begin(); itt != items.end(); itt++)
+		{
+			if (itt->reason == REASON_URL)
+			{
+				dzvents->ProcessHttpResponse(lua_state, items);
+				break;
+			}
+		}
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -3193,7 +3200,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
-		dzvents->SetGlobalVariables(lua_state, item.reason);
+		dzvents->SetGlobalVariables(lua_state, items);
 
 	lua_setglobal(lua_state, "globalvariables");
 

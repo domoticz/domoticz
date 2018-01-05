@@ -9,7 +9,7 @@ public:
 	static CdzVents* GetInstance() { return &m_dzvents; }
 	const std::string GetVersion();
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
-	void SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eReason reason);
+	void SetGlobalVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
