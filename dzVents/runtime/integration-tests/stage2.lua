@@ -744,7 +744,7 @@ return {
 			dz.devices('endResult').updateText('FAILED')
 		else
 			log('Results stage 2: SUCCEEDED')
-			dz.devices('endResult').updateText('SUCCEEDED')
+			dz.devices('endResult').updateText('ENDRESULT SUCCEEDED')
 		end
 
 		log('Finishing stage 2')

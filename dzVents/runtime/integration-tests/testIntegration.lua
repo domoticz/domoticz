@@ -602,7 +602,7 @@ describe('Integration test', function ()
 
 		it('Should have succeeded', function()
 
-			socket.sleep(23) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
+			socket.sleep(25) -- the trigger for stage 2 has a delay set to 4 seconds (afterSec(4))
 
 			local switchDimmerResultsDevice
 			local varStringResultsDevice
@@ -630,11 +630,11 @@ describe('Integration test', function ()
 			ok, switchSilentResultsDevice = TestTools.getDevice(switchSilentResultsIdx)
 			assert.is_true(ok)
 
-			assert.is_same('SUCCEEDED', endResultsDevice['Data'])
-			assert.is_same('SUCCEEDED', switchDimmerResultsDevice['Data'])
-			assert.is_same('SUCCEEDED', varStringResultsDevice['Data'])
-			assert.is_same('SUCCEEDED', secArmedAwayDevice['Data'])
-			assert.is_same('SUCCEEDED', scSceneResultsDevice['Data'])
+			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
+			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
+			assert.is_same('STRING VARIABLE SUCCEEDED', varStringResultsDevice['Data'])
+			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
+			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('Off', switchSilentResultsDevice['Status'])
 
 		end)

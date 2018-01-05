@@ -61,7 +61,7 @@ return {
 			dz.devices('varStringResults').updateText('FAILED')
 		else
 			dz.log('varString: Test variable: OK')
-			dz.devices('varStringResults').updateText('SUCCEEDED')
+			dz.devices('varStringResults').updateText('STRING VARIABLE SUCCEEDED')
 		end
 
 		-- finally cancel the queued command for varCancelled
