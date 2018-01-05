@@ -858,7 +858,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local responses =_G.httpresponse
 
 		if (responses ~= nil) then
-			for i, respsone in pairs(responses) do
+			for i, response in pairs(responses) do
 
 				local callback = response.callback
 
