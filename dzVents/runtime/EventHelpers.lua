@@ -403,7 +403,7 @@ local function EventHelpers(domoticz, mainMethod)
 		table.insert(bindings[event], module)
 	end
 
-	function self.getEventBindings(mode, testTime)
+	function self.getEventBindings(mode, testTime, securityState)
 		local bindings = {}
 		local errModules = {}
 		local internalScripts
@@ -578,7 +578,8 @@ local function EventHelpers(domoticz, mainMethod)
 									elseif (mode == 'security') then
 										if (type(j) == 'string' and j == 'security' and type(event) == 'table') then
 
-											local triggered, def = self.checkSecurity(event, self.domoticz.security)
+											-- local triggered, def = self.checkSecurity(event, self.domoticz.security)
+											local triggered, def = self.checkSecurity(event, securitState)
 											if (triggered) then
 												table.insert(bindings, module)
 												module.trigger = def
@@ -625,8 +626,8 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('httpResponse')
 	end
 
-	function self.getSecurityHandlers()
-		return self.getEventBindings('security')
+	function self.getSecurityHandlers(securityState)
+		return self.getEventBindings('security', nil, securityState)
 	end
 
 	function self.dumpCommandArray(commandArray, force)
@@ -804,9 +805,18 @@ local function EventHelpers(domoticz, mainMethod)
 	end
 
 	function self.dispatchSecurityEventsToScripts()
-		local scriptsToExecute = self.getSecurityHandlers()
-		self.handleEvents(scriptsToExecute, nil, nil, self.domoticz.security)
-		self.dumpCommandArray(self.domoticz.commandArray)
+
+		local updates =_G.securityupdates
+
+		if (updates ~= nil) then
+
+			for i, securityState in pairs(updates) do
+				local scriptsToExecute = self.getSecurityHandlers(securityState)
+				self.handleEvents(scriptsToExecute, nil, nil, securityState)
+			end
+			self.dumpCommandArray(self.domoticz.commandArray)
+		end
+
 
 		return self.domoticz.commandArray
 	end
