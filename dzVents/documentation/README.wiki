@@ -1863,10 +1863,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 == [2.4.0] ==
 
-* '''BREAKING CHANGE''': The second parameter passed to the <code>execute</code> function is no longer <code>nil</code> when the script was triggered by a timer or a security event. Please check your scripts. The second parameter now has checks to determine the type. E.g. <code>execute = function(domoticz, item) .. end</code>. You can inspect <code>item</code> using: <code>item.isDevice</code>, <code>item.isTimer</code>, <code>item.isVariable</code>, <code>item.isScene</code>, <code>item.isGroup</code>, <code>item.isSecurity</code>, <code>item.isHTTPResponse</code>. Please read the documentation about the execute function.
+* '''BREAKING CHANGE''': The second parameter passed to the execute function is no longer <code>nil</code> when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. <code>execute = function(domoticz, item) .. end</code>. You can inspect <code>item</code> using: <code>item.isDevice</code>, <code>item.isTimer</code>, <code>item.isVariable</code>, <code>item.isScene</code>, <code>item.isGroup</code>, <code>item.isSecurity</code>, <code>item.isHTTPResponse</code>. Please read the documentation about the execute function.
 * Added <code>.cancelQueuedCommands()</code> to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance <code>.afterMin(10)</code> or <code>.repeatAfterMin(1, 4)</code>
 * Added <code>.devices()</code> collection to scenes and groups to iterate (<code>forEach</code>, <code>filter</code>, <code>reduce</code>, <code>find</code>) over the associated devices.
-* Added http response event triggers to be used in combination with <code>openURL</code>. You can now do <code>GET</code> and <code>POST</code> request and handle the response in your dzVents scripts. See the documentation. No more json parsing needed or complex <code>curl</code> shizzle.
+* Added http response event triggers to be used in combination with <code>openURL</code>. You can now do <code>GET</code> and <code>POST</code> request and handle the response in your dzVents scripts '''ASYNCHRONICALLY'''. See the documentation. No more json parsing needed or complex <code>curl</code> shizzle.
 * Added a more consistent second parameter sent to the execute function. When a timer is triggered then the second parameter is a Timer object instead of nil. This way you can check the baseType of the second parameter and makes third parameter (triggerInfo) kind of obsolete. Every object bound to the second parameter now has a baseType.
 * Added locked/unlocked support for door-locks (locked == active).
 * Moved utility functions from the domoticz object to <code>domoticz.utils</code> object. You will see a deprecation warning when using the old function like <code>round()</code>, <code>toCelsius()</code> etc.
@@ -1874,14 +1874,15 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added <code>toJSON</code> and <code>fromJSON</code> methods to domoticz.utils.
 * Added <code>afterXXX()</code> and <code>withinXXX()</code> support for device-update commands. E.g.: <code>myTextDevice.updateText('Zork').afterMin(2)</code>.
 * Added support for Logitech Media Server devices (thanks to Eoreh).
-* Added new time rules: <code>on dd/mm</code>, <code>on */mm</code>, <code>on dd/*</code>, <code>on dd1/mm1-dd2/mm2</code>, <code>on -dd/mm</code>, <code>on dd/mm-</code>, <code>in week aa,bb,cc-dd,-ee, ff-</code>, <code>every even week</code>, <code>every odd week</code>
+* Added new timer rules: date rules: <code>on 13/07</code>, <code>on */03</code>, <code>on 12/*</code>, <code>on 12/04-22/09</code>, <code>on -24/03</code>, <code>on 19/11-</code>, week rules: <code>in week 12,15,19-23,-48,53-</code>, <code>every even week</code>, <code>every odd week</code>. See documentation.
 * Added historical data helper <code>delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)</code> to have a bit more control over smoothing. You can specify if want to smooth either the start value (reference) and/or the to value (compared value).
 * Added historical data helper <code>deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)</code>. This will use the oldest data value when the data set is shorter than timeAgo.
-* Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness. See the documentation.
+* Added support for Lighting Limitless/Applamp RGBW devices. You can now set Kelvin and RGB values, NightMode, WhiteMode and increase and decrease the brightness and discoMode. See the documentation.
 * Added device adapter for Onkyo receiver hardware.
 * Added <code>scriptName</code> to the triggerInfo object passed as the third parameter to the execute function. This holds the name of the script being executed.
 * Fixed bug in Domoticz where using forXXX() with selector switches didn't always work.
 * Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
+* Added support for webroot. dzVents will now use the proper API url when domoticz is started with the -webroot switch.
 
 == [2.3.0] ==
 
