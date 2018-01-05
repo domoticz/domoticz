@@ -819,6 +819,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local allEventScripts = self.getVariableHandlers()
 
+		local processed = false
 		domoticz.changedVariables().forEach(function(variable)
 
 			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. tostring(variable.value), utils.LOG_DEBUG)
@@ -837,10 +838,13 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, nil, variable, nil)
 			end
+			processed = true
 		end)
 
+		if (processed) then
+			self.dumpCommandArray(self.domoticz.commandArray)
+		end
 
-		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
 	end
 
@@ -853,20 +857,22 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local responses =_G.httpresponse
 
-		for i, respsone in pairs(responses) do
+		if (responses ~= nil) then
+			for i, respsone in pairs(responses) do
 
-			local callback = response.callback
+				local callback = response.callback
 
-			local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
+				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
-			if (scriptsToExecute ~= nil) then
-				utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
-				self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+				if (scriptsToExecute ~= nil) then
+					utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
+					self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+				end
+
 			end
 
+			self.dumpCommandArray(self.domoticz.commandArray)
 		end
-
-		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
 
 	end
