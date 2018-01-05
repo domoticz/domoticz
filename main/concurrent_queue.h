@@ -31,6 +31,10 @@ private:
 	boost::condition_variable the_condition_variable;
 
 public:
+	size_t size() const {
+		return the_queue.size();
+	}
+
 	void push(Data const& data) {
 		boost::mutex::scoped_lock lock(the_mutex);
 		the_queue.push(data);

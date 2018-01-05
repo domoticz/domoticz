@@ -33,41 +33,45 @@ float CdzVents::RandomTime(const int randomTime)
 	return ((float)(rand() / (RAND_MAX / randomTime)));
 }
 
-void CdzVents::ProcessHttpResponse(lua_State *lua_state, const CEventSystem::_tEventQueue &item)
+void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int statusCode;
-	lua_createtable(lua_state, 0, 0);
-	lua_pushstring(lua_state, "headers");
-	lua_createtable(lua_state, (int)item.vData.size(), 0);
-	if (item.vData.size() > 0)
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+	for (itt = items.begin(); itt != items.end(); itt++)
 	{
-		std::vector<std::string>::const_iterator itt;
-		for (itt = item.vData.begin(); itt != item.vData.end() - 1; itt++)
+		lua_createtable(lua_state, 0, 0);
+		lua_pushstring(lua_state, "headers");
+		lua_createtable(lua_state, (int)itt->vData.size(), 0);
+		if (itt->vData.size() > 0)
 		{
-			size_t pos = (*itt).find(": ");
-			if (pos != std::string::npos)
+			std::vector<std::string>::const_iterator itt2;
+			for (itt2 = itt->vData.begin(); itt2 != itt->vData.end() - 1; itt2++)
 			{
-				lua_pushstring(lua_state, (*itt).substr(0, pos).c_str());
-				lua_pushstring(lua_state, (*itt).substr(pos + 2).c_str());
-				lua_rawset(lua_state, -3);
+				size_t pos = (*itt2).find(": ");
+				if (pos != std::string::npos)
+				{
+					lua_pushstring(lua_state, (*itt2).substr(0, pos).c_str());
+					lua_pushstring(lua_state, (*itt2).substr(pos + 2).c_str());
+					lua_rawset(lua_state, -3);
+				}
 			}
+			// last item in vector is always the status code
+			itt2 = itt->vData.end() - 1;
+			std::stringstream ss(*itt2);
+			ss >> statusCode;
 		}
-		// last item in vector is always the status code
-		itt = item.vData.end() - 1;
-		std::stringstream ss(*itt);
-		ss >> statusCode;
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "statusCode");
+		lua_pushnumber(lua_state, (lua_Number)statusCode);
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "data");
+		lua_pushstring(lua_state, itt->sValue.c_str());
+		lua_rawset(lua_state, -3);
+		lua_pushstring(lua_state, "callback");
+		lua_pushstring(lua_state, itt->nValueWording.c_str());
+		lua_rawset(lua_state, -3);
+		lua_setglobal(lua_state, "httpresponse");
 	}
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "statusCode");
-	lua_pushnumber(lua_state, (lua_Number)statusCode);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "data");
-	lua_pushstring(lua_state, item.sValue.c_str());
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "callback");
-	lua_pushstring(lua_state, item.nValueWording.c_str());
-	lua_rawset(lua_state, -3);
-	lua_setglobal(lua_state, "httpresponse");
 }
 
 bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
@@ -443,7 +447,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const CEventSystem::_eRe
 	lua_rawset(lua_state, -3);
 }
 
-void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem::_tEventQueue &item)
+void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	int index = 1;
@@ -469,14 +473,26 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
 
 		bool triggerDevice = false;
-		if (sitem.ID == item.DeviceID && item.reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			triggerDevice = true;
-			sitem.lastUpdate = item.lastUpdate;
-			sitem.lastLevel = item.lastLevel;
-			sitem.sValue = item.sValue;
-			sitem.nValueWording = item.nValueWording;
-			sitem.nValue = item.nValue;
+			if (sitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+			{
+				triggerDevice = true;
+				sitem.lastUpdate = itt->lastUpdate;
+				sitem.lastLevel = itt->lastLevel;
+				sitem.sValue = itt->sValue;
+				sitem.nValueWording = itt->nValueWording;
+				sitem.nValue = itt->nValue;
+				if (itt->JsonMapString.size() > 0)
+					sitem.JsonMapString = itt->JsonMapString;
+				if (itt->JsonMapFloat.size() > 0)
+					sitem.JsonMapFloat = itt->JsonMapFloat;
+				if (itt->JsonMapInt.size() > 0)
+					sitem.JsonMapInt = itt->JsonMapInt;
+				if (itt->JsonMapBool.size() > 0)
+					sitem.JsonMapBool = itt->JsonMapBool;
+			}
 		}
 
 		//_log.Log(LOG_STATUS, "Getting device with id: %s", rowid.c_str());
@@ -596,9 +612,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 		// Now see if we have additional fields from the JSON data
 		if (sitem.JsonMapString.size() > 0)
 		{
-			if (triggerDevice && item.JsonMapString.size() > 0)
-				sitem.JsonMapString = item.JsonMapString;
-
 			std::map<uint8_t, std::string>::const_iterator itt;
 			for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
@@ -610,9 +623,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 
 		if (sitem.JsonMapFloat.size() > 0)
 		{
-			if (triggerDevice && item.JsonMapFloat.size() > 0)
-				sitem.JsonMapFloat = item.JsonMapFloat;
-
 			std::map<uint8_t, float>::const_iterator itt;
 			for (itt = sitem.JsonMapFloat.begin(); itt != sitem.JsonMapFloat.end(); ++itt)
 			{
@@ -624,9 +634,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 
 		if (sitem.JsonMapInt.size() > 0)
 		{
-			if (triggerDevice && item.JsonMapInt.size() > 0)
-				sitem.JsonMapInt = item.JsonMapInt;
-
 			std::map<uint8_t, int>::const_iterator itt;
 			for (itt = sitem.JsonMapInt.begin(); itt != sitem.JsonMapInt.end(); ++itt)
 			{
@@ -638,9 +645,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 
 		if (sitem.JsonMapBool.size() > 0)
 		{
-			if (triggerDevice && item.JsonMapBool.size() > 0)
-				sitem.JsonMapBool = item.JsonMapBool;
-
 			std::map<uint8_t, bool>::const_iterator itt;
 			for (itt = sitem.JsonMapBool.begin(); itt != sitem.JsonMapBool.end(); ++itt)
 			{
@@ -665,11 +669,15 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 	{
 		CEventSystem::_tScenesGroups sgitem = ittScenes->second;
 		bool triggerScene = false;
-		if (sgitem.ID == item.DeviceID && item.reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
+		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			triggerScene = true;
-			sgitem.lastUpdate = item.lastUpdate;
-			sgitem.scenesgroupValue = item.sValue;
+			if (sgitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
+			{
+				triggerScene = true;
+				sgitem.lastUpdate = itt->lastUpdate;
+				sgitem.scenesgroupValue = itt->sValue;
+			}
 		}
 
 		std::vector<std::vector<std::string> > result;
@@ -742,11 +750,15 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const CEventSystem:
 	{
 		CEventSystem::_tUserVariable uvitem = it_var->second;
 		bool triggerVar = false;
-		if (uvitem.ID == item.varId && item.reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
+		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			triggerVar = true;
-			uvitem.lastUpdate = item.lastUpdate;
-			uvitem.variableValue = item.sValue;
+			if (uvitem.ID == itt->varId && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
+			{
+				triggerVar = true;
+				uvitem.lastUpdate = itt->lastUpdate;
+				uvitem.variableValue = itt->sValue;
+			}
 		}
 
 		lua_pushnumber(lua_state, (lua_Number)index);

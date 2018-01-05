@@ -200,7 +200,9 @@ private:
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
-	void EvaluateEvent(const _tEventQueue &item);
+//	void EvaluateEvent(const _tEventQueue &item);
+	void EvaluateEvent(const std::vector<_tEventQueue> &items);
+
 	void EvaluateBlockly(const _tEventQueue &item);
 	bool parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID);
 	std::string ProcessVariableArgument(const std::string &Argument);
@@ -209,6 +211,7 @@ private:
 	void EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString);
 #endif
 	void EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString);
+	void EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString);
 	void luaThread(lua_State *lua_state, const std::string &filename);
 	static void luaStop(lua_State *L, lua_Debug *ar);
 	std::string nValueToWording(const uint8_t dType, const uint8_t dSubType, const _eSwitchType switchtype, const int nValue, const std::string &sValue, const std::map<std::string, std::string> & options);

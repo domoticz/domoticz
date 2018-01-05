@@ -1322,6 +1322,7 @@ void CEventSystem::EventQueueThread()
 {
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 	_tEventQueue item;
+	std::vector<_tEventQueue> items;
 
 	while (!m_stoprequested)
 	{
@@ -1336,7 +1337,14 @@ void CEventSystem::EventQueueThread()
 		_log.Log(LOG_STATUS, "EventSystem: \n DeviceID => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n varId => %" PRIu64 "\n lastUpdate => %s\n lastLevel => %d\n",
 			item.DeviceID, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.varId, item.lastUpdate.c_str(), item.lastLevel);
 #endif
-		EvaluateEvent(item);
+		items.push_back(item);
+		if (m_eventqueue.size() > 0)
+			continue;
+		else
+		{
+			EvaluateEvent(items);
+			items.clear();
+		}
 	}
 }
 
@@ -1403,13 +1411,14 @@ void CEventSystem::ProcessMinute()
 	m_eventqueue.push(item);
 }
 
-void CEventSystem::EvaluateEvent(const _tEventQueue &item)
+void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 {
 	if (!m_bEnabled)
 		return;
 
 	std::vector<std::string> FileEntries;
-	std::vector<std::string>::const_iterator itt;
+	std::vector<_tEventQueue>::const_iterator itt;
+	std::vector<std::string>::const_iterator itt2;
 	std::string filename;
 
 	if (!m_sql.m_bDisableDzVentsSystem)
@@ -1418,17 +1427,17 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 		std::string temp_prefix = m_printprefix;
 		m_printprefix = "dzVents";
 		if (dzvents->m_bdzVentsExist)
-			EvaluateLua(item, dzvents->m_runtimeDir + "dzVents.lua", "");
+			EvaluateLua(items, dzvents->m_runtimeDir + "dzVents.lua", "");
 		else
 		{
 			DirectoryListing(FileEntries, dzvents->m_scriptsDir, false, true);
-			for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+			for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
 			{
-				filename = *itt;
+				filename = *itt2;
 				if (filename.length() > 4 &&
 					filename.compare(filename.length() - 4, 4, ".lua") == 0)
 				{
-					EvaluateLua(item, dzvents->m_runtimeDir + "dzVents.lua", "");
+					EvaluateLua(items, dzvents->m_runtimeDir + "dzVents.lua", "");
 					break;
 				}
 			}
@@ -1439,105 +1448,108 @@ void CEventSystem::EvaluateEvent(const _tEventQueue &item)
 
 	bool bDeviceFileFound = false;
 	DirectoryListing(FileEntries, m_lua_Dir, false, true);
-	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+	for (itt = items.begin(); itt != items.end(); itt++)
 	{
-		filename = *itt;
-		if (filename.length() > 4 &&
-			filename.compare(filename.length() - 4, 4, ".lua") == 0 &&
-			filename.find("_demo.lua") == std::string::npos)
+		for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
 		{
-			if (item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
+			filename = *itt2;
+			if (filename.length() > 4 &&
+				filename.compare(filename.length() - 4, 4, ".lua") == 0 &&
+				filename.find("_demo.lua") == std::string::npos)
 			{
-				bDeviceFileFound = false;
-				boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-				std::map<uint64_t, _tDeviceStatus>::const_iterator itt2;
-				for (itt2 = m_devicestates.begin(); itt2 != m_devicestates.end(); ++itt2)
+				if (itt->reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
 				{
-					std::string deviceName = SpaceToUnderscore(LowerCase(itt2->second.deviceName));
-					if (filename.find("_device_" + deviceName + ".lua") != std::string::npos)
+					bDeviceFileFound = false;
+					boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+					std::map<uint64_t, _tDeviceStatus>::const_iterator itt3;
+					for (itt3 = m_devicestates.begin(); itt3 != m_devicestates.end(); ++itt3)
 					{
-						bDeviceFileFound = true;
-						if (deviceName == SpaceToUnderscore(LowerCase(item.devname)))
+						std::string deviceName = SpaceToUnderscore(LowerCase(itt3->second.deviceName));
+						if (filename.find("_device_" + deviceName + ".lua") != std::string::npos)
 						{
-							devicestatesMutexLock.unlock();
-							EvaluateLua(item, m_lua_Dir + filename, "");
-							break;
+							bDeviceFileFound = true;
+							if (deviceName == SpaceToUnderscore(LowerCase(itt->devname)))
+							{
+								devicestatesMutexLock.unlock();
+								EvaluateLua(*itt, m_lua_Dir + filename, "");
+								break;
+							}
 						}
 					}
+					if (!bDeviceFileFound)
+					{
+						devicestatesMutexLock.unlock();
+						EvaluateLua(*itt, m_lua_Dir + filename, "");
+					}
 				}
-				if (!bDeviceFileFound)
+				else if ((itt->reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
+					(itt->reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
+					(itt->reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
 				{
-					devicestatesMutexLock.unlock();
-					EvaluateLua(item, m_lua_Dir + filename, "");
+					EvaluateLua(*itt, m_lua_Dir + filename, "");
 				}
-			}
-			else if ((item.reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
-				(item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
-				(item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
-			{
-				EvaluateLua(item, m_lua_Dir + filename, "");
 			}
 		}
 		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
-	}
 
 #ifdef ENABLE_PYTHON
 
-	boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-	try
-	{
-		FileEntries.clear();
-		DirectoryListing(FileEntries, m_python_Dir, false, true);
-		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+		try
 		{
-			filename = *itt;
-			if (filename.length() > 3 &&
-				filename.compare(filename.length() - 3, 3, ".py") == 0 &&
-				filename.find("_demo.py") == std::string::npos)
+			FileEntries.clear();
+			DirectoryListing(FileEntries, m_python_Dir, false, true);
+			for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
 			{
-				if ((item.reason == REASON_DEVICE && filename.find("_device_") != std::string::npos) ||
-					(item.reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
-					(item.reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
-					(item.reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
+				filename = *itt2;
+				if (filename.length() > 3 &&
+					filename.compare(filename.length() - 3, 3, ".py") == 0 &&
+					filename.find("_demo.py") == std::string::npos)
 				{
-					EvaluatePython(item, m_python_Dir + filename, "");
+					if ((itt->reason == REASON_DEVICE && filename.find("_device_") != std::string::npos) ||
+						(itt->reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
+						(itt->reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
+						(itt->reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
+					{
+						EvaluatePython(*itt, m_python_Dir + filename, "");
+					}
 				}
+				// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
 			}
-			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .py or is demo file: %s", filename.c_str());
 		}
-	}
-	catch (...)
-	{
-	}
-	uservariablesMutexLock.unlock();
+		catch (...)
+		{
+		}
+		uservariablesMutexLock.unlock();
 #endif
 
-	EvaluateBlockly(item);
+		EvaluateBlockly(*itt);
 
-	// handle database held scripts
-	try {
-		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
-			bool eventActive = (it->EventStatus == 1);
-			if (eventInScope && eventActive) {
-				if (it->Interpreter == "Lua")
-					EvaluateLua(item, it->Name, it->Actions);
-				else if (it->Interpreter == "Python") {
+		// handle database held scripts
+		try {
+			boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+			std::vector<_tEventItem>::iterator it;
+			for (it = m_events.begin(); it != m_events.end(); ++it) {
+				bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[itt->reason])));
+				bool eventActive = (it->EventStatus == 1);
+				if (eventInScope && eventActive) {
+					if (it->Interpreter == "Lua")
+						EvaluateLua(*itt, it->Name, it->Actions);
+					else if (it->Interpreter == "Python") {
 #ifdef ENABLE_PYTHON
-					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-					EvaluatePython(item, it->Name, it->Actions);
-					//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
+						boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+						EvaluatePython(*itt, it->Name, it->Actions);
+						//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
 #else
-					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
+						_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
 #endif
+					}
 				}
 			}
 		}
-	}
-	catch (...) {
-		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
+		catch (...) {
+			_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
+		}
 	}
 }
 
@@ -2629,7 +2641,18 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 
 void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString)
 {
+	std::vector<_tEventQueue> items;
+	items.push_back(item);
+	EvaluateLua(items, filename, LuaString);
+}
+
+void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
+{
 	boost::lock_guard<boost::mutex> l(luaMutex);
+
+	_tEventQueue item;
+	if (items.size() > 0)
+		item = items[0];
 
 	//if (isEventscheduled(filename))
 	//{
@@ -3072,10 +3095,9 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	CdzVents* dzvents = CdzVents::GetInstance();
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
 	{
-		//m_dzvents.ExportDomoticzDataToLua(lua_state, item.DeviceID, item.varId, static_cast<int>(item.reason), item.nValue, item.lastLevel, item.sValue, item.nValueWording, item.lastUpdate);
-		dzvents->ExportDomoticzDataToLua(lua_state, item);
+		dzvents->ExportDomoticzDataToLua(lua_state, items);
 		if (item.reason == REASON_URL)
-			dzvents->ProcessHttpResponse(lua_state, item);
+			dzvents->ProcessHttpResponse(lua_state, items);
 	}
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
