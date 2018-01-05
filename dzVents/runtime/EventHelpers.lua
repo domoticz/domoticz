@@ -783,7 +783,6 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		domoticz.changedScenes().forEach(function(scene)
-			print(1111, scene.name)
 			processItem(scene, 'Scene')
 		end)
 
