@@ -39,7 +39,7 @@ if (isTimeEvent) then
 	commandArray = helpers.dispatchTimerEventsToScripts()
 else
 	helpers.dispatchDeviceEventsToScripts()
-	helpers.dispatchSecurityEventsToScripts()
+	--helpers.dispatchSecurityEventsToScripts()
 	helpers.dispatchSceneGroupEventsToScripts()
 	helpers.dispatchHTTPResponseEventsToScripts()
 	commandArray = helpers.domoticz.commandArray
