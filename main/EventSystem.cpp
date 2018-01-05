@@ -1324,6 +1324,7 @@ void CEventSystem::EventQueueThread()
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
 	_tEventQueue item;
 	std::vector<_tEventQueue> items;
+	std::vector<_tEventQueue>::const_iterator itt;
 
 	while (!m_stoprequested)
 	{
@@ -1338,14 +1339,22 @@ void CEventSystem::EventQueueThread()
 		_log.Log(LOG_STATUS, "EventSystem: \n DeviceID => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n varId => %" PRIu64 "\n lastUpdate => %s\n lastLevel => %d\n",
 			item.DeviceID, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.varId, item.lastUpdate.c_str(), item.lastLevel);
 #endif
+		for (itt = items.begin(); itt != items.end(); itt++)
+		{
+			if ((itt->DeviceID == item.DeviceID && itt->reason != REASON_USERVARIABLE) ||
+				(itt->reason == REASON_USERVARIABLE && itt->varId == item.varId))
+			{
+				EvaluateEvent(items);
+				items.clear();
+				break;
+			}
+		}
 		items.push_back(item);
 		if (m_eventqueue.size() > 0)
 			continue;
-		else
-		{
-			EvaluateEvent(items);
-			items.clear();
-		}
+
+		EvaluateEvent(items);
+		items.clear();
 	}
 }
 
