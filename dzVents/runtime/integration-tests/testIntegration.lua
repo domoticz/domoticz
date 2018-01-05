@@ -633,15 +633,15 @@ describe('Integration test', function ()
 			assert.is_same('ENDRESULT SUCCEEDED', endResultsDevice['Data'])
 			assert.is_same('DIMMER SUCCEEDED', switchDimmerResultsDevice['Data'])
 			assert.is_same('STRING VARIABLE SUCCEEDED', varStringResultsDevice['Data'])
-			ssert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
+			assert.is_same('SECURITY SUCCEEDED', secArmedAwayDevice['Data'])
 			assert.is_same('SCENE SUCCEEDED', scSceneResultsDevice['Data'])
 			assert.is_same('Off', switchSilentResultsDevice['Status'])
 
 		end)
 
-		it('NOTE', function()
-			print('DONT FORGET TO SWITCH OFF TESTMODE IN dVents.lua !!!!!')
-		end)
+		-- it('NOTE', function()
+		-- 	print('DONT FORGET TO SWITCH OFF TESTMODE IN dVents.lua !!!!!')
+		-- end)
 
 	end)
 
