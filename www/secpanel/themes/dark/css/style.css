@@ -1,0 +1,115 @@
+div, ul, li, p {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+@font-face {
+    font-family: 'Digital';
+    src: url('../../default/font/Digital.eot');
+    src: url('../../default/font/Digital.eot?#iefix') format('embedded-opentype'),
+         url('../../default/font/Digital.woff') format('woff'),
+         url('../../default/font/Digital.ttf') format('truetype'),
+         url('../../default/font/Digital.svg#../font/Digital-7Italic') format('svg');
+}
+@font-face {
+    font-family: 'Audiowide';
+    src: url('../../default/font/Audiowide.eot');
+    src: url('../../default/font/Audiowide.eot?#iefix') format('embedded-opentype'),
+         url('../../default/font/Audiowide.woff') format('woff'),
+         url('../../default/font/Audiowide.ttf') format('truetype'),
+         url('../../default/font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+}
+
+body { 
+	background: #121314;
+	width: 100%;
+	min-width: 550px;
+}
+
+.clear { clear: both; height: 0 }
+
+.main-border {
+	width: 468px;
+	margin-top: 14px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#keypad {
+	border-radius: 3px;
+	padding: 15px;
+}
+
+.title { 
+	margin-bottom: 30px;
+	color: rgba(0, 0, 0, .5);
+	font: 24px 'Audiowide';
+	text-align: center;
+    text-transform: uppercase;
+	text-shadow: 1px 1px 1px #818A83, 0 0 0 #000000;
+}
+
+input[type="text"] {
+	background: #222324;
+	border-radius: 5px;
+	padding: 2px 10px 0;
+	width: 418px;
+	height: 92px;
+	margin-bottom: 20px;
+	font: 72px 'Digital', sans-serif;
+	color: rgba(128, 255, 196, .95);
+	text-align: center;
+	border: 0;
+	box-shadow: inset 1px 1px 2px #000;
+}
+.keypad-keys {
+	overflow: hidden;
+}
+.keypad-keys	li {
+	display: block;
+	float: left;
+	cursor: pointer;
+	width: 32px;
+	background: #212223;
+	text-align: center;
+	white-space: nowrap;
+	margin: 0 15px 15px 0;
+	border-radius: 5px;
+	font: 32px/32px 'Audiowide';
+	color: #828384;
+	padding: 20px;
+	box-shadow: inset 1px 1px 2px #000;
+}
+.keypad-keys	li:hover {
+	background: #323334;
+	color: rgba(128, 255, 196, .95);
+}
+.keypad-keys	li:nth-child(4n+4) { 
+	margin-right: 0;
+}
+.keypad-keys	li.arm {
+	width: 137px;
+	font-size: 26px;
+	background: rgba(128,0,0,0.4);
+	box-shadow: inset 1px 1px 2px #000;
+}
+.keypad-keys	li.arm:hover {
+	background: rgba(128,0,0,0.9);
+}
+.keypad-keys li.disarm {
+	background: rgba(0,128,0,0.4);
+	box-shadow: inset 1px 1px 2px #000;
+}
+.keypad-keys	li.disarm:hover {
+	background: rgba(0,128,0,0.9);
+}
+.keypad-keys	li.disabled {
+	background: rgba(128,128,128,0.75);
+}
+.keypad-keys li.cancel {
+	background: #212223;
+}
+.keypad-keys li.cancel:hover {
+	background: #323334;
+}
