@@ -4,9 +4,10 @@ var SecurityPanel = function () {
     
 	var secPanel = {
 		heartbeatIntervalSecs: 10,
+		secOnDelay: 30,
 		heartbeatTimer: undefined,
-		code: "",
-		zones: []
+		code: ""/*,
+		zones: []*/
 	};
 
 	function ShowError(error) {
@@ -52,43 +53,6 @@ var SecurityPanel = function () {
 		
 	}
 
-	function RefreshVariables(callback) {
-
-		// Update user variables
-		$.ajax({
-			url: "../json.htm?type=command&param=getuservariables",
-			dataType: 'json',
-			success: function(data) {
-				if (data.status != "OK") {
-					ShowError('NoOkData');
-				}
-				else {
-					if (typeof(data.result) != "undefined") {
-						$.each(data.result, function(i,item) {
-							if (item.Name.toLowerCase()=='secpanel-autorefresh') {
-							
-								// Parse the interval (integer, seconds)
-								var parsedInterval = parseInt(item.Value, 10);
-
-								// Verify that value is a number, else default to heartbeatInterval
-								if (!isNaN(parsedInterval)) {
-									secPanel.heartbeatIntervalSecs = parsedInterval;
-								}
-
-							}
-						});
-					}
-				}
-				callback();
-			},
-			error: function(){
-				ShowError('NoConnect');
-				callback();
-			}
-		});
-
-	}
-
 	function RefreshStatus(callback) {
 
 		// Upate security status
@@ -100,12 +64,21 @@ var SecurityPanel = function () {
 					ShowError('NoOkData');
 				}
 				else {
+					
+					// Update status
 					var displaytext="";
 					if (data.secstatus==0) displaytext="DISARMED";
 					else if (data.secstatus==1) displaytext="ARM HOME";
 					else if (data.secstatus==2) displaytext="ARM AWAY";
 					else displaytext="UNKNOWN";
 					$('#digitdisplay').val("* "+displaytext+" *");
+					
+					// Update SecOnDelay
+					var parsedSecOnDelay = parseInt(data.secondelay, 10);
+					if (!isNaN(parsedSecOnDelay)) {
+						secPanel.secOnDelay = parsedSecOnDelay;
+					}
+					
 				}
 				
 				callback();
@@ -120,45 +93,15 @@ var SecurityPanel = function () {
 		});
 	}
 
-	/*function RefreshZones(callback) {
-
-		$.ajax({
-			url: "../json.htm?type=command&param=getlightswitches",
-			dataType: 'json',
-			success: function(data) {
-				if (data.status != "OK") {
-					ShowError('NoOkData');
-					return;
-				}
-				else {
-					var idxnumbers=[];
-					if (typeof(data.result) != "undefined") {
-						$.each(data.result, function(i,item) {
-							if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
-						});
-					}
-					secPanel.zones = idxnumbers;
-					callback(idxnumbers);
-				}
-			},
-			error: function(){
-				ShowError('NoConnect');
-				callback();
-			}
-		});
-	}*/
-
 	function Heartbeat() {
 
-		RefreshVariables(function () {
-			RefreshStatus(function () {
+		RefreshStatus(function () {
 
-				// RefreshZones();
+			// RefreshZones();
 
-				// Iterate!
-				ResetHeartbeat();
+			// Iterate!
+			ResetHeartbeat();
 
-			});
 		});
 
 	}
@@ -185,61 +128,6 @@ var SecurityPanel = function () {
 
 		}
 	}
-
-	function ArmDelay(callback) {
-
-		$.ajax({
-			url: "../json.htm?type=settings",
-			dataType: 'json',
-			success: function(data) {
-				if (data.status != "OK") {
-					ShowError('NoOkData');
-				}
-				else {
-					if (typeof(data.SecOnDelay) != "undefined") {
-						callback(data.SecOnDelay);
-					}
-				}
-			},
-			error: function(){
-				ShowError('NoConnect');
-			}
-		});
-
-	}
-
-	// check if provided zone idx number(s) is/are clear
-	/*function CheckZoneClear(zonearray) {
-		var openzone=false;
-		if (typeof(zonearray) != "undefined") {
-			$.each(zonearray, function(i,item) {
-				$.ajax({
-					url: "../json.htm?type=devices&rid="+item,
-					async: false, 
-					dataType: 'json',
-					success: function(data) {
-						if (data.status != "OK") {
-							ShowError('NoOkData');
-							return;
-						}
-						else {
-							if (typeof(data.result) != "undefined") {
-								$.each(data.result, function(j,zone) {
-									if (zone.Status=='On') openzone=true;
-								});
-							}
-							return openzone;
-						}
-					},
-					error: function(){
-						ShowError('NoConnect');
-						return;
-					}
-				});
-			});
-		}
-		return openzone;
-	}*/
 	
 	function Beep(tone) {
 		if (tone=="error") {
@@ -273,15 +161,6 @@ var SecurityPanel = function () {
 		// Make the heartbeat wait a while (secPanel.code is reset here)
 		ResetHeartbeat();
 
-		/*if (typeof(zonearray) != "undefined") {
-			if (CheckZoneClear(zonearray)) {
-				Beep('error');
-				$('#digitdisplay').val($.t('* ZONE OPEN *'));
-				CodeSetTimer=DelayedStatusRefresh(3000);
-				return;
-			}
-		}*/
-
 		$.ajax({
 			url: "../json.htm?type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + seccodeHash,
 			dataType: 'json',
@@ -299,9 +178,7 @@ var SecurityPanel = function () {
 				}
 				else {
 					if (status==1 || status==2) {
-						ArmDelay(function(delay) {
-							Countdown(delay);
-						});
+						Countdown(secPanel.secOnDelay);
 					}
 					else {
 						ResetHeartbeat(0);
@@ -344,16 +221,86 @@ var SecurityPanel = function () {
 		
 	}
 	
-	function Start() {
- 		Heartbeat();
-	}
- 	
  	return {
  		AddDigit: AddDigit,
 		SetSecStatus: SetSecStatus,
 		Beep: Beep,
 		ResetHeartbeat: ResetHeartbeat,
-		Start: Start
+		Start: Heartbeat
  	};
 		 	
 };
+
+// Deprecated code, left for future use
+
+	/*function RefreshZones(callback) {
+
+		$.ajax({
+			url: "../json.htm?type=command&param=getlightswitches",
+			dataType: 'json',
+			success: function(data) {
+				if (data.status != "OK") {
+					ShowError('NoOkData');
+					return;
+				}
+				else {
+					var idxnumbers=[];
+					if (typeof(data.result) != "undefined") {
+						$.each(data.result, function(i,item) {
+							if (item.Name.toLowerCase().indexOf('alarm zone')==0) idxnumbers[idxnumbers.length]=item.idx;
+						});
+					}
+					secPanel.zones = idxnumbers;
+					callback(idxnumbers);
+				}
+			},
+			error: function(){
+				ShowError('NoConnect');
+				callback();
+			}
+		});
+	}*/
+	// check if provided zone idx number(s) is/are clear
+	/*function CheckZoneClear(zonearray) {
+		var openzone=false;
+		if (typeof(zonearray) != "undefined") {
+			$.each(zonearray, function(i,item) {
+				$.ajax({
+					url: "../json.htm?type=devices&rid="+item,
+					async: false, 
+					dataType: 'json',
+					success: function(data) {
+						if (data.status != "OK") {
+							ShowError('NoOkData');
+							return;
+						}
+						else {
+							if (typeof(data.result) != "undefined") {
+								$.each(data.result, function(j,zone) {
+									if (zone.Status=='On') openzone=true;
+								});
+							}
+							return openzone;
+						}
+					},
+					error: function(){
+						ShowError('NoConnect');
+						return;
+					}
+				});
+			});
+		}
+		return openzone;
+	}*/
+	
+	
+	// SetSecStatus
+	
+		/*if (typeof(zonearray) != "undefined") {
+			if (CheckZoneClear(zonearray)) {
+				Beep('error');
+				$('#digitdisplay').val($.t('* ZONE OPEN *'));
+				CodeSetTimer=DelayedStatusRefresh(3000);
+				return;
+			}
+		}*/
