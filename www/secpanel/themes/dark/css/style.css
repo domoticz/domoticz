@@ -22,7 +22,7 @@ div, ul, li, p {
 }
 
 body { 
-	background: #FCFCFC;
+	background: #121314;
 	width: 100%;
 	min-width: 550px;
 }
@@ -43,25 +43,25 @@ body {
 
 .title { 
 	margin-bottom: 30px;
-	color: #F5F7F9;
+	color: rgba(0, 0, 0, .5);
 	font: 24px 'Audiowide';
 	text-align: center;
     text-transform: uppercase;
-	text-shadow: -1px -1px 1px #C0C1C2, 0 0 0 #F0F1F3;
+	text-shadow: 1px 1px 1px #818A83, 0 0 0 #000000;
 }
 
 input[type="text"] {
-	background: #F0F3F6;
+	background: #222324;
 	border-radius: 5px;
 	padding: 2px 10px 0;
 	width: 418px;
 	height: 92px;
 	margin-bottom: 20px;
 	font: 72px 'Digital', sans-serif;
-	color: rgba(128, 196, 255, .95);
+	color: rgba(128, 255, 196, .95);
 	text-align: center;
 	border: 0;
-	box-shadow: inset 1px 1px 2px #D0D1D2;
+	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys {
 	overflow: hidden;
@@ -71,18 +71,19 @@ input[type="text"] {
 	float: left;
 	cursor: pointer;
 	width: 32px;
-	background: #F0F0F0;
+	background: #212223;
 	text-align: center;
 	white-space: nowrap;
 	margin: 0 15px 15px 0;
 	border-radius: 5px;
 	font: 32px/32px 'Audiowide';
-	color: #626364;
+	color: #828384;
 	padding: 20px;
-	box-shadow: inset 1px 1px 2px #C0C1C2;
+	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li:hover {
-	background: #D0D1D2;
+	background: #323334;
+	color: rgba(128, 255, 196, .95);
 }
 .keypad-keys	li:nth-child(4n+4) { 
 	margin-right: 0;
@@ -90,25 +91,25 @@ input[type="text"] {
 .keypad-keys	li.arm {
 	width: 137px;
 	font-size: 26px;
-	background: rgba(255,128,128,0.4);
-	box-shadow: inset 1px 1px 2px #909192;
+	background: rgba(128,0,0,0.4);
+	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li.arm:hover {
-	background: rgba(255,128,128,0.6);
+	background: rgba(128,0,0,0.9);
 }
 .keypad-keys li.disarm {
-	background: rgba(128,255,128,0.4);
-	box-shadow: inset 1px 1px 2px #B0B1B2;
+	background: rgba(0,128,0,0.4);
+	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li.disarm:hover {
-	background: rgba(128,255,128,0.6);
+	background: rgba(0,128,0,0.9);
 }
 .keypad-keys	li.disabled {
 	background: rgba(128,128,128,0.75);
 }
 .keypad-keys li.cancel {
-	background: rgba(180,180,180,0.4);
+	background: #212223;
 }
 .keypad-keys li.cancel:hover {
-	background: rgba(180,180,180,0.9);
+	background: #323334;
 }

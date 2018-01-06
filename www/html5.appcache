@@ -16,6 +16,7 @@ css/style.css
 css/ui-darkness/jquery-ui.min.css
 secpanel/themes/default/css/style.css
 secpanel/themes/light/css/style.css
+secpanel/themes/dark/css/style.css
 css/remote.css
 
 # Fonts
