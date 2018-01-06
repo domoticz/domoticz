@@ -6621,9 +6621,14 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetSecStatus";
+				
 				int secstatus = 0;
 				m_sql.GetPreferencesVar("SecStatus", secstatus);
 				root["secstatus"] = secstatus;
+				
+				int secondelay = 30;
+				m_sql.GetPreferencesVar("SecOnDelay", secondelay);
+				root["secondelay"] = secondelay;
 			}
 			else if (cparam == "setsecstatus")
 			{
