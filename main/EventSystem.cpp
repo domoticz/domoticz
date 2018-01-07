@@ -2649,134 +2649,8 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	devicestatesMutexLock2.unlock();
 }
 
-void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString)
+void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item)
 {
-	std::vector<_tEventQueue> items;
-	items.push_back(item);
-	EvaluateLua(items, filename, LuaString);
-}
-
-void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
-{
-	boost::lock_guard<boost::mutex> l(luaMutex);
-
-	_tEventQueue item;
-	if (items.size() > 0)
-		item = items[0];
-
-	//if (isEventscheduled(filename))
-	//{
-	//	//_log.Log(LOG_NORM,"EventSystem: Already scheduled this event, skipping");
-	//	return;
-	//}
-
-	lua_State *lua_state;
-	lua_state = luaL_newstate();
-
-	// load Lua libraries
-	static const luaL_Reg lualibs[] =
-	{
-		{ "base", luaopen_base },
-		{ "io", luaopen_io },
-		{ "table", luaopen_table },
-		{ "string", luaopen_string },
-		{ "math", luaopen_math },
-		{ NULL, NULL }
-	};
-
-	const luaL_Reg *lib = lualibs;
-	for (; lib->func != NULL; lib++)
-	{
-		lib->func(lua_state);
-		lua_settop(lua_state, 0);
-	}
-
-	// reroute print library to Domoticz logger
-	luaL_openlibs(lua_state);
-	lua_pushcfunction(lua_state, l_domoticz_print);
-	lua_setglobal(lua_state, "print");
-
-	lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
-	lua_setglobal(lua_state, "domoticz_applyJsonPath");
-
-	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
-	lua_setglobal(lua_state, "domoticz_applyXPath");
-
-#ifdef _DEBUG
-	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[item.reason].c_str(), filename.c_str());
-#endif
-
-	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
-	int intSet = m_mainworker.m_SunRiseSetMins[1];
-	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
-	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
-	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
-	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
-	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
-	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
-	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
-	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
-
-	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
-	time_t now = mytime(NULL);
-	struct tm ltime;
-	localtime_r(&now, &ltime);
-	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
-
-	bool dayTimeBool = false;
-	bool nightTimeBool = false;
-	if (intRise == 0 && intSet == 0) {
-		if (intDayLength == 0)
-			nightTimeBool = true; // Sun below horizon in the space of 24 hours
-		else
-			dayTimeBool = true; // Sun above horizon in the space of 24 hours
-	}
-	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
-		dayTimeBool = true;
-	}
-	else {
-		nightTimeBool = true;
-	}
-
-	lua_createtable(lua_state, 4, 0);
-	lua_pushstring(lua_state, "Daytime");
-	lua_pushboolean(lua_state, dayTimeBool);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "Nighttime");
-	lua_pushboolean(lua_state, nightTimeBool);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "SunriseInMinutes");
-	lua_pushnumber(lua_state, intRise);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "SunsetInMinutes");
-	lua_pushnumber(lua_state, intSet);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "SunAtSouthInMinutes");
-	lua_pushnumber(lua_state, intSunAtSouth);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightStart);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightEnd);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightStart);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightEnd);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightStart);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightEnd);
-	lua_rawset(lua_state, -3);
-	lua_pushstring(lua_state, "DayLengthInMinutes");
-	lua_pushnumber(lua_state, intDayLength);
-	lua_rawset(lua_state, -3);
-	lua_setglobal(lua_state, "timeofday");
-
 	{
 		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 		GetCurrentMeasurementStates();
@@ -3102,28 +2976,6 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	ExportDeviceStatesToLua(lua_state);
 
-	CdzVents* dzvents = CdzVents::GetInstance();
-	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
-	{
-		dzvents->ExportDomoticzDataToLua(lua_state, items);
-		bool reasonURL = false;
-		bool reasonSecurity = false;
-		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
-		for (itt = items.begin(); itt != items.end(); itt++)
-		{
-			if (itt->reason == REASON_URL)
-				reasonURL = true;
-
-			if (itt->reason == REASON_SECURITY)
-				reasonSecurity = true;
-		}
-		if (reasonURL)
-			dzvents->ProcessHttpResponse(lua_state, items);
-
-		if (reasonSecurity)
-			dzvents->ProcessSecurity(lua_state, items);
-	}
-
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
 
@@ -3216,10 +3068,132 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushstring(lua_state, "Security");
 	lua_pushstring(lua_state, secstatusw.c_str());
 	lua_rawset(lua_state, -3);
-	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
-		dzvents->SetGlobalVariables(lua_state, items);
-
 	lua_setglobal(lua_state, "globalvariables");
+}
+
+void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &filename, const std::string &LuaString)
+{
+	std::vector<_tEventQueue> items;
+	items.push_back(item);
+	EvaluateLua(items, filename, LuaString);
+}
+
+void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std::string &filename, const std::string &LuaString)
+{
+	boost::lock_guard<boost::mutex> l(luaMutex);
+
+	lua_State *lua_state;
+	lua_state = luaL_newstate();
+
+	// load Lua libraries
+	static const luaL_Reg lualibs[] =
+	{
+		{ "base", luaopen_base },
+		{ "io", luaopen_io },
+		{ "table", luaopen_table },
+		{ "string", luaopen_string },
+		{ "math", luaopen_math },
+		{ NULL, NULL }
+	};
+
+	const luaL_Reg *lib = lualibs;
+	for (; lib->func != NULL; lib++)
+	{
+		lib->func(lua_state);
+		lua_settop(lua_state, 0);
+	}
+
+	// reroute print library to Domoticz logger
+	luaL_openlibs(lua_state);
+	lua_pushcfunction(lua_state, l_domoticz_print);
+	lua_setglobal(lua_state, "print");
+
+	lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
+	lua_setglobal(lua_state, "domoticz_applyJsonPath");
+
+	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
+	lua_setglobal(lua_state, "domoticz_applyXPath");
+
+#ifdef _DEBUG
+	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
+#endif
+
+	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
+	int intSet = m_mainworker.m_SunRiseSetMins[1];
+	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
+	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
+	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
+	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
+	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
+	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
+	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
+	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
+
+	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
+	time_t now = mytime(NULL);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
+	int minutesSinceMidnight = (ltime.tm_hour * 60) + ltime.tm_min;
+
+	bool dayTimeBool = false;
+	bool nightTimeBool = false;
+	if (intRise == 0 && intSet == 0) {
+		if (intDayLength == 0)
+			nightTimeBool = true; // Sun below horizon in the space of 24 hours
+		else
+			dayTimeBool = true; // Sun above horizon in the space of 24 hours
+	}
+	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+		dayTimeBool = true;
+	}
+	else {
+		nightTimeBool = true;
+	}
+
+	lua_createtable(lua_state, 4, 0);
+	lua_pushstring(lua_state, "Daytime");
+	lua_pushboolean(lua_state, dayTimeBool);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Nighttime");
+	lua_pushboolean(lua_state, nightTimeBool);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "SunriseInMinutes");
+	lua_pushnumber(lua_state, intRise);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "SunsetInMinutes");
+	lua_pushnumber(lua_state, intSet);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "SunAtSouthInMinutes");
+	lua_pushnumber(lua_state, intSunAtSouth);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intCivTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intNautTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightStart);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
+	lua_pushnumber(lua_state, intAstrTwilightEnd);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "DayLengthInMinutes");
+	lua_pushnumber(lua_state, intDayLength);
+	lua_rawset(lua_state, -3);
+	lua_setglobal(lua_state, "timeofday");
+
+	CdzVents* dzvents = CdzVents::GetInstance();
+	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
+		dzvents->EvaluateDzVents(lua_state, items);
+	else
+		EvaluateLuaClassic(lua_state, items[0]);
 
 	int status = 0;
 	if (LuaString.length() == 0) {

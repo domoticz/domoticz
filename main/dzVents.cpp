@@ -33,6 +33,33 @@ float CdzVents::RandomTime(const int randomTime)
 	return ((float)(rand() / (RAND_MAX / randomTime)));
 }
 
+void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+{
+	bool reasonTime = false;
+	bool reasonURL = false;
+	bool reasonSecurity = false;
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+	for (itt = items.begin(); itt != items.end(); itt++)
+	{
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_URL)
+			reasonURL = true;
+
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_SECURITY)
+			reasonSecurity = true;
+
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_TIME)
+			reasonTime = true;
+	}
+	ExportDomoticzDataToLua(lua_state, items);
+	SetGlobalVariables(lua_state, reasonTime);
+
+	if (reasonURL)
+		ProcessHttpResponse(lua_state, items);
+
+	if (reasonSecurity)
+		ProcessSecurity(lua_state, items);
+}
+
 void CdzVents::ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int index = 1;
@@ -424,7 +451,7 @@ void CdzVents::LoadEvents()
 	}
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime)
 {
 	std::stringstream lua_DirT;
 
@@ -435,21 +462,12 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::vector<CEvent
 	"scripts/dzVents/";
 #endif
 
+	lua_createtable(lua_state, 0, 0);
 	lua_pushstring(lua_state, "script_path");
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);
-	bool timeEvent = false;
-	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
-	for (itt = items.begin(); itt != items.end(); itt++)
-	{
-		if (itt->reason == m_mainworker.m_eventsystem.REASON_TIME)
-		{
-			timeEvent = true;
-			break;
-		}
-	}
 	lua_pushstring(lua_state, "isTimeEvent");
-	lua_pushboolean(lua_state, timeEvent);
+	lua_pushboolean(lua_state, reasonTime);
 	lua_rawset(lua_state, -3);
 
 	char szTmp[10];
@@ -492,6 +510,7 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const std::vector<CEvent
 	lua_pushstring(lua_state, "systemUptime");
 	lua_pushnumber(lua_state, (lua_Number)SystemUptime());
 	lua_rawset(lua_state, -3);
+	lua_setglobal(lua_state, "globalvariables");
 }
 
 void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)

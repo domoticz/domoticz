@@ -8,12 +8,9 @@ public:
 	~CdzVents(void);
 	static CdzVents* GetInstance() { return &m_dzvents; }
 	const std::string GetVersion();
-	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
-	void SetGlobalVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void LoadEvents();
 	bool processLuaCommand(lua_State *lua_state, const std::string &filename, const int tIndex);
-	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
-	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 
 	std::string m_scriptsDir, m_runtimeDir;
 	bool m_bdzVentsExist;
@@ -42,7 +39,11 @@ private:
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
+	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime);
+	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 
 	static CdzVents m_dzvents;
 	std::string m_version;
