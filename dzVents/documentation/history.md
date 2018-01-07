@@ -19,6 +19,7 @@
 - Fixed bug in Domoticz where using forXXX() with selector switches didn't always work.
 - Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
 - Added support for webroot. dzVents will now use the proper API url when domoticz is started with the -webroot switch.
+- Added support for event-bursts. If (on slower machines) events get queued up in Domoticz, they will be sent to dzVents in one-package. This makes event processing significantly faster.
 
 [2.3.0]
 
