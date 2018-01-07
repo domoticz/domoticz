@@ -466,15 +466,15 @@ void CDaikin::GetControlInfo()
 				//		0 - 1 - 7	AUTO
 				m_mode = results2[1];
 				if (m_mode == "2") // DEHUMDIFICATOR
-					InsertUpdateSwitchSelector(5,true,10,"Mode");
+					InsertUpdateSwitchSelector(5,true,20,"Mode");
 				else if (m_mode == "3") // COLD
-					InsertUpdateSwitchSelector(5, true, 20, "Mode");
-				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 30, "Mode");
-				else if (m_mode == "6") 
+				else if (m_mode == "4") // HOT
 					InsertUpdateSwitchSelector(5, true, 40, "Mode");
+				else if (m_mode == "6") 
+					InsertUpdateSwitchSelector(5, true, 50, "Mode");
 				else if ((m_mode == "0") || (m_mode == "1" ) || ( m_mode == "7") )
-					InsertUpdateSwitchSelector(5, true, 1, "Mode");
+					InsertUpdateSwitchSelector(5, true, 10, "Mode");
 			}
 		}
 		else if (results2[0] == "pow")
