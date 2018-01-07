@@ -56,6 +56,13 @@ const std::string CEventSystem::m_szReason[] =
 	"url"				// 5
 };
 
+// Security status
+const std::string CEventSystem::m_szSecStatus[] =
+{
+	"Disarmed",		// 0
+	"Armed Home",	// 1
+	"Armed Away"	// 2
+};
 
 // This table specifies which JSON fields are passed to the LUA scripts.
 // If new return fields are added in CWebServer::GetJSonDevices, they should
@@ -1427,15 +1434,12 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		return;
 
 	std::vector<std::string> FileEntries;
-	std::vector<_tEventQueue>::const_iterator itt;
 	std::vector<std::string>::const_iterator itt2;
 	std::string filename;
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
 		CdzVents* dzvents = CdzVents::GetInstance();
-		std::string temp_prefix = m_printprefix;
-		m_printprefix = "dzVents";
 		if (dzvents->m_bdzVentsExist)
 			EvaluateLua(items, dzvents->m_runtimeDir + "dzVents.lua", "");
 		else
@@ -1453,11 +1457,11 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 			}
 			FileEntries.clear();
 		}
-		m_printprefix = temp_prefix;
 	}
 
 	bool bDeviceFileFound = false;
 	DirectoryListing(FileEntries, m_lua_Dir, false, true);
+	std::vector<_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
 	{
 		for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
@@ -2649,8 +2653,13 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	devicestatesMutexLock2.unlock();
 }
 
-void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item)
+void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus)
 {
+	// reroute print library to Domoticz logger
+	luaL_openlibs(lua_state);
+	lua_pushcfunction(lua_state, l_domoticz_print);
+	lua_setglobal(lua_state, "print");
+
 	{
 		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 		GetCurrentMeasurementStates();
@@ -3051,22 +3060,9 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 	lua_setglobal(lua_state, "otherdevices_scenesgroups_idx");
 	scenesgroupsMutexLock.unlock();
 
-	int secstatus = 0;
-	std::string secstatusw = "";
-	m_sql.GetPreferencesVar("SecStatus", secstatus);
-	if (secstatus == 1) {
-		secstatusw = "Armed Home";
-	}
-	else if (secstatus == 2) {
-		secstatusw = "Armed Away";
-	}
-	else {
-		secstatusw = "Disarmed";
-	}
-
 	lua_createtable(lua_state, 0, 0);
 	lua_pushstring(lua_state, "Security");
-	lua_pushstring(lua_state, secstatusw.c_str());
+	lua_pushstring(lua_state, m_szSecStatus[secStatus].c_str());
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "globalvariables");
 }
@@ -3102,11 +3098,6 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		lib->func(lua_state);
 		lua_settop(lua_state, 0);
 	}
-
-	// reroute print library to Domoticz logger
-	luaL_openlibs(lua_state);
-	lua_pushcfunction(lua_state, l_domoticz_print);
-	lua_setglobal(lua_state, "print");
 
 	lua_pushcfunction(lua_state, l_domoticz_applyJsonPath);
 	lua_setglobal(lua_state, "domoticz_applyJsonPath");
@@ -3189,19 +3180,19 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
+	int secstatus = 0;
+	m_sql.GetPreferencesVar("SecStatus", secstatus);
 	CdzVents* dzvents = CdzVents::GetInstance();
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
-		dzvents->EvaluateDzVents(lua_state, items);
+		dzvents->EvaluateDzVents(lua_state, items, secstatus);
 	else
-		EvaluateLuaClassic(lua_state, items[0]);
+		EvaluateLuaClassic(lua_state, items[0], secstatus);
 
 	int status = 0;
-	if (LuaString.length() == 0) {
+	if (LuaString.length() == 0)
 		status = luaL_loadfile(lua_state, filename.c_str());
-	}
-	else {
+	else
 		status = luaL_loadstring(lua_state, LuaString.c_str());
-	}
 
 	if (status == 0)
 	{

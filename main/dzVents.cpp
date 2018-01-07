@@ -10,12 +10,14 @@
 
 extern std::string szUserDataFolder, szWebRoot;
 extern http::server::CWebServerHelper m_webservers;
+static std::string m_printprefix;
 
 CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void)
 {
 	m_version = "2.4.0";
+	m_printprefix = "dzVents";
 }
 
 CdzVents::~CdzVents(void)
@@ -33,8 +35,13 @@ float CdzVents::RandomTime(const int randomTime)
 	return ((float)(rand() / (RAND_MAX / randomTime)));
 }
 
-void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, const int secStatus)
 {
+	// reroute print library to Domoticz logger
+	luaL_openlibs(lua_state);
+	lua_pushcfunction(lua_state, l_domoticz_print);
+	lua_setglobal(lua_state, "print");
+
 	bool reasonTime = false;
 	bool reasonURL = false;
 	bool reasonSecurity = false;
@@ -51,7 +58,7 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 			reasonTime = true;
 	}
 	ExportDomoticzDataToLua(lua_state, items);
-	SetGlobalVariables(lua_state, reasonTime);
+	SetGlobalVariables(lua_state, reasonTime, secStatus);
 
 	if (reasonURL)
 		ProcessHttpResponse(lua_state, items);
@@ -385,6 +392,32 @@ void CdzVents::IterateTable(lua_State *lua_state, const int tIndex, std::vector<
 	}
 }
 
+int CdzVents::l_domoticz_print(lua_State* lua_state)
+{
+	int nargs = lua_gettop(lua_state);
+
+	for (int i = 1; i <= nargs; i++)
+	{
+		if (lua_isstring(lua_state, i))
+		{
+			std::string lstring = lua_tostring(lua_state, i);
+			if (lstring.find("Error: ") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "%s: %s", m_printprefix.c_str(), lstring.c_str());
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "%s: %s", m_printprefix.c_str(), lstring.c_str());
+			}
+		}
+		else
+		{
+			/* non strings? */
+		}
+	}
+	return 0;
+}
+
 void CdzVents::LoadEvents()
 {
 	m_bdzVentsExist = false;
@@ -451,7 +484,7 @@ void CdzVents::LoadEvents()
 	}
 }
 
-void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime)
+void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus)
 {
 	std::stringstream lua_DirT;
 
@@ -463,6 +496,9 @@ void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime)
 #endif
 
 	lua_createtable(lua_state, 0, 0);
+	lua_pushstring(lua_state, "Security");
+	lua_pushstring(lua_state, m_mainworker.m_eventsystem.m_szSecStatus[secStatus].c_str());
+	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "script_path");
 	lua_pushstring(lua_state, lua_DirT.str().c_str());
 	lua_rawset(lua_state, -3);

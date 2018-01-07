@@ -192,7 +192,7 @@ private:
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
 
-	static const std::string m_szReason[];
+	static const std::string m_szReason[], m_szSecStatus[];
 	static const _tJsonMap JsonMap[];
 
 	//our thread
@@ -200,7 +200,6 @@ private:
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(const uint64_t ulDevID, const std::string &devname, const int nValue, const char* sValue, const unsigned char devType, const unsigned char subType, const _eSwitchType switchType, const std::string &lastUpdate, const unsigned char lastLevel, const std::map<std::string, std::string> & options);
-//	void EvaluateEvent(const _tEventQueue &item);
 	void EvaluateEvent(const std::vector<_tEventQueue> &items);
 
 	void EvaluateBlockly(const _tEventQueue &item);
@@ -227,7 +226,7 @@ private:
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
-	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item);
+	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus);
 
 
 	//std::string reciprocalAction (std::string Action);
