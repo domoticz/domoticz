@@ -70,23 +70,6 @@ describe('event helper storage', function()
 				return devs[id]
 			end
 		}
-		_G.scripts = {
-			['myInternalScript'] = [[
-				return {
-					active = true,
-					on = {
-						'someswitch'
-					},
-					data = {
-						x = { initial = 4 }
-					},
-					execute = function(domoticz, device, triggerInfo)
-						domoticz.data.x = domoticz.data.x + 10
-
-					end
-				}
-			]],
-		}
 
 		EventHelpers = require('EventHelpers')
 	end)

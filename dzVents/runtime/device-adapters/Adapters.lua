@@ -77,7 +77,6 @@ local function DeviceAdapters(dummyLogger)
 				if (adapter.baseType == device.baseType) then
 					local matches = adapter.matches(device, self)
 					if (matches) then
-						utils.log('Device-adapter found for ' .. device.name .. ': ' .. adapter.name, utils.LOG_DEBUG)
 						table.insert(adapters, adapter)
 					end
 				end

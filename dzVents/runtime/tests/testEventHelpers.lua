@@ -44,19 +44,25 @@ describe('event helpers', function()
 		_G.dataFolderPath= './data'
 		_G.generatedScriptsFolderPath = './generated_scripts'
 		_G.httpresponse = {
-			callback='trigger1'
-		}
+            {
+	            callback='trigger1'
+            }
+        }
 
 		_G.globalvariables = {
 			Security = 'sec',
 			['radix_separator'] = '.',
 			['script_reason'] = 'device',
 			['script_path'] = scriptPath,
-			['Security'] = 'Armed Away',
+			['Security'] = '',
 			['dzVents_log_level'] = 1,
 			['domoticz_listening_port'] = '8181',
 			['currentTime'] = '2017-08-17 12:13:14.123'
 		}
+
+        _G.securityupdates = {
+            'Armed Away'
+        }
 
 		EventHelpers = require('EventHelpers')
 	end)
@@ -84,6 +90,7 @@ describe('event helpers', function()
 			['devices'] = function(id)
 				return devs[id]
 			end,
+            ['notify'] = function() end,
 --
 --			['devices'] = {
 --				['device1'] = { name = '' },
@@ -360,8 +367,9 @@ describe('event helpers', function()
 
 			helpers.dumpCommandArray(array)
 			assert.is_same({
-				"[1] = a: 1",
-				"[2] = b: 2",
+				"Commands sent to Domoticz: ",
+                "• a = 1",
+				"• b = 2",
 				"====================================================="
 			}, messages)
 		end)

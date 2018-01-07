@@ -20,13 +20,6 @@ describe('Event dispatching', function()
 			SunsetInMinutes = 'sunsetmin'
 		}
 
-		_G.globalvariables = {
-			['radix_separator'] = '.',
-			['Security'] = 'sec',
-			['domoticz_listening_port'] = '8080',
-			['script_path'] = scriptPath,
-			['currentTime'] = '2017-08-17 12:13:14.123'
-		}
 
 	end)
 
@@ -130,6 +123,23 @@ describe('Event dispatching', function()
 				["name"] = "mygroup1";
 			}
 		}
+		_G.globalvariables = {
+			['radix_separator'] = '.',
+			['Security'] = 'sec',
+			['domoticz_listening_port'] = '8080',
+			['script_path'] = scriptPath,
+			['isTimeEvent'] = false,
+			['currentTime'] = '2017-08-17 12:13:14.123'
+		}
+		_G.securityupdates = {
+            'Armed Away'
+        }
+
+		_G.httpresponse = {{
+			callback='trigger1',
+			statusCode = 200
+		}}
+
 	end)
 
 	after_each(function()
@@ -137,34 +147,10 @@ describe('Event dispatching', function()
 		package.loaded['dzVents'] = nil
 	end)
 
-	it('should dispatch device events', function()
-		_G.commandArray = {}
-		_G.globalvariables['script_reason'] = 'device'
-
-		local main = require('dzVents')
-
-		assert.is_same({
-			{ ["onscript1"] = "Off" },
-			{ ["onscript1"] = "Set Level 10" },
-			{ ["SendNotification"] = 'Yo##0#pushover##' }
-		}, main)
-	end)
-
-	it('should dispatch scene/group events', function()
-		_G.commandArray = {}
-		_G.globalvariables['script_reason'] = 'scenegroup'
-
-		local main = require('dzVents')
-
-		assert.is_same({
-			{ ["Scene:myscene1"] = 'Off' },
-			{ ["Group:mygroup1"] = 'On' },
-		}, main)
-	end)
 
 	it("should dispatch timer events", function()
 		_G.commandArray = {}
-		_G.globalvariables['script_reason'] = 'time'
+		_G.globalvariables['isTimeEvent'] = true
 		local main = require('dzVents')
 		assert.is_same({
 			{ ["onscript1"] = "Off" },
@@ -174,31 +160,39 @@ describe('Event dispatching', function()
 		}, main)
 	end)
 
-	it("should dispatch variable events", function()
-		_G.commandArray = {}
-		_G.globalvariables['script_reason'] = 'uservariable'
-		local main = require('dzVents')
-		assert.is_same({
-			{ ['Variable'] = { idx = 1, value='10', _trigger=true } }
-		}, main)
-	end)
 
-	it("should dispatch httpResponse events", function()
+	it('should dispatch non-timer events', function()
 		_G.commandArray = {}
-		_G.httpresponse = {
-			callback='trigger1',
-			statusCode = 200
-		}
-		_G.globalvariables['script_reason'] = 'url'
 
 		local main = require('dzVents')
-		assert.is_same({
-			{ ['OpenURL'] = {
-		      URL = 'test',
-		      method = 'GET'
-		  	} }
+
+		assert.is_same(
+		{
+			{
+				["onscript1"]="Off"
+			},
+			{
+				["onscript1"]="Set Level 10"
+			},
+			{
+				["SendNotification"]="Yo##0#pushover##"
+			},
+			{
+				["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true}
+			},
+			{
+				["SendNotification"]="Me#Armed Away#0#pushover##"
+			},
+			{
+				["Scene:myscene1"]="Off"
+			},
+			{
+				["Group:mygroup1"]="On"
+			},
+			{
+				["OpenURL"]={["URL"]="test", ["method"]="GET"}
+			}
 		}, main)
 	end)
-
 
 end)
