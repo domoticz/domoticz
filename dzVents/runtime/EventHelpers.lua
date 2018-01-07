@@ -12,6 +12,7 @@ local Timer = require('Timer')
 local Security = require('Security')
 
 local HistoricalStorage = require('HistoricalStorage')
+local _ = require('lodash')
 
 local function EventHelpers(domoticz, mainMethod)
 
@@ -279,7 +280,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 				namesLookup[name] = true -- for quick lookup for filename
 
-				utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
+				--utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
 			end
 		end
 		pfile:close()
@@ -629,24 +630,33 @@ local function EventHelpers(domoticz, mainMethod)
 		return self.getEventBindings('security', nil)
 	end
 
-	function self.dumpCommandArray(commandArray, force)
+	function self.dumpCommandArray(commandArray, fromIndex, force)
 		local printed = false
 		local level = utils.LOG_DEBUG
-		local _ = require('lodash')
 
-		if (force == true and force ~= nil) then
+
+		if (fromIndex == nil) then
+			fromIndex = 1
+		end
+
+		if (force == true and force ~= nil or globalvariables['testmode'] == true) then
 			level = utils.LOG_INFO
 		end
 
 		for k, v in pairs(commandArray) do
-			if (type(v) == 'table') then
-				for kk, vv in pairs(v) do
-					utils.log('[' .. k .. '] = ' .. kk .. ': ' .. _.str(vv), level)
+			if ((fromIndex ~= nil and k >= fromIndex) or fromIndex == nil) then
+				if (not printed) then
+					utils.log('Commands sent to Domoticz: ', level)
 				end
-			else
-				utils.log(k .. ': ' .. v, level)
+				if (type(v) == 'table') then
+					for kk, vv in pairs(v) do
+						utils.log('• ' .. kk .. ' = ' .. _.str(vv), level)
+					end
+				else
+					utils.log(k .. ' = ' .. v, level)
+				end
+				printed = true
 			end
-			printed = true
 		end
 		if (printed) then utils.log('=====================================================', level) end
 	end
@@ -654,7 +664,6 @@ local function EventHelpers(domoticz, mainMethod)
 	function self.findScriptForTarget(target, allEventScripts)
 		-- event could be like: myPIRLivingRoom
 		-- or myPir(.*)
-		utils.log('Searching for scripts for changed item: ' .. target, utils.LOG_DEBUG)
 
 		--[[
 
@@ -726,10 +735,11 @@ local function EventHelpers(domoticz, mainMethod)
 		local allEventScripts = self.getEventBindings()
 
 		domoticz.changedDevices().forEach( function(device)
-			utils.log('Device-event for: ' .. device.name .. ' value: ' .. tostring(device.state), utils.LOG_DEBUG)
 
 			local scriptsToExecute = self.findScriptForTarget(device.name, allEventScripts)
 			local idScripts = allEventScripts[device.id]
+
+			local caSize = _.size(self.domoticz.commandArray)
 
 			if (idScripts ~= nil) then
 				-- merge id scripts with name scripts
@@ -744,11 +754,11 @@ local function EventHelpers(domoticz, mainMethod)
 			if (scriptsToExecute ~= nil) then
 				utils.log('Handling events for: "' .. device.name .. '", value: "' .. tostring(device.state) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, device, nil, nil)
+				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
 
 		end)
 
-		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
 	end
 
@@ -765,6 +775,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 			local scriptsToExecute = self.findScriptForTarget(item.name, allEventScripts)
 			local idScripts = allEventScripts[item.id]
+			local caSize = _.size(self.domoticz.commandArray)
 
 			if (idScripts ~= nil) then
 				-- merge id scripts with name scripts
@@ -779,7 +790,9 @@ local function EventHelpers(domoticz, mainMethod)
 			if (scriptsToExecute ~= nil) then
 				utils.log('Handling events for: "' .. item.name .. '", value: "' .. tostring(item.state) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, nil, nil, nil, item)
+				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
+
 		end
 
 		domoticz.changedScenes().forEach(function(scene)
@@ -790,7 +803,6 @@ local function EventHelpers(domoticz, mainMethod)
 			processItem(group, 'Group')
 		end)
 
-		self.dumpCommandArray(self.domoticz.commandArray)
 		return self.domoticz.commandArray
 	end
 
@@ -810,12 +822,18 @@ local function EventHelpers(domoticz, mainMethod)
 		if (updates ~= nil) then
 
 			for i, securityState in pairs(updates) do
+
+				local caSize = _.size(self.domoticz.commandArray)
+
 				self.domoticz.security = securityState
+
 				local scriptsToExecute = self.getSecurityHandlers()
+
 				self.handleEvents(scriptsToExecute, nil, nil, securityState)
+
+				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
 		end
-		self.dumpCommandArray(self.domoticz.commandArray)
 
 		return self.domoticz.commandArray
 	end
@@ -827,12 +845,10 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local allEventScripts = self.getVariableHandlers()
 
-		local processed = false
 		domoticz.changedVariables().forEach(function(variable)
 
-			utils.log('Variable-event for: ' .. variable.name .. ' value: ' .. tostring(variable.value), utils.LOG_DEBUG)
-
 			local scriptsToExecute
+			local caSize = _.size(self.domoticz.commandArray)
 
 			-- first search by name
 
@@ -845,13 +861,9 @@ local function EventHelpers(domoticz, mainMethod)
 			if (scriptsToExecute ~= nil) then
 				utils.log('Handling variable-events for: "' .. variable.name .. '", value: "' .. tostring(variable.value) .. '"', utils.LOG_INFO)
 				self.handleEvents(scriptsToExecute, nil, variable, nil)
+				self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 			end
-			processed = true
 		end)
-
-		if (processed) then
-			self.dumpCommandArray(self.domoticz.commandArray)
-		end
 
 		return self.domoticz.commandArray
 	end
@@ -869,19 +881,70 @@ local function EventHelpers(domoticz, mainMethod)
 			for i, response in pairs(responses) do
 
 				local callback = response.callback
+				local caSize = _.size(self.domoticz.commandArray)
 
 				local scriptsToExecute = self.findScriptForTarget(callback, httpResponseScripts)
 
 				if (scriptsToExecute ~= nil) then
 					utils.log('Handling httpResponse-events for: "' .. callback, utils.LOG_INFO)
 					self.handleEvents(scriptsToExecute, nil, nil, nil, nil, response)
+					self.dumpCommandArray(self.domoticz.commandArray, caSize + 1)
 				end
 
 			end
 
-			self.dumpCommandArray(self.domoticz.commandArray)
 		end
+
 		return self.domoticz.commandArray
+
+	end
+
+	function self.getEventSummary(domoticz)
+		if (domoticz == nil) then -- you can pass a domoticz object for testing purposes
+			domoticz = self.domoticz
+		end
+
+		local items = {}
+		local length = 0
+
+		domoticz.changedDevices().forEach( function(device)
+			table.insert(items, '• Device: ' .. device.name)
+			length = length + 1
+		end)
+
+		domoticz.changedVariables().forEach(function(variable)
+			table.insert(items, '• Variable: ' .. variable.name)
+			length = length + 1
+		end)
+
+		local securityUpdates =_G.securityupdates
+		if (securityUpdates ~= nil) then
+			for i, securityState in pairs(securityUpdates) do
+				table.insert(items, '• Security: ' .. securityState)
+				length = length + 1
+			end
+		end
+
+		domoticz.changedScenes().forEach(function(scene)
+			table.insert(items, '• Scene: ' .. scene.name)
+			length = length + 1
+		end)
+
+		domoticz.changedGroups().forEach(function(group)
+			table.insert(items, '• Group: ' .. group.name)
+			length = length + 1
+		end)
+
+		local responses =_G.httpresponse
+
+		if (responses ~= nil) then
+			for i, response in pairs(responses) do
+				table.insert(items, '• HTTPResponse: ' .. response.callback)
+				length = length + 1
+			end
+		end
+
+		return items, length;
 
 	end
 
