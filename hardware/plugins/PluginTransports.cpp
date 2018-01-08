@@ -38,7 +38,7 @@ namespace Plugins {
 
 	void CPluginTransport::VerifyConnection()
 	{
-		// If the Python CConecction object reference count ever drops to one the the connection is out of scope so shut it down
+		// If the Python CConnection object reference count ever drops to one the the connection is out of scope so shut it down
 		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
 		{
 			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
@@ -1023,6 +1023,219 @@ namespace Plugins {
 			m_bConnected = false;
 		}
 		return true;
+	}
+
+	bool CPluginTransportMQTT::handleConnect()
+	{
+		m_bConnecting = false;
+		m_bConnected = false;
+
+		if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
+		{
+			ios.reset();
+			if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+				_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
+			boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+		}
+
+		// Create no TLS client
+		int keepalive = 60;
+		std::uint16_t pp = 1883;
+		std::string ss = "192.168.0.3";
+		m_client = mqtt::make_client(ios, m_IP.c_str(), m_Port.c_str());
+		//m_client2 = mqtt::make_client_no_strand(ios, ss, pp);
+
+		// Setup client
+		m_client->set_client_id("cid1");
+		m_client->set_clean_session(true);
+		m_client->set_keep_alive_sec(keepalive);
+		//m_client->set_user_name(); // TODO
+		//m_client->set_password(); // TODO
+
+		// Setup handlers
+		m_client->set_connack_handler(
+			[&]
+			(bool sp, std::uint8_t return_code){
+				/* rc=
+				** 0 - success
+				** 1 - connection refused(unacceptable protocol version)
+				** 2 - connection refused(identifier rejected)
+				** 3 - connection refused(broker unavailable)
+				** 4 - connection refused(bad user name or password)
+				** 5 - connection refused(not authorized)
+				*/
+
+				if (return_code == 0){
+					if (m_bConnected) {
+						_log.Log(LOG_STATUS, "CPluginTransportMQTT: re-connected to: %s:%s", m_IP.c_str(), m_Port.c_str());
+					} else {
+						_log.Log(LOG_STATUS, "CPluginTransportMQTT: connected to: %s:%s", m_IP.c_str(), m_Port.c_str());
+						m_bConnected = true;
+					}
+					m_bConnecting = false;
+
+					onConnectCallback*	Message = NULL;
+					Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, "MQTT subscription successful.");
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+				else {
+					_log.Log(LOG_ERROR, "CPluginTransportMQTT: Connection failed! rc=%d ('%s')", return_code, mqtt::connect_return_code_to_str(return_code));
+					onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, return_code, mqtt::connect_return_code_to_str(return_code));
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+
+					m_bConnecting = false;
+				}
+				return true;
+			});
+
+		m_client->set_error_handler(
+			[]
+			(boost::system::error_code const& ec){
+				_log.Log(LOG_STATUS, "CPluginTransportMQTT: error: '%s'", ec.message().c_str());
+			});
+
+		m_client->set_close_handler(
+			[&]
+			(){
+				_log.Log(LOG_STATUS, "CPluginTransportMQTT: close");
+
+				DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(pDisconnectedEvent);
+				}
+				m_bDisconnectQueued = true;
+
+				m_bConnected = false;
+				m_bConnecting = false;
+			});
+
+		m_client->set_disconnect_handler(
+			[]
+			(){
+				_log.Log(LOG_STATUS, "CPluginTransportMQTT: disconnect");
+			});
+
+		m_client->set_suback_handler(
+			[&]
+			(std::uint16_t packet_id, std::vector<boost::optional<std::uint8_t>> results){
+				for (auto const& e : results) {
+					std::vector<byte> data;
+
+					byte messageType = 9; // SUBACK
+
+					data.resize(sizeof(messageType)+1);
+					data[0] = messageType;
+					data[1] = '\0';
+
+					if (e) {
+						//TODO: Report granted QoS
+						//std::cout << "subscribe success: " << mqtt::qos::to_str(*e) << std::endl;
+					}
+					else {
+						//TODO: Report Error
+						//std::cout << "subscribe failed" << std::endl;
+					}
+
+					ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, data.size(), data.data());
+					{
+						boost::lock_guard<boost::mutex> l(PluginMutex);
+						PluginMessageQueue.push(Message);
+					}
+				}
+				return true;
+			});
+
+		m_client->set_publish_handler(
+			[&]
+			(std::uint8_t header,
+			 boost::optional<std::uint16_t> packet_id,
+			 std::string topic_name,
+			 std::string contents){
+				std::vector<byte> data;
+
+				byte messageType = 3; // PUBLISH
+				unsigned topiclen = topic_name.length() + 1; // Reserve space for terminating NULL
+				unsigned payloadlen = contents.length();
+
+				data.resize(sizeof(messageType) + topiclen + payloadlen);
+				data[0] = messageType;
+				memcpy(&data[sizeof(messageType)], &topic_name[0], topiclen);
+				memcpy(&data[sizeof(messageType)+topiclen], &contents[0], payloadlen);
+
+				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, data.size(), data.data());
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+				return true;
+			});
+
+		m_client->connect(); // Note: This connects asynchronously
+
+		m_bConnecting = true;
+
+		return true;
+	}
+
+	void CPluginTransportMQTT::handleWrite(const std::vector<byte>& pMessage)
+	{
+		try {
+			if (!m_bConnected)
+			{
+				_log.Log(LOG_ERROR, "CPluginTransportMQTT::%s Not Connected, failed to send message: %s", __func__, pMessage.data());
+				return;
+			}
+
+			byte messageType = pMessage[0];
+			unsigned topiclen = strlen((const char*)&pMessage[sizeof(messageType)])+1; // Count terminating NULL
+			unsigned payloadlen = pMessage.size()-topiclen-sizeof(messageType);
+			const char* pTopic = (const char*)&pMessage[sizeof(messageType)];
+			const char* pPayload = (const char*)(&pMessage[sizeof(messageType)+topiclen]);
+			std::string sTopic = (const char*)&pMessage[sizeof(messageType)];
+			std::string sPayload = (const char*)(&pMessage[sizeof(messageType)+topiclen]);
+			switch (messageType)
+			{
+				case 3: // PUBLISH
+					m_client->async_publish(sTopic, sPayload); // TODO: QoS
+					break;
+				case 8: // SUBSCRIBE
+					m_client->async_subscribe(sTopic, 0); // TODO: QoS
+					break;
+				case 10: // UNSUBSCRIBE
+					m_client->async_unsubscribe(sTopic);
+					break;
+			}
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "CPluginTransportMQTT::%s Failed to publish message: %s", __func__, pMessage.data());
+		}
+	}
+
+	bool CPluginTransportMQTT::handleDisconnect()
+	{
+		m_client->disconnect(); // Should async_disconnect be used instead to not block the thread?
+
+		// Without this, destructor is never called because m_bConnected is checked by caller.. Should also be done for other transports?
+		DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(pDisconnectedEvent);
+		}
+
+		m_bDisconnectQueued = false;
+		m_bConnected = false;
+		m_bConnecting = false;
+		return true;
+	}
+
+	CPluginTransportMQTT::~CPluginTransportMQTT()
+	{
+		// Nothing to do here, m_client will be reset automatically
+		_log.Log(LOG_TRACE, "CPluginTransportMQTT::~CPluginTransportMQTT");
 	}
 }
 #endif

@@ -65,6 +65,9 @@ namespace Plugins {
 		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
-	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?
+	class CPluginProtocolMQTT : CPluginProtocol {
+		virtual void				ProcessInbound(const ReadMessage* Message);
+		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+	};
 
 }

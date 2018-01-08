@@ -173,7 +173,17 @@ namespace Plugins {
 			}
 			else
 			{
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				// Escape '%' character
+				std::string smsg = msg;
+				const std::string s = "%";
+				const std::string t = "%%";
+				std::string::size_type n = 0;
+				while ( ( n = smsg.find( '%', n ) ) != std::string::npos )
+				{
+					smsg.replace( n, s.size(), t );
+					n += t.size();
+				}
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
 			}
 		}
@@ -599,7 +609,7 @@ namespace Plugins {
 			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
 			{
 				CPluginTransport*	pPluginTransport = *itt;
-				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
+				if (pPluginTransport && (pPluginTransport->IsConnected() || pPluginTransport->IsConnecting()) && (pPluginTransport->ThreadPoolRequired()))
 					return true;
 			}
 		}
@@ -1092,6 +1102,12 @@ namespace Plugins {
 			pConnection->pProtocol = (CPluginProtocol*)pProtocol;
 		}
 		else if (sProtocol == "ICMP") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolICMP();
+		else if (sProtocol == "MQTT")
+		{
+			CPluginProtocolMQTT*	pProtocol = new CPluginProtocolMQTT();
+			//pProtocol->AuthenticationDetails(m_Username, m_Password); //TODO
+			pConnection->pProtocol = (CPluginProtocol*) pProtocol;
+		}
 		else pConnection->pProtocol = new CPluginProtocol();
 	}
 
@@ -1138,9 +1154,16 @@ namespace Plugins {
 			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
 			pConnection->pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, (PyObject*)pConnection, sAddress, pConnection->Baud);
 		}
+		else if (sTransport == "MQTT")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportMQTT(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP and Serial.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP, Serial and MQTT.", Name.c_str(), sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)
@@ -1206,7 +1229,7 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)
@@ -1316,13 +1339,14 @@ namespace Plugins {
 			}
 
 			// If transport is not connected there won't be a Disconnect Event so tidy it up here
+			_log.Log(LOG_TRACE, "CPlugin::%s pConnection->pTransport->IsConnected(): %u", __func__, pConnection->pTransport->IsConnected());
 			if (!pConnection->pTransport->IsConnected())
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
-				pConnection->pTransport = NULL;
 				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
 			}
 			else
 			{
@@ -1337,11 +1361,21 @@ namespace Plugins {
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pTransport)
 		{
+			if (m_bDebug)
+			{
+				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if ((sTransport == "Serial") || (!sPort.length()))
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", Name.c_str(), sAddress.c_str());
+				else
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
+			}
 			{
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
-				pConnection->pTransport = NULL;
 				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
 			}
 
 			// inform the plugin
