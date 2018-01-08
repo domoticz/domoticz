@@ -155,11 +155,13 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	{
 		//output to console
 #ifndef WIN32
-		if (level == LOG_ERROR)
-			std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
-		else
+		if (level != LOG_ERROR)
 #endif
 			std::cout << szIntLog << std::endl;
+#ifndef WIN32
+		else  // print text in red color
+			std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
+#endif
 	}
 
 	if (m_outputfile.is_open())

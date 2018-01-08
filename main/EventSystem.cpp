@@ -3838,10 +3838,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 		_tTaskItem tItem;
 
 		float fRandomTime = 0;
-		if ( oParseResults.fRandomSec > (1./timer_resolution_hz/2) ) {
-			srand( (unsigned int)mytime( NULL ) + iIndex );
-			fRandomTime = (float)rand() / (float)( RAND_MAX / oParseResults.fRandomSec );
-		}
+		if (oParseResults.fRandomSec > (1./timer_resolution_hz/2))
+			fRandomTime = (float)GenerateRandomNumber(oParseResults.fRandomSec);
 
 		float fDelayTime = oParseResults.fAfterSec + fPreviousRandomTime + fRandomTime + iDeviceDelay + ( iIndex * oParseResults.fForSec ) + ( iIndex * oParseResults.fRepeatSec );
 		fPreviousRandomTime = fRandomTime;

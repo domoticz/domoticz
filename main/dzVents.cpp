@@ -29,12 +29,6 @@ const std::string CdzVents::GetVersion()
 	return m_version;
 }
 
-float CdzVents::RandomTime(const int randomTime)
-{
-	srand((unsigned int)mytime(NULL));
-	return ((float)(rand() / (RAND_MAX / randomTime)));
-}
-
 void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, const int secStatus)
 {
 	// reroute print library to Domoticz logger
@@ -184,7 +178,7 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 		else if (itt->type == TYPE_INTEGER)
 		{
 			if (itt->name == "_random")
-				delayTime = RandomTime(itt->iValue);
+				delayTime = GenerateRandomNumber(itt->iValue);
 			else if (itt->name == "_after")
 				delayTime = static_cast<float>(itt->iValue);
 		}
@@ -229,7 +223,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 			else if (itt->name == "protected")
 				Protected = itt->iValue ? true : false;
 			else if (itt->name == "_random")
-				delayTime = RandomTime(itt->iValue);
+				delayTime = GenerateRandomNumber(itt->iValue);
 			else if (itt->name == "_after")
 				delayTime = static_cast<float>(itt->iValue);
 		}
@@ -260,7 +254,7 @@ bool CdzVents::UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTable
 			if (itt->name == "idx")
 				idx = static_cast<uint64_t>(itt->iValue);
 			else if (itt->name == "_random")
-				delayTime = RandomTime(itt->iValue);
+				delayTime = GenerateRandomNumber(itt->iValue);
 			else if (itt->name == "_after")
 				delayTime = static_cast<float>(itt->iValue);
 		}
