@@ -12,7 +12,7 @@ return {
 	},
 	execute = function(domoticz)
 		local inTemp = domoticz.devices('Temp in').temperature
-		local outTemp = domoitcz.devices('Temp out').temperature
+		local outTemp = domoticz.devices('Temp out').temperature
 		local delta = outTemp - inTemp -- how much did the temperature drop?
 
 		-- update the dummy sensor
