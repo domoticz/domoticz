@@ -10,21 +10,24 @@ var SecurityPanel = function () {
 		zones: []*/
 	};
 
+	function Show(text) {
+		$('#digitdisplay').val(("* " + $.i18n.t(text) + " *").toUpperCase());
+	}
 	function ShowError(error) {
 		if (error=="NoConnect") {
-			$('#digitdisplay').val("no connect");
+			Show("Disconnected");
 		}
 		else if (error=="NoOkData") {
-			$('#digitdisplay').val("no ok data");
+			Show($.i18n.t("Disconnected"));
 		}
 		else if (error=="NoSettingsData") {
-			$('#digitdisplay').val("no settings");
+			Show($.i18n.t("Disconnected"));
 		}
 		else if (error=="NoOkCode") {
-			$('#digitdisplay').val("WRONG CODE");
+			Show($.i18n.t("WRONG CODE"));
 		}
 		else {
-			$('#digitdisplay').val("unkown err");
+			Show($.i18n.t("Disconnected"));
 		}
 	}
 
@@ -67,11 +70,12 @@ var SecurityPanel = function () {
 					
 					// Update status
 					var displaytext="";
-					if (data.secstatus==0) displaytext="DISARMED";
-					else if (data.secstatus==1) displaytext="ARM HOME";
-					else if (data.secstatus==2) displaytext="ARM AWAY";
-					else displaytext="UNKNOWN";
-					$('#digitdisplay').val("* "+displaytext+" *");
+					if (data.secstatus==0) displaytext="Disarmed";
+					else if (data.secstatus==1) displaytext="Armed Home";
+					else if (data.secstatus==2) displaytext="Armed";
+					else displaytext="Unknown Error";
+					
+					Show(displaytext);
 					
 					// Update SecOnDelay
 					var parsedSecOnDelay = parseInt(data.secondelay, 10);
@@ -117,7 +121,7 @@ var SecurityPanel = function () {
 
 			delay = delay - 1;
 			Beep('set');
-			$('#digitdisplay').val('Arm Delay: ' + delay);
+			$('#digitdisplay').val($.i18n.t('Arm Delay') + ': ' + delay);
 
 			secPanel.countdownTimer = setTimeout(function () { Countdown (delay); }, 1000);
 
@@ -299,7 +303,7 @@ var SecurityPanel = function () {
 		/*if (typeof(zonearray) != "undefined") {
 			if (CheckZoneClear(zonearray)) {
 				Beep('error');
-				$('#digitdisplay').val($.t('* ZONE OPEN *'));
+				$('#digitdisplay').val(('* ZONE OPEN *'));
 				CodeSetTimer=DelayedStatusRefresh(3000);
 				return;
 			}

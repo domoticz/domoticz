@@ -45,47 +45,43 @@
 		
 		// Setup translation
 		function SetLanguageEx(lng) {
+			
 			$.i18n.init({
 				resGetPath: '/i18n/domoticz-__lng__.json',
 				fallbackLng: false,
 				getAsync: false,
-				debug: false,
+				debug: true,
 				useCookie: false,
 				nsseparator: 'aadd',
 				keyseparator: 'bbcc',
 				lng: lng
 			});
-			$(".nav").i18n();
-			MakeDatatableTranslations();
+			
+			$('.translate').each(function(i, elm) {
+				var e = $(elm);
+				e.text($.i18n.t(e.text()));
+			});
+			
 		}
 
 		// DOM is ready, go go go!
 		$(document).ready(function() {
 
-			// Setup i18n
-			$.ajax({
-				 url: "../json.htm?type=command&param=getlanguage",
-				 dataType: 'json',
-				 success: function(data) {
-					if (typeof data.language != 'undefined') {
-						SetLanguageEx(data.language);
-					}
-					else {
-						SetLanguageEx('en');
-					}
-					
-				 	// Entrypoint for "main loop"
-				 	securityPanel.Start();
+			// Determine languange
+			var lang = 'en';
+			if(window.location.hash) {
+				var hash = window.location.hash.substring(1);
 
-				 },
-				 error: function () {
-
-				 	// Entrypoint for "main loop"
-				 	securityPanel.Start();
-				 	
-				 }
-			});
+				if(hash) {
+					lang = hash;
+				} 
+			}
 			
+			SetLanguageEx(lang);
+			
+		 	// Entrypoint for "main loop"
+		 	securityPanel.Start();
+			 	
 			// Setup events
 			$('li.digit').on('touchstart click', function (e) {
 				e.preventDefault();
@@ -140,25 +136,25 @@
 						<li class="digit" data-digit="1">1</li>
 						<li class="digit" data-digit="2">2</li>
 						<li class="digit" data-digit="3">3</li>
-						<li class="arm disarm" data-secstatus="0">Disarm</li>
+						<li class="arm disarm translate" data-secstatus="0">Disarm</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="digit" data-digit="4">4</li>
 						<li class="digit" data-digit="5">5</li>
 						<li class="digit" data-digit="6">6</li>
-						<li class="arm" data-secstatus="1">Arm Home</li>
+						<li class="arm translate" data-secstatus="1">Home</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="digit" data-digit="7">7</li>
 						<li class="digit" data-digit="8">8</li>
 						<li class="digit" data-digit="9">9</li>
-						<li class="arm" data-secstatus="2">Arm Away</li>
+						<li class="arm translate" data-secstatus="2">Away</li>
 					</ul>
 					<ul class="keypad-keys">
 						<li class="hidden"></li>
 						<li class="digit" data-digit="0">0</li>
 						<li class="hidden"></li>
-						<li class="arm cancel">Cancel</li>
+						<li class="arm cancel translate">Cancel</li>
 					</ul>
 				</form>
 			</div>
