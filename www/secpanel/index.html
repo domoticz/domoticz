@@ -89,11 +89,8 @@
 				// Digit
 				var 
 					target = $(e.target),
-					digit = target.data('digit'),
-					digitParsed = parseInt(digit, 10);
-				if(!isNaN(digitParsed)) {
-					securityPanel.AddDigit(digitParsed);
-				}
+					digit = target.data('digit');
+				securityPanel.AddDigit(digit);
 				
 			});
 			
@@ -151,9 +148,9 @@
 						<li class="arm translate" data-secstatus="2">Away</li>
 					</ul>
 					<ul class="keypad-keys">
-						<li class="hidden"></li>
+						<li class="digit" data-digit="*">*</li>
 						<li class="digit" data-digit="0">0</li>
-						<li class="hidden"></li>
+						<li class="digit" data-digit="#">#</li>
 						<li class="arm cancel translate">Cancel</li>
 					</ul>
 				</form>

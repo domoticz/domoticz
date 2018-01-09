@@ -121,7 +121,7 @@ var SecurityPanel = function () {
 
 			delay = delay - 1;
 			Beep('set');
-			$('#digitdisplay').val($.i18n.t('Arm Delay') + ': ' + delay);
+			$('#digitdisplay').val($.i18n.t('Delay') + ': ' + delay);
 
 			secPanel.countdownTimer = setTimeout(function () { Countdown (delay); }, 1000);
 
@@ -153,8 +153,8 @@ var SecurityPanel = function () {
 	
 	function SetSecStatus (status) {
 
-		// Bail out if code isn't numeric
-		if (isNaN(secPanel.code) || isNaN(status)) {
+		// Bail out if stuff doesn't seem right
+		if (isNaN(status)) {
 			Beep('error');
 			return;
 		}
@@ -206,17 +206,12 @@ var SecurityPanel = function () {
 		// Note: Heartbeat always resets the cleartext code placeholder (secStatus.code)
 		ResetHeartbeat(undefined, true);
 
-		// Reset code if not a number
-		if (isNaN(parseInt(secPanel.code, 10))) {
-			secPanel.code = "";
-		}
-
 		// Only proceed if new digit is a digit, inside range 0-9
 		var newDigit = parseInt(digit, 10);
-		if (!isNaN(newDigit) && newDigit >= 0 && newDigit <= 9) {
+		if ((newDigit >= 0 && newDigit <= 9) || digit == "*" || digit == "#") {
 
             // Update code
-			secPanel.code = "" + secPanel.code + "" + newDigit;
+			secPanel.code = "" + secPanel.code + "" + digit;
 			
 			// Update display
     		$('#digitdisplay').val(secPanel.code.replace(/./g,"#"));
