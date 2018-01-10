@@ -223,7 +223,7 @@ bool DomoticzTCP::ConnectInternal()
 	if (m_username!="")
 	{
 		char szAuth[300];
-		sprintf(szAuth,"AUTH;%s;%s",m_username.c_str(),m_password.c_str());
+		snprintf(szAuth,sizeof(szAuth),"AUTH;%s;%s",m_username.c_str(),m_password.c_str());
 		WriteToHardware((const char*)&szAuth,(const unsigned char)strlen(szAuth));
 	}
 
