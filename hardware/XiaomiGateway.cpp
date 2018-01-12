@@ -843,7 +843,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Selector;
 						name = "Xiaomi Wireless Switch";
 					}
-					else if (model == "sensor_switch.aq2") {
+					else if ((model == "sensor_switch.aq2") || (model == "sensor_switch.aq3")) {
 						type = STYPE_Selector;
 						name = "Xiaomi Square Wireless Switch";
 					}
