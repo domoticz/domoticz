@@ -226,7 +226,7 @@ private:
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
-	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus);
+	void EvaluateLuaClassic(lua_State *lua_state, const std::vector<_tEventQueue> &items, const int secStatus);
 
 
 	//std::string reciprocalAction (std::string Action);
