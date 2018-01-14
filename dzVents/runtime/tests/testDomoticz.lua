@@ -43,8 +43,6 @@ describe('Domoticz', function()
 		}
 
 		Domoticz = require('Domoticz')
-
-
 	end)
 
 	teardown(function()
@@ -294,7 +292,6 @@ describe('Domoticz', function()
 			assert.is_table(res)
 			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
 		end)
-
 	end)
 
 	describe('Interacting with the collections', function()
@@ -402,6 +399,31 @@ describe('Domoticz', function()
 			end, 0)
 
 			assert.is_same(6, reduced2)
+		end)
+
+		it('should support a table with ids and/or names as filter', function()
+			local collection = domoticz.devices()
+
+			local filtered = collection.filter({"device1", "device3", "device7"})
+			local _f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device1", "device3", "device7" })
+
+			filtered = collection.filter({"device1", 3, "device7"})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device1", "device3", "device7" })
+
+			filtered = collection.filter({3, 7})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device3", "device7" })
+
+			filtered = collection.filter({})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, {})
+
+			filtered = collection.filter({'Scene1'}) -- cross contamination
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, {})
+
 		end)
 
 		it('should give you a scene when you need one', function()
@@ -773,7 +795,6 @@ describe('Domoticz', function()
 				return device.name == 'device2'
 			end).name
 			assert.is_same('device2', found)
-
 		end)
 
 		it('group subdevices', function()
@@ -806,11 +827,7 @@ describe('Domoticz', function()
 				return device.name == 'device4'
 			end).name
 			assert.is_same('device4', found)
-
 		end)
-
-
-
 	end)
 
 	describe('devices', function()
@@ -879,7 +896,6 @@ describe('Domoticz', function()
 
 		local s = 'a b c'
 		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
-
 	end)
 
 	it('should round', function()

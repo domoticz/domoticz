@@ -8,3 +8,5 @@ twilight stuff
 
 setpoint stuff EvoHome
 sethue, setcolbrightness
+
+lastseen prop for (zwave) devices?

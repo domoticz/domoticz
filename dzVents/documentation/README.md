@@ -532,52 +532,66 @@ The domoticz object has these collections (tables): devices, scenes, groups, var
 
  1. **find(function)**: Returns the item in the collection for which `function` returns true. When no item is found `find` returns nil.
  2. **forEach(function)**: Executes function once per array element. The function receives the item in the collection (device or variable). If the function returns *false*, the loop is aborted.
- 3. **filter(function)**: returns items in the collection for which the function returns true.
+ 3. **filter(function / table)**: returns items in the collection for which the function returns true. You can also provide a table with names and/or ids.
  4. **reduce(function, initial)**: Loop over all items in the collection and do some calculation with it. You call it with the function and the initial value. Each iteration the function is called with the accumulator and the item in the collection. The function does something with the accumulator and returns a new value for it.
 
 ####Examples:
 
 find():
-
+```
 	local myDevice = domoticz.devices().find(function(device)
 		return device.name == 'myDevice'
 	end)
 	domoticz.log('Id: ' .. myDevice.id)
-
+```
 forEach():
-
+```
     domoticz.devices().forEach(function(device)
     	if (device.batteryLevel < 20) then
     		-- do something
     	end
     end)
-
+```
 filter():
-
+```
 	local deadDevices = domoticz.devices().filter(function(device)
 		return (device.lastUpdate.minutesAgo > 60)
 	end)
 	deadDevices.forEach(function(zombie)
 		-- do something
 	end)
+```
+or
+```
+	local livingLights = {
+		'window',
+		'couch',
+		33, -- kitchen light id
+	}
+	local lights = domoticz.devices().filter(livingLights)
+	lights.forEach(function(light)
+		-- do something
+		light.switchOn()
+	end)
+```
 
 Of course you can chain:
-
+```
 	domoticz.devices().filter(function(device)
 		return (device.lastUpdate.minutesAgo > 60)
 	end).forEach(function(zombie)
 		-- do something with the zombie
 	end)
-
+```
 Using a reducer to count all devices that are switched on:
-
+```
     local count = domoticz.devices().reduce(function(acc, device)
 	    if (device.state == 'On') then
 		    acc = acc + 1 -- increase the accumulator
 	    end
 	    return acc -- always return the accumulator
     end, 0) -- 0 is the initial value for the accumulator
-
+```
 
 ### Constants
 The domoticz object has these constants available for use in your code e.g. `domoticz.LOG_INFO`.
@@ -734,7 +748,6 @@ Note that if you do not find your specific device type here you can always inspe
  - **startPlaylist(name)**: *Function*. <sup>2.4.0</sup> Will start the playlist by its `name`. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **stop()**: *Function*. <sup>2.4.0</sup> Will stop the device (only effective if the device is streaming). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **switchOff()**: *Function*. <sup>2.4.0</sup> Will turn the device off. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
-
 
 #### Lux sensor
  - **lux**: *Number*. Lux level for light sensors.
@@ -940,7 +953,7 @@ Many dzVents device methods support extra options, like controlling a delay or a
  - **forHour(hours), forMin(minutes), forSec(seconds)**: *Function*. Activates the command for the duration of hours, minutes or seconds. See table below for applicability.
  - **withinHour(hours), withinMin(minutes), withinSec(seconds)**: *Function*. Activates the command within a certain period (specified in hours, minutes or seconds) *randomly*. See table below for applicability.
  - **silent()**: *Function*. No follow-up events will be triggered: `mySwitch.switchOff().silent()`.
- - **repeatAfterHour(hours, [number]), repeatAfterMin(minutes, [number]), repeatAfterSec(seconds, [number])**: *Function*. Repeats the sequence *number* times after the specified duration (specified in hours, minutes, or seconds).  If no *number* is provided, 1 is used.
+ - **repeatAfterHour(hours, [number]), repeatAfterMin(minutes, [number]), repeatAfterSec(seconds, [number])**: *Function*. Repeats the sequence *number* times after the specified duration (specified in hours, minutes, or seconds).  If no *number* is provided, 1 is used. **Note that `afterXXX()` and `withinXXX()` are only applied at the beginning of the sequence and not between the repeats!**
 
 Note that the actual switching or changing of the device is done by Domoticz and not by dzVents. dzVents only tells Domoticz what to do; if the options are not carried out as expected, this is likely a Domoticz or hardware issue.
 
@@ -958,7 +971,7 @@ else
 	light.switchOn().forMin(5)
 end
 ```
-or
+or issue these two commands *both* as they are mutually exclusive:
 ```
 light.switchOff().checkFirst().afterMin(5)
 light.switchOn().checkFirst().forMin(5)
@@ -1166,12 +1179,11 @@ The values in persistent script variables persist and can be retrieved in the ne
 For example, send a notification if a switch has been activated 5 times:
 ```
     return {
-        active = true,
         on = {
 			devices = { 'MySwitch' }
     	},
         data = {
-    	    counter = {initial=0}
+    	    counter = { initial = 0 }
     	},
         execute = function(domoticz, switch)
     		if (domoticz.data.counter == 5) then
@@ -1185,10 +1197,43 @@ For example, send a notification if a switch has been activated 5 times:
 ```
 The `data` section defines a persistent variable called `counter`. It also defines an initial value.  From then on you can read and set the variable in your script.
 
+You do not have to provide an initial value though. In that case the initial value is *nil*:
+
+```
+    return {
+	    --
+        data = {
+    	    'x', 'y', 'z' -- note the quotes
+    	},
+    	execute = function(domoticz, item)
+	    	print(tostring(domoticz.data.x)) -- prints nil
+    	end
+    }
+```
+
 You can define as many variables as you like and put whatever value in there that you like. It doesn't have to be just a number. Just don't put something in there with functions (well, they are filtered out actually).
 
 ### Size matters and watch your speed!!
 If you include tables (or arrays) in the persistent data, beware to not let them grow. It will definitely slow down script execution because dzVents has to serialize and deserialize the data. It is better to use the historical option as described below.
+
+### Re-initializing a variable <sup>2.4.0</sup>
+As of dzVents 2.4.0 you can re-initialize a persistent variable and re-apply the initial value as defined in the data section:
+
+```
+return {
+	on = { .. },
+	data = {
+		x = { initial = 'initial value' }
+	},
+	execute = function(domoticz, item)
+		if (domoticz.data.x ~= 'initial value') then
+			domoticz.data.initialize('x')
+			print(domoticz.data.x) -- will print 'initial value'
+		end
+	end
+}
+```
+Note that `domoticz.data.initialize('<varname>')` is just a convenience method. You can of course create a local variable in your module holding the initial value and use it in your data section and your execute function.
 
 ## Global persistent variables
 
@@ -1207,7 +1252,6 @@ Script level variables are only available in the scripts that define them, but g
 Just define the variables that you need and access them in your scripts:
 ```
     return {
-        active = true,
         on = {
     	    devices = {'WindowSensor'}
     	},
@@ -1220,6 +1264,8 @@ Just define the variables that you need and access them in your scripts:
     }
 ```
 **Note**: there can be only one `global_data.lua` on your system. Either in `/path/to/domoticz/scripts/dzVents/script` or in Domoticz' internal GUI web editor.
+
+You can use `domoticz.globalData.initialize('<varname>')` just as like `domoticz.data.initialize('<varname>')`.
 
 ## A special kind of persistent variables: *history = true* (Historical variables API)
 
@@ -1775,8 +1821,9 @@ On the other hand, you have to make sure that dzVents can access the json withou
 - Fixed bug in Domoticz where improper states were passed to the event scripts. This may happen on slower machines where several devices may have been updated before the event-system had a change to operate on them. In that case the event scripts received the current final state instead of the state at the moment of the actual event.
 - Added support for webroot. dzVents will now use the proper API url when domoticz is started with the -webroot switch.
 - Added support for event-bursts. If (on slower machines) events get queued up in Domoticz, they will be sent to dzVents in one-package. This makes event processing significantly faster.
-
-
+- Added `domoticz.data.initialize(varName)`. This will re-initialize non-historical variables to the initial value as defined in the data section.
+- You now no longer have to provide an initial value for a persistent variable when you declare it. So you can do `data = { 'a', 'b', 'c'}` instead of `data = {a={initial = nil}, b={initial=nil}, c={initial=nil} }`. You have to quote the names though.
+- A filter can now accept a table with names/id's instead of only functions. You can now do `domoticz.devices().filter({ 'mySwitch', 'myPIR', 34, 35, 'livingLights'})` which will give you a collection of devices with these names and ids.
 
 ##[2.3.0]
 

@@ -525,8 +525,22 @@ local function Domoticz(settings)
 				end
 
 				if (_item and type(_item) ~= 'function' and ( (initial == true and type(i) == 'number') or (initial == false and type(i) ~= number))) then
-					if (filter(_item)) then
-						res[i] = _item
+					if (type(filter) == 'function') then
+						if (filter(_item)) then
+							res[i] = _item
+						end
+					elseif (type(filter) == 'table') then
+						-- assume a list of names
+
+						for i, filterItem in pairs(filter) do
+							if (_item[ (type(filterItem) == 'number') and 'id' or 'name' ] == filterItem) then
+								res[i] = _item
+								break
+							end
+						end
+					else
+						--unsupported
+						utils.log('Please provide either a function or a table with names/ids to the filter.', utils.LOG_ERROR)
 					end
 				end
 			end

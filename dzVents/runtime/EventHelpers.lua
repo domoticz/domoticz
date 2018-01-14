@@ -2,9 +2,6 @@
 local GLOBAL = false
 local LOCAL = true
 
-local SCRIPT_DATA = 'data'
-local GLOBAL_DATA = 'globalData'
-
 local utils = require('Utils')
 local persistence = require('persistence')
 local HTTPResponse = require('HTTPResponse')
@@ -63,14 +60,23 @@ local function EventHelpers(domoticz, mainMethod)
 
 		local storageContext = {}
 		local fileStorage, value, ok
-
+		--require('lodash').print(1, storageDef)
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
 			ok, fileStorage = pcall(require, module)
 			package.loaded[module] = nil -- no caching
 			if (ok) then
 				-- only transfer data as defined in storageDef
-				for var, def in pairs(storageDef) do
+				for _var, _def in pairs(storageDef) do
+					local var, def
+
+					if (type(_var) == 'number' and type(_def) == 'string') then
+						var = _def
+						def = {}
+					else
+						var = _var
+						def = _def
+					end
 
 					if (def.history ~= nil and def.history == true) then
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
@@ -78,26 +84,43 @@ local function EventHelpers(domoticz, mainMethod)
 						if (fileStorage[var] == nil) then
 							-- obviously this is a var that was added later
 							-- initialize it
-							storageContext[var] = storageDef[var].initial
+							storageContext[var] = def.initial
 						else
 							storageContext[var] = fileStorage[var]
 						end
 					end
 				end
 			else
-				for var, def in pairs(storageDef) do
+				for _var, _def in pairs(storageDef) do
 
+					local var, def
+
+					if (type(_var) == 'number' and type(_def) == 'string') then
+						var = _def
+						def = {}
+					else
+						var = _var
+						def = _def
+					end
+
+					--require('lodash').print('>', var, def, '<')
 					if (def.history ~= nil and def.history == true) then
 						-- no initial value, just an empty history
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
-						if (storageDef[var].initial ~= nil) then
-							storageContext[var] = storageDef[var].initial
+						if (def.initial ~= nil) then
+							storageContext[var] = def.initial
 						else
 							storageContext[var] = nil
 						end
 					end
 				end
+			end
+
+		end
+		storageContext.initialize = function(varName)
+			if (storageContext[varName] ~= nil and storageDef[varName].history == nil ) then
+				storageContext[varName] = storageDef[varName].initial
 			end
 		end
 		fileStorage = nil
@@ -111,10 +134,15 @@ local function EventHelpers(domoticz, mainMethod)
 		if (storageDef ~= nil) then
 			-- transfer only stuf as described in storageDef
 			for var, def in pairs(storageDef) do
-				if (def.history ~= nil and def.history == true) then
-					data[var] = storageContext[var]._getForStorage()
+
+				if (type(var) == 'number' and type(def) == 'string') then
+					data[def] = storageContext[def]
 				else
-					data[var] = storageContext[var]
+					if (def.history ~= nil and def.history == true) then
+						data[var] = storageContext[var]._getForStorage()
+					else
+						data[var] = storageContext[var]
+					end
 				end
 			end
 			local ok, err = pcall(persistence.store, dataFilePath, data)
@@ -164,17 +192,17 @@ local function EventHelpers(domoticz, mainMethod)
 				local localStorageContext = self.getStorageContext(eventHandler.data, eventHandler.dataFileName)
 
 				if (localStorageContext) then
-					self.domoticz[SCRIPT_DATA] = localStorageContext
+					self.domoticz.data = localStorageContext
 				else
-					self.domoticz[SCRIPT_DATA] = {}
+					self.domoticz.data = {}
 				end
 			end
 
 			if (globalsDefinition) then
 				local globalStorageContext = self.getStorageContext(globalsDefinition, '__data_global_data')
-				self.domoticz[GLOBAL_DATA] = globalStorageContext
+				self.domoticz.globalData = globalStorageContext
 			else
-				self.domoticz[GLOBAL_DATA] = {}
+				self.domoticz.globalData = {}
 			end
 
 			-- ==================
@@ -222,18 +250,18 @@ local function EventHelpers(domoticz, mainMethod)
 					self.writeStorageContext(eventHandler.data,
 						eventHandler.dataFilePath,
 						eventHandler.dataFileName,
-						self.domoticz[SCRIPT_DATA])
+						self.domoticz.data)
 				end
 
 				if (globalsDefinition) then
 					self.writeStorageContext(globalsDefinition,
 						_G.dataFolderPath .. '/__data_global_data.lua',
 						_G.dataFolderPath .. '/__data_global_data',
-						self.domoticz[GLOBAL_DATA])
+						self.domoticz.globalData)
 				end
 
-				self.domoticz[SCRIPT_DATA] = nil
-				self.domoticz[GLOBAL_DATA] = nil
+				self.domoticz.data = nil
+				self.domoticz.globalData = nil
 
 				return res
 			else
@@ -244,8 +272,8 @@ local function EventHelpers(domoticz, mainMethod)
 			utils.log('No "execute" function found in event handler ' .. eventHandler, utils.LOG_ERROR)
 		end
 
-		self.domoticz[SCRIPT_DATA] = nil
-		self.domoticz[GLOBAL_DATA] = nil
+		self.domoticz.data = nil
+		self.domoticz.globalData = nil
 	end
 
 	function self.scandir(directory, type)
