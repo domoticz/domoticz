@@ -796,18 +796,36 @@ namespace Plugins {
 					iImage, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
 			}
 
-			if ((self->SubType != sTypeCustom) && (pOptionsDict != NULL))
+			// Options provided, assume change
+			if (pOptionsDict && PyDict_Check(pOptionsDict))
 			{
-				// Options provided, assume change
-				PyObject *pKeyDict, *pValueDict;
-				Py_ssize_t pos = 0;
-				std::map<std::string, std::string> mpOptions;
-				while(PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict)) {
-					std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-					std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
-					mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+				if (self->SubType != sTypeCustom)
+				{
+					PyObject *pKeyDict, *pValueDict;
+					Py_ssize_t pos = 0;
+					std::map<std::string, std::string> mpOptions;
+					while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict)) {
+						std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
+						std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+						mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+					}
+					m_sql.SetDeviceOptions(self->ID, mpOptions);
 				}
-				m_sql.SetDeviceOptions(self->ID, mpOptions);
+				else
+				{
+					std::string sOptionValue = "";
+					PyObject *pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+					if (pValue)
+					{
+						sOptionValue = PyUnicode_AsUTF8(pValue);
+					}
+
+					time_t now = time(0);
+					struct tm ltime;
+					localtime_r(&now, &ltime);
+					m_sql.safe_query("UPDATE DeviceStatus SET Options=%q, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
+						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+				}
 			}
 
 			// TimedOut change
