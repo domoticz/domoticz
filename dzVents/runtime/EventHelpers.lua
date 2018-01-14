@@ -25,12 +25,18 @@ local function EventHelpers(domoticz, mainMethod)
 		package.path = package.path .. ';' .. currentPath .. '/../?.lua'
 	end
 
+	local webRoot = globalvariables['domoticz_webroot']
+	local _url = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
+
 	local settings = {
 		['Log level'] = tonumber(globalvariables['dzVents_log_level']) or  1,
-		['Domoticz url'] = 'http://127.0.0.1:' .. (tostring(globalvariables['domoticz_listening_port']) or "8080")
+		['Domoticz url'] = _url,
+		['url'] = url,
+		['webRoot'] = tostring(webRoot),
+		['serverPort'] = globalvariables['domoticz_listening_port'] or '8080'
 	}
 
-	local webRoot = globalvariables['domoticz_webroot']
+
 	if (webRoot ~= '' and webRoot ~= nil) then
 		settings['Domoticz url'] = settings['Domoticz url'] .. '/' .. tostring(webRoot)
 	end

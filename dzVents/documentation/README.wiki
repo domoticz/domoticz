@@ -499,6 +499,10 @@ The domoticz object holds all information about your Domoticz system. It has glo
 * '''scenes(idx/name)''': ''Function'': A function returning a scene by name or id. Each scene has the same interface as a device. See [[#Device_object_API|Device object API]]. To iterate over all scenes do: <code>domoticz.scenes().forEach(..)</code>. See [[#looping-through-the-collections-iterators|Looping through the collections: iterators]]. (#Looping_through_the_collections:_iterators). Note that you cannot do <code>for i, j in pairs(domoticz.scenes()) do .. end</code>. Read more about [[#Scene|Scenes]].
 * '''security''': Holds the state of the security system e.g. <code>Armed Home</code> or <code>Armed Away</code>.
 * '''sendCommand(command, value)''': Generic (low-level)command method (adds it to the commandArray) to the list of commands that are being sent back to domoticz. ''There is likely no need to use this directly. Use any of the device methods instead (see below).''
+* '''settings''':
+** '''url''': internal url to access the API service.
+** '''webRoot''': <code>webroot</code> value as specified when starting the Domoticz service.
+** '''serverPort''': webserver listening port.
 * '''sms(message)''': ''Function''. Sends an sms if it is configured in Domoticz.
 * '''startTime''': ''[[#Time_object|Time Object]]''. Returns the startup time of the Domoticz service.
 * '''systemUptime''': ''Number''. Number of seconds the system is up.
@@ -1928,6 +1932,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * Added <code>domoticz.data.initialize(varName)</code>. This will re-initialize non-historical variables to the initial value as defined in the data section.
 * You now no longer have to provide an initial value for a persistent variable when you declare it. So you can do <code>data = { 'a', 'b', 'c'}</code> instead of <code>data = {a={initial = nil}, b={initial=nil}, c={initial=nil} }</code>. You have to quote the names though.
 * A filter can now accept a table with names/id's instead of only functions. You can now do <code>domoticz.devices().filter({ 'mySwitch', 'myPIR', 34, 35, 'livingLights'})</code> which will give you a collection of devices with these names and ids.
+* Added and documented <code>domoticz.settings.url</code>, <code>domoticz.settings.webRoot</code> and <code>domoticz.settings.serverPort</code>.
 
 == [2.3.0] ==
 
