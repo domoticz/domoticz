@@ -933,11 +933,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 						}
 						else if ((model == "smoke") || (model == "natgas") || (model == "sensor_wleak.aq1")) {
+							if (model == "sensor_wleak.aq1" && battery != 255) {
+								level = 0;
+							}
 							if ((alarm == "1") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
-							else if ((alarm == "0") || (status == "no_leak")) {
+							else if ((alarm == "0") || (status == "no_leak") || (status == "iam")) {
 								level = 0;
 							}
 							if (density != "")
