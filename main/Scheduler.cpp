@@ -375,7 +375,7 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 		struct tm tm1;
 
 		std::string  allSchedules[] = {sSunRise, sSunSet, sSunAtSouth, sCivTwStart, sCivTwEnd, sNautTwStart, sNautTwEnd, sAstTwStart, sAstTwEnd};
-		time_t allTimes[] = {m_tSunRise, m_tSunSet, m_tSunAtSouth, m_tCivTwStart, m_tCivTwEnd, m_tNautTwStart, m_tNautTwEnd, m_tAstTwStart, m_tAstTwEnd};
+		time_t *allTimes[] = {&m_tSunRise, &m_tSunSet, &m_tSunAtSouth, &m_tCivTwStart, &m_tCivTwEnd, &m_tNautTwStart, &m_tNautTwEnd, &m_tAstTwStart, &m_tAstTwEnd};
 		for(unsigned int a = 0; a < sizeof(allSchedules)/sizeof(allSchedules[0]); a = a + 1)
 		{
 			//std::cout << allSchedules[a].c_str() << ' ';
@@ -384,11 +384,11 @@ void CScheduler::SetSunRiseSetTimers(const std::string &sSunRise, const std::str
 			sec = atoi(allSchedules[a].substr(6, 2).c_str());
 
 			constructTime(temptime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,hour,min,sec,ltime.tm_isdst);
-			if ((allTimes[a] != temptime) && (temptime != 0))
+			if ((*allTimes[a] != temptime) && (temptime != 0))
 			{
-				if (allTimes[a] == 0)
+				if (*allTimes[a] == 0)
 					bReloadSchedules = true;
-				allTimes[a] = temptime;
+				*allTimes[a] = temptime;
 			}
 		}
 	}

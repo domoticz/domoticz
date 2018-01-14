@@ -25,7 +25,6 @@ namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls access to the message queue
 	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern boost::asio::io_service ios;
 
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
@@ -59,18 +58,17 @@ namespace Plugins {
 			{
 				m_bConnecting = false;
 				m_bConnected = false;
-				m_Resolver = new boost::asio::ip::tcp::resolver(ios);
 				m_Socket = new boost::asio::ip::tcp::socket(ios);
 
 				boost::system::error_code ec;
 				boost::asio::ip::tcp::resolver::query query(m_IP, m_Port);
-				boost::asio::ip::tcp::resolver::iterator iter = m_Resolver->resolve(query);
+				boost::asio::ip::tcp::resolver::iterator iter = m_Resolver.resolve(query);
 				boost::asio::ip::tcp::endpoint endpoint = *iter;
 
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/example/http/client/async_client.cpp
 				//
-				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportTCP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+				m_Resolver.async_resolve(query, boost::bind(&CPluginTransportTCP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
@@ -105,11 +103,6 @@ namespace Plugins {
 		{
 			m_bConnecting = false;
 
-			if (m_Resolver)
-			{
-				delete m_Resolver;
-				m_Resolver = NULL;
-			}
 			if (m_Socket)
 			{
 				delete m_Socket;
@@ -125,9 +118,6 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
-		delete m_Resolver;
-		m_Resolver = NULL;
-
 		if (!err)
 		{
 			m_bConnected = true;
@@ -358,11 +348,6 @@ namespace Plugins {
 			m_Acceptor->cancel();
 		}
 
-		if (m_Resolver)
-		{
-			delete m_Resolver;
-		}
-
 		m_bDisconnectQueued = false;
 
 		return true;
@@ -375,7 +360,7 @@ namespace Plugins {
 			handleDisconnect();
 			delete m_Socket;
 		}
-		if (m_Resolver) delete m_Resolver;
+
 		if (m_Acceptor)
 		{
 			delete m_Acceptor;
@@ -384,9 +369,6 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
-		delete m_Resolver;
-		m_Resolver = NULL;
-
 		if (!err)
 		{
 			m_Context = new boost::asio::ssl::context(boost::asio::ssl::context::sslv23);
@@ -725,7 +707,6 @@ namespace Plugins {
 			handleDisconnect();
 			delete m_Socket;
 		}
-		if (m_Resolver) delete m_Resolver;
 	};
 
 	void CPluginTransportICMP::handleAsyncResolve(const boost::system::error_code &ec, boost::asio::ip::icmp::resolver::iterator endpoint_iterator)
@@ -761,18 +742,17 @@ namespace Plugins {
 			{
 				m_bConnecting = false;
 				m_bConnected = false;
-				m_Resolver = new boost::asio::ip::icmp::resolver(ios);
 				m_Socket = new boost::asio::ip::icmp::socket(ios, boost::asio::ip::icmp::v4());
 
 				boost::system::error_code ec;
 				boost::asio::ip::icmp::resolver::query query(boost::asio::ip::icmp::v4(), m_IP, "");
-				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver->resolve(query);
+				boost::asio::ip::icmp::resolver::iterator iter = m_Resolver.resolve(query);
 				m_Endpoint = *iter;
 
 				//
 				//	Async resolve/connect based on http://www.boost.org/doc/libs/1_51_0/doc/html/boost_asio/example/icmp/ping.cpp
 				//
-				m_Resolver->async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+				m_Resolver.async_resolve(query, boost::bind(&CPluginTransportICMP::handleAsyncResolve, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
 
 				m_Initialised = true;
 			}
@@ -945,12 +925,6 @@ namespace Plugins {
 			m_Socket = NULL;
 		}
 
-		if (m_Resolver)
-		{
-			delete m_Resolver;
-			m_Resolver = NULL;
-		}
-
 		return true;
 	}
 
@@ -961,7 +935,6 @@ namespace Plugins {
 			handleDisconnect();
 			delete m_Socket;
 		}
-		if (m_Resolver) delete m_Resolver;
 	}
 
 	CPluginTransportSerial::CPluginTransportSerial(int HwdID, PyObject* pConnection, const std::string & Port, int Baud) : CPluginTransport(HwdID, pConnection), m_Baud(Baud)
