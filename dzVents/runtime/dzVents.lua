@@ -1,4 +1,4 @@
-local TESTMODE = true
+local TESTMODE = false
 globalvariables['testmode'] = true
 --globalvariables['dzVents_log_level'] = 4 --debug
 
