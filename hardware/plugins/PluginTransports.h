@@ -4,6 +4,8 @@
 #include <boost/asio.hpp>
 #include <ctime>
 
+#include <mqtt_client_cpp.hpp>
+
 namespace Plugins {
 
 	extern boost::asio::io_service ios;
@@ -145,6 +147,21 @@ namespace Plugins {
 		virtual void		handleRead(const char *data, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>&);
 		virtual	bool		handleDisconnect();
+	};
+
+	class CPluginTransportMQTT : CPluginTransportIP
+	{
+	public:
+		CPluginTransportMQTT(int HwdID, PyObject* pConnection, const std::string& Address, const std::string& Port): CPluginTransportIP(HwdID, pConnection, Address, Port) { };
+		~CPluginTransportMQTT(void);
+		virtual	bool		handleConnect();
+		virtual void		handleWrite(const std::vector<byte>&);
+		virtual	bool		handleDisconnect();
+
+		virtual bool		ThreadPoolRequired() { return true; };
+		
+	protected:
+		std::shared_ptr<mqtt::client<mqtt::tcp_endpoint<mqtt::as::ip::tcp::socket, mqtt::as::io_service::strand>>> m_client;
 	};
 
 }

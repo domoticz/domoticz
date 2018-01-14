@@ -21,8 +21,6 @@
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 namespace Plugins {
 
 	extern 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
@@ -636,7 +634,7 @@ namespace Plugins {
 		if (!pLength && pData && PyUnicode_Check(pData))
 		{
 			Py_ssize_t iLength = PyUnicode_GetLength(pData);
-			sHttp += "Content-Length: " + SSTR(iLength) + "\r\n";
+			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 		}
 
 		sHttp += "\r\n";
@@ -812,6 +810,118 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(RecvMessage);
 		}
+	}
+
+	void CPluginProtocolMQTT::ProcessInbound(const ReadMessage* Message)
+	{
+		byte messageType = *Message->m_Buffer.data();
+		unsigned topiclen = strlen((const char*)Message->m_Buffer.data()+sizeof(messageType)) + 1; // Count terminating NULL
+		unsigned payloadlen = Message->m_Buffer.size() - topiclen - sizeof(messageType);
+		const byte *topic = Message->m_Buffer.data()+sizeof(messageType);
+		const byte *payload = topic + topiclen;
+		if (Message->m_Buffer.size() < topiclen + payloadlen)
+		{
+			_log.Log(LOG_ERROR, "(%s) Unexpected buffer size:%u (topiclen:%u, payloadlen:%u)", "MQTT", Message->m_Buffer.size(), topiclen, payloadlen);
+			return;
+		}
+
+		PyObject*	pDataDict = PyDict_New();
+		char* sType = "Unknown";
+		if (messageType == 3) sType = "Publish";
+		if (messageType == 4) sType = "Puback";
+		if (messageType == 9) sType = "Suback";
+		if (messageType == 11) sType = "Unsuback";
+
+		PyObject*	pObj = Py_BuildValue("s", sType);
+		if (PyDict_SetItemString(pDataDict, "Type", pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "MQTT", "Type", sType);
+		Py_DECREF(pObj);
+
+		pObj = Py_BuildValue("s#", topic, topiclen - 1);
+		if (PyDict_SetItemString(pDataDict, "Topic", pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", "MQTT", "Topic", topic);
+		Py_DECREF(pObj);
+
+		pObj = Py_BuildValue("y#", payload, payloadlen);
+		if (PyDict_SetItemString(pDataDict, "Payload", pObj) == -1)
+			_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "MQTT", "Payload");
+		Py_DECREF(pObj);
+
+		onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		PluginMessageQueue.push(RecvMessage);
+	}
+
+	std::vector<byte>	CPluginProtocolMQTT::ProcessOutbound(const WriteDirective* WriteMessage)
+	{
+		std::vector<byte>	retVal;
+		std::string	sTopic;
+		std::string	sType = "Publish";
+		byte messageType = 0; // Reserved (illegal value)
+
+		// Sanity check input
+		if (!WriteMessage->m_Object || !PyDict_Check(WriteMessage->m_Object))
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT Send parameter was not a dictionary, ignored. See Python Plugin wiki page for help.", __func__);
+			return retVal;
+		}
+
+		// Extract potential values.  Failures return NULL, success returns borrowed reference
+		PyObject *pType = PyDict_GetItemString(WriteMessage->m_Object, "Type");
+		PyObject *pTopic = PyDict_GetItemString(WriteMessage->m_Object, "Topic");
+		PyObject *pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
+
+		if (pType)
+		{
+			if (!PyUnicode_Check(pType))
+			{
+				_log.Log(LOG_ERROR, "(%s) MQTT 'Type' dictionary entry not a string, ignored. See Python Plugin wiki page for help.", __func__);
+				return retVal;
+			}
+			sType = PyUnicode_AsUTF8(pType);
+		}
+		if (sType == "Publish") messageType = 3; // PUBLISH
+		if (sType == "Subscribe") messageType = 8; // SUBSCRIBE
+		if (sType == "Unsubscribe") messageType = 10; // UNSUBSCRIBE
+		if (!messageType)
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT 'Type' %s not supported. See Python Plugin wiki page for help.", __func__);
+			return retVal;
+		}
+
+		if (pTopic)
+		{
+			if (!PyUnicode_Check(pTopic))
+			{
+				_log.Log(LOG_ERROR, "(%s) MQTT 'Topic' dictionary entry not a string, ignored. See Python Plugin wiki page for help.", __func__);
+				return retVal;
+			}
+			sTopic = PyUnicode_AsUTF8(pTopic);
+			unsigned topiclen = sTopic.length() + 1; // Reserve space for terminating NULL
+			unsigned payloadlen = 0;
+
+			if (pPayload)
+			{
+				//if (!PyByteArray_Check(pPayload))  // Gives linker error, why?
+				if (!(pPayload->ob_type->tp_name == std::string("bytearray")))
+				{
+					_log.Log(LOG_ERROR, "(%s) MQTT 'Payload' dictionary entry not a bytearray, ignored. See Python Plugin wiki page for help.", __func__);
+					return retVal;
+				}
+				payloadlen = PyByteArray_GET_SIZE(pPayload);
+			}
+
+			retVal.resize(sizeof(messageType) + topiclen + payloadlen);
+			retVal[0] = messageType;
+			strcpy((char*)&retVal[sizeof(messageType)], sTopic.c_str());
+			if (payloadlen)	memcpy(&retVal[sizeof(messageType)+topiclen], ((PyByteArrayObject *)(pPayload))->ob_start, payloadlen);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "(%s) MQTT Send parameter does not contains 'Topic' entry, ignored. See Python Plugin wiki page for help.", __func__);
+			return retVal;
+		}
+		return retVal;
 	}
 }
 #endif

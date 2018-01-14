@@ -16,6 +16,7 @@
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include <datetime.h>
+#include "boost/lexical_cast.hpp"
 
 namespace Plugins {
 
@@ -235,7 +236,7 @@ namespace Plugins {
 					m_sql.safe_query("DELETE FROM CustomImages WHERE (ID==%d)", self->ImageID);
 
 					PyObject*	pKey = PyLong_FromLong(self->ImageID);
-					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
+					if (PyDict_DelItem((PyObject*)self->pPlugin->m_ImageDict, pKey) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to delete image '%d' from images dictionary.", self->pPlugin->Name.c_str(), self->ImageID);
 						Py_INCREF(Py_None);
@@ -534,7 +535,7 @@ namespace Plugins {
 						}
 						self->Type = pTypeGeneralSwitch;
 						self->SubType = sSwitchTypeSelector;
-						self->SwitchType = 18;
+						self->SwitchType = STYPE_Selector;
 					}
 					else if (sTypeName == "Custom")
 					{
@@ -765,35 +766,77 @@ namespace Plugins {
 			int			iImage = self->Image;
 			int			iTimedOut = self->TimedOut;
 			PyObject*	pOptionsDict = NULL;
+
+			char*		Name = NULL; // Not supported, TODO
+			char*		TypeName = NULL; // Not supported, TODO
+			int			iType = self->Type;
+			int			iSubType = self->SubType;
+			int			iSwitchType = self->SwitchType;
+			int			iUsed = self->Used;
+
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] = { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", NULL };
+			static char *kwlistupdatedevice[] = { "Name", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "TimedOut", NULL };
+			static char *kwlistupdatevalue[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", NULL };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "is|iiiOi", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut))
+			// Extract parameters needed to update value, require both nValue and sValue
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "is|ii", kwlistupdatevalue, &nValue, &sValue, &iSignalLevel, &iBatteryLevel))
 			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel', 'Options' or 'TimedOut' expected.", __func__, sName.c_str());
+				if (self->pPlugin->m_bDebug)
+				{
+					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+				}
+				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+
+				// Notify MQTT and various push mechanisms
+				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
+			else
+			{
+				_log.Log(LOG_TRACE, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'SignalLevel', 'BatteryLevel', device will not be updated", __func__, sName.c_str());
+				// Ignore any exception
+				PyErr_Clear();
+			}
+
+			// Extract parameters needed to update device settings
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ssiiiiOii", kwlistupdatedevice, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iImage, &pOptionsDict, &iUsed, &iTimedOut))
+			{
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'Name', 'TypeName', 'Type', 'Subtype', 'SwitchType', 'Image', 'Options', 'Used' or 'TimedOut' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
 
-			if (self->pPlugin->m_bDebug)
-			{
-				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
-			}
-			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+			std::string sID = boost::lexical_cast<std::string>(self->ID);
 
-			// Notify MQTT and various push mechanisms
-			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			// Type change
+			if (iType != self->Type)
+			{
+				m_sql.UpdateDeviceValue("Type", iType, sID);
+			}
+
+			// SubType change
+			if (iSubType != self->SubType)
+			{
+				m_sql.UpdateDeviceValue("SubType", iSubType, sID);
+			}
+
+			// SwitchType change
+			if (iSwitchType != self->SwitchType)
+			{
+				m_sql.UpdateDeviceValue("SwitchType", iSwitchType, sID);
+			}
 
 			// Image change
 			if (iImage != self->Image)
 			{
-				time_t now = time(0);
-				struct tm ltime;
-				localtime_r(&now, &ltime);
-				m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=%d, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
-					iImage, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
+				m_sql.UpdateDeviceValue("CustomImage", iImage, sID);
+			}
+
+			// Used change
+			if (iUsed != self->Used)
+			{
+				m_sql.UpdateDeviceValue("Used", iUsed, sID);
 			}
 
 			// Options provided, assume change
