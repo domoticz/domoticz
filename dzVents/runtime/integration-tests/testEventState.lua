@@ -16,6 +16,7 @@ describe('Test event state', function ()
 	setup(function()
 		local ok = TestTools.reset()
 		assert.is_true(ok)
+
 		ok, dummyIdx = TestTools.createDummyHardware('dummy')
 		TestTools.createVirtualDevice(dummyIdx, 'vdRepeatSwitch', 6)
 		ok, vdScriptStartIdx = TestTools.createVirtualDevice(dummyIdx, 'vdScriptStart', 6)

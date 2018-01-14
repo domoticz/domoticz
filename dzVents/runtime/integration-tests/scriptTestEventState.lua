@@ -61,6 +61,7 @@ return {
 			temp.updateTempHumBaro(20, 20, dz.HUM_DRY, 20, dz.BARO_SUNNY).afterSec(2)
 			temp.updateTempHumBaro(30, 30, dz.HUM_NORMAL, 30, dz.BARO_CLOUDY).afterSec(3)
 			temp.updateTempHumBaro(30, 30, dz.HUM_COMFORTABLE, 30, dz.BARO_UNSTABLE).afterSec(4)
+			print('initial scene state: ' .. scene.state)
 		end
 
 		if (item.name == 'vdDelay') then
@@ -70,20 +71,20 @@ return {
 		end
 
 		if (item.name == 'vdScriptEnd') then
-			print(dz.data.switchStates)
-			print(dz.data.switchSecs)
+			print('switch states: ' .. dz.data.switchStates)
+			print('switch secs: ' .. dz.data.switchSecs)
 			print('----')
 
-			print(dz.data.varStates)
-			print(dz.data.varSecs)
+			print('varStates: ' .. dz.data.varStates)
+			print('varSecs: ' .. dz.data.varSecs)
 			print('----')
 
-			print(dz.data.sceneStates)
-			print(dz.data.sceneSecs)
+			print('sceneStates: ' .. dz.data.sceneStates)
+			print('sceneSecs: ' .. dz.data.sceneSecs)
 			print('----')
 
-			print(dz.data.temp)
-			print(dz.data.tempSecs)
+			print('temp: ' .. dz.data.temp)
+			print('tempSecs: ' .. dz.data.tempSecs)
 			print('----')
 
 			local ok = true
