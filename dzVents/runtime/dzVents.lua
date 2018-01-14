@@ -1,5 +1,5 @@
 local TESTMODE = false
-globalvariables['testmode'] = true
+globalvariables['testmode'] = false
 --globalvariables['dzVents_log_level'] = 4 --debug
 
 if (_G.TESTMODE) then
