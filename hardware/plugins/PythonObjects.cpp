@@ -823,7 +823,7 @@ namespace Plugins {
 					time_t now = time(0);
 					struct tm ltime;
 					localtime_r(&now, &ltime);
-					m_sql.safe_query("UPDATE DeviceStatus SET Options=%q, LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
+					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' WHERE (HardwareID==%d) and (Unit==%d)",
 						sOptionValue.c_str(), ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec, self->HwdID, self->Unit);
 				}
 			}
