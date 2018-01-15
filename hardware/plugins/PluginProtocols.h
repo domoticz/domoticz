@@ -17,6 +17,8 @@ namespace Plugins {
 		virtual void				Flush(CPlugin* pPlugin, PyObject* pConnection);
 		virtual int					Length() { return m_sRetainedData.size(); };
 		virtual bool				Secure() { return m_Secure; };
+
+		static CPluginProtocol*		Create(std::string sProtocol, std::string sUsername, std::string sPassword);
 	};
 
 	class CPluginProtocolLine : CPluginProtocol
@@ -65,6 +67,21 @@ namespace Plugins {
 		virtual void	ProcessInbound(const ReadMessage* Message);
 	};
 
-	class CPluginProtocolMQTT : CPluginProtocol {}; // Maybe?
+	class CPluginProtocolMQTT : CPluginProtocol
+	{
+	private:
+		std::string		m_Username;
+		std::string		m_Password;
+		int				m_PacketID;
+	public:
+		CPluginProtocolMQTT(bool Secure) : m_PacketID(1) { m_Secure = Secure; };
+		virtual void				ProcessInbound(const ReadMessage* Message);
+		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
+		void						AuthenticationDetails(const std::string &Username, const std::string &Password)
+		{
+			m_Username = Username;
+			m_Password = Password;
+		};
+	};
 
 }

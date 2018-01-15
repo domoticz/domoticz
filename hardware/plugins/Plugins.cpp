@@ -1081,18 +1081,8 @@ namespace Plugins {
 			pConnection->pProtocol = NULL;
 		}
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
+		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
 		if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", Name.c_str(), sProtocol.c_str());
-		if (sProtocol == "Line") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
-		else if (sProtocol == "XML") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
-		else if (sProtocol == "JSON") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-		else if ((sProtocol == "HTTP") || (sProtocol == "HTTPS"))
-		{
-			CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP(sProtocol == "HTTPS");
-			pProtocol->AuthenticationDetails(m_Username, m_Password);
-			pConnection->pProtocol = (CPluginProtocol*)pProtocol;
-		}
-		else if (sProtocol == "ICMP") pConnection->pProtocol = (CPluginProtocol*) new CPluginProtocolICMP();
-		else pConnection->pProtocol = new CPluginProtocol();
 	}
 
 	void CPlugin::ConnectionConnect(CDirectiveBase * pMess)
