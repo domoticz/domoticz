@@ -1398,13 +1398,11 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			{
 				item.lastLevel = itt->second.lastLevel;
 				item.lastUpdate = itt->second.lastUpdate;
-				if (!m_sql.m_bDisableDzVentsSystem)
-				{
-					item.JsonMapString = itt->second.JsonMapString;
-					item.JsonMapInt = itt->second.JsonMapInt;
-					item.JsonMapFloat = itt->second.JsonMapFloat;
-					item.JsonMapBool = itt->second.JsonMapBool;
-				}
+				item.JsonMapString = itt->second.JsonMapString;
+				item.JsonMapInt = itt->second.JsonMapInt;
+				item.JsonMapFloat = itt->second.JsonMapFloat;
+				item.JsonMapBool = itt->second.JsonMapBool;
+
 				_tDeviceStatus replaceitem = itt->second;
 				replaceitem.lastUpdate = sd[2];
 				replaceitem.lastLevel = atoi(sd[3].c_str());
@@ -1461,55 +1459,48 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		}
 	}
 
-	bool bEvaluateOnce = false;
 	bool bDeviceFileFound = false;
 	DirectoryListing(FileEntries, m_lua_Dir, false, true);
 	std::vector<_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
 	{
-		if (!bEvaluateOnce)
+		for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
 		{
-			for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
+			filename = *itt2;
+			if (filename.length() > 4 &&
+				filename.compare(filename.length() - 4, 4, ".lua") == 0 &&
+				filename.find("_demo.lua") == std::string::npos)
 			{
-				filename = *itt2;
-				if (filename.length() > 4 &&
-					filename.compare(filename.length() - 4, 4, ".lua") == 0 &&
-					filename.find("_demo.lua") == std::string::npos)
+				if (itt->reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
 				{
-					if (itt->reason == REASON_DEVICE && filename.find("_device_") != std::string::npos)
+					bDeviceFileFound = false;
+					boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+					std::map<uint64_t, _tDeviceStatus>::const_iterator itt3;
+					for (itt3 = m_devicestates.begin(); itt3 != m_devicestates.end(); ++itt3)
 					{
-						bDeviceFileFound = false;
-						boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-						std::map<uint64_t, _tDeviceStatus>::const_iterator itt3;
-						for (itt3 = m_devicestates.begin(); itt3 != m_devicestates.end(); ++itt3)
+						std::string deviceName = SpaceToUnderscore(LowerCase(itt3->second.deviceName));
+						if (filename.find("_device_" + deviceName + ".lua") != std::string::npos)
 						{
-							std::string deviceName = SpaceToUnderscore(LowerCase(itt3->second.deviceName));
-							if (filename.find("_device_" + deviceName + ".lua") != std::string::npos)
+							bDeviceFileFound = true;
+							if (deviceName == SpaceToUnderscore(LowerCase(itt->devname)))
 							{
-								bDeviceFileFound = true;
-								if (deviceName == SpaceToUnderscore(LowerCase(itt->devname)))
-								{
-									devicestatesMutexLock.unlock();
-									EvaluateLua(items, m_lua_Dir + filename, "");
-									bEvaluateOnce = true;
-									break;
-								}
+								devicestatesMutexLock.unlock();
+								EvaluateLua(*itt, m_lua_Dir + filename, "");
+								break;
 							}
 						}
-						if (!bDeviceFileFound)
-						{
-							devicestatesMutexLock.unlock();
-							EvaluateLua(items, m_lua_Dir + filename, "");
-							bEvaluateOnce = true;
-						}
 					}
-					else if ((itt->reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
-						(itt->reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
-						(itt->reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
+					if (!bDeviceFileFound)
 					{
-						EvaluateLua(items, m_lua_Dir + filename, "");
-						bEvaluateOnce = true;
+						devicestatesMutexLock.unlock();
+						EvaluateLua(*itt, m_lua_Dir + filename, "");
 					}
+				}
+				else if ((itt->reason == REASON_TIME && filename.find("_time_") != std::string::npos) ||
+					(itt->reason == REASON_SECURITY && filename.find("_security_") != std::string::npos) ||
+					(itt->reason == REASON_USERVARIABLE && filename.find("_variable_") != std::string::npos))
+				{
+					EvaluateLua(*itt, m_lua_Dir + filename, "");
 				}
 			}
 		}
@@ -2609,7 +2600,7 @@ void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &f
 
 void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
@@ -2659,12 +2650,11 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastlevel");
+	devicestatesMutexLock2.unlock();
 }
 
-void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_tEventQueue> &items, const int secStatus)
+void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus)
 {
-	std::vector<_tEventQueue>::const_iterator itt;
-
 	// reroute print library to Domoticz logger
 	luaL_openlibs(lua_state);
 	lua_pushcfunction(lua_state, l_domoticz_print);
@@ -2674,20 +2664,19 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 		boost::lock_guard<boost::mutex> measurementStatesMutexLock(m_measurementStatesMutex);
 		GetCurrentMeasurementStates();
 
-		std::map<std::string, float> thisDeviceTemp;
-		std::map<std::string, float> thisDeviceDew;
-		std::map<std::string, float> thisDeviceRain;
-		std::map<std::string, float> thisDeviceRainLastHour;
-		std::map<std::string, float> thisDeviceUV;
-		std::map<std::string, unsigned char> thisDeviceHum;
-		std::map<std::string, float> thisDeviceBaro;
-		std::map<std::string, float> thisDeviceUtility;
-		std::map<std::string, float> thisDeviceWindDir;
-		std::map<std::string, float> thisDeviceWindSpeed;
-		std::map<std::string, float> thisDeviceWindGust;
-		std::map<std::string, float> thisDeviceWeather;
-		std::map<std::string, int> thisZwaveAlarm;
-
+		float thisDeviceTemp = 0;
+		float thisDeviceDew = 0;
+		float thisDeviceRain = 0;
+		float thisDeviceRainLastHour = 0;
+		float thisDeviceUV = 0;
+		unsigned char thisDeviceHum = 0;
+		float thisDeviceBaro = 0;
+		float thisDeviceUtility = 0;
+		float thisDeviceWindDir = 0;
+		float thisDeviceWindSpeed = 0;
+		float thisDeviceWindGust = 0;
+		float thisDeviceWeather = 0;
+		int thisZwaveAlarm = 0;
 
 		if (m_tempValuesByName.size()>0)
 		{
@@ -2698,10 +2687,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceTemp[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceTemp = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_temperature");
@@ -2715,10 +2702,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceDew[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceDew = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_dewpoint");
@@ -2732,10 +2717,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceHum[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceHum = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_humidity");
@@ -2749,10 +2732,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceBaro[itt->devname] = (float)p->second;
+				if (p->first == item.devname) {
+					thisDeviceBaro = (float)p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_barometer");
@@ -2766,10 +2747,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceUtility[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceUtility = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_utility");
@@ -2783,10 +2762,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceRain[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceRain = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_rain");
@@ -2800,10 +2777,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceRainLastHour[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceRainLastHour = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_rain_lasthour");
@@ -2817,10 +2792,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceUV[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceUV = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_uv");
@@ -2834,10 +2807,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceWindDir[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceWindDir = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_winddir");
@@ -2851,10 +2822,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceWindSpeed[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceWindSpeed = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_windspeed");
@@ -2868,10 +2837,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceWindGust[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceWindGust = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_windgust");
@@ -2885,10 +2852,8 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisDeviceWeather[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisDeviceWeather = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_weather");
@@ -2902,124 +2867,119 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 				lua_pushstring(lua_state, p->first.c_str());
 				lua_pushnumber(lua_state, (lua_Number)p->second);
 				lua_rawset(lua_state, -3);
-				for (itt = items.begin(); itt != items.end(); itt++)
-				{
-					if (p->first == itt->devname)
-						thisZwaveAlarm[itt->devname] = p->second;
+				if (p->first == item.devname) {
+					thisZwaveAlarm = p->second;
 				}
 			}
 			lua_setglobal(lua_state, "otherdevices_zwavealarms");
 		}
 
-		for (itt = items.begin(); itt != items.end(); itt++)
+		if (item.reason == REASON_DEVICE)
 		{
-			if (itt->reason == REASON_DEVICE)
+			lua_createtable(lua_state, 1, 0);
+			lua_pushstring(lua_state, item.devname.c_str());
+			lua_pushstring(lua_state, item.nValueWording.c_str());
+			lua_rawset(lua_state, -3);
+			if (thisDeviceTemp != 0)
 			{
-				lua_createtable(lua_state, 1, 0);
-				lua_pushstring(lua_state, itt->devname.c_str());
-				lua_pushstring(lua_state, itt->nValueWording.c_str());
+				std::string tempName = item.devname;
+				tempName += "_Temperature";
+				lua_pushstring(lua_state, tempName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceTemp);
 				lua_rawset(lua_state, -3);
-				if (thisDeviceTemp[itt->devname] != 0)
-				{
-					std::string tempName = itt->devname;
-					tempName += "_Temperature";
-					lua_pushstring(lua_state, tempName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceTemp[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceDew[itt->devname] != 0)
-				{
-					std::string tempName = itt->devname;
-					tempName += "_Dewpoint";
-					lua_pushstring(lua_state, tempName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceDew[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceHum[itt->devname] != 0) {
-					std::string humName = itt->devname;
-					humName += "_Humidity";
-					lua_pushstring(lua_state, humName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceHum[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceBaro[itt->devname] != 0) {
-					std::string baroName = itt->devname;
-					baroName += "_Barometer";
-					lua_pushstring(lua_state, baroName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceBaro[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceUtility[itt->devname] != 0) {
-					std::string utilityName = itt->devname;
-					utilityName += "_Utility";
-					lua_pushstring(lua_state, utilityName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceUtility[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceWeather[itt->devname] != 0) {
-					std::string weatherName = itt->devname;
-					weatherName += "_Weather";
-					lua_pushstring(lua_state, weatherName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceWeather[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceRain[itt->devname] != 0)
-				{
-					std::string tempName = itt->devname;
-					tempName += "_Rain";
-					lua_pushstring(lua_state, tempName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceRain[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceRainLastHour[itt->devname] != 0)
-				{
-					std::string tempName = itt->devname;
-					tempName += "_RainLastHour";
-					lua_pushstring(lua_state, tempName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceRainLastHour[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisDeviceUV[itt->devname] != 0)
-				{
-					std::string tempName = itt->devname;
-					tempName += "_UV";
-					lua_pushstring(lua_state, tempName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisDeviceUV[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				if (thisZwaveAlarm[itt->devname] != 0) {
-					std::string alarmName = itt->devname;
-					alarmName += "_ZWaveAlarm";
-					lua_pushstring(lua_state, alarmName.c_str());
-					lua_pushnumber(lua_state, (lua_Number)thisZwaveAlarm[itt->devname]);
-					lua_rawset(lua_state, -3);
-				}
-				lua_setglobal(lua_state, "devicechanged");
-
-
-				// BEGIN OTO: populate changed info
-				lua_createtable(lua_state, 3, 0);
-				lua_pushstring(lua_state, "idx");
-				lua_pushnumber(lua_state, (lua_Number)itt->DeviceID);
-				lua_rawset(lua_state, -3);
-
-				lua_pushstring(lua_state, "svalue");
-				lua_pushstring(lua_state, itt->sValue.c_str());
-				lua_rawset(lua_state, -3);
-
-				lua_pushstring(lua_state, "nvalue");
-				lua_pushnumber(lua_state, itt->nValue);
-				lua_rawset(lua_state, -3);
-
-				/* USELESS, WE HAVE THE DEVICE INDEX
-				// replace devicechanged =>
-				lua_pushstring(lua_state, "name");
-				lua_pushnumber(lua_state, nValue);
-				lua_rawset(lua_state, -3);
-				*/
-				lua_setglobal(lua_state, "devicechanged_ext");
-				// END OTO
 			}
+			if (thisDeviceDew != 0)
+			{
+				std::string tempName = item.devname;
+				tempName += "_Dewpoint";
+				lua_pushstring(lua_state, tempName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceDew);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceHum != 0) {
+				std::string humName = item.devname;
+				humName += "_Humidity";
+				lua_pushstring(lua_state, humName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceHum);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceBaro != 0) {
+				std::string baroName = item.devname;
+				baroName += "_Barometer";
+				lua_pushstring(lua_state, baroName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceBaro);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceUtility != 0) {
+				std::string utilityName = item.devname;
+				utilityName += "_Utility";
+				lua_pushstring(lua_state, utilityName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceUtility);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceWeather != 0) {
+				std::string weatherName = item.devname;
+				weatherName += "_Weather";
+				lua_pushstring(lua_state, weatherName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceWeather);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceRain != 0)
+			{
+				std::string tempName = item.devname;
+				tempName += "_Rain";
+				lua_pushstring(lua_state, tempName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceRain);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceRainLastHour != 0)
+			{
+				std::string tempName = item.devname;
+				tempName += "_RainLastHour";
+				lua_pushstring(lua_state, tempName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceRainLastHour);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisDeviceUV != 0)
+			{
+				std::string tempName = item.devname;
+				tempName += "_UV";
+				lua_pushstring(lua_state, tempName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisDeviceUV);
+				lua_rawset(lua_state, -3);
+			}
+			if (thisZwaveAlarm != 0) {
+				std::string alarmName = item.devname;
+				alarmName += "_ZWaveAlarm";
+				lua_pushstring(lua_state, alarmName.c_str());
+				lua_pushnumber(lua_state, (lua_Number)thisZwaveAlarm);
+				lua_rawset(lua_state, -3);
+			}
+			lua_setglobal(lua_state, "devicechanged");
+
+
+			// BEGIN OTO: populate changed info
+			lua_createtable(lua_state, 3, 0);
+			lua_pushstring(lua_state, "idx");
+			lua_pushnumber(lua_state, (lua_Number)item.DeviceID);
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "svalue");
+			lua_pushstring(lua_state, item.sValue.c_str());
+			lua_rawset(lua_state, -3);
+
+			lua_pushstring(lua_state, "nvalue");
+			lua_pushnumber(lua_state, item.nValue);
+			lua_rawset(lua_state, -3);
+
+			/* USELESS, WE HAVE THE DEVICE INDEX
+			// replace devicechanged =>
+			lua_pushstring(lua_state, "name");
+			lua_pushnumber(lua_state, nValue);
+			lua_rawset(lua_state, -3);
+			*/
+			lua_setglobal(lua_state, "devicechanged_ext");
+			// END OTO
 		}
 	}
 
@@ -3062,23 +3022,16 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const std::vector<_t
 	}
 	lua_setglobal(lua_state, "uservariables_lastupdate");
 
-	for (itt = items.begin(); itt != items.end(); itt++)
-	{
-		if (itt->reason == REASON_USERVARIABLE)
-		{
-			if (itt->varId > 0)
-			{
-				for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var)
-				{
-					_tUserVariable uvitem = it_var->second;
-					if (uvitem.ID == itt->varId)
-					{
-						lua_createtable(lua_state, 1, 0);
-						lua_pushstring(lua_state, uvitem.variableName.c_str());
-						lua_pushstring(lua_state, uvitem.variableValue.c_str());
-						lua_rawset(lua_state, -3);
-						lua_setglobal(lua_state, "uservariablechanged");
-					}
+	if (item.reason == REASON_USERVARIABLE) {
+		if (item.varId > 0) {
+			for (it_var = m_uservariables.begin(); it_var != m_uservariables.end(); ++it_var) {
+				_tUserVariable uvitem = it_var->second;
+				if (uvitem.ID == item.varId) {
+					lua_createtable(lua_state, 1, 0);
+					lua_pushstring(lua_state, uvitem.variableName.c_str());
+					lua_pushstring(lua_state, uvitem.variableValue.c_str());
+					lua_rawset(lua_state, -3);
+					lua_setglobal(lua_state, "uservariablechanged");
 				}
 			}
 		}
@@ -3175,17 +3128,18 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if (intRise == 0 && intSet == 0)
-	{
+	if (intRise == 0 && intSet == 0) {
 		if (intDayLength == 0)
 			nightTimeBool = true; // Sun below horizon in the space of 24 hours
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet))
+	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
 		dayTimeBool = true;
-	else
+	}
+	else {
 		nightTimeBool = true;
+	}
 
 	lua_createtable(lua_state, 4, 0);
 	lua_pushstring(lua_state, "Daytime");
@@ -3232,7 +3186,7 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (!m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua")
 		dzvents->EvaluateDzVents(lua_state, items, secstatus);
 	else
-		EvaluateLuaClassic(lua_state, items, secstatus);
+		EvaluateLuaClassic(lua_state, items[0], secstatus);
 
 	int status = 0;
 	if (LuaString.length() == 0)
@@ -3243,9 +3197,18 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	if (status == 0)
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
+		//luaThread = boost::thread(&CEventSystem::luaThread, lua_state, filename);
+		//boost::shared_ptr<boost::thread> luaThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename)));
 		boost::thread luaThread(boost::bind(&CEventSystem::luaThread, this, lua_state, filename));
+		//m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 		if (!luaThread.timed_join(boost::posix_time::seconds(10)))
+		{
 			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
+		}
+		else
+		{
+			//_log.Log(LOG_ERROR, "EventSystem: lua script completed");
+		}
 	}
 	else
 	{
@@ -3253,6 +3216,38 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 		lua_close(lua_state);
 		return;
 	}
+
+	/*
+	if (status == 0)
+	{
+		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
+		status = lua_pcall(lua_state, 0, LUA_MULTRET, 0);
+	}
+
+
+	report_errors(lua_state, status);
+
+	bool scriptTrue = false;
+	lua_getglobal(lua_state, "commandArray");
+	if (lua_istable(lua_state, -1))
+	{
+		int tIndex = lua_gettop(lua_state);
+		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
+	}
+	else
+	{
+		if (status == 0)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Lua script did not return a commandArray");
+		}
+	}
+
+	if (scriptTrue)
+	{
+		_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
+	}
+	lua_close(lua_state);
+	*/
 }
 
 void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
@@ -3268,15 +3263,22 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 		int tIndex = lua_gettop(lua_state);
 		scriptTrue = iterateLuaTable(lua_state, tIndex, filename);
 	}
-	else if (status == 0)
-		_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
+	else
+	{
+		if (status == 0)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
+		}
+	}
 
 	if (scriptTrue)
 	{
 		if (m_sql.m_bLogEventScriptTrigger)
 			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
 	}
+
 	lua_close(lua_state);
+
 }
 
 
@@ -3319,6 +3321,7 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 	}
 
 	return scriptTrue;
+
 }
 
 bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &filename)
