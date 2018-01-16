@@ -119,6 +119,19 @@ namespace Plugins {
 		if (pTraceback) Py_XDECREF(pTraceback);
 	}
 
+	// Escape '%' character
+	static void escapepercent(std::string &smsg)
+	{
+		const std::string s = "%";
+		const std::string t = "%%";
+		std::string::size_type n = 0;
+		while ( ( n = smsg.find( '%', n ) ) != std::string::npos )
+		{
+			smsg.replace( n, s.size(), t );
+			n += t.size();
+		}
+	}
+
 	static PyObject*	PyDomoticz_Debug(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
@@ -137,12 +150,16 @@ namespace Plugins {
 				char* msg;
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
+					//TODO: Dump data to aid debugging
 					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
 				else
 				{
-					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+					// Escape '%' character
+					std::string smsg = msg;
+					escapepercent(smsg);
+					std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
 				}
 			}
@@ -168,6 +185,7 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
@@ -175,14 +193,7 @@ namespace Plugins {
 			{
 				// Escape '%' character
 				std::string smsg = msg;
-				const std::string s = "%";
-				const std::string t = "%%";
-				std::string::size_type n = 0;
-				while ( ( n = smsg.find( '%', n ) ) != std::string::npos )
-				{
-					smsg.replace( n, s.size(), t );
-					n += t.size();
-				}
+				escapepercent(smsg);
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
 			}
@@ -208,12 +219,16 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				// Escape '%' character
+				std::string smsg = msg;
+				escapepercent(smsg);
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
 			}
 		}
@@ -1362,7 +1377,7 @@ namespace Plugins {
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (m_stoprequested && !m_Transports.size()) 
+			if (m_stoprequested && !m_Transports.size())
 			{
 				onStopCallback*	Message = new onStopCallback(this);
 				{
