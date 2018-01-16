@@ -282,7 +282,7 @@ namespace Plugins {
 		}
 	}
 
-#define ADD_UTF8_TO_DICT(pDict, key, value) \
+#define ADD_BYTES_TO_DICT(pDict, key, value) \
 		{	\
 			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());	\
 			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
@@ -934,25 +934,25 @@ namespace Plugins {
 					switch (*it++)
 					{
 					case 0:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Accepted"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Accepted"));
 						break;
 					case 1:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
 						break;
 					case 2:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
 						break;
 					case 3:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
 						break;
 					case 4:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
 						break;
 					case 5:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
 						break;
 					default:
-						ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Unknown status returned"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Unknown status returned"));
 						break;
 					}
 					ADD_INT_TO_DICT(pMqttDict, "Status", *it++);
@@ -960,7 +960,7 @@ namespace Plugins {
 				else
 				{
 					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
 				}
 				break;
 			}
@@ -988,19 +988,19 @@ namespace Plugins {
 						switch (Status)
 						{
 						case 0x00:
-							ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
 							break;
 						case 0x01:
-							ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
 							break;
 						case 0x02:
-							ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
 							break;
 						case 0x80:
-							ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Failure"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Failure"));
 							break;
 						default:
-							ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Unknown status returned"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Unknown status returned"));
 							break;
 						}
 						PyList_Append(pResponsesList, pResponseDict);
@@ -1010,7 +1010,7 @@ namespace Plugins {
 				else
 				{
 					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
 				}
 				break;
 			}
@@ -1049,7 +1049,7 @@ namespace Plugins {
 				// Variable Header
 				int		topicLen = (*it++ << 8) + *it++;
 				std::string	sTopic((char const*)&*it, topicLen);
-				ADD_UTF8_TO_DICT(pMqttDict, "Topic", sTopic);
+				ADD_STRING_TO_DICT(pMqttDict, "Topic", sTopic);
 				it += topicLen;
 				if (iQoS)
 				{
@@ -1059,7 +1059,7 @@ namespace Plugins {
 				// Payload
 				const char*	pPayload = (it==pktend)?0:(const char*)&*it;
 				std::string	sPayload(pPayload, std::distance(it, pktend));
-				ADD_UTF8_TO_DICT(pMqttDict, "Payload", sPayload);
+				ADD_BYTES_TO_DICT(pMqttDict, "Payload", sPayload);
 				break;
 			}
 			case MQTT_UNSUBACK:
