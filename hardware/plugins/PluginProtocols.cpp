@@ -877,6 +877,12 @@ namespace Plugins {
 #define MQTT_STRING(vVector, sString)	\
 		{ \
 			int sLen = sString.length(); \
+			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
+		}
+
+#define MQTT_STRING_W_LEN(vVector, sString)	\
+		{ \
+			int sLen = sString.length(); \
 			MQTT_NUMBER(vVector, sLen) \
 			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
 		}
@@ -1075,7 +1081,7 @@ namespace Plugins {
 
 			if (sVerb == "CONNECT")
 			{
-				MQTT_STRING(vVariableHeader, std::string("MQTT"));
+				MQTT_STRING_W_LEN(vVariableHeader, std::string("MQTT"));
 				vVariableHeader.push_back(MQTT_PROTOCOL);
 
 				byte	bControlFlags = 0;
@@ -1084,21 +1090,21 @@ namespace Plugins {
 				PyObject *pID = PyDict_GetItemString(WriteMessage->m_Object, "ID");
 				if (pID && !PyUnicode_Check(pID))
 				{
-					MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pID)));
+					MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pID)));
 				}
 				else
-					MQTT_STRING(vPayload, std::string("Domoticz"));
+					MQTT_STRING_W_LEN(vPayload, std::string("Domoticz"));
 
 				// Username / Password
 				if (m_Username.length())
 				{
-					MQTT_STRING(vPayload, m_Username);
+					MQTT_STRING_W_LEN(vPayload, m_Username);
 					bControlFlags |= 128;
 				}
 
 				if (m_Password.length())
 				{
-					MQTT_STRING(vPayload, m_Password);
+					MQTT_STRING_W_LEN(vPayload, m_Password);
 					bControlFlags |= 64;
 				}
 
@@ -1147,7 +1153,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyDict_GetItemString(pTopicDict, "Topic");
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
 						PyObject*	pQoS = PyDict_GetItemString(pTopicDict, "QoS");
 						if (pQoS && PyLong_Check(pQoS))
 						{
@@ -1186,7 +1192,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyList_GetItem(pTopicList, i);
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
 					}
 				}
 
@@ -1223,7 +1229,7 @@ namespace Plugins {
 				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "Topic");
 				if (pTopic && PyUnicode_Check(pTopic))
 				{
-					MQTT_STRING(vVariableHeader, std::string(PyUnicode_AsUTF8(pTopic)));
+					MQTT_STRING_W_LEN(vVariableHeader, std::string(PyUnicode_AsUTF8(pTopic)));
 				}
 				else
 				{
@@ -1252,11 +1258,6 @@ namespace Plugins {
 				if (pPayload && PyUnicode_Check(pPayload))
 				{
 					MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pPayload)));
-				}
-				else
-				{
-					_log.Log(LOG_ERROR, "(%s) MQTT Publish: No 'Payload' present, nothing to publish. See Python Plugin wiki page for help.", __func__);
-					return retVal;
 				}
 
 				retVal.push_back(bByte0);
