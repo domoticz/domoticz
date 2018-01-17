@@ -6,10 +6,13 @@
 #include "../main/mainworker.h"
 
 #include <iostream>
-
 #include <boost/lexical_cast.hpp>
 
-#define RETRY_DELAY 30
+/*
+	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
+
+	These modules provide relays and digital sensors in the range of 5-30V DC.
+*/
 
 Comm5Serial::Comm5Serial(const int ID, const std::string& devname, unsigned int baudRate /*= 115200*/) :
 	m_szSerialPort(devname),
