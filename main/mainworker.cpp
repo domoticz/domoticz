@@ -936,23 +936,23 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryHTU21D:
-		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryTSL2561:
-		pHardware = new I2C(ID, I2C::I2CTYPE_TSL2561, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_TSL2561, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryPCF8574:
-		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Port);
+		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryBME280:
-		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryMCP23017:
 		_log.Log(LOG_NORM, "MainWorker::AddHardwareFromParams HTYPE_RaspberryMCP23017");
-		pHardware = new I2C(ID, I2C::I2CTYPE_MCP23017, Port);
+		pHardware = new I2C(ID, I2C::I2CTYPE_MCP23017, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID, Username, Password);
