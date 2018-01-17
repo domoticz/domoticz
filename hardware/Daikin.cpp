@@ -106,9 +106,7 @@ bool CDaikin::StartHardware()
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CDaikin::Do_Work, this)));
 	m_bIsStarted=true;
 	sOnConnected(this);
-	char szIdx[100];
-	sprintf(szIdx, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
-	_log.Log(LOG_STATUS, szIdx);
+	_log.Log(LOG_STATUS, "Daikin: Started hardware %s ...", m_szIPAddress.c_str());
 	return (m_thread!=NULL);
 }
 
@@ -120,9 +118,7 @@ bool CDaikin::StopHardware()
 		m_stoprequested = true;
 		m_thread->join();
 	}
-	char szIdx[100];
-	sprintf(szIdx, "Daikin: Stopped hardware %s ...", m_szIPAddress.c_str());
-	_log.Log(LOG_STATUS, szIdx);
+	_log.Log(LOG_STATUS, "Daikin: Stopped hardware %s ...", m_szIPAddress.c_str());
 	m_bIsStarted=false;
 	return true;
 }
@@ -145,18 +141,14 @@ void CDaikin::Do_Work()
 			GetMeterDetails();
 		}
 	}
-	char szIdx[100];
-	sprintf(szIdx, "Daikin: Worker stopped %s ...", m_szIPAddress.c_str());
-	_log.Log(LOG_STATUS, szIdx);
+	_log.Log(LOG_STATUS, "Daikin: Worker stopped %s ...", m_szIPAddress.c_str());
 }
 
 // pData = _tThermostat
 
 bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	char szIdx[100];
-	sprintf(szIdx, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
-	_log.Log(LOG_STATUS, szIdx);	
+	_log.Log(LOG_STATUS, "Daikin: Worker %s, Write to Hardware...", m_szIPAddress.c_str());
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	unsigned char subtype = pCmd->ICMND.subtype;
@@ -187,8 +179,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int child_sensor_id = pSwitch->unitcode;
 		bool command = pSwitch->cmnd;
 
-		sprintf(szIdx, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(),node_id,command,pSwitch->level);
-		_log.Log(LOG_STATUS, szIdx);
+		_log.Log(LOG_STATUS, "Daikin: Worker %s, Set General Switch ID %d, command : %d, value : %d", m_szIPAddress.c_str(), node_id, command, pSwitch->level);
 
 
 		if (node_id == 1)
@@ -230,9 +221,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 		int node_id = pMeter->id2;
 		int child_sensor_id = pMeter->id3;
 
-		char szIdx[100];
-		sprintf(szIdx, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
-		_log.Log(LOG_STATUS, szIdx);
+		_log.Log(LOG_STATUS, "Daikin: Worker %s, Thermostat %.1f", m_szIPAddress.c_str(), pMeter->temp);
 
 		char szTmp[10];
 		sprintf(szTmp, "%.1f", pMeter->temp);
