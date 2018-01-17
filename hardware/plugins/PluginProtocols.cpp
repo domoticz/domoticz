@@ -1126,7 +1126,55 @@ namespace Plugins {
 					MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pID)));
 				}
 				else
-					MQTT_STRING_W_LEN(vPayload, std::string("Domoticz"));
+					MQTT_STRING_W_LEN(vPayload, std::string("Domoticz")); // TODO: default ID should be more unique, for example "Domoticz_<plugin_name>_<HwID>"
+
+				byte	bCleanSession = 1;
+				PyObject*	pCleanSession = PyDict_GetItemString(WriteMessage->m_Object, "CleanSession");
+				if (pCleanSession && PyLong_Check(pCleanSession))
+				{
+					bCleanSession = (byte)PyLong_AsLong(pCleanSession);
+				}
+				bControlFlags |= (bCleanSession&1)<<1;
+
+				// Will topic
+				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "WillTopic");
+				if (pTopic && PyUnicode_Check(pTopic))
+				{
+					MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+					bControlFlags |= 4;
+				}
+
+				// Will QoS, Retain and Message
+				if (bControlFlags & 4)
+				{
+					PyObject *pQoS = PyDict_GetItemString(WriteMessage->m_Object, "WillQoS");
+					if (pQoS && PyLong_Check(pQoS))
+					{
+						byte bQoS = (byte) PyLong_AsLong(pQoS);
+						bControlFlags |= (bQoS&3)<<3; // Set QoS flag
+					}
+
+					PyObject *pRetain = PyDict_GetItemString(WriteMessage->m_Object, "WillRetain");
+					if (pRetain && PyLong_Check(pRetain))
+					{
+						byte bRetain = PyLong_AsLong(pRetain);
+						bControlFlags |= (bRetain&1)<<5; // Set retain flag
+					}
+
+					std::string sPayload = "";
+					PyObject*	pPayload = PyDict_GetItemString(WriteMessage->m_Object, "WillPayload");
+					// Support both string and bytes
+					//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
+					if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
+					{
+						sPayload = std::string(PyByteArray_AsString(pPayload), PyByteArray_Size(pPayload));
+					}
+					else if (pPayload && PyUnicode_Check(pPayload))
+					{
+						sPayload = std::string(PyUnicode_AsUTF8(pPayload));
+					}
+					MQTT_STRING_W_LEN(vPayload, sPayload);
+				}
 
 				// Username / Password
 				if (m_Username.length())
@@ -1248,14 +1296,14 @@ namespace Plugins {
 				if (pQoS && PyLong_Check(pQoS))
 				{
 					iQoS = PyLong_AsLong(pQoS);
-					if (iQoS) bByte0 |= (iQoS << 1); // Set QoS flag
+					bByte0 |= ((iQoS & 3) << 1); // Set QoS flag
 				}
 
 				PyObject *pRetain = PyDict_GetItemString(WriteMessage->m_Object, "Retain");
 				if (pRetain && PyLong_Check(pRetain))
 				{
 					long	bRetain = PyLong_AsLong(pRetain);
-					if (bRetain) bByte0 |= 0x01; // Set retain flag
+					bByte0 |= (bRetain & 1); // Set retain flag
 				}
 
 				// Variable Header
@@ -1287,11 +1335,20 @@ namespace Plugins {
 				}
 
 				// Payload
+				std::string sPayload = "";
 				PyObject*	pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
-				if (pPayload && PyUnicode_Check(pPayload))
+				// Support both string and bytes
+				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
+				if (pPayload) _log.Log(LOG_TRACE, "(%s) MQTT Publish: payload %p (%s)", __func__, pPayload, pPayload->ob_type->tp_name);
+				if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
 				{
-					MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pPayload)));
+					sPayload = std::string(PyByteArray_AsString(pPayload), PyByteArray_Size(pPayload));
 				}
+				else if (pPayload && PyUnicode_Check(pPayload))
+				{
+					sPayload = std::string(PyUnicode_AsUTF8(pPayload));
+				}
+				MQTT_STRING(vPayload, sPayload);
 
 				retVal.push_back(bByte0);
 			}

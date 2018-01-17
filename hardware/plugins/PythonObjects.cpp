@@ -554,17 +554,24 @@ namespace Plugins {
 					PyDict_Clear(self->Options);
 					while(PyDict_Next(Options, &pos, &pKey, &pValue))
 					{
-						PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
-						PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
-						if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
+						if (PyUnicode_Check(pValue))
 						{
-							_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+							PyObject *pKeyDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pKey), PyUnicode_DATA(pKey), PyUnicode_GET_LENGTH(pKey));
+							PyObject *pValueDict = PyUnicode_FromKindAndData(PyUnicode_KIND(pValue), PyUnicode_DATA(pValue), PyUnicode_GET_LENGTH(pValue));
+							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
+							{
+								_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+								Py_XDECREF(pKeyDict);
+								Py_XDECREF(pValueDict);
+								break;
+							}
 							Py_XDECREF(pKeyDict);
 							Py_XDECREF(pValueDict);
-							break;
 						}
-						Py_XDECREF(pKeyDict);
-						Py_XDECREF(pValueDict);
+						else
+						{
+							_log.Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d): Only \"string\" type dictionary entries supported, but entry has type \"%s\"", self->pPlugin->Name.c_str(), self->HwdID, self->Unit, pValue->ob_type->tp_name);
+						}
 					}
 				}
 			}
@@ -773,11 +780,18 @@ namespace Plugins {
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlistupdatedevice[] = { "Name", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "TimedOut", NULL };
-			static char *kwlistupdatevalue[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", NULL };
+			static char *kwlist[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "TimedOut", NULL };
 
-			// Try to extract parameters needed to update value, requires both nValue and sValue to be supplied, and optionally SignalLevel and BatteryLevel
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "is|ii", kwlistupdatevalue, &nValue, &sValue, &iSignalLevel, &iBatteryLevel))
+			// Try to extract parameters needed to update device settings
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|isiissiiiiOii", kwlist, &nValue, &sValue, &iSignalLevel, &iBatteryLevel, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iImage, &pOptionsDict, &iUsed, &iTimedOut))
+			{
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'Name', 'TypeName', 'Type', 'Subtype', 'SwitchType', 'Image', 'Options', 'Used' or 'TimedOut' expected.", __func__, sName.c_str());
+				LogPythonException(self->pPlugin, __func__);
+				Py_INCREF(Py_None);
+				return Py_None;
+			}
+
+			if (PyDict_GetItemString(kwds, "nValue") && sValue)
 			{
 				if (self->pPlugin->m_bDebug)
 				{
@@ -787,20 +801,6 @@ namespace Plugins {
 
 				// Notify MQTT and various push mechanisms
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
-			}
-			else
-			{
-				// Clear exception thrown if nValue or sValue were missing
-				PyErr_Clear();
-			}
-
-			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|ssiiiiOii", kwlistupdatedevice, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iImage, &pOptionsDict, &iUsed, &iTimedOut))
-			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'Name', 'TypeName', 'Type', 'Subtype', 'SwitchType', 'Image', 'Options', 'Used' or 'TimedOut' expected.", __func__, sName.c_str());
-				LogPythonException(self->pPlugin, __func__);
-				Py_INCREF(Py_None);
-				return Py_None;
 			}
 
 			std::string sID = SSTR(self->ID);
