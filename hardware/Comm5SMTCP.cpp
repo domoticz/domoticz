@@ -11,6 +11,11 @@
 
 #include <boost/lexical_cast.hpp>
 
+/* 
+    This driver allows Domoticz to read sensor data from SM-XXXX sensors from Comm5 Technology
+	The SM-1200 sensor provides: Temperature, Humidity, Barometric and Luminosity data. 
+	https://www.comm5.com.br/en/sm-1200/
+*/
 
 static inline std::string &rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
