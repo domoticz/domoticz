@@ -1201,7 +1201,6 @@ namespace Plugins {
 			else if (sVerb == "PING")
 			{
 				retVal.push_back(MQTT_PINGREQ);
-				retVal.push_back(0);
 			}
 			else if (sVerb == "SUBSCRIBE")
 			{
