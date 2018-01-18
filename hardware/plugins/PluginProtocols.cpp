@@ -869,23 +869,23 @@ namespace Plugins {
 #define MQTT_PROTOCOL	  4
 
 #define MQTT_NUMBER(vVector, iNumber)	\
-		{ \
+		do { \
 			vVector.push_back(iNumber / 256); \
 			vVector.push_back(iNumber % 256); \
-		}
+		} while (0)
 
 #define MQTT_STRING(vVector, sString)	\
-		{ \
+		do { \
 			int sLen = sString.length(); \
 			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
-		}
+		} while (0)
 
 #define MQTT_STRING_W_LEN(vVector, sString)	\
-		{ \
+		do { \
 			int sLen = sString.length(); \
-			MQTT_NUMBER(vVector, sLen) \
+			MQTT_NUMBER(vVector, sLen); \
 			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
-		}
+		} while(0)
 
 	void CPluginProtocolMQTT::ProcessInbound(const ReadMessage * Message)
 	{
@@ -918,7 +918,8 @@ namespace Plugins {
 
 			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
 			{
-				_log.Log(LOG_TRACE, "(%s) Too little data (got %u, expected %u).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
+				// Full packet has not arrived, wait for more data
+				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %u, expected %u).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
 				return;
 			}
 
