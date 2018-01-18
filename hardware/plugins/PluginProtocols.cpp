@@ -868,24 +868,22 @@ namespace Plugins {
 
 #define MQTT_PROTOCOL	  4
 
-#define MQTT_NUMBER(vVector, iNumber)	\
-		do { \
-			vVector.push_back(iNumber / 256); \
-			vVector.push_back(iNumber % 256); \
-		} while (0)
+	static void MQTTPushBackNumber(int iNumber, std::vector<byte> &vVector)
+	{
+		vVector.push_back(iNumber / 256);
+		vVector.push_back(iNumber % 256);
+	}
 
-#define MQTT_STRING(vVector, sString)	\
-		do { \
-			int sLen = sString.length(); \
-			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
-		} while (0)
+	static void MQTTPushBackString(const std::string &sString, std::vector<byte> &vVector)
+	{
+		vVector.insert(vVector.end(), sString.begin(), sString.end());
+	}
 
-#define MQTT_STRING_W_LEN(vVector, sString)	\
-		do { \
-			int sLen = sString.length(); \
-			MQTT_NUMBER(vVector, sLen); \
-			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
-		} while(0)
+	static void MQTTPushBackStringWLen(const std::string &sString, std::vector<byte> &vVector)
+	{
+		MQTTPushBackNumber(sString.length(), vVector);
+		vVector.insert(vVector.end(), sString.begin(), sString.end());
+	}
 
 	void CPluginProtocolMQTT::ProcessInbound(const ReadMessage * Message)
 	{
@@ -1115,7 +1113,7 @@ namespace Plugins {
 
 			if (sVerb == "CONNECT")
 			{
-				MQTT_STRING_W_LEN(vVariableHeader, std::string("MQTT"));
+				MQTTPushBackStringWLen("MQTT", vVariableHeader);
 				vVariableHeader.push_back(MQTT_PROTOCOL);
 
 				byte	bControlFlags = 0;
@@ -1124,10 +1122,10 @@ namespace Plugins {
 				PyObject *pID = PyDict_GetItemString(WriteMessage->m_Object, "ID");
 				if (pID && !PyUnicode_Check(pID))
 				{
-					MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pID)));
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pID)), vPayload);
 				}
 				else
-					MQTT_STRING_W_LEN(vPayload, std::string("Domoticz")); // TODO: default ID should be more unique, for example "Domoticz_<plugin_name>_<HwID>"
+					MQTTPushBackStringWLen("Domoticz", vPayload); // TODO: default ID should be more unique, for example "Domoticz_<plugin_name>_<HwID>"
 
 				byte	bCleanSession = 1;
 				PyObject*	pCleanSession = PyDict_GetItemString(WriteMessage->m_Object, "CleanSession");
@@ -1141,7 +1139,7 @@ namespace Plugins {
 				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "WillTopic");
 				if (pTopic && PyUnicode_Check(pTopic))
 				{
-					MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
 					bControlFlags |= 4;
 				}
 
@@ -1174,19 +1172,19 @@ namespace Plugins {
 					{
 						sPayload = std::string(PyUnicode_AsUTF8(pPayload));
 					}
-					MQTT_STRING_W_LEN(vPayload, sPayload);
+					MQTTPushBackStringWLen(sPayload, vPayload);
 				}
 
 				// Username / Password
 				if (m_Username.length())
 				{
-					MQTT_STRING_W_LEN(vPayload, m_Username);
+					MQTTPushBackStringWLen(m_Username, vPayload);
 					bControlFlags |= 128;
 				}
 
 				if (m_Password.length())
 				{
-					MQTT_STRING_W_LEN(vPayload, m_Password);
+					MQTTPushBackStringWLen(m_Password, vPayload);
 					bControlFlags |= 64;
 				}
 
@@ -1214,7 +1212,7 @@ namespace Plugins {
 					iPacketIdentifier = PyLong_AsLong(pID);
 				}
 				else iPacketIdentifier = m_PacketID++;
-				MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+				MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 
 				// Payload is list of topics and QoS numbers
 				PyObject *pTopicList = PyDict_GetItemString(WriteMessage->m_Object, "Topics");
@@ -1234,7 +1232,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyDict_GetItemString(pTopicDict, "Topic");
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
 						PyObject*	pQoS = PyDict_GetItemString(pTopicDict, "QoS");
 						if (pQoS && PyLong_Check(pQoS))
 						{
@@ -1259,7 +1257,7 @@ namespace Plugins {
 					iPacketIdentifier = PyLong_AsLong(pID);
 				}
 				else iPacketIdentifier = m_PacketID++;
-				MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+				MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 
 				// Payload is a Python list of topics
 				PyObject *pTopicList = PyDict_GetItemString(WriteMessage->m_Object, "Topics");
@@ -1273,7 +1271,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyList_GetItem(pTopicList, i);
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING_W_LEN(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
 					}
 				}
 
@@ -1310,7 +1308,7 @@ namespace Plugins {
 				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "Topic");
 				if (pTopic && PyUnicode_Check(pTopic))
 				{
-					MQTT_STRING_W_LEN(vVariableHeader, std::string(PyUnicode_AsUTF8(pTopic)));
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vVariableHeader);
 				}
 				else
 				{
@@ -1327,7 +1325,7 @@ namespace Plugins {
 						iPacketIdentifier = PyLong_AsLong(pID);
 					}
 					else iPacketIdentifier = m_PacketID++;
-					MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+					MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 				}
 				else if (pID)
 				{
@@ -1348,7 +1346,7 @@ namespace Plugins {
 				{
 					sPayload = std::string(PyUnicode_AsUTF8(pPayload));
 				}
-				MQTT_STRING(vPayload, sPayload);
+				MQTTPushBackString(sPayload, vPayload);
 
 				retVal.push_back(bByte0);
 			}
@@ -1360,7 +1358,7 @@ namespace Plugins {
 				if (pID && PyLong_Check(pID))
 				{
 					iPacketIdentifier = PyLong_AsLong(pID);
-					MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+					MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 				}
 				else
 				{
