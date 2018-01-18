@@ -95,6 +95,7 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/Comm5SMTCP.h"
 #include "../hardware/Comm5Serial.h"
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
@@ -1093,6 +1094,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EnphaseAPI:
 		pHardware = new EnphaseAPI(ID, Address, Port);
+		break;
+	case HTYPE_Comm5SMTCP:
+		pHardware = new Comm5SMTCP(ID, Address, Port);
 		break;
 	}
 

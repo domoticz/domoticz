@@ -307,6 +307,7 @@ hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
 hardware/Comm5TCP.cpp
+hardware/Comm5SMTCP.cpp
 hardware/Comm5Serial.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
