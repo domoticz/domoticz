@@ -8,6 +8,7 @@
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
+#include "SunRiseSet.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
@@ -2690,21 +2691,17 @@ namespace http {
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 
-			std::string Latitude = "1";
-			std::string Longitude = "1";
-			if (m_sql.GetPreferencesVar("Location", nValue, sValue))
-			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
-
-				if (strarray.size() == 2)
-				{
-					Latitude = strarray[0];
-					Longitude = strarray[1];
-				}
+			if(m_mainworker.m_LatLong.size() == 2) {
+				char s[11];
+				sprintf(s,"%.6f", m_mainworker.m_LatLong[0]); // Make a string of it
+				root["Latitude"] = s;
+				sprintf(s,"%.6f", m_mainworker.m_LatLong[1]);
+				root["Longitude"] = s;
 			}
-			root["Latitude"] = Latitude;
-			root["Longitude"] = Longitude;
+			else {
+				root["Latitude"] = "1";
+				root["Longitude"] = "1";
+			}
 
 #ifndef NOCLOUD
 			bool bEnableTabProxy = request::get_req_header(&req, "X-From-MyDomoticz") != NULL;
@@ -6575,22 +6572,126 @@ namespace http {
 				}
 			} //(rtype=="switchscene")
 			else if (cparam == "getSunRiseSet") {
-				if (!m_mainworker.m_LastSunriseSet.empty())
+				bool reqLocation = false, reqDate = false;
+				double dLatitude = atof(request::findValue(&req, "Latitude").c_str());
+				double dLongitude = atof(request::findValue(&req, "Longitude").c_str());
+				int year, month, day;
+				std::string sunCalcDate;
+				std::string customDate = request::findValue(&req, "Date");
+				if ((dLatitude != 0.0) && (dLongitude != 0.0)) {
+					// A valid latitude in Signed degrees format must be between -90.0 and 90.0,
+					// and valid longitude may range from -180.0 to 180.0.
+					if (((dLatitude >= -90.0) && (dLatitude <= 90.0)) && ((dLongitude >= -180.0) && (dLongitude <= 180.0))) {
+						reqLocation = true;
+					}
+				}
+				if (!customDate.empty()) {
+					year = 0, month = 0, day = 0;
+					sscanf(customDate.c_str(), "%4d-%2d-%2d", &year, &month, &day);
+					if ((year > 1800) && (year < 2100) && ((month > 0) && (month < 13)) && ((day > 0) && (day < 31)))
+					{
+						// Valid year range for the function we use is 1801-2099
+						unsigned short monthlen[]={31,28,31,30,31,30,31,31,30,31,30,31};
+						if (year && month && day && (month<13))
+							if (((!(year%4) && (year%100)) || !(year%400)) && month==2)
+								monthlen[1]++;
+						if (day<=monthlen[month-1])
+						{
+							reqDate = true;
+							sprintf(szTmp, "%04d-%02d-%02d", year, month, day);
+							sunCalcDate = szTmp;
+						}
+					}
+				 }
+
+				struct tm loctime;
+				time_t now = mytime(NULL);
+				localtime_r(&now, &loctime);
+				strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
+				std::string serverTime = szTmp;
+				if (!reqDate)
+				{
+					strftime(szTmp, 80, "%Y-%m-%d", &loctime);
+					sunCalcDate = szTmp;
+				}
+
+				if (!reqLocation)
+				{
+					if(m_mainworker.m_LatLong.size() == 2) {
+						dLatitude = m_mainworker.m_LatLong[0];
+						dLongitude = m_mainworker.m_LatLong[1];
+					}
+					else {
+						dLatitude = 1.0; // (Keep it compatible with previous code)
+						dLongitude = 1.0;
+					}
+				}
+
+				sprintf(szTmp,"%.6f", dLatitude); // Make a string of it
+				std::string sLatitude = szTmp;
+				sprintf(szTmp,"%.6f", dLongitude);
+				std::string sLongitude = szTmp;
+				root["UtcOffset"] = SunRiseSet::get_utc_offset();
+
+				if (reqDate || reqLocation)
+				{
+					SunRiseSet::_tSubRiseSetResults sresult;
+					SunRiseSet::GetSunRiseSet(dLatitude, dLongitude, year, month, day, sresult);
+					if (sresult.evtInfo[0] == -1)
+						root["Remarks"]["Sunrise"] = "The sun is below the horizon 24 hours";
+					else if (sresult.evtInfo[0] == 1)
+						root["Remarks"]["Sunrise"] = "The sun is above the horizon 24 hours";
+					if (sresult.evtInfo[1] == -1)
+						root["Remarks"]["CivilTwilight"] = "No civil twilight in the space of 24 hours";
+					else if (sresult.evtInfo[1] == 1)
+						root["Remarks"]["CivilTwilight"] = "The civil day is 24 hours";
+					if (sresult.evtInfo[2] == -1)
+						root["Remarks"]["NauticalTwilight"] = "No nautical twilight in the space of 24 hours";
+					else if (sresult.evtInfo[2] == 1)
+						root["Remarks"]["NauticalTwilight"] = "The nautical day is 24 hours";
+					if (sresult.evtInfo[3] == -1)
+						root["Remarks"]["AstronomicalTwilight"] = "No astronomical twilight in the space of 24 hours";
+					else if (sresult.evtInfo[3] == 1)
+						root["Remarks"]["AstronomicalTwilight"] = "The astronomical day is 24 hours";
+					char szRiseSet[30];
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
+					root["Sunrise"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
+					root["Sunset"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.DaylengthHours, sresult.DaylengthMins);
+					root["DayLength"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
+					root["SunAtSouth"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
+					root["CivTwilightStart"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
+					root["CivTwilightEnd"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
+					root["NautTwilightStart"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
+					root["NautTwilightEnd"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
+					root["AstrTwilightStart"] = szRiseSet;
+					sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
+					root["AstrTwilightEnd"] = szRiseSet;
+
+					root["status"] = "OK";
+					root["title"] = "getSunRiseSet";
+					root["ServerTime"] = serverTime;
+					root["SunCalcDate"] = sunCalcDate;
+					root["Latitude"] = sLatitude;
+					root["Longitude"] = sLongitude;
+				}
+				else if (!m_mainworker.m_LastSunriseSet.empty())
 				{
 					std::vector<std::string> strarray;
 					StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
 					if (strarray.size() == 10)
 					{
-						struct tm loctime;
-						time_t now = mytime(NULL);
-
-						localtime_r(&now, &loctime);
-						//strftime(szTmp, 80, "%b %d %Y %X", &loctime);
-						strftime(szTmp, 80, "%Y-%m-%d %X", &loctime);
-
 						root["status"] = "OK";
 						root["title"] = "getSunRiseSet";
-						root["ServerTime"] = szTmp;
+						root["ServerTime"] = serverTime;
+						root["SunCalcDate"] = sunCalcDate;
 						root["Sunrise"] = strarray[0];
 						root["Sunset"] = strarray[1];
 						root["SunAtSouth"] = strarray[2];
@@ -6601,6 +6702,8 @@ namespace http {
 						root["AstrTwilightStart"] = strarray[7];
 						root["AstrTwilightEnd"] = strarray[8];
 						root["DayLength"] = strarray[9];
+						root["Latitude"] = sLatitude;
+						root["Longitude"] = sLongitude;
 					}
 				}
 			}

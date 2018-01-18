@@ -34,10 +34,11 @@ public:
 		int AstronomicalTwilightStartMin;
 		int AstronomicalTwilightEndHour;
 		int AstronomicalTwilightEndMin;
-
+		std::vector<int> evtInfo;
 	};
 	static bool GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults &result);
 	static bool GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults &result);
+	static double get_utc_offset();
 private:
 	static double UtcToLocal(double time, double tz);
 	static double __daylen__( int year, int month, int day, double lon, double lat, double altit, int upper_limb);

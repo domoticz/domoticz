@@ -2798,6 +2798,12 @@ void CEventSystem::EvaluateLua(const _tEventQueue &item, const std::string &file
 	lua_pushstring(lua_state, "DayLengthInMinutes");
 	lua_pushnumber(lua_state, intDayLength);
 	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Latitude");
+	lua_pushnumber(lua_state, m_mainworker.m_LatLong[0]);
+	lua_rawset(lua_state, -3);
+	lua_pushstring(lua_state, "Longitude");
+	lua_pushnumber(lua_state, m_mainworker.m_LatLong[1]);
+	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
 	{
