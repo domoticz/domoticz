@@ -19,21 +19,11 @@ long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 
-size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp)
+size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *userp) // called once for each header
 {
-	// called once for each header
 	size_t realsize = size * nmemb;
 	std::vector<std::string>* pvHeaderData = (std::vector<std::string>*)userp;
-	size_t ii = 0;
-	while (ii < realsize)
-	{
-		unsigned char *pData = (unsigned char*)contents + ii;
-		if ((pData[0] == '\n') || (pData[0] == '\r'))
-			break;
-		ii++;
-	}
-	std::string str((unsigned char*)contents, (unsigned char*)contents + ii);
-	pvHeaderData->push_back(str);
+	pvHeaderData->push_back(std::string((unsigned char*)contents, (std::find((unsigned char*)contents, (unsigned char*)contents + realsize, '\n'))));
 	return realsize;
 }
 
