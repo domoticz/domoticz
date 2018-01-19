@@ -9,8 +9,6 @@
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 class CPanasonicNode;
 
 class CPanasonic : public CDomoticzHardwareBase

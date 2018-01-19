@@ -11,6 +11,7 @@
 #include <iostream>
 
 #define round(a) ( int ) ( a + .5 )
+#define SSTR( x ) std::to_string( x )
 #define DEBUG_LOGGING (m_Port[0] == '-')
 
 /*
