@@ -23,7 +23,7 @@ size_t write_curl_headerdata(void *contents, size_t size, size_t nmemb, void *us
 {
 	size_t realsize = size * nmemb;
 	std::vector<std::string>* pvHeaderData = (std::vector<std::string>*)userp;
-	pvHeaderData->push_back(std::string((unsigned char*)contents, (std::find((unsigned char*)contents, (unsigned char*)contents + realsize, '\n'))));
+	pvHeaderData->push_back(std::string((unsigned char*)contents, (std::find((unsigned char*)contents, (unsigned char*)contents + realsize, '\r'))));
 	return realsize;
 }
 
