@@ -582,7 +582,6 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 			EnsureSwitchDevice(ID_SLI + id - 1, options.c_str());
 
 			// Send queries for it, and the power and volume for this zone.
-			char query[8];
 			SendPacket(switch_types[ID_SLI + id - 1].iscpCmd, "QSTN");
 			SendPacket(switch_types[ID_PWR + id - 1].iscpCmd, "QSTN");
 			SendPacket(switch_types[ID_MVL + id - 1].iscpCmd, "QSTN");
