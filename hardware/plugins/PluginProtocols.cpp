@@ -1156,7 +1156,7 @@ namespace Plugins {
 					PyObject *pRetain = PyDict_GetItemString(WriteMessage->m_Object, "WillRetain");
 					if (pRetain && PyLong_Check(pRetain))
 					{
-						byte bRetain = PyLong_AsLong(pRetain);
+						byte bRetain = (byte)PyLong_AsLong(pRetain);
 						bControlFlags |= (bRetain&1)<<5; // Set retain flag
 					}
 
