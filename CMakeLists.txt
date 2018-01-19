@@ -1,5 +1,5 @@
 #set to minimum version that supports clean build on cygwin
-cmake_minimum_required(VERSION 3.8.0)
+cmake_minimum_required(VERSION 2.8.9)
 
 project(domoticz)
 
@@ -7,8 +7,17 @@ project(domoticz)
 SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
 
-set(CMAKE_CXX_STANDARD 11)
-set(CXX_STANDARD_REQUIRED ON)
+macro(use_cxx11)
+  if (CMAKE_VERSION VERSION_LESS "3.1")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    endif()
+  else()
+    set(CMAKE_CXX_STANDARD 11)
+    set(CXX_STANDARD_REQUIRED ON)
+  endif()
+endmacro(use_cxx11)
+use_cxx11()
 
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
