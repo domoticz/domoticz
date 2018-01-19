@@ -1,11 +1,14 @@
 #set to minimum version that supports clean build on cygwin
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.1.0)
 
 project(domoticz)
 
 ## required min. libBoost version
 SET(DOMO_MIN_LIBBOOST_VERSION 105500)
 ##
+
+set(CMAKE_CXX_STANDARD 11)
+set(CXX_STANDARD_REQUIRED ON)
 
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
@@ -235,10 +238,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     LIST(APPEND _compiler_FLAGS ${_directory_flags})
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
-    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
+    MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -std=gnu++11 -o ${_output} ${_source}")
     ADD_CUSTOM_COMMAND(
       OUTPUT ${_output}
-      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
+      COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -std=gnu++11 -o ${_output} ${_source}
       DEPENDS ${_source} )
     ADD_CUSTOM_TARGET(${_targetName}_gch DEPENDS ${_output})
     ADD_DEPENDENCIES(${_targetName} ${_targetName}_gch)
