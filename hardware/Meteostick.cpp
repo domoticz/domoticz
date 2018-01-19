@@ -304,7 +304,7 @@ void Meteostick::ParseLine()
 	{
 	case MSTATE_INIT:
 		if (sLine.find("# MeteoStick Version") == 0) {
-			_log.Log(LOG_STATUS, sLine.c_str());
+			_log.Log(LOG_STATUS, "%s", sLine.c_str());
 			return;
 		}
 		if (results[0] == "?")
@@ -342,7 +342,7 @@ void Meteostick::ParseLine()
 		return;
 
 //#ifdef _DEBUG
-	_log.Log(LOG_NORM, sLine.c_str());
+	_log.Log(LOG_NORM, "%s", sLine.c_str());
 //#endif
 
 	switch (rCode)

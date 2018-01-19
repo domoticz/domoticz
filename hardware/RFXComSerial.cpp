@@ -239,22 +239,22 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 	//Start bootloader mode
 	m_szUploadMessage = "RFXCOM: Start bootloader process...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	m_szUploadMessage = "RFXCOM: Get bootloader version...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	//read bootloader version
 	if (!Write_TX_PKT(PKT_VERSION, sizeof(PKT_VERSION)))
 	{
 		m_szUploadMessage = "RFXCOM: Error getting bootloader version!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -274,7 +274,7 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -295,18 +295,18 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Error opening serial port!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 
 	m_szUploadMessage = "RFXCOM: Start bootloader version...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 	Write_TX_PKT(PKT_STARTBOOT, sizeof(PKT_STARTBOOT), 1);
 
 	m_szUploadMessage = "RFXCOM: Bootloader, Start programming...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	for (itt = firmwareBuffer.begin(); itt != firmwareBuffer.end(); ++itt)
 	{
 		icntr++;
@@ -341,7 +341,7 @@ bool RFXComSerial::UpgradeFirmware()
 			if (!ret)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader, unable to program firmware memory, please try again!!!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 				m_FirmwareUploadPercentage = -1;
 				goto exitfirmwareupload;
 			}
@@ -356,18 +356,18 @@ bool RFXComSerial::UpgradeFirmware()
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
 #endif
 	//Verify
 	m_szUploadMessage = "RFXCOM: Start bootloader verify...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	if (!Write_TX_PKT(PKT_VERIFY_OK, sizeof(PKT_VERIFY_OK)))
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -375,16 +375,16 @@ bool RFXComSerial::UpgradeFirmware()
 	{
 		m_FirmwareUploadPercentage = -1;
 		m_szUploadMessage = "RFXCOM: Bootloader,  program firmware memory not succeeded, please try again!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 	}
 	else
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, Programming completed successfully...";
-		_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+		_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	}
 exitfirmwareupload:
 	m_szUploadMessage = "RFXCOM: bootloader reset...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	Write_TX_PKT(PKT_RESET, sizeof(PKT_RESET), 1);
 #ifndef WIN32
 	try
@@ -394,7 +394,7 @@ exitfirmwareupload:
 	catch (...)
 	{
 		m_szUploadMessage = "RFXCOM: Bootloader, unable to flush serial device!!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		m_FirmwareUploadPercentage = -1;
 		goto exitfirmwareupload;
 	}
@@ -439,7 +439,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		if (ret!=0)
 		{
 			m_szUploadMessage = "Error setting firmware ownership (chown returned an error!)";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			return false;
 		}
 	}
@@ -451,12 +451,12 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	if (!infile.is_open())
 	{
 		m_szUploadMessage = "RFXCOM: bootloader, unable to open file: " + std::string(szFilename);
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		return false;
 	}
 
 	m_szUploadMessage = "RFXCOM: start reading Firmware...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 
 	unsigned char rawLineBuf[PKT_writeblock];
 	int raw_length = 0;
@@ -478,7 +478,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, firmware does not start with ':'";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			return false;
 		}
 		sLine = sLine.substr(1);
@@ -497,7 +497,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, firmware line not equals 2 digests";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			return false;
 		}
 		raw_length = 0;
@@ -516,7 +516,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			{
 				infile.close();
 				m_szUploadMessage = "RFXCOM: bootloader, incorrect length";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 				return false;
 			}
 			
@@ -527,7 +527,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		{
 			infile.close();
 			m_szUploadMessage = "RFXCOM: bootloader, checksum mismatch!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			return false;
 		}
 		int byte_count = rawLineBuf[0];
@@ -552,19 +552,19 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			if (!bHaveEOF)
 			{
 				m_szUploadMessage = "RFXCOM: Bootloader invalid size!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			}
 			break;
 		case 2:
 			//Extended Segment Address Record 
 			m_szUploadMessage = "RFXCOM: Bootloader type 2 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		case 3:
 			//Start Segment Address Record 
 			m_szUploadMessage = "RFXCOM: Bootloader type 3 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		case 4:
@@ -572,7 +572,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 			if (raw_length < 7)
 			{
 				m_szUploadMessage = "RFXCOM: Invalid line length!!";
-				_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+				_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 				infile.close();
 				return false;
 			}
@@ -581,7 +581,7 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 		case 5:
 			//Start Linear Address Record
 			m_szUploadMessage = "RFXCOM: Bootloader type 5 not supported!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			infile.close();
 			return false;
 		}
@@ -591,18 +591,18 @@ bool RFXComSerial::Read_Firmware_File(const char *szFilename, std::map<unsigned 
 	if (!bHaveEOF)
 	{
 		m_szUploadMessage = "RFXCOM: No end-of-line found!!";
-		_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+		_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 		return false;
 	}
 	m_szUploadMessage = "RFXCOM: Firmware read correctly...";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	return true;
 }
 
 bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 {
 	m_szUploadMessage = "RFXCOM: Erasing memory....";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	int BootAddr = StartAddress;
 
 	while (BootAddr < StopAddress)
@@ -622,13 +622,13 @@ bool RFXComSerial::EraseMemory(const int StartAddress, const int StopAddress)
 		if (!Write_TX_PKT(bcmd, sizeof(bcmd), 5))
 		{
 			m_szUploadMessage = "RFXCOM: Error erasing memory!";
-			_log.Log(LOG_ERROR, m_szUploadMessage.c_str());
+			_log.Log(LOG_ERROR, "%s", m_szUploadMessage.c_str());
 			return false;
 		}
 		BootAddr+= (PKT_eraseblock * nBlocks);
 	}
 	m_szUploadMessage = "RFXCOM: Erasing memory completed....";
-	_log.Log(LOG_STATUS, m_szUploadMessage.c_str());
+	_log.Log(LOG_STATUS, "%s", m_szUploadMessage.c_str());
 	return true;
 }
 

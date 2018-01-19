@@ -205,7 +205,7 @@ void CLogger::LogSequenceEnd(const _eLogLevel level)
 		message = message.substr(0, message.size() - 1);
 	}
 
-	Log(level, message.c_str());
+	Log(level, "%s", message.c_str());
 	m_sequencestring.clear();
 	m_sequencestring.str("");
 

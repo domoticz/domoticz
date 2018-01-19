@@ -130,7 +130,7 @@ void C1WireByKernel::ReadStates()
 		}
 		catch (const OneWireReadErrorException& e)
 		{
-			_log.Log(LOG_ERROR, e.what());
+			_log.Log(LOG_ERROR, "%s", e.what());
 		}
 	}
 
@@ -166,12 +166,12 @@ void C1WireByKernel::ThreadProcessPendingChanges()
          }
          catch(const OneWireReadErrorException& e)
          {
-            _log.Log(LOG_ERROR,e.what());
+            _log.Log(LOG_ERROR, "%s", e.what());
             continue;
          }
          catch(const OneWireWriteErrorException& e)
          {
-            _log.Log(LOG_ERROR,e.what());
+            _log.Log(LOG_ERROR, "%s", e.what());
             continue;
          }
          success=true;

@@ -241,7 +241,7 @@ void CEvohomeBase::Log(bool bDebug, int nLogLevel, const char* format, ... )
         va_end(argList);
 
 	if(!bDebug || m_bDebug)
-		_log.Log(static_cast<_eLogLevel>(nLogLevel),cbuffer);
+		_log.Log(static_cast<_eLogLevel>(nLogLevel), "%s", cbuffer);
 	if(m_bDebug && m_pEvoLog)
 	{
 		LogDate();

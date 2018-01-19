@@ -169,7 +169,7 @@ namespace http {
 			}
 			boost::unique_lock<boost::mutex>(writeMutex);
 			if (bytes_transferred != SockWriteBuf.length()) {
-				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", bytes_transferred, SockWriteBuf.length());
+				_log.Log(LOG_ERROR, "Only wrote %zu of %lu bytes.", bytes_transferred, SockWriteBuf.length());
 			}
 			SockWriteBuf.clear();
 			ProxyPdu *pdu;
@@ -182,7 +182,7 @@ namespace http {
 				break;
 			case status_connected:
 				if (bytes_transferred < SockWriteBuf.length()) {
-					_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, SockWriteBuf.length());
+					_log.Log(LOG_ERROR, "PROXY: Only wrote %zd of %zd bytes.", bytes_transferred, SockWriteBuf.length());
 				}
 			if (error) {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
@@ -405,7 +405,7 @@ namespace http {
 			}
 			else {
 				// unknown subsystem
-				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %d.", subsystem);
+				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %ld.", subsystem);
 			}
 		}
 
