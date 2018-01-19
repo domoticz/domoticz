@@ -5,7 +5,7 @@ SET(CORE lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c llex.c
 	ltm.c lundump.c lvm.c lzio.c)
 
 SET (LIB lauxlib.c lbaselib.c lbitlib.c lcorolib.c ldblib.c liolib.c
-	lmathlib.c loslib.c lstrlib.c ltablib.c loadlib.c linit.c)
+	lmathlib.c loslib.c lstrlib.c ltablib.c loadlib.c linit.c lutf8lib.c)
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(OperatingSystem "Linux")
