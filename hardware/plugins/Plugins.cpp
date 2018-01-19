@@ -119,6 +119,19 @@ namespace Plugins {
 		if (pTraceback) Py_XDECREF(pTraceback);
 	}
 
+	// Escape '%' character
+	static void escapepercent(std::string &smsg)
+	{
+		const std::string s = "%";
+		const std::string t = "%%";
+		std::string::size_type n = 0;
+		while ( ( n = smsg.find( '%', n ) ) != std::string::npos )
+		{
+			smsg.replace( n, s.size(), t );
+			n += t.size();
+		}
+	}
+
 	static PyObject*	PyDomoticz_Debug(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
@@ -137,12 +150,16 @@ namespace Plugins {
 				char* msg;
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
+					//TODO: Dump data to aid debugging
 					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
 				else
 				{
-					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+					// Escape '%' character
+					std::string smsg = msg;
+					escapepercent(smsg);
+					std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
 				}
 			}
@@ -168,12 +185,16 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				// Escape '%' character
+				std::string smsg = msg;
+				escapepercent(smsg);
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
 			}
 		}
@@ -198,12 +219,16 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				// Escape '%' character
+				std::string smsg = msg;
+				escapepercent(smsg);
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
 				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
 			}
 		}
@@ -1130,7 +1155,7 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP and Serial.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP and Serial.", Name.c_str(), sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)
@@ -1196,7 +1221,7 @@ namespace Plugins {
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), (PyObject*)pConnection, sTransport.c_str());
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), sTransport.c_str());
 			return;
 		}
 		if (pConnection->pTransport)
@@ -1311,8 +1336,8 @@ namespace Plugins {
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
-				pConnection->pTransport = NULL;
 				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
 			}
 			else
 			{
@@ -1327,11 +1352,21 @@ namespace Plugins {
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 		if (pConnection->pTransport)
 		{
+			if (m_bDebug)
+			{
+				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if ((sTransport == "Serial") || (!sPort.length()))
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", Name.c_str(), sAddress.c_str());
+				else
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
+			}
 			{
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
-				pConnection->pTransport = NULL;
 				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
 			}
 
 			// inform the plugin
@@ -1342,7 +1377,7 @@ namespace Plugins {
 			}
 
 			// Plugin exiting and all connections have disconnect messages queued
-			if (m_stoprequested && !m_Transports.size()) 
+			if (m_stoprequested && !m_Transports.size())
 			{
 				onStopCallback*	Message = new onStopCallback(this);
 				{

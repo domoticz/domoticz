@@ -38,7 +38,7 @@ namespace Plugins {
 
 	void CPluginTransport::VerifyConnection()
 	{
-		// If the Python CConecction object reference count ever drops to one the the connection is out of scope so shut it down
+		// If the Python CConnection object reference count ever drops to one the the connection is out of scope so shut it down
 		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
 		{
 			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);

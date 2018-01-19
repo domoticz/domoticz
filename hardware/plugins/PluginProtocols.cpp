@@ -115,7 +115,7 @@ namespace Plugins {
 		vData.insert(vData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());		// add the new data
 
 		std::string		sData(vData.begin(), vData.end());
-		int iPos = sData.find_first_of('\r');		//  Look for message terminator 
+		int iPos = sData.find_first_of('\r');		//  Look for message terminator
 		while (iPos != std::string::npos)
 		{
 			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos]));
@@ -124,7 +124,7 @@ namespace Plugins {
 				PluginMessageQueue.push(RecvMessage);
 			}
 
-			if (sData[iPos + 1] == '\n') iPos++;				//  Handle \r\n 
+			if (sData[iPos + 1] == '\n') iPos++;				//  Handle \r\n
 			sData = sData.substr(iPos + 1);
 			iPos = sData.find_first_of('\r');
 		}
@@ -282,7 +282,7 @@ namespace Plugins {
 		}
 	}
 
-#define ADD_UTF8_TO_DICT(pDict, key, value) \
+#define ADD_BYTES_TO_DICT(pDict, key, value) \
 		{	\
 			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());	\
 			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
@@ -868,184 +868,222 @@ namespace Plugins {
 
 #define MQTT_PROTOCOL	  4
 
-#define MQTT_NUMBER(vVector, iNumber)	\
-		{ \
-			vVector.push_back(iNumber / 256); \
-			vVector.push_back(iNumber % 256); \
-		}
+	static void MQTTPushBackNumber(int iNumber, std::vector<byte> &vVector)
+	{
+		vVector.push_back(iNumber / 256);
+		vVector.push_back(iNumber % 256);
+	}
 
-#define MQTT_STRING(vVector, sString)	\
-		{ \
-			int sLen = sString.length(); \
-			MQTT_NUMBER(vVector, sLen) \
-			for (int i = 0; i<sLen; i++) vVector.push_back(sString[i]); \
-		}
+	static void MQTTPushBackString(const std::string &sString, std::vector<byte> &vVector)
+	{
+		vVector.insert(vVector.end(), sString.begin(), sString.end());
+	}
+
+	static void MQTTPushBackStringWLen(const std::string &sString, std::vector<byte> &vVector)
+	{
+		MQTTPushBackNumber(sString.length(), vVector);
+		vVector.insert(vVector.end(), sString.begin(), sString.end());
+	}
 
 	void CPluginProtocolMQTT::ProcessInbound(const ReadMessage * Message)
 	{
-		byte		bResponseType = Message->m_Buffer[0] & 0xF0;
-		PyObject*	pMqttDict = PyDict_New();
-		PyObject*	pObj = NULL;
-		long		iPacketIdentifier = 0;
-		long		iRemainingLength = Message->m_Buffer[1];
+		byte loop = 0;
+		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
-		switch (bResponseType)
-		{
-		case MQTT_CONNACK:
-		{
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("CONNACK"));
-			if (Message->m_Buffer[1] == 2) // check length is correct
+		do {
+			std::vector<byte>::iterator it = m_sRetainedData.begin();
+
+			byte		header = *it++;
+			byte		bResponseType = header & 0xF0;
+			PyObject*	pMqttDict = PyDict_New();
+			PyObject*	pObj = NULL;
+			long		iPacketIdentifier = 0;
+			long		iRemainingLength = 0;
+			long		multiplier = 1;
+			byte 		encodedByte;
+
+			do
 			{
-				ADD_INT_TO_DICT(pMqttDict, "Status", Message->m_Buffer[3]);
-				switch (Message->m_Buffer[3])
+				encodedByte = *it++;
+				iRemainingLength += (encodedByte & 127) * multiplier;
+				multiplier *= 128;
+				if (multiplier > 128*128*128)
 				{
-				case 0:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Accepted"));
-					break;
-				case 1:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
-					break;
-				case 2:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
-					break;
-				case 3:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
-					break;
-				case 4:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
-					break;
-				case 5:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
-					break;
-				default:
-					ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Unknown status returned"));
-					break;
+					_log.Log(LOG_ERROR, "(%s) Malformed Remaining Length.", __func__);
+					return;
 				}
-			}
-			else
-			{
-				ADD_INT_TO_DICT(pMqttDict, "Status", -1);
-				ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
-			}
-			break;
-		}
-		case MQTT_SUBACK:
-		{
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("SUBACK"));
-			iPacketIdentifier = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
-			ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+			} while ((encodedByte & 128) != 0);
 
-			if (Message->m_Buffer[1] >= 3) // check length is acceptable
+			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
 			{
-				PyObject* pResponsesList = PyList_New(0);
-				if (PyDict_SetItemString(pMqttDict, "Topics", pResponsesList) == -1)
-				{
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", __func__, "Topics");
-					break;
-				}
-				Py_DECREF(pResponsesList);
+				// Full packet has not arrived, wait for more data
+				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %u, expected %u).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
+				return;
+			}
 
-				for (int i = 4; i < Message->m_Buffer[1] + 2; i++)
+			std::vector<byte>::iterator pktend = it+iRemainingLength;
+
+			switch (bResponseType)
+			{
+			case MQTT_CONNACK:
+			{
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("CONNACK"));
+				if (iRemainingLength == 2) // check length is correct
 				{
-					PyObject*	pResponseDict = PyDict_New();
-					ADD_INT_TO_DICT(pResponseDict, "Status", Message->m_Buffer[i]);
-					switch (Message->m_Buffer[i])
+					switch (*it++)
 					{
-					case 0x00:
-						ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
+					case 0:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Accepted"));
 						break;
-					case 0x01:
-						ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
+					case 1:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
 						break;
-					case 0x02:
-						ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
+					case 2:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
 						break;
-					case 0x80:
-						ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Failure"));
+					case 3:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
+						break;
+					case 4:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
+						break;
+					case 5:
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
 						break;
 					default:
-						ADD_UTF8_TO_DICT(pResponseDict, "Description", std::string("Unknown status returned"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Unknown status returned"));
 						break;
 					}
-					PyList_Append(pResponsesList, pResponseDict);
-					Py_DECREF(pResponseDict);
+					ADD_INT_TO_DICT(pMqttDict, "Status", *it++);
 				}
+				else
+				{
+					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
+				}
+				break;
 			}
-			else
+			case MQTT_SUBACK:
 			{
-				ADD_INT_TO_DICT(pMqttDict, "Status", -1);
-				ADD_UTF8_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
-			}
-			break;
-		}
-		case MQTT_PUBACK:
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBACK"));
-			if (iRemainingLength == 2)
-			{
-				iPacketIdentifier = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("SUBACK"));
+				iPacketIdentifier = (*it++ << 8) + *it++;
 				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
-			}
-			break;
-		case MQTT_PUBREC:
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBREC"));
-			if (iRemainingLength == 2)
-			{
-				iPacketIdentifier = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
-				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
-			}
-			break;
-		case MQTT_PUBCOMP:
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBCOMP"));
-			if (iRemainingLength == 2)
-			{
-				iPacketIdentifier = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
-				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
-			}
-			break;
-		case MQTT_PUBLISH:
-		{
-			// Fixed Header
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBLISH"));
-			ADD_INT_TO_DICT(pMqttDict, "DUP", ((Message->m_Buffer[0] & 0x08) >> 3));
-			long	iQoS = (Message->m_Buffer[0] & 0x06) >> 1;
-			ADD_INT_TO_DICT(pMqttDict, "QoS", iQoS);
-			PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(Message->m_Buffer[0] & 0x01));
-			// Variable Header
-			int		topicLen = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
-			std::string	sTopic((char const*)&(Message->m_Buffer[4]), topicLen);
-			ADD_UTF8_TO_DICT(pMqttDict, "Topic", sTopic);
-			const char*	pPayload = (const char*)&(Message->m_Buffer[4])+ topicLen;
-			if (iQoS)
-			{
-				iPacketIdentifier = (pPayload[0] << 8) + pPayload[1];
-				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
-				topicLen += 2; // step over Packet Identifier
-				pPayload += 2;
-			}
-			// Payload
-			std::string	sPayload(pPayload, iRemainingLength-topicLen-2);
-			ADD_UTF8_TO_DICT(pMqttDict, "Payload", sPayload);
-			break;
-		}
-		case MQTT_UNSUBACK:
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("UNSUBACK"));
-			if (iRemainingLength == 2)
-			{
-				iPacketIdentifier = (Message->m_Buffer[2] << 8) + Message->m_Buffer[3];
-				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
-			}
-			break;
-		case MQTT_PINGRESP:
-			ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PINGRESP"));
-			break;
-		default:
-			_log.Log(LOG_ERROR, "(%s) MQTT response invalid '%d' is unknown.", __func__, bResponseType);
-			return;
-		}
 
-		onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict);
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(RecvMessage);
+				if (iRemainingLength >= 3) // check length is acceptable
+				{
+					PyObject* pResponsesList = PyList_New(0);
+					if (PyDict_SetItemString(pMqttDict, "Topics", pResponsesList) == -1)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", __func__, "Topics");
+						break;
+					}
+					Py_DECREF(pResponsesList);
+
+					while (it != pktend)
+					{
+						PyObject*	pResponseDict = PyDict_New();
+						byte Status = *it++;
+						ADD_INT_TO_DICT(pResponseDict, "Status", Status);
+						switch (Status)
+						{
+						case 0x00:
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
+							break;
+						case 0x01:
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
+							break;
+						case 0x02:
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
+							break;
+						case 0x80:
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Failure"));
+							break;
+						default:
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Unknown status returned"));
+							break;
+						}
+						PyList_Append(pResponsesList, pResponseDict);
+						Py_DECREF(pResponseDict);
+					}
+				}
+				else
+				{
+					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
+				}
+				break;
+			}
+			case MQTT_PUBACK:
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBACK"));
+				if (iRemainingLength == 2)
+				{
+					iPacketIdentifier = (*it++ << 8) + *it++;
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				break;
+			case MQTT_PUBREC:
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBREC"));
+				if (iRemainingLength == 2)
+				{
+					iPacketIdentifier = (*it++ << 8) + *it++;
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				break;
+			case MQTT_PUBCOMP:
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBCOMP"));
+				if (iRemainingLength == 2)
+				{
+					iPacketIdentifier = (*it++ << 8) + *it++;
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				break;
+			case MQTT_PUBLISH:
+			{
+				// Fixed Header
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBLISH"));
+				ADD_INT_TO_DICT(pMqttDict, "DUP", ((header & 0x08) >> 3));
+				long	iQoS = (header & 0x06) >> 1;
+				ADD_INT_TO_DICT(pMqttDict, "QoS", iQoS);
+				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(header & 0x01));
+				// Variable Header
+				int		topicLen = (*it++ << 8) + *it++;
+				std::string	sTopic((char const*)&*it, topicLen);
+				ADD_STRING_TO_DICT(pMqttDict, "Topic", sTopic);
+				it += topicLen;
+				if (iQoS)
+				{
+					iPacketIdentifier = (*it++ << 8) + *it++;
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				// Payload
+				const char*	pPayload = (it==pktend)?0:(const char*)&*it;
+				std::string	sPayload(pPayload, std::distance(it, pktend));
+				ADD_BYTES_TO_DICT(pMqttDict, "Payload", sPayload);
+				break;
+			}
+			case MQTT_UNSUBACK:
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("UNSUBACK"));
+				if (iRemainingLength == 2)
+				{
+					iPacketIdentifier = (*it++ << 8) + *it++;
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				}
+				break;
+			case MQTT_PINGRESP:
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PINGRESP"));
+				break;
+			default:
+				_log.Log(LOG_ERROR, "(%s) MQTT response invalid '%d' is unknown.", __func__, bResponseType);
+				m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
+				continue;
+			}
+
+			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict);
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(RecvMessage);
+
+			m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
+		} while (m_sRetainedData.size() > 0);
 	}
 
 	std::vector<byte> CPluginProtocolMQTT::ProcessOutbound(const WriteDirective * WriteMessage)
@@ -1075,7 +1113,7 @@ namespace Plugins {
 
 			if (sVerb == "CONNECT")
 			{
-				MQTT_STRING(vVariableHeader, std::string("MQTT"));
+				MQTTPushBackStringWLen("MQTT", vVariableHeader);
 				vVariableHeader.push_back(MQTT_PROTOCOL);
 
 				byte	bControlFlags = 0;
@@ -1084,21 +1122,69 @@ namespace Plugins {
 				PyObject *pID = PyDict_GetItemString(WriteMessage->m_Object, "ID");
 				if (pID && !PyUnicode_Check(pID))
 				{
-					MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pID)));
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pID)), vPayload);
 				}
 				else
-					MQTT_STRING(vPayload, std::string("Domoticz"));
+					MQTTPushBackStringWLen("Domoticz", vPayload); // TODO: default ID should be more unique, for example "Domoticz_<plugin_name>_<HwID>"
+
+				byte	bCleanSession = 1;
+				PyObject*	pCleanSession = PyDict_GetItemString(WriteMessage->m_Object, "CleanSession");
+				if (pCleanSession && PyLong_Check(pCleanSession))
+				{
+					bCleanSession = (byte)PyLong_AsLong(pCleanSession);
+				}
+				bControlFlags |= (bCleanSession&1)<<1;
+
+				// Will topic
+				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "WillTopic");
+				if (pTopic && PyUnicode_Check(pTopic))
+				{
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
+					bControlFlags |= 4;
+				}
+
+				// Will QoS, Retain and Message
+				if (bControlFlags & 4)
+				{
+					PyObject *pQoS = PyDict_GetItemString(WriteMessage->m_Object, "WillQoS");
+					if (pQoS && PyLong_Check(pQoS))
+					{
+						byte bQoS = (byte) PyLong_AsLong(pQoS);
+						bControlFlags |= (bQoS&3)<<3; // Set QoS flag
+					}
+
+					PyObject *pRetain = PyDict_GetItemString(WriteMessage->m_Object, "WillRetain");
+					if (pRetain && PyLong_Check(pRetain))
+					{
+						byte bRetain = PyLong_AsLong(pRetain);
+						bControlFlags |= (bRetain&1)<<5; // Set retain flag
+					}
+
+					std::string sPayload = "";
+					PyObject*	pPayload = PyDict_GetItemString(WriteMessage->m_Object, "WillPayload");
+					// Support both string and bytes
+					//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
+					if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
+					{
+						sPayload = std::string(PyByteArray_AsString(pPayload), PyByteArray_Size(pPayload));
+					}
+					else if (pPayload && PyUnicode_Check(pPayload))
+					{
+						sPayload = std::string(PyUnicode_AsUTF8(pPayload));
+					}
+					MQTTPushBackStringWLen(sPayload, vPayload);
+				}
 
 				// Username / Password
 				if (m_Username.length())
 				{
-					MQTT_STRING(vPayload, m_Username);
+					MQTTPushBackStringWLen(m_Username, vPayload);
 					bControlFlags |= 128;
 				}
 
 				if (m_Password.length())
 				{
-					MQTT_STRING(vPayload, m_Password);
+					MQTTPushBackStringWLen(m_Password, vPayload);
 					bControlFlags |= 64;
 				}
 
@@ -1114,11 +1200,10 @@ namespace Plugins {
 			else if (sVerb == "PING")
 			{
 				retVal.push_back(MQTT_PINGREQ);
-				retVal.push_back(0);
 			}
 			else if (sVerb == "SUBSCRIBE")
 			{
-				// Variable header - Packet Identifier. 
+				// Variable header - Packet Identifier.
 				// If supplied then use it otherwise create one
 				PyObject *pID = PyDict_GetItemString(WriteMessage->m_Object, "PacketIdentifier");
 				long	iPacketIdentifier = 0;
@@ -1127,7 +1212,7 @@ namespace Plugins {
 					iPacketIdentifier = PyLong_AsLong(pID);
 				}
 				else iPacketIdentifier = m_PacketID++;
-				MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+				MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 
 				// Payload is list of topics and QoS numbers
 				PyObject *pTopicList = PyDict_GetItemString(WriteMessage->m_Object, "Topics");
@@ -1147,7 +1232,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyDict_GetItemString(pTopicDict, "Topic");
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
 						PyObject*	pQoS = PyDict_GetItemString(pTopicDict, "QoS");
 						if (pQoS && PyLong_Check(pQoS))
 						{
@@ -1172,7 +1257,7 @@ namespace Plugins {
 					iPacketIdentifier = PyLong_AsLong(pID);
 				}
 				else iPacketIdentifier = m_PacketID++;
-				MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+				MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 
 				// Payload is a Python list of topics
 				PyObject *pTopicList = PyDict_GetItemString(WriteMessage->m_Object, "Topics");
@@ -1186,7 +1271,7 @@ namespace Plugins {
 					PyObject*	pTopic = PyList_GetItem(pTopicList, i);
 					if (pTopic && PyUnicode_Check(pTopic))
 					{
-						MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pTopic)));
+						MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vPayload);
 					}
 				}
 
@@ -1209,21 +1294,21 @@ namespace Plugins {
 				if (pQoS && PyLong_Check(pQoS))
 				{
 					iQoS = PyLong_AsLong(pQoS);
-					if (iQoS) bByte0 |= (iQoS << 1); // Set QoS flag
+					bByte0 |= ((iQoS & 3) << 1); // Set QoS flag
 				}
 
 				PyObject *pRetain = PyDict_GetItemString(WriteMessage->m_Object, "Retain");
 				if (pRetain && PyLong_Check(pRetain))
 				{
 					long	bRetain = PyLong_AsLong(pRetain);
-					if (bRetain) bByte0 |= 0x01; // Set retain flag
+					bByte0 |= (bRetain & 1); // Set retain flag
 				}
 
 				// Variable Header
 				PyObject*	pTopic = PyDict_GetItemString(WriteMessage->m_Object, "Topic");
 				if (pTopic && PyUnicode_Check(pTopic))
 				{
-					MQTT_STRING(vVariableHeader, std::string(PyUnicode_AsUTF8(pTopic)));
+					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pTopic)), vVariableHeader);
 				}
 				else
 				{
@@ -1240,7 +1325,7 @@ namespace Plugins {
 						iPacketIdentifier = PyLong_AsLong(pID);
 					}
 					else iPacketIdentifier = m_PacketID++;
-					MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+					MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 				}
 				else if (pID)
 				{
@@ -1248,16 +1333,20 @@ namespace Plugins {
 				}
 
 				// Payload
+				std::string sPayload = "";
 				PyObject*	pPayload = PyDict_GetItemString(WriteMessage->m_Object, "Payload");
-				if (pPayload && PyUnicode_Check(pPayload))
+				// Support both string and bytes
+				//if (pPayload && PyByteArray_Check(pPayload)) // Gives linker error, why?
+				if (pPayload) _log.Log(LOG_TRACE, "(%s) MQTT Publish: payload %p (%s)", __func__, pPayload, pPayload->ob_type->tp_name);
+				if (pPayload && pPayload->ob_type->tp_name == std::string("bytearray"))
 				{
-					MQTT_STRING(vPayload, std::string(PyUnicode_AsUTF8(pPayload)));
+					sPayload = std::string(PyByteArray_AsString(pPayload), PyByteArray_Size(pPayload));
 				}
-				else
+				else if (pPayload && PyUnicode_Check(pPayload))
 				{
-					_log.Log(LOG_ERROR, "(%s) MQTT Publish: No 'Payload' present, nothing to publish. See Python Plugin wiki page for help.", __func__);
-					return retVal;
+					sPayload = std::string(PyUnicode_AsUTF8(pPayload));
 				}
+				MQTTPushBackString(sPayload, vPayload);
 
 				retVal.push_back(bByte0);
 			}
@@ -1269,7 +1358,7 @@ namespace Plugins {
 				if (pID && PyLong_Check(pID))
 				{
 					iPacketIdentifier = PyLong_AsLong(pID);
-					MQTT_NUMBER(vVariableHeader, (int)iPacketIdentifier);
+					MQTTPushBackNumber((int)iPacketIdentifier, vVariableHeader);
 				}
 				else
 				{
