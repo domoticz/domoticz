@@ -9,9 +9,9 @@
 
 #include <iostream>
 
-/* 
-    This driver allows Domoticz to read sensor data from SM-XXXX sensors from Comm5 Technology
-	The SM-1200 sensor provides: Temperature, Humidity, Barometric and Luminosity data. 
+/*
+	This driver allows Domoticz to read sensor data from SM-XXXX sensors from Comm5 Technology
+	The SM-1200 sensor provides: Temperature, Humidity, Barometric and Luminosity data.
 	https://www.comm5.com.br/en/sm-1200/
 */
 
@@ -35,11 +35,11 @@ static inline bool startsWith(const std::string &haystack, const std::string &ne
 }
 
 Comm5SMTCP::Comm5SMTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort) :
-m_szIPAddress(IPAddress)
+	m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_stoprequested=false;
-	m_usIPPort=usIPPort;
+	m_HwdID = ID;
+	m_stoprequested = false;
+	m_usIPPort = usIPPort;
 	initSensorData = true;
 	m_bReceiverStarted = false;
 }
@@ -133,8 +133,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float temperature = std::stof(tokens[1]);
-
+			float temperature = static_cast<float>(atof(tokens[1].c_str()));
 			SendTempSensor(1, 255, temperature, "TEMPERATURE");
 		}
 		else if (startsWith(line, "281")) {
@@ -142,8 +141,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			int humidity = std::stoi(tokens[1]);
-
+			int humidity = atoi(tokens[1].c_str());
 			SendHumiditySensor(1, 255, humidity, "HUMIDITY");
 		}
 		else if (startsWith(line, "282")) {
@@ -151,8 +149,7 @@ void Comm5SMTCP::ParseData(const unsigned char* data, const size_t len)
 			if (tokens.size() < 2)
 				break;
 
-			float baro = std::stof(tokens[1]);
-
+			float baro = static_cast<float>(atof(tokens[1].c_str()));
 			SendBaroSensor(1, 0, 255, baro, 0, "BAROMETRIC");
 		}
 	}

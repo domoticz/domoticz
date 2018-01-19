@@ -297,14 +297,14 @@ void CDaikin::UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const 
 	gswitch.id = Idx;
 
 	// Get device level to set
-	int level = Level;
+	int level = static_cast<int>(Level);
 
 	// Now check the values
 	if (bOn)
 		gswitch.cmnd = gswitch_sOff;
 	else
 		gswitch.cmnd = gswitch_sOn;
-	gswitch.level = Level;
+	gswitch.level = static_cast<uint8_t>(Level);
 	gswitch.rssi = 12;
 	sDecodeRXMessage(this, (const unsigned char *)&gswitch, defaultname.c_str(), 255);
 }
