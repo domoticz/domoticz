@@ -37,7 +37,6 @@ Version history
 #include "../webserver/Base64.h"
 #include "../json/json.h"
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 
 #ifdef _DEBUG
 #define DEBUG_EcoDevices
@@ -286,7 +285,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-		message = message + boost::lexical_cast<std::string>( min_major ) + "." + boost::lexical_cast<std::string>(min_minor) + "." + boost::lexical_cast<std::string>(min_release);
+		message = message + std::to_string( min_major ) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;
@@ -447,7 +446,7 @@ void CEcoDevices::GetMeterRT2Details()
 	if (!((major > min_major) || ((major == min_major) && (minor > min_minor)) || ((major == min_major) && (minor == min_minor) && (release >= min_release))))
 	{
 		message = "EcoDevices RT2 firmware needs to be at least version ";
-		message = message + boost::lexical_cast<std::string>(min_major) + "." + boost::lexical_cast<std::string>(min_minor) + "." + boost::lexical_cast<std::string>(min_release);
+		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;
