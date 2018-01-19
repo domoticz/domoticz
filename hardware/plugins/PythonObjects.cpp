@@ -17,8 +17,6 @@
 #include "PluginTransports.h"
 #include <datetime.h>
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 namespace Plugins {
 
 	extern boost::mutex PluginMutex;	// controls accessto the message queue
@@ -803,7 +801,7 @@ namespace Plugins {
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
 			}
 
-			std::string sID = SSTR(self->ID);
+			std::string sID = std::to_string(self->ID);
 
 			if (TypeName) {
 				// Reset nValue and sValue when changing device types
