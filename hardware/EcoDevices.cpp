@@ -52,7 +52,7 @@ Version history
 #define MINOR_RT2 0
 #define RELEASE_RT2 29
 
-CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort, 
+CEcoDevices::CEcoDevices(const int ID, const std::string &IPAddress, const unsigned short usIPPort,
 	const std::string &username, const std::string &password, const int datatimeout, const int model, const int ratelimit):
 m_szIPAddress(IPAddress),
 m_username(username),
@@ -62,16 +62,16 @@ m_password(password)
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 	m_iModel = model;
-        
-        // Updates must be at least every 5mn in order to keep consistent historical data
+
+	// Updates must be at least every 5mn in order to keep consistent historical data
 	m_iDataTimeout = (datatimeout >= 300 || datatimeout == 0) ? 300 : datatimeout;
-	
+
  	// system seems unstable if going too fast
 	m_iRateLimit = (ratelimit < 2) ? 2 : ratelimit;
 
-        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
+	// RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate)
 	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake.
-        if (m_iRateLimit > m_iDataTimeout)   m_iRateLimit = m_iDataTimeout;
+	if (m_iRateLimit > m_iDataTimeout)   m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }
@@ -90,11 +90,11 @@ void CEcoDevices::Init()
 	// Is the device we poll password protected?
 	m_ssURL.str("");
 	if ((m_username.size() > 0) && (m_password.size() > 0))
-        	m_ssURL << "http://" << m_username << ":" << m_password << "@";
-        else
-                m_ssURL <<"http://";
+		m_ssURL << "http://" << m_username << ":" << m_password << "@";
+	else
+		m_ssURL <<"http://";
 
-        m_ssURL << m_szIPAddress << ":" << m_usIPPort;
+	m_ssURL << m_szIPAddress << ":" << m_usIPPort;
 
 }
 
@@ -208,7 +208,7 @@ void CEcoDevices::GetMeterDetails()
 
 	// Check EcoDevices firmware version and process pulse counters
 	sstr << m_ssURL.str() << "/status.xml";
-	
+
 	if (m_status.hostname.empty()) m_status.hostname = m_szIPAddress;
 	if (HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 	{
@@ -285,7 +285,7 @@ void CEcoDevices::GetMeterDetails()
 	else
 	{
 		message = "EcoDevices firmware needs to be at least version ";
-		message = message + std::to_string( min_major ) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
+		message = message + std::to_string(min_major) + "." + std::to_string(min_minor) + "." + std::to_string(min_release);
 		message = message + ", current version is " + m_status.version;
 		_log.Log(LOG_ERROR, "(%s) %s", Name.c_str(), message.c_str());
 		return;
@@ -323,7 +323,7 @@ void CEcoDevices::GetMeterDetails()
 	{
 		sstr.str("");
 		sstr << m_ssURL.str() << "/protect/settings/teleinfo2.xml";
-		
+
 		_log.Log(LOG_NORM, "(%s) Fetching Teleinfo 2 data", Name.c_str());
 		if (!HTTPClient::GET(sstr.str(), ExtraHeaders, sResult))
 		{
@@ -452,7 +452,7 @@ void CEcoDevices::GetMeterRT2Details()
 		return;
 	}
 
-	//Measured voltage on power supply 
+	//Measured voltage on power supply
 	m_status.voltage = i_xpath_int(XMLdoc.RootElement(), "/response/vmesure/text()");
 	SendVoltageSensor(m_HwdID, 1, 255, (float)m_status.voltage, "EcoDevice RT2");
 

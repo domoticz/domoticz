@@ -28,6 +28,7 @@ macro(use_cxx11)
 endmacro(use_cxx11)
 use_cxx11()
 
+
 MACRO(Gitversion_GET_REVISION dir variable)
   EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} --git-dir ./.git rev-list HEAD --count
     WORKING_DIRECTORY ${dir}

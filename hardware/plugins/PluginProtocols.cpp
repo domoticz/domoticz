@@ -21,8 +21,6 @@
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
-#define SSTR( x ) dynamic_cast< std::ostringstream & >(( std::ostringstream() << std::dec << x ) ).str()
-
 namespace Plugins {
 
 	extern 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
@@ -673,7 +671,7 @@ namespace Plugins {
 		if (!pLength && pData && PyUnicode_Check(pData))
 		{
 			Py_ssize_t iLength = PyUnicode_GetLength(pData);
-			sHttp += "Content-Length: " + SSTR(iLength) + "\r\n";
+			sHttp += "Content-Length: " + std::to_string(iLength) + "\r\n";
 		}
 
 		sHttp += "\r\n";
