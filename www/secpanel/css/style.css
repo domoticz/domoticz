@@ -1,3 +1,7 @@
+.hidden {
+	visibility: hidden;
+}
+
 div, ul, li, p {
 	margin: 0;
 	padding: 0;
@@ -6,25 +10,24 @@ div, ul, li, p {
 
 @font-face {
     font-family: 'Digital';
-    src: url('../../default/font/Digital.eot');
-    src: url('../../default/font/Digital.eot?#iefix') format('embedded-opentype'),
-         url('../../default/font/Digital.woff') format('woff'),
-         url('../../default/font/Digital.ttf') format('truetype'),
-         url('../../default/font/Digital.svg#../font/Digital-7Italic') format('svg');
+    src: url('../font/Digital.eot');
+    src: url('../font/Digital.eot?#iefix') format('embedded-opentype'),
+         url('../font/Digital.woff') format('woff'),
+         url('../font/Digital.ttf') format('truetype'),
+         url('../font/Digital.svg#../font/Digital-7Italic') format('svg');
 }
+
 @font-face {
     font-family: 'Audiowide';
-    src: url('../../default/font/Audiowide.eot');
-    src: url('../../default/font/Audiowide.eot?#iefix') format('embedded-opentype'),
-         url('../../default/font/Audiowide.woff') format('woff'),
-         url('../../default/font/Audiowide.ttf') format('truetype'),
-         url('../../default/font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+    src: url('../font/Audiowide.eot');
+    src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
+         url('../font/Audiowide.woff') format('woff'),
+         url('../font/Audiowide.ttf') format('truetype'),
+         url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
 }
 
 body { 
 	background: #121314;
-	width: 100%;
-	min-width: 550px;
 }
 
 .clear { clear: both; height: 0 }
@@ -43,11 +46,11 @@ body {
 
 .title { 
 	margin-bottom: 30px;
-	color: rgba(0, 0, 0, .5);
+	color: rgba(64, 64, 64, .5);
 	font: 24px 'Audiowide';
 	text-align: center;
     text-transform: uppercase;
-	text-shadow: 1px 1px 1px #818A83, 0 0 0 #000000;
+	text-shadow: 1px 1px 1px #D1DAD3, 0 0 0 #000000;
 }
 
 input[type="text"] {
@@ -77,13 +80,13 @@ input[type="text"] {
 	margin: 0 15px 15px 0;
 	border-radius: 5px;
 	font: 32px/32px 'Audiowide';
-	color: #828384;
+	color: #D2D3D4;
 	padding: 20px;
 	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li:hover {
 	background: #323334;
-	color: rgba(128, 255, 196, .95);
+	color: rgba(196, 255, 225, .95);
 }
 .keypad-keys	li:nth-child(4n+4) { 
 	margin-right: 0;
@@ -91,14 +94,14 @@ input[type="text"] {
 .keypad-keys	li.arm {
 	width: 137px;
 	font-size: 26px;
-	background: rgba(128,0,0,0.4);
+	background: rgba(128,0,0,0.6);
 	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li.arm:hover {
 	background: rgba(128,0,0,0.9);
 }
 .keypad-keys li.disarm {
-	background: rgba(0,128,0,0.4);
+	background: rgba(0,128,0,0.6);
 	box-shadow: inset 1px 1px 2px #000;
 }
 .keypad-keys	li.disarm:hover {

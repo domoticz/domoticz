@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1470
+# ref 1487
 
 CACHE:
 # CSS
@@ -14,9 +14,7 @@ css/jquery-ui-timepicker-addon.css
 css/legacy.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
-secpanel/themes/default/css/style.css
-secpanel/themes/light/css/style.css
-secpanel/themes/dark/css/style.css
+secpanel/css/style.css
 css/remote.css
 
 # Fonts
@@ -26,14 +24,14 @@ css/fonts/Oswald-Regular.eot
 css/fonts/Oswald-Regular.ttf
 css/fonts/Satisfy.eot
 css/fonts/Satisfy.ttf
-secpanel/themes/default/font/Audiowide.eot
-secpanel/themes/default/font/Audiowide.svg
-secpanel/themes/default/font/Audiowide.ttf
-secpanel/themes/default/font/Audiowide.woff
-secpanel/themes/default/font/Digital.eot
-secpanel/themes/default/font/Digital.svg
-secpanel/themes/default/font/Digital.ttf
-secpanel/themes/default/font/Digital.woff
+secpanel/font/Audiowide.eot
+secpanel/font/Audiowide.svg
+secpanel/font/Audiowide.ttf
+secpanel/font/Audiowide.woff
+secpanel/font/Digital.eot
+secpanel/font/Digital.svg
+secpanel/font/Digital.ttf
+secpanel/font/Digital.woff
 
 # Images
 favicon.ico
@@ -400,7 +398,7 @@ media/trashlid.png
 media/tree.png
 media/swf/copy_csv_xls.swf
 media/swf/copy_csv_xls_pdf.swf
-secpanel/themes/default/img/bg.jpg
+secpanel/img/bg.jpg
 
 # Audio
 media/click.mp3
@@ -552,7 +550,6 @@ js/ui-bootstrap.min.js
 js/wow.min.js
 js/ZeroClipboard.js
 secpanel/js/ion.sound.min.js
-secpanel/js/securitypanel.js
 ozwcp/cp.js
 
 #Dynamic theme
