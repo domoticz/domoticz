@@ -72,7 +72,7 @@
             <Item label="When system is turned off the output is 230V or 24V (NO)" value="1" />
         </Value>
 
-        <Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="1">
+        <Value type="list" genre="config" instance="1" index="100" label="Enable / Disable Endpoints I2 or select notification type and event" size="1" min="0" max="9" value="0">
             <Help/>
             <Item label="Endpoint, I2 disabled" value="0" />
 			<Item label="Home Security; Motion Detection, unknown location" value="1" />
@@ -84,7 +84,7 @@
 			<Item label="Sensor binary" value="9" />
         </Value>
 
-        <Value type="list" genre="config" instance="1" index="101" label="Enable / Disable Endpoints I3 or select notification type and event" size="1" min="0" max="9" value="1">
+        <Value type="list" genre="config" instance="1" index="101" label="Enable / Disable Endpoints I3 or select notification type and event" size="1" min="0" max="9" value="0">
 	        <Help/>
 	        <Item label="Endpoint, I3 disabled" value="0" />
 	        <Item label="Home Security; Motion Detection, unknown location" value="1" />

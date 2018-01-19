@@ -127,6 +127,20 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
 		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
+		{ TTYPE_BEFORESUNATSOUTH, "Before Sun at South" },
+		{ TTYPE_AFTERSUNATSOUTH, "After Sun at South" },
+		{ TTYPE_BEFORECIVTWSTART, "Before Civil Twilight Start" },
+		{ TTYPE_AFTERCIVTWSTART, "After Civil Twilight Start" },
+		{ TTYPE_BEFORECIVTWEND, "Before Civil Twilight End" },
+		{ TTYPE_AFTERCIVTWEND, "After Civil Twilight End" },
+		{ TTYPE_BEFORENAUTTWSTART, "Before Nautical Twilight Start" },
+		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twilight Start" },
+		{ TTYPE_BEFORENAUTTWEND, "Before Nautical Twilight End" },
+		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twilight End" },
+		{ TTYPE_BEFOREASTTWSTART, "Before Astronomical Twilight Start" },
+		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twilight Start" },
+		{ TTYPE_BEFOREASTTWEND, "Before Astronomical Twilight End" },
+		{ TTYPE_AFTERASTTWEND, "After Astronomical Twilight End" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
@@ -215,6 +229,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5SMTCP, "Comm5 SM-XXXX with LAN interface" },
 		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },

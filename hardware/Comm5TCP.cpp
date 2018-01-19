@@ -12,6 +12,15 @@
 #define RETRY_DELAY 30
 #define Max_Comm5_MA_Relais 16
 
+/*
+   This driver allows Domoticz to control any I/O module from the MA-5xxx-2 Family, including the fiber-optics (FX)
+   variations.
+   https://www.comm5.com.br/en/products/io-modules/
+   These modules provide relays and digital sensors in the range of 5-30V DC or 70-240V AC selectable by dip switches
+   for each individual input.
+
+*/
+
 static inline std::string &rtrim(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
@@ -128,7 +137,7 @@ void Comm5TCP::processSensorData(const std::string& line)
 	for (int i = 0; i < 16; ++i) {
 		bool on = (sensorbitfield & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorbitfield & (1 << i))) || initSensorData) {
-			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorbitfield;

@@ -668,6 +668,18 @@ int main(int argc, char**argv)
 		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalCurrent = true;
 	}
+	//New Armbian Kernal 4.14+
+	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+
 #if defined (__OpenBSD__)
 
 	szInternalTemperatureCommand="sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";

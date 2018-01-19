@@ -2136,6 +2136,9 @@
     <ClInclude Include="..\hardware\eHouse\status.h">
       <Filter>Devices\eHouse</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Comm5SMTCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2867,8 +2870,11 @@
     <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
       <Filter>Devices\eHouse</Filter>
     </ClCompile>
-  <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
       <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

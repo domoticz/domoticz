@@ -154,7 +154,8 @@
         
         bool PythonEventsStop() {
             if (m_PyInterpreter) {
-                PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+				boost::lock_guard<boost::mutex> l(PythonMutex);
+				PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 				if (Plugins::Py_IsInitialized())
 					Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
 				m_PyInterpreter = NULL;
@@ -202,7 +203,8 @@
 
            if (Plugins::Py_IsInitialized()) {
                
-               if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+			   boost::lock_guard<boost::mutex> l(PythonMutex);
+			   if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
                
                /*{
                    _log.Log(LOG_ERROR, "EventSystem - Python: Failed to attach to interpreter");

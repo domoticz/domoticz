@@ -315,7 +315,7 @@ define(['app'], function (app) {
 
 							var DayStr = "";
 							var DayStrOrig = "";
-							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9)) {
+							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9) || ((item.Type >= 14) && (item.Type <= 27))) {
 								var dayflags = parseInt(item.Days);
 								if (dayflags & 0x80)
 									DayStrOrig = "Everyday";
