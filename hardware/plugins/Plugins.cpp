@@ -144,7 +144,7 @@ namespace Plugins {
 				else
 				{
 					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-					_log.Log((_eLogLevel)LOG_NORM, "%s", message.c_str());
+					_log.Log((_eLogLevel)LOG_NORM, message);
 				}
 			}
 		}
@@ -176,7 +176,7 @@ namespace Plugins {
 			else
 			{
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_NORM, "%s", message.c_str());
+				_log.Log((_eLogLevel)LOG_NORM, message);
 			}
 		}
 
@@ -207,7 +207,7 @@ namespace Plugins {
 			else
 			{
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_ERROR, "%s", message.c_str());
+				_log.Log((_eLogLevel)LOG_ERROR, message);
 			}
 		}
 

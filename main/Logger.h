@@ -39,6 +39,7 @@ public:
 	void SetOutputFile(const char *OutputFile);
 	void SetVerboseLevel(_eLogFileVerboseLevel vLevel);
 
+	void Log(const _eLogLevel level, const std::string& sLogline);
 	void Log(const _eLogLevel level, const char* logline, ...)
 #ifdef __GNUC__
 		__attribute__ ((format (printf, 3, 4)))

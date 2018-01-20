@@ -51,7 +51,7 @@
             else
             {
                 std::string	message = msg;
-                _log.Log((_eLogLevel)LOG_NORM, "%s", message.c_str());
+                _log.Log((_eLogLevel)LOG_NORM, message);
             }
 
             Py_INCREF(Py_None);

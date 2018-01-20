@@ -16610,7 +16610,7 @@ namespace http {
 									root["result"][ii]["se"] = se;
 									root["result"][ii]["sx"] = sx;
 									char szTmp[1024];
-									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
+									snprintf(szTmp, sizeof(szTmp), "%.1f %.1f %.1f", sm, se, sx);
 									_log.Log(LOG_STATUS, "%s", szTmp);
 
 								}
