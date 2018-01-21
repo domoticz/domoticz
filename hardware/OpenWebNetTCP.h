@@ -36,6 +36,15 @@ public:
 			  */
 	};
 
+	enum _eWhereEnergy {
+			WHERE_ENERGY_1 = 51,
+			WHERE_ENERGY_2 = 52,
+			WHERE_ENERGY_3 = 53,
+			WHERE_ENERGY_4 = 54,
+			WHERE_ENERGY_5 = 55,
+			WHERE_ENERGY_6 = 56,
+			MAX_WHERE_ENERGY = 57
+	};
 	bool isStatusSocketConnected();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	bool SetSetpoint(const int idx, const float temp); 

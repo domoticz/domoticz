@@ -1410,7 +1410,7 @@ void COpenWebNetTCP::requestDryContactIRDetectionStatus()
 }
 
 /**
-	request energy totalizer (1 - 4 device)
+	request energy totalizer
 **/
 void COpenWebNetTCP::requestEnergyTotalizer()
 {
@@ -1421,7 +1421,7 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 	whoStr << WHO_ENERGY_MANAGEMENT;
 	dimensionStr << ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER;
 
-	for (int where = 51; where < 55; where++)
+	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
 	{
 		stringstream whereStr;
 		whereStr << where;
@@ -1431,7 +1431,7 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 }
 
 /**
-	request automatic update power (1 - 4 device)
+	request automatic update power
 **/
 void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
 {
@@ -1449,7 +1449,7 @@ void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
 	appStr << time;
 	value.push_back(appStr.str());
 
-	for (int where = 51; where < 55; where++)
+	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
 	{
 		stringstream whereStr;
 		whereStr << where;
