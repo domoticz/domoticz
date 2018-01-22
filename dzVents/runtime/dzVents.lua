@@ -58,14 +58,14 @@ local isTimeEvent = globalvariables['isTimeEvent']
 
 if (isTimeEvent) then
 	commandArray = helpers.dispatchTimerEventsToScripts()
-else
-	helpers.dispatchDeviceEventsToScripts()
-	helpers.dispatchVariableEventsToScripts()
-	helpers.dispatchSecurityEventsToScripts()
-	helpers.dispatchSceneGroupEventsToScripts()
-	helpers.dispatchHTTPResponseEventsToScripts()
-	commandArray = helpers.domoticz.commandArray
 end
+
+helpers.dispatchDeviceEventsToScripts()
+helpers.dispatchVariableEventsToScripts()
+helpers.dispatchSecurityEventsToScripts()
+helpers.dispatchSceneGroupEventsToScripts()
+helpers.dispatchHTTPResponseEventsToScripts()
+commandArray = helpers.domoticz.commandArray
 
 
 return commandArray

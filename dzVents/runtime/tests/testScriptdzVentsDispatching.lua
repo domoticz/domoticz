@@ -153,10 +153,44 @@ describe('Event dispatching', function()
 		_G.globalvariables['isTimeEvent'] = true
 		local main = require('dzVents')
 		assert.is_same({
-			{ ["onscript1"] = "Off" },
-			{ ['Scene:scene 2'] = 'On' },
-				{ ["SendNotification"] = 'Me#every minute timer every minute script_timer_single#0#pushover##' },
-			{ ["Scene:scene 1"] = "On" }
+			{
+				["onscript1"] = "Off"
+			},
+			{
+				['Scene:scene 2'] = 'On'
+			},
+			{
+				["SendNotification"] = 'Me#every minute timer every minute script_timer_single#0#pushover##'
+		 	},
+			{
+				["Scene:scene 1"] = "On"
+			},
+			{
+				["onscript1"]="Off"
+			},
+			{
+				["onscript1"]="Set Level 10"
+			},
+			{
+				["SendNotification"]="Yo##0#pushover##"
+			},
+			{
+				["Variable"]={["value"]="10", ["idx"]=1, ["_trigger"]=true}
+			},
+			{
+				["SendNotification"]="Me#Armed Away#0#pushover##"
+			},
+			{
+				["Scene:myscene1"]="Off"
+			},
+			{
+				["Group:mygroup1"]="On"
+			},
+			{
+				["OpenURL"]={["URL"]="test", ["method"]="GET"}
+			},
+
+
 		}, main)
 	end)
 
