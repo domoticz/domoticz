@@ -1343,12 +1343,12 @@ void CEventSystem::EventQueueThread()
 		if (m_stoprequested)
 			break;
 #ifdef _DEBUG
-		_log.Log(LOG_STATUS, "EventSystem: \n DeviceID => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n varId => %" PRIu64 "\n lastUpdate => %s\n lastLevel => %d\n",
-			item.DeviceID, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.varId, item.lastUpdate.c_str(), item.lastLevel);
+		_log.Log(LOG_STATUS, "EventSystem: \n reason => %d\n DeviceID => %" PRIu64 "\n devname => %s\n nValue => %d\n sValue => %s\n nValueWording => %s\n varId => %" PRIu64 "\n lastUpdate => %s\n lastLevel => %d\n",
+			item.reason, item.DeviceID, item.devname.c_str(), item.nValue, item.sValue.c_str(), item.nValueWording.c_str(), item.varId, item.lastUpdate.c_str(), item.lastLevel);
 #endif
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if ((itt->DeviceID == item.DeviceID && itt->reason != REASON_USERVARIABLE) ||
+			if ((itt->DeviceID == item.DeviceID && itt->reason <= REASON_SCENEGROUP) ||
 				(itt->reason == REASON_USERVARIABLE && itt->varId == item.varId))
 			{
 				EvaluateEvent(items);
@@ -1398,11 +1398,13 @@ void CEventSystem::ProcessDevice(const int HardwareID, const uint64_t ulDevID, c
 			{
 				item.lastLevel = itt->second.lastLevel;
 				item.lastUpdate = itt->second.lastUpdate;
-				item.JsonMapString = itt->second.JsonMapString;
-				item.JsonMapInt = itt->second.JsonMapInt;
-				item.JsonMapFloat = itt->second.JsonMapFloat;
-				item.JsonMapBool = itt->second.JsonMapBool;
-
+				if (!m_sql.m_bDisableDzVentsSystem)
+				{
+					item.JsonMapString = itt->second.JsonMapString;
+					item.JsonMapInt = itt->second.JsonMapInt;
+					item.JsonMapFloat = itt->second.JsonMapFloat;
+					item.JsonMapBool = itt->second.JsonMapBool;
+				}
 				_tDeviceStatus replaceitem = itt->second;
 				replaceitem.lastUpdate = sd[2];
 				replaceitem.lastLevel = atoi(sd[3].c_str());
