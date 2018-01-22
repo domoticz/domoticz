@@ -13,6 +13,9 @@ Supported Layer :
 History :
 - 2017-10-01 : Creation by X.PONCET
 
+- 2018-01-22 : Update :
+# for feature add to MultiblocV8: manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
+
 */
 #include "stdafx.h"
 #include "USBtin.h"
@@ -260,13 +263,7 @@ void USBtin::ParseData(const char *pData, int Len)
 {
 	char value[30] = "";
 	std::string vString;
-	unsigned long ulValue;
 	
-	unsigned long IdValue;
-	unsigned int DlcValue;
-	unsigned int Data[8];
-	
-	int i,j;
 	int ii = 0;
 	while (ii<Len)
 	{

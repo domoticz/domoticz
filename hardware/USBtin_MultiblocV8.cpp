@@ -13,6 +13,12 @@ Description : This class manage the CAN MultiblocV8 Layer
 History :
 - 2017-10-01 : Creation by X.PONCET
 
+- 2018-01-22 : Update :
+# add feature : manual creation up to 127 virtual switch, ability to learn eatch switch to any blocks output
+# add feature : now possibility to Enter/Exit Learn mode Or Clear Mode for all SFSP Blocks 
+	(each blocks detected blocks automatically creates 3 associated buttons for Learn/Exit Learn and Clear, usefull if the blocks is not accessible )
+
+	
 */
 #include "stdafx.h"
 #include "USBtin_MultiblocV8.h"
