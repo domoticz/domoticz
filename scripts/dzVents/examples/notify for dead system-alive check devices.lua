@@ -27,9 +27,9 @@ return {
 	data = {
 		notified = { initial = {} }
 	},
-	execute = function(domoticz, device, triggerInfo)
+	execute = function(domoticz, item, triggerInfo)
 
-		if (triggerInfo.type == domoticz.EVENT_TYPE_TIMER) then
+		if (item.isTimer) then
 
 			-- check all devices that are off and have not been updated in the past 5 minutes and have not been notified for
 			for index, deviceName in pairs(devicesToCheck) do
@@ -49,7 +49,8 @@ return {
 
 
 		else
-			domoticz.data.notified[device.name] = false
+			-- it is the device that was triggered
+			domoticz.data.notified[item.name] = false
 
 		end
 

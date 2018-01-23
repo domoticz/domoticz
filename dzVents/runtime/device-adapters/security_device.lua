@@ -18,6 +18,8 @@ return {
 
 	process = function (device, data, domoticz, utils, adapterManager)
 
+		device.baseType = domoticz.BASETYPE_SECURITY
+
 		-- from data: maxDimLevel???
 
 		device.state = domoticz.security -- normalize to domoticz.security states

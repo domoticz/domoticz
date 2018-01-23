@@ -13,7 +13,7 @@ return {
 			dz.devices('secArmedAwayResults').updateText('FAILED')
 		else
 			dz.log('secArmedAway: Test security: OK')
-			dz.devices('secArmedAwayResults').updateText('SUCCEEDED')
+			dz.devices('secArmedAwayResults').updateText('SECURITY SUCCEEDED')
 		end
 
 	end

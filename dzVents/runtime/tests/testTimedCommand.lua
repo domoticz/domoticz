@@ -230,12 +230,12 @@ describe('timed commands', function()
 		it('should return proper functions when nothing is set', function()
 			assert.is_function(cmd.silent)
 
-			assert.is_nil(cmd.afterSec)
-			assert.is_nil(cmd.afterMin)
-			assert.is_nil(cmd.afterHour)
-			assert.is_nil(cmd.withinMin)
-			assert.is_nil(cmd.withinSec)
-			assert.is_nil(cmd.withinHour)
+			assert.is_function(cmd.afterSec)
+			assert.is_function(cmd.afterMin)
+			assert.is_function(cmd.afterHour)
+			assert.is_function(cmd.withinMin)
+			assert.is_function(cmd.withinSec)
+			assert.is_function(cmd.withinHour)
 			assert.is_nil(cmd.forSec)
 			assert.is_nil(cmd.forMin)
 			assert.is_nil(cmd.forHour)
@@ -244,17 +244,35 @@ describe('timed commands', function()
 			assert.is_nil(cmd.repeatAfterHour)
 		end)
 
+		it('should return proper function when called after', function()
+			local res = cmd.afterSec(1)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_function(res.silent)
+			assert.is_nil(res.repeatAfterSec)
+			assert.is_nil(res.repeatAfterMin)
+			assert.is_nil(res.repeatAfterHour)
+
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+		end)
+
 
 		it('should return proper functions called silent', function()
 
 			local res = cmd.silent()
 
-			assert.is_nil(res.afterSec)
-			assert.is_nil(res.afterMin)
-			assert.is_nil(res.afterHour)
-			assert.is_nil(res.withinMin)
-			assert.is_nil(res.withinSec)
-			assert.is_nil(res.withinHour)
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
 
 			assert.is_nil(res.silent)
 			assert.is_nil(res.forSec)
@@ -264,6 +282,109 @@ describe('timed commands', function()
 			assert.is_nil(res.repeatAfterMin)
 			assert.is_nil(res.repeatAfterHour)
 		end)
+	end)
+
+
+	describe('updatedevice with table', function()
+
+		before_each(function()
+			cmd = TimedCommand(domoticz, 'OpenURL', {
+				url = 'http://ab/cd',
+				callback = 'something'
+			}, 'updatedevice')
+		end)
+
+		after_each(function()
+			commandArray = {}
+			cmd = nil
+		end)
+
+
+		it('should return proper functions when nothing is set', function()
+			assert.is_function(cmd.silent)
+
+			assert.is_function(cmd.afterSec)
+			assert.is_function(cmd.afterMin)
+			assert.is_function(cmd.afterHour)
+			assert.is_function(cmd.withinMin)
+			assert.is_function(cmd.withinSec)
+			assert.is_function(cmd.withinHour)
+			assert.is_nil(cmd.forSec)
+			assert.is_nil(cmd.forMin)
+			assert.is_nil(cmd.forHour)
+			assert.is_nil(cmd.repeatAfterSec)
+			assert.is_nil(cmd.repeatAfterMin)
+			assert.is_nil(cmd.repeatAfterHour)
+
+		end)
+
+		it('should return proper function when called after', function()
+			local res = cmd.afterSec(1)
+
+			assert.is_function(res.silent)
+
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.repeatAfterSec)
+			assert.is_nil(res.repeatAfterMin)
+			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+
+			assert.is_same(1, commandArray[1]['OpenURL']['_after'])
+
+		end)
+
+		it('should return proper function when called random', function()
+			local res = cmd.withinMin(10)
+
+			assert.is_function(res.silent)
+
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.repeatAfterSec)
+			assert.is_nil(res.repeatAfterMin)
+			assert.is_nil(res.repeatAfterHour)
+			assert.is_nil(res.afterSec)
+			assert.is_nil(res.afterMin)
+			assert.is_nil(res.afterHour)
+			assert.is_nil(res.withinSec)
+			assert.is_nil(res.withinMin)
+			assert.is_nil(res.withinHour)
+
+			local random = commandArray[1]['OpenURL']['_random']
+			assert.is_same(600, random)
+
+		end)
+
+		it('should return proper functions called silent', function()
+			local res = cmd.silent()
+
+			assert.is_function(res.afterSec)
+			assert.is_function(res.afterMin)
+			assert.is_function(res.afterHour)
+			assert.is_function(res.withinMin)
+			assert.is_function(res.withinSec)
+			assert.is_function(res.withinHour)
+
+			assert.is_nil(res.silent)
+			assert.is_nil(res.forSec)
+			assert.is_nil(res.forMin)
+			assert.is_nil(res.forHour)
+			assert.is_nil(res.repeatAfterSec)
+			assert.is_nil(res.repeatAfterMin)
+			assert.is_nil(res.repeatAfterHour)
+
+			assert.is_nil(commandArray[1]['OpenURL']['_trigger'])
+		end)
+
+
 	end)
 
 	describe('commands', function()
