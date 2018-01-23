@@ -1509,7 +1509,6 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 
 #ifdef ENABLE_PYTHON
-
 		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		try
 		{
@@ -1538,34 +1537,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		}
 		uservariablesMutexLock.unlock();
 #endif
-
-		EvaluateBlockly(*itt);
-
-		// handle database held scripts
-		try {
-			boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-			std::vector<_tEventItem>::iterator it;
-			for (it = m_events.begin(); it != m_events.end(); ++it) {
-				bool eventInScope = ((it->Interpreter != "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[itt->reason])));
-				bool eventActive = (it->EventStatus == 1);
-				if (eventInScope && eventActive) {
-					if (it->Interpreter == "Lua")
-						EvaluateLua(*itt, it->Name, it->Actions);
-					else if (it->Interpreter == "Python") {
-#ifdef ENABLE_PYTHON
-						boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
-						EvaluatePython(*itt, it->Name, it->Actions);
-						//_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not supported yet");
-#else
-						_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
-#endif
-					}
-				}
-			}
-		}
-		catch (...) {
-			_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
-		}
+		EvaluateDatabaseEvents(*itt);
 	}
 }
 
@@ -1794,239 +1766,119 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	return lua_state;
 }
 
-void CEventSystem::EvaluateBlockly(const _tEventQueue &item)
+lua_State *CEventSystem::ParseBlocklyLua(lua_State *lua_state, const _tEventItem &item)
 {
-//#ifdef _DEBUG
-	//    _log.Log(LOG_STATUS,"EventSystem: blockly %s trigger",reason.c_str());
-//#endif
+	std::string conditions = item.Conditions;
+	// Replace Sunrise and sunset placeholder with actual time for query
+	if (conditions.find("@Sunrise") != std::string::npos)
+	{
+		int intRise = getSunRiseSunSetMinutes("Sunrise");
+		std::stringstream ssRise;
+		ssRise << intRise;
+		stdreplace(conditions, "@Sunrise", ssRise.str());
+	}
+	if (conditions.find("@Sunset") != std::string::npos)
+	{
+		int intSet = getSunRiseSunSetMinutes("Sunset");
+		std::stringstream ssSet;
+		ssSet << intSet;
+		stdreplace(conditions, "@Sunset", ssSet.str());
+	}
 
-	lua_State *lua_state=NULL;
+	std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
 
-	if ((item.reason == REASON_DEVICE) && (item.DeviceID >0)) {
-		std::size_t found;
-		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type=="all")||(it->Type == m_szReason[item.reason])));
+	if (lua_state == NULL)
+	{
+		lua_state = CreateBlocklyLuaState();
+		if (lua_state == NULL)
+			return NULL;
+	}
+
+	//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
+	if (luaL_dostring(lua_state, ifCondition.c_str()))
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", item.Name.c_str(), lua_tostring(lua_state, -1));
+	}
+	else
+	{
+		lua_Number ruleTrue = lua_tonumber(lua_state, -1);
+		if (ruleTrue != 0)
+		{
+			if (m_sql.m_bLogEventScriptTrigger)
+				_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", item.Name.c_str());
+			parseBlocklyActions(item);
+		}
+	}
+	return lua_state;
+}
+
+void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
+{
+	lua_State *lua_state = NULL;
+
+	boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
+	std::vector<_tEventItem>::const_iterator it;
+	try
+	{
+		for (it = m_events.begin(); it != m_events.end(); ++it)
+		{
+			bool eventInScope = ((it->Type == "all") || (it->Type == m_szReason[item.reason]));
 			bool eventActive = (it->EventStatus == 1);
+
 			if (eventInScope && eventActive)
 			{
-				std::stringstream sstr;
-				//sstr << "device[" << DeviceID << "]";
-				sstr << "[" << item.DeviceID << "]";
-				std::string conditions(it->Conditions);
-				found = conditions.find(sstr.str());
-				if (found != std::string::npos)
+				if (it->Interpreter == "Blockly")
 				{
-					// Replace Sunrise and sunset placeholder with actual time for query
-					if (conditions.find("@Sunrise") != std::string::npos) {
-						int intRise = getSunRiseSunSetMinutes("Sunrise");
-						std::stringstream ssRise;
-						ssRise << intRise;
-						stdreplace(conditions, "@Sunrise", ssRise.str());
-					}
-					if (conditions.find("@Sunset") != std::string::npos) {
-						int intSet = getSunRiseSunSetMinutes("Sunset");
-						std::stringstream ssSet;
-						ssSet << intSet;
-						stdreplace(conditions, "@Sunset", ssSet.str());
-					}
-
-					std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
-
-					if (lua_state == NULL)
+					std::size_t found;
+					if ((item.reason == REASON_DEVICE) && (item.DeviceID > 0))
 					{
-						lua_state = CreateBlocklyLuaState();
-						if (lua_state == NULL)
-							return;
+						std::stringstream sstr;
+						sstr << "[" << item.DeviceID << "]";
+						found = it->Conditions.find(sstr.str());
 					}
+					else if (item.reason == REASON_SECURITY)
+					{
+						// security status change
+						std::stringstream sstr;
+						sstr << "securitystatus";
+						found = it->Conditions.find(sstr.str());
+					}
+					else if (item.reason == REASON_TIME)
+					{
+						// time rules will only run when time or date based critera are found
+						found = 0;
+					}
+					else if ((item.reason == REASON_USERVARIABLE) && (item.varId > 0))
+					{
+						std::stringstream sstr;
+						sstr << "variable[" << item.varId << "]";
+						found = it->Conditions.find(sstr.str());
+					}
+					if (found != std::string::npos)
+						lua_state = ParseBlocklyLua(lua_state, *it);
+				}
+				else if (it->Interpreter == "Lua")
+					EvaluateLua(item, it->Name, it->Actions);
 
-					//_log.Log(LOG_STATUS,"EventSystem: ifc: %s",ifCondition.c_str());
-					if (luaL_dostring(lua_state, ifCondition.c_str()))
-					{
-						_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
-					}
-					else
-					{
-						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-						if (ruleTrue != 0)
-						{
-							if (m_sql.m_bLogEventScriptTrigger)
-								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-							parseBlocklyActions(it->Actions, it->Name, it->ID);
-						}
-					}
+				else if (it->Interpreter == "Python")
+				{
+#ifdef ENABLE_PYTHON
+					boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
+					EvaluatePython(item, it->Name, it->Actions);
+#else
+					_log.Log(LOG_ERROR, "EventSystem: Error processing database scripts, Python not enabled");
+#endif
 				}
 			}
 		}
 	}
-	else if (item.reason == REASON_SECURITY) {
-		// security status change
-		std::size_t found;
-		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
-			bool eventActive = (it->EventStatus == 1);
-			std::stringstream sstr;
-			sstr << "securitystatus";
-			std::string conditions (it->Conditions);
-			found = conditions.find(sstr.str());
-
-			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
-
-				// Replace Sunrise and sunset placeholder with actual time for query
-				if (conditions.find("@Sunrise") != std::string::npos) {
-					int intRise = getSunRiseSunSetMinutes("Sunrise");
-					std::stringstream ssRise;
-					ssRise << intRise;
-					stdreplace(conditions, "@Sunrise", ssRise.str());
-				}
-				if (conditions.find("@Sunset") != std::string::npos) {
-					int intSet = getSunRiseSunSetMinutes("Sunset");
-					std::stringstream ssSet;
-					ssSet << intSet;
-					stdreplace(conditions, "@Sunset", ssSet.str());
-				}
-
-				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
-
-				if (lua_state == NULL)
-				{
-					lua_state = CreateBlocklyLuaState();
-					if (lua_state == NULL)
-						return;
-				}
-
-				//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
-				if (luaL_dostring(lua_state, ifCondition.c_str()))
-				{
-					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
-				}
-				else {
-					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-
-					if (ruleTrue != 0)
-					{
-						if (m_sql.m_bLogEventScriptTrigger)
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						parseBlocklyActions(it->Actions, it->Name, it->ID);
-					}
-				}
-			}
-		}
-	}
-	else if (item.reason == REASON_TIME) {
-		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
-			bool eventActive = (it->EventStatus == 1);
-			if ((eventInScope) && (eventActive)) {
-				// time rules will only run when time or date based critera are found
-				std::string conditions (it->Conditions);
-				if ((conditions.find("timeofday") != std::string::npos) || (conditions.find("weekday") != std::string::npos)) {
-
-					// Replace Sunrise and sunset placeholder with actual time for query
-					if (conditions.find("@Sunrise") != std::string::npos) {
-						int intRise = getSunRiseSunSetMinutes("Sunrise");
-						std::stringstream ssRise;
-						ssRise << intRise;
-						stdreplace(conditions, "@Sunrise", ssRise.str());
-					}
-					if (conditions.find("@Sunset") != std::string::npos) {
-						int intSet = getSunRiseSunSetMinutes("Sunset");
-						std::stringstream ssSet;
-						ssSet << intSet;
-						stdreplace(conditions, "@Sunset", ssSet.str());
-					}
-
-					std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
-
-					if (lua_state == NULL)
-					{
-						lua_state = CreateBlocklyLuaState();
-						if (lua_state == NULL)
-							return;
-					}
-
-					//_log.Log(LOG_NORM,"ifc: %s",ifCondition.c_str());
-					if (luaL_dostring(lua_state, ifCondition.c_str()))
-					{
-						_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
-					}
-					else {
-						lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-						if (ruleTrue != 0)
-						{
-							if (m_sql.m_bLogEventScriptTrigger)
-								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-							parseBlocklyActions(it->Actions, it->Name, it->ID);
-						}
-					}
-				}
-			}
-		}
-	}
-	else if ((item.reason == REASON_USERVARIABLE) && (item.varId >0)) {
-		std::size_t found;
-		boost::shared_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
-		std::vector<_tEventItem>::iterator it;
-		for (it = m_events.begin(); it != m_events.end(); ++it) {
-			bool eventInScope = ((it->Interpreter == "Blockly") && ((it->Type == "all") || (it->Type == m_szReason[item.reason])));
-			bool eventActive = (it->EventStatus == 1);
-			std::stringstream sstr;
-			sstr << "variable[" << item.varId << "]";
-			std::string conditions (it->Conditions);
-			found = conditions.find(sstr.str());
-
-			if ((eventInScope) && (eventActive) && (found != std::string::npos)) {
-
-				// Replace Sunrise and sunset placeholder with actual time for query
-				if (conditions.find("@Sunrise") != std::string::npos) {
-					int intRise = getSunRiseSunSetMinutes("Sunrise");
-					std::stringstream ssRise;
-					ssRise << intRise;
-					stdreplace(conditions, "@Sunrise", ssRise.str());
-				}
-				if (conditions.find("@Sunset") != std::string::npos) {
-					int intSet = getSunRiseSunSetMinutes("Sunset");
-					std::stringstream ssSet;
-					ssSet << intSet;
-					stdreplace(conditions, "@Sunset", ssSet.str());
-				}
-				std::string ifCondition = "result = 0; weekday = os.date('*t')['wday']; timeofday = ((os.date('*t')['hour']*60)+os.date('*t')['min']); if " + conditions + " then result = 1 end; return result";
-
-				if (lua_state == NULL)
-				{
-					lua_state = CreateBlocklyLuaState();
-					if (lua_state == NULL)
-						return;
-				}
-
-				//_log.Log(LOG_STATUS,"ifc: %s",ifCondition.c_str());
-				if (luaL_dostring(lua_state, ifCondition.c_str()))
-				{
-					_log.Log(LOG_ERROR, "EventSystem: Lua script error (Blockly), Name: %s => %s", it->Name.c_str(), lua_tostring(lua_state, -1));
-				}
-				else {
-					lua_Number ruleTrue = lua_tonumber(lua_state, -1);
-
-					if (ruleTrue != 0)
-					{
-						if (m_sql.m_bLogEventScriptTrigger)
-							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
-						parseBlocklyActions(it->Actions, it->Name, it->ID);
-					}
-				}
-			}
-		}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Exception processing database scripts");
 	}
 
 	if (lua_state != NULL)
-	{
 		lua_close(lua_state);
-	}
 }
 
 static inline long long GetIndexFromDevice(std::string devline)
@@ -2214,16 +2066,16 @@ std::string CEventSystem::ParseBlocklyString(const std::string &oString)
 	return retString;
 }
 
-bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::string &eventName, const uint64_t eventID)
+bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 {
-	if (isEventscheduled(eventName))
+	if (isEventscheduled(item.Name))
 	{
 		//_log.Log(LOG_NORM,"Already scheduled this event, skipping");
 		return false;
 	}
 	bool actionsDone = false;
 	std::string csubstr;
-	std::string tmpstr(Actions);
+	std::string tmpstr(item.Actions);
 	size_t sPos=0, ePos;
 	do
 	{
@@ -2268,12 +2120,12 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 			if (m_devicestates.count(deviceNo)) {
 				devicestatesMutexLock.unlock(); // Unlock to avoid recursive lock (because the ScheduleEvent function locks again)
-				if (ScheduleEvent(deviceNo, doWhat, false, eventName, 0)) {
+				if (ScheduleEvent(deviceNo, doWhat, false, item.Name, 0)) {
 					actionsDone = true;
 				}
 			}
 			else {
-				reportMissingDevice(deviceNo, eventName, eventID);
+				reportMissingDevice(deviceNo, item);
 			}
 			continue;
 		}
@@ -2288,7 +2140,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 			deviceNo = atoi(deviceName.substr(6).c_str());
 			if (deviceNo)
 			{
-				if (ScheduleEvent(deviceNo, doWhat, true, eventName, sceneType))
+				if (ScheduleEvent(deviceNo, doWhat, true, item.Name, sceneType))
 				{
 					actionsDone = true;
 				}
@@ -2333,7 +2185,7 @@ bool CEventSystem::parseBlocklyActions(const std::string &Actions, const std::st
 		{
 			if (!atoi(deviceName.substr(11).c_str()))
 				continue;
-			ScheduleEvent(deviceName, doWhat, eventName);
+			ScheduleEvent(deviceName, doWhat, item.Name);
 			actionsDone = true;
 			continue;
 		}
@@ -3944,7 +3796,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		bool bIsOn = IsLightSwitchOn(lstatus);
 		if (bIsOn)
 		{
-lstatus = "Open";
+			lstatus = "Open";
 		}
 		else if (lstatus == "Off")
 		{
@@ -4060,22 +3912,22 @@ int CEventSystem::l_domoticz_print(lua_State* lua_state)
 	return 0;
 }
 
-void CEventSystem::reportMissingDevice(const int deviceID, const std::string &eventName, const uint64_t eventID)
+void CEventSystem::reportMissingDevice(const int deviceID, const _tEventItem &item)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID == %d)", deviceID);
 	if (!result.empty())
 	{
-		_log.Log(LOG_ERROR, "EventSystem: Device ('%s', ID=%d) used in event '%s' not found, make sure that it's hardware is not disabled!", result[0][0].c_str(), deviceID, eventName.c_str());
+		_log.Log(LOG_ERROR, "EventSystem: Device ('%s', ID=%d) used in event '%s' not found, make sure that it's hardware is not disabled!", result[0][0].c_str(), deviceID, item.Name.c_str());
 	}
 	else
 	{
-		_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, eventName.c_str());
+		_log.Log(LOG_ERROR, "EventSystem: Device no. '%d' used in event '%s' no longer exists, disabling event!", deviceID, item.Name.c_str());
 
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT EventMaster.ID FROM EventMaster INNER JOIN EventRules ON EventRules.EMID=EventMaster.ID WHERE (EventRules.ID == '%" PRIu64 "')",
-			eventID);
+			item.ID);
 		if (result.size() > 0)
 		{
 
