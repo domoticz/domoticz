@@ -232,8 +232,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
 
 <code>trifferInfo</code> holds information about what triggered the script. The object has two attributes:
 
-# '''type''': the type of the the event that triggered the execute function, either: - domoticz.EVENT_TYPE_TIMER, - domoticz.EVENT_TYPE_DEVICE, - domoticz.EVENT_TYPE_SECURITY, - domoticz.EVENT_TYPE_SCENE,<br />
-- domoticz.EVENT_TYPE_GROUP - domoticz.EVENT_TYPE_VARIABLE) - domoticz.EVENT_TYPE_HTTPRESPONSE <sup>2.4.0</sup>
+# '''type''': the type of the the event that triggered the execute function, either: - domoticz.EVENT_TYPE_TIMER, - domoticz.EVENT_TYPE_DEVICE, - domoticz.EVENT_TYPE_SECURITY, - domoticz.EVENT_TYPE_SCENE, - domoticz.EVENT_TYPE_GROUP - domoticz.EVENT_TYPE_VARIABLE) - domoticz.EVENT_TYPE_HTTPRESPONSE <sup>2.4.0</sup>
 # '''trigger''': the timer rule that triggered the script if the script was called due to a timer event, or the security state that triggered the security trigger rule. See [[#timer_trigger_rules|below]] for the possible timer trigger rules.
 # '''scriptName''': the name of the current script.
 
@@ -1933,6 +1932,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 * You now no longer have to provide an initial value for a persistent variable when you declare it. So you can do <code>data = { 'a', 'b', 'c'}</code> instead of <code>data = {a={initial = nil}, b={initial=nil}, c={initial=nil} }</code>. You have to quote the names though.
 * A filter can now accept a table with names/id's instead of only functions. You can now do <code>domoticz.devices().filter({ 'mySwitch', 'myPIR', 34, 35, 'livingLights'})</code> which will give you a collection of devices with these names and ids.
 * Added and documented <code>domoticz.settings.url</code>, <code>domoticz.settings.webRoot</code> and <code>domoticz.settings.serverPort</code>.
+* Removed fixed limit on historical variables if there is a limit specified.
 
 == [2.3.0] ==
 
