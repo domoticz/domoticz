@@ -6,30 +6,13 @@
 #include "../main/mainworker.h"
 
 #include <iostream>
-
 #include <boost/lexical_cast.hpp>
 
-#define RETRY_DELAY 30
-#define Max_Comm5_MA_Relais 16
+/*
+	This driver allows Domoticz to control any I/O module from the MA-4xxx Family
 
-static inline std::string &rtrim(std::string &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
-
-static inline std::vector<std::string> tokenize(const std::string &s) {
-	std::vector<std::string> tokens;
-	std::istringstream iss(s);
-	std::copy(std::istream_iterator<std::string>(iss),
-		std::istream_iterator<std::string>(),
-		std::back_inserter(tokens));
-	return tokens;
-}
-
-static inline bool startsWith(const std::string &haystack, const std::string &needle) {
-	return needle.length() <= haystack.length()
-		&& std::equal(needle.begin(), needle.end(), haystack.begin());
-}
+	These modules provide relays and digital sensors in the range of 5-30V DC.
+*/
 
 Comm5Serial::Comm5Serial(const int ID, const std::string& devname, unsigned int baudRate /*= 115200*/) :
 	m_szSerialPort(devname),
@@ -142,20 +125,14 @@ void Comm5Serial::Do_Work()
 
 	while (!m_stoprequested)
 	{
-		sleep_milliseconds(200);
-		if (m_stoprequested)
-			break;
-		msec_counter++;
-		if (msec_counter == 5)
-		{
+		m_LastHeartbeat = mytime(NULL);
+		sleep_milliseconds(40);
+		if (msec_counter++ >= 100) {
 			msec_counter = 0;
-
-			sec_counter++;
-			if (sec_counter % 12 == 0) {
-				m_LastHeartbeat = mytime(NULL);
-			}
+			querySensorState();
 		}
 	}
+
 	_log.Log(LOG_STATUS, "Comm5 MA-42XX: Serial Worker stopped...");
 }
 
@@ -167,7 +144,7 @@ void Comm5Serial::requestDigitalInputResponseHandler(const std::string & frame)
 	for (int i = 0; i < 8; ++i) {
 		bool on = (sensorStatus & (1 << i)) != 0 ? true : false;
 		if (((lastKnownSensorState & (1 << i)) ^ (sensorStatus & (1 << i))) || initSensorData) {
-			SendSwitch((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
+			SendSwitchUnchecked((i + 1) << 8, 1, 255, on, 0, "Sensor " + boost::lexical_cast<std::string>(i + 1));
 		}
 	}
 	lastKnownSensorState = sensorStatus;

@@ -230,7 +230,7 @@ Since you can define multiple on-triggers in your script, it is not always clear
 		- domoticz.EVENT_TYPE_TIMER,
 		- domoticz.EVENT_TYPE_DEVICE,
 		- domoticz.EVENT_TYPE_SECURITY,
-		- domoticz.EVENT_TYPE_SCENE,  
+		- domoticz.EVENT_TYPE_SCENE,
 		- domoticz.EVENT_TYPE_GROUP
 		- domoticz.EVENT_TYPE_VARIABLE)
 		- domoticz.EVENT_TYPE_HTTPRESPONSE <sup>2.4.0</sup>

@@ -11,11 +11,24 @@ public:
 
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	void SetSetpoint(const int idx, const float temp);
+	void SetGroupOnOFF(const bool OnOFF);
+	void SetLedOnOFF(const bool OnOFF);
+	void SetModeLevel(const int NewLevel);
+	void SetF_RateLevel(const int NewLevel);
+	void SetF_DirLevel(const int NewLevel);
 private:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_Username;
 	std::string m_Password;
+	std::string m_pow;
+	std::string m_mode;
+	std::string m_f_rate;
+	std::string m_f_dir;
+	std::string m_otemp;
+	std::string m_stemp;
+	std::string m_shum;
+	std::string m_led;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
 
@@ -26,6 +39,8 @@ private:
 	void GetMeterDetails();
 	void GetControlInfo();
 	void GetSensorInfo();
-	void UpdateSwitch(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void GetBasicInfo();
+	void UpdateSwitchNew(const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname);
+	void InsertUpdateSwitchSelector(const unsigned char Idx, const bool bIsOn, const int level, const std::string &defaultname);
 };
 

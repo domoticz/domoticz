@@ -1107,7 +1107,7 @@ namespace http {
 			else if (
 				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
+				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPInOut) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype==HTYPE_eHouseTCP)
 				) {
 				//Lan
@@ -1482,7 +1482,7 @@ namespace http {
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
-				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
+				(htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPInOut) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP)
 				) {
 				//Lan
@@ -10649,7 +10649,18 @@ namespace http {
 #endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
-				reply::set_content_from_file(&rep, OutputFileName, "domoticz.db", true);
+				std::string szAttachmentName = "domoticz.db";
+				std::string szVar;
+				if (m_sql.GetPreferencesVar("Title", szVar))
+				{
+					stdreplace(szVar, " ", "_");
+					stdreplace(szVar, "/", "_");
+					stdreplace(szVar, "\\", "_");
+					if (!szVar.empty()) {
+						szAttachmentName = szVar + ".db";
+					}
+				}
+				reply::set_content_from_file(&rep, OutputFileName, szAttachmentName, true);
 			}
 		}
 
