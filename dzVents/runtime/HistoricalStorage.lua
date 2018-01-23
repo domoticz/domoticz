@@ -61,7 +61,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	-- IMPORTANT: data must be time-stamped in UTC format
 
 	local newAdded = false
-	if (maxItems == nil or maxItems > MAXLIMIT) then
+	if (maxItems == nil) then
 		maxItems = MAXLIMIT
 	end
 	-- maybe we should make a limit anyhow in the number of items
