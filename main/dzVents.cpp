@@ -16,7 +16,7 @@ CdzVents CdzVents::m_dzvents;
 
 CdzVents::CdzVents(void)
 {
-	m_version = "2.4.0";
+	m_version = "2.4.1";
 	m_printprefix = "dzVents";
 }
 
