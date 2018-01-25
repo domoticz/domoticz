@@ -984,3 +984,42 @@ uint32_t SystemUptime()
 	return 0;
 #endif
 }
+
+// True random number generator (source: http://www.azillionmonkeys.com/qed/random.html)
+static struct
+{
+	int which;
+	time_t t;
+	clock_t c;
+	int counter;
+} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+
+static unsigned char * p = (unsigned char *) (&entropy + 1);
+static int accSeed = 0;
+
+int GenerateRandomNumber(const int range)
+{
+	if (p == ((unsigned char *) (&entropy + 1)))
+	{
+		switch (entropy.which)
+		{
+			case 0:
+				entropy.t += time (NULL);
+				accSeed ^= entropy.t;
+				break;
+			case 1:
+				entropy.c += clock();
+				break;
+			case 2:
+				entropy.counter++;
+				break;
+		}
+		entropy.which = (entropy.which + 1) % 3;
+		p = (unsigned char *) &entropy.t;
+	}
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	p++;
+	srand (accSeed);
+	return (rand() / (RAND_MAX / range));
+}
+

@@ -4,7 +4,7 @@ _G._ = _
 local scriptPath = ''
 
 --package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua'
-package.path = package.path .. ";../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
+package.path = package.path .. ";../?.lua;../../../scripts/lua/?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;'
 
 local testData = require('tstData')
 local function values(t)
@@ -43,8 +43,6 @@ describe('Domoticz', function()
 		}
 
 		Domoticz = require('Domoticz')
-
-
 	end)
 
 	teardown(function()
@@ -218,9 +216,69 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SendSMS'] = 'mes' } }, domoticz.commandArray)
 		end)
 
-		it('should open a url', function()
-			domoticz.openURL('some url')
-			assert.is_same({ { ['OpenURL'] = 'some url' } }, domoticz.commandArray)
+		describe('openURL', function()
+
+			it('should open a simple url', function()
+				domoticz.openURL('some url')
+				assert.is_same({
+					{
+						['OpenURL'] = { URL = 'some url', method = 'GET' }
+					}
+				}, domoticz.commandArray)
+			end)
+
+			it('should open a url with options', function()
+				local cmd = domoticz.openURL({
+					url = 'some url',
+					method = 'POST',
+					callback = 'trigger1',
+					postData = {
+						a = 1, b = 2
+					}
+				})
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
+							_trigger = 'trigger1',
+      						postdata = '{"a":1,"b":2}'
+						}
+					}
+				}, domoticz.commandArray)
+
+				cmd = cmd.afterMin(1)
+
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
+							_trigger = 'trigger1',
+      						postdata = '{"a":1,"b":2}',
+							_after = 60
+						}
+					}
+				}, domoticz.commandArray)
+
+				cmd.silent()
+
+				assert.is_same({
+					{
+						['OpenURL'] = {
+     						URL = 'some url',
+      						method = 'POST',
+							headers = { ['Content-Type'] = 'application/json' },
+      						postdata = '{"a":1,"b":2}',
+							_after = 60
+						}
+					}
+				}, domoticz.commandArray)
+
+			end)
+
 		end)
 
 		it('should set a scene', function()
@@ -234,7 +292,6 @@ describe('Domoticz', function()
 			assert.is_table(res)
 			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
 		end)
-		
 	end)
 
 	describe('Interacting with the collections', function()
@@ -342,6 +399,31 @@ describe('Domoticz', function()
 			end, 0)
 
 			assert.is_same(6, reduced2)
+		end)
+
+		it('should support a table with ids and/or names as filter', function()
+			local collection = domoticz.devices()
+
+			local filtered = collection.filter({"device1", "device3", "device7"})
+			local _f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device1", "device3", "device7" })
+
+			filtered = collection.filter({"device1", 3, "device7"})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device1", "device3", "device7" })
+
+			filtered = collection.filter({3, 7})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, { "device3", "device7" })
+
+			filtered = collection.filter({})
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, {})
+
+			filtered = collection.filter({'Scene1'}) -- cross contamination
+			_f = _.pluck(filtered, {'name'})
+			assert.is_same(_f, {})
+
 		end)
 
 		it('should give you a scene when you need one', function()
@@ -681,6 +763,73 @@ describe('Domoticz', function()
 		end)
 	end)
 
+	describe('scene/group subdevice iterators', function()
+
+		it('scene subdevices', function()
+
+			local scene1 = domoticz.scenes('Scene1')
+
+			local names = ''
+
+			scene1.devices().forEach(function(device)
+				names = names .. tostring(device.name)
+			end)
+
+			assert.is_same('device1device2', names)
+
+			names = ''
+			scene1.devices().filter(function(device)
+				return device.name == 'device2'
+			end).forEach(function(device)
+				names = names .. device.name
+			end)
+			assert.is_same('device2', names)
+
+			names = scene1.devices().reduce(function(acc, device)
+				return acc .. device.name
+			end, '')
+
+			assert.is_same('device1device2', names)
+
+			local found = scene1.devices().find(function(device)
+				return device.name == 'device2'
+			end).name
+			assert.is_same('device2', found)
+		end)
+
+		it('group subdevices', function()
+
+			local group1 = domoticz.groups('Group1')
+
+			local names = ''
+
+			group1.devices().forEach(function(device)
+				names = names .. tostring(device.name)
+			end)
+
+			assert.is_same('device3device4', names)
+
+			names = ''
+			group1.devices().filter(function(device)
+				return device.name == 'device3'
+			end).forEach(function(device)
+				names = names .. device.name
+			end)
+			assert.is_same('device3', names)
+
+			names = group1.devices().reduce(function(acc, device)
+				return acc .. device.name
+			end, '')
+
+			assert.is_same('device3device4', names)
+
+			local found = group1.devices().find(function(device)
+				return device.name == 'device4'
+			end).name
+			assert.is_same('device4', found)
+		end)
+	end)
+
 	describe('devices', function()
 
 		it('should create devices', function()
@@ -739,27 +888,26 @@ describe('Domoticz', function()
 	end)
 
 	it('should convert to Celsius', function()
-		assert.is_same(35, domoticz.toCelsius(95))
-		assert.is_same(10, domoticz.toCelsius(18, true))
+		assert.is_same(35, domoticz.utils.toCelsius(95))
+		assert.is_same(10, domoticz.utils.toCelsius(18, true))
 	end)
 
 	it('should url encode', function()
 
 		local s = 'a b c'
-		assert.is_same('a+b+c', domoticz.urlEncode(s))
-
+		assert.is_same('a+b+c', domoticz.utils.urlEncode(s))
 	end)
 
 	it('should round', function()
-		assert.is_same(10, domoticz.round(10.4, 0))
-		assert.is_same(10.0, domoticz.round(10, 1))
-		assert.is_same(10.00, domoticz.round(10, 2))
-		assert.is_same(10.10, domoticz.round(10.1, 2))
-		assert.is_same(10.1, domoticz.round(10.05, 1))
-		assert.is_same(10.14, domoticz.round(10.144, 2))
-		assert.is_same(10.144, domoticz.round(10.144, 3))
-		assert.is_same(-10.144, domoticz.round(-10.144, 3))
-		assert.is_same(-10.001, domoticz.round(-10.0009, 3))
+		assert.is_same(10, domoticz.utils.round(10.4, 0))
+		assert.is_same(10.0, domoticz.utils.round(10, 1))
+		assert.is_same(10.00, domoticz.utils.round(10, 2))
+		assert.is_same(10.10, domoticz.utils.round(10.1, 2))
+		assert.is_same(10.1, domoticz.utils.round(10.05, 1))
+		assert.is_same(10.14, domoticz.utils.round(10.144, 2))
+		assert.is_same(10.144, domoticz.utils.round(10.144, 3))
+		assert.is_same(-10.144, domoticz.utils.round(-10.144, 3))
+		assert.is_same(-10.001, domoticz.utils.round(-10.0009, 3))
 	end)
 
 	it('should log', function()
@@ -773,6 +921,23 @@ describe('Domoticz', function()
 		domoticz.log('boeh', 1)
 		assert.is_true(logged)
 	end)
+
+	it('should convert to json', function()
+		local t = {
+			a = 10,
+			b = 20
+		}
+		assert.is_same('{"a":10,"b":20}', domoticz.utils.toJSON(t))
+	end)
+
+	it('should convert from json', function()
+		local json = '{"a":10,"b":20}'
+		assert.is_same({
+			a = 10,
+			b = 20
+		}, domoticz.utils.fromJSON(json))
+	end)
+
 
 
 end)

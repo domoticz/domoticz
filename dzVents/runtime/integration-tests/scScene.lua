@@ -60,7 +60,7 @@ return {
 			dz.devices('scSceneResults').updateText('FAILED')
 		else
 			dz.log('scScene: Test scene event: OK')
-			dz.devices('scSceneResults').updateText('SUCCEEDED')
+			dz.devices('scSceneResults').updateText('SCENE SUCCEEDED')
 		end
 
 	end
