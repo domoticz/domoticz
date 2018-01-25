@@ -362,12 +362,12 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	//Send Reset
 	SendCommand(pHardware->m_HwdID, cmdRESET, "Reset");
 	//wait at least 500ms
-	boost::this_thread::sleep(boost::posix_time::millisec(500));
+	sleep_milliseconds(500);
 	pHardware->m_rxbufferpos = 0;
 	pHardware->m_bEnableReceive = true;
 
 	SendCommand(pHardware->m_HwdID, cmdStartRec, "Start Receiver");
-	boost::this_thread::sleep(boost::posix_time::millisec(50));
+	sleep_milliseconds(50);
 
 	SendCommand(pHardware->m_HwdID, cmdSTATUS, "Status");
 }
