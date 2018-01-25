@@ -282,28 +282,28 @@ namespace Plugins {
 		}
 	}
 
-	static void AddBytesToDict(PyObject* pDict, const char* key, const std::string& value)
-		{
-			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());
-			if (PyDict_SetItemString(pDict, key, pObj) == -1)
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
-			Py_DECREF(pObj);
+#define ADD_BYTES_TO_DICT(pDict, key, value)	\
+		{	\
+			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());	\
+			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());	\
+			Py_DECREF(pObj);	\
 		}
 
-	static void AddStringToDict(PyObject* pDict, const char* key, const std::string& value)
-		{
-			PyObject*	pObj = Py_BuildValue("s#", value.c_str(), value.length());
-			if (PyDict_SetItemString(pDict, key, pObj) == -1)
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());
-			Py_DECREF(pObj);
+#define ADD_STRING_TO_DICT(pDict, key, value)	\
+		{	\
+			PyObject*	pObj = Py_BuildValue("s#", value.c_str(), value.length());	\
+			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());	\
+			Py_DECREF(pObj);	\
 		}
 
-	static void AddIntToDict(PyObject* pDict, const char* key, int value)
-		{
-			PyObject*	pObj = Py_BuildValue("i", value);
-			if (PyDict_SetItemString(pDict, key, pObj) == -1)
-				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);
-			Py_DECREF(pObj);
+#define ADD_INT_TO_DICT(pDict, key, value)	\
+		{	\
+			PyObject*	pObj = Py_BuildValue("i", value);	\
+			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);	\
+			Py_DECREF(pObj);	\
 		}
 
 	void CPluginProtocolHTTP::ProcessInbound(const ReadMessage* Message)
@@ -927,47 +927,47 @@ namespace Plugins {
 			{
 			case MQTT_CONNACK:
 			{
-				AddStringToDict(pMqttDict, "Verb", std::string("CONNACK"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("CONNACK"));
 				if (iRemainingLength == 2) // check length is correct
 				{
 					switch (*it++)
 					{
 					case 0:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Accepted"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Accepted"));
 						break;
 					case 1:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, unacceptable protocol version"));
 						break;
 					case 2:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, identifier rejected"));
 						break;
 					case 3:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, Server unavailable"));
 						break;
 					case 4:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, bad user name or password"));
 						break;
 					case 5:
-						AddStringToDict(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Connection Refused, not authorized"));
 						break;
 					default:
-						AddStringToDict(pMqttDict, "Description", std::string("Unknown status returned"));
+						ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Unknown status returned"));
 						break;
 					}
-					AddIntToDict(pMqttDict, "Status", *it++);
+					ADD_INT_TO_DICT(pMqttDict, "Status", *it++);
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
 				}
 				break;
 			}
 			case MQTT_SUBACK:
 			{
-				AddStringToDict(pMqttDict, "Verb", std::string("SUBACK"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("SUBACK"));
 				iPacketIdentifier = (*it++ << 8) + *it++;
-				AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+				ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 
 				if (iRemainingLength >= 3) // check length is acceptable
 				{
@@ -983,23 +983,23 @@ namespace Plugins {
 					{
 						PyObject*	pResponseDict = PyDict_New();
 						byte Status = *it++;
-						AddIntToDict(pResponseDict, "Status", Status);
+						ADD_INT_TO_DICT(pResponseDict, "Status", Status);
 						switch (Status)
 						{
 						case 0x00:
-							AddStringToDict(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 0"));
 							break;
 						case 0x01:
-							AddStringToDict(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 1"));
 							break;
 						case 0x02:
-							AddStringToDict(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Success - Maximum QoS 2"));
 							break;
 						case 0x80:
-							AddStringToDict(pResponseDict, "Description", std::string("Failure"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Failure"));
 							break;
 						default:
-							AddStringToDict(pResponseDict, "Description", std::string("Unknown status returned"));
+							ADD_STRING_TO_DICT(pResponseDict, "Description", std::string("Unknown status returned"));
 							break;
 						}
 						PyList_Append(pResponsesList, pResponseDict);
@@ -1008,69 +1008,69 @@ namespace Plugins {
 				}
 				else
 				{
-					AddIntToDict(pMqttDict, "Status", -1);
-					AddStringToDict(pMqttDict, "Description", std::string("Invalid message length"));
+					ADD_INT_TO_DICT(pMqttDict, "Status", -1);
+					ADD_STRING_TO_DICT(pMqttDict, "Description", std::string("Invalid message length"));
 				}
 				break;
 			}
 			case MQTT_PUBACK:
-				AddStringToDict(pMqttDict, "Verb", std::string("PUBACK"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBACK"));
 				if (iRemainingLength == 2)
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
-					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				break;
 			case MQTT_PUBREC:
-				AddStringToDict(pMqttDict, "Verb", std::string("PUBREC"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBREC"));
 				if (iRemainingLength == 2)
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
-					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				break;
 			case MQTT_PUBCOMP:
-				AddStringToDict(pMqttDict, "Verb", std::string("PUBCOMP"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBCOMP"));
 				if (iRemainingLength == 2)
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
-					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				break;
 			case MQTT_PUBLISH:
 			{
 				// Fixed Header
-				AddStringToDict(pMqttDict, "Verb", std::string("PUBLISH"));
-				AddIntToDict(pMqttDict, "DUP", ((header & 0x08) >> 3));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBLISH"));
+				ADD_INT_TO_DICT(pMqttDict, "DUP", ((header & 0x08) >> 3));
 				long	iQoS = (header & 0x06) >> 1;
-				AddIntToDict(pMqttDict, "QoS", iQoS);
+				ADD_INT_TO_DICT(pMqttDict, "QoS", (int) iQoS);
 				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(header & 0x01));
 				// Variable Header
 				int		topicLen = (*it++ << 8) + *it++;
 				std::string	sTopic((char const*)&*it, topicLen);
-				AddStringToDict(pMqttDict, "Topic", sTopic);
+				ADD_STRING_TO_DICT(pMqttDict, "Topic", sTopic);
 				it += topicLen;
 				if (iQoS)
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
-					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				// Payload
 				const char*	pPayload = (it==pktend)?0:(const char*)&*it;
 				std::string	sPayload(pPayload, std::distance(it, pktend));
-				AddBytesToDict(pMqttDict, "Payload", sPayload);
+				ADD_BYTES_TO_DICT(pMqttDict, "Payload", sPayload);
 				break;
 			}
 			case MQTT_UNSUBACK:
-				AddStringToDict(pMqttDict, "Verb", std::string("UNSUBACK"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("UNSUBACK"));
 				if (iRemainingLength == 2)
 				{
 					iPacketIdentifier = (*it++ << 8) + *it++;
-					AddIntToDict(pMqttDict, "PacketIdentifier", iPacketIdentifier);
+					ADD_INT_TO_DICT(pMqttDict, "PacketIdentifier", iPacketIdentifier);
 				}
 				break;
 			case MQTT_PINGRESP:
-				AddStringToDict(pMqttDict, "Verb", std::string("PINGRESP"));
+				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PINGRESP"));
 				break;
 			default:
 				_log.Log(LOG_ERROR, "(%s) MQTT response invalid '%d' is unknown.", __func__, bResponseType);
