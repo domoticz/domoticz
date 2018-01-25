@@ -6,7 +6,7 @@ Documentation for dzVents 2.3.0 (Domoticz v3.5876) can be found [https://github.
 
 Documentation for dzVents 2.2.0 (Domoticz v3.8153) can be found [https://github.com/domoticz/domoticz/blob/9f75e45f994f87c8d8ce9cb39eaab85886df0be4/scripts/dzVents/documentation/README.md here].
 
-= About dzVents 2.4.0 (Domoticz v3.8837) =
+= About dzVents 2.4.x (Domoticz v3.8837+) =
 
 dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And ... '''it is 100% Lua'''! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
@@ -1904,6 +1904,11 @@ Prior to 2.x you likely used the rawData attribute to get to certain device valu
 In 2.x it is no longer needed to make timed json calls to Domoticz to get extra device information into your scripts. Very handy. On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under '''Local Networks (no username/password)''' you add <code>127.0.0.1</code> and you're good to go.
 
 = Change log =
+
+== [2.4.1] ==
+
+* Fixed week number problems on Windows
+* Fixed 'on date' rules to support dd/mm format (e.g. 01/02)
 
 == [2.4.0] ==
 
