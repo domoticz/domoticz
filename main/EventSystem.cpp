@@ -1845,7 +1845,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 					else if (item.reason == REASON_TIME)
 					{
 						// time rules will only run when time or date based critera are found
-						found = 0;
+						found = std::min((it->Conditions.find("timeofday")), (it->Conditions.find("weekday")));
 					}
 					else if ((item.reason == REASON_USERVARIABLE) && (item.varId > 0))
 					{
