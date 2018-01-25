@@ -1306,16 +1306,25 @@ namespace Plugins {
 
 	PyObject * CConnection_str(CConnection * self)
 	{
-		time_t	tLastSeen = self->pTransport->LastSeen();
-		struct tm ltime;
-		localtime_r(&tLastSeen, &ltime);
-		char date[32];
-		strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
-		PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
-			self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
-			(self->pTransport ? self->pTransport->TotalBytes() : -1),
-			(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
-		return pRetVal;
+		if (self->pTransport)
+		{
+			time_t	tLastSeen = self->pTransport->LastSeen();
+			struct tm ltime;
+			localtime_r(&tLastSeen, &ltime);
+			char date[32];
+			strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", &ltime);
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Bytes: %d, Connected: %s, Last Seen: %s",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud,
+				(self->pTransport ? self->pTransport->TotalBytes() : -1),
+				(self->pTransport ? (self->pTransport->IsConnected() ? "True" : "False") : "False"), date);
+			return pRetVal;
+		}
+		else
+		{
+			PyObject*	pRetVal = PyUnicode_FromFormat("Name: '%U', Transport: '%U', Protocol: '%U', Address: '%U', Port: '%U', Baud: %d, Connected: False",
+				self->Name, self->Transport, self->Protocol, self->Address, self->Port, self->Baud);
+			return pRetVal;
+		}
 	}
 
 }
