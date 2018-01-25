@@ -1,3 +1,7 @@
+[2.4.1]
+- Fixed week number problems on Windows
+- Fixed 'on date' rules to support dd/mm format (e.g. 01/02)
+
 [2.4.0]
 - **BREAKING CHANGE**: The second parameter passed to the execute function is no longer `nil` when the script was triggered by a timer or a security event. Please check your scripts. The second parameter has checks to determine the type. E.g. `execute = function(domoticz, item) .. end`. You can inspect `item` using: `item.isDevice`, `item.isTimer`, `item.isVariable`, `item.isScene`, `item.isGroup`, `item.isSecurity`, `item.isHTTPResponse`. Please read the documentation about the execute function.
 - Added ``.cancelQueuedCommands()`` to devices, groups, scenes and variables. Calling this method will cancel any scheduled future commands issued using for instance `.afterMin(10)` or `.repeatAfterMin(1, 4)`

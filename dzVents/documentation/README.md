@@ -1,13 +1,12 @@
+**Note**: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).
 
-*Note: This document is maintained on [github](https://github.com/domoticz/domoticz/blob/development/dzVents/documentation/README.md), and the wiki version is automatically generated. Edits should be performed on github, or they may be suggested on the wiki article's [Discussion page](https://www.domoticz.com/wiki/Talk:DzVents:_next_generation_LUA_scripting).*
+**Breaking change warning!!**: For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).
 
-**For people using with dzVents prior to version 2.4: Please read the [change log](#Change_log) below as there is an easy-to-fix breaking change regarding the second parameter passed to the execute function (it is no longer `nil` for timer/security triggers).**
+Documentation for dzVents 2.3.0 (Domoticz v3.5876) can be found [here](https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md).
 
-**For people working with dzVents prior to version 2.0: Please read the [change log](#Change_log) below as there are a couple of (easy-to-fix) breaking changes. Or check [Migrating from version 1.x.x](#Migrating_from_version_1.x.x)**
+Documentation for dzVents 2.2.0 (Domoticz v3.8153) can be found [here](https://github.com/domoticz/domoticz/blob/9f75e45f994f87c8d8ce9cb39eaab85886df0be4/scripts/dzVents/documentation/README.md).
 
-Documentation for dzVents 2.3.0 can be found [here](https://github.com/domoticz/domoticz/blob/2f6ba5c5a8978a010d6867228ad84eab762c5936/dzVents/documentation/README.md).
-
-# About dzVents 2.4.0
+# About dzVents 2.4.x (Domoticz v3.8837+)
 dzVents /diː ziː vɛnts/, short for Domoticz Easy Events, brings Lua scripting in Domoticz to a whole new level. Writing scripts for Domoticz has never been so easy. Not only can you define triggers more easily, and have full control over timer-based scripts with extensive scheduling support, dzVents presents you with an easy to use API to all necessary information in Domoticz. No longer do you have to combine all kinds of information given to you by Domoticz in many different data tables. You don't have to construct complex commandArrays anymore. dzVents encapsulates all the Domoticz peculiarities regarding controlling and querying your devices. And on top of that, script performance has increased a lot if you have many scripts because Domoticz will fetch all device information only once for all your device scripts and timer scripts. And ... **it is 100% Lua**! So if you already have a bunch of event scripts for Domoticz, upgrading should be fairly easy.
 
 Let's start with an example. Say you have a switch that when activated, it should activate another switch but only if the room temperature is above a certain level. And when done, it should send a notification. This is how it looks in dzVents:
@@ -522,7 +521,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	 - **sunriseInMinutes**: *Number*. Number of minutes since midnight when the sun will rise.
 	 - **sunsetInMinutes**: *Number*. Number of minutes since midnight when the sun will set.
  - **utils**: <sup>2.4.0</sup>. A subset of handy utilities:
-	- **_**: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
+	- _: Lodash. This is an entire collection with very handy Lua functions. Read more about [Lodash](#Lodash_for_Lua).  E.g.: `domoticz.utils._.size({'abc', 'def'}))` Returns 2.
 	- **fileExists(path)**: *Function*: <sup>2.4.0</sup> Returns `true` if the file (with full path) exists.
 	- **fromJSON(json)**: *Function*. Turns a json string to a Lua table. Example: `local t = domoticz.utils.fromJSON('{ "a": 1 }')`. Followed by: `print( t.a )` will print 1.
 	- **osExecute(cmd)**: *Function*:  Execute an os command.
@@ -1802,6 +1801,10 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 On the other hand, you have to make sure that dzVents can access the json without the need for a password because some commands are issued using json calls by dzVents. Make sure that in Domoticz settings under **Local Networks (no username/password)** you add `127.0.0.1` and you're good to go.
 
 # Change log
+
+##[2.4.1]
+- Fixed week number problems on Windows
+- Fixed 'on date' rules to support dd/mm format (e.g. 01/02)
 
 ##[2.4.0]
 
