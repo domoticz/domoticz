@@ -450,14 +450,21 @@ define(['app'], function (app) {
 								ShowNotify($.t('Please enter ASCI password - 6 characters'), 2500, true);
 								}
 					}
-				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-					if (password != "") {
-						if (/*(isNaN(password)) || */ (password.length < 5)) /* must be a number */ {
-							ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
-							return;
-						}
-					}
-				}
+                if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                    if (password != "") {
+                        if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
+                            ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
+                            return;
+                        }
+                    }
+
+                    var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {
+                        ShowNotify($.t('Please enter rate limit!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = ratelimitp1;
+                }
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&address=" + address +
@@ -1469,11 +1476,17 @@ define(['app'], function (app) {
 				var password = encodeURIComponent($("#hardwarecontent #divlogin #password").val());
 				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
 					if (password != "") {
-                        if (/*(isNaN(password)) || */ (password.length < 5)) /* must be a number */ {
+                        if ((isNaN(password)) || (password.length < 5)) /* must be a number */ {
                             ShowNotify($.t('Please enter a password of at least 5 characters'), 2500, true);
 							return;
 						}
-					}
+                    }
+                    var ratelimitp1 = $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val();
+                    if ((ratelimitp1 == "") || (isNaN(ratelimitp1))) {
+                        ShowNotify($.t('Please enter rate limit!'), 2500, true);
+                        return;
+                    }
+                    Mode1 = ratelimitp1;
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -5185,6 +5198,15 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("Satel Integra") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 							}
+
+                            if (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                                var RateLimit = parseInt(data["Mode1"]);
+                                if (RateLimit && (RateLimit < 300)) {
+                                    RateLimit = 300;
+                                }
+                                $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(RateLimit);
+                            }
+
 							if (data["Type"].indexOf("eHouse") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 					 			$('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked",data["Mode2"] == 1);
@@ -5605,8 +5627,10 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divehouse").show();
 				}
 
-				if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
-					$("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+                if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                    $("#hardwarecontent #divratelimitp1").show();
+                    $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
+                    $("#hardwarecontent #divratelimitp1").val(300);
 				}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {
