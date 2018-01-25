@@ -3298,6 +3298,48 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	}
 }
 
+bool IsNetworkDevice(const _eHardwareTypes htype)
+{
+	switch (htype) {
+	case HTYPE_RFXLAN:
+	case HTYPE_P1SmartMeterLAN:
+	case HTYPE_YouLess:
+	case HTYPE_RazberryZWave:
+	case HTYPE_OpenThermGatewayTCP:
+	case HTYPE_LimitlessLights:
+	case HTYPE_SolarEdgeTCP:
+	case HTYPE_WOL:
+	case HTYPE_ECODEVICES:
+	case HTYPE_Mochad:
+	case HTYPE_MySensorsTCP:
+	case HTYPE_MySensorsMQTT:
+	case HTYPE_MQTT:
+	case HTYPE_FRITZBOX:
+	case HTYPE_ETH8020:
+	case HTYPE_RelayNet:
+	case HTYPE_Sterbox:
+	case HTYPE_KMTronicTCP:
+	case HTYPE_KMTronicUDP:
+	case HTYPE_SOLARMAXTCP:
+	case HTYPE_SatelIntegra:
+	case HTYPE_RFLINKTCP:
+	case HTYPE_Comm5TCP:
+	case HTYPE_Comm5SMTCP:
+	case HTYPE_CurrentCostMeterLAN:
+	case HTYPE_NefitEastLAN:
+	case HTYPE_DenkoviSmartdenLan:
+	case HTYPE_DenkoviSmartdenIPInOut:
+	case HTYPE_Ec3kMeterTCP:
+	case HTYPE_MultiFun:
+	case HTYPE_ZIBLUETCP:
+	case HTYPE_OnkyoAVTCP:
+	case HTYPE_eHouseTCP:
+		return true;
+	default:
+		return false;
+	}
+}
+
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 {
 	if (dtype == pTypeLighting1) {
