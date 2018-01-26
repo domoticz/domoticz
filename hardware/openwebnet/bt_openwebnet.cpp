@@ -833,6 +833,36 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
   IsCorrect();
 }
 
+//creates the OPEN message *#who*where*#dimension#val_1*val_2*...val_n##
+void bt_openwebnet::CreateWrDimensionMsgOpen2(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
+{
+	//call CreateNullMsgOpen function
+	CreateNullMsgOpen();
+
+	std::stringstream frame;
+
+	// creates the OPEN message
+	frame << "*#";
+	frame << who;  frame << "*";
+	frame << where; frame << "*#";
+	frame << dimension;
+	for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); it++)
+	{
+		if (it == value.begin())
+			frame << "#";
+		else
+			frame << "*";
+		frame << *it;
+	}
+	frame << "##";
+
+	frame_open = DeleteControlCharacters(frame.str());
+	length_frame_open = frame_open.length();
+
+	// checks for correct syntax ...
+	IsCorrect();
+}
+
 //creates the OPEN message *#who*where#level#interface*#dimension*val_1*val_2*...val_n##
 void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::string& where, const std::string& lev, const std::string& interf, const std::string& dimension, const std::vector<std::string>& value)
 {
