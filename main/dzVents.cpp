@@ -1064,7 +1064,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	for (ittScenes = m_mainworker.m_eventsystem.m_scenesgroups.begin(); ittScenes != m_mainworker.m_eventsystem.m_scenesgroups.end(); ++ittScenes)
 	{
 		CEventSystem::_tScenesGroups sgitem = ittScenes->second;
-		bool triggerScene = false;
+		/*bool triggerScene = false;
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
@@ -1074,7 +1074,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				sgitem.lastUpdate = itt->lastUpdate;
 				sgitem.scenesgroupValue = itt->sValue;
 			}
-		}
+		}*/
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
@@ -1102,10 +1102,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, sgitem.lastUpdate.c_str());
-		lua_rawset(lua_state, -3);
-
-		lua_pushstring(lua_state, "changed");
-		lua_pushboolean(lua_state, triggerScene);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
@@ -1148,7 +1144,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	for (it_var = m_mainworker.m_eventsystem.m_uservariables.begin(); it_var != m_mainworker.m_eventsystem.m_uservariables.end(); ++it_var)
 	{
 		CEventSystem::_tUserVariable uvitem = it_var->second;
-		bool triggerVar = false;
+	/*	bool triggerVar = false;
 		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
@@ -1158,7 +1154,7 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 				uvitem.lastUpdate = itt->lastUpdate;
 				uvitem.variableValue = itt->sValue;
 			}
-		}
+		}*/
 
 		lua_pushnumber(lua_state, (lua_Number)index);
 
@@ -1175,9 +1171,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_rawset(lua_state, -3);
 		lua_pushstring(lua_state, "lastUpdate");
 		lua_pushstring(lua_state, uvitem.lastUpdate.c_str());
-		lua_rawset(lua_state, -3);
-		lua_pushstring(lua_state, "changed");
-		lua_pushboolean(lua_state, triggerVar);
 		lua_rawset(lua_state, -3);
 
 		lua_pushstring(lua_state, "data");
