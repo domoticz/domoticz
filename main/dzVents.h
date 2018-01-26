@@ -40,11 +40,13 @@ private:
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
-	void ExportChangedDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessChangedDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessChangedScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessChangedUserVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 
 	static int l_domoticz_print(lua_State* lua_state);
 	static CdzVents m_dzvents;
