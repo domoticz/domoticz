@@ -548,7 +548,6 @@ void CdzVents::ExportChangedDevices(lua_State *lua_state, const std::vector<CEve
 	std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator iterator;
 
 	int index = 1;
-	uint8_t count;
 
 	lua_createtable(lua_state, 0, 0); // begin changedDevices
 
@@ -557,9 +556,11 @@ void CdzVents::ExportChangedDevices(lua_State *lua_state, const std::vector<CEve
 	{
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 		{
-			count = 0;
+			uint8_t count = 0;
+
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
+
 			std::vector<CEventSystem::_tEventQueue>::const_iterator itt2;
 			for (itt2 = itt; itt2 != items.end(); itt2++)
 			{
@@ -607,15 +608,11 @@ void CdzVents::ExportChangedDevices(lua_State *lua_state, const std::vector<CEve
 				lua_settable(lua_state, -3); // rawData table
 
 				uint8_t devType, subType;
-				for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin();
-					iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
+				iterator = m_mainworker.m_eventsystem.m_devicestates.find(itt2->DeviceID);
+				if (iterator != m_mainworker.m_eventsystem.m_devicestates.end())
 				{
-					if (iterator->first == itt2->DeviceID)
-					{
-						devType = iterator->second.devType;
-						subType = iterator->second.subType;
-						break;
-					}
+					devType = iterator->second.devType;
+					subType = iterator->second.subType;
 				}
 				// Lux does not have it's own field yet.
 				if (devType == pTypeLux && subType == sTypeLux)
