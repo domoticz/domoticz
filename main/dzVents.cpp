@@ -552,7 +552,7 @@ void CdzVents::ExportChangedDevices(lua_State *lua_state, const std::vector<CEve
 
 	lua_createtable(lua_state, 0, 0); // begin changedDevices
 
-	std::vector<CEventSystem::_tEventQueue>::const_iterator itt, itt2;
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
 	{
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
@@ -560,13 +560,17 @@ void CdzVents::ExportChangedDevices(lua_State *lua_state, const std::vector<CEve
 			count = 0;
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
+			std::vector<CEventSystem::_tEventQueue>::const_iterator itt2;
 			for (itt2 = itt; itt2 != items.end(); itt2++)
 			{
 				if (itt->DeviceID == itt2->DeviceID)
 				{
 					count++;
 					if (count > 1)
+					{
+						itt2--;
 						break;
+					}
 				}
 				_log.Log(LOG_STATUS, "itt2 = itt loop %" PRIu64 "", itt->DeviceID);
 				lua_pushnumber(lua_state, (lua_Number)itt2->DeviceID);
