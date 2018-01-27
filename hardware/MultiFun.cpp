@@ -292,7 +292,7 @@ bool MultiFun::ConnectToDevice()
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }

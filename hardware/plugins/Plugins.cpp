@@ -119,19 +119,6 @@ namespace Plugins {
 		if (pTraceback) Py_XDECREF(pTraceback);
 	}
 
-	// Escape '%' character
-	static void escapepercent(std::string &smsg)
-	{
-		const std::string s = "%";
-		const std::string t = "%%";
-		std::string::size_type n = 0;
-		while ( ( n = smsg.find( '%', n ) ) != std::string::npos )
-		{
-			smsg.replace( n, s.size(), t );
-			n += t.size();
-		}
-	}
-
 	static PyObject*	PyDomoticz_Debug(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
@@ -156,11 +143,8 @@ namespace Plugins {
 				}
 				else
 				{
-					// Escape '%' character
-					std::string smsg = msg;
-					escapepercent(smsg);
-					std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
-					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+					_log.Log((_eLogLevel)LOG_NORM, message);
 				}
 			}
 		}
@@ -191,11 +175,8 @@ namespace Plugins {
 			}
 			else
 			{
-				// Escape '%' character
-				std::string smsg = msg;
-				escapepercent(smsg);
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
-				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_NORM, message);
 			}
 		}
 
@@ -225,11 +206,8 @@ namespace Plugins {
 			}
 			else
 			{
-				// Escape '%' character
-				std::string smsg = msg;
-				escapepercent(smsg);
-				std::string	message = "(" + pModState->pPlugin->Name + ") " + smsg;
-				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_ERROR, message);
 			}
 		}
 
@@ -510,11 +488,11 @@ namespace Plugins {
 				{
 					if ((lineno > 0) && (lineno < 1000))
 					{
-						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d, offset: %d", Name.c_str(), sError.c_str(), lineno, offset);
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %lld, offset: %lld", Name.c_str(), sError.c_str(), lineno, offset);
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d", Name.c_str(), sError.c_str(), offset);
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %lld", Name.c_str(), sError.c_str(), offset);
 					}
 					sError = "";
 				}
@@ -544,7 +522,7 @@ namespace Plugins {
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
-			_log.Log(LOG_ERROR, "(%s) Call to import module '%s' failed, unable to decode exception.", Name.c_str());
+			_log.Log(LOG_ERROR, "(%s) Call to import module failed, unable to decode exception.", Name.c_str());
 		}
 
 		if (pExcept) Py_XDECREF(pExcept);
@@ -975,7 +953,7 @@ namespace Plugins {
 			PyObject*	pObj = Py_BuildValue("i", m_HwdID);
 			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
 			{
-				_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%s' to dictionary.", m_PluginKey.c_str(), m_HwdID);
+				_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
 				return false;
 			}
 			Py_DECREF(pObj);
@@ -1503,9 +1481,9 @@ namespace Plugins {
 		if (m_bDebug)
 		{
 			if (Incoming)
-				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Received %lu bytes of data:", Name.c_str(), Buffer.size());
 			else
-				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Sending %lu bytes of data:", Name.c_str(), Buffer.size());
 
 			for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
 			{

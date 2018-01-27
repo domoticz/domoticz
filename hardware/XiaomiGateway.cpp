@@ -1172,7 +1172,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 		}
 		if (showmessage && m_OutputMessage) {
-			_log.Log(LOG_STATUS, data_);
+			_log.Log(LOG_STATUS, "%s", data_);
 		}
 		start_receive();
 	}

@@ -248,7 +248,7 @@ void CHttpPush::DoHttpPush()
 
 				// debug
 				if (httpDebugActive) {
-					_log.Log(LOG_NORM, "HttpLink: response ", sResult.c_str());
+					_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
 				}
 			}
 		}
