@@ -22,7 +22,7 @@ before_install:
   # OpenZWave
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   # lookup boost version
-  - sudo apt-cache search libboost
+  #- sudo apt-cache search libboost
 
 # Build matrix definition
 # * Two builds
