@@ -780,28 +780,25 @@ namespace Plugins {
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] = { "nValue", "sValue", "SignalLevel", "BatteryLevel", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "TimedOut", NULL };
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|isiissiiiiOii", kwlist, &nValue, &sValue, &iSignalLevel, &iBatteryLevel, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iImage, &pOptionsDict, &iUsed, &iTimedOut))
-			{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'Name', 'TypeName', 'Type', 'Subtype', 'SwitchType', 'Image', 'Options', 'Used' or 'TimedOut' expected.", __func__, sName.c_str());
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiii", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed))
+				{
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype' or 'Used' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
 
-			if (PyDict_GetItemString(kwds, "nValue") && sValue)
+			if (self->pPlugin->m_bDebug)
 			{
-				if (self->pPlugin->m_bDebug)
-				{
-					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
-				}
-				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
-
-				// Notify MQTT and various push mechanisms
-				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
+			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+
+			// Notify MQTT and various push mechanisms
+			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
 
 			std::string sID = SSTR(self->ID);
 
