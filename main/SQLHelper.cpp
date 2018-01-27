@@ -13,7 +13,6 @@
 #include "../sqlite/sqlite3.h"
 #endif
 #include "../hardware/hardwaretypes.h"
-#include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
@@ -3043,8 +3042,33 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string sResult;
-				bool ret = HTTPClient::GET(itt->_sValue, sResult);
+				std::string response;
+				std::vector<std::string> headerData, extraHeaders;
+				std::string postData = itt->_command;
+				std::string callback = itt->_ID;
+
+				if (!itt->_relatedEvent.empty())
+					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
+
+				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod>(itt->_switchtype);
+
+				bool ret;
+				if (method == HTTPClient::HTTP_METHOD_GET)
+				{
+					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData);
+				}
+				else if (method == HTTPClient::HTTP_METHOD_POST)
+				{
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData);
+				}
+
+				if (m_bEnableEventSystem && !callback.empty())
+				{
+					if (ret)
+						headerData.push_back("200");
+					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
+				}
+
 				if (!ret)
 				{
 					_log.Log(LOG_ERROR, "Error opening url: %s", itt->_sValue.c_str());
@@ -3173,6 +3197,10 @@ void CSQLHelper::Do_Work()
 						sValue3 = splitresults[2];
 					IFTTT::Send_IFTTT_Trigger(itt->_ID, sValue1, sValue2, sValue3);
 				}
+			}
+			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
+			{
+				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, (itt->_HardwareID ? true : false), (itt->_switchtype ? true : false));
 			}
 
 			++itt;
@@ -3406,10 +3434,10 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, devname);
 		break;
 	case pTypeCURRENT:
-		//Current/Ampere 
+		//Current/Ampere
 		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname);
 		break;
-	case pTypeThermostat: //Thermostat Setpoint 
+	case pTypeThermostat: //Thermostat Setpoint
 	{
 		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -3425,95 +3453,95 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sTypePressure: //Pressure (Bar) 
-		case sTypePercentage: //Percentage 
-		case sTypeWaterflow: //Waterflow 
+		case sTypePressure: //Pressure (Bar)
+		case sTypePercentage: //Percentage
+		case sTypeWaterflow: //Waterflow
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
 		}
 		break;
-		case sTypeCounterIncremental:		//Counter Incremental 
+		case sTypeCounterIncremental:		//Counter Incremental
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
 			break;
-		case sTypeVoltage:		//Voltage 
+		case sTypeVoltage:		//Voltage
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.000", devname);
 		}
 		break;
-		case sTypeTextStatus:		//Text 
+		case sTypeTextStatus:		//Text
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "Hello World", devname);
 		}
 		break;
-		case sTypeAlert:		//Alert 
+		case sTypeAlert:		//Alert
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "No Alert!", devname);
 			break;
-		case sTypeSoundLevel:		//Sound Level 
+		case sTypeSoundLevel:		//Sound Level
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "65", devname);
 		}
 		break;
-		case sTypeBaro:		//Barometer (hPa) 
+		case sTypeBaro:		//Barometer (hPa)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1021.34;0", devname);
 		}
 		break;
-		case sTypeVisibility:		//Visibility (km) 
+		case sTypeVisibility:		//Visibility (km)
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "10.3", devname);
 			break;
-		case sTypeDistance:		//Distance (cm) 
+		case sTypeDistance:		//Distance (cm)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "123.4", devname);
 		}
 		break;
-		case sTypeSoilMoisture:		//Soil Moisture 
+		case sTypeSoilMoisture:		//Soil Moisture
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 3, devname);
 		}
 		break;
-		case sTypeLeafWetness:		//Leaf Wetness 
+		case sTypeLeafWetness:		//Leaf Wetness
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 2, devname);
 		}
 		break;
-		case sTypeKwh:		//kWh 
+		case sTypeKwh:		//kWh
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0;0.0", devname);
 		}
 		break;
-		case sTypeCurrent:		//Current (Single) 
+		case sTypeCurrent:		//Current (Single)
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "6.4", devname);
 		}
 		break;
-		case sTypeSolarRadiation:		//Solar Radiation 
+		case sTypeSolarRadiation:		//Solar Radiation
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
 			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1.0", devname);
 		}
 		break;
-		case sTypeCustom:			//Custom 
+		case sTypeCustom:			//Custom
 		{
 			if (!soptions.empty())
 			{
@@ -3537,7 +3565,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		switch (SensorSubType)
 		{
 		case sTypeWIND1:			// sTypeWIND1
-		case sTypeWIND4:			//Wind + Temp + Chill 
+		case sTypeWIND4:			//Wind + Temp + Chill
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;N;0;0;0;0", devname);
 			break;
 		}
@@ -3548,13 +3576,13 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sSwitchGeneralSwitch:		//Switch 
+		case sSwitchGeneralSwitch:		//Switch
 		{
 			sprintf(ID, "%08lX", nid);
 			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "100", devname);
 		}
 		break;
-		case sSwitchTypeSelector:		//Selector Switch 
+		case sSwitchTypeSelector:		//Selector Switch
 		{
 			unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
 			unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
@@ -3579,7 +3607,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	{
 		switch (SensorSubType)
 		{
-		case sTypeLimitlessRGB:		//RGB switch 
+		case sTypeLimitlessRGB:		//RGB switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -3591,7 +3619,7 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 			}
 		}
 		break;
-		case sTypeLimitlessRGBW:		//RGBW switch 
+		case sTypeLimitlessRGBW:		//RGBW switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -6724,7 +6752,7 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 	}
 }
 
-void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
+void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 {
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
@@ -6735,7 +6763,9 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 
 	if (
 		(tItem._ItemType == TITEM_SWITCHCMD_EVENT) ||
-		(tItem._ItemType == TITEM_SWITCHCMD_SCENE)
+		(tItem._ItemType == TITEM_SWITCHCMD_SCENE) ||
+		(tItem._ItemType == TITEM_UPDATEDEVICE) ||
+		(tItem._ItemType == TITEM_SET_VARIABLE)
 		)
 	{
 		std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
@@ -6760,7 +6790,8 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		}
 	}
 	// _log.Log(LOG_NORM, "=> Adding new task item");
-	m_background_task_queue.push_back(tItem);
+	if (!cancelItem)
+		m_background_task_queue.push_back(tItem);
 }
 
 void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
@@ -7543,11 +7574,12 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 	if (formatError != "OK")
 		return formatError;
 
+	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	std::vector<std::vector<std::string> > result;
 	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')",
 		varname.c_str(),
 		typei,
-		CURLEncode::URLDecode(varvalue.c_str()).c_str()
+		szVarValue.c_str()
 		);
 
 	if (m_bEnableEventSystem)
@@ -7563,7 +7595,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 			uint64_t vId;
 			vId_str >> vId;
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", "", -1, sd[1]);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", szVarValue, typei, sd[1]);
 		}
 	}
 	return "OK";

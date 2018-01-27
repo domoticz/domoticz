@@ -4,7 +4,7 @@ return {
 			domoticz.SECURITY_ARMEDAWAY,
 		}
 	},
-	execute = function(domoticz, _nil, info)
-		domoticz.log('Security was triggered by ' .. info.trigger, domoticz.LOG_INFO)
+	execute = function(domoticz, security, info)
+		domoticz.log('Security was triggered by ' .. security.trigger, domoticz.LOG_INFO)
 	end
 }

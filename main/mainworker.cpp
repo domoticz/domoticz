@@ -362,12 +362,12 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	//Send Reset
 	SendCommand(pHardware->m_HwdID, cmdRESET, "Reset");
 	//wait at least 500ms
-	boost::this_thread::sleep(boost::posix_time::millisec(500));
+	sleep_milliseconds(500);
 	pHardware->m_rxbufferpos = 0;
 	pHardware->m_bEnableReceive = true;
 
 	SendCommand(pHardware->m_HwdID, cmdStartRec, "Start Receiver");
-	boost::this_thread::sleep(boost::posix_time::millisec(50));
+	sleep_milliseconds(50);
 
 	SendCommand(pHardware->m_HwdID, cmdSTATUS, "Status");
 }
@@ -1046,7 +1046,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNetTCP:
-		pHardware = new COpenWebNetTCP(ID, Address, Port, Password);
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
@@ -1391,6 +1391,18 @@ void MainWorker::HandleAutomaticBackups()
 	m_sql.GetLastBackupNo("Day", lastDayBackup);
 	m_sql.GetLastBackupNo("Month", lastMonthBackup);
 
+	std::string szInstanceName = "domoticz";
+	std::string szVar;
+	if (m_sql.GetPreferencesVar("Title", szVar))
+	{
+		stdreplace(szVar, " ", "_");
+		stdreplace(szVar, "/", "_");
+		stdreplace(szVar, "\\", "_");
+		if (!szVar.empty()) {
+			szInstanceName = szVar;
+		}
+	}
+
 	DIR *lDir;
 	//struct dirent *ent;
 	if ((lastHourBackup == -1) || (lastHourBackup != hour)) {
@@ -1398,7 +1410,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << ".db";
+			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirH + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1418,7 +1430,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << ".db";
+			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirD + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1437,7 +1449,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << ".db";
+			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirM + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {

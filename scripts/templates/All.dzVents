@@ -56,6 +56,11 @@ return {
 		-- group triggers
 		groups = {
 			'myGroup'
+		},
+
+		-- http http responses
+		httpResponses = {
+			'some callback string'
 		}
 	},
 
@@ -75,8 +80,8 @@ return {
 	-- actual event code
 	-- the second parameter is depending on the trigger
 	-- when it is a device change, the second parameter is the device object
-	-- similir for variables, scenes and groups
-	-- for timer and security events, the second parameter is nil
+	-- similar for variables, scenes and groups and httpResponses
+	-- inspect the type like: triggeredItem.isDevice
 	execute = function(domoticz, triggeredItem, info)
 		--[[
 
@@ -93,7 +98,7 @@ return {
 		-- example
 
 		if (triggerdItem.active) then -- state == 'On'
-			triggerdItem.switchOff().after_min(2) -- if it is a switch
+			triggerdItem.switchOff().afterMin(2) -- if it is a switch
 			domoticz.notify('Light info', 'The light ' .. triggerdItem.name .. ' will be switched off soon')
 		end
 	end
