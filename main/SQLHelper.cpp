@@ -7102,9 +7102,15 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
-		else if (OnAction.find("script://")!=std::string::npos)
+		else if (OnAction.find("script://") != std::string::npos)
 		{
 			//Execute possible script
+			if (OnAction.find("../") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OnAction.c_str());
+				return false;
+			}
+
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
 			if (scriptname.find("/") != 0)
@@ -7139,6 +7145,12 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	else if (OffAction.find("script://") != std::string::npos)
 	{
 		//Execute possible script
+		if (OffAction.find("../") != std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OffAction.c_str());
+			return false;
+		}
+
 		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
 		if (scriptname.find("/") != 0)
