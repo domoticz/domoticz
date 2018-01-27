@@ -123,7 +123,7 @@ bool MochadTCP::StopHardware()
 
 void MochadTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "Mochad: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 	m_bDoRestart = false;
 
@@ -195,7 +195,7 @@ void MochadTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Mochad: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -224,7 +224,7 @@ bool MochadTCP::WriteToHardware(const char *pdata, const unsigned char length)
 //			case light1_sBright:
 //			case light1_sAllOn:
 //			case light1_sAllOff:
-		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d:%d", pdata[1],pdata[2],pdata[6]);
+		_log.Log(LOG_STATUS, "Mochad: Unknown command %d:%d:%d", pdata[1],pdata[2],pdata[6]);
 		return false;
 	}
 //	_log.Log(LOG_STATUS, "Mochad: send '%s'", s_buffer);

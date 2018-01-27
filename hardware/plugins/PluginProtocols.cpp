@@ -282,28 +282,28 @@ namespace Plugins {
 		}
 	}
 
-#define ADD_BYTES_TO_DICT(pDict, key, value) \
+#define ADD_BYTES_TO_DICT(pDict, key, value)	\
 		{	\
 			PyObject*	pObj = Py_BuildValue("y#", value.c_str(), value.length());	\
 			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());	\
-			Py_DECREF(pObj); \
+			Py_DECREF(pObj);	\
 		}
 
-#define ADD_STRING_TO_DICT(pDict, key, value) \
+#define ADD_STRING_TO_DICT(pDict, key, value)	\
 		{	\
 			PyObject*	pObj = Py_BuildValue("s#", value.c_str(), value.length());	\
 			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to dictionary.", __func__, key, value.c_str());	\
-			Py_DECREF(pObj); \
+			Py_DECREF(pObj);	\
 		}
 
-#define ADD_INT_TO_DICT(pDict, key, value) \
+#define ADD_INT_TO_DICT(pDict, key, value)	\
 		{	\
 			PyObject*	pObj = Py_BuildValue("i", value);	\
 			if (PyDict_SetItemString(pDict, key, pObj) == -1)	\
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%d' to dictionary.", __func__, key, value);	\
-			Py_DECREF(pObj); \
+			Py_DECREF(pObj);	\
 		}
 
 	void CPluginProtocolHTTP::ProcessInbound(const ReadMessage* Message)
@@ -703,7 +703,7 @@ namespace Plugins {
 			if (pDataDict && pIPv4Dict)
 			{
 				if (PyDict_SetItemString(pDataDict, "IPv4", (PyObject*)pIPv4Dict) == -1)
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "IPv4");
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "ICMP", "IPv4");
 				else
 				{
 					Py_XDECREF((PyObject*)pIPv4Dict);
@@ -760,7 +760,7 @@ namespace Plugins {
 			if (pDataDict && pIcmpDict)
 			{
 				if (PyDict_SetItemString(pDataDict, "ICMP", (PyObject*)pIcmpDict) == -1)
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", Message->m_pPlugin, "ICMP");
+					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", "ICMP", "ICMP");
 				else
 				{
 					Py_XDECREF((PyObject*)pIcmpDict);
@@ -897,7 +897,7 @@ namespace Plugins {
 			byte		bResponseType = header & 0xF0;
 			PyObject*	pMqttDict = PyDict_New();
 			PyObject*	pObj = NULL;
-			long		iPacketIdentifier = 0;
+			uint16_t	iPacketIdentifier = 0;
 			long		iRemainingLength = 0;
 			long		multiplier = 1;
 			byte 		encodedByte;
@@ -917,7 +917,7 @@ namespace Plugins {
 			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
 			{
 				// Full packet has not arrived, wait for more data
-				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %u, expected %u).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
+				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %ld, expected %ld).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
 				return;
 			}
 
@@ -1043,7 +1043,7 @@ namespace Plugins {
 				ADD_STRING_TO_DICT(pMqttDict, "Verb", std::string("PUBLISH"));
 				ADD_INT_TO_DICT(pMqttDict, "DUP", ((header & 0x08) >> 3));
 				long	iQoS = (header & 0x06) >> 1;
-				ADD_INT_TO_DICT(pMqttDict, "QoS", iQoS);
+				ADD_INT_TO_DICT(pMqttDict, "QoS", (int) iQoS);
 				PyDict_SetItemString(pMqttDict, "Retain", PyBool_FromLong(header & 0x01));
 				// Variable Header
 				int		topicLen = (*it++ << 8) + *it++;

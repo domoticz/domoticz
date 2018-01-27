@@ -146,7 +146,7 @@ void HTTPClient::LogError(const long response_code)
 			_log.Log(LOG_TRACE, "HTTP 503: Service Unavailable");
 			break;
 		default:
-			_log.Log(LOG_TRACE, "HTTP return code is: %i", response_code);
+			_log.Log(LOG_TRACE, "HTTP return code is: %li", response_code);
 			break;
 		}
 	}

@@ -150,6 +150,7 @@ void CEventSystem::StartEventSystem()
     Plugins::PythonEventsInitialize(szUserDataFolder);
 #endif
 
+	m_stoprequested = false;
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::Do_Work, this)));
 	m_eventqueuethread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CEventSystem::EventQueueThread, this)));
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
@@ -163,6 +164,7 @@ void CEventSystem::StopEventSystem()
 		m_stoprequested = true;
 		UnlockEventQueueThread();
 		m_eventqueuethread->join();
+		m_eventqueue.clear();
 	}
 
 	if (m_thread)
@@ -237,9 +239,7 @@ void CEventSystem::Do_Work()
 	m_python_Dir = szUserDataFolder + "scripts/python/";
 #endif
 #endif
-	m_stoprequested = false;
 	time_t lasttime = mytime(NULL);
-	//bool bFirstTime = true;
 	struct tm tmptime;
 	struct tm ltime;
 
@@ -262,10 +262,9 @@ void CEventSystem::Do_Work()
 			if (ltime.tm_sec % 12 == 0) {
 				m_mainworker.HeartbeatUpdate("EventSystem");
 			}
-			if (ltime.tm_min != _LastMinute)//((ltime.tm_min != _LastMinute) || (bFirstTime))
+			if (ltime.tm_min != _LastMinute)
 			{
 				_LastMinute = ltime.tm_min;
-				//bFirstTime = false;
 				ProcessMinute();
 			}
 		}
@@ -1846,7 +1845,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 					else if (item.reason == REASON_TIME)
 					{
 						// time rules will only run when time or date based critera are found
-						found = 0;
+						found = std::min((it->Conditions.find("timeofday")), (it->Conditions.find("weekday")));
 					}
 					else if ((item.reason == REASON_USERVARIABLE) && (item.varId > 0))
 					{

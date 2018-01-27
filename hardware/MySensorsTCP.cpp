@@ -70,7 +70,7 @@ bool MySensorsTCP::StopHardware()
 
 void MySensorsTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"MySensors: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"MySensors: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_bufferpos=0;
@@ -105,7 +105,7 @@ void MySensorsTCP::Do_Work()
 		if (bFirstTime)
 		{
 			bFirstTime=false;
-			_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			connect(m_szIPAddress,m_usIPPort);
 		}
 		else
@@ -113,7 +113,7 @@ void MySensorsTCP::Do_Work()
 			time_t atime=time(NULL);
 			if ((m_bDoRestart)&&(atime%30==0))
 			{
-				_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+				_log.Log(LOG_STATUS, "MySensors: trying to connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 				connect(m_szIPAddress,m_usIPPort);
 			}
 			update();
@@ -152,7 +152,7 @@ void MySensorsTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "MySensors: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "MySensors: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof)||
