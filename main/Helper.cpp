@@ -878,6 +878,31 @@ std::string MakeHtml(const std::string &txt)
         return sRet;
 }
 
+//Prevent against XSS (Cross Site Scripting)
+std::string SafeHtml(const std::string &txt)
+{
+	std::string tmpstr = txt;
+	stdupper(tmpstr);
+
+	bool bHaveFoundDirtyHTML = false;
+
+	if (tmpstr.find("<SCRIPT>") != std::string::npos)
+	{
+		stdreplace(tmpstr, "<SCRIPT>", "<DOMO>");
+		stdreplace(tmpstr, "</SCRIPT>", "</DOMO>");
+		bHaveFoundDirtyHTML = true;
+	}
+	if (tmpstr.find("JAVASCRIPT") != std::string::npos)
+	{
+		stdreplace(tmpstr, "JAVASCRIPT", "DOMOSCRIPT");
+		bHaveFoundDirtyHTML = true;
+	}
+	if (bHaveFoundDirtyHTML)
+		return tmpstr;
+	return txt;
+}
+
+
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
