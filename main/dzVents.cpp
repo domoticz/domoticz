@@ -574,12 +574,9 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 					}
 				}
 //				_log.Log(LOG_STATUS, "itt2 = itt loop %" PRIu64 "", itt->DeviceID);
-				lua_pushnumber(lua_state, (lua_Number)index2);
-				lua_createtable(lua_state, 1, 11);
-
-				lua_pushstring(lua_state, "id");
 				lua_pushnumber(lua_state, (lua_Number)itt2->DeviceID);
-				lua_rawset(lua_state, -3);
+				lua_createtable(lua_state, 0, 0);
+
 				lua_pushstring(lua_state, "lastUpdate");
 				lua_pushstring(lua_state, itt2->lastUpdate.c_str());
 				lua_rawset(lua_state, -3);
@@ -587,14 +584,6 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 				lua_pushnumber(lua_state, (lua_Number)itt2->lastLevel);
 				lua_rawset(lua_state, -3);
 
-				lua_pushstring(lua_state, "data");
-				lua_createtable(lua_state, 0, 0);
-				lua_pushstring(lua_state, "_state");
-				lua_pushstring(lua_state, itt2->nValueWording.c_str());
-				lua_rawset(lua_state, -3);
-				lua_pushstring(lua_state, "_nValue");
-				lua_pushnumber(lua_state, (lua_Number)itt2->nValue);
-				lua_rawset(lua_state, -3);
 				//get all svalues separate
 				std::vector<std::string> strarray;
 				StringSplit(itt2->sValue, ";", strarray);
@@ -609,6 +598,16 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 					lua_rawset(lua_state, -3);
 				}
 				lua_settable(lua_state, -3); // rawData table
+
+				lua_pushstring(lua_state, "data");
+				lua_createtable(lua_state, 0, 0);
+				lua_pushstring(lua_state, "_state");
+				lua_pushstring(lua_state, itt2->nValueWording.c_str());
+				lua_rawset(lua_state, -3);
+				lua_pushstring(lua_state, "_nValue");
+				lua_pushnumber(lua_state, (lua_Number)itt2->nValue);
+				lua_rawset(lua_state, -3);
+
 
 				uint8_t devType, subType;
 				iterator = m_mainworker.m_eventsystem.m_devicestates.find(itt2->DeviceID);
@@ -772,11 +771,12 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 		{
 			uint8_t count = 0;
 			int index2 = 1;
+			int variableType;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
 
-			int variableType;
+			boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
 			std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator iterator;
 			std::vector<CEventSystem::_tEventQueue>::const_iterator itt2;
 			for (itt2 = itt; itt2 != items.end(); itt2++)
@@ -848,6 +848,8 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	time_t checktime;
 
 	ProcessChangedDevices(lua_state, items);
+	ProcessChangedUserVariables(lua_state, items);
+	ProcessChangedScenesGroups(lua_state, items);
 
 	lua_createtable(lua_state, 0, 0); // begin domoticzData
 
@@ -1056,10 +1058,8 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 	// Now do the scenes and groups.
 	const char *description = "";
+
 	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
-
-	ProcessChangedScenesGroups(lua_state, items);
-
 	std::map<uint64_t, CEventSystem::_tScenesGroups>::const_iterator ittScenes;
 	for (ittScenes = m_mainworker.m_eventsystem.m_scenesgroups.begin(); ittScenes != m_mainworker.m_eventsystem.m_scenesgroups.end(); ++ittScenes)
 	{
@@ -1137,8 +1137,6 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 	// Now do the user variables.
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
-
-	ProcessChangedUserVariables(lua_state, items);
 
 	std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 	for (it_var = m_mainworker.m_eventsystem.m_uservariables.begin(); it_var != m_mainworker.m_eventsystem.m_uservariables.end(); ++it_var)
