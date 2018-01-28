@@ -822,13 +822,7 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 	lua_settable(lua_state, -3); // uservariables table
 }
 
-
-void CdzVents::ProcessChangedItems(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
-{
-
-}
-
-void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index)
 {
 	time_t now = mytime(NULL);
 	struct tm tm1;
@@ -841,9 +835,9 @@ void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEv
 	struct tm ntime;
 	time_t checktime;
 
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	CEventSystem::_tDeviceStatus sitem;
-	// First export all the devices.
+
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator iterator;
 	for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin(); iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
 	{
@@ -1013,9 +1007,8 @@ void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEv
 	}
 }
 
-void CdzVents::ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+void CdzVents::ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index)
 {
-	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 	const char *description = "";
 
 	std::map<uint64_t, CEventSystem::_tScenesGroups>::const_iterator ittScenes;
@@ -1080,11 +1073,10 @@ void CdzVents::ExportDomoticzScenesGroups(lua_State *lua_state, const std::vecto
 	}
 }
 
-void CdzVents::ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+void CdzVents::ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index)
 {
 	std::string vtype;
 
-	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
 	std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 	for (it_var = m_mainworker.m_eventsystem.m_uservariables.begin(); it_var != m_mainworker.m_eventsystem.m_uservariables.end(); ++it_var)
 	{
@@ -1149,10 +1141,11 @@ void CdzVents::ExportDomoticzUservariables(lua_State *lua_state, const std::vect
 	}
 }
 
-
 void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
-	bool reasonDevice, reasonSceneGroup, reasonUservariable;
+//	_log.Log(LOG_ERROR, "ExportDomoticzDataToLua begin()");
+	bool reasonDevice = false, reasonScene = false, reasonVar = false;
+
 	lua_createtable(lua_state, 0, 0); // begin changedItems
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
@@ -1161,30 +1154,33 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 			reasonDevice = true;
 		else if (itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
-			reasonSceneGroup = true;
+			reasonScene = true;
 		else if (itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
-			reasonUservariable = true;
+			reasonVar = true;
 	}
 
 	if (reasonDevice)
 		ProcessChangedDevices(lua_state, items);
-	if (reasonSceneGroup)
+	if (reasonScene)
 		ProcessChangedScenesGroups(lua_state, items);
-	if (reasonUservariable)
+	if (reasonVar)
 		ProcessChangedUserVariables(lua_state, items);
 
 	lua_setglobal(lua_state, "changedItems");
 	lua_createtable(lua_state, 0, 0); // begin domoticzData
 
-	int index = 1;
+	uint32_t index = 1;
 
 	ExportDomoticzDevices(lua_state, items, index);
 
+	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 	if (m_mainworker.m_eventsystem.m_scenesgroups.size() > 0)
 		ExportDomoticzScenesGroups(lua_state, items, index);
 
+	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
 	if (m_mainworker.m_eventsystem.m_uservariables.size() > 0)
 		ExportDomoticzUservariables(lua_state, items, index);
 
 	lua_setglobal(lua_state, "domoticzData");
+//	_log.Log(LOG_ERROR, "ExportDomoticzDataToLua end());
 }
