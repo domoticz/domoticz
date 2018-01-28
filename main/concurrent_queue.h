@@ -36,6 +36,12 @@ public:
 		return the_queue.size();
 	}
 
+	void clear() {
+		boost::mutex::scoped_lock lock(the_mutex);
+		while (!the_queue.empty())
+			the_queue.pop();
+	}
+
 	void push(Data const& data) {
 		boost::mutex::scoped_lock lock(the_mutex);
 		the_queue.push(data);

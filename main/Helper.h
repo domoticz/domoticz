@@ -61,6 +61,7 @@ void DirectoryListing(std::vector<std::string>& entries, const std::string &dir,
 
 std::string GenerateUserAgent();
 std::string MakeHtml(const std::string &txt);
+std::string SafeHtml(const std::string &txt);
 
 #if defined WIN32
 	int gettimeofday(timeval * tp, void * tzp);

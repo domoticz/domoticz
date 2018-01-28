@@ -82,6 +82,11 @@ void CLogger::ForwardErrorsToNotificationSystem(const bool bDoForward)
 		m_notification_log.clear();
 }
 
+void CLogger::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	Log(level, "%s", sLogline.c_str());
+}
+
 void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
@@ -212,7 +217,7 @@ void CLogger::LogSequenceEnd(const _eLogLevel level)
 		message = message.substr(0, message.size() - 1);
 	}
 
-	Log(level, message.c_str());
+	Log(level, message);
 	m_sequencestring.clear();
 	m_sequencestring.str("");
 

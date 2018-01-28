@@ -75,7 +75,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
     }
     if(data == (indata+inlen))
     {
-        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%d of them)", inlen);
+        _log.Log(LOG_ERROR, "RAVEn::readCallback only got NULLs (%zu of them)", inlen);
         return;
     }
     size_t len = (indata+inlen) - data;
