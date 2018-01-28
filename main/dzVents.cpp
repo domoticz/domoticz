@@ -555,7 +555,7 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 		{
 			uint8_t count = 0;
-			int index2 = 1;
+			//int index2 = 1;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
@@ -684,9 +684,9 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 				}
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // device entry
-				index2++;
+				//index2++;
 			}
-			lua_settable(lua_state, -3); // end device set entry
+			lua_settable(lua_state, -3); // device set entry
 			if (itt2 == items.end())
 				break;
 			else
@@ -709,7 +709,7 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 		{
 			uint8_t count = 0;
-			int index2 = 1;
+			//int index2 = 1;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
@@ -742,7 +742,7 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // device entry
-				index2++;
+				//index2++;
 			}
 			lua_settable(lua_state, -3); // end set entry
 			if (itt2 == items.end())
@@ -767,7 +767,7 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
 		{
 			uint8_t count = 0;
-			int index2 = 1;
+			//int index2 = 1;
 			int variableType;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
@@ -812,7 +812,7 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // end entry
-				index2++;
+				//index2++;
 			}
 
 			lua_settable(lua_state, -3); // end set entry
