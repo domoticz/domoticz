@@ -726,12 +726,9 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 						break;
 					}
 				}
-				lua_pushnumber(lua_state, (lua_Number)index2);
+				lua_pushnumber(lua_state, (lua_Number)itt->DeviceID);
 				lua_createtable(lua_state, 0, 0);
 
-				lua_pushstring(lua_state, "id");
-				lua_pushnumber(lua_state, (lua_Number)itt->DeviceID);
-				lua_rawset(lua_state, -3);
 				lua_pushstring(lua_state, "lastUpdate");
 				lua_pushstring(lua_state, itt2->lastUpdate.c_str());
 				lua_rawset(lua_state, -3);
@@ -794,12 +791,9 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 				if (iterator != m_mainworker.m_eventsystem.m_uservariables.end())
 					variableType = iterator->second.variableType;
 
-				lua_pushnumber(lua_state, (lua_Number)index2);
+				lua_pushnumber(lua_state, (lua_Number)itt2->varId);
 				lua_createtable(lua_state, 0, 0);
 
-				lua_pushstring(lua_state, "id");
-				lua_pushnumber(lua_state, (lua_Number)itt2->varId);
-				lua_rawset(lua_state, -3);
 				lua_pushstring(lua_state, "lastUpdate");
 				lua_pushstring(lua_state, itt2->lastUpdate.c_str());
 				lua_rawset(lua_state, -3);
