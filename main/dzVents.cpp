@@ -547,7 +547,8 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 {
 	int index = 1;
 
-	lua_createtable(lua_state, 0, 0); // begin changedDevices
+	lua_pushstring(lua_state, "devices");
+	lua_createtable(lua_state, 0, 0); // begin devices
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
@@ -555,12 +556,11 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
 		{
 			uint8_t count = 0;
-			//int index2 = 1;
+			std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator iterator;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
 
-			std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator iterator;
 			std::vector<CEventSystem::_tEventQueue>::const_iterator itt2;
 			for (itt2 = itt; itt2 != items.end(); itt2++)
 			{
@@ -573,7 +573,6 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 						break;
 					}
 				}
-//				_log.Log(LOG_STATUS, "itt2 = itt loop %" PRIu64 "", itt->DeviceID);
 				lua_pushnumber(lua_state, (lua_Number)itt2->DeviceID);
 				lua_createtable(lua_state, 0, 0);
 
@@ -684,7 +683,6 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 				}
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // device entry
-				//index2++;
 			}
 			lua_settable(lua_state, -3); // device set entry
 			if (itt2 == items.end())
@@ -694,14 +692,15 @@ void CdzVents::ProcessChangedDevices(lua_State *lua_state, const std::vector<CEv
 			index++;
 		}
 	}
-	lua_setglobal(lua_state, "changedDevices");
+	lua_settable(lua_state, -3); // devices table
 }
 
 void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int index = 1;
 
-	lua_createtable(lua_state, 0, 0); // begin changedScenesGroups
+	lua_pushstring(lua_state, "scenesgroups");
+	lua_createtable(lua_state, 0, 0); // begin scenesgroups
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
@@ -709,7 +708,6 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
 		{
 			uint8_t count = 0;
-			//int index2 = 1;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
 			lua_createtable(lua_state, 0, 0);
@@ -742,7 +740,6 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // device entry
-				//index2++;
 			}
 			lua_settable(lua_state, -3); // end set entry
 			if (itt2 == items.end())
@@ -752,14 +749,15 @@ void CdzVents::ProcessChangedScenesGroups(lua_State *lua_state, const std::vecto
 			index++;
 		}
 	}
-	lua_setglobal(lua_state, "changedScenesGroups");
+	lua_settable(lua_state, -3); // scenesgroups table
 }
 
 void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
 	int index = 1;
 
-	lua_createtable(lua_state, 0, 0); // begin changedUserVariables
+	lua_pushstring(lua_state, "uservariables");
+	lua_createtable(lua_state, 0, 0); // begin uservariables
 
 	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
 	for (itt = items.begin(); itt != items.end(); itt++)
@@ -767,7 +765,6 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 		if (itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
 		{
 			uint8_t count = 0;
-			//int index2 = 1;
 			int variableType;
 
 			lua_pushnumber(lua_state, (lua_Number)index);
@@ -812,7 +809,6 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 
 				lua_settable(lua_state, -3); // data table
 				lua_settable(lua_state, -3); // end entry
-				//index2++;
 			}
 
 			lua_settable(lua_state, -3); // end set entry
@@ -823,13 +819,17 @@ void CdzVents::ProcessChangedUserVariables(lua_State *lua_state, const std::vect
 			index++;
 		}
 	}
-	lua_setglobal(lua_state, "changedUserVariables");
+	lua_settable(lua_state, -3); // uservariables table
 }
 
-void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+
+void CdzVents::ProcessChangedItems(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
-	int index = 1;
+
+}
+
+void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+{
 	time_t now = mytime(NULL);
 	struct tm tm1;
 	localtime_r(&now, &tm1);
@@ -841,49 +841,12 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 	struct tm ntime;
 	time_t checktime;
 
-	ProcessChangedDevices(lua_state, items);
-	ProcessChangedUserVariables(lua_state, items);
-	ProcessChangedScenesGroups(lua_state, items);
-
-	lua_createtable(lua_state, 0, 0); // begin domoticzData
-
-	//bool skipItem = false;
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_mainworker.m_eventsystem.m_devicestatesMutex);
 	CEventSystem::_tDeviceStatus sitem;
 	// First export all the devices.
-	//std::vector<CEventSystem::_tEventQueue>::const_iterator itt3;
 	std::map<uint64_t, CEventSystem::_tDeviceStatus>::const_iterator iterator;
 	for (iterator = m_mainworker.m_eventsystem.m_devicestates.begin(); iterator != m_mainworker.m_eventsystem.m_devicestates.end(); ++iterator)
 	{
-		//bool triggerDevice = false;
-
-	/*	for (itt3 = items.begin(); itt3 != items.end(); itt3++)
-		{
-			if (iterator->second.ID == itt3->DeviceID && itt3->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
-			{
-				triggerDevice = true;
-				sitem.lastUpdate = itt->lastUpdate;
-				sitem.lastLevel = itt->lastLevel;
-				sitem.sValue = itt->sValue;
-				sitem.nValueWording = itt->nValueWording;
-				sitem.nValue = itt->nValue;
-				if (itt->JsonMapString.size() > 0)
-					sitem.JsonMapString = itt->JsonMapString;
-				if (itt->JsonMapFloat.size() > 0)
-					sitem.JsonMapFloat = itt->JsonMapFloat;
-				if (itt->JsonMapInt.size() > 0)
-					sitem.JsonMapInt = itt->JsonMapInt;
-				if (itt->JsonMapBool.size() > 0)
-					sitem.JsonMapBool = itt->JsonMapBool;
-
-				skipItem = true;
-				break;
-			}
-		}
-		if (skipItem)
-		{
-			skipItem = false;
-			continue;
-		}*/
 		sitem = iterator->second;
 		const char *dev_type = RFX_Type_Desc(sitem.devType, 1);
 		const char *sub_type = RFX_Type_SubType_Desc(sitem.devType, sitem.subType);
@@ -1048,27 +1011,17 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_settable(lua_state, -3); // device entry
 		index++;
 	}
-	devicestatesMutexLock.unlock();
+}
 
-	// Now do the scenes and groups.
+void CdzVents::ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+{
+	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 	const char *description = "";
 
-	boost::shared_lock<boost::shared_mutex> scenesgroupsMutexLock(m_mainworker.m_eventsystem.m_scenesgroupsMutex);
 	std::map<uint64_t, CEventSystem::_tScenesGroups>::const_iterator ittScenes;
 	for (ittScenes = m_mainworker.m_eventsystem.m_scenesgroups.begin(); ittScenes != m_mainworker.m_eventsystem.m_scenesgroups.end(); ++ittScenes)
 	{
 		CEventSystem::_tScenesGroups sgitem = ittScenes->second;
-		/*bool triggerScene = false;
-		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
-		for (itt = items.begin(); itt != items.end(); itt++)
-		{
-			if (sgitem.ID == itt->DeviceID && itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
-			{
-				triggerScene = true;
-				sgitem.lastUpdate = itt->lastUpdate;
-				sgitem.scenesgroupValue = itt->sValue;
-			}
-		}*/
 
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT Description FROM Scenes WHERE (ID=='%d')", sgitem.ID);
@@ -1125,29 +1078,17 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		lua_settable(lua_state, -3); // end entry
 		index++;
 	}
-	scenesgroupsMutexLock.unlock();
+}
 
+void CdzVents::ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index)
+{
 	std::string vtype;
 
-	// Now do the user variables.
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_mainworker.m_eventsystem.m_uservariablesMutex);
-
 	std::map<uint64_t, CEventSystem::_tUserVariable>::const_iterator it_var;
 	for (it_var = m_mainworker.m_eventsystem.m_uservariables.begin(); it_var != m_mainworker.m_eventsystem.m_uservariables.end(); ++it_var)
 	{
 		CEventSystem::_tUserVariable uvitem = it_var->second;
-	/*	bool triggerVar = false;
-		std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
-		for (itt = items.begin(); itt != items.end(); itt++)
-		{
-			if (uvitem.ID == itt->varId && itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
-			{
-				triggerVar = true;
-				uvitem.lastUpdate = itt->lastUpdate;
-				uvitem.variableValue = itt->sValue;
-			}
-		}*/
-
 		lua_pushnumber(lua_state, (lua_Number)index);
 
 		lua_createtable(lua_state, 1, 5);
@@ -1206,6 +1147,44 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 
 		index++;
 	}
+}
+
+
+void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items)
+{
+	bool reasonDevice, reasonSceneGroup, reasonUservariable;
+	lua_createtable(lua_state, 0, 0); // begin changedItems
+
+	std::vector<CEventSystem::_tEventQueue>::const_iterator itt;
+	for (itt = items.begin(); itt != items.end(); itt++)
+	{
+		if (itt->reason == m_mainworker.m_eventsystem.REASON_DEVICE)
+			reasonDevice = true;
+		else if (itt->reason == m_mainworker.m_eventsystem.REASON_SCENEGROUP)
+			reasonSceneGroup = true;
+		else if (itt->reason == m_mainworker.m_eventsystem.REASON_USERVARIABLE)
+			reasonUservariable = true;
+	}
+
+	if (reasonDevice)
+		ProcessChangedDevices(lua_state, items);
+	if (reasonSceneGroup)
+		ProcessChangedScenesGroups(lua_state, items);
+	if (reasonUservariable)
+		ProcessChangedUserVariables(lua_state, items);
+
+	lua_setglobal(lua_state, "changedItems");
+	lua_createtable(lua_state, 0, 0); // begin domoticzData
+
+	int index = 1;
+
+	ExportDomoticzDevices(lua_state, items, index);
+
+	if (m_mainworker.m_eventsystem.m_scenesgroups.size() > 0)
+		ExportDomoticzScenesGroups(lua_state, items, index);
+
+	if (m_mainworker.m_eventsystem.m_uservariables.size() > 0)
+		ExportDomoticzUservariables(lua_state, items, index);
 
 	lua_setglobal(lua_state, "domoticzData");
 }

@@ -39,11 +39,17 @@ private:
 	bool UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool UpdateVariable(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
 	bool CancelItem(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable);
+
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
+	void ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
+	void ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
+
 	void IterateTable(lua_State *lua_state, const int tIndex, std::vector<_tLuaTableValues> &vLuaTable);
 	void SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus);
 	void ProcessHttpResponse(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
+	void ProcessChangedItems(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessChangedDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessChangedScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessChangedUserVariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
