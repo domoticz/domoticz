@@ -3024,16 +3024,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
 #endif
 
-	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
-	int intSet = m_mainworker.m_SunRiseSetMins[1];
-	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
-	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
-	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
-	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
-	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
-	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
-	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
-	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
+	int sunTimers[10];
+	if (m_mainworker.m_SunRiseSetMins.size() == 10)
+	{
+		for (int i = 0; i < 10; i++)
+			sunTimers[i] = m_mainworker.m_SunRiseSetMins[i];
+	}
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 	time_t now = mytime(NULL);
@@ -3064,34 +3060,34 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushboolean(lua_state, nightTimeBool);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunriseInMinutes");
-	lua_pushnumber(lua_state, intRise);
+	lua_pushnumber(lua_state, sunTimers[0]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunsetInMinutes");
-	lua_pushnumber(lua_state, intSet);
+	lua_pushnumber(lua_state, sunTimers[1]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunAtSouthInMinutes");
-	lua_pushnumber(lua_state, intSunAtSouth);
+	lua_pushnumber(lua_state, sunTimers[2]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[3]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[4]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[5]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[6]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[7]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[8]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "DayLengthInMinutes");
-	lua_pushnumber(lua_state, intDayLength);
+	lua_pushnumber(lua_state, sunTimers[9]);
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 
