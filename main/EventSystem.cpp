@@ -190,21 +190,32 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
+	std::string dzv_Dir, s;
+	CdzVents* dzvents = CdzVents::GetInstance();
+	dzvents->m_bdzVentsExist = false;
+
 #ifdef WIN32
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+	dzvents->m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
+	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
+	dzvents->m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
 #endif
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-	CdzVents* dzvents = CdzVents::GetInstance();
-	dzvents->LoadEvents();
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
-	if (result.size()>0)
+	result = m_sql.safe_query(
+		"SELECT EventRules.ID, EventMaster.Name, EventRules.Conditions, EventRules.Actions, EventMaster.Status, "
+		"EventRules.SequenceNo, EventMaster.Interpreter, EventMaster.Type FROM EventRules "
+		"INNER JOIN EventMaster ON EventRules.EMID = EventMaster.ID ORDER BY EventRules.ID");
+	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -223,6 +234,55 @@ void CEventSystem::LoadEvents()
 			eitem.EventStatus = atoi(sd[4].c_str());
 			eitem.SequenceNo = atoi(sd[5].c_str());
 			m_events.push_back(eitem);
+		}
+	}
+	result = m_sql.safe_query(
+		"SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster "
+		"WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+	if (result.size() > 0)
+	{
+		std::vector<std::string> FileEntries;
+		std::string filename;
+
+		// Remove dzVents DB files from disk
+		DirectoryListing(FileEntries, dzv_Dir, false, true);
+		std::vector<std::string>::const_iterator itt;
+		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+		{
+			filename = dzv_Dir + *itt;
+			if (filename.find("README.md") == std::string::npos)
+				std::remove(filename.c_str());
+		}
+
+		std::vector<std::vector<std::string> >::const_iterator itt2;
+		for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
+		{
+			std::vector<std::string> sd = *itt2;
+			CEventSystem::_tEventItem eitem;
+			std::stringstream s_str(sd[0]);
+			s_str >> eitem.ID;
+			eitem.Name = sd[1];
+			eitem.Interpreter = sd[2];
+			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			eitem.Type = sd[3];
+			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.Actions = sd[5];
+			eitem.SequenceNo = 0;
+			m_events.push_back(eitem);
+
+			// Write active dzVents scripts to disk.
+			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
+			{
+				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s",s.c_str());
+				FILE *fOut = fopen(s.c_str(), "wb+");
+				if (fOut)
+				{
+					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
+					fclose(fOut);
+				}
+				dzvents->m_bdzVentsExist = true;
+			}
 		}
 	}
 #ifdef _DEBUG
