@@ -190,21 +190,32 @@ void CEventSystem::SetEnabled(const bool bEnabled)
 
 void CEventSystem::LoadEvents()
 {
+	std::string dzv_Dir, s;
+	CdzVents* dzvents = CdzVents::GetInstance();
+	dzvents->m_bdzVentsExist = false;
+
 #ifdef WIN32
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
+	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
+	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
+	dzvents->m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
+	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
+	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
+	dzvents->m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
 #endif
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
 	_log.Log(LOG_STATUS, "EventSystem: reset all events...");
 	m_events.clear();
-	CdzVents* dzvents = CdzVents::GetInstance();
-	dzvents->LoadEvents();
 
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT EventRules.ID,EventMaster.Name,EventRules.Conditions,EventRules.Actions,EventMaster.Status,EventRules.SequenceNo,EventMaster.Interpreter,EventMaster.Type FROM EventRules INNER JOIN EventMaster ON EventRules.EMID=EventMaster.ID ORDER BY EventRules.ID");
-	if (result.size()>0)
+	result = m_sql.safe_query(
+		"SELECT EventRules.ID, EventMaster.Name, EventRules.Conditions, EventRules.Actions, EventMaster.Status, "
+		"EventRules.SequenceNo, EventMaster.Interpreter, EventMaster.Type FROM EventRules "
+		"INNER JOIN EventMaster ON EventRules.EMID = EventMaster.ID ORDER BY EventRules.ID");
+	if (result.size() > 0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
@@ -223,6 +234,55 @@ void CEventSystem::LoadEvents()
 			eitem.EventStatus = atoi(sd[4].c_str());
 			eitem.SequenceNo = atoi(sd[5].c_str());
 			m_events.push_back(eitem);
+		}
+	}
+	result = m_sql.safe_query(
+		"SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster "
+		"WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
+	if (result.size() > 0)
+	{
+		std::vector<std::string> FileEntries;
+		std::string filename;
+
+		// Remove dzVents DB files from disk
+		DirectoryListing(FileEntries, dzv_Dir, false, true);
+		std::vector<std::string>::const_iterator itt;
+		for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
+		{
+			filename = dzv_Dir + *itt;
+			if (filename.find("README.md") == std::string::npos)
+				std::remove(filename.c_str());
+		}
+
+		std::vector<std::vector<std::string> >::const_iterator itt2;
+		for (itt2 = result.begin(); itt2 != result.end(); ++itt2)
+		{
+			std::vector<std::string> sd = *itt2;
+			CEventSystem::_tEventItem eitem;
+			std::stringstream s_str(sd[0]);
+			s_str >> eitem.ID;
+			eitem.Name = sd[1];
+			eitem.Interpreter = sd[2];
+			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
+			eitem.Type = sd[3];
+			eitem.EventStatus = atoi(sd[4].c_str());
+			eitem.Actions = sd[5];
+			eitem.SequenceNo = 0;
+			m_events.push_back(eitem);
+
+			// Write active dzVents scripts to disk.
+			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
+			{
+				s = dzv_Dir + eitem.Name.c_str() + ".lua";
+				_log.Log(LOG_STATUS, "dzVents: Write file: %s",s.c_str());
+				FILE *fOut = fopen(s.c_str(), "wb+");
+				if (fOut)
+				{
+					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
+					fclose(fOut);
+				}
+				dzvents->m_bdzVentsExist = true;
+			}
 		}
 	}
 #ifdef _DEBUG
@@ -2964,16 +3024,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	_log.Log(LOG_STATUS, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
 #endif
 
-	int intRise = m_mainworker.m_SunRiseSetMins[0]; // Or we could just do getSunRiseSunSetMinutes("Sunrise")
-	int intSet = m_mainworker.m_SunRiseSetMins[1];
-	int intSunAtSouth = m_mainworker.m_SunRiseSetMins[2];
-	int intCivTwilightStart = m_mainworker.m_SunRiseSetMins[3];
-	int intCivTwilightEnd = m_mainworker.m_SunRiseSetMins[4];
-	int intNautTwilightStart = m_mainworker.m_SunRiseSetMins[5];
-	int intNautTwilightEnd = m_mainworker.m_SunRiseSetMins[6];
-	int intAstrTwilightStart = m_mainworker.m_SunRiseSetMins[7];
-	int intAstrTwilightEnd = m_mainworker.m_SunRiseSetMins[8];
-	int intDayLength = m_mainworker.m_SunRiseSetMins[9];
+	int sunTimers[10];
+	if (m_mainworker.m_SunRiseSetMins.size() == 10)
+	{
+		for (int i = 0; i < 10; i++)
+			sunTimers[i] = m_mainworker.m_SunRiseSetMins[i];
+	}
 
 	// Do not correct for DST change - we only need this to compare with intRise and intSet which aren't as well
 	time_t now = mytime(NULL);
@@ -2983,13 +3039,13 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if (intRise == 0 && intSet == 0) {
-		if (intDayLength == 0)
+	if (sunTimers[0] == 0 && sunTimers[1] == 0) {
+		if (sunTimers[9] == 0)
 			nightTimeBool = true; // Sun below horizon in the space of 24 hours
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+	else if ((minutesSinceMidnight > sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
 		dayTimeBool = true;
 	}
 	else {
@@ -3004,34 +3060,34 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushboolean(lua_state, nightTimeBool);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunriseInMinutes");
-	lua_pushnumber(lua_state, intRise);
+	lua_pushnumber(lua_state, sunTimers[0]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunsetInMinutes");
-	lua_pushnumber(lua_state, intSet);
+	lua_pushnumber(lua_state, sunTimers[1]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "SunAtSouthInMinutes");
-	lua_pushnumber(lua_state, intSunAtSouth);
+	lua_pushnumber(lua_state, sunTimers[2]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[3]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "CivTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intCivTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[4]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[5]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "NautTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intNautTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[6]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightStartInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightStart);
+	lua_pushnumber(lua_state, sunTimers[7]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "AstrTwilightEndInMinutes");
-	lua_pushnumber(lua_state, intAstrTwilightEnd);
+	lua_pushnumber(lua_state, sunTimers[8]);
 	lua_rawset(lua_state, -3);
 	lua_pushstring(lua_state, "DayLengthInMinutes");
-	lua_pushnumber(lua_state, intDayLength);
+	lua_pushnumber(lua_state, sunTimers[9]);
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "timeofday");
 

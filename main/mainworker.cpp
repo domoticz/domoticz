@@ -225,7 +225,6 @@ MainWorker::MainWorker()
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
-	m_SunRiseSetMins.clear();
 	m_DayLength = "";
 
 	m_bHaveDownloadedDomoticzUpdate = false;
@@ -573,8 +572,11 @@ bool MainWorker::GetSunSettings()
 		std::vector<std::string> strarray;
 		std::vector<std::string> hourMinItem;
 		StringSplit(m_LastSunriseSet, ";", strarray);
+		m_SunRiseSetMins.clear();
 
-		for(std::vector<std::string>::iterator it = strarray.begin(); it != strarray.end(); ++it) {
+		std::vector<std::string>::const_iterator it;
+		for(it = strarray.begin(); it != strarray.end(); ++it)
+		{
 			StringSplit(*it, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
 			m_SunRiseSetMins.push_back(intMins);
@@ -824,7 +826,7 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
-	case HTYPE_eHouseTCP:	
+	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
 		pHardware = new eHouseTCP(ID, Address, Port, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
