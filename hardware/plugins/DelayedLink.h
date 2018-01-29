@@ -74,7 +74,9 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(int, PyDict_DelItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_Next, PyObject* COMMA Py_ssize_t* COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_Items, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_New, Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(void*, PyModule_GetState, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyState_FindModule, struct PyModuleDef*);
@@ -177,8 +179,10 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_DelItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Next);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Items);
+					RESOLVE_PYTHON_SYMBOL(PyList_New);
 					RESOLVE_PYTHON_SYMBOL(PyList_Size);
-					RESOLVE_PYTHON_SYMBOL(PyList_GetItem);
+					RESOLVE_PYTHON_SYMBOL(PyList_GetItem); 
+					RESOLVE_PYTHON_SYMBOL(PyList_Append);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -340,8 +344,10 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_DelItem			pythonLib->PyDict_DelItem
 #define PyDict_Next				pythonLib->PyDict_Next
 #define PyDict_Items			pythonLib->PyDict_Items
+#define PyList_New				pythonLib->PyList_New
 #define PyList_Size				pythonLib->PyList_Size
 #define PyList_GetItem			pythonLib->PyList_GetItem
+#define PyList_Append			pythonLib->PyList_Append
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear

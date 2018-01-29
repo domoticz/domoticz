@@ -66,7 +66,7 @@ bool CRFLinkTCP::StopHardware()
 
 void CRFLinkTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"RFLink: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"RFLink: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
@@ -176,7 +176,7 @@ void CRFLinkTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "RFLink: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Cooper Wallmount 5-Scene Controller RFWC5/RFWDC
+http://www.cooperindustries.com/content/dam/public/wiringdevices/products/documents/instruction_sheets/rfwcddsc_rev._a_.pdf
+http://www.cooperindustries.com/content/dam/public/wiringdevices/products/documents/technical_specifications/advancedtechinfo_V2.pdf
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="byte" index="1" genre="config" label="Group 1 Level" units="" min="1" max="255" value="10">
+			<Help>Value 0x00-0x63 or 0xFF is the level for all nodes listed in the Group 1</Help>
+		</Value>
+		<Value type="byte" index="2" genre="config" label="Group 2 Level" units="" min="1" max="255" value="20">
+			<Help>Value 0x00-0x63 or 0xFF is the level for all nodes listed in the Group 2</Help>
+		</Value>
+		<Value type="byte" index="3" genre="config" label="Group 3 Level" units="" min="1" max="255" value="30">
+			<Help>Value 0x00-0x63 or 0xFF is the level for all nodes listed in the Group 3</Help>
+		</Value>
+		<Value type="byte" index="4" genre="config" label="Group 4 Level" units="" min="1" max="255" value="40">
+			<Help>Value 0x00-0x63 or 0xFF is the level for all nodes listed in the Group 1</Help>
+		</Value>
+		<Value type="byte" index="5" genre="config" label="Group 5 Level" units="" min="1" max="255" value="50">
+			<Help>Value 0x00-0x63 or 0xFF is the level for all nodes listed in the Group 4</Help>
+		</Value>
+	</CommandClass>
+
+    <!-- Used to map Scenes to Groups, but not advertised by the device -->
+	<!-- CommandClass id="46" name="COMMAND_CLASS_SCENE_CONTROLLER_CONF" version="1" request_flags="4" innif="true"/-->
+
+	<!-- Used to set a device into Panic Mode (On-Off flashing at time intervals determined in the device configuration),
+	     To turn ON send a ALARM_REPORT command to the device with an Alarm Type of 1 and a value of 255.
+	     To turn OFF send a ALARM_REPORT command with an Alarm Type of 1 and a value of 0.-->
+	<CommandClass id="113" name="COMMAND_CLASS_ALARM" version="1" request_flags="4" />
+
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="6">
+			<Group index="1" max_associations="232" label="Group 1" auto="false"/>
+			<Group index="2" max_associations="232" label="Group 2"/>
+			<Group index="3" max_associations="232" label="Group 3"/>
+			<Group index="4" max_associations="232" label="Group 4"/>
+			<Group index="5" max_associations="232" label="Group 5"/>
+			<Group index="255" max_associations="1" label="Group 255"/>
+		</Associations>
+	</CommandClass>
+</Product>

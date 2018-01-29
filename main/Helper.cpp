@@ -878,6 +878,31 @@ std::string MakeHtml(const std::string &txt)
         return sRet;
 }
 
+//Prevent against XSS (Cross Site Scripting)
+std::string SafeHtml(const std::string &txt)
+{
+	std::string tmpstr = txt;
+	stdupper(tmpstr);
+
+	bool bHaveFoundDirtyHTML = false;
+
+	if (tmpstr.find("<SCRIPT>") != std::string::npos)
+	{
+		stdreplace(tmpstr, "<SCRIPT>", "<DOMO>");
+		stdreplace(tmpstr, "</SCRIPT>", "</DOMO>");
+		bHaveFoundDirtyHTML = true;
+	}
+	if (tmpstr.find("JAVASCRIPT") != std::string::npos)
+	{
+		stdreplace(tmpstr, "JAVASCRIPT", "DOMOSCRIPT");
+		bHaveFoundDirtyHTML = true;
+	}
+	if (bHaveFoundDirtyHTML)
+		return tmpstr;
+	return txt;
+}
+
+
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
@@ -984,3 +1009,42 @@ uint32_t SystemUptime()
 	return 0;
 #endif
 }
+
+// True random number generator (source: http://www.azillionmonkeys.com/qed/random.html)
+static struct
+{
+	int which;
+	time_t t;
+	clock_t c;
+	int counter;
+} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+
+static unsigned char * p = (unsigned char *) (&entropy + 1);
+static int accSeed = 0;
+
+int GenerateRandomNumber(const int range)
+{
+	if (p == ((unsigned char *) (&entropy + 1)))
+	{
+		switch (entropy.which)
+		{
+			case 0:
+				entropy.t += time (NULL);
+				accSeed ^= entropy.t;
+				break;
+			case 1:
+				entropy.c += clock();
+				break;
+			case 2:
+				entropy.counter++;
+				break;
+		}
+		entropy.which = (entropy.which + 1) % 3;
+		p = (unsigned char *) &entropy.t;
+	}
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	p++;
+	srand (accSeed);
+	return (rand() / (RAND_MAX / range));
+}
+

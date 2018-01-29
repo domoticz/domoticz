@@ -32,6 +32,7 @@
 #define sTypeLimitlessRGB		0x02
 #define sTypeLimitlessWhite		0x03
 #define sTypeLimitlessRGBWW		0x04
+#define sTypeLimitlessLivCol	0x05
 
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01

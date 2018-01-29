@@ -36,7 +36,7 @@ namespace http {
 
 		std::string CWebsocketFrame::Create(opcodes opcode, const std::string &payload, bool domasking)
 		{
-			size_t payloadlen = payload.length();
+			size_t_t payloadlen = payload.length();
 			std::string res;
 			// byte 0
 			res += ((uint8_t)opcode | FIN_MASK);
@@ -69,7 +69,7 @@ namespace http {
 					masking_key[i] = rand();
 					res += masking_key[i];
 				}
-				res += unmask(masking_key, (const uint8_t *)payload.c_str(), payloadlen);
+				res += unmask(masking_key, (const uint8_t *)payload.c_str(), (size_t)payloadlen);
 			}
 			else {
 				res += payload;

@@ -1061,7 +1061,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Kodi: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Kodi: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 

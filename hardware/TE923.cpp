@@ -101,7 +101,7 @@ void CTE923::GetSensorDetails()
 	{
 		//give it one more change!
 		_te923tool.CloseDevice();
-		boost::this_thread::sleep( boost::posix_time::milliseconds(500) );
+		sleep_milliseconds(500);
 
 		CTE923Tool _te923tool2;
 		if (!_te923tool2.OpenDevice())

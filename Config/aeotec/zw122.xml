@@ -41,10 +41,15 @@ http://products.z-wavealliance.org/products/2437
 		<Value type="byte" genre="config" instance="1" index="39" label="Set the low battery value" min="10" max="50" value="20" units="%" size="1">
 			<Help>10% to 50%</Help>
 		</Value>
-		<Value type="list" genre="config" instance="1" index="48" label="Sensor report" min="0" max="1" size="1" value="1">
-			<Help>Enable/disable the sensor report</Help>
-			<Item label="Disabled" value="0"/>
-			<Item label="Enabled" value="1"/>
+		<Value type="byte" genre="config" instance="1" index="48" label="Sensor report" min="0" max="1" size="1" value="1">
+			<Help>Enable/disable the sensor report:
+				Bit 7 - Bit 6 - Bit 5 Notification Report for Overheat alarm.
+				Bit 4 Notification Report for Under heat alarm.
+				Bit 3 - Bit 2 Configuration Report for Tilt sensor.
+				Bit 1 Notification Report for Vibration event.
+				Bit 0 Notification Report for Water Leak event.
+				Note: if the value = 1+2+4+16+32=55, which means if any sensor will report alarm.
+			</Help>
 		</Value>
 		<Value type="int" genre="config" instance="1" index="49" label="Upper limit value" size="4" min="65536" max="2147483647" value="26214400">
 			<Help>
