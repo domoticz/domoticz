@@ -3039,13 +3039,13 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 
 	bool dayTimeBool = false;
 	bool nightTimeBool = false;
-	if (intRise == 0 && intSet == 0) {
-		if (intDayLength == 0)
+	if (sunTimers[0] == 0 && sunTimers[1] == 0) {
+		if (sunTimers[9] == 0)
 			nightTimeBool = true; // Sun below horizon in the space of 24 hours
 		else
 			dayTimeBool = true; // Sun above horizon in the space of 24 hours
 	}
-	else if ((minutesSinceMidnight > intRise) && (minutesSinceMidnight < intSet)) {
+	else if ((minutesSinceMidnight > sunTimers[0]) && (minutesSinceMidnight < sunTimers[1])) {
 		dayTimeBool = true;
 	}
 	else {
