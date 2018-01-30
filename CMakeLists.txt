@@ -366,6 +366,7 @@ hardware/MySensorsTCP.cpp
 hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
+hardware/NestOAuthAPI.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OnkyoAVTCP.cpp
