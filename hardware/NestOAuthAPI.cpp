@@ -113,7 +113,7 @@ void CNestOAuthAPI::SendSetPointSensor(const unsigned char Idx, const float Temp
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
 
-// Creates and updates switch used to log Heating and/or Colling.
+// Creates and updates switch used to log Heating and/or Cooling.
 void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
 	bool bDeviceExits = true;
@@ -170,8 +170,18 @@ bool CNestOAuthAPI::Login()
 		if (m_ProductId.size() != 0 && m_ProductSecret.size() != 0 && m_PinCode.size() != 0) {
 			_log.Log(LOG_NORM, "NestOAuthAPI: Will request an API key based on Product Id, Product Secret and PIN code.");
 
+			std::string sTmpToken = "";
 			// Request the token
-			std::string sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
+			try
+			{
+				sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
+			}
+			catch (std::exception& e)
+			{
+				std::string what = e.what();
+				_log.Log(LOG_ERROR, ("NestOAuthAPI: Error retrieving API key: " + what).c_str());
+				return false;
+			}
 
 			if (sTmpToken.size() > 0) {
 				_log.Log(LOG_NORM, ("NestOAuthAPI: Received an API key to use for future requests: " + sTmpToken).c_str());
@@ -188,7 +198,7 @@ bool CNestOAuthAPI::Login()
 	}
 
 	// Check if we still don't have an access token available
-	if (m_OAuthApiAccessToken.size() == 0) 
+	if (m_OAuthApiAccessToken.empty() || m_OAuthApiAccessToken.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: API Key was not supplied and failed to fetch one.");
 		Logout();
@@ -685,35 +695,58 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 		return "";
 	}
 
+	_log.Log(LOG_NORM, "NestOAuthAPI: Preparing URL");
+
 	std::string sURL = "https://api.home.nest.com/oauth2/access_token";
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	std::ostringstream s;
-	s << "code=" << pincode << "&client_id=" << productid << "&client_secret=" << secret << "&grant_type=authorization_code";
+
+	std::string sProductid = productid;
+	std::string sSecret = secret;
+	std::string sPincode = pincode;
+
+	boost::trim(sProductid);
+	boost::trim(sSecret);
+	boost::trim(sPincode);
+
+	s << "code=" << sPincode << "&client_id=" << sProductid << "&client_secret=" << sSecret << "&grant_type=authorization_code";
 	std::string sPostData = s.str();
 
+	_log.Log(LOG_NORM, "NestOAuthAPI: postdata= " + sPostData);
+	_log.Log(LOG_NORM, "NestOAuthAPI: Doing POST request to URL: " + sURL);
 	if (!HTTPClient::POST(sURL, sPostData, ExtraHeaders, sResult, true))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Error performing access token fetch request.");
 		return "";
 	}
+	_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
 
+	_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
 	Json::Value root;
 	Json::Reader jReader;
 	bool bRet = jReader.parse(sResult, root);
+	_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
 	if ((!bRet) || (!root.isObject()))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse JSON data or no data received.");
 		return "";
+	}
+	else {
+		_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
 	}
 	if (root.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: parsed JSON data contains no elements!");
 		return "";
 	}
+	else {
+		_log.Log(LOG_NORM, "NestOAuthAPI: parsed JSON data contains more than 0 elements");
+	}
 	
+	_log.Log(LOG_NORM, "NestOAuthAPI: Fetching access_token from JSON object");
 	std::string sReceivedAccessToken = root["access_token"].asString();
-	_log.Log(LOG_NORM, ("NestOAuthAPI: Fetched access token: " + sReceivedAccessToken).c_str());
+	_log.Log(LOG_NORM, ("NestOAuthAPI: Fetched access token: " + sReceivedAccessToken));
 	return sReceivedAccessToken;
 }
 
