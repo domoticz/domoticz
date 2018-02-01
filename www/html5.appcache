@@ -1,6 +1,10 @@
 CACHE MANIFEST
 
+<<<<<<< HEAD
 # ref 1473
+=======
+# ref 1476
+>>>>>>> refs/remotes/domoticz/development
 
 CACHE:
 # CSS

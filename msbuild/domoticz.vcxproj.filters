@@ -489,6 +489,9 @@
     <Filter Include="Devices\eHouse">
       <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{879cf5f9-d3b3-4ee3-a4c1-bd157db7abe3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2139,6 +2142,9 @@
     <ClInclude Include="..\hardware\Comm5SMTCP.h">
       <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2875,6 +2881,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
       <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -219,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -771,6 +772,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
+		{ pTypeLimitlessLights, sTypeLimitlessLivCol, "LivCol" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },

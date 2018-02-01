@@ -383,7 +383,7 @@ void COpenWebNetTCP::MonitorFrames()
 			    if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
                 {
                     // Monitor session correctly open
-                    _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+                    _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
                     sOnConnected(this);
                 }
                 else
@@ -1020,7 +1020,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			case 32:
 				if (where.substr(0, 1) != "3")
 				{
-					_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str(), who.c_str());
 					return;
 				}
 
@@ -1038,8 +1038,32 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
 				break;
 			default:
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str()), who.c_str();
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str(), who.c_str());
 				return;
+			}
+			break;
+		case WHO_ENERGY_MANAGEMENT:                     // 18
+			if (!iter->IsMeasureFrame())
+			{
+				if (iter->IsNormalFrame())
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+				else
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				return;
+			}
+			devname = OPENWEBNET_ENERGY_MANAGEMENT;
+			devname += " " + where;
+			switch (atoi(dimension.c_str()))
+			{
+			case ENERGY_MANAGEMENT_DIMENSION_ACTIVE_POWER:
+				UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), 255, devname.c_str());
+				break;
+			case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
+				UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), 255, devname.c_str());
+				break;
+			default:
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+				break;
 			}
 			break;
 		case WHO_ENERGY_MANAGEMENT:                     // 18
@@ -1311,7 +1335,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
         return false;
     }
     // Command session correctly open
-    _log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+    _log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
     // Command session correctly open -> write command
 	int bytesWritten = commandSocket->write(command.frame_open.c_str(), command.frame_open.length());

@@ -75,7 +75,7 @@ bool Comm5SMTCP::StopHardware()
 
 void Comm5SMTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "Comm5 SM-XXXX: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bIsStarted = true;
 
 	sOnConnected(this);
@@ -190,7 +190,7 @@ void Comm5SMTCP::OnError(const boost::system::error_code& error)
 	case boost::asio::error::access_denied:
 	case boost::asio::error::host_unreachable:
 	case boost::asio::error::timed_out:
-		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Comm5 SM-XXXX: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		break;
 	case boost::asio::error::eof:
 	case boost::asio::error::connection_reset:

@@ -6772,7 +6772,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 		while (itt != m_background_task_queue.end())
 		{
 			if (_log.isTraceEnabled())
-				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%" PRId64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
@@ -7102,9 +7102,15 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
-		else if (OnAction.find("script://")!=std::string::npos)
+		else if (OnAction.find("script://") != std::string::npos)
 		{
 			//Execute possible script
+			if (OnAction.find("../") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OnAction.c_str());
+				return false;
+			}
+
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
 			if (scriptname.find("/") != 0)
@@ -7139,6 +7145,12 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	else if (OffAction.find("script://") != std::string::npos)
 	{
 		//Execute possible script
+		if (OffAction.find("../") != std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OffAction.c_str());
+			return false;
+		}
+
 		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
 		if (scriptname.find("/") != 0)
@@ -8133,4 +8145,3 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 	}
 	return true;
 }
-

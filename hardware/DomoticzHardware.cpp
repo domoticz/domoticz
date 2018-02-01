@@ -652,6 +652,8 @@ void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, 
 {
 	int level = int(Level);
 	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
+	if (defaultname == "LIVCOL")
+		subType = sTypeLimitlessLivCol;
 	//Send as LimitlessLight
 	_tLimitlessLights lcmd;
 	lcmd.id = NodeID;

@@ -571,7 +571,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
-		_log.Log(LOG_STATUS, "Logitech Media Server: %i player-switch(es) found.", result.size());
+		_log.Log(LOG_STATUS, "Logitech Media Server: %lu player-switch(es) found.", result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{
