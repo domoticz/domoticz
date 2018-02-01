@@ -9,11 +9,11 @@ return {
 	        'at sunrise'
         }
     },
-    execute = function(domoticz, _, triggerInfo)
+    execute = function(domoticz, timer)
     	-- external light switch name
     	local external_light = domoticz.devices('External light')
 
-        if (triggerInfo.trigger == 'at sunset') then
+        if (timer.trigger == 'at sunset') then
 	        external_light.switchOn()
         else
 	        external_light.switchOff()

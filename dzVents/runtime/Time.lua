@@ -1,6 +1,10 @@
 local utils = require('Utils')
 local _MS -- kind of a cache so we don't have to extract ms every time
 
+local isEmpty = function(v)
+	return (v == nil or v == '')
+end
+
 local function getTimezone()
 	local now = os.time()
 	local dnow = os.date('*t', now)
@@ -151,13 +155,24 @@ local function Time(sDate, isUTC, _testMS)
 		sec= now.sec
 	}
 
-	local msDiff, secDiff, minDiff, hourDiff, dayDiff = getDiffParts(os.difftime(tToday, dDate), ms, getMS())
+	local msDiff, secDiff, minDiff, hourDiff, dayDiff, cmp = getDiffParts(os.difftime(tToday, dDate), ms, getMS())
+
+	if (cmp > 0) then
+		-- time is in the future so the xxAgo items should be negative
+		msDiff = -msDiff
+		secDiff = -secDiff
+		minDiff = -minDiff
+		hourDiff = -hourDiff
+		dayDiff = -dayDiff
+	end
 
 	if (isUTC) then
 		localTime = os.date('*t', os.time(time) + getTimezone())
 		self = localTime
 		self['utcSystemTime'] = now
 		self['utcTime'] = time
+		self['utcTime'].minutes = time.min
+		self['utcTime'].seconds = time.sec
 	else
 		self = time
 	end
@@ -165,7 +180,9 @@ local function Time(sDate, isUTC, _testMS)
 	self.rawDate = self.year .. '-' .. self.month .. '-' .. self.day
 	self.rawTime = self.hour .. ':' .. self.min .. ':' .. self.sec
 	self.milliSeconds = ms
+	self.milliseconds = ms
 	self.dayAbbrOfWeek = LOOKUP[self.wday]
+	self.week = tonumber(os.date('%V', dDate))
 
 	self['raw'] = sDate
 	self['isToday'] = (now.year == time.year and
@@ -173,10 +190,14 @@ local function Time(sDate, isUTC, _testMS)
 		now.day==time.day)
 
 	self['msAgo'] = msDiff
+	self['millisecondsAgo'] = msDiff
 	self['minutesAgo'] = minDiff
 	self['secondsAgo'] = secDiff
 	self['hoursAgo'] = hourDiff
 	self['daysAgo'] = dayDiff
+
+	self['minutes'] = self.min
+	self['seconds'] = self.sec
 
 	self['secondsSinceMidnight'] = self.hour * 3600 + self.min * 60 + self.sec
 	self['utils'] = utils
@@ -191,18 +212,22 @@ local function Time(sDate, isUTC, _testMS)
 
 	self['current'] = os.date('*t')
 
+	-- compares to self against the provided Time object (t)
 	function self.compare(t)
 		if (t.raw ~= nil) then
 
 			local msDiff, secDiff, minDiff, hourDiff, dayDiff, cmp =
-				getDiffParts(os.difftime(dDate, t.dDate), t.milliSeconds, ms) -- offset is 'our' ms value
+				getDiffParts(os.difftime(dDate, t.dDate), t.milliseconds, ms) -- offset is 'our' ms value
 
 			return {
 				mins = minDiff,
 				hours = hourDiff,
 				secs = secDiff,
+				seconds = secDiff,
+				minutes = minDiff,
 				days = dayDiff,
 				ms = msDiff,
+				milliseconds = msDiff,
 				compare = cmp -- 0 == equal, -1==(t earlier than self), 1=(t later than self)
 			}
 		else
@@ -210,24 +235,9 @@ local function Time(sDate, isUTC, _testMS)
 		end
 	end
 
+	-- return ISO format
 	function self.getISO()
 		return os.date("!%Y-%m-%dT%TZ", os.time(time))
-	end
-
-	function getMinutesBeforeSunrise(minutes)
-		return _G.timeofday['SunriseInMinutes'] - minutes
-	end
-
-	function getMinutesAfterSunrise(minutes)
-		return _G.timeofday['SunriseInMinutes'] + minutes
-	end
-
-	function getMinutesBeforeSunset(minutes)
-		return _G.timeofday['SunsetInMinutes'] - minutes
-	end
-
-	function getMinutesAfterSunset(minutes)
-		return _G.timeofday['SunsetInMinutes'] + minutes
 	end
 
 	function getSunset()
@@ -238,6 +248,27 @@ local function Time(sDate, isUTC, _testMS)
 		return _G.timeofday['SunriseInMinutes']
 	end
 
+	-- return minutes before sunrise
+	function getMinutesBeforeSunrise(minutes)
+		return getSunrise() - minutes
+	end
+
+	-- return minutes after sunrise
+	function getMinutesAfterSunrise(minutes)
+		return getSunrise() + minutes
+	end
+
+	-- return minutes before sunset
+	function getMinutesBeforeSunset(minutes)
+		return getSunset() - minutes
+	end
+
+	-- return minutes after sunset
+	function getMinutesAfterSunset(minutes)
+		return getSunset() + minutes
+	end
+
+	-- returns hours part and minutes part of the passed-in minutes amount
 	function minutesToTime(minutes)
 
 		local hh = math.floor(minutes / 60)
@@ -246,6 +277,7 @@ local function Time(sDate, isUTC, _testMS)
 		return hh, mm
 	end
 
+	-- returns true if the current time is within a time range: startH:startM and stopH:stopM
 	local function timeIsInRange(startH, startM, stopH, stopM)
 
 		local function getMinutes(hours, minutes)
@@ -269,7 +301,25 @@ local function Time(sDate, isUTC, _testMS)
 		return (curTVal >= startTVal and curTVal <= stopTVal)
 	end
 
+	-- returns true if self.day is on the rule: on day1,day2...
 	function self.ruleIsOnDay(rule)
+		local days = string.match(rule, 'on% (.+)$')
+		if (isEmpty(days)) then
+			return nil
+		end
+
+		local isDayRule = false
+		for i,day in pairs({'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'}) do
+			if (string.find(days, day) ~= nil) then
+				isDayRule = true
+				break
+			end
+		end
+
+		if (not isDayRule) then
+			return nil
+		end
+
 		local days = string.match(rule, 'on% (.+)$')
 		if (days ~= nil) then
 			-- 'on <day>' was specified
@@ -283,6 +333,119 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'on <days>' was specified in the rule
 	end
 
+	-- returns true if self.week matches rule in week 1,3,4 / every odd-week, every even-week, in week 5-12,23,44
+	function self.ruleIsInWeek(rule)
+
+		if (string.find(rule, 'every odd week') and not ((self.week % 2) == 0)) then
+			return true
+		end
+
+		if (string.find(rule, 'every even week') and ((self.week % 2) == 0)) then
+			return true
+		end
+
+		local weeks = string.match(rule, 'in week% ([0-9%-%,% ]*)')
+
+		if (weeks == nil) then
+			return nil
+		end
+
+		-- from here on, if there is a match we return true otherwise false
+
+		-- remove spaces and add a comma
+		weeks = string.gsub(weeks, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
+
+		-- do a quick scan first to see if we already have a match without needing to search for ranges
+		if (string.find(weeks, tostring(self.week) .. ',')) then
+			return true
+		end
+
+		-- now get the ranges
+		for set, from, to in string.gmatch(weeks, '(([0-9]*)-([0-9]*))') do
+			to = tonumber(to)
+			from = tonumber(from)
+			if (isEmpty(from) and not isEmpty(to) and self.week <= to ) then
+				return true
+			end
+			if (not isEmpty(from) and isEmpty(to) and self.week >= from ) then
+				return true
+			end
+			if (not isEmpty(from) and not isEmpty(to) and to ~= nil) then
+				if (self.week >= from and self.week <= to) then
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	function self.ruleIsOnDate(rule)
+		local dates = string.match(rule, 'on% ([0-9%*%/%,% %-]*)')
+		if (isEmpty(dates)) then
+			return nil
+		end
+		-- remove spaces and add a comma
+		dates = string.gsub(dates, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
+
+		-- do a quick scan first to see if we already have a match without needing to search for ranges and wildcards
+		if (string.find(dates, tostring(self.day) .. '/' .. tostring(self.month) .. ',')) then
+			return true
+		end
+
+		-- wildcards
+		for set, day, month in string.gmatch(dates, '(([0-9%*]*)/([0-9%*]*))') do
+			if (day == '*' and month ~= '*') then
+				if (self.month == tonumber(month)) then
+					return true
+				end
+			end
+			if (day ~= '*' and month == '*') then
+				if (self.day == tonumber(day)) then
+					return true
+				end
+			end
+		end
+
+		local getParts = function(set)
+			local day, month = string.match(set, '([0-9]+)/([0-9]+)')
+			return tonumber(day), tonumber(month)
+		end
+
+		--now get the ranges
+		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
+			local fromDay, toDay, fromMonth, toMonth
+
+			if (isEmpty(fromSet) and not isEmpty(toSet)) then
+				toDay, toMonth = getParts(toSet)
+				if ((self.month < toMonth) or (self.month == toMonth and self.day <= toDay)) then
+					return true
+				end
+			end
+
+			if (not isEmpty(fromSet) and isEmpty(toSet)) then
+				fromDay, fromMonth = getParts(fromSet)
+				if ((self.month > fromMonth) or (self.month == fromMonth and self.day >= fromDay)) then
+					return true
+				end
+			end
+
+			toDay, toMonth = getParts(toSet)
+			fromDay, fromMonth = getParts(fromSet)
+			if (
+				( self.month > fromMonth and self.month < toMonth ) or
+				( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
+				( self.month == fromMonth and self.day >= fromDay ) or
+				( self.month == toMonth and self.day <= toDay )
+			) then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	--returns true if self.time is at sunrise
 	function self.ruleIsAtSunrise(rule)
 		if (string.find(rule, 'at sunrise')) then
 			local minutesnow = self.min + self.hour * 60
@@ -292,6 +455,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at sunrise' was specified in rule
 	end
 
+	-- returns true if self.time is in the rule 'xx minutes before sunrise'
 	function self.ruleIsBeforeSunrise(rule)
 		-- xx minutes before sunrise
 
@@ -307,6 +471,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no xx minutes before sunrise found
 	end
 
+	-- return true if the self.time is in the rule xx minutes after sunrise
 	function self.ruleIsAfterSunrise(rule)
 		-- xx minutes after sunrise
 
@@ -322,6 +487,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no xx minutes after sunrise found
 	end
 
+	-- returns true if self.time is at sunset
 	function self.ruleIsAtSunset(rule)
 		if (string.find(rule, 'at sunset')) then
 			local minutesnow = self.min + self.hour * 60
@@ -331,6 +497,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at sunset' was specified in the rule
 	end
 
+	-- returns true if self.time is before sunset
 	function self.ruleIsBeforeSunset(rule)
 		-- xx minutes before sunset
 
@@ -346,6 +513,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no xx minutes before sunset found
 	end
 
+	--returns true if self.time is after sunset
 	function self.ruleIsAfterSunset(rule)
 		-- xx minutes after sunset
 
@@ -361,6 +529,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no xx minutes before sunset found
 	end
 
+	-- returns true if self.time is after sunset and before sunrise
 	function self.ruleIsAtNight(rule)
 		if (string.find(rule, 'at nighttime')) then
 			return _G.timeofday['Nighttime'] -- coming from domotic
@@ -368,6 +537,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at nighttime' was specified in the rule
 	end
 
+	-- return true if self.time is after sunrise and before sunset (daytime)
 	function self.ruleIsAtDayTime(rule)
 		if (string.find(rule, 'at daytime')) then
 			return _G.timeofday['Daytime'] -- coming from domotic
@@ -375,6 +545,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no 'at daytime' was specified
 	end
 
+	-- returns true if self.min fits in the every xx minute /every other minute/every minute rule
 	function self.ruleMatchesMinuteSpecification(rule)
 
 		local function fitsMinuteRule(m)
@@ -402,6 +573,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- nothing specified for this rule
 	end
 
+	-- return true if self.hour fits the every hour/every other hour/every xx hours rule
 	function self.ruleMatchesHourSpecification(rule)
 
 		local function fitsHourRule(h)
@@ -430,6 +602,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- nothing specified for this rule
 	end
 
+	-- return true if self.time is at hh:mm / *:mm/ hh:*
 	function self.ruleMatchesTime(rule)
 
 		local hh, mm
@@ -461,6 +634,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil -- no at hh:mm found in rule
 	end
 
+	-- returns true if self.time is in time range: at hh:mm-hh:mm
 	function self.ruleMatchesTimeRange(rule)
 		local fromH, fromM, toH, toM = string.match(rule, 'at% ([0-9%*]+):([0-9%*]+)-([0-9%*]+):([0-9%*]+)')
 
@@ -483,6 +657,7 @@ local function Time(sDate, isUTC, _testMS)
 
 	end
 
+	-- returns true if 'moment' matches with any of the moment-like time rules
 	function getMoment(moment)
 		local minutes
 		-- first check if it in the form of hh:mm
@@ -531,6 +706,7 @@ local function Time(sDate, isUTC, _testMS)
 		return nil
 	end
 
+	-- returns true if self.time is in a between xx and yy range
 	function self.ruleMatchesBetweenRange(rule)
 		-- between 16:20 and 23:15
 		-- between sunset and sunrise
@@ -551,9 +727,9 @@ local function Time(sDate, isUTC, _testMS)
 		end
 
 		return timeIsInRange(fromHH, fromMM, toHH, toMM)
-
 	end
 
+	-- returns true if self.time matches the rule
 	function self.matchesRule(rule)
 		if (string.len(rule == nil and "" or rule) == 0) then
 			return false
@@ -570,6 +746,22 @@ local function Time(sDate, isUTC, _testMS)
 			total = res ~= nil and (total or res) or total
 		end
 
+		res = self.ruleIsInWeek(rule)
+		if (res == false) then
+			-- in week <weeks> was specified but 'now' is not
+			-- on any of the specified weeks
+			return false
+		end
+		updateTotal(res)
+
+		res = self.ruleIsOnDate(rule)
+		if (res == false) then
+			-- on date <dates> was specified but 'now' is not
+			-- on any of the specified dates
+			return false
+		end
+		updateTotal(res)
+
 		res = self.ruleIsOnDay(rule) -- range
 		if (res == false) then
 			-- on <days> was specified but 'now' is not
@@ -577,7 +769,6 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
-
 
 		local _between = self.ruleMatchesBetweenRange(rule) -- range
 		if (_between == false) then
@@ -677,8 +868,6 @@ local function Time(sDate, isUTC, _testMS)
 			return false
 		end
 		updateTotal(res)
-
-
 
 		return total
 

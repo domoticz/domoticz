@@ -45,7 +45,7 @@ return {
 			end
 	   },
     },
-	execute = function(domoticz, dummy, info)
-		domoticz.log('Timer event was triggered by ' .. info.trigger, domoticz.LOG_INFO)
+	execute = function(domoticz, timer)
+		domoticz.log('Timer event was triggered by ' .. timer.trigger, domoticz.LOG_INFO)
 	end
 }

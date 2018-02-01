@@ -17,7 +17,7 @@ return {
 		device.wetness = data.data._nValue
 
 		function device.updateWetness(wetness)
-			return device.update(tostring(wetness), 0)
+			return device.update(wetness)
 		end
 
 	end
