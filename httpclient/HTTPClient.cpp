@@ -197,15 +197,20 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
 		res = curl_easy_perform(curl);
 
-		if (res == CURLE_HTTP_RETURNED_ERROR)
+		if (res != CURLE_OK)
 		{
-			// Push response code to end of vHeaderData vector
-			long responseCode;
-			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+			// Push response/error code to end of vHeaderData vector
 			std::stringstream ss;
-			ss << responseCode;
+			if (res == CURLE_HTTP_RETURNED_ERROR)
+			{
+				long responseCode;
+				curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+				ss << responseCode;
+				LogError(responseCode);
+			}
+			else
+				ss << res;
 			vHeaderData.push_back(ss.str());
-			LogError(responseCode);
 		}
 
 		curl_easy_cleanup(curl);
