@@ -881,25 +881,14 @@ std::string MakeHtml(const std::string &txt)
 //Prevent against XSS (Cross Site Scripting)
 std::string SafeHtml(const std::string &txt)
 {
-	std::string tmpstr = txt;
-	stdupper(tmpstr);
+    std::string sRet = txt;
 
-	bool bHaveFoundDirtyHTML = false;
-
-	if (tmpstr.find("<SCRIPT>") != std::string::npos)
-	{
-		stdreplace(tmpstr, "<SCRIPT>", "<DOMO>");
-		stdreplace(tmpstr, "</SCRIPT>", "</DOMO>");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (tmpstr.find("JAVASCRIPT") != std::string::npos)
-	{
-		stdreplace(tmpstr, "JAVASCRIPT", "DOMOSCRIPT");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (bHaveFoundDirtyHTML)
-		return tmpstr;
-	return txt;
+    stdreplace(sRet, "&", "&amp;");
+    stdreplace(sRet, "\"", "&quot;");
+    stdreplace(sRet, "'", "&apos;");
+    stdreplace(sRet, "<", "&lt;");
+    stdreplace(sRet, ">", "&gt;");
+    return sRet;
 }
 
 
