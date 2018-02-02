@@ -1070,30 +1070,6 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				break;
 			}
 			break;
-		case WHO_ENERGY_MANAGEMENT:                     // 18
-			if (!iter->IsMeasureFrame())
-			{
-				if (iter->IsNormalFrame())
-					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
-				else
-					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
-				return;
-			}
-			devname = OPENWEBNET_ENERGY_MANAGEMENT;
-			devname += " " + where;
-			switch (atoi(dimension.c_str()))
-			{
-			case ENERGY_MANAGEMENT_DIMENSION_ACTIVE_POWER:
-				UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), 255, devname.c_str());
-				break;
-			case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
-				UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), 255, devname.c_str());
-				break;
-			default:
-				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
-				break;
-			}
-			break;
 		case WHO_SCENARIO:                              // 0
 		case WHO_LOAD_CONTROL:                          // 3
 		case WHO_DOOR_ENTRY_SYSTEM:                     // 6
