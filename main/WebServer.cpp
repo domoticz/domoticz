@@ -1306,6 +1306,9 @@ namespace http {
 			else if (htype == HTYPE_EnphaseAPI) {
 				//All fine here
 			}
+			else if (htype == HTYPE_EcoCompteur) {
+				//all fine here!
+			}
 			else
 				return;
 
