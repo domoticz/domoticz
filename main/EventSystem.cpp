@@ -3331,8 +3331,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			_log.Log(LOG_ERROR, "EventSystem: UpdateDevice, invalid parameters!");
 			return false;
 		}
-		int nValue = -1;
-		uint8_t Protected;
+		int nValue = -1, Protected = -1;
 		uint64_t idx;
 		std::string sValue;
 		std::stringstream ssIdx(strarray[0]);
@@ -3344,7 +3343,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		if (strarray.size() > 3 && !strarray[3].empty())
 			Protected = atoi(strarray[3].c_str());
 
-		UpdateDevice(idx, nValue, sValue, (Protected ? true : false), false);
+		UpdateDevice(idx, nValue, sValue, Protected, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3431,7 +3430,7 @@ void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 	}
 }
 
-void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
+void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
 {
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
@@ -3460,8 +3459,8 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			db_sValue = sValue;
 		if (nValue != -1 || !sValue.empty())
 			db_LastUpdate = szLastUpdate;
-
-		db_Protected = Protected ? 1 : 0;
+		if (Protected != -1)
+			db_Protected = Protected;
 
 		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d, sValue='%q', Protected=%d, LastUpdate='%s' WHERE (ID=='%" PRIu64 "')",
 			db_nValue,
