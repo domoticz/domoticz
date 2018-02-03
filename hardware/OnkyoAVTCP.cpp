@@ -196,7 +196,7 @@ bool OnkyoAVTCP::StopHardware()
 
 void OnkyoAVTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"OnkyoAVTCP: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 
@@ -260,7 +260,7 @@ void OnkyoAVTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "OnkyoAVTCP: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "OnkyoAVTCP: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||
@@ -582,7 +582,6 @@ bool OnkyoAVTCP::ReceiveXML(const char *pData, int Len)
 			EnsureSwitchDevice(ID_SLI + id - 1, options.c_str());
 
 			// Send queries for it, and the power and volume for this zone.
-			char query[8];
 			SendPacket(switch_types[ID_SLI + id - 1].iscpCmd, "QSTN");
 			SendPacket(switch_types[ID_PWR + id - 1].iscpCmd, "QSTN");
 			SendPacket(switch_types[ID_MVL + id - 1].iscpCmd, "QSTN");

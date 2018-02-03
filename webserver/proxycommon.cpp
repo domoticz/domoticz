@@ -141,7 +141,7 @@ void CValueLengthPart::GetPdu(void **data, size_t *length)
 int CValueLengthPart::GetNextPart(void **data, size_t *length)
 {
 	if (_len < SIZE_SIZE_T) {
-		_log.Log(LOG_ERROR, "GetNextPart: _len too small (%d).\n", _len);
+		_log.Log(LOG_ERROR, "GetNextPart: _len too small (%zu).\n", _len);
 		return 0;
 	}
 	size_t len = 0;

@@ -470,6 +470,10 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// click/double click
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
+				else if (Name == "Xiaomi Smart Push Button") {
+					// click/double click
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Shake", false));
+				}
 				else if (Name == "Xiaomi Cube") {
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
@@ -847,6 +851,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Selector;
 						name = "Xiaomi Square Wireless Switch";
 					}
+					else if (model == "sensor_switch.aq3") {
+						type = STYPE_Selector;
+						name = "Xiaomi Smart Push Button";
+					}
 					else if ((model == "magnet") || (model == "sensor_magnet.aq2")) {
 						type = STYPE_Contact;
 						name = "Xiaomi Door Sensor";
@@ -933,11 +941,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 						}
 						else if ((model == "smoke") || (model == "natgas") || (model == "sensor_wleak.aq1")) {
+							if (model == "sensor_wleak.aq1" && battery != 255) {
+								level = 0;
+							}
 							if ((alarm == "1") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
-							else if ((alarm == "0") || (status == "no_leak")) {
+							else if ((alarm == "0") || (status == "no_leak") || (status == "iam")) {
 								level = 0;
 							}
 							if (density != "")
@@ -955,7 +966,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake")) {
 							level = 20;
 							on = true;
 						}
@@ -1161,7 +1172,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 			}
 		}
 		if (showmessage && m_OutputMessage) {
-			_log.Log(LOG_STATUS, data_);
+			_log.Log(LOG_STATUS, "%s", data_);
 		}
 		start_receive();
 	}

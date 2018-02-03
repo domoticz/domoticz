@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+  <!-- https://products.z-wavealliance.org/products/1901 -->
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="20" value="1" label="Overload Protection" units="" size="1" min="0" max="1" type="list">
+      <Help>turns relay off once voltage exceeds 16.5A for over 5 secs if enabled</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Enabled"/>
+    </Value>
+    <Value genre="config" instance="1" index="21" value="0" label="On/Off Status Recovery After Power Failure" units="" size="1" min="0" max="2" type="list">
+      <Help>Recovery state for power failure</Help>
+      <Item value="0" label="Previous setting"/>
+      <Item value="1" label="ON"/>
+      <Item value="2" label="OFF"/>
+    </Value>
+    <Value genre="config" instance="1" index="24" value="1" label="On/Off Status Change Notifications " units="" size="1" min="0" max="2" type="list">
+      <Help>Send notifications to associated devices</Help>
+      <Item value="0" label="Disabled"/>
+      <Item value="1" label="Send any change"/>
+      <Item value="2" label="Send manual changes"/>
+    </Value>
+    <Value genre="config" instance="1" index="27" value="0" label="LED Indicator Control" units="" size="1" min="0" max="1" type="list">
+      <Help>LED Indicator Control</Help>
+      <Item value="0" label="Display power consumption always"/>
+      <Item value="1" label="Display power consumption at state change"/>
+    </Value>
+    <Value genre="config" instance="1" index="151" value="50" label="Power Report Value Threshold" units="Watts" size="2" min="0" max="65535" type="short">
+      <Help>Minimum change in watts to report</Help>
+    </Value>
+    <Value genre="config" instance="1" index="152" value="10" label="Power Report Percentage Threshold" units="%" size="1" min="0" max="255" type="byte">
+      <Help>Minimum percentage change to report</Help>
+    </Value>
+    <Value genre="config" instance="1" index="171" value="30" label="Power Report Frequency" units="seconds" size="4" min="0" max="2678400" type="int">
+      <Help>How often to report power consumption (W) in secs</Help>
+    </Value>
+    <Value genre="config" instance="1" index="172" value="300" label="Energy Report Frequency " units="seconds" size="4" min="0" max="2678400" type="int">
+      <Help>How often to report energy usage (KWH) in secs</Help>
+    </Value>
+    <Value genre="config" instance="1" index="173" value="0" label="Voltage Report Frequency " units="seconds" size="4" min="0" max="2678400" type="int">
+      <Help>How often to report voltage (V) in secs</Help>
+    </Value>
+    <Value genre="config" instance="1" index="174" value="0" label="Electricity Report Frequency" units="seconds" size="4" min="0" max="2678400" type="int">
+      <Help>How often to report electrical current (A) in secs</Help>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5" />
+    </Associations>
+  </CommandClass>
+
+</Product>

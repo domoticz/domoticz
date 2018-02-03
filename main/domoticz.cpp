@@ -696,7 +696,7 @@ int main(int argc, char**argv)
 
 	if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
 	{
-		_log.Log(LOG_NORM, szHelp);
+		_log.Log(LOG_NORM, "%s", szHelp);
 		return 0;
 	}
 

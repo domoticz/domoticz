@@ -912,7 +912,7 @@ bool CPanasonic::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Panasonic Plugin: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Panasonic Plugin: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 

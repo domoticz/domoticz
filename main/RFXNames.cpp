@@ -130,17 +130,17 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_BEFORESUNATSOUTH, "Before Sun at South" },
 		{ TTYPE_AFTERSUNATSOUTH, "After Sun at South" },
 		{ TTYPE_BEFORECIVTWSTART, "Before Civil Twilight Start" },
-		{ TTYPE_AFTERCIVTWSTART, "After Civil Twiligt Start" },
+		{ TTYPE_AFTERCIVTWSTART, "After Civil Twilight Start" },
 		{ TTYPE_BEFORECIVTWEND, "Before Civil Twilight End" },
-		{ TTYPE_AFTERCIVTWEND, "After Civil Twiligt End" },
+		{ TTYPE_AFTERCIVTWEND, "After Civil Twilight End" },
 		{ TTYPE_BEFORENAUTTWSTART, "Before Nautical Twilight Start" },
-		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twiligt Start" },
+		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twilight Start" },
 		{ TTYPE_BEFORENAUTTWEND, "Before Nautical Twilight End" },
-		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twiligt End" },
+		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twilight End" },
 		{ TTYPE_BEFOREASTTWSTART, "Before Astronomical Twilight Start" },
-		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twiligt Start" },
+		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twilight Start" },
 		{ TTYPE_BEFOREASTTWEND, "Before Astronomical Twilight End" },
-		{ TTYPE_AFTERASTTWEND, "After Astronomical Twiligt End" },
+		{ TTYPE_AFTERASTTWEND, "After Astronomical Twilight End" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
@@ -219,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -229,6 +230,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5SMTCP, "Comm5 SM-XXXX with LAN interface" },
 		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
@@ -770,6 +772,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
+		{ pTypeLimitlessLights, sTypeLimitlessLivCol, "LivCol" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -3291,6 +3294,48 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
 	case HTYPE_USBtinGateway:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool IsNetworkDevice(const _eHardwareTypes htype)
+{
+	switch (htype) {
+	case HTYPE_RFXLAN:
+	case HTYPE_P1SmartMeterLAN:
+	case HTYPE_YouLess:
+	case HTYPE_RazberryZWave:
+	case HTYPE_OpenThermGatewayTCP:
+	case HTYPE_LimitlessLights:
+	case HTYPE_SolarEdgeTCP:
+	case HTYPE_WOL:
+	case HTYPE_ECODEVICES:
+	case HTYPE_Mochad:
+	case HTYPE_MySensorsTCP:
+	case HTYPE_MySensorsMQTT:
+	case HTYPE_MQTT:
+	case HTYPE_FRITZBOX:
+	case HTYPE_ETH8020:
+	case HTYPE_RelayNet:
+	case HTYPE_Sterbox:
+	case HTYPE_KMTronicTCP:
+	case HTYPE_KMTronicUDP:
+	case HTYPE_SOLARMAXTCP:
+	case HTYPE_SatelIntegra:
+	case HTYPE_RFLINKTCP:
+	case HTYPE_Comm5TCP:
+	case HTYPE_Comm5SMTCP:
+	case HTYPE_CurrentCostMeterLAN:
+	case HTYPE_NefitEastLAN:
+	case HTYPE_DenkoviSmartdenLan:
+	case HTYPE_DenkoviSmartdenIPInOut:
+	case HTYPE_Ec3kMeterTCP:
+	case HTYPE_MultiFun:
+	case HTYPE_ZIBLUETCP:
+	case HTYPE_OnkyoAVTCP:
+	case HTYPE_eHouseTCP:
 		return true;
 	default:
 		return false;

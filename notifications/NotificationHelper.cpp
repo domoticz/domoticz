@@ -185,7 +185,7 @@ void CNotificationHelper::LoadConfig()
 		}
 	}
 	logline << " (" << active << "/" << tot << ")";
-	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
+	_log.Log(LOG_NORM, logline.str());
 }
 
 std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue)

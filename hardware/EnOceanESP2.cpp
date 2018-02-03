@@ -1300,7 +1300,7 @@ bool CEnOceanESP2::ParseData()
 	{
 	case C_ORG_INF_IDBASE:
 		m_id_base = (pFrame->DATA_BYTE3 << 24) + (pFrame->DATA_BYTE2 << 16) + (pFrame->DATA_BYTE1 << 8) + pFrame->DATA_BYTE0;
-		_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
+		_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08lx",m_id_base);
 		break;
 	case C_ORG_RPS:
 		if (pFrame->STATUS & S_RPS_NU) {
@@ -1369,7 +1369,7 @@ bool CEnOceanESP2::ParseData()
 					int manufacturer = ((pFrame->DATA_BYTE2 & 7) << 8) | pFrame->DATA_BYTE1;
 					int profile = pFrame->DATA_BYTE3 >> 2;
 					int ttype = ((pFrame->DATA_BYTE3 & 3) << 5) | (pFrame->DATA_BYTE2 >> 3);
-					_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)", 
+					_log.Log(LOG_NORM,"EnOcean: 4BS, Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 						id, manufacturer,Get_EnoceanManufacturer(manufacturer),
 						profile,ttype,Get_Enocean4BSType(0xA5,profile,ttype));
 

@@ -1253,7 +1253,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 
 	int slevel = atoi(result[0][2].c_str());
 	std::stringstream sstr;
-	sstr << int(slevel * 100 / 15);
+	sstr << int(slevel);
 	sSwitchValue = sstr.str();
 	return true;
 }
@@ -1360,7 +1360,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (light_command == light2_sSetLevel)
 			{
-				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
+				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
@@ -1805,6 +1805,10 @@ void MySensorsBase::ParseLine()
 			//Register response from GW
 			while (1 == 0);
 			break;
+		case I_INCLUSION_MODE:
+			_log.Log(LOG_NORM, "MySensors: Inclusion mode=%s", payload.c_str());
+		  	m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) ? true : false;
+		  	break;
 		case I_DEBUG:
 			//Debug message
 			while (1 == 0);

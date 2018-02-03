@@ -17,7 +17,7 @@ return {
 		device.moisture = data.data._nValue --cB centibar
 
 		device['updateSoilMoisture'] = function (moisture)
-			return device.update(tostring(moisture), 0)
+			return device.update(moisture, 0)
 		end
 
 	end

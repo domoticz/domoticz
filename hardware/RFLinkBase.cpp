@@ -195,6 +195,7 @@ CRFLinkBase::CRFLinkBase()
 	m_rfbufferpos=0;
 	memset(&m_rfbuffer,0,sizeof(m_rfbuffer));
 	/*
+	ParseLine("20;4F;LIVCOL;ID=1a2b3c4;SWITCH=00;RGBW=ec5a;CMD=ON;");
 	ParseLine("20;08;NewKaku;ID=31c42a;SWITCH=2;CMD=OFF;");
 	ParseLine("20;3A;NewKaku;ID=c142;SWITCH=1;CMD=ALLOFF;");
 	ParseLine("20;14;Oregon BTHR;ID=5a00;TEMP=00d1;HUM=29;BARO=0407;BAT=LOW;");
@@ -350,7 +351,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 		return true;
 	}
-	else {		// RFLink Milight extension
+	else {		// RFLink Milight/Living Colours extension
 		_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
       /*
 		_log.Log(LOG_ERROR, "RFLink: ledtype: %d", pLed->type);			// type limitlessled
@@ -363,7 +364,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 		bool bSendOn = false;
 
 		const int m_LEDType = pLed->type;
-		std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, 0x57);
+		std::string switchtype = GetGeneralRFLinkFromInt(rfswitches, (pSwitch->subtype == sTypeLimitlessLivCol) ? sSwitchTypeLivcol : sSwitchMiLightv1);
 		std::string switchcmnd = GetGeneralRFLinkFromInt(rfswitchcommands, pLed->command);
 		unsigned int m_colorbright = 0;
 
@@ -830,7 +831,7 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		else if (results[ii].find("RGBW") != std::string::npos)
 		{
 			bHaveRGBW = true;
-			rgbw = RFLinkGetIntStringValue(results[ii]);
+			rgbw = RFLinkGetHexStringValue(results[ii]);
 		}
 		else if (results[ii].find("RGB") != std::string::npos)
 		{
@@ -1045,16 +1046,12 @@ bool CRFLinkBase::ParseLine(const std::string &sLine)
 		//RRGGBB
 		if (switchcmd == "ON") rgb = 0xffff;
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgb, false, tmp_Name);
-	} else
-	if (bHaveRGBW)
-	{
+	} else if (bHaveRGBW) {
 		//RRGGBBWW
 		//_log.Log(LOG_STATUS, "RFLink ID,unit,level,cmd: %x , %x, %x, %x", ID, switchunit, rgbw, switchcmd);
 		if (switchcmd == "OFF") rgbw = 0;
 		SendRGBWSwitch(ID, switchunit, BatteryLevel, rgbw, true, tmp_Name);
-	} else
-	if (bHaveSwitch && bHaveSwitchCmd)
-	{
+	} else if (bHaveSwitch && bHaveSwitchCmd) {
 		std::string switchType = results[2];
 		SendSwitchInt(ID, switchunit, BatteryLevel, switchType, switchcmd, switchlevel);
 	}
