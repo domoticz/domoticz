@@ -53,7 +53,7 @@ License: Public domain
 #define OPENWEBNET_AUXILIARY					"AUXILIARY"
 #define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
 #define OPENWEBNET_ENERGY_MANAGEMENT			"ENERGY MANAGEMENT"
-
+#define OPENWEBNET_SOUND_DIFFUSION				"SOUND DIFFUSION"
 
 /**
     Create new hardware OpenWebNet instance
@@ -1079,11 +1079,13 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 		case WHO_AUDIO:                                 // 16
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
+		case WHO_SOUND_DIFFUSION:						// 22
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
 		case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
+		case WHO_ENERGY_MANAGEMENT_DIAGNOSTIC:			// 1018
 			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not yet supported!", who.c_str());
 			return;
 		default:
