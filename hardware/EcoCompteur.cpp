@@ -104,10 +104,10 @@ void CEcoCompteur::GetScript()
 
 	// Download hourly report
 	std::string sLog2;
-	sUrl = m_url + "/log2.old";
+	sUrl = m_url + "/log2.csv";
 	if (!HTTPClient::GET(sUrl, sLog2))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.old' from url : " + m_url);
+		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.csv' from url : " + m_url);
 		return;
 	}
 
@@ -119,7 +119,7 @@ void CEcoCompteur::GetScript()
 	// Parsing log2.csv
 	if (sLog2.length() == 0)
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: log2.old looks empty");
+		_log.Log(LOG_ERROR, "EcoCompteur: log2.csv looks empty");
 		return;
 	}
 	size_t position = sLog2.rfind("\r\n",sLog2.length()-3);	// Looking for the beginning of lastline
@@ -131,7 +131,7 @@ void CEcoCompteur::GetScript()
 	}
 	string lastline = sLog2.substr(position, sLog2.length() - position - 2); // finally getting lastline
 	vector<string> fields;
-	split(fields, lastline, [](char c) {return c == ';'; });				// Splitting on ';'
+	split(fields, lastline, is_any_of(";"));				// Splitting on ';'
 
 	// Sending kWh meter data
 	if (!root["data1"].empty())
