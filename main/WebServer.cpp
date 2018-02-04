@@ -6704,10 +6704,11 @@ namespace http {
 				if (iswhite != "true")
 				{
 					//convert hue from 360 steps to 255
+					uint32_t iHue = atoi(hue.c_str());
 					double dval;
-					dval = (255.0 / 360.0)*atof(hue.c_str());
+					dval = (255.0 / 360.0)*float(iHue & 0xFFFF);
 					int ival;
-					ival = round(dval);
+					ival = (iHue & 0xFF0000) | round(dval);
 					m_mainworker.SwitchLight(ID, "Set Color", ival, -1, false, 0);
 				}
 				else

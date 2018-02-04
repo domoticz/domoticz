@@ -11310,10 +11310,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (hue != 1000)
 				{
 					double dval;
-					dval = (255.0 / 360.0)*float(hue);
+					dval = (255.0 / 360.0)*float(hue & 0xFFFF);
 					int ival;
 					ival = round(dval);
-					lcmd2.value = ival;
+					lcmd2.value = (hue & 0xFF0000) | ival;
 					lcmd2.command = Limitless_SetRGBColour;
 				}
 				else
