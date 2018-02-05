@@ -36,6 +36,7 @@ local testAirQuality = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 2,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["quality"] = 'Excellent',
 		["co2"] = 0,
 		["deviceSubType"] = "Voltcraft CO-20";
@@ -60,6 +61,7 @@ local testSwitch = function(name)
 		["id"] = 1,
 		["name"] = name,
 		["maxDimLevel"] = 100,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["state"] = "Off",
 		["deviceSubType"] = "Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -85,8 +87,9 @@ local testDimmer = function(name)
 		["id"] = 39,
 		["name"] = name,
 		["maxDimLevel"] = 100,
-		['level'] = 33,
-		["lastLevel"] = 33, -- this script is NOT triggered by the dimmer so lastLevel is the current level
+		["baseType"] = dz.BASETYPE_DEVICE,
+		['level'] = 34,
+		["lastLevel"] = 34, -- this script is NOT triggered by the dimmer so lastLevel is the current level
 		["state"] = "On",
 		["deviceSubType"] = "Switch";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -114,6 +117,7 @@ local testAlert = function(name)
 		["id"] = 3,
 		["name"] = name,
 		["state"] = "No Alert!",
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["color"] = 0,
 		["deviceSubType"] = "Alert";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -138,6 +142,7 @@ local testAmpere3 = function(name)
 		['current1'] = 0,
 		['current2'] = 0,
 		['current3'] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["name"] = name,
 		["deviceSubType"] = "CM113, Electrisave";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -166,6 +171,7 @@ local testAmpere1 = function(name)
 		["name"] = name,
 		["state"] = "6.4",
 		["deviceSubType"] = "Current";
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
 		["hardwareName"] = "dummy";
 		["hardwareTypeValue"] = 15;
@@ -190,6 +196,7 @@ local testBarometer = function(name)
 		["name"] = name,
 		["forecastString"] = "Stable";
 		["forecast"] = 0;
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Barometer";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
 		["hardwareName"] = "dummy";
@@ -213,6 +220,7 @@ local testCounter = function(name)
 		["name"] = name,
 		["counterToday"] = 0;
 		["valueUnits"] = "";
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["valueQuantity"] = "";
 		["counter"] = 0.000;
 		["deviceSubType"] = "RFXMeter counter";
@@ -237,6 +245,7 @@ local testCounterIncremental = function(name)
 		["id"] = 8,
 		["name"] = name,
 		["counterToday"] = 0;
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["valueUnits"] = "";
 		["valueQuantity"] = "";
 		["counter"] = 0.000;
@@ -263,6 +272,7 @@ local testCustomSensor = function(name)
 		["name"] = name,
 		["sensorUnit"] = "axis";
 		["sensorType"] = 1;
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["state"] = "0.0";
 		["deviceSubType"] = "Custom Sensor";
 		["deviceType"] = "General";
@@ -286,6 +296,7 @@ local testDistance = function(name)
 		["id"] = 10,
 		["name"] = name,
 		["state"] = '123.4',
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["distance"] = 123.4,
 		["deviceSubType"] = "Distance";
 		["deviceType"] = "General";
@@ -309,6 +320,7 @@ local testElectricInstanceCounter = function(name)
 		["id"] = 11,
 		["name"] = name,
 		['WhTotal'] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		['WhActual'] = 0,
 		['counterToday'] = 0,
 		['usage'] = 0.0,
@@ -335,6 +347,7 @@ local testGas = function(name)
 		["name"] = name,
 		['counterToday'] = 0,
 		['counter'] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Gas";
 		["deviceType"] = "P1 Smart Meter";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -358,6 +371,7 @@ local testHumidity = function(name)
 		["name"] = name,
 		["humidityStatus"] = "Comfortable";
 		["humidity"] = 50;
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "LaCrosse TX3";
 		["deviceType"] = "Humidity";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -380,6 +394,7 @@ local testLeafWetness = function(name)
 		["id"] = 14,
 		["name"] = name,
 		['wetness'] = 2,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Leaf Wetness";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -402,6 +417,7 @@ local testLux = function(name)
 		["id"] = 15,
 		["name"] = name,
 		['lux'] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Lux";
 		["deviceType"] = "Lux";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -427,6 +443,7 @@ local testP1SmartMeter = function(name)
 		['usage1'] = 0,
 		['usage2'] = 0,
 		['return1'] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		['return2'] = 0,
 		['usage'] = 0,
 		['usageDelivered'] = 0,
@@ -453,6 +470,7 @@ local testPercentage = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 17,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		['percentage'] = 0,
 		["deviceSubType"] = "Percentage";
 		["deviceType"] = "General";
@@ -476,6 +494,7 @@ local testPressureBar = function(name)
 		["id"] = 18,
 		["name"] = name,
 		["pressure"] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Pressure";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -499,6 +518,7 @@ local testRain = function(name)
 		["name"] = name,
 		["rain"] = 0,
 		["rainRate"] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "TFA";
 		["deviceType"] = "Rain";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -520,6 +540,7 @@ local testRGB = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 20,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["maxDimLevel"] = 100,
 		["state"] = "On",
 		["deviceSubType"] = "RGB";
@@ -545,6 +566,7 @@ local testRGBW = function(name)
 		["name"] = name,
 		["maxDimLevel"] = 100,
 		["state"] = "On",
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "RGBW";
 		["deviceType"] = "Lighting Limitless/Applamp";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -566,6 +588,7 @@ local testScaleWeight = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 22,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		['weight'] = 0,
 		["deviceSubType"] = "BWR102";
 		["deviceType"] = "Weight";
@@ -589,6 +612,7 @@ local testSelectorSwitch = function(name)
 		["id"] = 23,
 		["name"] = name,
 		['levelName'] = 'Off',
+		["baseType"] = dz.BASETYPE_DEVICE,
 		['level'] = 0,
 		["state"] = 'Off',
 		["deviceSubType"] = "Selector Switch";
@@ -619,6 +643,7 @@ local testSoilMoisture = function(name)
 		["id"] = 24,
 		["name"] = name,
 		["moisture"] = 3,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Soil Moisture";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -642,6 +667,7 @@ local testSolarRadiation = function(name)
 		["id"] = 25,
 		["name"] = name,
 		["radiation"] = 1,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Solar Radiation";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -664,6 +690,7 @@ local testSoundLevel = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 26,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["level"] = 65,
 		["deviceSubType"] = "Sound Level";
 		["deviceType"] = "General";
@@ -686,6 +713,7 @@ local testTemperature = function(name)
 	local res = true
 	res = res and checkAttributes(dev, {
 		["id"] = 27,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["name"] = name,
 		["temperature"] = 0,
 		["deviceSubType"] = "LaCrosse TX3";
@@ -714,7 +742,6 @@ local testAPITemperature = function(name)
 	return res
 end
 
-
 local testTempHum = function(name)
 	local dev = dz.devices(name)
 	local res = true
@@ -723,6 +750,7 @@ local testTempHum = function(name)
 		["name"] = name,
 		["temperature"] = 0,
 		["humidity"] = 50,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["humidityStatus"] = "Comfortable";
 		["deviceSubType"] = "THGN122/123, THGN132, THGR122/228/238/268";
 		--["deviceType"] = 'Temp + Humidity';
@@ -746,6 +774,7 @@ local testTempHumBaro = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 29,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["temperature"] = 0,
 		["barometer"] = 1010,
 		["forecastString"] = "Sunny";
@@ -772,6 +801,7 @@ local testTempBaro = function(name)
 		["id"] = 40,
 		["name"] = name,
 		["temperature"] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["barometer"] = 1038,
 		["forecastString"] = "Stable";
 		["forecast"] = 0;
@@ -796,6 +826,7 @@ local testText = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 30,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["text"] = 'Hello World',
 		["deviceSubType"] = "Text";
 		["deviceType"] = "General";
@@ -808,7 +839,8 @@ local testText = function(name)
 		["timedOut"] = false;
 	})
 
-	dev.updateText("Oh my Darwin, what a lot of tests!")
+	dev.updateText("Oh my Darwin, what a lot of tests!").afterSec(3)
+	dev.updateText("This change should not happen").afterSec(10) -- is cancelled in vdCancelledRepeatSwitch
 	tstMsg('Test text device', res)
 	return res
 end
@@ -820,6 +852,7 @@ local testThermostatSetpoint = function(name)
 		["id"] = 31,
 		["name"] = name,
 		["setPoint"] = 20.5,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "SetPoint";
 		["deviceType"] = "Thermostat";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -842,6 +875,7 @@ local testUsageElectric = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 32,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["WhActual"] = 0,
 		["deviceSubType"] = "Electric";
 		["deviceType"] = "Usage";
@@ -865,6 +899,7 @@ local testUV = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 33,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["uv"] = 0,
 		["deviceSubType"] = "UVN128,UV138";
 		["deviceType"] = "UV";
@@ -889,6 +924,7 @@ local testVisibility = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 34,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Visibility";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -912,6 +948,7 @@ local testVoltage = function(name)
 		["id"] = 35,
 		["name"] = name,
 		["voltage"] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["deviceSubType"] = "Voltage";
 		["deviceType"] = "General";
 		["hardwareType"] = "Dummy (Does nothing, use for virtual switches only)";
@@ -934,6 +971,7 @@ local testWaterflow = function(name)
 	res = res and checkAttributes(dev, {
 		["id"] = 36,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["flow"] = 0,
 		["deviceSubType"] = "Waterflow";
 		["deviceType"] = "General";
@@ -959,6 +997,7 @@ local testWind = function(name, id, subType)
 		["name"] = name,
 		["gust"] = 0,
 		["temperature"] = 0,
+		["baseType"] = dz.BASETYPE_DEVICE,
 		["speed"] = 0,
 		["direction"] = 0,
 		['directionString'] = "N",
@@ -986,10 +1025,17 @@ local testScene = function(name)
 		["id"] = 1,
 		["name"] = name,
 		['state'] = 'Off',
-		['baseType'] = 'scene'
+		["baseType"] = dz.BASETYPE_SCENE,
 	})
 
+	names = scene.devices().reduce(function(acc, device)
+		return acc .. device.name
+	end, '')
+
+	res = res and expectEql('sceneSwitch1', names, 'Scene iterators')
+
 	scene.switchOn()
+
 	tstMsg('Test scene', res)
 	return res
 end
@@ -1002,7 +1048,7 @@ local testGroup = function(name)
 		["id"] = 2,
 		["name"] = name,
 		['state'] = 'Off',
-		['baseType'] = 'group'
+		['baseType'] = dz.BASETYPE_GROUP
 	})
 
 	group.switchOn()
@@ -1016,7 +1062,9 @@ local testVariableInt = function(name)
 	res = res and checkAttributes(var, {
 		["id"] = 1,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_VARIABLE,
 		['value'] = 42
+
 	})
 
 	var.set(43)
@@ -1030,6 +1078,7 @@ local testVariableFloat = function(name)
 	res = res and checkAttributes(var, {
 		["id"] = 2,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_VARIABLE,
 		['value'] = 42.11
 	})
 
@@ -1044,10 +1093,15 @@ local testVariableString = function(name)
 	res = res and checkAttributes(var, {
 		["id"] = 3,
 		["name"] = name,
+		["baseType"] = dz.BASETYPE_VARIABLE,
 		['value'] = 'Somestring'
 	})
 
-	var.set('Zork is a dork').afterSec(3)
+	var.set('Zork is a dork').withinSec(3)
+
+	local varCancelled = dz.variables('varCancelled')
+	varCancelled.set(2).afterSec(5) -- this one will be cancelled in varString.lua!
+
 	tstMsg('Test variable: string', res)
 	return res
 end
@@ -1057,7 +1111,8 @@ local testVariableDate = function(name)
 	local res = true
 	res = res and checkAttributes(var, {
 		["id"] = 4,
-		["name"] = name,
+		["baseType"] = dz.BASETYPE_VARIABLE,
+		["name"] = name
 	})
 
 	res = res and expectEql(var.date.month, 12)
@@ -1073,6 +1128,7 @@ local testVariableTime = function(name)
 	local res = true
 	res = res and checkAttributes(var, {
 		["id"] = 5,
+		["baseType"] = dz.BASETYPE_VARIABLE,
 		["name"] = name,
 	})
 
@@ -1115,11 +1171,9 @@ local testSilentGroup = function(name)
 	return res
 end
 
-
 local storeLastUpdates = function()
 
 	dz.globalData.stage1Time = dz.time.raw
-
 end
 
 local testLastUpdates = function()
@@ -1162,7 +1216,28 @@ local testRepeatSwitch = function(name)
 	dz.globalData.repeatSwitch.reset()
 	dz.globalData.repeatSwitch.add({ state = 'Start', delta = 0 })
 	dev.switchOn().afterSec(8).forSec(2).repeatAfterSec(5, 1) -- 17s total
-	tstMsg('Test switch device', res)
+	tstMsg('Test reapeat switch device', res)
+	return true
+end
+
+local testCancelledRepeatSwitch = function(name)
+	local dev = dz.devices(name)
+	dev.switchOn().afterSec(8).forSec(1).repeatAfterSec(1, 5)
+	tstMsg('Test cancelled repeat switch device', res)
+	return true
+end
+
+local testCancelledScene = function(name)
+	local sc = dz.scenes(name)
+	sc.switchOn().afterSec(4).forSec(1).repeatAfterSec(1, 5)
+	tstMsg('Test cancelled repeat scene', res)
+	return true
+end
+
+local testHTTPSwitch = function(name)
+	local dev = dz.devices(name)
+	dev.switchOn()
+	tstMsg('Test http trigger switch device', res)
 	return true
 end
 
@@ -1233,6 +1308,9 @@ return {
 		res = res and testSilentVar('varSilent')
 		res = res and testAPITemperature('vdAPITemperature');
 		res = res and testRepeatSwitch('vdRepeatSwitch');
+		res = res and testCancelledRepeatSwitch('vdCancelledRepeatSwitch');
+		res = res and testCancelledScene('scCancelledScene');
+		res = res and testHTTPSwitch('vdHTTPSwitch');
 
 		storeLastUpdates()
 

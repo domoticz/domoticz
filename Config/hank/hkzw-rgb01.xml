@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns="http://code.google.com/p/open-zwave/">
+
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value genre="config" instance="1" index="21" value="0" label="Status after power failure" units="" size="1" min="0" max="2" type="list">
+      <Help>Define how the RGB BULB will react after the power supply is back on.</Help>
+      <Item value="0" label="RGB BULB memorizes its state after a power failure"/>
+      <Item value="1" label="Device will be on after power supply is reconnected"/>
+      <Item value="2" label="Device will be off after power supply is reconnected"/>
+    </Value>
+    <Value genre="config" instance="1" index="24" value="1" label="Notification when Load status change" units="" size="1" min="0" max="2" type="list">
+      <Help>RGB BULB can send notifications to associated device </Help>
+      <Item value="0" label="Notifications Disabled"/>
+      <Item value="1" label="Send BASIC REPORT"/>
+      <Item value="2" label="Send BASIC REPORT only without status change"/>
+    </Value>
+    <Value genre="config" instance="1" index="51" value="0" label="Enable/disable the function of using wall switch" units="" size="1" min="0" max="1" type="list">
+      <Help>Enable/disable the function of using wall switch to turn on/off RGB BULB</Help>
+      <Item value="0" label="Disable"/>
+      <Item value="1" label="Enable"/>
+    </Value>
+    <Value genre="config" instance="1" index="61" value="3072" label="Advance mode" units="" size="4" min="3072" max="318816256" type="list">
+      <Help>RGB BULB can blink or cyclic/random change color automatically at set intervals.</Help>
+      <Item value="3072" label="Stop changing"/>
+      <Item value="16826368" label="Color gradual change randomly"/>
+      <Item value="33603584" label="Color change randomly with a breathing blink"/>
+      <Item value="50380800" label="Blink with random color"/>
+      <Item value="67158016" label="Color change randomly"/>
+      <Item value="285261824" label="Color gradual change"/>
+      <Item value="302039040" label="Breathing blink with a specific color"/>
+      <Item value="318816256" label="Blink with a specific color"/>
+    </Value>
+    <Value genre="config" instance="1" index="255" value="1" label="Resetting to factory default" units="" size="4" min="1" max="1431655765" type="list">
+      <Help>RGB BULB will exclude from the Z-Wave network with this particular command</Help>
+      <Item value="1431655765" label="Resetting to the factory default"/>
+    </Value>
+  </CommandClass>
+
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" label="Lifeline" max_associations="5"/>
+    </Associations>
+  </CommandClass>
+
+</Product>

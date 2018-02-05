@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!--
+  Dome Mouser
+  https://products.z-wavealliance.org/products/1847
+  -->
+  <!-- Configuration Parameters -->
+  <CommandClass id="112">
+    <Value type="byte" genre="config" index="1" label="Basic Set Level" value="255" min="0" max="255" size="1">
+      <Help>
+        This parameter defines the value sent by the BASIC_SET command to Association Group 2.
+        0 Turn Off Device.
+        1 to 99 Set Device to Value.
+        255 Turn On Device.
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="2" label="Set Firing Mode" min="1" max="2" size="1" value="2">
+      <Help>
+        This parameter sets firing mode of the Mouser.
+        Two firing modes are available: in the first (Continuous Fire,) electricity is passed continuously for the entire duration,
+        and in the second (Burst Fire,) electricity is passed continuously only for the first minute and it is pulsed at approximately 400 beats per minute for the remainder of the time.
+      </Help>
+      <Item label="Continuous Fire" value="1"/>
+      <Item label="Burst Fire" value="2"/>
+    </Value>
+    <Value type="short" genre="config" index="3" label="High Voltage Duration Time" value="100" units="Seconds" min="100" max="360" size="2">
+      <Help>
+        This parameter defines how long the Mouser will fire continuously before it starts to burst-fire
+      </Help>
+    </Value>
+    <Value type="list" genre="config" index="4" label=" LED Alarm" min="0" max="1" size="1" value="1">
+      <Help>
+        This parameter enables or disables the indicator LED alarm when the trap is tripped.
+      </Help>
+      <Item label="Disable" value="0"/>
+      <Item label="Enable" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" index="5" label="LED Alarm Duration" value="0" units="Hours" min="1" max="255" size="1">
+      <Help>
+        This parameter sets the amount of time the LED Indicator blinks after the trap is tripped.
+        0 LED Blinks Until Trap is Reset.
+        1 to 255 in Hours.
+      </Help>
+    </Value>
+
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="4">
+      <Group index="1" max_associations="5" label="Lifeline" />
+      <Group index="2" max_associations="5" label="Basic Set" />
+      <Group index="3" max_associations="5" label="Notification Report" />
+      <Group index="4" max_associations="5" label="Sensor Binary Report"/>
+    </Associations>
+  </CommandClass>
+</Product>

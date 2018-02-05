@@ -817,7 +817,7 @@ void CPiFace::Do_Work()
     int sec_counter = 0;
     while (!m_stoprequested)
     {
-        boost::this_thread::sleep(boost::posix_time::millisec(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS));
+		sleep_milliseconds(PIFACE_WORKER_THREAD_SLEEP_INTERVAL_MS);
         if (m_stoprequested)
             break;
         
@@ -863,7 +863,7 @@ void CPiFace::Do_Work_Queue()
     std::vector<std::string>::iterator itt;
     while (!m_stoprequested)
     {
-        boost::this_thread::sleep(boost::posix_time::millisec(100));
+		sleep_milliseconds(100);
         if (m_stoprequested)
             break;
         if (m_send_queue.empty())

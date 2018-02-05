@@ -19,6 +19,7 @@ History :
 - 2017-03-21 : 2.1 Fixed bug sending too many updates
 - 2017-03-26 : 2.2 Fixed bug affecting tree-phases users. Consequently, simplified code
 - 2017-04-01 : 2.3 Added RateLimit, flag to ignore CRC checks, and new CRC computation algorithm available on newer meters
+- 2017-12-17 : 2.4 Fix bug affecting meters not providing PAPP, thanks to H. Lertouani
 */
 
 #include "stdafx.h"
@@ -56,9 +57,9 @@ CTeleinfoSerial::CTeleinfoSerial(const int ID, const std::string& devname, const
 	else
 		m_iBaudRate = 9600;
 
-        // RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate) 
-        // down to Timeout in order to avoir watchdog errors due to this user configuration mistake
-        if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
+	// RateLimit > DataTimeout is an inconsistent setting. In that case, decrease RateLimit (which increases update rate)
+	// down to Timeout in order to avoir watchdog errors due to this user configuration mistake
+	if ((m_iRateLimit > m_iDataTimeout) && (m_iDataTimeout > 0))  m_iRateLimit = m_iDataTimeout;
 
 	Init();
 }
@@ -153,6 +154,7 @@ void CTeleinfoSerial::MatchLine()
 	std::vector<std::string> splitresults;
 	unsigned long value;
 	const char* line = m_buffer;
+
 	#ifdef DEBUG_TeleinfoSerial
 	_log.Log(LOG_NORM,"Frame : #%s#", line);
 	#endif
@@ -176,7 +178,11 @@ void CTeleinfoSerial::MatchLine()
 	if (label == "ADCO") teleinfo.ADCO = vString;
 	else if (label == "OPTARIF") teleinfo.OPTARIF = vString;
 	else if (label == "ISOUSC") teleinfo.ISOUSC = value;
-	else if (label == "PAPP") teleinfo.PAPP = value;
+	else if (label == "PAPP")
+	{
+		teleinfo.PAPP = value;
+		teleinfo.withPAPP = true;
+	}
 	else if (label == "PTEC")  teleinfo.PTEC = vString;
 	else if (label == "IINST") teleinfo.IINST = value;
 	else if (label == "BASE") teleinfo.BASE = value;

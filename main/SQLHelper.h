@@ -5,6 +5,7 @@
 #include "RFXNames.h"
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
+#include "../httpclient/HTTPClient.h"
 #include <map>
 
 #define timer_resolution_hz 25
@@ -47,6 +48,7 @@ enum _eTaskItemType
 	TITEM_SEND_NOTIFICATION,
 	TITEM_SET_SETPOINT,
 	TITEM_SEND_IFTTT_TRIGGER,
+	TITEM_UPDATEDEVICE
 };
 
 struct _tTaskItem
@@ -65,6 +67,7 @@ struct _tTaskItem
 	int _nValue;
 	std::string _sValue;
 	std::string _command;
+	std::string _sUntil;
 	unsigned char _level;
 	int _Hue;
 	std::string _relatedEvent;
@@ -73,6 +76,21 @@ struct _tTaskItem
 	_tTaskItem()
 	{
 
+	}
+
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_UPDATEDEVICE;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = idx;
+		tItem._nValue = nValue;
+		tItem._sValue = sValue;
+		tItem._HardwareID = Protected ? 1 : 0;
+		tItem._switchtype = bEventTrigger ? 1 : 0;
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
 	}
 
 	static _tTaskItem SwitchLight(const float DelayTime, const uint64_t idx, const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchtype, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue)
@@ -189,11 +207,18 @@ struct _tTaskItem
 	}
 	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &eventName)
 	{
+		return GetHTTPPage(DelayTime, URL, "", HTTPClient::HTTP_METHOD_GET, "", "");
+	}
+	static _tTaskItem GetHTTPPage(const float DelayTime, const std::string &URL, const std::string &extraHeaders, const HTTPClient::_eHTTPmethod method, const std::string &postData, const std::string &trigger)
+	{
 		_tTaskItem tItem;
-		tItem._ItemType=TITEM_GETURL;
-		tItem._DelayTime=DelayTime;
-		tItem._sValue= URL;
-		tItem._relatedEvent = eventName;
+		tItem._ItemType = TITEM_GETURL;
+		tItem._DelayTime = DelayTime;
+		tItem._sValue = URL;
+		tItem._switchtype = method;
+		tItem._relatedEvent = extraHeaders;
+		tItem._command = postData;
+		tItem._ID = trigger;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -226,13 +251,15 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue)
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string())
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_SETPOINT;
 		tItem._DelayTime = DelayTime;
 		tItem._idx = idx;
 		tItem._sValue = varvalue;
+		tItem._command = mode;
+		tItem._sUntil = until;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
@@ -321,7 +348,7 @@ public:
 
 	bool DoesSceneByNameExits(const std::string &SceneName);
 
-	void AddTaskItem(const _tTaskItem &tItem);
+	void AddTaskItem(const _tTaskItem &tItem, const bool cancelItem = false);
 
 	void EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks);
 
@@ -342,6 +369,8 @@ public:
 	bool SetUserVariable(const uint64_t idx, const std::string &varvalue, const bool eventtrigger);
 	std::vector<std::vector<std::string> > GetUserVariables();
 
+	uint64_t CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions);
+
 	void UpdateDeviceValue(const char * FieldName , std::string &Value , std::string &Idx );
 	void UpdateDeviceValue(const char * FieldName , int Value , std::string &Idx )   ;
 	void UpdateDeviceValue(const char * FieldName , float Value , std::string &Idx ) ;
@@ -361,6 +390,7 @@ public:
 
 	std::map<std::string, std::string> BuildDeviceOptions(const std::string & options, const bool decode = true);
 	std::map<std::string, std::string> GetDeviceOptions(const std::string & idx);
+	std::string FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap);
 	bool SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & options);
 public:
 	std::string m_LastSwitchID;	//for learning command

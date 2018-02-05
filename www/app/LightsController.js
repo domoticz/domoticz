@@ -315,7 +315,7 @@ define(['app'], function (app) {
 
 							var DayStr = "";
 							var DayStrOrig = "";
-							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9)) {
+							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9) || ((item.Type >= 14) && (item.Type <= 27))) {
 								var dayflags = parseInt(item.Days);
 								if (dayflags & 0x80)
 									DayStrOrig = "Everyday";
@@ -2180,10 +2180,10 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Door Contact") {
 									if (item.InternalState == "Open") {
-										img = '<img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+										img = '<img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48">';
 									}
 									else {
-										img = '<img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+										img = '<img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48">';
 									}
 								}
 								else if (item.SwitchType == "Door Lock") {
@@ -2506,7 +2506,7 @@ define(['app'], function (app) {
 								if (isdimmer == true) {
 									var dslider = $(id + " #slider");
 									if (typeof dslider != 'undefined') {
-										dslider.slider("value", item.LevelInt + 1);
+										dslider.slider("value", item.LevelInt);
 									}
 								}
 								if (item.SwitchType === "Selector") {
@@ -2744,10 +2744,10 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Door Contact") {
 								if (item.InternalState == "Open") {
-									xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48"></td>\n';
 								}
 								bAddTimer = false;
 							}
@@ -3232,16 +3232,16 @@ define(['app'], function (app) {
 			$('#lightcontent .dimslider').slider({
 				//Config
 				range: "min",
-				min: 1,
-				max: 16,
-				value: 5,
+				min: 0,
+				max: 15,
+				value: 4,
 
 				//Slider Events
 				create: function (event, ui) {
-					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
+					$(this).slider("option", "max", $(this).data('maxlevel'));
 					$(this).slider("option", "type", $(this).data('type'));
 					$(this).slider("option", "isprotected", $(this).data('isprotected'));
-					$(this).slider("value", $(this).data('svalue') + 1);
+					$(this).slider("value", $(this).data('svalue'));
 					if ($(this).data('disabled'))
 						$(this).slider("option", "disabled", true);
 				},
@@ -3250,7 +3250,7 @@ define(['app'], function (app) {
 					var maxValue = $(this).slider("option", "max");
 					var dtype = $(this).slider("option", "type");
 					var isProtected = $(this).slider("option", "isprotected");
-					var fPercentage = parseInt((100.0 / (maxValue - 1)) * ((ui.value - 1)));
+					var fPercentage = parseInt((100.0 / maxValue) * ui.value);
 					var idx = $(this).data('idx');
 					id = "#lightcontent #" + idx;
 					var obj = $(id);

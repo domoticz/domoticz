@@ -471,7 +471,7 @@ std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const
 	return wording;
 }
 
-std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertypein)
+std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType, const int metertypein)
 {
 	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
 	unsigned char tempsign=m_sql.m_tempsign[0];
@@ -491,7 +491,10 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Humidity")
 	{
-		sprintf(szData,"%d", atoi(rawsendValue.c_str()));
+		if (devType == pTypeHUM)
+			sprintf(szData, "%d", nValue);
+		else
+			sprintf(szData,"%d", atoi(rawsendValue.c_str()));
 	}
 	else if (vType == "Humidity Status")
 	{

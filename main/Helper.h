@@ -1,4 +1,3 @@
-
 #pragma once
 
 enum _eTimeFormat
@@ -71,4 +70,5 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 
 bool IsArgumentSecure(const std::string &arg);
 uint32_t SystemUptime();
+int GenerateRandomNumber(const int range);
 

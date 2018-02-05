@@ -6,7 +6,7 @@
 #   Plugin parameter definition below will be parsed during startup and copied into Manifest.xml, this will then drive the user interface in the Hardware web page
 #
 """
-<plugin key="RAVEn" name="RAVEn Zigbee energy monitor" author="dnpwwo" version="1.3.10" externallink="https://rainforestautomation.com/rfa-z106-raven/">
+<plugin key="RAVEn" name="RAVEn Zigbee energy monitor" author="dnpwwo" version="1.4.0" externallink="https://rainforestautomation.com/rfa-z106-raven/">
     <params>
         <param field="SerialPort" label="Serial Port" width="150px" required="true" default="/dev/ttyRAVEn"/>
         <param field="Mode6" label="Debug" width="100px">
@@ -45,6 +45,8 @@ def onStart():
         Domoticz.Log("Devices created.")
     Domoticz.Log("Plugin has " + str(len(Devices)) + " devices associated with it.")
     DumpConfigToLog()
+    for Device in Devices:
+        Devices[Device].Update(nValue=Devices[Device].nValue, sValue=Devices[Device].sValue, TimedOut=1)
     SerialConn = Domoticz.Connection(Name="RAVEn", Transport="Serial", Protocol="XML", Address=Parameters["SerialPort"], Baud=115200)
     SerialConn.Connect()
     return
@@ -113,13 +115,13 @@ def onMessage(Connection, Data):
           summation = summation + delta
           Domoticz.Log( "MeterMacId: %s, Instantaneous Demand = %.3f, Summary Total = %.3f, Delta = %f" % (xmltree.find('MeterMacId').text, demand, summation, delta))
           sValue = "%.3f;%.3f" % (demand,summation)
-          Devices[1].Update(0, sValue.replace('.',''))
+          Devices[1].Update(nValue=0, sValue=sValue.replace('.',''), TimedOut=0)
     elif xmltree.tag == 'CurrentSummationDelivered':
         total = float(getCurrentSummationKWh(xmltree))
         if (total > summation):
           summation = total
         sValue = "%.3f" % (total)
-        Devices[2].Update(0, sValue.replace('.',''))
+        Devices[2].Update(nValue=0, sValue=sValue.replace('.',''), TimedOut=0)
         Domoticz.Log( "MeterMacId: %s, Current Summation = %.3f" % (xmltree.find('MeterMacId').text, total))
 
     elif xmltree.tag == 'TimeCluster':
@@ -137,6 +139,8 @@ def onMessage(Connection, Data):
     return
 
 def onDisconnect(Connection):
+    for Device in Devices:
+        Devices[Device].Update(nValue=Devices[Device].nValue, sValue=Devices[Device].sValue, TimedOut=1)
     Domoticz.Log("Connection '"+Connection.Name+"' disconnected.")
     return
 

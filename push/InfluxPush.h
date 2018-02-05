@@ -1,10 +1,6 @@
 #pragma once
-
-#include <boost/signals2.hpp>
-
 #include "BasePush.h"
 #include <map>
-#include <string>
 
 class CInfluxPush : public CBasePush
 {

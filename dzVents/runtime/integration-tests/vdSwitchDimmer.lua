@@ -36,7 +36,7 @@ local testDimmer = function(name)
 	local res = true
 	res = res and checkAttributes(dev, {
 		['level'] = 75,
-		["lastLevel"] = 33,
+		["lastLevel"] = 34,
 	})
 
 	tstMsg('Test dimmer lastLevel', res)
@@ -63,7 +63,7 @@ return {
 			dz.devices('switchDimmerResults').updateText('FAILED')
 		else
 			log('Results vdSwitchDimmer: SUCCEEDED')
-			dz.devices('switchDimmerResults').updateText('SUCCEEDED')
+			dz.devices('switchDimmerResults').updateText('DIMMER SUCCEEDED')
 		end
 	end
 }

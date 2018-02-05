@@ -470,6 +470,10 @@ void XiaomiGateway::InsertUpdateSwitch(const std::string &nodeid, const std::str
 					// click/double click
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Double Click", false));
 				}
+				else if (Name == "Xiaomi Smart Push Button") {
+					// click/double click
+					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Click|Shake", false));
+				}
 				else if (Name == "Xiaomi Cube") {
 					// flip90/flip180/move/tap_twice/shake_air/swing/alert/free_fall
 					m_sql.SetDeviceOptions(atoi(Idx.c_str()), m_sql.BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|flip90|flip180|move|tap_twice|shake_air|swing|alert|free_fall|clock_wise|anti_clock_wise", false));
@@ -552,12 +556,12 @@ void XiaomiGateway::InsertUpdateVoltage(const std::string & nodeid, const std::s
 	}
 }
 
-void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination)
+void XiaomiGateway::InsertUpdateLux(const std::string & nodeid, const std::string & Name, const int Illumination, const int battery)
 {
 	unsigned int sID = GetShortID(nodeid);
 	if (sID > 0) {
 		float lux = (float)Illumination;
-		SendLuxSensor(sID, sID, 100, lux, Name);
+		SendLuxSensor(sID, sID, battery, lux, Name);
 	}
 }
 
@@ -847,6 +851,10 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_Selector;
 						name = "Xiaomi Square Wireless Switch";
 					}
+					else if (model == "sensor_switch.aq3") {
+						type = STYPE_Selector;
+						name = "Xiaomi Smart Push Button";
+					}
 					else if ((model == "magnet") || (model == "sensor_magnet.aq2")) {
 						type = STYPE_Contact;
 						name = "Xiaomi Door Sensor";
@@ -933,11 +941,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 0;
 						}
 						else if ((model == "smoke") || (model == "natgas") || (model == "sensor_wleak.aq1")) {
+							if (model == "sensor_wleak.aq1" && battery != 255) {
+								level = 0;
+							}
 							if ((alarm == "1") || (status == "leak")) {
 								level = 0;
 								on = true;
 							}
-							else if ((alarm == "0") || (status == "no_leak")) {
+							else if ((alarm == "0") || (status == "no_leak") || (status == "iam")) {
 								level = 0;
 							}
 							if (density != "")
@@ -955,7 +966,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							level = 10;
 							on = true;
 						}
-						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click")) {
+						else if ((status == "double_click") || (status == "flip180") || (aqara_wireless2 == "click") || (status == "shake")) {
 							level = 20;
 							on = true;
 						}
@@ -1010,7 +1021,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 								}
 								if (lux != "") {
-									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()));
+									m_XiaomiGateway->InsertUpdateLux(sid.c_str(), name, atoi(lux.c_str()), battery);
 								}
 								if (voltage != "" && m_IncludeVoltage) {
 									m_XiaomiGateway->InsertUpdateVoltage(sid.c_str(), name, atoi(voltage.c_str()));
@@ -1051,18 +1062,24 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						if (temperature != "") {
 							float temp = (float)atoi(temperature.c_str());
 							temp = temp / 100;
-							m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
+							if (temp < 99) {
+								m_XiaomiGateway->InsertUpdateTemperature(sid.c_str(), "Xiaomi Temperature", temp, battery);
+							}
 						}
 						if (humidity != "") {
 							int hum = atoi(humidity.c_str());
 							hum = hum / 100;
-							m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
+							if (hum > 1) {
+								m_XiaomiGateway->InsertUpdateHumidity(sid.c_str(), "Xiaomi Humidity", hum, battery);
+							}
 						}
 						if (name == "Xiaomi Aqara Weather") {
 							std::string pressure = root2["pressure"].asString();
 							int pres = atoi(pressure.c_str());
 							pres = pres / 100;
-							m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
+							if (pres > 1) {
+								m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
+							}
 						}
 					}
 					else if (name == "Xiaomi RGB Gateway") {
@@ -1086,7 +1103,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 									on = true;
 								}
 								m_XiaomiGateway->InsertUpdateRGBGateway(sid.c_str(), name + " (" + m_gatewayip + ")", on, brightness, 0);
-								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()));
+								m_XiaomiGateway->InsertUpdateLux(sid.c_str(), "Xiaomi Gateway Lux", atoi(illumination.c_str()), 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Ringtone", false, STYPE_Selector, 3, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Alarm Clock", false, STYPE_Selector, 4, 0, cmd, "", "", 255);
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), "Xiaomi Gateway Doorbell", false, STYPE_Selector, 5, 0, cmd, "", "", 255);

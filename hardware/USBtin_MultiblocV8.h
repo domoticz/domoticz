@@ -25,6 +25,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		
 		int sec_counter;
 		int Asec_counter;
+		int Bsec_counter;
 		int min_counter;
 		int min_counter2;
 		bool BOOL_TaskAGo;
@@ -32,7 +33,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		bool BOOL_SendPushOffSwitch;
 		int Sid_PushOff_ToSend;
 		char CodeTouchePushOff_ToSend;
-		
+		bool BOOL_Global_BlinkOutputs;
 		char CommandBlocToSend;
 		
 		struct
@@ -47,7 +48,7 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 			int AliveFrameReceived;
 			int NbAliveFrameReceived;
 			bool ForceUpdateSTOR[12];
-			
+			bool IsOutputBlink[12];
 		} BlocList_CAN[MAX_NUMBER_BLOC]; //30 blocs Maxi
 				
 		void ClearingBlocList();
@@ -71,5 +72,9 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		void USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(long sID_ToSend,char CodeTouche);
 		void USBtin_MultiblocV8_Send_CommandBlocState_OnCAN(long sID_ToSend,char Commande);
 		void USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend,char Commande);
+		
+		void InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname);
+		void SetOutputBlinkInDomoticz (unsigned long sID,int OutputNumber,bool Blink);
+		void DoBlinkOutput();
 };
 

@@ -49,17 +49,23 @@ License: Public domain
 #define OPENWEBNET_CENPLUS            			"CEN PLUS"
 #define OPENWEBNET_AUXILIARY					"AUXILIARY"
 #define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
+#define OPENWEBNET_ENERGY_MANAGEMENT			"ENERGY MANAGEMENT"
 
 
 /**
     Create new hardware OpenWebNet instance
 **/
-COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword) : m_szIPAddress(IPAddress)
+COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime) : m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_stoprequested = false;
 	m_usIPPort = usIPPort;
 	m_ownPassword = ownPassword;
+
+	if (!ownScanTime)
+		_log.Log(LOG_STATUS, "COpenWebNetTCP: scan devices DISABLED!");
+
+	m_ownScanTime = ownScanTime;
 	m_heartbeatcntr = OPENWEBNET_HEARTBEAT_DELAY;
 	m_pStatusSocket = NULL;
 }
@@ -437,11 +443,69 @@ void COpenWebNetTCP::UpdateTemp(const int who, const int where, float fval, cons
     SendTempSensor(cnode, BatteryLevel, fval, devname);
 }
 
-
+/**
+	Update temperature setpoint
+**/
 void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, const char *devname)
 {
 	int cnode = ((who << 12) & 0xF000) | (where & 0xFF); //setpoint zone (1 - 99)
 	SendSetPointSensor((who & 0xFF), 0, (cnode & 0xFF), fval, devname); 
+}
+
+/**
+Get last Meter Usage
+**/
+bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy)
+{
+	int dID = (NodeID << 8) | ChildID;
+	char szTmp[30];
+	sprintf(szTmp, "%08X", dID);
+
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
+	if (result.size() >= 1)
+	{
+		std::string sup, sValue = result[0][0].c_str();
+
+		if (usage) 
+			*usage = (float)atof(sValue.c_str());
+
+		if (energy)
+		{
+			size_t pos = sValue.find(';', 0);
+			if (pos >= 0)
+			{
+				sup = sValue.substr(pos + 1);
+				*energy = (float)atof(sup.c_str());
+			}
+		}
+			
+		return true;
+	}
+	return false; // not found
+}
+
+/**
+	Update Active power usage
+**/
+void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, const int BatteryLevel, const char *devname)
+{
+	//double energy = GetKwhMeter(who, where, bExists);
+	double energy = 0.;
+	GetValueMeter(who, where, NULL, &energy);
+	SendKwhMeter(who, where, BatteryLevel, fval, (energy / 1000.), devname);
+}
+
+
+/**
+	Update total energy
+**/
+void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, const int BatteryLevel, const char *devname)
+{
+	double usage = 0.;
+	GetValueMeter(who, where, &usage, NULL);
+	SendKwhMeter(who, where, BatteryLevel, usage, fval, devname);
 }
 
 /**
@@ -599,7 +663,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	    int slevel = atoi(result[0][1].c_str());
         if ((what > 1) && (nvalue != gswitch_sOff) && (slevel == level)) return; // Already ON/LEVEL at x%
     }
-	else if (who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION)
+	else if ((who == WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION) || (who == (WHO_TEMPERATURE_CONTROL + 500)) || (who == (WHO_TEMPERATURE_CONTROL + 600)))
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
@@ -743,7 +807,10 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_TEMPERATURE_CONTROL:
 			if (!iter->IsMeasureFrame())
 			{
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				if (iter->IsNormalFrame())
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+				else
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
 				return;
 			}
              // 4: this is a openwebnet termoregulation update/poll messagge, setup devname
@@ -753,6 +820,14 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			{
 			case TEMPERATURE_CONTROL_DIMENSION_TEMPERATURE:
 				UpdateTemp(WHO_TEMPERATURE_CONTROL, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 10.), 255, devname.c_str());
+				break;
+			case TEMPERATURE_CONTROL_DIMENSION_VALVES_STATUS:
+				devname += " Valves";
+				UpdateSwitch(WHO_TEMPERATURE_CONTROL + 600, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
+				break;
+			case TEMPERATURE_CONTROL_DIMENSION_ACTUATOR_STATUS:
+				devname += " Actuator";
+				UpdateSwitch(WHO_TEMPERATURE_CONTROL + 500, atoi(where.c_str()), atoi(value.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
 				break;
 			case TEMPERATURE_CONTROL_DIMENSION_COMPLETE_PROBE_STATUS:
 				devname += " Setpoint";
@@ -902,7 +977,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			devname += " " + where;
 
 			//pTypeGeneralSwitch, sSwitchAuxiliaryT1
-			UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 100, devname.c_str(), sSwitchAuxiliaryT1);
+			UpdateSwitch(WHO_AUXILIARY, atoi(where.c_str()), atoi(what.c_str()), atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchAuxiliaryT1);
 			break;
 		case WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION:              // 25
 			if (!iter->IsNormalFrame())
@@ -967,6 +1042,30 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				return;
 			}
 			break;
+		case WHO_ENERGY_MANAGEMENT:                     // 18
+			if (!iter->IsMeasureFrame())
+			{
+				if (iter->IsNormalFrame())
+					_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, what:%s, where=%s not yet supported", who.c_str(), what.c_str(), where.c_str());
+				else
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s frame error!", who.c_str());
+				return;
+			}
+			devname = OPENWEBNET_ENERGY_MANAGEMENT;
+			devname += " " + where;
+			switch (atoi(dimension.c_str()))
+			{
+			case ENERGY_MANAGEMENT_DIMENSION_ACTIVE_POWER:
+				UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), 255, devname.c_str());
+				break;
+			case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
+				UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), 255, devname.c_str());
+				break;
+			default:
+				_log.Log(LOG_STATUS, "COpenWebNetTCP: who=%s, where=%s, dimension=%s not yet supported", who.c_str(), where.c_str(), dimension.c_str());
+				break;
+			}
+			break;
 		case WHO_SCENARIO:                              // 0
 		case WHO_LOAD_CONTROL:                          // 3
 		case WHO_DOOR_ENTRY_SYSTEM:                     // 6
@@ -976,7 +1075,6 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 		case WHO_AUDIO:                                 // 16
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
-		case WHO_ENERGY_MANAGEMENT:                     // 18
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
 		case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
@@ -1076,7 +1174,7 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
             }
             break;
 		case sSwitchContactT1:
-			// Dry Contact / IR Detection
+			// Dry Contact / IR Detection /  Termo valves-actuator
 			return(false); // can't write a contact
         case pTypeThermostat:
             // Test Thermostat subtype
@@ -1312,6 +1410,55 @@ void COpenWebNetTCP::requestDryContactIRDetectionStatus()
 }
 
 /**
+	request energy totalizer
+**/
+void COpenWebNetTCP::requestEnergyTotalizer()
+{
+	bt_openwebnet request;
+	vector<bt_openwebnet> responses;
+	stringstream whoStr;
+	stringstream dimensionStr;
+	whoStr << WHO_ENERGY_MANAGEMENT;
+	dimensionStr << ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER;
+
+	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
+	{
+		stringstream whereStr;
+		whereStr << where;
+		request.CreateDimensionMsgOpen(whoStr.str(), whereStr.str(), dimensionStr.str());
+		sendCommand(request, responses, 0, true);
+	}
+}
+
+/**
+	request automatic update power
+**/
+void COpenWebNetTCP::requestAutomaticUpdatePower(int time)
+{
+	bt_openwebnet request;
+	vector<bt_openwebnet> responses;
+	stringstream whoStr, dimensionStr, appStr;
+	std::vector<std::string> value;
+	whoStr << WHO_ENERGY_MANAGEMENT;
+	dimensionStr << ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE;
+
+	if (time > 255) time = 255; // Time in minutes
+
+	value.clear();
+	value.push_back("1");
+	appStr << time;
+	value.push_back(appStr.str());
+
+	for (int where = WHERE_ENERGY_1; where < MAX_WHERE_ENERGY; where++)
+	{
+		stringstream whereStr;
+		whereStr << where;
+		request.CreateWrDimensionMsgOpen2(whoStr.str(), whereStr.str(), dimensionStr.str(), value);
+		sendCommand(request, responses, 0, true);
+	}
+}
+
+/**
     Request time to gateway
 **/
 void COpenWebNetTCP::requestTime()
@@ -1408,7 +1555,7 @@ void COpenWebNetTCP::Do_Work()
         }
 
 		// every 5 minuts force scan ALL devices for refresh status
-		if ((mytime(NULL) - LastScanTime) > 300)
+		if (m_ownScanTime && ((mytime(NULL) - LastScanTime) > m_ownScanTime))
 		{
 			if ((mask_request_status & 0x1) == 0)
 				_log.Log(LOG_STATUS, "COpenWebNetTCP: HEARTBEAT set scan devices ...");
@@ -1416,6 +1563,20 @@ void COpenWebNetTCP::Do_Work()
 		}
 
 		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
+
+		if ((mytime(NULL) - LastScanTimeEnergy) > 300)
+		{
+			
+			requestAutomaticUpdatePower(300 / 60);
+			LastScanTimeEnergy = mytime(NULL);
+		}
+
+		if ((mytime(NULL) - LastScanTimeEnergyTot) > 30)
+		{
+			requestEnergyTotalizer();
+			LastScanTimeEnergyTot = mytime(NULL);
+		}
+		
 		m_LastHeartbeat = mytime(NULL);
 	}
 	_log.Log(LOG_STATUS, "COpenWebNetTCP: Heartbeat worker stopped...");

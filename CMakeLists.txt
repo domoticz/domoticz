@@ -291,6 +291,7 @@ push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
 push/HttpPush.cpp
 push/InfluxPush.cpp
+push/WebsocketPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -305,8 +306,9 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
-hardware/Comm5TCP.cpp
 hardware/Comm5Serial.cpp
+hardware/Comm5SMTCP.cpp
+hardware/Comm5TCP.cpp
 hardware/csocket.cpp
 hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
@@ -320,9 +322,15 @@ hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
+hardware/EcoCompteur.cpp
 hardware/EcoDevices.cpp
+hardware/eHouseTCP.cpp
+hardware/eHouse/EhouseEvents.cpp
+hardware/eHouse/EhouseTcpClient.cpp
+hardware/eHouse/EhouseUdpListener.cpp
 hardware/EnOceanESP2.cpp
 hardware/EnOceanESP3.cpp
+hardware/EnphaseAPI.cpp
 hardware/Ec3kMeterTCP.cpp
 hardware/EvohomeBase.cpp
 hardware/EvohomeRadio.cpp
@@ -359,6 +367,7 @@ hardware/MySensorsTCP.cpp
 hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
+hardware/NestOAuthAPI.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OnkyoAVTCP.cpp
@@ -381,6 +390,7 @@ hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
+hardware/RAVEn.cpp
 hardware/Razberry.cpp
 hardware/Rego6XXSerial.cpp
 hardware/RelayNet.cpp
@@ -413,17 +423,16 @@ hardware/ToonThermostat.cpp
 hardware/USBtin.cpp
 hardware/USBtin_MultiblocV8.cpp
 hardware/VolcraftCO20.cpp
-hardware/RAVEn.cpp
 hardware/Winddelen.cpp
 hardware/WOL.cpp
 hardware/Wunderground.cpp
+hardware/XiaomiGateway.cpp
+hardware/Yeelight.cpp
 hardware/YouLess.cpp
 hardware/ZiBlueBase.cpp
 hardware/ZiBlueSerial.cpp
 hardware/ZiBlueTCP.cpp
 hardware/ZWaveBase.cpp
-hardware/Yeelight.cpp
-hardware/XiaomiGateway.cpp
 hardware/plugins/DelayedLink.cpp
 hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
@@ -431,6 +440,7 @@ hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
 hardware/plugins/PythonObjects.cpp
 notifications/NotificationBase.cpp
+notifications/NotificationBrowser.cpp
 notifications/NotificationEmail.cpp
 notifications/NotificationGCM.cpp
 notifications/NotificationHelper.cpp
@@ -454,12 +464,14 @@ webserver/connection_manager.cpp
 webserver/cWebem.cpp
 webserver/fastcgi.cpp
 webserver/mime_types.cpp
+webserver/proxycommon.cpp
+webserver/proxyclient.cpp
 webserver/reply.cpp
 webserver/request_handler.cpp
 webserver/request_parser.cpp
 webserver/server.cpp
-webserver/proxycommon.cpp
-webserver/proxyclient.cpp
+webserver/Websockets.cpp
+webserver/WebsocketHandler.cpp
 json/json_reader.cpp
 json/json_value.cpp
 json/json_writer.cpp
@@ -734,4 +746,3 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTAL
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)
-

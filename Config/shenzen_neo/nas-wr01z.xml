@@ -62,7 +62,7 @@
     <Value type="short" genre="config" instance="1" index="9" label="Configure Time switch Period" units="minute" value="150" min="1" max="65535" size="2">
       <Help>
         This parameter defines the time period that plug time switch off. This parameter can be configured 1 - 65535(in minutes).
-        If Parameter #9 is enabled, and relay is turn-on, the relay will be turn-off after delay this parameter.
+        If Parameter #8 is enabled, and relay is turn-on, the relay will be turn-off after delay this parameter.
       </Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="10" label="Button On/Off" value="1" size="1">

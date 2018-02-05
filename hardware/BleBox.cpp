@@ -12,7 +12,7 @@
 #define TOT_TYPE 7
 
 const _STR_DEVICE DevicesType[TOT_TYPE] =
-{ 
+{
 	{ 0, "switchBox", "Switch Box",pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
 	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
@@ -96,7 +96,7 @@ void BleBox::GetDevicesState()
 		Json::Value root = SendCommand(itt->first, command, 2);
 		if (root.empty())
 			continue;
-		
+
 		int IP = IPToUInt(itt->first);
 		if (IP != 0)
 		{
@@ -106,7 +106,7 @@ void BleBox::GetDevicesState()
 				{
 					if (IsNodeExists(root, "state") == false)
 						break;
-					
+
 					const bool state = root["state"].asBool();
 
 					SendSwitch(IP, 0, 255, state, 0, DevicesType[itt->second].name);
@@ -195,7 +195,7 @@ void BleBox::GetDevicesState()
 						//std::string name = DevicesType[itt->second].name + " " + relay["state"].asString();
 						SendSwitch(IP, relayNumber, 255, currentState, 0, DevicesType[itt->second].name);
 					}
-					
+
 					break;
 				}
 			}
@@ -254,8 +254,9 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 	char szIdx[10];
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
 	if (type != pTypeLimitlessLights)
-	{ 
-		sprintf(szIdx, "%08X", atoi(strarray[0].data()), atoi(strarray[1].data()), atoi(strarray[2].data()), atoi(strarray[3].data()));
+	{
+		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
+		sprintf(szIdx, "%08X", (unsigned int)sID);
 	}
 	else
 	{
@@ -319,13 +320,13 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 							percentage = output->LIGHTING2.level * 100 / 15;
 							break;
 					}
-					
+
 
 					Json::Value root = SendCommand(IPAddress, "/s/p/" + boost::to_string(percentage));
- 
+
  					if (root.empty())
   						return false;
-					
+
 					if (IsNodeExists(root, "state") == false)
 						return false;
 
@@ -352,7 +353,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 						else
 						{
-							int percentage = output->LIGHTING2.level * 255 / 15;
+							uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
 
 							char value[4];
 							sprintf(value, "%x", percentage);
@@ -389,7 +390,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 						}
 						else
 						{
-							int percentage = output->LIGHTING2.level * 255 / 15;
+							uint8_t percentage = static_cast<uint8_t>(output->LIGHTING2.level * 255 / 15);
 
 							char value[4];
 							sprintf(value, "%x", percentage);
@@ -521,7 +522,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
 		int red, green, blue, white;
 		bool setColor = true;
-		
+
 		switch (pLed->command)
 		{
 			case Limitless_LedOn: {
@@ -742,7 +743,7 @@ namespace http {
 					root["result"][ii]["Name"] = sd[1];
 					root["result"][ii]["IP"] = ip;
 					root["result"][ii]["Type"] = "unknown";
-					root["result"][ii]["Uptime"] = "unknown";			
+					root["result"][ii]["Uptime"] = "unknown";
 					root["result"][ii]["hv"] = "unknown";
 					root["result"][ii]["fv"] = "unknown";
 
@@ -1023,7 +1024,7 @@ std::string BleBox::GetUptime(const std::string &IPAddress)
 	int days = static_cast<int>(total_minutes / (24 * 60));
 	int hours = static_cast<int>(total_minutes / 60 - days * 24);
 	int mins = static_cast<int>(total_minutes - days * 24 * 60 - hours * 60);   //sec / 60 - day * (24 * 60) - hour * 60;
-	
+
 	sprintf(timestring, "%d:%02d:%02d", days, hours, mins);
 
 	return timestring;
@@ -1167,7 +1168,7 @@ void BleBox::UpdateFirmware()
 }
 
 void BleBox::SearchNodes(const std::string &ipmask)
-{ 
+{
 	std::vector<std::string> strarray;
 	StringSplit(ipmask, ".", strarray); // ipmask - expected "x.y.z.*"
 	if (strarray.size() != 4)

@@ -41,30 +41,30 @@
         <Value type="list" genre="config" instance="1" index="5" label="Alarm Music Index" min="1" max="10" size="1" value="10">
             <Help>This parameter defines the alarm music index for siren play different music when alarm occurs.
                 There are 10 different music for user selection</Help>
-            <Item label="1" value="1"/>
-            <Item label="2" value="2"/>
-            <Item label="3" value="3"/>
-            <Item label="4" value="4"/>
-            <Item label="5" value="5"/>
-            <Item label="6" value="6"/>
-            <Item label="7" value="7"/>
-            <Item label="8" value="8"/>
-            <Item label="9" value="9"/>
-            <Item label="10" value="10"/>
+            <Item label="Doorbell" value="1"/>
+            <Item label="Fur Elise" value="2"/>
+            <Item label="Doorbell Extended" value="3"/>
+            <Item label="Alert" value="4"/>
+            <Item label="William Tell" value="5"/>
+            <Item label="Rondo Alla Turca" value="6"/>
+            <Item label="Police Siren" value="7"/>
+            <Item label="Evacuation" value="8"/>
+            <Item label="Beep Beep" value="9"/>
+            <Item label="Beep" value="10"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="6" label="Door Bell Music Index" min="1" max="10" size="1" value="9">
             <Help>This parameter defines the door bell music index for siren play different music when alarm occurs.
                 There are 10 different music for user selection.</Help>
-            <Item label="1" value="1"/>
-            <Item label="2" value="2"/>
-            <Item label="3" value="3"/>
-            <Item label="4" value="4"/>
-            <Item label="5" value="5"/>
-            <Item label="6" value="6"/>
-            <Item label="7" value="7"/>
-            <Item label="8" value="8"/>
-            <Item label="9" value="9"/>
-            <Item label="10" value="10"/>
+            <Item label="Doorbell" value="1"/>
+            <Item label="Fur Elise" value="2"/>
+            <Item label="Doorbell Extended" value="3"/>
+            <Item label="Alert" value="4"/>
+            <Item label="William Tell" value="5"/>
+            <Item label="Rondo Alla Turca" value="6"/>
+            <Item label="Police Siren" value="7"/>
+            <Item label="Evacuation" value="8"/>
+            <Item label="Beep Beep" value="9"/>
+            <Item label="Beep" value="10"/>
         </Value>
         <Value type="list" genre="config" instance="1" index="7" label="Configure Default Siren On Mode" min="1" max="2" size="1" value="1">
             <Help>This parameter defines the default music index, volume and the duration time for 3 siren on.

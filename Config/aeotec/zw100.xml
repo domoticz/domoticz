@@ -2,15 +2,15 @@
 <!-- 
 Aeotec ZW100 MultiSensor 6
 https://aeotec.freshdesk.com/helpdesk/attachments/6028954764
-version 1.07 (4.11.2016)
+V1.10 + V1.11 (12/14/2017)
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
 		<Value type="list" index="2" genre="config" label="Wake up 10 minutes on Power On" min="0" max="1" value="0" size="1">
-			<Help>Stay awake for 10 minutes after batteries are inserted</Help>
-			<Item label="No" value="0" />
-			<Item label="Yes" value="1" />
+			<Help>Enable/Disable waking up for 10 minutes when re-power on (battery mode) the MultiSensor</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
 		</Value>
 		<Value type="short" index="3" genre="config" label="On time" units="seconds" min="10" max="3600" value="240">
 			<Help>Duration that the motion sensor must observe no motion before it will return to the no-motion state.
@@ -55,7 +55,7 @@ version 1.07 (4.11.2016)
 			<Item label="Disabled" value="0" />
 			<Item label="Enabled" value="1" />
 		</Value>
-		<Value type="short" index="41" genre="config" label="Temperature Reporting Threshold" units="%" min="0" max="39321" value="20" size="2">
+		<Value type="int" index="41" genre="config" label="Temperature Reporting Threshold" units="C/F" min="0" max="39321" value="20" size="4">
 			<Help>Threshold change in temperature to induce an automatic report.  
 			Note: 
 			1. The unit is Fahrenheit for US version, Celsius for EU/AU version.
@@ -242,10 +242,11 @@ version 1.07 (4.11.2016)
 			<Item label="Celsius" value="1" />
 			<Item label="Fahrenheit" value="2" />
 		</Value>
-        <Value type="list" index="81" genre="config" label="LED report" min="0" max="1" value="0" size="1">
-			<Help>LED when motion/vibration triggered</Help>
-			<Item label="Enable" value="0" />
-			<Item label="Disable" value="1" />
+        <Value type="list" index="81" genre="config" label="LED blinking report" min="0" max="2" value="0" size="1">
+			<Help>Enable/disable the LED blinking for motion, wakeup, and sensor report.</Help>
+			<Item label="Enable LED blinking" value="0" />
+			<Item label="Disable LED blinking only when the PIR is triggered" value="1" />
+			<Item label="Completely disable LED for motion, wakeup, and sensor report" value="2" />
 		</Value>
 		<Value type="button" index="100" genre="config" label="Reset Params 101-103 to Default" write_only="true" affects="101,102,103">
 			<Help>Reset The Reporting Group Configuration (101 to 103) to default</Help>
@@ -306,13 +307,14 @@ version 1.07 (4.11.2016)
 			- If the device is on battery, the sensor will never report in more often than its configured wake interval, regardless of what this setting is configured to; setting this to 3601 when the wake interval is 3600 would make this group report in every 7200 seconds. 240 seconds is the minimum wake interval, but will quickly use battery.</Help>
 		</Value>
 		<Value type="short" index="201" genre="config" label="Temperature Calibration" value="1">
-			<Help>The calibration value = standard value - measure value. 
-			(the available value range is [-100, 100] or [-10C, 10C]).
+			<Help>Temperature calibration (the available value range is [-128,127] or [-12.8C,12.7C]).
 			Note:
-			1. The value contains one decimal point. E.g. if the value is set to 20, the calibration value is 2.0 (EU/AU version) or 2.0 (US version)
-			2. The calibration value = standard value - measure value.
-			If measure value =25.3 and the standard value = 23.2, so the calibration value= 23.2-25.3 = -2.1 (0xEB).
-			If the measure value =30.1 and the standard value = 33.2, so the calibration value= 33.2-30.1= 3.1 (0x1F). 
+			1. High byte is the calibration value. Low byte is the unit (0x01=Celsius,0x02=Fahrenheit)
+			2. The calibration value (high byte) contains one decimal point. 
+			E.g. if the value is set to 20 (0x1401), the calibration value is 2.0C (EU/AU version) or if the value is set to 20 (0x1402), the calibration value is 2.0F (US version)
+			3. The calibration value (high byte) = standard value - measure value. 
+			E.g. If measure value =25.3C and the standard value = 23.2C, so the calibration value= 23.2C - 25.3C= -2.1C (0xEB). 
+			If the measure value =30.1C and the standard value = 33.2C, so the calibration value= 33.2C - 30.1C=3.1C (0x1F).
 			Default value: 1 for EU/AU version, 2 for US version.
 			</Help>
 		</Value>
@@ -344,9 +346,12 @@ version 1.07 (4.11.2016)
 			<Item label="Disable" value="0" />
 			<Item label="Enable" value="1" />
 		</Value>
-		<Value type="button" index="255" genre="config" label="Reset to default" write_only="true" value="0" >
-			<Help>Reset to factory defaults.</Help>
-		</Value>
+		<Value type="list" index="255" genre="config" label="Reset To Factory Defaults" size="4" value="1" write_only="true">
+          		<Help>Reset to factory defaults</Help>
+          		<Item label="Reset to factory default setting" value="0"/>
+          		<Item label="Normal" value="1"/>
+          		<Item label="Reset to factory default setting and removed from the z-wave network" value="1431655765"/>
+      		</Value>
 	</CommandClass>
 
 	<!-- the Device Doesn't support Get for Alarm Class -->
