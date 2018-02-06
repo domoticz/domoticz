@@ -136,27 +136,27 @@ void CEcoCompteur::GetScript()
 	// Sending kWh meter data
 	if (!root["data1"].empty())
 	{
-		SendKwhMeter(m_HwdID, 1, 255, root["data1"].asFloat(), stod(fields[7]), "Conso 1");
+		SendKwhMeter(m_HwdID, 1, 255, root["data1"].asFloat(), atof(fields[7].c_str()), "Conso 1");
 	}
 
 	if (!root["data2"].empty())
 	{
-		SendKwhMeter(m_HwdID, 2, 255, root["data2"].asFloat(), stod(fields[9]), "Conso 2");
+		SendKwhMeter(m_HwdID, 2, 255, root["data2"].asFloat(), atof(fields[9].c_str()), "Conso 2");
 	}
 
 	if (!root["data3"].empty())
 	{
-		SendKwhMeter(m_HwdID, 3, 255, root["data3"].asFloat(), stod(fields[11]), "Conso 3");
+		SendKwhMeter(m_HwdID, 3, 255, root["data3"].asFloat(), atof(fields[11].c_str()), "Conso 3");
 	}
 
 	if (!root["data4"].empty())
 	{
-		SendKwhMeter(m_HwdID, 4, 255, root["data4"].asFloat(), stod(fields[13]), "Conso 4");
+		SendKwhMeter(m_HwdID, 4, 255, root["data4"].asFloat(), atof(fields[13].c_str()), "Conso 4");
 	}
 
 	if (!root["data5"].empty())
 	{
-		SendKwhMeter(m_HwdID, 5, 255, root["data5"].asFloat(), stod(fields[15]), "Conso 5");
+		SendKwhMeter(m_HwdID, 5, 255, root["data5"].asFloat(), atof(fields[15].c_str()), "Conso 5");
 	}
 }
 
