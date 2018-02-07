@@ -2496,8 +2496,56 @@ void CEventSystem::ParseActionString( const std::string &oAction_, _tActionParse
 
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName) {
-    ScheduleEvent(ID, Action,eventName);
-    return true;
+	if (ID.find("Variable:") == 0) {
+		std::string variableName = ID.substr(9);
+
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
+		if (result.size() != 1) {
+			_log.Log(LOG_ERROR, "EventSystem: Unknown variable %s", variableName);
+			return false;
+		}
+		std::vector<std::string> sd = result[0];
+
+		std::string doWhat = std::string(Action);
+		float afterTimerSeconds = 0;
+		size_t aFind = doWhat.find(" AFTER ");
+		if ((aFind > 0) && (aFind != std::string::npos)) {
+			std::string delayString = doWhat.substr(aFind + 7);
+			doWhat = doWhat.substr(0, aFind);
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+		}
+		doWhat = ProcessVariableArgument(doWhat);
+
+		uint64_t idx = atol(sd[0].c_str());
+		m_sql.AddTaskItem(_tTaskItem::SetVariable(afterTimerSeconds, idx, doWhat, false));
+
+		return true;
+	} else if(ID.find("SetSetpoint:") == 0) {
+		int idx = atoi(ID.substr(12).c_str());
+		std::string doWhat = std::string(Action);
+		std::string temp, mode, until;
+		std::vector<std::string> aParam;
+		StringSplit(doWhat, "#", aParam);
+		switch (aParam.size()) {
+			case 3:
+				until = aParam[2];
+			case 2:
+				mode = aParam[1];
+			case 1:
+				temp = aParam[0];
+				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5f, idx, temp, mode, until));
+				break;
+
+			default:
+				//Invalid
+				_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, not enough parameters!");
+				return false;
+		}
+		
+		return true;
+	}
+	return ScheduleEvent(ID, Action,eventName);
 }
 
 void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &filename, const std::string &PyString)
