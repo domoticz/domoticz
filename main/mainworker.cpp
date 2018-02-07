@@ -11749,7 +11749,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				std::stringstream sslevel;
 				sslevel << level;
 				if (statuses[sslevel.str()].empty()) {
-					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %" PRIu64 "", level, ID);
+					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %lu", level, ID);
 				}
 			}
 		}

@@ -1481,9 +1481,9 @@ namespace Plugins {
 		if (m_bDebug)
 		{
 			if (Incoming)
-				_log.Log(LOG_NORM, "(%s) Received %lu bytes of data:", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:", Name.c_str(), (int)Buffer.size());
 			else
-				_log.Log(LOG_NORM, "(%s) Sending %lu bytes of data:", Name.c_str(), Buffer.size());
+				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:", Name.c_str(), (int)Buffer.size());
 
 			for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
 			{
