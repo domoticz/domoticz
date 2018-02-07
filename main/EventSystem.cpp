@@ -2502,7 +2502,7 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE (Name == '%q')", variableName.c_str());
 		if (result.size() != 1) {
-			_log.Log(LOG_ERROR, "EventSystem: Unknown variable %s", variableName);
+			_log.Log(LOG_ERROR, "EventSystem: Unknown variable %s", variableName.c_str());
 			return false;
 		}
 		std::vector<std::string> sd = result[0];
