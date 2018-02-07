@@ -21,7 +21,6 @@ This theme generally tries not to set any colours, and leaves that to the sub-th
 body {
 	color: #ddd; /*!important;*/
 	background-color: #013 !important;
-	background-image: linear-gradient(to bottom, #001c38 0%,#0f0c2b 100%);
 	background-attachment: fixed;
 }
 
