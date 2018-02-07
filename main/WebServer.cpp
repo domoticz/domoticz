@@ -14004,8 +14004,7 @@ namespace http {
 											char szTime[50];
 											sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
 											root["result"][ii]["d"] = szTime;
-
-											float TotalValue = float(actValue - ulFirstValue);
+											float TotalValue = float((long long)actValue - (long long)ulFirstValue);
 
 											//if (TotalValue != 0)
 											{
