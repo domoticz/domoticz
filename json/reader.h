@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Baptiste Lepilleur
+// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
@@ -22,6 +22,8 @@
 #pragma warning(push)
 #pragma warning(disable : 4251)
 #endif // if defined(JSONCPP_DISABLE_DLL_INTERFACE_WARNING)
+
+#pragma pack(push, 8)
 
 namespace Json {
 
@@ -50,11 +52,13 @@ public:
   /** \brief Constructs a Reader allowing all features
    * for parsing.
    */
+  JSONCPP_DEPRECATED("Use CharReader and CharReaderBuilder instead") 
   Reader();
 
   /** \brief Constructs a Reader allowing the specified feature set
    * for parsing.
    */
+  JSONCPP_DEPRECATED("Use CharReader and CharReaderBuilder instead") 
   Reader(const Features& features);
 
   /** \brief Read a Value from a <a HREF="http://www.json.org">JSON</a>
@@ -228,6 +232,9 @@ private:
   void addComment(Location begin, Location end, CommentPlacement placement);
   void skipCommentTokens(Token& token);
 
+  static bool containsNewLine(Location begin, Location end);
+  static JSONCPP_STRING normalizeEOL(Location begin, Location end);
+
   typedef std::stack<Value*> Nodes;
   Nodes nodes_;
   Errors errors_;
@@ -396,6 +403,8 @@ bool JSON_API parseFromStream(
 JSON_API JSONCPP_ISTREAM& operator>>(JSONCPP_ISTREAM&, Value&);
 
 } // namespace Json
+
+#pragma pack(pop)
 
 #if defined(JSONCPP_DISABLE_DLL_INTERFACE_WARNING)
 #pragma warning(pop)
