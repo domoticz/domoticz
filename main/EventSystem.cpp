@@ -2539,7 +2539,7 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 
 			default:
 				//Invalid
-				_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, not enough parameters!");
+				_log.Log(LOG_ERROR, "EventSystem: SetPoint, not enough parameters!");
 				return false;
 		}
 		
