@@ -39,7 +39,7 @@ void CInfluxPush::Stop()
 
 void CInfluxPush::UpdateSettings()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("InfluxActive", fActive);
 	m_bLinkActive = (fActive == 1);
 	m_InfluxPort = 8086;
