@@ -46,7 +46,7 @@ void CInfluxPush::UpdateSettings()
 	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
 	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
 	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
-	int InfluxDebugActiveInt;
+	int InfluxDebugActiveInt = 0;
 	m_bInfluxDebugActive = false;
 	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
 	if (InfluxDebugActiveInt == 1) {
