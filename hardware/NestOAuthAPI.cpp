@@ -174,7 +174,10 @@ bool CNestOAuthAPI::Login()
 			std::string sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
 
 			if (sTmpToken.size() > 0) {
-				_log.Log(LOG_NORM, ("NestOAuthAPI: Received an API key to use for future requests: " + sTmpToken).c_str());
+				if (_log.isTraceEnabled())
+				{
+					_log.Log(LOG_TRACE, "NestOAuthAPI: Received an API key to use for future requests: %s", sTmpToken.c_str());
+				}
 
 				// Use the newly obtained access token
 				m_OAuthApiAccessToken = sTmpToken;
