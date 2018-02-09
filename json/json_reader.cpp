@@ -1,9 +1,7 @@
-// Copyright 2007-2011 Baptiste Lepilleur and The JsonCpp Authors
-// Copyright (C) 2016 InfoTeCS JSC. All rights reserved.
+// Copyright 2007-2011 Baptiste Lepilleur
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
-
 #include "stdafx.h"
 #if !defined(JSON_IS_AMALGAMATION)
 #include "assertions.h"
@@ -46,12 +44,12 @@
 #pragma warning(disable : 4996)
 #endif
 
-// Define JSONCPP_DEPRECATED_STACK_LIMIT as an appropriate integer at compile time to change the stack limit
-#if !defined(JSONCPP_DEPRECATED_STACK_LIMIT)
-#define JSONCPP_DEPRECATED_STACK_LIMIT 1000
+static int const stackLimit_g = 1000;
+#if __cplusplus >= 201103L
+thread_local static int stackDepth_g = 0;  // see readValue()
+#else
+static int       stackDepth_g = 0;  // see readValue()
 #endif
-
-static size_t const stackLimit_g = JSONCPP_DEPRECATED_STACK_LIMIT; // see readValue()
 
 namespace Json {
 
@@ -82,7 +80,7 @@ Features Features::strictMode() {
 // Implementation of class Reader
 // ////////////////////////////////
 
-bool Reader::containsNewLine(Reader::Location begin, Reader::Location end) {
+static bool containsNewLine(Reader::Location begin, Reader::Location end) {
   for (; begin < end; ++begin)
     if (*begin == '\n' || *begin == '\r')
       return true;
@@ -104,7 +102,8 @@ Reader::Reader(const Features& features)
 
 bool
 Reader::parse(const std::string& document, Value& root, bool collectComments) {
-  document_.assign(document.begin(), document.end());
+  JSONCPP_STRING documentCopy(document.data(), document.data() + document.capacity());
+  std::swap(documentCopy, document_);
   const char* begin = document_.c_str();
   const char* end = begin + document_.length();
   return parse(begin, end, root, collectComments);
@@ -137,12 +136,13 @@ bool Reader::parse(const char* beginDoc,
   current_ = begin_;
   lastValueEnd_ = 0;
   lastValue_ = 0;
-  commentsBefore_.clear();
+  commentsBefore_ = "";
   errors_.clear();
   while (!nodes_.empty())
     nodes_.pop();
   nodes_.push(&root);
 
+  stackDepth_g = 0;  // Yes, this is bad coding, but options are limited.
   bool successful = readValue();
   Token token;
   skipCommentTokens(token);
@@ -165,10 +165,12 @@ bool Reader::parse(const char* beginDoc,
 }
 
 bool Reader::readValue() {
-  // readValue() may call itself only if it calls readObject() or ReadArray().
-  // These methods execute nodes_.push() just before and nodes_.pop)() just after calling readValue(). 
-  // parse() executes one nodes_.push(), so > instead of >=.
-  if (nodes_.size() > stackLimit_g) throwRuntimeError("Exceeded stackLimit in readValue().");
+  // This is a non-reentrant way to support a stackLimit. Terrible!
+  // But this deprecated class has a security problem: Bad input can
+  // cause a seg-fault. This seems like a fair, binary-compatible way
+  // to prevent the problem.
+  if (stackDepth_g >= stackLimit_g) throwRuntimeError("Exceeded stackLimit in readValue().");
+  ++stackDepth_g;
 
   Token token;
   skipCommentTokens(token);
@@ -176,7 +178,7 @@ bool Reader::readValue() {
 
   if (collectComments_ && !commentsBefore_.empty()) {
     currentValue().setComment(commentsBefore_, commentBefore);
-    commentsBefore_.clear();
+    commentsBefore_ = "";
   }
 
   switch (token.type_) {
@@ -242,6 +244,7 @@ bool Reader::readValue() {
     lastValue_ = &currentValue();
   }
 
+  --stackDepth_g;
   return successful;
 }
 
@@ -370,7 +373,7 @@ bool Reader::readComment() {
   return true;
 }
 
-JSONCPP_STRING Reader::normalizeEOL(Reader::Location begin, Reader::Location end) {
+static JSONCPP_STRING normalizeEOL(Reader::Location begin, Reader::Location end) {
   JSONCPP_STRING normalized;
   normalized.reserve(static_cast<size_t>(end - begin));
   Reader::Location current = begin;
@@ -474,7 +477,7 @@ bool Reader::readObject(Token& tokenStart) {
       break;
     if (tokenName.type_ == tokenObjectEnd && name.empty()) // empty object
       return true;
-    name.clear();
+    name = "";
     if (tokenName.type_ == tokenString) {
       if (!decodeString(tokenName, name))
         return recoverFromError(tokenObjectEnd);
@@ -1019,9 +1022,6 @@ private:
   void addComment(Location begin, Location end, CommentPlacement placement);
   void skipCommentTokens(Token& token);
 
-  static JSONCPP_STRING normalizeEOL(Location begin, Location end);
-  static bool containsNewLine(Location begin, Location end);
-
   typedef std::stack<Value*> Nodes;
   Nodes nodes_;
   Errors errors_;
@@ -1032,6 +1032,7 @@ private:
   Location lastValueEnd_;
   Value* lastValue_;
   JSONCPP_STRING commentsBefore_;
+  int stackDepth_;
 
   OurFeatures const features_;
   bool collectComments_;
@@ -1039,16 +1040,10 @@ private:
 
 // complete copy of Read impl, for OurReader
 
-bool OurReader::containsNewLine(OurReader::Location begin, OurReader::Location end) {
-  for (; begin < end; ++begin)
-    if (*begin == '\n' || *begin == '\r')
-      return true;
-  return false;
-}
-
 OurReader::OurReader(OurFeatures const& features)
     : errors_(), document_(), begin_(), end_(), current_(), lastValueEnd_(),
       lastValue_(), commentsBefore_(),
+      stackDepth_(0),
       features_(features), collectComments_() {
 }
 
@@ -1066,12 +1061,13 @@ bool OurReader::parse(const char* beginDoc,
   current_ = begin_;
   lastValueEnd_ = 0;
   lastValue_ = 0;
-  commentsBefore_.clear();
+  commentsBefore_ = "";
   errors_.clear();
   while (!nodes_.empty())
     nodes_.pop();
   nodes_.push(&root);
 
+  stackDepth_ = 0;
   bool successful = readValue();
   Token token;
   skipCommentTokens(token);
@@ -1100,15 +1096,15 @@ bool OurReader::parse(const char* beginDoc,
 }
 
 bool OurReader::readValue() {
-  //  To preserve the old behaviour we cast size_t to int.
-  if (static_cast<int>(nodes_.size()) > features_.stackLimit_) throwRuntimeError("Exceeded stackLimit in readValue().");
+  if (stackDepth_ >= features_.stackLimit_) throwRuntimeError("Exceeded stackLimit in readValue().");
+  ++stackDepth_;
   Token token;
   skipCommentTokens(token);
   bool successful = true;
 
   if (collectComments_ && !commentsBefore_.empty()) {
     currentValue().setComment(commentsBefore_, commentBefore);
-    commentsBefore_.clear();
+    commentsBefore_ = "";
   }
 
   switch (token.type_) {
@@ -1198,6 +1194,7 @@ bool OurReader::readValue() {
     lastValue_ = &currentValue();
   }
 
+  --stackDepth_;
   return successful;
 }
 
@@ -1238,7 +1235,7 @@ bool OurReader::readToken(Token& token) {
     token.type_ = tokenString;
     ok = readStringSingleQuote();
     break;
-    } // else fall through
+    } // else continue
   case '/':
     token.type_ = tokenComment;
     ok = readComment();
@@ -1355,25 +1352,6 @@ bool OurReader::readComment() {
   return true;
 }
 
-JSONCPP_STRING OurReader::normalizeEOL(OurReader::Location begin, OurReader::Location end) {
-  JSONCPP_STRING normalized;
-  normalized.reserve(static_cast<size_t>(end - begin));
-  OurReader::Location current = begin;
-  while (current != end) {
-    char c = *current++;
-    if (c == '\r') {
-      if (current != end && *current == '\n')
-         // convert dos EOL
-         ++current;
-      // convert Mac EOL
-      normalized += '\n';
-    } else {
-      normalized += c;
-    }
-  }
-  return normalized;
-}
-
 void
 OurReader::addComment(Location begin, Location end, CommentPlacement placement) {
   assert(collectComments_);
@@ -1476,7 +1454,7 @@ bool OurReader::readObject(Token& tokenStart) {
       break;
     if (tokenName.type_ == tokenObjectEnd && name.empty()) // empty object
       return true;
-    name.clear();
+    name = "";
     if (tokenName.type_ == tokenString) {
       if (!decodeString(tokenName, name))
         return recoverFromError(tokenObjectEnd);
@@ -2053,6 +2031,10 @@ JSONCPP_ISTREAM& operator>>(JSONCPP_ISTREAM& sin, Value& root) {
   JSONCPP_STRING errs;
   bool ok = parseFromStream(b, sin, &root, &errs);
   if (!ok) {
+    fprintf(stderr,
+            "Error from reader: %s",
+            errs.c_str());
+
     throwRuntimeError(errs);
   }
   return sin;

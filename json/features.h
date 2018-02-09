@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2007-2010 Baptiste Lepilleur
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
@@ -9,8 +9,6 @@
 #if !defined(JSON_IS_AMALGAMATION)
 #include "forwards.h"
 #endif // if !defined(JSON_IS_AMALGAMATION)
-
-#pragma pack(push, 8)
 
 namespace Json {
 
@@ -55,7 +53,5 @@ public:
 };
 
 } // namespace Json
-
-#pragma pack(pop)
 
 #endif // CPPTL_JSON_FEATURES_H_INCLUDED

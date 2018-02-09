@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2007-2010 Baptiste Lepilleur
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
@@ -8,8 +8,6 @@
 
 #include <cstring>
 #include <memory>
-
-#pragma pack(push, 8)
 
 namespace Json {
 template<typename T>
@@ -92,7 +90,5 @@ bool operator!=(const SecureAllocator<T>&, const SecureAllocator<U>&) {
 }
 
 } //namespace Json
-
-#pragma pack(pop)
 
 #endif // CPPTL_JSON_ALLOCATOR_H_INCLUDED
