@@ -2269,7 +2269,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 
 			default:
 				//Invalid
-				_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, not enough parameters!");
+				_log.Log(LOG_ERROR, "EventSystem: SetPoint, not enough parameters!");
 				break;
 			}
 			continue;
@@ -3457,7 +3457,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 
 		default:
 			//Invalid
-			_log.Log(LOG_ERROR, "EventSystem: EvohomeSetPoint, incorrect parameters!");
+			_log.Log(LOG_ERROR, "EventSystem: SetPoint, incorrect parameters!");
 			return false;
 		}
 	}
