@@ -80,7 +80,7 @@ void eHouseTCP::ExecQueuedEvents(void)
 					EvQ[i]->LocalEventsTimeOuts--;		//decrement timer
 				else										//Timer reach 0 - remove event from Queue
 				{
-					memset(EvQ[i], 0, sizeof(EvQ[i]));
+					memset(EvQ[i], 0, sizeof(EventQueueT));
 					if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Remove Event");
 				}
 		}
