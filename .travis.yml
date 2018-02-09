@@ -62,7 +62,7 @@ matrix:
           - python3-dev
     script:
       - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
-      - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" CMakeLists.txt
+      - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
       - make
   # Apple OSX
   - os: osx
