@@ -7,13 +7,15 @@
 		<Product type="1e10" id="0158" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="1e12" id="015c" name="CT30 Thermostat" config="2gig/ct30.xml"/>
 		<Product type="1e12" id="015e" name="CT30 Thermostat" config="2gig/ct30.xml"/>
+		<Product type="2002" id="0100" name="CT32 Thermostat" config="2gig/ct32.xml"/>
+		<Product type="5002" id="0100" name="CT80 Thermostat" config="2gig/ct80.xml"/>
+		<Product type="5003" id="0109" name="CT80 Thermostat" config="2gig/ct80.xml"/>
 		<Product type="6401" id="0105" name="CT100 Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6401" id="0107" name="CT100 Thermostat USA" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0100" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6402" id="0001" name="CT100 Plus Thermostat" config="2gig/ct100.xml"/>
 		<Product type="6501" id="000c" name="CT101 Thermostat (Iris)" config="2gig/ct101.xml"/>
 		<Product type="6501" id="000d" name="CT101 Thermostat" config="2gig/ct101.xml"/>
-		<Product type="5003" id="0109" name="CT80 Thermostat" config="2gig/ct80.xml"/>
 	</Manufacturer>
 	<Manufacturer id="002a" name="3e Technologies">
 	</Manufacturer>
@@ -197,6 +199,8 @@
 		<Product type="0006" id="0000" name="Yale Key Free Touchscreen Deadbolt (YRD240)" config="assa_abloy/TouchDeadbolt.xml"/>
 		<Product type="0007" id="0000" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>
 		<Product type="1bef" id="9230" name="Yale Keyless Connected Smart Lock (YSL)" config="assa_abloy/KeyfreeConnected.xml"/>
+		<Product type="6600" id="0002" name="Yale Conexis L1 (SD-L1000-CH)" config="assa_abloy/ConexisL1.xml"/>
+		<Product type="0006" id="0001" name="Yale Keyfree Connected Smart Lock (YKFCON)" config="assa_abloy/KeyfreeConnected-plus.xml"/>
 		<Product type="8001" id="0b00" name="Yale nexTouch Wireless Push Button (NTB610)" config="assa_abloy/nexTouch.xml"/>
 		<Product type="8003" id="0b00" name="Yale nexTouch Wireless Push Button (NTB620)" config="assa_abloy/nexTouch.xml"/>
 	</Manufacturer>
@@ -576,6 +580,7 @@
 		<Product type="4944" id="3033" name="12729 3-Way Dimmer Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3034" name="12730 Fan Control Switch" config="ge/12724-dimmer.xml"/>
 		<Product type="4944" id="3131" name="14287 Fan Control Switch" config="ge/12724-dimmer.xml"/>
+		<Product type="4952" id="3134" name="14288 In-Wall Tamper Resistant Smart Outlet" config="ge/14288-outlet.xml"/>
 		<Product type="4944" id="3038" name="14294 In-Wall Smart Dimmer" config="ge/14294-dimmer.xml"/>
 		<Product type="4944" id="3130" name="14295 In-Wall Smart Toggle Dimmer" config="ge/14295-dimmer-toggle.xml"/>
 		<Product type="494d" id="3032" name="26931 Smart Motion Switch" config="ge/26931-motion-switch.xml"/>
@@ -655,11 +660,13 @@
 	<Manufacturer id="000c" name="HomeSeer">
 		<Product type="4447" id="3033" name="HS-WS100+ Wall Switch" config="homeseer/hs-ws100plus.xml"/>
 		<Product type="4447" id="3034" name="HS-WD100+ Wall Dimmer" config="homeseer/hs-wd100plus.xml"/>
+		<Product type="4447" id="3036" name="HS-WD200+ Wall Dimmer" config="homeseer/hs-wd200plus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0030" name="HomeSeer Tech">
 	</Manufacturer>
 	<Manufacturer id="0039" name="Honeywell">
 		<Product type="0011" id="0001" name="TH8320ZW1000 Touchscreen Thermostat" config="honeywell/th8320zw1000.xml"/>
+		<Product type="0001" id="0003" name="Lynx Touch L5100 / L7000" config="honeywell/lynx-touch-l5100.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0059" name="Horstmann">
 		<Product type="0001" id="0001" name="ASR-RF Thermostat Receiver"/>
@@ -727,6 +734,7 @@
 	</Manufacturer>
 	<Manufacturer id="0214" name="Kaipule">
 		<Product type="0002" id="0001" name="IM20 Door/Window Sensor" config="kaipule/im20.xml"/>
+		<Product type="0003" id="0002" name="PIR Celling Sensor" config="kaipule/ix32.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0091" name="Kamstrup">
 	</Manufacturer>
@@ -786,6 +794,7 @@
 		<Product type="5457" id="3033" name="WT00Z-1 3-Way Wall Accessory Switch" config="linear/WT00Z-1.xml"/>
 		<Product type="5442" id="5431" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
 		<Product type="5442" id="5436" name="GC-TBZ48 Battery Powered Z-Wave Thermostat" config="linear/GC-TBZ48.xml" />
+		<Product type="5744" id="3530" name="WD500Z5-1 Wall Mounted Dimmer" config="linear/WD500Z5-1.xml" />
 	</Manufacturer>
 	<Manufacturer id="015e" name="Locstar">
 		<Product type="8015" id="0001" name="LS-8015-ZW Single Latch Door Lock"/>
@@ -850,8 +859,8 @@
 	<Manufacturer id="0083" name="MTC Maintronic">
 	</Manufacturer>
 	<Manufacturer id="0258" name="Neo CoolCam">
-		<Product type="0003" id="1082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
 		<Product type="0003" id="0082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
+		<Product type="0003" id="1082" name="Door/Window Detector" config="shenzen_neo/nas-ds01z.xml"/>
 		<Product type="0003" id="0087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="1087" name="Power plug 12A" config="shenzen_neo/nas-wr01z.xml"/>
 		<Product type="0003" id="0083" name="Battery Powered PIR Sensor" config="shenzen_neo/nas-pd01z.xml"/>
@@ -861,7 +870,11 @@
 		<Product type="0003" id="6085" name="Water Leakage Detector" config="shenzen_neo/nas-ws02z.xml"/>
 		<Product type="0003" id="0088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
 		<Product type="0003" id="1088" name="Siren Alarm" config="shenzen_neo/nas-ab01z.xml"/>
+		<Product type="0003" id="008a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
+		<Product type="0003" id="108a" name="SOS/Remote Control" config="shenzen_neo/nas-rc01z.xml"/>
+		<Product type="0003" id="008b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
 		<Product type="0003" id="108b" name="Wall Switch (2 channels)" config="shenzen_neo/ls02ch.xml"/>
+		<Product type="0003" id="008c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
 		<Product type="0003" id="108c" name="Wall Switch (1 channel)" config="shenzen_neo/ls01ch.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0178" name="Nexia">
@@ -881,6 +894,17 @@
 		<Product type="0010" id="0001" name="NQ-9121 Gas Meter" config="northq/nq9121.xml" />
 	</Manufacturer>
 	<Manufacturer id="0040" name="Novar EDS">
+	</Manufacturer>
+	<Manufacturer id="016a" name="Oomi">
+		<!-- US-market products start with type prefix "01" -->
+		<!-- AU-market products start with type prefix "02" -->
+		<!-- CN-market products start with type prefix "1D" -->
+		<Product type="0102" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="0202" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />
+		<Product type="1D02" id="0064" name="FT100 MultiSensor 6" config="oomi/ft100.xml" />		
+		<Product type="0103" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
+		<Product type="0203" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
+		<Product type="1D03" id="006F" name="FT111 In Wall Dimmer" config="oomi/ft111.xml" />
 	</Manufacturer>
 	<Manufacturer id="0041" name="OpenPeak Inc.">
 	</Manufacturer>
@@ -1263,6 +1287,7 @@
 		<Product type="0003" id="0088" name="ZSE33 Smart Chime" config="zooz/zse33.xml" />
 		<Product type="0101" id="000a" name="ZEN06" config="zooz/zen06.xml"/>
 		<Product type="b111" id="251c" name="ZEN23 Toggle Switch V2" config="zooz/zen23.xml" />
+        <Product type="0101" id="000D" name="ZEN15 Power Switch" config="zooz/zen15.xml" />
 	</Manufacturer>
 	<Manufacturer id="015d" name="Zooz">
 		<Product type="0651" id="f51c" name="ZEN20 Power Strip" config="zooz/zen20.xml" />

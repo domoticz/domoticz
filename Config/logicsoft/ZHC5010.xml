@@ -98,7 +98,7 @@
 			<Item label="Relay follows the state of button #2; when button is down the relay is on and when button is released the relay is off" value="10" />
 			<Item label="Relay follows the state of button #3; when button is down the relay is on and when button is released the relay is off" value="11" />
 			<Item label="Relay follows the state of button #4; when button is down the relay is on and when button is released the relay is off" value="12" />
-			<Item label="Relay is only controlled by commands sent to the root device. Commands to the root device will not be forwarded to device 1" value="13" />
+			<Item label="Relay is only controlled by commands sent to the root device (instance 0). Commands to the root device will not be forwarded to instance 1" value="13" />
 		</Value>
 		<Value type="list" genre="config" instance="1" index="16" label="Indicator mode" min="0" max="1" value="1" size="1" >
 			<Help>When ZHC5010 receives an Indicator Set message, then the received value can be used only to set the current light level for the actual LED or the level value can be stored and will then be used for subsequent internal activations.</Help>
@@ -170,13 +170,13 @@
 		</Value>
 		<Value type="list" genre="config" instance="1" index="23" label="Control of association groups for button 1" min="0" max="1" value="1" size="1" >
 			<Help>Enable or disable if received commands are relayed to the nodes in the association groups received by device 1.</Help>
-			<Item label="Nodes in the association groups will not be switched, button activations will still send switch values" value="0" />
-			<Item label="Nodes in the association groups will be switched" value="1" />
+			<Item label="When commands are received by device 1, nodes in the association groups will not be switched, button activations will still send switch values" value="0" />
+			<Item label="When commands are received by deivce 1, nodes in the association groups will be switched" value="1" />
 		</Value>
 		<Value type="list" genre="config" instance="1" index="24" label="Control of association groups for button 2" min="0" max="1" value="1" size="1" >
 			<Help>Enable or disable if received commands are relayed to the nodes in the association groups received by device 2.</Help>
-			<Item label="Nodes in the association groups will not be switched, button activations will still send switch values" value="0" />
-			<Item label="Nodes in the association groups will be switched" value="1" />
+			<Item label="When commands are received by device 2, nodes in the association groups will not be switched, button activations will still send switch values" value="0" />
+			<Item label="When commands are received by device 2, nodes in the association groups will be switched" value="1" />
 		</Value>
 		<Value type="list" genre="config" instance="1" index="25" label="Control of association groups for button 3" min="0" max="1" value="1" size="1" >
 			<Help>Enable or disable if received commands are relayed to the nodes in the association groups received by device 3.</Help>
@@ -281,7 +281,10 @@
 			</Help>
 		</Value>
 	</CommandClass>
-	<CommandClass id="96" mapping="endpoints" />
+	<!-- COMMAND_CLASS_SWITCH_ALL SwitchAllCmd_Get is not supported -->
+	<CommandClass id="39" getsupported="false" />
+	<!-- MultiInstance Command Class. Note: If you do not need Dedicated Relay Control instance, change below mapping to "endpoints", then rejoin the node to your network. -->
+	<CommandClass id="96" mapping="all" />
 	<!-- Multi Channel Association Groups -->
 	<CommandClass id="142" ForceInstances="true"/>
 	<!-- Association Groups -->
@@ -289,25 +292,25 @@
 		<Associations num_groups="21">
 			<Group index="1" max_associations="1" label="Lifeline" />
 			<Group index="2" max_associations="5" label="Send Basic Report (On/Off) when button #1 is used" auto="true" />
-			<Group index="3" max_associations="5" label="Sends Basic Set (On/Off) when button #1 is used" auto="true" />
-			<Group index="4" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #1 is used" auto="true" />
-			<Group index="5" max_associations="5" label="Send Binary Toggle Switch Set when button #1 is used" auto="true" />
-			<Group index="6" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #1 is used" auto="true" />
+			<Group index="3" max_associations="5" label="Sends Basic Set (On/Off) when button #1 is used" />
+			<Group index="4" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #1 is used" />
+			<Group index="5" max_associations="5" label="Send Binary Toggle Switch Set when button #1 is used" />
+			<Group index="6" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #1 is used" />
 			<Group index="7" max_associations="5" label="Send Basic Report (On/Off) when button #2 is used" auto="true" />
-			<Group index="8" max_associations="5" label="Sends Basic Set (On/Off) when button #2 is used" auto="true" />
-			<Group index="9" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #2 is used" auto="true" />
-			<Group index="10" max_associations="5" label="Send Binary Toggle Switch Set when button #2 is used" auto="true" />
-			<Group index="11" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #2 is used" auto="true" />
+			<Group index="8" max_associations="5" label="Sends Basic Set (On/Off) when button #2 is used" />
+			<Group index="9" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #2 is used" />
+			<Group index="10" max_associations="5" label="Send Binary Toggle Switch Set when button #2 is used" />
+			<Group index="11" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #2 is used" />
 			<Group index="12" max_associations="5" label="Send Basic Report (On/Off) when button #3 is used" auto="true" />
-			<Group index="13" max_associations="5" label="Sends Basic Set (On/Off) when button #3 is used" auto="true" />
-			<Group index="14" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #3 is used" auto="true" />
-			<Group index="15" max_associations="5" label="Send Binary Toggle Switch Set when button #3 is used" auto="true" />
-			<Group index="16" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #3 is used" auto="true" />
+			<Group index="13" max_associations="5" label="Sends Basic Set (On/Off) when button #3 is used" />
+			<Group index="14" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #3 is used" />
+			<Group index="15" max_associations="5" label="Send Binary Toggle Switch Set when button #3 is used" />
+			<Group index="16" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #3 is used" />
 			<Group index="17" max_associations="5" label="Send Basic Report (On/Off) when button #4 is used" auto="true" />
-			<Group index="18" max_associations="5" label="Sends Basic Set (On/Off) when button #4 is used" auto="true" />
-			<Group index="19" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #4 is used" auto="true" />
-			<Group index="20" max_associations="5" label="Send Binary Toggle Switch Set when button #4 is used" auto="true" />
-			<Group index="21" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #4 is used" auto="true" />
+			<Group index="18" max_associations="5" label="Sends Basic Set (On/Off) when button #4 is used" />
+			<Group index="19" max_associations="5" label="Sends Binary Switch Set (On/Off) when button #4 is used" />
+			<Group index="20" max_associations="5" label="Send Binary Toggle Switch Set when button #4 is used" />
+			<Group index="21" max_associations="5" label="Sends Multilevel Switch Set / Multilevel Switch Start Level Change / Multilevel Switch Stop Level Change when button #4 is used" />
 		</Associations>
 	</CommandClass>
 </Product>
