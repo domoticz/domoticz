@@ -397,12 +397,14 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
+/*
+//Should success have 'true' as string ? the below is for sure invalid
 	if (root["success"] == true)
 	{
 		m_bDoLogin = false;
 		return true;
 	}
-
+*/
 	return false;
 }
 
