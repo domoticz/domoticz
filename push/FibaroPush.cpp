@@ -33,7 +33,7 @@ void CFibaroPush::Stop()
 
 void CFibaroPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("FibaroActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -59,7 +59,7 @@ void CFibaroPush::DoFibaroPush()
 	m_sql.GetPreferencesVar("FibaroVersion4", iIsVersion4);
 
 	
-	int fibaroDebugActiveInt;
+	int fibaroDebugActiveInt = 0;
 	bool fibaroDebugActive = false;
 	m_sql.GetPreferencesVar("FibaroDebug", fibaroDebugActiveInt);
 	if (fibaroDebugActiveInt == 1) {

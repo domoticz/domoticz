@@ -844,7 +844,7 @@ void CHEOS::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,DeviceID, Name, nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
-		_log.Log(LOG_STATUS, "DENON for HEOS: %lu players found.", result.size());
+		_log.Log(LOG_STATUS, "DENON for HEOS: %d players found.", (int)result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{

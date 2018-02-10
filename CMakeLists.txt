@@ -322,6 +322,7 @@ hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
+hardware/EcoCompteur.cpp
 hardware/EcoDevices.cpp
 hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp

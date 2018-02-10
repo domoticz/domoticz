@@ -205,11 +205,11 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 
 bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
-	std::string sValue;
+	bool bEventTrigger = false;
+	int nValue = -1, Protected = -1;
 	uint64_t idx = -1;
-	int nValue;
 	float delayTime = 0;
-	bool bEventTrigger = false, Protected = false;
+	std::string sValue;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); itt++)
@@ -221,7 +221,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 			else if (itt->name == "nValue")
 				nValue = itt->iValue;
 			else if (itt->name == "protected")
-				Protected = itt->iValue ? true : false;
+				Protected = itt->iValue;
 			else if (itt->name == "_random")
 				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
 			else if (itt->name == "_after")

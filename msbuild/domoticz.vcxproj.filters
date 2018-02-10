@@ -492,6 +492,9 @@
     <Filter Include="Devices\NestOAuthAPI">
       <UniqueIdentifier>{879cf5f9-d3b3-4ee3-a4c1-bd157db7abe3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\EcoCompteur">
+      <UniqueIdentifier>{eb6a5b30-c80f-4a3f-826b-bfcea2bfc947}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2145,6 +2148,9 @@
     <ClInclude Include="..\hardware\NestOAuthAPI.h">
       <Filter>Devices\NestOAuthAPI</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\EcoCompteur.h">
+      <Filter>Devices\EcoCompteur</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2884,6 +2890,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
       <Filter>Devices\NestOAuthAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EcoCompteur.cpp">
+      <Filter>Devices\EcoCompteur</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

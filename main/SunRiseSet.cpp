@@ -161,6 +161,17 @@ bool SunRiseSet::GetSunRiseSet(const double latit, const double longit, const in
 			result.SunRiseHour = static_cast<int>(_tmpH);
 			result.SunSetMin = static_cast<int>(modf(set, &_tmpH)*60+0.5);
 			result.SunSetHour = static_cast<int>(_tmpH);
+			//fix a possible rounding issue above
+			if (result.SunRiseMin > 59)
+			{
+				result.SunRiseMin = 0;
+				result.SunRiseHour = (result.SunRiseHour + 1) % 24;
+			}
+			if (result.SunSetMin > 59)
+			{
+				result.SunSetMin = 0;
+				result.SunSetHour = (result.SunSetHour + 1) % 24;
+			}
 			break;
 		case +1:
 		case -1:

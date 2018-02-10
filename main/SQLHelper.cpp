@@ -3201,7 +3201,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
 			{
-				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, (itt->_HardwareID ? true : false), (itt->_switchtype ? true : false));
+				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, itt->_HardwareID, (itt->_switchtype ? true : false));
 			}
 
 			++itt;

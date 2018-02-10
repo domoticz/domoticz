@@ -1306,6 +1306,9 @@ namespace http {
 			else if (htype == HTYPE_EnphaseAPI) {
 				//All fine here
 			}
+			else if (htype == HTYPE_EcoCompteur) {
+				//all fine here!
+			}
 			else
 				return;
 
@@ -6705,10 +6708,11 @@ namespace http {
 				if (iswhite != "true")
 				{
 					//convert hue from 360 steps to 255
+					uint32_t iHue = atoi(hue.c_str());
 					double dval;
-					dval = (255.0 / 360.0)*atof(hue.c_str());
+					dval = (255.0 / 360.0)*float(iHue & 0xFFFF);
 					int ival;
-					ival = round(dval);
+					ival = (iHue & 0xFF0000) | round(dval);
 					m_mainworker.SwitchLight(ID, "Set Color", ival, -1, false, 0);
 				}
 				else
@@ -9119,7 +9123,7 @@ namespace http {
 							root["result"][ii]["SwitchType"] = "TPI";
 							root["result"][ii]["Level"] = llevel;
 							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
-							if (root["result"][ii]["Unit"] > 100)
+							if (root["result"][ii]["Unit"].asInt() > 100)
 								root["result"][ii]["Protected"] = true;
 
 							sprintf(szData, "%s: %d", lstatus.c_str(), atoi(sValue.c_str()));

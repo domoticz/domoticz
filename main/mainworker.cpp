@@ -134,6 +134,7 @@
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/eHouseTCP.h"
+#include "../hardware/EcoCompteur.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -1103,6 +1104,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Comm5SMTCP:
 		pHardware = new Comm5SMTCP(ID, Address, Port);
+		break;
+	case HTYPE_EcoCompteur:
+		pHardware = new CEcoCompteur(ID, Address, Port);
 		break;
 	}
 
@@ -11310,10 +11314,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (hue != 1000)
 				{
 					double dval;
-					dval = (255.0 / 360.0)*float(hue);
+					dval = (255.0 / 360.0)*float(hue & 0xFFFF);
 					int ival;
 					ival = round(dval);
-					lcmd2.value = ival;
+					lcmd2.value = (hue & 0xFF0000) | ival;
 					lcmd2.command = Limitless_SetRGBColour;
 				}
 				else
@@ -11745,7 +11749,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				std::stringstream sslevel;
 				sslevel << level;
 				if (statuses[sslevel.str()].empty()) {
-					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %" PRIu64 "", level, ID);
+					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %lu", level, ID);
 				}
 			}
 		}
