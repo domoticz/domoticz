@@ -70,7 +70,7 @@ namespace Plugins {
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
 		void	SendCommand(const int Unit, const std::string &command, const int nValue, const std::string &sValue);
-			
+		void    SendCommand(const int Unit, const std::string &command);
 		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;

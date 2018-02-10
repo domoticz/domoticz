@@ -232,6 +232,14 @@ namespace Plugins {
                                 Py_DECREF(pObj);
                         }
 		};
+		onUpdateCallback(CPlugin* pPlugin, int Unit, const std::string& Command) : CCallbackBase(pPlugin, "onUpdate")
+		{
+                        PyObject* pObj;
+			m_Name = __func__;
+			m_Unit = Unit;
+			m_Command = Command;
+                        m_pDataDict = PyDict_New();
+		};
 		PyObject* m_pDataDict;
                 std::string				m_Command;
 

@@ -1552,6 +1552,16 @@ namespace Plugins {
 		}
 	}
 
+	void CPlugin::SendCommand(const int Unit, const std::string & command)
+	{
+		//	Add command to message queue
+		onUpdateCallback*	Message2 = new onUpdateCallback(this, Unit, command);
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(Message2);
+		}
+	}
+
 	bool CPlugin::HasNodeFailed(const int Unit)
 	{
 		if (!m_DeviceDict)	return true;

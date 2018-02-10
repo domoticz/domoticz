@@ -369,6 +369,24 @@ namespace Plugins {
 			}
 		}
 	}
+
+	void CPluginSystem::DeviceRemoved(int HwID, int Unit)
+	{
+		Plugins::CPluginSystem Plugins;
+		std::map<int, CDomoticzHardwareBase*>* PluginHwd = Plugins.GetHardware();
+		Plugins::CPlugin* pPlugin = NULL;
+
+		// Disabled plugins will not be in plugin hardware map
+		if (PluginHwd->count(HwID))
+		{
+			pPlugin = (CPlugin*)(*PluginHwd)[HwID];
+		}
+
+		if (pPlugin)
+		{
+			pPlugin->SendCommand(Unit, "remove");
+		}
+	}
 }
 
 //Webserver helpers
