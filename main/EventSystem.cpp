@@ -2542,7 +2542,7 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 				_log.Log(LOG_ERROR, "EventSystem: SetPoint, not enough parameters!");
 				return false;
 		}
-		
+
 		return true;
 	}
 	return ScheduleEvent(ID, Action,eventName);
@@ -4104,12 +4104,10 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 
 unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 {
-
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %d)",
-		deviceID);
+	result = m_sql.safe_query("SELECT Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID == %d)", deviceID);
 	unsigned char ilevel = 0;
-	if (result.size()>0)
+	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
 
@@ -4122,25 +4120,33 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		bool bHaveGroupCmd = false;
 		int maxDimLevel = 0;
 
-		GetLightStatus(dType, dSubType, switchtype,0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 		ilevel = maxDimLevel;
 
 		if (maxDimLevel != 0)
 		{
 			if ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
-				float fLevel = (maxDimLevel / 100.0f)*percentageLevel;
+				float fLevel = (maxDimLevel / 100.0f) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
 				ilevel = int(fLevel);
-			} else if (switchtype == STYPE_Selector) {
+			}
+			else if (switchtype == STYPE_Selector)
+			{
 				// llevel cannot be get without sValue so level is getting from percentageLevel
 				ilevel = percentageLevel;
-				if (ilevel > 100) {
-					ilevel = 100;
-				} else if (ilevel < 0) {
-					ilevel = 0;
+				int maxLevel = 100;
+				if (!sd[3].empty())
+				{
+					std::map<std::string, std::string> statuses;
+					GetSelectorSwitchStatuses(m_sql.BuildDeviceOptions(sd[3]), statuses);
+					maxLevel = (statuses.size() - 1) * 10;
 				}
+				if (ilevel > maxLevel)
+					ilevel = maxLevel;
+				else if (ilevel < 0)
+					ilevel = 0;
 			}
 		}
 	}
