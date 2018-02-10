@@ -253,9 +253,14 @@ width: 99.5% !important;
    margin-left: 95px !important;
 }
 
-#rgbw_popup .dimslider {
+#rgbw_popup #slider{
    width: calc(100% - 108px) !important;
    margin-left: 6px !important;
-   margin-top: 10px !important;       
+   margin-top: 18px !important;       
 }
 
+#white_slider{
+   width: calc(100% - 108px) !important;
+   margin-left: 6px !important;
+   margin-top: 60px !important;       
+}
