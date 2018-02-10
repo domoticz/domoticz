@@ -3696,8 +3696,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::string previousState = m_devicestates[deviceID].nValueWording;
-	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
-	unsigned char level = 0;
+	int previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
+	int level = 0;
 	devicestatesMutexLock.unlock();
 
 	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
@@ -4102,11 +4102,11 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 }
 
 
-unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
+int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 {
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID == %d)", deviceID);
-	unsigned char ilevel = 0;
+	int iLevel = 0;
 	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
@@ -4121,7 +4121,7 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		int maxDimLevel = 0;
 
 		GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-		ilevel = maxDimLevel;
+		iLevel = maxDimLevel;
 
 		if (maxDimLevel != 0)
 		{
@@ -4130,12 +4130,12 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 				float fLevel = (maxDimLevel / 100.0f) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
-				ilevel = int(fLevel);
+				iLevel = int(fLevel);
 			}
 			else if (switchtype == STYPE_Selector)
 			{
 				// llevel cannot be get without sValue so level is getting from percentageLevel
-				ilevel = percentageLevel;
+				iLevel = percentageLevel;
 				int maxLevel = 100;
 				if (!sd[3].empty())
 				{
@@ -4143,14 +4143,14 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 					GetSelectorSwitchStatuses(m_sql.BuildDeviceOptions(sd[3]), statuses);
 					maxLevel = (statuses.size() - 1) * 10;
 				}
-				if (ilevel > maxLevel)
-					ilevel = maxLevel;
-				else if (ilevel < 0)
-					ilevel = 0;
+				if (iLevel > maxLevel)
+					iLevel = maxLevel;
+				else if (iLevel < 0)
+					iLevel = 0;
 			}
 		}
 	}
-	return ilevel;
+	return iLevel;
 }
 
 //Webserver helpers
