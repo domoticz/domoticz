@@ -2542,7 +2542,7 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 				_log.Log(LOG_ERROR, "EventSystem: SetPoint, not enough parameters!");
 				return false;
 		}
-		
+
 		return true;
 	}
 	return ScheduleEvent(ID, Action,eventName);
@@ -2561,16 +2561,17 @@ void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &f
 
 #endif // ENABLE_PYTHON
 
-void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
+void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.nValueWording.c_str() : iterator->second.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices");
@@ -2578,9 +2579,9 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.lastUpdate.c_str() : iterator->second.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastupdate");
@@ -2588,18 +2589,17 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			 item.sValue.c_str() : iterator->second.sValue.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushnumber(lua_state, (lua_Number)iterator->second.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_idx");
@@ -2607,13 +2607,12 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushnumber(lua_state, sitem.lastLevel);
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushnumber(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.lastLevel : iterator->second.lastLevel);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastlevel");
-	devicestatesMutexLock2.unlock();
 }
 
 void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus)
@@ -2946,7 +2945,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 	}
 
-	ExportDeviceStatesToLua(lua_state);
+	ExportDeviceStatesToLua(lua_state, item);
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);

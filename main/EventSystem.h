@@ -22,6 +22,7 @@ extern "C" {
 class CEventSystem : public CLuaCommon
 {
 	friend class CdzVents;
+	friend class CLuaHandler;
 	typedef struct lua_State lua_State;
 
 	struct _tEventItem
@@ -126,7 +127,6 @@ public:
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(const uint64_t ulDevID, const int nValue, const std::string &lastUpdate);
 	void UpdateUserVariable(const uint64_t ulDevID, const std::string &varName, const std::string &varValue, const int varType, const std::string &lastUpdate);
-	void ExportDeviceStatesToLua(lua_State *lua_state);
 	bool PythonScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
@@ -226,8 +226,8 @@ private:
 	void UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID);
 	void EventQueueThread();
 	void UnlockEventQueueThread();
+	void ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item);
 	void EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus);
-
 
 	//std::string reciprocalAction (std::string Action);
 	std::vector<_tEventItem> m_events;
