@@ -2570,7 +2570,8 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQu
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
 		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
-		lua_pushstring(lua_state, iterator->second.nValueWording.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.nValueWording.c_str() : iterator->second.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices");
