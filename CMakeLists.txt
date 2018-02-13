@@ -322,7 +322,6 @@ hardware/DomoticzHardware.cpp
 hardware/DomoticzInternal.cpp
 hardware/DomoticzTCP.cpp
 hardware/Dummy.cpp
-hardware/EcoCompteur.cpp
 hardware/EcoDevices.cpp
 hardware/eHouseTCP.cpp
 hardware/eHouse/EhouseEvents.cpp
@@ -367,7 +366,6 @@ hardware/MySensorsTCP.cpp
 hardware/MySensorsMQTT.cpp
 hardware/NefitEasy.cpp
 hardware/Nest.cpp
-hardware/NestOAuthAPI.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OnkyoAVTCP.cpp

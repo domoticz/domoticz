@@ -1,3 +1,0 @@
-#define APPVERSION 2107
-#define APPHASH "2107"
-#define APPDATE 2107

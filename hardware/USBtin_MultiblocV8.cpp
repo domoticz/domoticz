@@ -668,6 +668,7 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 		case type_STATE_S_TOR_1_TO_2:
 			if(bufferdata[2] & 0x01) OutputCde = true;
 			else OutputCde = false;
+			
 			//if( ((bufferdata[2]>>4) & 0x01) )OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[0];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
@@ -683,6 +684,7 @@ void USBtin_MultiblocV8::Traitement_Etat_S_TOR_Recu(const unsigned int FrameType
 			
 			if(bufferdata[6] & 0x01) OutputCde = true;
 			else OutputCde = false;
+			
 			//if((bufferdata[6]>>4) & 0x01)OutputPWM = true;
 			//else OutputPWM = false;
 			level_value = bufferdata[4];			//variable niveau (lvl) 0-254 à convertir en 0 - 100%
