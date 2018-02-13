@@ -205,11 +205,11 @@ bool CdzVents::OpenURL(lua_State *lua_state, const std::vector<_tLuaTableValues>
 
 bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableValues> &vLuaTable)
 {
-	std::string sValue;
+	bool bEventTrigger = false;
+	int nValue = -1, Protected = -1;
 	uint64_t idx = -1;
-	int nValue;
 	float delayTime = 0;
-	bool bEventTrigger = false, Protected = false;
+	std::string sValue;
 
 	std::vector<_tLuaTableValues>::const_iterator itt;
 	for (itt = vLuaTable.begin(); itt != vLuaTable.end(); itt++)
@@ -221,7 +221,7 @@ bool CdzVents::UpdateDevice(lua_State *lua_state, const std::vector<_tLuaTableVa
 			else if (itt->name == "nValue")
 				nValue = itt->iValue;
 			else if (itt->name == "protected")
-				Protected = itt->iValue ? true : false;
+				Protected = itt->iValue;
 			else if (itt->name == "_random")
 				delayTime = static_cast<float>(GenerateRandomNumber(itt->iValue));
 			else if (itt->name == "_after")
@@ -410,72 +410,6 @@ int CdzVents::l_domoticz_print(lua_State* lua_state)
 		}
 	}
 	return 0;
-}
-
-void CdzVents::LoadEvents()
-{
-	m_bdzVentsExist = false;
-	std::string dzv_Dir, s;
-#ifdef WIN32
-	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
-	m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
-	m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
-#else
-	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
-	m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
-	m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
-#endif
-
-	// Remove dzVents DB files from disk
-	std::vector<std::string> FileEntries;
-	std::vector<std::string>::const_iterator itt;
-	std::string filename;
-	DirectoryListing(FileEntries, dzv_Dir, false, true);
-	for (itt = FileEntries.begin(); itt != FileEntries.end(); ++itt)
-	{
-		filename = dzv_Dir + *itt;
-		if (filename.find("README.md") == std::string::npos)
-			std::remove(filename.c_str());
-	}
-
-	if (m_sql.m_bDisableDzVentsSystem)
-		return;
-
-	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT ID, Name, Interpreter, Type, Status, XMLStatement FROM EventMaster WHERE Interpreter <> 'Blockly' AND Status > 0 ORDER BY ID");
-	if (result.size() > 0)
-	{
-		std::vector<std::vector<std::string> >::const_iterator itt;
-		for (itt = result.begin(); itt != result.end(); ++itt)
-		{
-			std::vector<std::string> sd = *itt;
-			CEventSystem::_tEventItem eitem;
-			std::stringstream s_str(sd[0]);
-			s_str >> eitem.ID;
-			eitem.Name = sd[1];
-			eitem.Interpreter = sd[2];
-			std::transform(sd[3].begin(), sd[3].end(), sd[3].begin(), ::tolower);
-			eitem.Type = sd[3];
-			eitem.EventStatus = atoi(sd[4].c_str());
-			eitem.Actions = sd[5];
-			eitem.SequenceNo = 0;
-			m_mainworker.m_eventsystem.m_events.push_back(eitem);
-
-			// Write active dzVents scripts to disk.
-			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
-			{
-				s = dzv_Dir + eitem.Name.c_str() + ".lua";
-				_log.Log(LOG_STATUS, "dzVents: Write file: %s",s.c_str());
-				FILE *fOut = fopen(s.c_str(), "wb+");
-				if (fOut)
-				{
-					fwrite(eitem.Actions.c_str(), 1, eitem.Actions.size(), fOut);
-					fclose(fOut);
-				}
-				m_bdzVentsExist = true;
-			}
-		}
-	}
 }
 
 void CdzVents::SetGlobalVariables(lua_State *lua_state, const bool reasonTime, const int secStatus)

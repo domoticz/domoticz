@@ -68,7 +68,7 @@ struct _tTaskItem
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
-	unsigned char _level;
+	int _level;
 	int _Hue;
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
@@ -78,7 +78,7 @@ struct _tTaskItem
 
 	}
 
-	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_UPDATEDEVICE;
@@ -86,7 +86,7 @@ struct _tTaskItem
 		tItem._idx = idx;
 		tItem._nValue = nValue;
 		tItem._sValue = sValue;
-		tItem._HardwareID = Protected ? 1 : 0;
+		tItem._HardwareID = Protected;
 		tItem._switchtype = bEventTrigger ? 1 : 0;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
@@ -179,7 +179,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const int Hue, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;

@@ -582,7 +582,8 @@ input[type="search"] {
 }
 .dimslider {
   position: relative;
-  width: calc(98% - 60px) !important;
+  right: -58px;
+  width: calc(98% - 120px) !important;
   background-color: #555555 !important;
   border-radius: 0px !important;
   height: 10px;

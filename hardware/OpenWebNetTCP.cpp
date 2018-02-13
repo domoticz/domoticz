@@ -36,6 +36,9 @@ License: Public domain
 #define OPENWEBNET_BUFFER_SIZE          1024
 #define OPENWEBNET_SOCKET_SUCCESS       0
 
+#define	SCAN_TIME_REQ_AUTO_UPDATE_POWER	(14400) // 4hour = 240min = 14400sec
+#define SCAN_TIME_REQ_ENERGY_TOTALIZER	(900)	// 15min = 900sec
+
 #define OPENWEBNET_GROUP_ID				0x00008000
 
 #define OPENWEBNET_AUTOMATION					"AUTOMATION"
@@ -50,7 +53,7 @@ License: Public domain
 #define OPENWEBNET_AUXILIARY					"AUXILIARY"
 #define OPENWEBNET_DRY_CONTACT					"DRYCONTACT"
 #define OPENWEBNET_ENERGY_MANAGEMENT			"ENERGY MANAGEMENT"
-
+#define OPENWEBNET_SOUND_DIFFUSION				"SOUND DIFFUSION"
 
 /**
     Create new hardware OpenWebNet instance
@@ -85,6 +88,7 @@ bool COpenWebNetTCP::StartHardware()
 	m_stoprequested = false;
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
+	LastScanTimeEnergy = LastScanTimeEnergyTot = 0;	// Force first request command
 
 	//Start monitor thread
 	m_monitorThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&COpenWebNetTCP::MonitorFrames, this)));
@@ -383,7 +387,7 @@ void COpenWebNetTCP::MonitorFrames()
 			    if ((m_pStatusSocket = connectGwOwn(OPENWEBNET_EVENT_SESSION)))
                 {
                     // Monitor session correctly open
-                    _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+                    _log.Log(LOG_STATUS, "COpenWebNetTCP: Monitor session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
                     sOnConnected(this);
                 }
                 else
@@ -1020,7 +1024,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			case 32:
 				if (where.substr(0, 1) != "3")
 				{
-					_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str()), who.c_str();
+					_log.Log(LOG_ERROR, "COpenWebNetTCP: Where=%s is not correct for who=%s", where.c_str(), who.c_str());
 					return;
 				}
 
@@ -1038,7 +1042,7 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 				UpdateSwitch(WHO_CEN_PLUS_DRY_CONTACT_IR_DETECTION, iWhere, iAppValue, atoi(sInterface.c_str()), 255, devname.c_str(), sSwitchContactT1);
 				break;
 			default:
-				_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str()), who.c_str();
+				_log.Log(LOG_ERROR, "COpenWebNetTCP: What=%s is not correct for who=%s", what.c_str(), who.c_str());
 				return;
 			}
 			break;
@@ -1075,11 +1079,13 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 		case WHO_SCENARIO_SCHEDULER_SWITCH:             // 15
 		case WHO_AUDIO:                                 // 16
 		case WHO_SCENARIO_PROGRAMMING:                  // 17
+		case WHO_SOUND_DIFFUSION:						// 22
 		case WHO_LIHGTING_MANAGEMENT:                   // 24
 		case WHO_ZIGBEE_DIAGNOSTIC:                     // 1000
 		case WHO_AUTOMATIC_DIAGNOSTIC:                  // 1001
 		case WHO_THERMOREGULATION_DIAGNOSTIC_FAILURES:  // 1004
 		case WHO_DEVICE_DIAGNOSTIC:                     // 1013
+		case WHO_ENERGY_MANAGEMENT_DIAGNOSTIC:			// 1018
 			_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s not yet supported!", who.c_str());
 			return;
 		default:
@@ -1311,7 +1317,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& 
         return false;
     }
     // Command session correctly open
-    _log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+    _log.Log(LOG_STATUS, "COpenWebNetTCP: Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
     // Command session correctly open -> write command
 	int bytesWritten = commandSocket->write(command.frame_open.c_str(), command.frame_open.length());
@@ -1564,14 +1570,13 @@ void COpenWebNetTCP::Do_Work()
 
 		sleep_seconds(OPENWEBNET_HEARTBEAT_DELAY);
 
-		if ((mytime(NULL) - LastScanTimeEnergy) > 300)
+		if ((mytime(NULL) - LastScanTimeEnergy) > SCAN_TIME_REQ_AUTO_UPDATE_POWER)
 		{
-			
-			requestAutomaticUpdatePower(300 / 60);
+			requestAutomaticUpdatePower(255); // automatic update for 255 minutes
 			LastScanTimeEnergy = mytime(NULL);
 		}
 
-		if ((mytime(NULL) - LastScanTimeEnergyTot) > 30)
+		if ((mytime(NULL) - LastScanTimeEnergyTot) > SCAN_TIME_REQ_ENERGY_TOTALIZER)
 		{
 			requestEnergyTotalizer();
 			LastScanTimeEnergyTot = mytime(NULL);

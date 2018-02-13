@@ -189,11 +189,11 @@ bool DomoticzTCP::ConnectInternal()
 	{
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
-		_log.Log(LOG_ERROR, "Domoticz: TCP could not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "Domoticz: TCP could not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "Domoticz: TCP connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS, "Domoticz: TCP connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 	if (m_username != "")
 	{

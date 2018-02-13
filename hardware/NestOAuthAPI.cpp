@@ -174,7 +174,10 @@ bool CNestOAuthAPI::Login()
 			std::string sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
 
 			if (sTmpToken.size() > 0) {
-				_log.Log(LOG_NORM, ("NestOAuthAPI: Received an API key to use for future requests: " + sTmpToken).c_str());
+				if (_log.isTraceEnabled())
+				{
+					_log.Log(LOG_TRACE, "NestOAuthAPI: Received an API key to use for future requests: %s", sTmpToken.c_str());
+				}
 
 				// Use the newly obtained access token
 				m_OAuthApiAccessToken = sTmpToken;
@@ -516,7 +519,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			Json::Value ndevice = deviceRoot["thermostats"][devID];
 			if (!ndevice.isObject())
 			{
-				_log.Log(LOG_ERROR, ("NestOAuthAPI: Structure referenced thermostat " + devID + " but it was not found.").c_str());
+				_log.Log(LOG_ERROR, "NestOAuthAPI: Structure referenced thermostat %s but it was not found.", devID.c_str());
 				continue;
 			}
 
@@ -713,13 +716,13 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 	}
 	
 	std::string sReceivedAccessToken = root["access_token"].asString();
-	_log.Log(LOG_NORM, ("NestOAuthAPI: Fetched access token: " + sReceivedAccessToken).c_str());
+	_log.Log(LOG_NORM, "NestOAuthAPI: Fetched access token: %s", sReceivedAccessToken.c_str());
 	return sReceivedAccessToken;
 }
 
 bool CNestOAuthAPI::SetOAuthAccessToken(const unsigned int ID, std::string &newToken)
 {
-	_log.Log(LOG_NORM, ("NestOAuthAPI: Storing received access token " + newToken + " and clearing token request information.").c_str());
+	_log.Log(LOG_NORM, "NestOAuthAPI: Storing received access token %s and clearing token request information.", newToken.c_str());
 
 	// std::vector<std::vector<std::string> > result;
 	m_sql.safe_query("UPDATE Hardware SET Username='%q', Extra='' WHERE (ID==%d)", newToken.c_str(), ID);

@@ -1496,8 +1496,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (pLed->command == Limitless_SetBrightnessLevel)
 			{
-				float fvalue = pLed->value;
-				int svalue = round(fvalue);
+				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
 				std::stringstream sstr;

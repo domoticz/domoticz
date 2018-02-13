@@ -86,6 +86,7 @@
 #include "../hardware/SolarMaxTCP.h"
 #include "../hardware/Pinger.h"
 #include "../hardware/Nest.h"
+#include "../hardware/NestOAuthAPI.h"
 #include "../hardware/Thermosmart.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
@@ -133,6 +134,7 @@
 #include "../hardware/USBtin_MultiblocV8.h"
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/eHouseTCP.h"
+#include "../hardware/EcoCompteur.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -225,7 +227,6 @@ MainWorker::MainWorker()
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
-	m_SunRiseSetMins.clear();
 	m_DayLength = "";
 
 	m_bHaveDownloadedDomoticzUpdate = false;
@@ -573,8 +574,11 @@ bool MainWorker::GetSunSettings()
 		std::vector<std::string> strarray;
 		std::vector<std::string> hourMinItem;
 		StringSplit(m_LastSunriseSet, ";", strarray);
+		m_SunRiseSetMins.clear();
 
-		for(std::vector<std::string>::iterator it = strarray.begin(); it != strarray.end(); ++it) {
+		std::vector<std::string>::const_iterator it;
+		for(it = strarray.begin(); it != strarray.end(); ++it)
+		{
 			StringSplit(*it, ":", hourMinItem);
 			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
 			m_SunRiseSetMins.push_back(intMins);
@@ -824,7 +828,7 @@ bool MainWorker::AddHardwareFromParams(
 		//LAN
 		pHardware = new MQTT(ID, Address, Port, Username, Password, Filename, Mode1);
 		break;
-	case HTYPE_eHouseTCP:	
+	case HTYPE_eHouseTCP:
 		//eHouse LAN, WiFi,Pro and other via eHousePRO gateway
 		pHardware = new eHouseTCP(ID, Address, Port, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
@@ -991,6 +995,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_NEST:
 		pHardware = new CNest(ID, Username, Password);
 		break;
+	case HTYPE_Nest_OAuthAPI:
+		pHardware = new CNestOAuthAPI(ID, Username, Filename);
+		break;
 	case HTYPE_ANNATHERMOSTAT:
 		pHardware = new CAnnaThermostat(ID, Address, Port, Username, Password);
 		break;
@@ -1097,6 +1104,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Comm5SMTCP:
 		pHardware = new Comm5SMTCP(ID, Address, Port);
+		break;
+	case HTYPE_EcoCompteur:
+		pHardware = new CEcoCompteur(ID, Address, Port);
 		break;
 	}
 
@@ -11304,10 +11314,10 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				if (hue != 1000)
 				{
 					double dval;
-					dval = (255.0 / 360.0)*float(hue);
+					dval = (255.0 / 360.0)*float(hue & 0xFFFF);
 					int ival;
 					ival = round(dval);
-					lcmd2.value = ival;
+					lcmd2.value = (hue & 0xFF0000) | ival;
 					lcmd2.command = Limitless_SetRGBColour;
 				}
 				else
@@ -11739,7 +11749,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 				std::stringstream sslevel;
 				sslevel << level;
 				if (statuses[sslevel.str()].empty()) {
-					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %" PRIu64 "", level, ID);
+					_log.Log(LOG_ERROR, "Setting a wrong level value %d to Selector device %lu", level, ID);
 				}
 			}
 		}
@@ -11852,7 +11862,7 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLight idx:%d cmd:%s lvl:%d ", (long)idx, switchcmd.c_str(), level);
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLight idx:%" PRId64 " cmd:%s lvl:%d ", idx, switchcmd.c_str(), level);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
@@ -12014,6 +12024,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_TOONTHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_AtagOne) ||
 		(pHardware->HwdType == HTYPE_NEST) ||
+		(pHardware->HwdType == HTYPE_Nest_OAuthAPI) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
@@ -12054,6 +12065,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_NEST)
 		{
 			CNest *pGateway = reinterpret_cast<CNest*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
+		{
+			CNestOAuthAPI *pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_ANNATHERMOSTAT)
@@ -12330,6 +12346,12 @@ bool MainWorker::SetThermostatState(const std::string &idx, const int newState)
 	else if (pHardware->HwdType == HTYPE_NEST)
 	{
 		CNest *pGateway = reinterpret_cast<CNest*>(pHardware);
+		pGateway->SetProgramState(newState);
+		return true;
+	}
+	else if (pHardware->HwdType == HTYPE_Nest_OAuthAPI)
+	{
+		CNestOAuthAPI *pGateway = reinterpret_cast<CNestOAuthAPI*>(pHardware);
 		pGateway->SetProgramState(newState);
 		return true;
 	}
