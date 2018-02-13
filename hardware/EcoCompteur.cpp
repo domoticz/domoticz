@@ -98,8 +98,8 @@ void CEcoCompteur::GetScript()
 	string sUrl = m_url + "/inst.json";
 	if (!HTTPClient::GET(sUrl, sInst))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'inst.json' from url : %s", m_url.c_str());
-		return;
+		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'inst.json' from url : " + m_url);
+  	return;
 	}
 
 	// Download hourly report
@@ -107,7 +107,7 @@ void CEcoCompteur::GetScript()
 	sUrl = m_url + "/log2.csv";
 	if (!HTTPClient::GET(sUrl, sLog2))
 	{
-		_log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.csv' from url : %s", m_url.c_str());
+    _log.Log(LOG_ERROR, "EcoCompteur: Error getting 'log2.csv' from url : " + m_url);
 		return;
 	}
 

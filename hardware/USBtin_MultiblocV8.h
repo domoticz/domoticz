@@ -17,7 +17,9 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		void StopThread();
 		bool StartThread();
 		bool m_stoprequested;
+
 		unsigned long V8switch_id_base;
+
 		
 	private:
 		boost::shared_ptr<boost::thread> m_thread;
@@ -25,17 +27,20 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		
 		int sec_counter;
 		int Asec_counter;
+
 		int Bsec_counter;
+
 		int min_counter;
 		int min_counter2;
 		bool BOOL_TaskAGo;
 		bool BOOL_TaskRqStorGo;
+
 		bool BOOL_SendPushOffSwitch;
 		int Sid_PushOff_ToSend;
 		char CodeTouchePushOff_ToSend;
 		bool BOOL_Global_BlinkOutputs;
 		char CommandBlocToSend;
-		
+
 		struct
 		{
 			long BlocID;
@@ -48,8 +53,8 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 			int AliveFrameReceived;
 			int NbAliveFrameReceived;
 			bool ForceUpdateSTOR[12];
-			bool IsOutputBlink[12];
-		} BlocList_CAN[MAX_NUMBER_BLOC]; //30 blocs Maxi
+      bool IsOutputBlink[12];
+   	} BlocList_CAN[MAX_NUMBER_BLOC]; //30 blocs Maxi
 				
 		void ClearingBlocList();
 		void BlocList_CheckBloc();
@@ -76,5 +81,6 @@ class USBtin_MultiblocV8 : public CDomoticzHardwareBase
 		void InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname);
 		void SetOutputBlinkInDomoticz (unsigned long sID,int OutputNumber,bool Blink);
 		void DoBlinkOutput();
+
 };
 

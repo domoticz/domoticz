@@ -8,7 +8,7 @@ Description : This class manage the USBtin CAN gateway.
 - Receiving CAN Frame and switching then to appropriate CAN Layer
 - Sending CAN Frame with writeframe, writeframe is virtualized inside each CAN Layer
 Supported Layer :
-* MultiblocV8 CAN : Scheiber spécific communication
+* MultiblocV8 CAN : Scheiber spÃ©cific communication
 
 History :
 - 2017-10-01 : Creation by X.PONCET
@@ -263,7 +263,7 @@ void USBtin::ParseData(const char *pData, int Len)
 {
 	char value[30] = "";
 	std::string vString;
-	
+
 	int ii = 0;
 	while (ii<Len)
 	{
