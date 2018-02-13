@@ -68,7 +68,7 @@ struct _tTaskItem
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
-	unsigned char _level;
+	int _level;
 	int _Hue;
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
@@ -179,7 +179,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const int Hue, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
