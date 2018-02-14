@@ -280,7 +280,6 @@ void USBtin_MultiblocV8::Do_Work()
 			BOOL_SendPushOffSwitch = false;
 			USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(Sid_PushOff_ToSend,CodeTouchePushOff_ToSend);
 		}
-		}
 	}
 }
 
