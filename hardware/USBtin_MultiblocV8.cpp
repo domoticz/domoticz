@@ -344,7 +344,7 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	unsigned long SwitchId = (bufferdata[0]<<24)+(bufferdata[1]<<16)+(bufferdata[2]<<8)+bufferdata[3];
 	std::string defaultname=" ";
 	
-	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, bufferdata[4] );
+	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, (unsigned int)bufferdata[4] );
 	
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
