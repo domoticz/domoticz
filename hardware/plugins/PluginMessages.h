@@ -117,6 +117,33 @@ namespace Plugins {
 		};
 	};
 
+#ifdef _WIN32
+static std::wstring string_to_wstring(const std::string &str, int codepage)
+{
+	if (str.empty()) return std::wstring();
+	int sz = MultiByteToWideChar(codepage, 0, &str[0], (int)str.size(), 0, 0);
+	std::wstring res(sz, 0);
+	MultiByteToWideChar(codepage, 0, &str[0], (int)str.size(), &res[0], sz);
+	return res;
+}
+
+static std::string wstring_to_string(const std::wstring &wstr, int codepage)
+{
+	if (wstr.empty()) return std::string();
+	int sz = WideCharToMultiByte(codepage, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
+	std::string res(sz, 0);
+	WideCharToMultiByte(codepage, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
+	return res;
+}
+
+static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
+{
+	std::wstring utf16 = string_to_wstring(utf8, codepage);
+	std::string ansi = wstring_to_string(utf16, CP_UTF8);
+	return ansi;
+}
+#endif
+
 	class onConnectCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
@@ -127,7 +154,12 @@ namespace Plugins {
 	protected:
 		virtual void ProcessLocked()
 		{
-			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, m_Text.c_str()));  // 0 is success else socket failure code
+#ifdef _WIN32
+			std::string textUTF8 = get_utf8_from_ansi(m_Text, GetACP());
+#else
+			std::string textUTF8 = m_Text; // TODO: Is it safe to assume non-Windows will always be UTF-8?
+#endif
+			Callback(Py_BuildValue("Ois", m_pConnection, m_Status, textUTF8.c_str()));  // 0 is success else socket failure code
 		};
 	};
 
