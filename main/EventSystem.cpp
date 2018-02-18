@@ -72,6 +72,7 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 	{ "Barometer",			"barometer",				JTYPE_FLOAT		},
 	{ "CameraIndx",			"cameraIdx", 				JTYPE_STRING	},
 	{ "Chill",				"chill", 					JTYPE_FLOAT		},
+	{ "Color",				"color", 					JTYPE_STRING	},
 	{ "Counter",			"counter", 					JTYPE_STRING	},
 	{ "CounterDeliv",		"counterDelivered", 		JTYPE_FLOAT		},
 	{ "CounterDelivToday",	"counterDeliveredToday",	JTYPE_STRING	},
@@ -3824,7 +3825,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 			}
 
 		} else {
-			tItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, oParseResults.sCommand, level, -1, eventName );
+			tItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName );
 		}
 		m_sql.AddTaskItem( tItem );
 #ifdef _DEBUG
@@ -3851,7 +3852,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 					tDelayedtItem = _tTaskItem::SwitchSceneEvent( fDelayTime, deviceID, "On", eventName );
 				}
 			} else {
-				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, -1, eventName );
+				tDelayedtItem = _tTaskItem::SwitchLightEvent( fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName );
 			}
 			m_sql.AddTaskItem( tDelayedtItem );
 #ifdef _DEBUG

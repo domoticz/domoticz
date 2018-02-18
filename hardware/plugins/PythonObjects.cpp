@@ -274,6 +274,7 @@ namespace Plugins {
 		Py_XDECREF(self->sValue);
 		PyDict_Clear(self->Options);
 		Py_XDECREF(self->Options);
+		Py_XDECREF(self->Color);
 		Py_TYPE(self)->tp_free((PyObject*)self);
 	}
 
@@ -330,6 +331,11 @@ namespace Plugins {
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->TimedOut = 0;
+				self->Color = PyUnicode_FromString("");
+				if (self->Color == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
 				self->pPlugin = NULL;
 			}
 		}
@@ -610,7 +616,7 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description, Color FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (result.size() > 0)
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -662,6 +668,8 @@ namespace Plugins {
 					}
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
+					Py_XDECREF(self->Color);
+					self->Color = PyUnicode_FromString(sd[16].c_str());
 				}
 			}
 		}
@@ -694,6 +702,7 @@ namespace Plugins {
 					if (result.size() == 0)
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
+						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSON(); //Parse the color to detect incorrectly formatted color data
 						std::string	sLongName = self->pPlugin->Name + " - " + sName;
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
@@ -706,16 +715,16 @@ namespace Plugins {
 								sOptionValue = PyUnicode_AsUTF8(pValueDict);
 
 							m_sql.safe_query(
-								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Options) "
-								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q')",
-								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sOptionValue.c_str());
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q', '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sColor.c_str(), sOptionValue.c_str());
 						}
 						else
 						{
 							m_sql.safe_query(
-								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description) "
-								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str());
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sColor.c_str());
 						}
 
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
@@ -798,16 +807,17 @@ namespace Plugins {
 			int			iUsed = self->Used;
 			uint64_t 		DevRowIdx;
 			char*		Description = NULL;
+			char*		Color = NULL;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", NULL };
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiis", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiiss", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color))
 				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used' or 'Description' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description' or 'Color' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -821,7 +831,7 @@ namespace Plugins {
 
 			// Notify MQTT and various push mechanisms
 			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
-			
+
 			std::string sID = SSTR(self->ID);
 
 			if (TypeName) {
@@ -881,6 +891,16 @@ namespace Plugins {
 				m_sql.UpdateDeviceValue("Used", iUsed, sID);
 			}
 
+			// Color change
+			if (Color)
+			{
+				std::string sColor = Color;
+				m_sql.UpdateDeviceValue("Color", sColor, sID);
+
+				// TODO: Notify MQTT and various push mechanisms?
+				//m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
+
 			// Options provided, assume change
 			if (pOptionsDict && PyDict_Check(pOptionsDict))
 			{
@@ -919,7 +939,7 @@ namespace Plugins {
 			{
 				self->TimedOut = iTimedOut;
 			}
-			
+
 			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 			CDevice_refresh(self);

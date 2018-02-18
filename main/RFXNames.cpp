@@ -776,6 +776,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
 		{ pTypeLimitlessLights, sTypeLimitlessLivCol, "RGB" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWZ, "RGBWZ" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWWZ, "RGBWWZ" },
+		{ pTypeLimitlessLights, sTypeLimitlessWW, "WW" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -1515,6 +1518,10 @@ void GetLightStatus(
 	case pTypeLimitlessLights:
 		bHaveDimmer=true;
 		maxDimLevel=100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+		llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+
 		switch (nValue)
 		{
 		case Limitless_LedOff:
@@ -1526,11 +1533,11 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
-		case Limitless_SetKelvinLevel:
-			lstatus="Set Kelvin Level";
-			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
+			break;
+		case Limitless_SetRGBColour:
+			lstatus="Set Color";
 			break;
 		case Limitless_NightMode:
 			lstatus="NightMode";
@@ -2560,11 +2567,6 @@ bool GetLightCommand(
 			)
 		{
 			cmd=Limitless_SetBrightnessLevel;
-			return true;
-		}
-		else if (switchcmd=="Set Kelvin Level")
-		{
-			cmd=Limitless_SetKelvinLevel;
 			return true;
 		}
 		else if (switchcmd == "Set White")

@@ -251,51 +251,35 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	}]);
 
 	app.factory('deviceApi', function($q, domoticzApi, permissions) {
-        return {
-            getDeviceInfo: getDeviceInfo,
-            setHexColor: setHexColor,
-            setHsbColor: setHsbColor
-        };
+		return {
+			getDeviceInfo: getDeviceInfo,
+			setHexColor: setHexColor,
+			setHsbColor: setHsbColor
+		};
 
-        function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
-                .then(function (data) {
-                    return data && data.result && data.result.length === 1
-                        ? data.result[0]
-                        : $q.reject(data);
-                });
-        }
+		function getDeviceInfo(deviceIdx) {
+			return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
+				.then(function (data) {
+					return data && data.result && data.result.length === 1
+						? data.result[0]
+						: $q.reject(data);
+				});
+		}
 
-        function setHexColor(deviceIdx, color) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
+		function setColor(deviceIdx, color, brightness) {
+			if (permissions.hasPermission('Viewer')) {
+				var message = $.t('You do not have permission to do that!');
 				HideNotify();
 				ShowNotify(message, 2500, true);
 				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hex: color,
-                brightness: 100
-            });
-        }
+			}
 
-        function setHsbColor(deviceIdx, hue, brightness, whiteValue, isWhite) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hue: (whiteValue << 16) + hue,
-                brightness: brightness,
-                iswhite: isWhite
-            });
-        }
+			return domoticzApi.sendCommand('setcolbrightnessvalue', {
+				idx: deviceIdx,
+				color: color,
+				brightness: brightness
+			});
+		}
 	});
 	
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {

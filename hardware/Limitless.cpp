@@ -15,7 +15,6 @@
 
 // Commands
 // V6
-// Todo: Kelvin slider & WW/CW type
 #define l_zone 0
 #define v6_repeats 3
 
@@ -521,7 +520,13 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			case Limitless_SetRGBColour:
 			{
-				//First send ON , sleep 100ms, then the command
+				//Color temperature is not for bridge
+				if (pLed->color.mode == ColorModeTemp && pLed->dunit == 5)
+				{
+					return false;
+				}
+
+				//Send ON, sleep 100ms
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -530,16 +535,53 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				SendV6Command(pCMD);
 				sleep_milliseconds(100);
+
+				//Send the command, sleep 100ms
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					if (pLed->dunit == 5)
+						pCMD = (unsigned char*)&V6_Bridge_White_On;
+					else {
+						pCMD = (unsigned char*)&V6_RGBWW_White_On;
+						pCMD[0x09] = pLed->dunit;
+					}
+				}
+				else if (pLed->color.mode == ColorModeTemp)
+				{
+					pCMD = (unsigned char*)&V6_RGBWW_SetKelvinLevel;
+					pCMD[0x05] = (255-pLed->color.t) * 100 / 255;
+					pCMD[0x09] = pLed->dunit;
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					if (pLed->dunit == 5)
+						pCMD = (unsigned char*)&V6_Bridge_SetColor;
+					else
+						pCMD = (unsigned char*)&V6_RGBWW_SetColor;
+					float hsb[3];
+					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
+					pCMD[0x05] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x06] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x07] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x08] = (unsigned char)(hsb[0]*255.0f);
+					if (pLed->dunit != 5)
+						pCMD[0x09] = pLed->dunit;
+				}
+				else{
+					_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+
+				//Send brightness
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetColor;
+					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
 				else
-					pCMD = (unsigned char*)&V6_RGBWW_SetColor;
+					pCMD = (unsigned char*)&V6_RGBWW_SetBrightnessLevel;
 				pCMD[0x05] = pLed->value;
-				pCMD[0x06] = pLed->value;
-				pCMD[0x07] = pLed->value;
-				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+
 				break;
 			}
 			case Limitless_SetBrightnessLevel:
@@ -560,20 +602,6 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				pCMD[0x05] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
-				break;
-			}
-			case Limitless_SetKelvinLevel:
-			{
-				//Not for bridge
-				if (pLed->dunit == 5)
-					return false;
-				else {
-
-					pCMD = (unsigned char*)&V6_RGBWW_SetKelvinLevel;
-					//pCMD[0x05] = tmpValue[0];
-					pCMD[0x05] = pLed->value;
-					pCMD[0x09] = pLed->dunit;
-				}
 				break;
 			}
 			case Limitless_SetColorToWhite:
@@ -880,7 +908,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			}
 			case Limitless_SetRGBColour:
 			{
-				//First send ON , sleep 100ms, then the command
+				//Send ON, sleep 100ms
 				if (pLed->dunit == 5)
 					pCMD = (unsigned char*)&V6_BridgeOn;
 				else {
@@ -889,16 +917,47 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				SendV6Command(pCMD);
 				sleep_milliseconds(100);
+
+				//Send the command, sleep 100ms
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					if (pLed->dunit == 5)
+						pCMD = (unsigned char*)&V6_Bridge_White_On;
+					else {
+						pCMD = (unsigned char*)&V6_RGBW_White_On;
+						pCMD[0x09] = pLed->dunit;
+					}
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					if (pLed->dunit == 5)
+						pCMD = (unsigned char*)&V6_Bridge_SetColor;
+					else
+						pCMD = (unsigned char*)&V6_RGBW_SetColor;
+					float hsb[3];
+					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
+					pCMD[0x05] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x06] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x07] = (unsigned char)(hsb[0]*255.0f);
+					pCMD[0x08] = (unsigned char)(hsb[0]*255.0f);
+					if (pLed->dunit != 5)
+						pCMD[0x09] = pLed->dunit;
+				}
+				else{
+					_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				}
+				SendV6Command(pCMD);
+				sleep_milliseconds(100);
+
+				//Send brightness
 				if (pLed->dunit == 5)
-					pCMD = (unsigned char*)&V6_Bridge_SetColor;
+					pCMD = (unsigned char*)&V6_Bridge_SetBrightnessLevel;
 				else
-					pCMD = (unsigned char*)&V6_RGBW_SetColor;
+					pCMD = (unsigned char*)&V6_RGBW_SetBrightnessLevel;
 				pCMD[0x05] = pLed->value;
-				pCMD[0x06] = pLed->value;
-				pCMD[0x07] = pLed->value;
-				pCMD[0x08] = pLed->value;
 				if (pLed->dunit != 5)
 					pCMD[0x09] = pLed->dunit;
+
 				break;
 			}
 			case Limitless_SetBrightnessLevel:
@@ -1357,7 +1416,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetRGBColour:
 		{
-			//First send ON , sleep 100ms, then the command
+			//Send ON, sleep 100ms
 			if (pLed->dunit == 0) {
 				sendto(m_RemoteSocket, (const char*)&RGBWOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(100);
@@ -1378,10 +1437,35 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 				sendto(m_RemoteSocket, (const char*)&RGBWGroup4AllOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
 				sleep_milliseconds(100);
 			}
-			//The Hue is inverted/swifted 90 degrees
-			int iHue = ((255 - pLed->value) + 192) & 0xFF;
-			RGBWSetColor[1] = (unsigned char)iHue;
-			pCMD = (unsigned char*)&RGBWSetColor;
+
+			//Send brightness, sleep 100ms
+			//convert brightness (0-100) to (0-50) to 0-59
+			double dval = (59.0 / 100.0)*float(pLed->value / 2);
+			int ival = round(dval);
+			if (ival < 2)
+				ival = 2;
+			if (ival > 27)
+				ival = 27;
+			RGBWSetBrightnessLevel[1] = (unsigned char)ival;
+			pCMD = (unsigned char*)&RGBWSetBrightnessLevel;
+			sendto(m_RemoteSocket, (const char*)pCMD, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+			sleep_milliseconds(100);
+
+			//Send the command
+			if (pLed->color.mode == ColorModeRGB)
+			{
+				// Convert RGB to HSV
+				float hsb[3];
+				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
+				int iHue = (unsigned char)(hsb[0]*255.0f);
+				//The Hue is inverted/swifted 90 degrees
+				iHue = ((255 - iHue) + 192) & 0xFF;
+				RGBWSetColor[1] = (unsigned char)iHue;
+				pCMD = (unsigned char*)&RGBWSetColor;
+			}
+			else{
+				_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+			}
 		}
 		break;
 		case Limitless_DiscoSpeedSlower:
@@ -1900,13 +1984,23 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		case Limitless_SetRGBColour:
 		{
-			//First send ON , sleep 100ms, then the command
-			sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
-			sleep_milliseconds(100);
-			//The Hue is inverted/swifted 90 degrees
-			int iHue = ((255 - pLed->value) + 192) & 0xFF;
-			RGBSetColour[1] = (unsigned char)iHue;
-			pCMD = (unsigned char*)&RGBSetColour;
+			if (pLed->color.mode == ColorModeRGB)
+			{
+				//First send ON , sleep 100ms, then the command
+				sendto(m_RemoteSocket, (const char*)&RGBOn, 3, 0, (struct sockaddr*)&m_stRemoteDestAddr, sizeof(sockaddr_in));
+				sleep_milliseconds(100);
+				// Convert RGB to HSV
+				float hsb[3];
+				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
+				int iHue = (unsigned char)(hsb[0]*255.0f);
+				//The Hue is inverted/swifted 90 degrees
+				iHue = ((255 - iHue) + 192) & 0xFF;
+				RGBSetColour[1] = (unsigned char)iHue;
+				pCMD = (unsigned char*)&RGBSetColour;
+			}
+			else{
+				_log.Log(LOG_STATUS, "AppLamp: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+			}
 		}
 		break;
 		case Limitless_SetBrightUp:
@@ -1958,7 +2052,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			break;
 		}
 	}
-	else if (m_LEDType == sTypeLimitlessWhite)
+	else if (m_LEDType == sTypeLimitlessWhite || m_LEDType == sTypeLimitlessWW)
 	{
 		switch (pLed->command)
 		{

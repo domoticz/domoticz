@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1491
+# ref 1492
 
 CACHE:
 # CSS
@@ -539,6 +539,7 @@ js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
+js/jquery.wheelcolorpicker.js
 js/md5.js
 js/modules/exporting.js
 js/ng-grid-flexible-height.js

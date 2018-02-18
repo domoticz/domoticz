@@ -27,7 +27,6 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
-	m_LimitlessRGBWcHueState = 0.0;
 	m_LimitlessRGBWisWhiteState = true;
 	m_LimitlessRGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
@@ -526,9 +525,11 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		switch (pLed->command)
 		{
 			case Limitless_LedOn: {
-				if(m_LimitlessRGBWcHueState != 0.0 && !m_LimitlessRGBWisWhiteState)
+				if(m_LimitlessRGBWColorState.mode != ColorModeNone && !m_LimitlessRGBWisWhiteState)
 				{
-					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, m_LimitlessRGBWbrightnessState);
+					red = int(round(m_LimitlessRGBWColorState.r*m_LimitlessRGBWbrightnessState/255.0f));
+					green = int(round(m_LimitlessRGBWColorState.g*m_LimitlessRGBWbrightnessState/255.0f));
+					blue = int(round(m_LimitlessRGBWColorState.b*m_LimitlessRGBWbrightnessState/255.0f));
 					white = 0;
 				}
 				else
@@ -548,15 +549,25 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				break;
 			case Limitless_SetColorToWhite: {
 				m_LimitlessRGBWisWhiteState = true;
-				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+				m_LimitlessRGBWColorState = pLed->color; //TODO: Is there any point of doing this?
 				setColor = false;//Sending is done by SetBrightnessLevel
 				break;
 			}
 			case Limitless_SetRGBColour: {
-				m_LimitlessRGBWisWhiteState = false;
-				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
-				setColor = false;//Sending is done by SetBrightnessLevel
-				break;
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					m_LimitlessRGBWisWhiteState = true;
+					m_LimitlessRGBWColorState = pLed->color; //TODO: Is there any point of doing this?
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					m_LimitlessRGBWisWhiteState = false;
+					m_LimitlessRGBWColorState = pLed->color;
+				}
+				else{
+					_log.Log(LOG_STATUS, "Blebox: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				}
+				// No break, fall through to send combined color + brightness command
 			}
 			case Limitless_SetBrightnessLevel: {
 				int BrightnessBase = (int)pLed->value;
@@ -564,7 +575,7 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 
 				m_LimitlessRGBWbrightnessState = dMax_Send;
 
-				if(m_LimitlessRGBWisWhiteState)
+				if(m_LimitlessRGBWisWhiteState) // TODO: Check m_LimitlessRGBWColorState.mode instead
 				{
 					red = 0;
 					green = 0;
@@ -573,7 +584,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				else
 				{
-					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					red = int(round(m_LimitlessRGBWColorState.r*dMax_Send/255.0f));
+					green = int(round(m_LimitlessRGBWColorState.g*dMax_Send/255.0f));
+					blue = int(round(m_LimitlessRGBWColorState.b*dMax_Send/255.0f));
 					white = 0;
 				}
 				break;

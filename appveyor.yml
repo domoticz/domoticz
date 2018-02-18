@@ -21,6 +21,12 @@ before_build:
     
     cd ..
 
+    cd www\js
+
+    7z a domoticz.js.gz domoticz.js
+
+    cd ..\..
+
 build:
   parallel: true                  # enable MSBuild parallel builds
   project: msbuild\domoticz.sln   # path to Visual Studio solution or project
@@ -50,8 +56,8 @@ deploy:
   host: $(FTP_HOST)
   username: $(FTP_USER)
   password: $(FTP_PASSWORD)
-  folder: beta
+  folder: incoming/domoticz/windows/$(APPVEYOR_REPO_BRANCH)/$(APPVEYOR_BUILD_VERSION)/$(APPVEYOR_REPO_COMMIT)
   on:
-    APPVEYOR_REPO_NAME: domoticz/domoticz
-    APPVEYOR_REPO_BRANCH: development
+    APPVEYOR_REPO_NAME: emontnemery/domoticz
+    APPVEYOR_REPO_BRANCH: rgbww_dev_merge
 

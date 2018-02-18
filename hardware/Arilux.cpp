@@ -33,8 +33,6 @@ Arilux::Arilux(const int ID)
 	m_HwdID = ID;
 	m_bDoRestart = false;
 	m_stoprequested = false;
-	cHue = 0.0;
-	brightness = 255;
 	isWhite = true;
 
 }
@@ -117,10 +115,10 @@ void Arilux::InsertUpdateSwitch(const std::string &nodeID, const std::string &li
 	{
 		_log.Log(LOG_STATUS, "Arilux: New controller added (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(ariluxBright.c_str());
-		int cmd = light1_sOn;
+		int cmd = Limitless_LedOn;
 		//int level = 100;
 		if (!bIsOn) {
-			cmd = light1_sOff;
+			cmd = Limitless_LedOff;
 			//level = 0;
 		}
 		_tLimitlessLights ycmd;
@@ -272,32 +270,37 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 		Arilux_RGBCommand_Command[4] = 0xff;
 		commandToSend = Arilux_RGBCommand_Command;
 		break;	
-	case Limitless_SetRGBColour: {
-		isWhite = false;
-		cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
-		//Sending is done by SetBrightnessLevel
-	}
-    break;
+	case Limitless_SetRGBColour:
+		if (pLed->color.mode == ColorModeWhite)
+		{
+			isWhite = true;
+		}
+		else if (pLed->color.mode == ColorModeRGB)
+		{
+			isWhite = false;
+			color.r = pLed->color.r;
+			color.g = pLed->color.g;
+			color.b = pLed->color.b;
+		}
+		else {
+			_log.Log(LOG_STATUS, "Arilux: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+		}
+		// No break, fall through to send combined color + brightness command
 	case Limitless_SetBrightnessLevel: {
 
 		int red, green, blue;
-		int BrightnessBase = 100;
-		int dMax_convert = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
-		BrightnessBase = (int)pLed->value;
+		int BrightnessBase = (int)pLed->value;
 		int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
-		hue2rgb(cHue, red, green, blue, dMax_convert);
+		red = color.r;
+		green = color.g;
+		blue = color.b;
 
-
-		if (isWhite)
+		if (isWhite) // TODO: Use m_LimitlessRGBWColorState.mode instead
 		{
-			
-
 			Arilux_RGBCommand_Command[1] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[2] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[3] = (unsigned char)0xff;
 			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
-
-			brightness = dMax_Send;
 
 			commandToSend = Arilux_RGBCommand_Command;
 		}
@@ -309,8 +312,6 @@ bool Arilux::WriteToHardware(const char *pdata, const unsigned char length)
 			Arilux_RGBCommand_Command[2] = (unsigned char)green;
 			Arilux_RGBCommand_Command[3] = (unsigned char)blue;
 			Arilux_RGBCommand_Command[4] = (unsigned char)dMax_Send;
-
-			brightness = dMax_Send;
 
 			commandToSend = Arilux_RGBCommand_Command;
 		}

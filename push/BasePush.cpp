@@ -264,6 +264,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWZ, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessRGBWWZ, "Status" },
+		{ pTypeLimitlessLights, sTypeLimitlessWW, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFY2, "Status" },

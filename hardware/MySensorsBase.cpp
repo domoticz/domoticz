@@ -1464,16 +1464,35 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != NULL);
 			if (pLed->command == Limitless_SetRGBColour)
 			{
-				int red, green, blue;
-
-				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-				int Brightness = 100;
-				int dMax = round((255.0f / 100.0f)*float(Brightness));
-				hue2rgb(cHue, red, green, blue, dMax);
 				std::stringstream sstr;
-				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
-					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
-					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
+				//TODO: OK to scale color instead of sending separate V_PERCENTAGE?
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					int wWhite = 255 * pLed->value / 100;
+					if (!bIsRGBW)
+					{
+						sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+					}
+					else
+					{
+						sstr << "#000000"
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+					}
+				}
+				else if (pLed->color.mode == ColorModeRGB) {
+					int r = pLed->color.r * pLed->value / 100;
+					int g = pLed->color.g * pLed->value / 100;
+					int b = pLed->color.b * pLed->value / 100;
+					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << r
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << g
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << b;
+				}
+				else{
+					_log.Log(LOG_STATUS, "MySensors: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+					return false;
+				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
 			else if (pLed->command == Limitless_SetColorToWhite)

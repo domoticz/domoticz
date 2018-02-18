@@ -191,19 +191,25 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 		else if (xcmd->command == Limitless_SetRGBColour) {
-			int red, green, blue;
-			float cHue = (360.0f / 255.0f)*float(xcmd->value);//hue given was in range of 0-255
-			hue2rgb(cHue, red, green, blue, 255);
-			std::stringstream sstr;
-			sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
-				<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
-				<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
+			if (xcmd->color.mode == ColorModeRGB)
+			{
+				m_GatewayRgbR = xcmd->color.r;
+				m_GatewayRgbG = xcmd->color.g;
+				m_GatewayRgbB = xcmd->color.b;
+				m_GatewayBrightnessInt = xcmd->value; //TODO: What is the valid range for XiaomiGateway, 0..100 or 0..255?
 
-			std::string hexstring(sstr.str());
-			m_GatewayRgbHex = hexstring;
+				uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
+
+				std::stringstream ss;
+				ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+				message = ss.str();
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "XiaomiGateway: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", xcmd->color.mode);
+			}
 		}
 		else if ((xcmd->command == Limitless_SetBrightnessLevel) || (xcmd->command == Limitless_SetBrightUp) || (xcmd->command == Limitless_SetBrightDown)) {
-			std::string brightnessAndRgbHex = m_GatewayRgbHex;
 			//add the brightness
 			if (xcmd->command == Limitless_SetBrightUp) {
 				//m_GatewayBrightnessInt = std::min(m_GatewayBrightnessInt + 10, 100);
@@ -212,19 +218,14 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				//m_GatewayBrightnessInt = std::max(m_GatewayBrightnessInt - 10, 0);
 			}
 			else {
-				m_GatewayBrightnessInt = (int)xcmd->value;
+				m_GatewayBrightnessInt = (int)xcmd->value; //TODO: What is the valid range for XiaomiGateway, 0..100 or 0..255?
 			}
-			std::stringstream stream;
-			stream << std::hex << m_GatewayBrightnessInt;
-			std::string brightnessHex = stream.str();
-			brightnessAndRgbHex.insert(0, brightnessHex.c_str());
-			//_log.Log(LOG_STATUS, "XiaomiGateway: brightness and rgb hex %s", brightnessAndRgbHex.c_str());
-			unsigned long hexvalue = std::strtoul(brightnessAndRgbHex.c_str(), 0, 16);
-			std::string rgbvalue;
-			std::stringstream strstream;
-			strstream << hexvalue;
-			strstream >> rgbvalue;
-			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" + rgbvalue + ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+
+			uint32_t value = (m_GatewayBrightnessInt << 24) | (m_GatewayRgbR << 16) | (m_GatewayRgbG << 8) | (m_GatewayRgbB);
+
+			std::stringstream ss;
+			ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
+			message = ss.str();
 		}
 		else if (xcmd->command == Limitless_SetColorToWhite) {
 			//ignore Limitless_SetColorToWhite
@@ -233,7 +234,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command %d", xcmd->command);
 		}
 	}
-	if (message != "") {
+	if (!message.empty()) {
+		_log.Log(LOG_STATUS, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
 		if (result == false) {
 			//send the message again
@@ -344,9 +346,9 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Gateway Found (%s/%s)", str.c_str(), Name.c_str());
 		//int value = atoi(brightness.c_str());
 		//int value = hue; // atoi(hue.c_str());
-		int cmd = light1_sOn;
+		int cmd = Limitless_LedOn;
 		if (!bIsOn) {
-			cmd = light1_sOff;
+			cmd = Limitless_LedOff;
 		}
 		_tLimitlessLights ycmd;
 		ycmd.len = sizeof(_tLimitlessLights) - 1;
@@ -605,7 +607,9 @@ bool XiaomiGateway::StartHardware()
 		//m_GatewayPassword = result[0][0].c_str();
 		//m_GatewayIp = result[0][1].c_str();
 		//m_ListenPort9898 = true;
-		m_GatewayRgbHex = "FFFFFF";
+		m_GatewayRgbR = 255;
+		m_GatewayRgbG = 255;
+		m_GatewayRgbB = 255;
 		m_GatewayBrightnessInt = 100;
 		//m_GatewayPrefix = "f0b4";
 		//check for presence of Xiaomi user variable to enable message output 
