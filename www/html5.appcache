@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1462
+# ref 1479
 
 CACHE:
 # CSS
@@ -112,14 +112,14 @@ images/button.png
 images/camera_default.png
 images/camera-web.png
 images/capture.png
+images/ChristmasTree.png
+images/ChristmasTree48_Off.png
+images/ChristmasTree48_On.png
 images/clock.png
 images/clock48.png
 images/clock48_On.png
 images/collection.png
 images/collection_hover.png
-images/ChristmasTree.png
-images/ChristmasTree48_Off.png
-images/ChristmasTree48_On.png
 images/Computer.png
 images/Computer48_Off.png
 images/Computer48_On.png

@@ -86,7 +86,11 @@ define(['app'], function (app) {
 			if (tsettings.cmd == 0) {
 				if ($.bIsLED) {
 					tsettings.level = $("#lightcontent #Brightness").val();
-					tsettings.hue = $("#lightcontent #Hue").val();
+					var hue = $("#lightcontent #Hue").val();
+					var white_value = $('#lightcontent #white_slider').slider("option", "value") - 1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					tsettings.hue = (white_value << 16) + parseInt(hue);
 					var bIsWhite = $('#lightcontent #ledtable #optionWhite').is(":checked")
 					if (bIsWhite == true) {
 						tsettings.hue = 1000;
@@ -298,7 +302,7 @@ define(['app'], function (app) {
 								} else {
 									tCommand += " (" + item.Level + "%)";
 									if ($.bIsLED) {
-										var hue = item.Hue;
+										var hue = item.Hue & 0xFFFF;
 										var sat = 100;
 										if (hue == 1000) {
 											hue = 0;
@@ -308,14 +312,14 @@ define(['app'], function (app) {
 										cHSB.h = hue;
 										cHSB.s = sat;
 										cHSB.b = item.Level;
-										tCommand += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
+										tCommand += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpick.hsbToHex(cHSB) + ';"></div>';
 									}
 								}
 							}
 
 							var DayStr = "";
 							var DayStrOrig = "";
-							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9)) {
+							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9) || ((item.Type >= 14) && (item.Type <= 27))) {
 								var dayflags = parseInt(item.Days);
 								if (dayflags & 0x80)
 									DayStrOrig = "Everyday";
@@ -446,7 +450,8 @@ define(['app'], function (app) {
 						var level = data["Level"];
 						if ($.bIsLED) {
 							$('#lightcontent #Brightness').val(level & 255);
-							var hue = data["Hue"];
+							var hue = parseInt(data["Hue"]) & 0xFFFF;
+							$('#lightcontent #white_slider').slider('value',(parseInt(data["Hue"]) & 0xFF0000)>>16);
 							var sat = 100;
 							if (hue == 1000) {
 								hue = 0;
@@ -693,11 +698,18 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsRGBW").hide();
 			}
-			$('#lightcontent #picker').colpick({
+			
+			if (($.bIsRGBW == true) || ($.bIsRGBWW == true)) {
+				$("#lightcontent #optionsWhiteSlider").show();
+			} else {
+				$("#lightcontent #optionsWhiteSlider").hide();
+			}
+			
+			$cpick = $('#lightcontent #picker').colpick({
 				flat: true,
 				layout: 'hex',
 				submit: 0,
-				onChange: function (hsb, hex, rgb, fromSetColor) {
+				onChange: function (hsb, hex, rgb, el, fromSetColor) {
 					if (!fromSetColor) {
 						$('#lightcontent #Hue').val(hsb.h);
 						$('#lightcontent #Brightness').val(hsb.b);
@@ -705,10 +717,48 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked', !bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked', bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function () { SetColValue($.devIdx, hsb.h, hsb.b, bIsWhite); }, 400);
+						var white_value = $('#lightcontent #white_slider').slider("option", "value") - 1;
+						if (white_value<0) white_value=0;
+						if (white_value>255) white_value=255;
+						$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
 					}
 				}
 			});
+			$('#lightcontent #white_slider').slider({
+				//Config
+				range: "min",
+				min: 1,
+				max: 255,
+				value: 0,
+
+				//Slider Events
+				create: function (event, ui) {
+					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
+					$(this).slider("option", "type", $(this).data('type'));
+					$(this).slider("option", "isprotected", $(this).data('isprotected'));
+					$(this).slider("value", $(this).data('svalue') + 1);
+					if ($(this).data('disabled'))
+						$(this).slider("option", "disabled", true);
+				},
+				slide: function (event, ui) { //When the slider is sliding
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				},
+				stop: function (event, ui) {
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				}
+			});			
 
 			$("#lightcontent #optionRGB").prop('checked', (sat == 180));
 			$("#lightcontent #optionWhite").prop('checked', !(sat == 180));
@@ -1613,6 +1663,11 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsRGBWWLimit").hide();
 			}
+			if (($.bIsRGBW == true) || ($.bIsRGBWW == true)) {
+				$("#lightcontent #optionsWhiteSlider").show();
+			} else {
+				$("#lightcontent #optionsWhiteSlider").hide();
+			}
 			if ($.bIsRGBW == true && $.bIsRGBWW == false && $.bIsLimitless == true) {
 				$("#lightcontent #optionsRGBWLimit").show();
 			}
@@ -1631,11 +1686,11 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsWhite").hide();
 			}
-			$('#lightcontent #picker').colpick({
+			$cpick = $('#lightcontent #picker').colpick({
 				flat: true,
 				layout: 'hex',
 				submit: 0,
-				onChange: function (hsb, hex, rgb, fromSetColor) {
+				onChange: function (hsb, hex, rgb, el, fromSetColor) {
 					if (!fromSetColor) {
 						$('#lightcontent #Hue').val(hsb.h);
 						$('#lightcontent #Brightness').val(hsb.b);
@@ -1643,10 +1698,49 @@ define(['app'], function (app) {
 						$("#lightcontent #optionRGB").prop('checked', !bIsWhite);
 						$("#lightcontent #optionWhite").prop('checked', bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function () { SetColValue($.devIdx, hsb.h, hsb.b, bIsWhite); }, 400);
+
+						var white_value = $('#lightcontent #white_slider').slider("option", "value") - 1;
+						if (white_value<0) white_value=0;
+						if (white_value>255) white_value=255;
+						$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
 					}
 				}
 			});
+			$('#lightcontent #white_slider').slider({
+				//Config
+				range: "min",
+				min: 1,
+				max: 255,
+				value: 0,
+
+				//Slider Events
+				create: function (event, ui) {
+					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
+					$(this).slider("option", "type", $(this).data('type'));
+					$(this).slider("option", "isprotected", $(this).data('isprotected'));
+					$(this).slider("value", $(this).data('svalue') + 1);
+					if ($(this).data('disabled'))
+						$(this).slider("option", "disabled", true);
+				},
+				slide: function (event, ui) { //When the slider is sliding
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				},
+				stop: function (event, ui) {
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				}
+			});			
 			$("#lightcontent #optionRGB").prop('checked', (sat == 100));
 			$("#lightcontent #optionWhite").prop('checked', !(sat == 100));
 

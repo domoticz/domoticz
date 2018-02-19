@@ -5,11 +5,12 @@ return {
 		variables = {},
 		scenes = {},
 		groups = {},
-		security = {}
+		security = {},
+		httpResponses = {}
 	},
 	data = {},
 	logger = {},
-	execute = function(domoticz, triggeredItem, info)
+	execute = function(domoticz, triggeredItem)
 
 	end
 }

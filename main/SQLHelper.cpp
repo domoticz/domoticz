@@ -13,7 +13,6 @@
 #include "../sqlite/sqlite3.h"
 #endif
 #include "../hardware/hardwaretypes.h"
-#include "../httpclient/HTTPClient.h"
 #include "../smtpclient/SMTPClient.h"
 #include "WebServerHelper.h"
 #include "../webserver/Base64.h"
@@ -33,7 +32,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 121
+#define DB_VERSION 122
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2336,7 +2335,82 @@ bool CSQLHelper::OpenDatabase()
 					safe_query("UPDATE Hardware SET Mode3='%q', Mode5='' WHERE (ID=%s)", sd[1].c_str(), sd[0].c_str());
 				}
 			}
+		}
 
+		if (dbversion < 122)
+		{
+			//Patch for Darksky ozone sensor
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> > result2;
+			std::vector<std::vector<std::string> > result3;
+			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_DarkSky << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeGeneral << ") AND (SubType=" << (int)sTypeSolarRadiation << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery2.str());
+
+					std::vector<std::vector<std::string> >::const_iterator itt2;
+					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+					{
+						sd = *itt2;
+
+						//Change device type
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeCustom << ", DeviceID='00000100', Options='1;DU' WHERE (ID=" << sd[0] << ")";
+						query(szQuery2.str());
+
+						//change log
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "SELECT Value, Date FROM Meter WHERE ([DeviceRowID]=" << sd[0] << ")";
+						result3 = query(szQuery2.str());
+
+						std::vector<std::vector<std::string> >::const_iterator itt3;
+						for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+						{
+							std::vector<std::string> sd3 = *itt3;
+							szQuery2.clear();
+							szQuery2.str("");
+							szQuery2 << "INSERT INTO Percentage (DeviceRowID, Percentage, Date) VALUES (" << sd[0] << ", " << (float)atof(sd3[0].c_str())/10.0f << ", '" << sd3[1] << "')";
+							query(szQuery2.str());
+						}
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "DELETE FROM Meter WHERE ([DeviceRowID]=" << sd[0] << ")";
+						query(szQuery2.str());
+
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "SELECT Value1, Value2, Value3, Date FROM MultiMeter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
+						result3 = query(szQuery2.str());
+
+						for (itt3 = result3.begin(); itt3 != result3.end(); ++itt3)
+						{
+							std::vector<std::string> sd3 = *itt3;
+							szQuery2.clear();
+							szQuery2.str("");
+							float percentage_min = (float)atof(sd3[0].c_str()) / 10.0f;
+							float percentage_max = (float)atof(sd3[1].c_str()) / 10.0f;
+							float percentage_avg = (float)atof(sd3[2].c_str()) / 10.0f;
+							szQuery2 << "INSERT INTO Percentage_Calendar (DeviceRowID, Percentage_Min, Percentage_Max, Percentage_Avg, Date) VALUES (" << sd[0] << ", " << percentage_min << ", " << percentage_max << ", " << percentage_avg << ", '" << sd3[3] << "')";
+							query(szQuery2.str());
+						}
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "DELETE FROM Meter_Calendar WHERE ([DeviceRowID]=" << sd[0] << ")";
+						query(szQuery2.str());
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -2968,8 +3042,33 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_GETURL)
 			{
-				std::string sResult;
-				bool ret = HTTPClient::GET(itt->_sValue, sResult);
+				std::string response;
+				std::vector<std::string> headerData, extraHeaders;
+				std::string postData = itt->_command;
+				std::string callback = itt->_ID;
+
+				if (!itt->_relatedEvent.empty())
+					StringSplit(itt->_relatedEvent, "!#", extraHeaders);
+
+				HTTPClient::_eHTTPmethod method = static_cast<HTTPClient::_eHTTPmethod>(itt->_switchtype);
+
+				bool ret;
+				if (method == HTTPClient::HTTP_METHOD_GET)
+				{
+					ret = HTTPClient::GET(itt->_sValue, extraHeaders, response, headerData);
+				}
+				else if (method == HTTPClient::HTTP_METHOD_POST)
+				{
+					ret = HTTPClient::POST(itt->_sValue, postData, extraHeaders, response, headerData);
+				}
+
+				if (m_bEnableEventSystem && !callback.empty())
+				{
+					if (ret)
+						headerData.push_back("200");
+					m_mainworker.m_eventsystem.TriggerURL(response, headerData, callback);
+				}
+
 				if (!ret)
 				{
 					_log.Log(LOG_ERROR, "Error opening url: %s", itt->_sValue.c_str());
@@ -3069,7 +3168,7 @@ void CSQLHelper::Do_Work()
 				sstr << itt->_idx;
 				std::string idx = sstr.str();
 				float fValue = (float)atof(itt->_sValue.c_str());
-				m_mainworker.SetSetPoint(idx, fValue);
+				m_mainworker.SetSetPoint(idx, fValue, itt->_command, itt->_sUntil);
 			}
 			else if (itt->_ItemType == TITEM_SEND_NOTIFICATION)
 			{
@@ -3098,6 +3197,10 @@ void CSQLHelper::Do_Work()
 						sValue3 = splitresults[2];
 					IFTTT::Send_IFTTT_Trigger(itt->_ID, sValue1, sValue2, sValue3);
 				}
+			}
+			else if (itt->_ItemType == TITEM_UPDATEDEVICE)
+			{
+				m_mainworker.m_eventsystem.UpdateDevice(itt->_idx, itt->_nValue, itt->_sValue, itt->_HardwareID, (itt->_switchtype ? true : false));
 			}
 
 			++itt;
@@ -3284,6 +3387,264 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string &
 		_log.Log(LOG_ERROR, "SQL Query(\"%s\") : %s", szQuery.c_str(), error.c_str());
 	return results;
 }
+
+uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, const int SensorSubType, std::string &devname, const unsigned long nid, const std::string &soptions)
+{
+	uint64_t DeviceRowIdx = -1;
+	char ID[20];
+	sprintf(ID, "%lu", nid);
+
+	switch (SensorType)
+	{
+
+	case pTypeTEMP:
+	case pTypeWEIGHT:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+		break;
+	case pTypeUV:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0", devname);
+		break;
+	case pTypeRAIN:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0", devname);
+		break;
+	case pTypeTEMP_BARO:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;1038.0;0;188.0", devname);
+		break;
+	case pTypeHUM:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 50, "1", devname);
+		break;
+	case pTypeTEMP_HUM:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;50;1", devname);
+		break;
+	case pTypeTEMP_HUM_BARO:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;50;1;1010;1", devname);
+		break;
+	case pTypeRFXMeter:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 10, 255, 0, "0", devname);
+		break;
+	case pTypeUsage:
+	case pTypeLux:
+	case pTypeP1Gas:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+		break;
+	case pTypeP1Power:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;0;0;0;0;0", devname);
+		break;
+	case pTypeAirQuality:
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, devname);
+		break;
+	case pTypeCURRENT:
+		//Current/Ampere
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0.0;0.0;0.0", devname);
+		break;
+	case pTypeThermostat: //Thermostat Setpoint
+	{
+		unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+		unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+		unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+		unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+		sprintf(ID, "%X%02X%02X%02X", ID1, ID2, ID3, ID4);
+
+		DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "20.5", devname);
+		break;
+	}
+
+	case pTypeGeneral:
+	{
+		switch (SensorSubType)
+		{
+		case sTypePressure: //Pressure (Bar)
+		case sTypePercentage: //Percentage
+		case sTypeWaterflow: //Waterflow
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+		}
+		break;
+		case sTypeCounterIncremental:		//Counter Incremental
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+			break;
+		case sTypeVoltage:		//Voltage
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.000", devname);
+		}
+		break;
+		case sTypeTextStatus:		//Text
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "Hello World", devname);
+		}
+		break;
+		case sTypeAlert:		//Alert
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "No Alert!", devname);
+			break;
+		case sTypeSoundLevel:		//Sound Level
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "65", devname);
+		}
+		break;
+		case sTypeBaro:		//Barometer (hPa)
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1021.34;0", devname);
+		}
+		break;
+		case sTypeVisibility:		//Visibility (km)
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "10.3", devname);
+			break;
+		case sTypeDistance:		//Distance (cm)
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "123.4", devname);
+		}
+		break;
+		case sTypeSoilMoisture:		//Soil Moisture
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 3, devname);
+		}
+		break;
+		case sTypeLeafWetness:		//Leaf Wetness
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 2, devname);
+		}
+		break;
+		case sTypeKwh:		//kWh
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0;0.0", devname);
+		}
+		break;
+		case sTypeCurrent:		//Current (Single)
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "6.4", devname);
+		}
+		break;
+		case sTypeSolarRadiation:		//Solar Radiation
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "1.0", devname);
+		}
+		break;
+		case sTypeCustom:			//Custom
+		{
+			if (!soptions.empty())
+			{
+				std::string rID = std::string(ID);
+				padLeft(rID, 8, '0');
+				DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 0, "0.0", devname);
+				if (DeviceRowIdx != -1)
+				{
+					//Set the Label
+					m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID==%" PRIu64 ")", soptions.c_str(), DeviceRowIdx);
+				}
+			}
+			break;
+		}
+		}
+		break;
+	}
+
+	case pTypeWIND:
+	{
+		switch (SensorSubType)
+		{
+		case sTypeWIND1:			// sTypeWIND1
+		case sTypeWIND4:			//Wind + Temp + Chill
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0;N;0;0;0;0", devname);
+			break;
+		}
+		break;
+	}
+
+	case pTypeGeneralSwitch:
+	{
+		switch (SensorSubType)
+		{
+		case sSwitchGeneralSwitch:		//Switch
+		{
+			sprintf(ID, "%08lX", nid);
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "100", devname);
+		}
+		break;
+		case sSwitchTypeSelector:		//Selector Switch
+		{
+			unsigned char ID1 = (unsigned char)((nid & 0xFF000000) >> 24);
+			unsigned char ID2 = (unsigned char)((nid & 0x00FF0000) >> 16);
+			unsigned char ID3 = (unsigned char)((nid & 0x0000FF00) >> 8);
+			unsigned char ID4 = (unsigned char)((nid & 0x000000FF));
+			sprintf(ID, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
+			DeviceRowIdx = UpdateValue(HardwareID, ID, 1, SensorType, SensorSubType, 12, 255, 0, "0", devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to selector
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Selector, DeviceRowIdx);
+				//Set default device options
+				m_sql.SetDeviceOptions(DeviceRowIdx, BuildDeviceOptions("SelectorStyle:0;LevelNames:Off|Level1|Level2|Level3", false));
+			}
+		}
+		break;
+		}
+		break;
+	}
+
+	case pTypeLimitlessLights:
+	{
+		switch (SensorSubType)
+		{
+		case sTypeLimitlessRGB:		//RGB switch
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
+			}
+		}
+		break;
+		case sTypeLimitlessRGBW:		//RGBW switch
+		{
+			std::string rID = std::string(ID);
+			padLeft(rID, 8, '0');
+			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
+			if (DeviceRowIdx != -1)
+			{
+				//Set switch type to dimmer
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
+			}
+		}
+		break;
+		}
+		break;
+	}
+	}
+
+	if (DeviceRowIdx != -1)
+	{
+		m_sql.safe_query("UPDATE DeviceStatus SET Used=1 WHERE (ID==%" PRIu64 ")", DeviceRowIdx);
+		m_mainworker.m_eventsystem.GetCurrentStates();
+	}
+
+	return DeviceRowIdx;
+}
+
 
 uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, std::string &devname, const bool bUseOnOffAction)
 {
@@ -3536,14 +3897,18 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			return -1; //We do not allow new devices
 		}
 
-		devname="Unknown";
+		if (devname == "")
+		{
+			devname = "Unknown";
+		}
+
 		safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue) "
-			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q')",
+			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
+			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q','%q')",
 			HardwareID,
 			ID,unit,devType,subType,
 			signallevel,batterylevel,
-			nValue,sValue);
+			nValue,sValue, devname.c_str());
 
 		//Get new ID
 		result = safe_query(
@@ -6387,7 +6752,7 @@ void CSQLHelper::DeleteDataPoint(const char *ID, const std::string &Date)
 	}
 }
 
-void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
+void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 {
 	boost::lock_guard<boost::mutex> l(m_background_task_mutex);
 
@@ -6398,14 +6763,16 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 
 	if (
 		(tItem._ItemType == TITEM_SWITCHCMD_EVENT) ||
-		(tItem._ItemType == TITEM_SWITCHCMD_SCENE)
+		(tItem._ItemType == TITEM_SWITCHCMD_SCENE) ||
+		(tItem._ItemType == TITEM_UPDATEDEVICE) ||
+		(tItem._ItemType == TITEM_SET_VARIABLE)
 		)
 	{
 		std::vector<_tTaskItem>::iterator itt = m_background_task_queue.begin();
 		while (itt != m_background_task_queue.end())
 		{
 			if (_log.isTraceEnabled())
-				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%llu, DelayTime=%d, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%" PRId64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
@@ -6423,7 +6790,8 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem)
 		}
 	}
 	// _log.Log(LOG_NORM, "=> Adding new task item");
-	m_background_task_queue.push_back(tItem);
+	if (!cancelItem)
+		m_background_task_queue.push_back(tItem);
 }
 
 void CSQLHelper::EventsGetTaskItems(std::vector<_tTaskItem> &currentTasks)
@@ -6734,9 +7102,15 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 		{
 			AddTaskItem(_tTaskItem::GetHTTPPage(0.2f, OnAction, "SwitchActionOn"));
 		}
-		else if (OnAction.find("script://")!=std::string::npos)
+		else if (OnAction.find("script://") != std::string::npos)
 		{
 			//Execute possible script
+			if (OnAction.find("../") != std::string::npos)
+			{
+				_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OnAction.c_str());
+				return false;
+			}
+
 			std::string scriptname = OnAction.substr(9);
 #if !defined WIN32
 			if (scriptname.find("/") != 0)
@@ -6771,6 +7145,12 @@ bool CSQLHelper::HandleOnOffAction(const bool bIsOn, const std::string &OnAction
 	else if (OffAction.find("script://") != std::string::npos)
 	{
 		//Execute possible script
+		if (OffAction.find("../") != std::string::npos)
+		{
+			_log.Log(LOG_ERROR, "SQLHelper: Invalid script location! '%s'", OffAction.c_str());
+			return false;
+		}
+
 		std::string scriptname = OffAction.substr(9);
 #if !defined WIN32
 		if (scriptname.find("/") != 0)
@@ -7206,11 +7586,12 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 	if (formatError != "OK")
 		return formatError;
 
+	std::string szVarValue = CURLEncode::URLDecode(varvalue.c_str());
 	std::vector<std::vector<std::string> > result;
 	safe_query("INSERT INTO UserVariables (Name,ValueType,Value) VALUES ('%q','%d','%q')",
 		varname.c_str(),
 		typei,
-		CURLEncode::URLDecode(varvalue.c_str()).c_str()
+		szVarValue.c_str()
 		);
 
 	if (m_bEnableEventSystem)
@@ -7226,7 +7607,7 @@ std::string CSQLHelper::SaveUserVariable(const std::string &varname, const std::
 			uint64_t vId;
 			vId_str >> vId;
 			m_mainworker.m_eventsystem.SetEventTrigger(vId, m_mainworker.m_eventsystem.REASON_USERVARIABLE, 0);
-			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", "", -1, sd[1]);
+			m_mainworker.m_eventsystem.UpdateUserVariable(vId, "", szVarValue, typei, sd[1]);
 		}
 	}
 	return "OK";
@@ -7720,12 +8101,7 @@ std::map<std::string, std::string> CSQLHelper::GetDeviceOptions(const std::strin
 	return optionsMap;
 }
 
-bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
-	if (idx < 1) {
-		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
-		return false;
-	}
-
+std::string CSQLHelper::FormatDeviceOptions(const std::map<std::string, std::string> & optionsMap) {
 	std::string options;
 	int count = optionsMap.size();
 	if (count > 0) {
@@ -7745,17 +8121,27 @@ bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string
 		}
 		options.assign(ssoptions.str());
 	}
-	if (options.empty() && (count > 0)) {
-		_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+
+	return options;
+}
+
+bool CSQLHelper::SetDeviceOptions(const uint64_t idx, const std::map<std::string, std::string> & optionsMap) {
+	if (idx < 1) {
+		_log.Log(LOG_ERROR, "Cannot set options on device %" PRIu64 "", idx);
 		return false;
 	}
-	if (options.empty()) {
+
+	if (optionsMap.empty()) {
 		//_log.Log(LOG_STATUS, "DEBUG : removing options on device %" PRIu64 "", idx);
 		safe_query("UPDATE DeviceStatus SET Options = null WHERE (ID==%" PRIu64 ")", idx);
 	} else {
+		std::string options = FormatDeviceOptions(optionsMap);
+		if (options.empty()) {
+			_log.Log(LOG_ERROR, "Cannot parse options for device %" PRIu64 "", idx);
+			return false;
+		}
 		//_log.Log(LOG_STATUS, "DEBUG : setting options '%s' on device %" PRIu64 "", options.c_str(), idx);
 		safe_query("UPDATE DeviceStatus SET Options = '%q' WHERE (ID==%" PRIu64 ")", options.c_str(), idx);
 	}
 	return true;
 }
-

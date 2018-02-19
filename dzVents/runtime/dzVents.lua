@@ -1,7 +1,14 @@
 local TESTMODE = false
+globalvariables['testmode'] = false
+--globalvariables['dzVents_log_level'] = 4 --debug
 
-local currentPath = globalvariables['script_path']
-local triggerReason = globalvariables['script_reason']
+if (_G.TESTMODE) then
+	TESTMODE = false
+	globalvariables['testmode'] = false
+
+end
+
+local currentPath = globalvariables['script_path'] -- should be path/to/domoticz/scripts/dzVents
 
 _G.scriptsFolderPath = currentPath .. 'scripts' -- global
 _G.generatedScriptsFolderPath = currentPath .. 'generated_scripts' -- global
@@ -12,6 +19,7 @@ package.path = package.path .. ';' .. currentPath .. '../../dzVents/runtime/?.lu
 package.path = package.path .. ';' .. currentPath .. '../../dzVents/runtime/device-adapters/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'dzVents/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'scripts/?.lua'
+package.path = package.path .. ';' .. currentPath .. '../lua/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'scripts/modules/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'generated_scripts/?.lua'
 package.path = package.path .. ';' .. currentPath .. 'data/?.lua'
@@ -21,33 +29,43 @@ local EventHelpers = require('EventHelpers')
 local helpers = EventHelpers()
 local utils = require('Utils')
 
+
 if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMODE) then
-	utils.log('Dumping domoticz data to ' .. currentPath .. '/domoticzData.lua', utils.LOG_DEBUG)
+	print('Debug: Dumping domoticz data to ' .. currentPath .. 'domoticzData.lua')
 	local persistence = require('persistence')
 	persistence.store(currentPath .. 'domoticzData.lua', domoticzData)
+
+	local events, length = helpers.getEventSummary()
+	if (length > 0) then
+		print('Debug: dzVents version: 2.4.1')
+
+		print('Debug: Event triggers:')
+		for i, event in pairs(events) do
+			print('Debug: ' .. event)
+		end
+	end
+
+	if (globalvariables['isTimeEvent']) then
+		print('Debug: Event triggers:')
+		print('Debug: • Timer')
+	end
+
 end
 
 commandArray = {}
 
-utils.log('dzVents version: 2.3.0', utils.LOG_DEBUG)
-utils.log('Event trigger type: ' .. triggerReason, utils.LOG_DEBUG)
+local isTimeEvent = globalvariables['isTimeEvent']
 
-if triggerReason == "time" then
+if (isTimeEvent) then
 	commandArray = helpers.dispatchTimerEventsToScripts()
-elseif triggerReason == "device" then
-	commandArray = helpers.dispatchDeviceEventsToScripts()
-elseif triggerReason == "uservariable" then
-	commandArray = helpers.dispatchVariableEventsToScripts()
-elseif triggerReason == 'security' then
-	commandArray = helpers.dispatchSecurityEventsToScripts()
-elseif triggerReason == 'scenegroup' then
-	commandArray = helpers.dispatchSceneGroupEventsToScripts()
-else
-	utils.log("Unknown trigger: " .. triggerReason, utils.LOG_ERROR)
 end
 
-if (TESTMODE) then
-	helpers.dumpCommandArray(commandArray, true)
-end
+helpers.dispatchDeviceEventsToScripts()
+helpers.dispatchVariableEventsToScripts()
+helpers.dispatchSecurityEventsToScripts()
+helpers.dispatchSceneGroupEventsToScripts()
+helpers.dispatchHTTPResponseEventsToScripts()
+commandArray = helpers.domoticz.commandArray
+
 
 return commandArray

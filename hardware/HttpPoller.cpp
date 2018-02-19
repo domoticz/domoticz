@@ -138,14 +138,14 @@ void CHttpPoller::GetScript()
 		if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 		{
 			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err.c_str());
+			_log.Log(LOG_ERROR, err);
 			return;
 		}
 	}
 	if (m_method == 1) {
 		if (!HTTPClient::POST(sURL, m_postdata, ExtraHeaders, sResult)) {
 			std::string err = "Http: Error getting data from url \"" + sURL + "\"";
-			_log.Log(LOG_ERROR, err.c_str());
+			_log.Log(LOG_ERROR, err);
 			return;
 		}
 	}

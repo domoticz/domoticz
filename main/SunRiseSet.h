@@ -11,38 +11,40 @@ public:
 		int month;
 		int day;
 
-		double DaysUntilY2K;
-
-		double Declination;
-
-		int DaylengthHour;
-		int DaylengthMin;
-
-		int BeginCivilTwilightHour;
-		int BeginCivilTwilightMin;
-
-		int CivilTwilightHour;
-		int CivilTwilightMin;
-
-		int NoonHour;
-		int NoonMin;
-
-		double AltitudeNoonMax;
-		unsigned char AltitudeNoonMaxSN;
-
 		int SunRiseHour;
 		int SunRiseMin;
 		int SunSetHour;
 		int SunSetMin;
+
+		int DaylengthHours;
+		int DaylengthMins;
+
+		int SunAtSouthHour;
+		int SunAtSouthMin;
+
+		int CivilTwilightStartHour;
+		int CivilTwilightStartMin;
+		int CivilTwilightEndHour;
+		int CivilTwilightEndMin;
+		int NauticalTwilightStartHour;
+		int NauticalTwilightStartMin;
+		int NauticalTwilightEndHour;
+		int NauticalTwilightEndMin;
+		int AstronomicalTwilightStartHour;
+		int AstronomicalTwilightStartMin;
+		int AstronomicalTwilightEndHour;
+		int AstronomicalTwilightEndMin;
+
 	};
 	static bool GetSunRiseSet(const double latit, const double longit, _tSubRiseSetResults &result);
 	static bool GetSunRiseSet(const double latit, const double longit, const int year, const int month, const int day, _tSubRiseSetResults &result);
 private:
-	static double FNday (int y, int m, int d, float h);
-	static double FNrange (double x);
-	static double f0(double lat, double declin);
-	static double f1(double lat, double declin);
-	static double FNsun (double d);
-	static void gethourmin(const double dhr, int &hour, int &min);
+	static double UtcToLocal(double time, double tz);
+	static double __daylen__( int year, int month, int day, double lon, double lat, double altit, int upper_limb);
+	static int __sunriset__(int year, int month, int day, double lon, double lat, double altit, int upper_limb, double *rise, double *set);
+	static void sunpos(double d, double *lon, double *r);
+	static void sun_RA_dec(double d, double *RA, double *dec, double *r);
+	static double revolution(double x);
+	static double rev180(double x);
+	static double GMST0(double d);
 };
-

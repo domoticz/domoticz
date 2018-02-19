@@ -7,7 +7,7 @@ return {
 			end
 		}
 	},
-	execute = function(domoticz, device)
+	execute = function(domoticz, timer)
 		domoticz.setScene('scene 2', 'On')
 		return 'script_timer_function'
 	end

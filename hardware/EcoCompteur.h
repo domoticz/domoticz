@@ -1,0 +1,32 @@
+#pragma once
+
+#include "DomoticzHardware.h"
+
+namespace Json
+{
+	class Value;
+};
+
+class CEcoCompteur : public CDomoticzHardwareBase
+{
+public:
+	CEcoCompteur(const int ID, const std::string& url, const unsigned short port);
+	~CEcoCompteur(void);
+
+	bool WriteToHardware(const char *pdata, const unsigned char length);
+
+private:
+	std::string m_url;
+	unsigned short m_port;
+	unsigned short m_refresh;
+
+	volatile bool m_stoprequested;
+	boost::shared_ptr<boost::thread> m_thread;
+
+	void Init();
+	bool StartHardware();
+	bool StopHardware();
+	void Do_Work();
+	void GetScript();
+};
+

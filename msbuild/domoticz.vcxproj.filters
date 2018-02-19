@@ -486,6 +486,15 @@
     <Filter Include="Pushers\Websocket">
       <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\eHouse">
+      <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{879cf5f9-d3b3-4ee3-a4c1-bd157db7abe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EcoCompteur">
+      <UniqueIdentifier>{eb6a5b30-c80f-4a3f-826b-bfcea2bfc947}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2121,6 +2130,27 @@
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Webserver</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Comm5SMTCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EcoCompteur.h">
+      <Filter>Devices\EcoCompteur</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2842,6 +2872,27 @@
     </ClCompile>
     <ClCompile Include="..\webserver\Websockets.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EcoCompteur.cpp">
+      <Filter>Devices\EcoCompteur</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
