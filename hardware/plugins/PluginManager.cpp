@@ -369,6 +369,7 @@ namespace Plugins {
 			}
 		}
 	}
+}
 
 //Webserver helpers
 namespace http {
