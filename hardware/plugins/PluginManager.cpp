@@ -390,6 +390,8 @@ namespace http {
 				else
 				{
 					TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+					TiXmlPrinter Xmlprinter;
+					Xmlprinter.SetStreamPrinting();
 					for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
 					{
 						TiXmlElement* pXmlEle = pXmlNode->ToElement();
@@ -401,6 +403,15 @@ namespace http {
 							ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
 							ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
 							ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
+
+							TiXmlElement* pXmlDescNode = (TiXmlElement*)pXmlEle->FirstChild("description");
+							std::string		sDescription;
+							if (pXmlDescNode)
+							{
+								pXmlDescNode->Accept(&Xmlprinter);
+								sDescription = Xmlprinter.CStr();
+							}
+							root[iPluginCnt]["description"] = sDescription;
 
 							TiXmlNode* pXmlParamsNode = pXmlEle->FirstChild("params");
 							int	iParams = 0;
