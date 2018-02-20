@@ -1592,42 +1592,12 @@ namespace Plugins {
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
-		onUpdateCallback*	Message2 = new onUpdateCallback(this, Unit, command, level, hue);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message2);
-		}
 	}
 
 	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)
 	{
 		//	Add command to message queue
 		onCommandCallback*	Message = new onCommandCallback(this, Unit, command, level);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
-		}
-		onUpdateCallback*	Message2 = new onUpdateCallback(this, Unit, command, level);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message2);
-		}
-	}
-
-	void CPlugin::SendCommand(const int Unit, const std::string & command, const int nValue, const std::string & sValue)
-	{
-		//	Add command to message queue
-		onUpdateCallback*	Message = new onUpdateCallback(this, Unit, command, nValue, sValue);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
-		}
-	}
-
-	void CPlugin::SendCommand(const int Unit, const std::string & command)
-	{
-		//	Add command to message queue
-		onUpdateCallback*	Message = new onUpdateCallback(this, Unit, command);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);

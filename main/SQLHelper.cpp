@@ -20,7 +20,9 @@
 #include <boost/lexical_cast.hpp>
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
+#ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
+#endif
 
 #ifndef WIN32
 	#include <sys/stat.h>
@@ -3396,12 +3398,20 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 	sprintf(ID, "%lu", nid);
 
 #ifdef ENABLE_PYTHON
-	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
-	if (pHardware != NULL && pHardware->HwdType == HTYPE_PythonPlugin)
 	{
-		// Not allowed to add device to plugin HW (plugin framework does not use key column "ID" but instead uses column "unit" as key)
-		_log.Log(LOG_ERROR, "CSQLHelper::CreateDevice: Not allowed to add device owned by plugin %u!", HardwareID);
-		return DeviceRowIdx;
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HardwareID);
+		if (result.size() > 0)
+		{
+			std::vector<std::string> sd = result[0];
+			_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
+			if (Type == HTYPE_PythonPlugin)
+			{
+				// Not allowed to add device to plugin HW (plugin framework does not use key column "ID" but instead uses column "unit" as key)
+				_log.Log(LOG_ERROR, "CSQLHelper::CreateDevice: Not allowed to add device owned by plugin %u!", HardwareID);
+				return DeviceRowIdx;
+			}
+		}
 	}
 #endif
 

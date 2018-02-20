@@ -69,8 +69,6 @@ namespace Plugins {
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
-		void	SendCommand(const int Unit, const std::string &command, const int nValue, const std::string &sValue);
-		void    SendCommand(const int Unit, const std::string &command);
 
 		void	onDeviceAdded(int Unit);
 		void	onDeviceModified(int Unit);
