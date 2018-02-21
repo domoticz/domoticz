@@ -2478,7 +2478,24 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			sdevicetype += "/" + std::string(RFX_Type_SubType_Desc(pMeter->type, pMeter->subtype));
 		}
 		std::stringstream sTmp;
-		sTmp << "(" << pHardware->Name << ") " << sdevicetype << " (" << DeviceName << ")";
+
+		std::string sHardwareName = pHardware->Name;
+		if (pHardware->HwdType == HTYPE_OpenZWave)
+		{
+			std::string ZWID = std::to_string(pHardware->m_HwdID);
+			ZWID = ZWID.substr(ZWID.length() - 5, 2);
+			if (ZWID == "00") {
+				ZWID = ZWID.substr(ZWID.length() - 3, 2);
+			}
+
+			ZWID.erase(0, ZWID.find_first_not_of("0"));
+
+			std::string ZWIDdec = "00" + ZWID;
+			ZWIDdec = ZWIDdec.substr(ZWIDdec.length() - 4, 3);
+			sHardwareName = sHardwareName + " " + ZWIDdec + " (" + ZWID + ")";
+		}
+
+		sTmp << "(" << sHardwareName << ") " << sdevicetype << " (" << DeviceName << ")";
 		WriteMessageStart();
 		WriteMessage(sTmp.str().c_str());
 		WriteMessageEnd();
