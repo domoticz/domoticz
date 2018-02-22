@@ -342,9 +342,10 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 	
 	//_log.Log(LOG_NORM,"MultiblocV8: receive SFSP Switch: ID: %x Data: %x %x %x %x %x",sID, bufferdata[0], bufferdata[1],bufferdata[2], bufferdata[3], bufferdata[4]);
 	unsigned long SwitchId = (bufferdata[0]<<24)+(bufferdata[1]<<16)+(bufferdata[2]<<8)+bufferdata[3];
+	unsigned int codetouche = bufferdata[4];
 	std::string defaultname=" ";
-	
-	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, (unsigned int)bufferdata[4] );
+
+	_log.Log(LOG_NORM,"MultiblocV8: Receiving SFSP Switch Frame: Id: %s Codage: %d Ssreseau: %d SwitchID: %08X CodeTouche: %02X",NomRefBloc[RefBloc].c_str(),Codage,Ssreseau,SwitchId, codetouche );
 	
 	tRBUF lcmd;
 	memset(&lcmd, 0, sizeof(RBUF));
@@ -367,9 +368,9 @@ void USBtin_MultiblocV8::Traitement_SFSP_Switch_Recu(const unsigned int FrameTyp
 		defaultname = "Wireless switch";
 	}
 
-	int CodeNumber = bufferdata[4]&0x7F;
+	int CodeNumber = codetouche&0x7F;
 	lcmd.LIGHTING2.unitcode = CodeNumber;
-	if( bufferdata[4]&0x80 ) lcmd.LIGHTING2.cmnd = light2_sOn;
+	if( codetouche&0x80 ) lcmd.LIGHTING2.cmnd = light2_sOn;
 	else lcmd.LIGHTING2.cmnd = light2_sOff;
 	lcmd.LIGHTING2.level = 0;		
 	lcmd.LIGHTING2.filler = 2;
