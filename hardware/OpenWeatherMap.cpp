@@ -319,6 +319,20 @@ void COpenWeatherMap::GetMeterDetails()
 		}
 	}
 
+	//clouds
+	if (!root["clouds"].empty())
+	{
+		//_log.Log(LOG_STATUS, "OpenWeatherMap: clouds %s", root["clouds"].asString().c_str());
+		int clouds = -1;
+
+		if (!root["clouds"]["all"].empty())
+		{
+			clouds = root["clouds"]["all"].asInt();
+		}
+		if ((clouds != -1))
+			SendCustomSensor(1, 0, 255, clouds, "Cloud Sensor", "%"); 
+	}
+
 	//Forecast URL
 	if (!root["id"].empty())
 	{
