@@ -229,16 +229,16 @@ void CRFLinkBase::ParseData(const char *data, size_t len)
 	while (ii<len)
 	{
 		const unsigned char c = data[ii];
-		if (c == 0x0d)
+		if (c == '\r')
 		{
 			ii++;
 			continue;
 		}
 
-		if (c == 0x0a || m_rfbufferpos == sizeof(m_rfbuffer) - 1)
+		if (c == '\n' || m_rfbufferpos == sizeof(m_rfbuffer) - 1)
 		{
 			// discard newline, close string, parse line and clear it.
-			if (m_rfbufferpos > 0) m_rfbuffer[m_rfbufferpos] = 0;
+			m_rfbuffer[m_rfbufferpos] = '\0';
 			std::string sLine((char*)&m_rfbuffer);
 			ParseLine(sLine);
 			m_rfbufferpos = 0;
