@@ -1159,11 +1159,11 @@ define(['app'], function (app) {
 							var xhtm =
 								'\t<div class="item span4 ' + backgroundClass + '" id="' + item.idx + '">\n' +
 								'\t  <section>\n' +
-								'\t    <table id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
+								'\t    <table class="itemtable" id="itemtable" border="0" cellpadding="0" cellspacing="0">\n' +
 								'\t    <tr>\n';
 
-							xhtm += '\t      <td id="name">' + item.Name + '</td>\n';
-							xhtm += '\t      <td id="bigtext">';
+							xhtm += '\t      <td class="name" id="name">' + item.Name + '</td>\n';
+							xhtm += '\t      <td class="bigtext" id="bigtext">';
 							if ((typeof item.Usage != 'undefined') && (typeof item.UsageDeliv == 'undefined')) {
 								xhtm += item.Usage;
 							}
@@ -1218,7 +1218,7 @@ define(['app'], function (app) {
 								xhtm += item.Data;
 							}
 							xhtm += '</td>\n';
-							xhtm += '\t      <td id="img"><img src="images/';
+							xhtm += '\t      <td class="img" id="img"><img src="images/';
 							var status = "";
 							if (typeof item.Counter != 'undefined') {
 								if ((item.Type == "RFXMeter") || (item.Type == "YouLess Meter") || (item.SubType == "Counter Incremental")) {
@@ -1354,9 +1354,9 @@ define(['app'], function (app) {
 								}
 							}
 							xhtm +=
-								'\t      <td id="status">' + status + '</td>\n' +
-								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
-								'\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
+								'\t      <td class="status" id="status">>' + status + '</td>\n' +
+								'\t      <td class="lastupdate" id="lastupdate">' + item.LastUpdate + '</td>\n' +
+								'\t      <td class="type" id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
 								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
