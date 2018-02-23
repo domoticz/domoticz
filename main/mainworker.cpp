@@ -12974,7 +12974,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
 				return false;
 			}
-			((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(unit, "udevice",  static_cast<float>(atof(sValue.c_str())));
+			((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(unit, "udevice", nValue, sValue);
 #endif
 			return true;
 		}

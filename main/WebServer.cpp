@@ -5259,6 +5259,7 @@ namespace http {
 					"UPDATE DeviceStatus SET Used=1, Name='%q', SwitchType=%d WHERE (ID == '%q')",
 					name.c_str(), switchtype, ID.c_str());
 				m_mainworker.m_eventsystem.GetCurrentStates();
+				// TODO: Notify plugin!
 
 				//Set device options
 				m_sql.SetDeviceOptions(atoi(ID.c_str()), m_sql.BuildDeviceOptions(deviceoptions, false));
@@ -12410,8 +12411,10 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "SetUsed";
 			}
-			if (m_sql.m_bEnableEventSystem)
+			if (m_sql.m_bEnableEventSystem) {
 				m_mainworker.m_eventsystem.GetCurrentStates();
+				// TODO: Notify plugin!
+			}
 		}
 
 		void CWebServer::RType_Settings(WebEmSession & session, const request& req, Json::Value &root)

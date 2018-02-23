@@ -214,9 +214,77 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			}
 			Callback(pParams);
 		};
-	};
+        };
 
-	class onMessageCallback : public CCallbackBase, public CHasConnection
+        class onUpdateCallback : public CCallbackBase
+	{
+	public:
+		onUpdateCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onUpdate")
+		{
+                        PyObject* pObj;
+			m_Name = __func__;
+			m_Unit = Unit;
+			m_Command = Command;
+                        m_pDataDict = PyDict_New();
+			if (m_pDataDict) {
+                                pObj = Py_BuildValue("i", level);
+				PyDict_SetItemString(m_pDataDict, "iLevel", pObj);
+                                Py_DECREF(pObj);
+                                pObj = Py_BuildValue("i", hue);
+				PyDict_SetItemString(m_pDataDict, "iHue", pObj);
+                                Py_DECREF(pObj);
+                        }
+		};
+		onUpdateCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onUpdate")
+		{
+                        PyObject* pObj;
+			m_Name = __func__;
+			m_Unit = Unit;
+			m_Command = Command;
+                        m_pDataDict = PyDict_New();
+			if (m_pDataDict) {
+                                pObj = Py_BuildValue("f", level);
+				PyDict_SetItemString(m_pDataDict, "fLevel", pObj);
+                                Py_DECREF(pObj);
+                        }
+		};
+		onUpdateCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int nValue, const std::string& sValue) : CCallbackBase(pPlugin, "onUpdate")
+		{
+                        PyObject* pObj;
+			m_Name = __func__;
+			m_Unit = Unit;
+			m_Command = Command;
+                        m_pDataDict = PyDict_New();
+			if (m_pDataDict) {
+                                pObj = Py_BuildValue("i", nValue);
+				PyDict_SetItemString(m_pDataDict, "iValue", pObj);
+                                Py_DECREF(pObj);
+                                pObj = Py_BuildValue("s", sValue.c_str());
+				PyDict_SetItemString(m_pDataDict, "sValue", pObj);
+                                Py_DECREF(pObj);
+                        }
+		};
+		onUpdateCallback(CPlugin* pPlugin, int Unit, const std::string& Command) : CCallbackBase(pPlugin, "onUpdate")
+		{
+                        PyObject* pObj;
+			m_Name = __func__;
+			m_Unit = Unit;
+			m_Command = Command;
+                        m_pDataDict = PyDict_New();
+		};
+		PyObject* m_pDataDict;
+                std::string				m_Command;
+
+		virtual void ProcessLocked()
+		{
+			PyObject*	pParams;
+                        pParams = Py_BuildValue("isO", m_Unit, m_Command.c_str(), m_pDataDict);
+			Callback(pParams);
+			Py_XDECREF(m_pDataDict);
+		};
+	};
+        
+        class onMessageCallback : public CCallbackBase, public CHasConnection
 	{
 	public:
 		onMessageCallback(CPlugin* pPlugin, PyObject* Connection, const std::string& Buffer) : CCallbackBase(pPlugin, "onMessage"), CHasConnection(Connection), m_Data(NULL)
