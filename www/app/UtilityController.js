@@ -1357,7 +1357,7 @@ define(['app'], function (app) {
 								'\t      <td id="status">' + status + '</td>\n' +
 								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 								'\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-								'\t      <td>';
+								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
 									'<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
