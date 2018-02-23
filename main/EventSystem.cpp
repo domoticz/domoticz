@@ -1857,6 +1857,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 							if (m_sql.m_bLogEventScriptTrigger)
 								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 							parseBlocklyActions(it->Actions, it->Name, it->ID);
+							break;
 						}
 					}
 				}
@@ -1914,6 +1915,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 						if (m_sql.m_bLogEventScriptTrigger)
 							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
+						break;
 					}
 				}
 			}
@@ -1965,6 +1967,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 							if (m_sql.m_bLogEventScriptTrigger)
 								_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 							parseBlocklyActions(it->Actions, it->Name, it->ID);
+							break;
 						}
 					}
 				}
@@ -2020,6 +2023,7 @@ void CEventSystem::EvaluateBlockly(const std::string &reason, const uint64_t Dev
 						if (m_sql.m_bLogEventScriptTrigger)
 							_log.Log(LOG_NORM, "EventSystem: Event triggered: %s", it->Name.c_str());
 						parseBlocklyActions(it->Actions, it->Name, it->ID);
+						break;
 					}
 				}
 			}
