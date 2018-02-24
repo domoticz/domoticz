@@ -322,7 +322,6 @@ void COpenWeatherMap::GetMeterDetails()
 	//clouds
 	if (!root["clouds"].empty())
 	{
-		//_log.Log(LOG_STATUS, "OpenWeatherMap: clouds %s", root["clouds"].asString().c_str());
 		int clouds = -1;
 
 		if (!root["clouds"]["all"].empty())
@@ -330,7 +329,7 @@ void COpenWeatherMap::GetMeterDetails()
 			clouds = root["clouds"]["all"].asInt();
 		}
 		if ((clouds != -1))
-			SendCustomSensor(1, 0, 255, clouds, "Cloud Sensor", "%"); 
+			SendPercentageSensor(1, 0, 255, clouds, "Cloud Sensor", "%"); 
 	}
 
 	//Forecast URL
