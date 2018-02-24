@@ -197,8 +197,8 @@ bool USBtin_MultiblocV8::StartThread()
   //Id Base for manual creation switch from domoticz...
 	m_V8switch_id_base = (type_SFSP_SWITCH<<SHIFT_TYPE_TRAME)+(1<<SHIFT_INDEX_MODULE)+(0<<SHIFT_CODAGE_MODULE)+0;
 
-	m_V8min_counter = (60*5);
-	m_V8min_counter2 = (3600*6);
+	m_V8minCounterBase = (60*5);
+	m_V8minCounter1 = (3600*6);
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&USBtin_MultiblocV8::Do_Work, this)));
 	_log.Log(LOG_STATUS,"MultiblocV8: thread started");
 	return (m_thread != NULL);
@@ -249,28 +249,28 @@ void USBtin_MultiblocV8::Do_Work()
 	while( !m_stoprequested ){
 		sleep_milliseconds(TIME_100ms);
 		
-		m_V8sec_counter++;
-		if (m_V8sec_counter >= 10)
+		m_V8secCounterBase++;
+		if (m_V8secCounterBase >= 10)
 		{
-			m_V8sec_counter = 0;
-			m_V8min_counter--;
-			m_V8min_counter2--;
+			m_V8secCounterBase = 0;
+			m_V8minCounterBase--;
+			m_V8minCounter1--;
 			
-			if( m_V8min_counter == 0 ){
+			if( m_V8minCounterBase == 0 ){
 				//each 5 minutes
-				m_V8min_counter = (60*5);
+				m_V8minCounterBase = (60*5);
 				m_BOOL_TaskAGo = true;
 			}
 			
-			if( m_V8min_counter2 == 0 ){
+			if( m_V8minCounter1 == 0 ){
 				//each 6 hours...
-				m_V8min_counter2 = (3600*6);
+				m_V8minCounter1 = (3600*6);
 				m_BOOL_TaskRqStorGo = true;
 			}
 			
-			m_V8Asec_counter++;
-			if( m_V8Asec_counter >= 3 ){
-				m_V8Asec_counter = 0;
+			m_V8secCounter1++;
+			if( m_V8secCounter1 >= 3 ){
+				m_V8secCounter1 = 0;
 				//each 3 seconds
 				BlocList_CheckBloc();
 			}
@@ -278,7 +278,7 @@ void USBtin_MultiblocV8::Do_Work()
 		
 		if( m_BOOL_SendPushOffSwitch ){ //if a Send push off switch is request
 			m_BOOL_SendPushOffSwitch = false;
-			USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(m_INT_Sid_PushOff_ToSend,m_CHAR_CodeTouchePushOff_ToSend);
+			USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(m_INT_SidPushoffToSend,m_CHAR_CodeTouchePushOff_ToSend);
 		}
 	}
 }
@@ -622,7 +622,7 @@ void USBtin_MultiblocV8::DoBlinkOutput(){
 	int RefBlocAlive = 0;
 	unsigned long sID = 0;
 	
-	m_BOOL_Global_BlinkOutputs = !m_BOOL_Global_BlinkOutputs;
+	m_BOOL_GlobalBlinkOutputs = !m_BOOL_GlobalBlinkOutputs;
 	//serching for blocks :
 	for(i = 0;i < MAX_NUMBER_BLOC;i++){
 		if( m_BlocList_CAN[i].BlocID != 0 ){ //if bloc is logged
@@ -635,24 +635,24 @@ void USBtin_MultiblocV8::DoBlinkOutput(){
 					//6 outputs on sfsp blocks
 					for(output_index = 1;output_index < 7;output_index ++){
 						if( m_BlocList_CAN[i].IsOutputBlink[output_index] == true ){
-							_log.Log(LOG_NORM,"MultiblocV8: Output n: %d blink state %d",output_index,m_BOOL_Global_BlinkOutputs);
+							_log.Log(LOG_NORM,"MultiblocV8: Output n: %d blink state %d",output_index,m_BOOL_GlobalBlinkOutputs);
 							if(output_index == 1 || output_index==2 ){
 								sID = (type_STATE_S_TOR_1_TO_2<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 								//if Blink mode is on:
 								//simulate a change only in domoticz, no sending frame for that !
-								OutputNewStates( sID, output_index,m_BOOL_Global_BlinkOutputs,15 );
+								OutputNewStates( sID, output_index,m_BOOL_GlobalBlinkOutputs,15 );
 							}
 							else if(output_index == 3 || output_index==4 ){
 								sID = (type_STATE_S_TOR_3_TO_4<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 								//if Blink mode is on:
 								//simulate a change only in domoticz, no sending frame for that !
-								OutputNewStates( sID, output_index,m_BOOL_Global_BlinkOutputs,15 );
+								OutputNewStates( sID, output_index,m_BOOL_GlobalBlinkOutputs,15 );
 							}
 							else if(output_index == 5 || output_index==6 ){
 								sID = (type_STATE_S_TOR_5_TO_6<<SHIFT_TYPE_TRAME)+ m_BlocList_CAN[i].BlocID;
 								//if Blink mode is on:
 								//simulate a change only in domoticz, no sending frame for that !
-								OutputNewStates( sID, output_index,m_BOOL_Global_BlinkOutputs,15 );
+								OutputNewStates( sID, output_index,m_BOOL_GlobalBlinkOutputs,15 );
 							}
 							
 						}
@@ -890,7 +890,7 @@ bool USBtin_MultiblocV8::WriteToHardware(const char *pdata, const unsigned char 
 					if( pSen->LIGHTING2.cmnd == light2_sOn || pSen->LIGHTING2.cmnd == light2_sOff ){
 						//use directly the baseId to send a "push on" command, the send "push off" is automatic:
 						unsigned char CodeTouche = (pSen->LIGHTING2.unitcode);
-						m_INT_Sid_PushOff_ToSend = sID_EnBase;
+						m_INT_SidPushoffToSend = sID_EnBase;
 						m_CHAR_CodeTouchePushOff_ToSend = CodeTouche;
 						CodeTouche |= 0x80; //send a "push ON" command
 						USBtin_MultiblocV8_Send_SFSPSwitch_OnCAN(sID_EnBase,CodeTouche);

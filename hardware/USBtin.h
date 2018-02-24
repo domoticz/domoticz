@@ -36,11 +36,11 @@ public:
 private:
 	volatile bool m_stoprequested;
 	unsigned int m_EtapeInitCan;
-	int m_retrycntr;	
-	int m_BelErrorCount;
-	char m_bufferUSBtin[390]; //buffer capable de stocker 15 trames en 1 fois
-	int m_bufferpos;
-	bool m_BOOL_Debug; //1 = activ
+	int m_USBtinRetrycntr;	
+	int m_USBtinBelErrorCount;
+	char m_USBtinBuffer[390]; //buffer capable de stocker 15 trames en 1 fois
+	int m_USBtinBufferpos;
+	bool m_BOOL_USBtinDebug; //1 = activ
 	
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;

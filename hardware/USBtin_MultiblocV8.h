@@ -24,15 +24,15 @@ private:
 	bool m_BOOL_TaskAGo;
 	bool m_BOOL_TaskRqStorGo;
 	bool m_BOOL_SendPushOffSwitch;
-	bool m_BOOL_Global_BlinkOutputs;
+	bool m_BOOL_GlobalBlinkOutputs;
 	char m_CHAR_CommandBlocToSend;
 	char m_CHAR_CodeTouchePushOff_ToSend;
-	int m_INT_Sid_PushOff_ToSend;
-	int m_V8sec_counter;
-	int m_V8Asec_counter;
-	int m_V8Bsec_counter;
-	int m_V8min_counter;
-	int m_V8min_counter2;
+	int m_INT_SidPushoffToSend;
+	int m_V8secCounterBase;
+	int m_V8secCounter1;
+	int m_V8secCounter2;
+	int m_V8minCounterBase;
+	int m_V8minCounter1;
 	
 	struct
 	{
