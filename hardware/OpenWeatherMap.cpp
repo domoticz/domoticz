@@ -329,7 +329,7 @@ void COpenWeatherMap::GetMeterDetails()
 			clouds = root["clouds"]["all"].asInt();
 		}
 		if ((clouds != -1))
-			SendPercentageSensor(1, 0, 255, clouds, "Cloud Sensor", "%"); 
+			SendPercentageSensor(1, 0, 255, clouds, "Clouds %");
 	}
 
 	//Forecast URL
