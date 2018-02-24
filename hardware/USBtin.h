@@ -34,26 +34,23 @@ public:
 	unsigned long switch_id_base;
 	
 private:
-	bool StartHardware();
-	bool StopHardware();
-	
 	volatile bool m_stoprequested;
-	bool OpenSerialDevice();
-	unsigned int EtapeInitCan;
-	
+	unsigned int m_EtapeInitCan;
 	int m_retrycntr;	
-	int BelErrorCount;
+	int m_BelErrorCount;
 	char m_bufferUSBtin[390]; //buffer capable de stocker 15 trames en 1 fois
 	int m_bufferpos;
-	
-	bool BOOL_Debug; //1 = activ
+	bool m_BOOL_Debug; //1 = activ
 	
 	boost::asio::serial_port_base::parity m_iOptParity;
 	boost::asio::serial_port_base::character_size m_iOptCsize;
 	boost::asio::serial_port_base::flow_control m_iOptFlow;
 	boost::asio::serial_port_base::stop_bits m_iOptStop;
-	
 	boost::shared_ptr<boost::thread> m_thread;
+	
+	bool StartHardware();
+	bool StopHardware();
+	bool OpenSerialDevice();
 	void Do_Work();
 	// Read callback, stores data in the buffer
 	void readCallback(const char *data, size_t len);
@@ -67,4 +64,5 @@ private:
 	void SetBaudRate250Kbd();
 	void OpenCanPort();
 	void CloseCanPort();
+	
 };

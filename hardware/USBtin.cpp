@@ -77,8 +77,8 @@ m_szSerialPort(devname)
 	m_stoprequested=false;
 	m_retrycntr=USBTIN_RETRY_DELAY*5;
 	Bus_CANType = BusCanType;
-	if( DebugMode == 0 )BOOL_Debug = false;
-	else BOOL_Debug = true;
+	if( DebugMode == 0 )m_BOOL_Debug = false;
+	else m_BOOL_Debug = true;
 	Init();
 }
 
@@ -94,7 +94,7 @@ void USBtin::Init()
 bool USBtin::StartHardware()
 {
 	m_stoprequested = false;
-	BelErrorCount = 0;
+	m_BelErrorCount = 0;
 	m_retrycntr=USBTIN_RETRY_DELAY*5; //will force reconnect first thing
 	m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&USBtin::Do_Work, this)));
 	return (m_thread!=NULL);
@@ -119,16 +119,16 @@ bool USBtin::StopHardware()
 
 void USBtin::Do_Work()
 {
-	int sec_counter = 0;
+	int m_V8sec_counter = 0;
 	int msec_counter = 0;
-	EtapeInitCan = 0;
+	m_EtapeInitCan = 0;
 	
 	while (!m_stoprequested) 
 	{
 		sleep_milliseconds(TIME_200ms);
 		
 		if (m_stoprequested){
-			EtapeInitCan = 0;
+			m_EtapeInitCan = 0;
 			break;
 		}
 		
@@ -136,33 +136,33 @@ void USBtin::Do_Work()
 		if (msec_counter == 5)
 		{
 			msec_counter = 0;
-			sec_counter++;
+			m_V8sec_counter++;
 
-			if (sec_counter % 12 == 0) {
+			if (m_V8sec_counter % 12 == 0) {
 				m_LastHeartbeat = mytime(NULL);
 			}
 			
 			if (isOpen()) //Serial port open, we can initiate the Can BUS :
 			{
-				switch(EtapeInitCan){
+				switch(m_EtapeInitCan){
 					case 0 :
 						_log.Log(LOG_STATUS, "USBtin: Serial port is now open !");
 						CloseCanPort(); //more cleaner to close in first, sometimes the gateway maybe already open...
 						memset(&m_bufferUSBtin,0,sizeof(m_bufferUSBtin));
-						BelErrorCount = 0;
-						EtapeInitCan++;
+						m_BelErrorCount = 0;
+						m_EtapeInitCan++;
 						break;
 					case 1 :
 						GetHWVersion();
-						EtapeInitCan++;
+						m_EtapeInitCan++;
 						break;
 					case 2 :
 						GetFWVersion();
-						EtapeInitCan++;
+						m_EtapeInitCan++;
 						break;
 					case 3 :
 						GetSerialNumber();
-						EtapeInitCan++;
+						m_EtapeInitCan++;
 						break;
 					case 4 :
 						SetBaudRate250Kbd();
@@ -171,16 +171,16 @@ void USBtin::Do_Work()
 						if( (Bus_CANType&FreeCan) == FreeCan )  _log.Log(LOG_STATUS, "USBtin: FreeCAN is Selected !");
 						
 						if( Bus_CANType == 0 ) _log.Log(LOG_ERROR, "USBtin: WARNING: No Can management Selected !");
-						EtapeInitCan++;
+						m_EtapeInitCan++;
 						break;
 					case 5 : //openning can port :
 						//Activate the good CAN Layer :
 						if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ 
 							ManageThreadV8(true);
-							switch_id_base = V8switch_id_base;
+							switch_id_base = m_V8switch_id_base;
 						}
 						OpenCanPort();
-						EtapeInitCan++;
+						m_EtapeInitCan++;
 						break;
 					
 					case 6 ://All is good !
@@ -271,8 +271,8 @@ void USBtin::ParseData(const char *pData, int Len)
 		// BEL signal received : appears if the command is allready active or if errors occured on CAN side...
 		if( USBTIN_BELSIGNAL == m_bufferUSBtin[m_bufferpos] ){
 			//reset first char
-			BelErrorCount++;
-			if( BelErrorCount > 3 ){ //If more than 3 BEL receive : restart the Gateway !
+			m_BelErrorCount++;
+			if( m_BelErrorCount > 3 ){ //If more than 3 BEL receive : restart the Gateway !
 				_log.Log(LOG_ERROR,"USBtin: 3x times BEL signal receive : restart gateway ");
 				Restart();
 			}
@@ -284,7 +284,7 @@ void USBtin::ParseData(const char *pData, int Len)
 		//else CR receive = good reception of a response :
 		else if( USBTIN_CR == m_bufferUSBtin[m_bufferpos] )
 		{
-			BelErrorCount = 0;
+			m_BelErrorCount = 0;
 			if( m_bufferUSBtin[0] == USBTIN_HARDWARE_VERSION ){
 				strncpy(value, (char*)&(m_bufferUSBtin[1]), 4);
 				_log.Log(LOG_STATUS,"USBtin: Hardware Version: %s", value);
@@ -336,11 +336,11 @@ void USBtin::ParseData(const char *pData, int Len)
 				if( (Bus_CANType&Multibloc_V8) == Multibloc_V8 ){ //multibloc V8 Management !
 					Traitement_MultiblocV8(IDhexNumber,DLChexNumber,Buffer_Octets);
 					//So in debug mode we can check good reception after treatment :
-					if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Traitement trame multiblocV8 : #%s#",m_bufferUSBtin);
+					if( m_BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Traitement trame multiblocV8 : #%s#",m_bufferUSBtin);
 				}
 				
 				if( Bus_CANType == 0 ){ //No management !
-					if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame receive not managed: #%s#",m_bufferUSBtin);
+					if( m_BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame receive not managed: #%s#",m_bufferUSBtin);
 				}
 				
 			}
@@ -349,11 +349,11 @@ void USBtin::ParseData(const char *pData, int Len)
 			}
 			else if( m_bufferUSBtin[0] == USBTIN_GOODSENDING_NOR_TRAME || m_bufferUSBtin[0] == USBTIN_GOODSENDING_EXT_TRAME ){
 				//The Gateway answers USBTIN_GOODSENDING_NOR_TRAME or USBTIN_GOODSENDING_EXT_TRAME each times a frame is sent correctly
-				if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame Send OK !"); //So in debug mode we CAN check it, convenient way to check
+				if( m_BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: Frame Send OK !"); //So in debug mode we CAN check it, convenient way to check
 				//if the CAN communication is in good life ;-)
 			}
 			else{ //over things here...
-				if( BOOL_Debug == true) _log.Log(LOG_ERROR,"USBtin: receive command not supported : #%s#", m_bufferUSBtin);
+				if( m_BOOL_Debug == true) _log.Log(LOG_ERROR,"USBtin: receive command not supported : #%s#", m_bufferUSBtin);
 			}
 			//rreset of the pointer here
 			m_bufferpos = 0;
@@ -372,7 +372,7 @@ bool USBtin::writeFrame(const std::string & data)
 	if (!isOpen()){
 		return false;
 	}
-	if( BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: write frame to Can Gateway: #%s# ",data.c_str());
+	if( m_BOOL_Debug == true) _log.Log(LOG_NORM,"USBtin: write frame to Can Gateway: #%s# ",data.c_str());
 	std::string frame;
 	frame.append(data);
 	frame.append("\x0D"); //add the "carry return" at end
