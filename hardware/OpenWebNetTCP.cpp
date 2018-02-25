@@ -542,9 +542,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
     {
         // Special insert to set SwitchType = STYPE_VenetianBlindsEU
         // so we have stop button!
-        m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
-                         "VALUES (%d,'%s', %d,%d,%d,%d,'%q',0)",
-                         m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_VenetianBlindsEU, devname);
+		m_sql.InsertDevice(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_VenetianBlindsEU, 0, "", devname);
     }
 
     _tGeneralSwitch gswitch;
@@ -671,9 +669,7 @@ void COpenWebNetTCP::UpdateSwitch(const int who, const int where, const int what
 	{
 		// Special insert to set SwitchType = STYPE_Contact
 		// so we have a correct contact device
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
-			"VALUES (%d,'%s', %d,%d,%d,%d,'%q',0)",
-			m_HwdID, szIdx, unit, pTypeGeneralSwitch, subtype, STYPE_Contact, devname);
+		m_sql.InsertDevice(m_HwdID, szIdx, unit, pTypeGeneralSwitch, subtype, STYPE_Contact, 0, "Unavailable", devname);
 	}
 
     _tGeneralSwitch gswitch;

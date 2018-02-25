@@ -189,16 +189,8 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
 		if (result.empty())
 		{
-			m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(m_LEDType), devname.c_str());
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(m_LEDType));
-			if (!result.empty())
-			{
-				//Set type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
-			}
+			m_sql.InsertDevice(m_HwdID, "1", int(Unit), pTypeLimitlessLights, int(m_LEDType), int(STYPE_Dimmer), 0, " ", devname);
+
 			return false;
 		}
 	}
@@ -206,16 +198,8 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
 		if (result.empty())
 		{
-			m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-					m_HwdID, int(1), int(Unit), pTypeLimitlessLights, int(4), devname.c_str());
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeLimitlessLights, int(4));
-			if (!result.empty())
-			{
-				//Set type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
-			}
+			m_sql.InsertDevice(m_HwdID, "1", int(Unit), pTypeLimitlessLights, 4, int(STYPE_Dimmer), 0, " ", devname);
+
 			return false;
 		}
 	}

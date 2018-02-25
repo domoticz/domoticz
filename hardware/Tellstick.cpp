@@ -56,10 +56,8 @@ bool CTellstick::AddSwitchIfNotExits(const int id, const char* devname, bool isD
     if (result.size() < 1)
     {
         _log.Log(LOG_NORM, "Tellstick: device %d %s: %s", id, sid ,devname);
-        m_sql.safe_query(
-            "INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-            "VALUES (%d,'%q',%d,%d,%d,%d,12,255,'%q',0,' ')",
-            m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, devname);
+		m_sql.InsertDevice(m_HwdID, sid, 3, pTypeGeneralSwitch, sSwitchTypeAC, isDimmer ? STYPE_Dimmer : STYPE_OnOff, 0, " ", devname);
+
         return true;
     }
     return false;

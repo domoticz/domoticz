@@ -238,7 +238,7 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 {
 	char IDX[20];
 	char state[5] = "";
-	int i;
+	uint64_t i;
 	sprintf(IDX, "%02X%02X%02X%02X", devh, devl, code, nr);  //index calculated adrh,adrl,signalcode,i/o nr
 	if ((type == pTypeLighting2)) // || (type==pTypeTEMP))
 		sprintf(IDX, "%X%02X%02X%02X", devh, devl, code, nr);    //exception bug in Domoticz??
@@ -265,16 +265,11 @@ int eHouseTCP::UpdateSQLState(int devh, int devl, int devtype, int type, int sub
 
 	if (result.size() < 1)
 	{
-		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name,     Used, SwitchType ) "
-			"VALUES ('%d',      '%q',       '%d','%d',  '%d',   '%d',       '%d',           '%d',   '%q', '%q',     1, %d)",
-			m_HwdID, IDX, devl, type, subtype, signal, battery, nValue, sValue, devname.c_str(), swtype);
+		i = m_sql.InsertDevice(m_HwdID, IDX, devl, type, subtype, swtype, nValue, sValue, devname, signal, battery, 1);
 
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)",
-			m_HwdID, IDX, devl);
 		//add Plan for each controllers
-		if (result.size() > 0)
+		if (i > 0)
 		{
-			i = atoi(result[0][0].c_str());
 			result = m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID==%d)", i);
 			if (result.size() < 1)
 			{
