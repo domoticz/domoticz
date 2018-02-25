@@ -53,6 +53,7 @@ void CdzVents::EvaluateDzVents(lua_State *lua_state, const std::vector<CEventSys
 	}
 	ExportDomoticzDataToLua(lua_state, items);
 	SetGlobalVariables(lua_state, reasonTime, secStatus);
+	SetScheduledItems(lua_state); // getScheduledItems table
 
 	if (reasonURL)
 		ProcessHttpResponse(lua_state, items);
@@ -132,7 +133,7 @@ void CdzVents::ProcessHttpResponse(lua_State *lua_state, const std::vector<CEven
 			lua_pushstring(lua_state, "callback");
 			lua_pushstring(lua_state, itt->nValueWording.c_str());
 			lua_rawset(lua_state, -3);
-			lua_settable(lua_state, -3); // number entry
+			lua_settable(lua_state, -3); // index entry
 			index++;
 		}
 	}
@@ -1007,6 +1008,65 @@ void CdzVents::ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEv
 	}
 }
 
+void CdzVents::SetScheduledItems(lua_State *lua_state)
+{
+	std::vector<_tTaskItem> currentTasks;
+	m_sql.EventsGetTaskItems(currentTasks);
+	if (currentTasks.size() > 0)
+	{
+		int index = 1;
+		struct timeval tvDiff, DelayTimeEnd;
+		getclock(&DelayTimeEnd);
+		std::string baseType;
+		lua_createtable(lua_state, 0, 0);
+		std::vector<_tTaskItem>::iterator itt;
+		for (itt = currentTasks.begin(); itt != currentTasks.end(); ++itt)
+		{
+			switch (itt->_ItemType)
+			{
+			case TITEM_SWITCHCMD_EVENT:
+				baseType = "device";
+				break;
+			case TITEM_SWITCHCMD_SCENE:
+				baseType = "scenegroup";
+				break;
+			case TITEM_UPDATEDEVICE:
+				baseType = "updatedevice";
+				break;
+			case TITEM_SET_VARIABLE:
+				baseType = "uservariable";
+				break;
+			default:
+				continue;
+			}
+
+			if (timeval_subtract(&tvDiff, &DelayTimeEnd, &itt->_DelayTimeBegin))
+			{
+				tvDiff.tv_sec = 0;
+				tvDiff.tv_usec = 0;
+			}
+			float remaining = itt->_DelayTime - ((tvDiff.tv_usec / 1000000.0f) + tvDiff.tv_sec);
+
+			lua_pushnumber(lua_state, (lua_Number)index);
+			lua_createtable(lua_state, 0, 0);
+
+			lua_pushstring(lua_state, "id");
+			lua_pushnumber(lua_state, (lua_Number)itt->_idx);
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "baseType");
+			lua_pushstring(lua_state, baseType.c_str());
+			lua_rawset(lua_state, -3);
+			lua_pushstring(lua_state, "remaining");
+			lua_pushnumber(lua_state, (lua_Number)remaining);
+			lua_rawset(lua_state, -3);
+
+			lua_settable(lua_state, -3); // index table
+			index++;
+		}
+		lua_setglobal(lua_state, "scheduledItems");
+	}
+}
+
 void CdzVents::ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index)
 {
 	const char *description = "";
@@ -1167,9 +1227,9 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 		ProcessChangedUserVariables(lua_state, items);
 
 	lua_setglobal(lua_state, "changedItems");
-	lua_createtable(lua_state, 0, 0); // begin domoticzData
 
 	uint32_t index = 1;
+	lua_createtable(lua_state, 0, 0); // begin domoticzData
 
 	ExportDomoticzDevices(lua_state, items, index);
 
