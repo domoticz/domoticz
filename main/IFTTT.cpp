@@ -39,13 +39,13 @@ bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &sv
 			{
 				_log.Log(LOG_ERROR, "Error sending trigger to IFTTT! (Check EventName/Key!)");
 				sSend += " => Failed!";
-				_log.Log(LOG_ERROR, sSend.c_str());
+				_log.Log(LOG_ERROR, sSend);
 				return false;
 			}
 			else
 			{
 				sSend += " => Success!";
-				_log.Log(LOG_STATUS, sSend.c_str());
+				_log.Log(LOG_STATUS,sSend);
 				return true;
 			}
 		}

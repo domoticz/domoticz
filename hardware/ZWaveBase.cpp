@@ -1028,10 +1028,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->command == Limitless_SetBrightnessLevel)
 			{
 				instanceID = 2;
-				float fvalue = pLed->value;
-				if (fvalue > 99.0f)
-					fvalue = 99.0f; //99 is fully on
-				svalue = round(fvalue);
+				int ivalue = pLed->value;
+				if (ivalue > 99)
+					ivalue = 99; //99 is fully on
+				svalue = ivalue;
 				return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 			}
 			else if (pLed->command == Limitless_SetColorToWhite)
@@ -1095,10 +1095,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				else if (pLed->command == Limitless_SetBrightnessLevel)
 				{
 					instanceID = 1;
-					float fvalue = pLed->value;
-					if (fvalue > 99.0f)
-						fvalue = 99.0f; //99 is fully on
-					svalue = round(fvalue);
+					int ivalue = pLed->value;
+					if (ivalue > 99)
+						ivalue = 99; //99 is fully on
+					svalue = ivalue;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
 				else if (pLed->command == Limitless_SetColorToWhite)
@@ -1115,15 +1115,15 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				else if (pLed->command == Limitless_SetRGBColour)
 				{
 					int red, green, blue;
-					float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+					float cHue = (360.0f / 255.0f)*float(pLed->value & 0xFFFF);//hue given was in range of 0-255
 
 					int Brightness = 100;
 
 					int dMax = round((255.0f / 100.0f)*float(Brightness));
 					hue2rgb(cHue, red, green, blue, dMax);
 					instanceID = 1;
-					int wWhite = 0;
-					int cWhite = 0;
+					int wWhite = (pLed->value >> 16);
+					int cWhite = 0;// (pLed->value >> 16);
 					sstr << "#"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green

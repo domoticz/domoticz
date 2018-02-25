@@ -169,7 +169,7 @@ namespace http {
 			}
 			boost::unique_lock<boost::mutex>(writeMutex);
 			if (bytes_transferred != SockWriteBuf.length()) {
-				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", bytes_transferred, SockWriteBuf.length());
+				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 			}
 			SockWriteBuf.clear();
 			ProxyPdu *pdu;
@@ -182,7 +182,7 @@ namespace http {
 				break;
 			case status_connected:
 				if (bytes_transferred < SockWriteBuf.length()) {
-					_log.Log(LOG_ERROR, "PROXY: Only wrote %ld of %ld bytes.", bytes_transferred, SockWriteBuf.length());
+					_log.Log(LOG_ERROR, "PROXY: Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 				}
 			if (error) {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
@@ -405,7 +405,7 @@ namespace http {
 			}
 			else {
 				// unknown subsystem
-				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %d.", subsystem);
+				_log.Log(LOG_ERROR, "PROXY: Got Request pdu for unknown subsystem %ld.", subsystem);
 			}
 		}
 
@@ -508,6 +508,7 @@ namespace http {
 
 			if (!authenticated) {
 				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
+				return;
 			}
 			DomoticzTCP *slave = sharedData.findSlaveConnection(instanceparam);
 			if (slave) {
@@ -771,7 +772,7 @@ namespace http {
 		{
 			try {
 				//boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::tlsv12_client);
-				boost::asio::ssl::context ctx(io_service, boost::asio::ssl::context::sslv23);
+				boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
 				ctx.set_verify_mode(boost::asio::ssl::verify_none);
 
 				proxyclient.reset(new CProxyClient(io_service, ctx, m_pWebEm));

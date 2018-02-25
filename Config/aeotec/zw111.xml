@@ -8,7 +8,7 @@ https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" index="3" genre="config" label="Over current protection" units="" min="0" max="1" size="1" value="1">
-            <Help>Output load will be closed after 30 seconds if the current exceeds (US: 15.5A, AU or EU: 10.5A).</Help>
+            <Help>Output Load will be turned off automatically after 30 seconds and if the current overrun 1.5A.</Help>
             <Item label="Disable" value="0"/>
             <Item label="Enable" value="1"/>
         </Value>

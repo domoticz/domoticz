@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+GE/Jasco ZW6302 Portable Smart Motion Sensor
+https://products.z-wavealliance.org/products/1902
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" index="13" genre="config" label="PIR Sensitivity Setting" units="" min="1" max="3" size="1" value="3">
+            <Help>PIR Sensitivity Setting</Help>
+            <Item label="Low" value="1"/>
+            <Item label="Medium" value="2"/>
+            <Item label="High" value="3"/>
+        </Value>
+        <Value type="byte" index="18" genre="config" label="PIR Timeout Duration" units="" min="0" max="1" size="1" value="1">
+            <Help>
+                1 to 60 => 1 min to 60 min.
+                255 => 5 seconds.
+            </Help>
+        </Value>
+        <Value type="list" index="20" genre="config" label="Report type" units="" min="1" max="3" size="1" value="3">
+            <Help>Motion Sensor will send out</Help>
+            <Item label="Notification" value="1"/>
+            <Item label="Basic Set" value="2"/>
+            <Item label="Basic Report" value="3"/>
+        </Value>
+        <Value type="list" index="28" genre="config" label="LED indication" units="" min="0" max="1" size="1" value="1">
+            <Help>Enable or Disable the LED indication when PIR is triggered</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+    </CommandClass>
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

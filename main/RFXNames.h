@@ -207,6 +207,9 @@ enum _eHardwareTypes {
 	HTYPE_EnphaseAPI,			//108
 	HTYPE_RaspberryMCP23017,	//109
 	HTYPE_eHouseTCP,			//110
+	HTYPE_Comm5SMTCP,			//111
+	HTYPE_Nest_OAuthAPI,		//112
+	HTYPE_EcoCompteur,			//113
 	HTYPE_END
 };
 
@@ -295,4 +298,5 @@ bool GetLightCommand(
 bool IsLightSwitchOn(const std::string &lstatus);
 
 bool IsSerialDevice(const _eHardwareTypes htype);
+bool IsNetworkDevice(const _eHardwareTypes htype);
 void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype);
