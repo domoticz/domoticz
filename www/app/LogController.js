@@ -36,7 +36,8 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_NORM,
 				async: false,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.result != 'undefined') {
 					if (typeof data.LastLogTime != 'undefined') {
 						$scope.LastLogTime = parseInt(data.LastLogTime);
@@ -70,7 +71,7 @@ define(['app'], function (app) {
 				$scope.mytimer = $interval(function () {
 					$scope.RefreshLog();
 				}, 5000);
-			}).error(function () {
+			}, function errorCallback(response) {
 				$scope.mytimer = $interval(function () {
 					$scope.RefreshLog();
 				}, 5000);
@@ -81,7 +82,8 @@ define(['app'], function (app) {
 					url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_ERROR,
 					async: false,
 					dataType: 'json'
-				}).success(function (data) {
+				}).then(function successCallback(response) {
+					var data = response.data;
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
 							var message = item.message.replace(/\n/gi, "<br>");
@@ -99,7 +101,8 @@ define(['app'], function (app) {
 					url: "json.htm?type=command&param=getlog&lastlogtime=" + $scope.LastLogTime + "&loglevel=" + LOG_STATUS,
 					async: false,
 					dataType: 'json'
-				}).success(function (data) {
+				}).then(function successCallback(response) {
+					var data = response.data;
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
 							var message = item.message.replace(/\n/gi, "<br>");
@@ -124,14 +127,15 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=clearlog",
 				async: false,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				$scope.logitems = [];
 				$scope.logitems_error = [];
 				$scope.logitems_status = [];
 				$scope.mytimer = $interval(function () {
 					$scope.RefreshLog();
 				}, 5000);
-			}).error(function () {
+			}, function errorCallback(response) {
 				$scope.mytimer = $interval(function () {
 					$scope.RefreshLog();
 				}, 5000);

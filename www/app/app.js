@@ -325,6 +325,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}]);
 	app.config(function ($routeProvider, $locationProvider) {
+		$locationProvider.hashPrefix('');
 		$routeProvider.
 			when('/Dashboard', angularAMD.route({
 				templateUrl: 'views/dashboard.html',
@@ -892,7 +893,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					url: "json.htm?type=command&param=getSunRiseSet",
 					async: true,
 					dataType: 'json'
-				}).success(function (data) {
+				}).then(function successCallback(response) {
+					var data = response.data;
 					if (typeof data.Sunrise != 'undefined') {
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
