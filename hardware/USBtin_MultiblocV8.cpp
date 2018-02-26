@@ -587,7 +587,7 @@ void USBtin_MultiblocV8::OutputNewStates(unsigned long sID,int OutputNumber,bool
 	int level = int(rlevel);
 	//Extract the RefBloc Type
 	uint8_t RefBloc = (uint8_t)((sID & MSK_INDEX_MODULE) >> SHIFT_INDEX_MODULE);
-	if (RefBloc > _countof(NomRefBloc))
+	if (RefBloc >= 45)// _countof(NomRefBloc))
 		return;
 	
 	tRBUF lcmd;
