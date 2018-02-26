@@ -54,7 +54,8 @@ protected:
 	void WriteInt(const std::string &sendStr);
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
-	boost::signals2::connection m_sConnection;
+	boost::signals2::connection m_sDeviceReceivedConnection;
+	boost::signals2::connection m_sSwitchSceneConnection;
 	enum _ePublishTopics {
 		PT_none 	  = 0x00,
 		PT_out  	  = 0x01, 	// publish on domoticz/out

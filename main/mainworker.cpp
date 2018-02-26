@@ -12522,6 +12522,9 @@ bool MainWorker::SwitchScene(const uint64_t idx, std::string switchcmd)
 	if (m_sql.m_bEnableEventSystem)
 		bEventTrigger = m_eventsystem.UpdateSceneGroup(idx, nValue, szLastUpdate);
 
+	// Notify listeners
+	sOnSwitchScene(idx, Name);
+
 	//now switch all attached devices, and only the onces that do not trigger a scene
 	result = m_sql.safe_query(
 		"SELECT DeviceRowID, Cmd, Level, Hue, OnDelay, OffDelay FROM SceneDevices WHERE (SceneRowID == %" PRIu64 ") ORDER BY [Order] ASC", idx);
