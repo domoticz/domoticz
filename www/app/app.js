@@ -211,7 +211,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
                         http_uri += loc.pathname;
 						// get via json get
                         url = http_uri + url;
-						$http.get(url).success(callback_fn);
+						$http({
+							url: url,
+						}).then(function successCallback(response) {
+							callback_fn();
+				        });               
 					}
 					else {
 						var settings = {
