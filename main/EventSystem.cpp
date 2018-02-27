@@ -1407,7 +1407,7 @@ void CEventSystem::EventQueueThread()
 #endif
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if ((itt->DeviceID == item.DeviceID && itt->reason <= REASON_SCENEGROUP) ||
+			if ((itt->DeviceID == item.DeviceID && itt->reason <= REASON_SCENEGROUP && itt->reason == item.reason) ||
 				(itt->reason == REASON_USERVARIABLE && itt->varId == item.varId))
 			{
 				EvaluateEvent(items);
@@ -1497,6 +1497,10 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt2;
 	std::string filename;
+#ifdef ENABLE_PYTHON
+	std::vector<std::string> FileEntriesPython;
+	DirectoryListing(FileEntriesPython, m_python_Dir, false, true);
+#endif
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
@@ -1571,9 +1575,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		try
 		{
-			FileEntries.clear();
-			DirectoryListing(FileEntries, m_python_Dir, false, true);
-			for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
+			for (itt2 = FileEntriesPython.begin(); itt2 != FileEntriesPython.end(); ++itt2)
 			{
 				filename = *itt2;
 				if (filename.length() > 3 &&
