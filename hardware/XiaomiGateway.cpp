@@ -1078,7 +1078,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							int pres = atoi(pressure.c_str());
 							pres = pres / 100;
 							if (pres > 1) {
-								m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Humidity", pres, battery);
+								m_XiaomiGateway->InsertUpdatePressure(sid.c_str(), "Xiaomi Pressure", pres, battery);
 							}
 						}
 					}
