@@ -753,7 +753,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				if (DevRowIdx == -1)
 					return -1;
 				char devname[8];
-				sprintf(devname, "zone %zu", row);
+				sprintf(devname, "zone %d", (int)row);
 				sprintf(ID, "%lu", evoID);
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q',DeviceID='%q' WHERE (ID == %" PRIu64 ")", devname, ID, DevRowIdx);
 				m_zones[row] = evoID;

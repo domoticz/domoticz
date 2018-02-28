@@ -5,11 +5,13 @@ colpick Color Picker / colpick.com
 /*Main container*/
 .colpick {
 	position: absolute;
+    box-sizing:content-box;
 	width: 346px;
 	height: 170px;
 	overflow: hidden;
 	display: none;
 	font-family: Arial, Helvetica, sans-serif;
+    direction:ltr;
 	background:#ebebeb;
 	border: 1px solid #bbb;
 	-webkit-border-radius: 5px;
@@ -23,7 +25,7 @@ colpick Color Picker / colpick.com
 	-o-user-select: none;
 	user-select: none;
 }
-/*Color selection box*/
+/*Color selection box with gradients*/
 .colpick_color {
 	position: absolute;
 	left: 7px;
@@ -40,9 +42,14 @@ colpick Color Picker / colpick.com
 	top:0;
 	width: 156px;
 	height: 156px;
-	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr='#ffffff', endColorstr='#00ffffff'); /* IE6 & IE7 */
 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr='#ffffff', endColorstr='#00ffffff')"; /* IE8 */
-	background: linear-gradient(to right, rgba(255,255,255,1), rgba(255,255,255,0));
+	background: -moz-linear-gradient(left, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(left, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(left, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(left, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* IE10+ */
+	background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=1,startColorstr='#ffffff', endColorstr='#00ffffff'); /* IE6 & IE7 */
 }
 .colpick_color_overlay2 {
 	position: absolute;
@@ -50,9 +57,14 @@ colpick Color Picker / colpick.com
 	top:0;
 	width: 156px;
 	height: 156px;
-	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#00000000', endColorstr='#000000'); /* IE6 & IE7 */
 	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#00000000', endColorstr='#000000')"; /* IE8 */
-	background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,1));
+	background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
 }
 /*Circular color selector*/
 .colpick_selector_outer {

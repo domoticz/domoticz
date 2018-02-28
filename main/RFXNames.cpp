@@ -219,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -273,6 +274,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
 		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
 		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
+		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);

@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1475
+# ref 1483
 
 CACHE:
 # CSS
@@ -524,7 +524,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.12.0.min.js
+js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js

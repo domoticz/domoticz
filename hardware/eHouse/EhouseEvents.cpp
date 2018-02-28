@@ -67,7 +67,7 @@ void eHouseTCP::ExecQueuedEvents(void)
 				if (EvQ[i]->LocalEventsDrop > RE_SEND_RETRIES)	//to much retries (no controller or no communication)
 				{
 					if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Q[%d] Drop Event", i);
-					memset(EvQ[i], 0, sizeof(EvQ[i]));		//delete event permanently and immediatelly                
+					memset(EvQ[i], 0, sizeof(EventQueueT));		//delete event permanently and immediatelly                
 				}
 				else
 				{
@@ -80,7 +80,7 @@ void eHouseTCP::ExecQueuedEvents(void)
 					EvQ[i]->LocalEventsTimeOuts--;		//decrement timer
 				else										//Timer reach 0 - remove event from Queue
 				{
-					memset(EvQ[i], 0, sizeof(EvQ[i]));
+					memset(EvQ[i], 0, sizeof(EventQueueT));
 					if (DEBUG_TCPCLIENT) _log.Log(LOG_STATUS, "[Exec Event] Remove Event");
 				}
 		}

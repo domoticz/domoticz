@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenIPInOut_POLL_INTERVAL 60
+#define DenkoviSmartdenIPInOut_POLL_INTERVAL 5
 
 #ifdef _DEBUG
 //#define DEBUG_DenkoviInR

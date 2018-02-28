@@ -917,7 +917,7 @@ namespace Plugins {
 			if (iRemainingLength > std::distance(it, m_sRetainedData.end()))
 			{
 				// Full packet has not arrived, wait for more data
-				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %ld, expected %ld).", __func__, std::distance(it, m_sRetainedData.end()), iRemainingLength);
+				_log.Log(LOG_TRACE, "(%s) Not enough data received (got %ld, expected %ld).", __func__, (long)std::distance(it, m_sRetainedData.end()), iRemainingLength);
 				return;
 			}
 
@@ -1120,7 +1120,7 @@ namespace Plugins {
 
 				// Client Identifier
 				PyObject *pID = PyDict_GetItemString(WriteMessage->m_Object, "ID");
-				if (pID && !PyUnicode_Check(pID))
+				if (pID && PyUnicode_Check(pID))
 				{
 					MQTTPushBackStringWLen(std::string(PyUnicode_AsUTF8(pID)), vPayload);
 				}

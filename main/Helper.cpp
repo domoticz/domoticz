@@ -296,7 +296,7 @@ double CalculateAltitudeFromPressure(double pressure)
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in 캜)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in 째C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -313,7 +313,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in 캜) */
+	/* T = temperature (in 째C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
@@ -322,7 +322,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in 캜)
+(in 째C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -339,7 +339,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in 캜) */
+	/* T = Temperature (in 째C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -881,25 +881,13 @@ std::string MakeHtml(const std::string &txt)
 //Prevent against XSS (Cross Site Scripting)
 std::string SafeHtml(const std::string &txt)
 {
-	std::string tmpstr = txt;
-	stdupper(tmpstr);
+    std::string sRet = txt;
 
-	bool bHaveFoundDirtyHTML = false;
-
-	if (tmpstr.find("<SCRIPT>") != std::string::npos)
-	{
-		stdreplace(tmpstr, "<SCRIPT>", "<DOMO>");
-		stdreplace(tmpstr, "</SCRIPT>", "</DOMO>");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (tmpstr.find("JAVASCRIPT") != std::string::npos)
-	{
-		stdreplace(tmpstr, "JAVASCRIPT", "DOMOSCRIPT");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (bHaveFoundDirtyHTML)
-		return tmpstr;
-	return txt;
+    stdreplace(sRet, "\"", "&quot;");
+    stdreplace(sRet, "'", "&apos;");
+    stdreplace(sRet, "<", "&lt;");
+    stdreplace(sRet, ">", "&gt;");
+    return sRet;
 }
 
 

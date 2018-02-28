@@ -1275,7 +1275,7 @@ namespace http {
 			unsigned char icmd = atoi(scmd.c_str());
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
-			int hue = atoi(shue.c_str());
+			uint32_t hue = atoi(shue.c_str());
 			int mday = atoi(smday.c_str());
 			int month = atoi(smonth.c_str());
 			int occurence = atoi(soccurence.c_str());
@@ -1380,7 +1380,7 @@ namespace http {
 			unsigned char icmd = atoi(scmd.c_str());
 			int days = atoi(sdays.c_str());
 			unsigned char level = atoi(slevel.c_str());
-			int hue = atoi(shue.c_str());
+			uint32_t hue = atoi(shue.c_str());
 			int mday = atoi(smday.c_str());
 			int month = atoi(smonth.c_str());
 			int occurence = atoi(soccurence.c_str());
