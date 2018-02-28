@@ -47,9 +47,9 @@ private:
 	void ProcessSecurity(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 
 	void ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
-	void ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index);
-	void ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index);
-	void ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, uint32_t &index);
+	void ExportDomoticzDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
+	void ExportDomoticzScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
+	void ExportDomoticzUservariables(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items, int &index);
 
 	void ProcessChangedDevices(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
 	void ProcessChangedScenesGroups(lua_State *lua_state, const std::vector<CEventSystem::_tEventQueue> &items);
