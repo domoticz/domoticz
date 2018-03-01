@@ -3539,8 +3539,13 @@ define(['app'], function (app) {
 				bIsType5 = 1;
 				totunits = 0;
 			}
-			else if (lighttype == 105) {
-				//ASA
+			else if (lighttype == 226) {
+				//Eurodomest
+				bIsType5 = 1;
+				totunits = 4;	
+			}
+			else if ((lighttype == 105) || (lighttype == 250)) {
+				//ASA & EV1527
 				bIsType5 = 1;
 				totunits = 16;
 			}
@@ -3649,7 +3654,23 @@ define(['app'], function (app) {
 				$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide()
 				$("#dialog-addmanuallightdevice #lightingparams_sysfsgpio").show();
 			}
-			else if ((lighttype >= 200) && (lighttype < 300)) {
+			else if (lighttype == 226) {
+				//Eurodomest
+				$('#dialog-addmanuallightdevice #lightparams3 #combounitcode >option').remove();
+				for (ii = 1; ii < totunits + 1; ii++) {
+					$('#dialog-addmanuallightdevice #lightparams3 #combounitcode').append($('<option></option>').val(ii).html(ii));
+				}
+					$('#dialog-addmanuallightdevice #lightparams3 #combounitcode').append($('<option></option>').val(6).html("ALL OFF"));
+					$('#dialog-addmanuallightdevice #lightparams3 #combounitcode').append($('<option></option>').val(7).html("ALL ON"));
+				$("#dialog-addmanuallightdevice #lighting2params #combocmd1").hide();
+				$("#dialog-addmanuallightdevice #lighting2paramsUnitCode").hide();
+				$("#dialog-addmanuallightdevice #lighting3paramsCmd").hide();
+				$("#dialog-addmanuallightdevice #lighting3paramsGroupCode").hide();
+				$("#dialog-addmanuallightdevice #lighting1params").hide();
+				$("#dialog-addmanuallightdevice #lighting2params").show();
+				$("#dialog-addmanuallightdevice #lighting3params").show();
+			}
+			else if ((lighttype >= 200) && (lighttype < 300) && (lighttype != 250) && (lighttype != 226)) {
 				//Blinds
 				$("#dialog-addmanuallightdevice #blindsparams").show();
 				var bShow1 = (lighttype == 205) || (lighttype == 206) || (lighttype == 207) || (lighttype == 210) || (lighttype == 211);
@@ -3871,7 +3892,7 @@ define(['app'], function (app) {
 			else if (lighttype == 104) {
 				mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #he105params #combounitcode option:selected").text();
 			}
-			else if ((lighttype >= 200) && (lighttype < 300)) {
+			else if ((lighttype >= 200) && (lighttype < 300) && (lighttype != 250) && (lighttype != 226)) {
 				//Blinds
 				ID =
 					$("#dialog-addmanuallightdevice #blindsparams #combocmd1 option:selected").text() +
@@ -3965,6 +3986,26 @@ define(['app'], function (app) {
 				var unitcode = "0";
 				mParams += "&id=" + ID.toUpperCase() + "&unitcode=" + unitcode;
 			}
+			else if (lighttype == 226) {
+				var ID =
+					"00" +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text() +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text() +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text() +
+					"00";
+				mParams += "&id=" + ID.toUpperCase();
+                                mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #lightparams2 #combounitcode option:selected").val();
+                        }
+			else if (lighttype == 250) {
+				var ID =
+					"00" +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd2 option:selected").text() +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd3 option:selected").text() +
+					$("#dialog-addmanuallightdevice #lightparams2 #combocmd4 option:selected").text() +
+					"00";
+				mParams += "&id=" + ID.toUpperCase();
+                                mParams += "&unitcode=" + $("#dialog-addmanuallightdevice #lightparams3 #combounitcode option:selected").val();
+                        }
 			else {
 				//AC
 				var ID = "";
