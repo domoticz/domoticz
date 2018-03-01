@@ -267,8 +267,13 @@ bool CZiBlueBase::WriteToHardware(const char *pdata, const unsigned char length)
 		case gswitch_sOn:
 			oFrame.action = SEND_ACTION_ON;
 			break;
+		case gswitch_sSetLevel:
+			oFrame.action = SEND_ACTION_DIM;
+			oFrame.dimValue = pSwitch->level;
+			break;
 		case gswitch_sDim:
 			oFrame.action = SEND_ACTION_DIM;
+			oFrame.dimValue = pSwitch->level;
 			break;
 		case gswitch_sBright:
 			oFrame.action = SEND_ACTION_BRIGHT;
@@ -498,7 +503,11 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					switchCmd = "ALLOFF";
 					break;
 				}
-				SendSwitchInt(houseCode, dev, 255, "X10", switchCmd, 0);
+				const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
+				if (szProtocol != NULL)
+				{
+					SendSwitchInt(houseCode, dev, 255, std::string(szProtocol), switchCmd, 0);
+				}
 #ifdef DEBUG_ZIBLUE
 				_log.Log(LOG_NORM, "ZiBlue: subtype: %d (%s), houseCode: %c, dev: %d", pSen->subtype, switchCmd.c_str(), (uint8_t)('A' + houseCode), dev + 1);
 #endif
@@ -534,7 +543,11 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					break;
 */
 				}
-				SendSwitchInt(DevID, 1, 255, "AC", switchCmd, 0);
+				const char *szProtocol = szZiBlueProtocol(pIncomming->protocol);
+				if (szProtocol != NULL)
+				{
+					SendSwitchInt(DevID, 1, 255, std::string(szProtocol), switchCmd, 0);
+				}
 #ifdef DEBUG_ZIBLUE
 				_log.Log(LOG_NORM, "ZiBlue: subtype: %d (%s), DevID: %04X", pSen->subtype, switchCmd.c_str(), DevID);
 #endif

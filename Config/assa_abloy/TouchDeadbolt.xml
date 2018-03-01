@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 <!-- Yale Touchscreen Deadbolt (YRD220)
-http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 
+http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf
+http://products.z-wavealliance.org/products/1972/configs
+http://products.z-wavealliance.org/products/1973/configs
 -->
 	<!-- Configuration -->
 	<CommandClass id="112">
@@ -52,6 +54,26 @@ http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf
 			<Item label="Normal" value="0" />
 			<Item label="Vacation" value="1" />
 			<Item label="Privacy" value="2" />			
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="11" label="One Touch Locking" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="12" label="Privacy Button" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="13" label="Lock Status LED" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="15" label="Reset to Factory Defaults" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
 		</Value>
 	</CommandClass>
 	<CommandClass id="113">

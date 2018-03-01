@@ -1,3 +1,5 @@
+@import url("../css/legacy.css"); /* Don't remove this line! */
+
 @font-face {
 	font-family: "OpenSans";
 	font-style: normal;
@@ -326,7 +328,6 @@ body table#mobileitem tr td:first-child{
 
 .selectorlevels .ui-selectmenu-button.ui-widget {
 	font-size: 1em;
-	width: 200px !important;
 	height: 22px;
 }
 

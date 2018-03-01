@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Zooz ZSE30 Water Sensor -->
+  <!-- http://products.z-wavealliance.org/products/2204 -->
+
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="byte" genre="config" index="1" label="Alarm Duration" size="1" min="0" max="255" units="minutes" value="120">
+          <Help>
+            Use this parameter to set the total duration of audio and visual alarm each time water is detected. 
+            If the value is set to 0, the alarm will continue until water is no longer detected.
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" index="2" label="Audio Alarm Beep Interval" size="1" min="1" max="255" units="minutes" value="1">
+          <Help>
+            Set the beeping frequency for the sensors audio alarm.
+            The interval between beeps can be as low as 1 minute.
+          </Help>
+        </Value>
+        <Value type="byte" genre="config" index="3" label="Audio Alarm First Beep Duration" size="1" min="10" max="255" units="seconds" value="60">
+          <Help>
+            Adjust the duration of the initial sound the alarm will produce after a leak is detected.
+          </Help>
+        </Value>
+        <Value type="byte" genre="config" index="4" label="Audio Alarm Beep Duration" size="1" min="5" max="255" units="seconds" value="5">
+          <Help>
+            Adjust the duration of the beeps the alarm will sound after a leak is detected and the first "long" beep is produced.
+          </Help>
+        </Value>
+    <Value type="list" index="5" genre="config" label="Audio Alarm" size="1" value="1">
+      <Help>
+        Enable or disable the audio alarm by adjusting this parameter setting. 
+        The visual alarm will NOT be disabled and the LED indicator will always light up each time water is detected
+      </Help>
+      <Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+    </Value>
+    <Value type="list" index="6" genre="config" label="Water Detection" size="1" value="1">
+      <Help>
+        Enable or disable water detection for the sensor by adjusting this parameter setting..
+      </Help>
+      <Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+    </Value>
+    <Value type="byte" genre="config" index="7" label="Trigger Action" size="1" min="0" max="255" value="255">
+      <Help>
+        You can choose if your Water Sensor turns an associated device on or off when sending the basic set command. 
+        Use value 0 to turn the associated device OFF and value 255 to turn it ON.
+        Adjust brightness level for a Z-Wave dimmer (Multilevel switch) by putting in any value between 1 and 99. 
+        Values: 0 - OFF; 1 - 99 (% of light); 255 - ON (default).
+      </Help>
+    </Value>        
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="4">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="Control Command"/>
+            <Group index="3" max_associations="5" label="Notification report"/>
+            <Group index="4" max_associations="5" label="Binary sensor report"/>
+        </Associations>
+    </CommandClass>
+</Product>

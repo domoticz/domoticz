@@ -26,7 +26,7 @@
      </Value>	
     
     <Value type="list" genre="config" instance="1" index="10" label="Roller Shutter operating modes" value="0" size="1">
-      <Help>Default settng: 1</Help>
+      <Help>Default setting: 1</Help>
       <Item label="0 - Roller Blind Mode, without positioning" value="0"/>
       <Item label="1 - Roller Blind Mode, with positioning" value="1"/>
 	    <Item label="2 - Venetian Blind Mode, with positioning" value="2"/>

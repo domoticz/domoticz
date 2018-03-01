@@ -20,7 +20,7 @@ struct _tRemoteShareUser
 
 #define RemoteMessage_id_Low 0xE2
 #define RemoteMessage_id_High 0x2E
-
+#define SECONDS_PER_DAY 60*60*24
 
 struct _tRemoteMessage
 {
@@ -47,6 +47,11 @@ public:
 	std::vector<_tRemoteShareUser> GetRemoteUsers();
 	unsigned int GetUserDevicesCount(const std::string &username);
 protected:
+	struct _tTCPLogInfo
+	{
+		time_t		time;
+		std::string string;
+	};
 
 	_tRemoteShareUser* FindUser(const std::string &username);
 
@@ -84,6 +89,9 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 
 	CTCPClient_ptr new_connection_;
+
+	bool IsUserHereFirstTime(const std::string &ip_string);
+	std::vector<_tTCPLogInfo> m_incoming_domoticz_history;
 };
 
 #ifndef NOCLOUD

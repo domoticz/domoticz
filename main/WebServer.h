@@ -99,15 +99,19 @@ public:
 	void RemoveSession(const std::string & sessionId);
 	void CleanSessions();
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
+	std::string PluginHardwareDesc(int HwdID);
 
 private:
 	void HandleCommand(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 	void HandleRType(const std::string &rtype, WebEmSession & session, const request& req, Json::Value &root);
 
+	bool IsIdxForUser(const WebEmSession *pSession, const int Idx);
+
 	//Commands
 	void Cmd_RFXComGetFirmwarePercentage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
+        void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root);
@@ -253,16 +257,17 @@ private:
 	void Cmd_PanasonicClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteMobileDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_HEOSMediaCommand(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_OnkyoEiscpCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddYeeLight(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddArilux(WebEmSession & session, const request& req, Json::Value &root);
 
 	void Cmd_BleBoxSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxAddNode(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_BleBoxUpdateNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxClearNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
@@ -273,13 +278,16 @@ private:
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteCamera(WebEmSession & session, const request& req, Json::Value &root);
+
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 	void PluginLoadConfig();
 #endif
-	std::string PluginHardwareDesc(int HwdID);
 
 	//RTypes
 	void RType_HandleGraph(WebEmSession & session, const request& req, Json::Value &root);
@@ -292,6 +300,7 @@ private:
 	void RType_Devices(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Cameras(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Users(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_Mobiles(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Timers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SceneTimers(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_SetpointTimers(WebEmSession & session, const request& req, Json::Value &root);
@@ -306,7 +315,8 @@ private:
 	void RType_AddScene(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_DeleteScene(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_UpdateScene(WebEmSession & session, const request& req, Json::Value &root);
-	void RType_CreateVirtualSensor(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root);
+	void RType_CreateDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_CustomLightIcons(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_Plans(WebEmSession & session, const request& req, Json::Value &root);
 	void RType_FloorPlans(WebEmSession & session, const request& req, Json::Value &root);

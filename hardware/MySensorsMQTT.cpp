@@ -7,15 +7,30 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 
-#define TOPIC_IN	"domoticz/in/MyMQTT"
-#define TOPIC_OUT	"domoticz/out/MyMQTT"
+#define TOPIC_DEFAULT	"MyMQTT"
+#define TOPIC_IN		"domoticz/in/"
+#define TOPIC_OUT		"domoticz/out/"
 
-MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out)
+MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
+	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out),
+	MyTopicIn(TOPIC_IN),
+	MyTopicOut(TOPIC_OUT)
 {
-	m_TopicInWithoutHash = TOPIC_IN;
+	switch (Topics) {
+		case 1:
+			MyTopicIn += Name;
+			MyTopicOut += Name;
+			break;
+		case 0:
+		default:
+			MyTopicIn += TOPIC_DEFAULT;
+			MyTopicOut += TOPIC_DEFAULT;
+			break;
+	}
+	m_TopicInWithoutHash = MyTopicIn;
 	m_TopicIn = m_TopicInWithoutHash + "/#";
-	m_TopicOut = TOPIC_OUT;
+	m_TopicOut = MyTopicOut;
+
 }
 
 MySensorsMQTT::~MySensorsMQTT(void)
@@ -79,7 +94,7 @@ void MySensorsMQTT::on_connect(int rc)
 
 	if (m_IsConnected)
 	{
-		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 		//Request gateway version
 		std::string sRequest = "0;0;3;0;2;";

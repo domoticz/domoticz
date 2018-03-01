@@ -11,6 +11,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include "../main/localtime_r.h"
 #include <sstream>
 #include <openssl/md5.h>
 
@@ -20,6 +21,17 @@
 
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
+
+// Includes for SystemUptime()
+#if defined(__linux__) || defined(__linux) || defined(linux)
+#include <sys/sysinfo.h>
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#include <time.h>
+#include <errno.h>
+#include <sys/sysctl.h>
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+#include <time.h>
+#endif
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
@@ -38,7 +50,7 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat)
 {
 	int pos = 0;
@@ -135,7 +147,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				sprintf(szPortName, "COM%d", ii);
 				ret.push_back(szPortName); // add port
 			}
-			// --------------            
+			// --------------
 		}
 	}
 	// Method 3: EnumSerialPortsWindows, often fails
@@ -178,6 +190,9 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 		// Loop while not NULL
 		while ((de = readdir(d)))
 		{
+			// Only consider character devices and symbolic links
+                        if ((de->d_type == DT_CHR) || (de->d_type == DT_LNK))
+                        {
 			std::string fname = de->d_name;
 			if (fname.find("ttyUSB")!=std::string::npos)
 			{
@@ -198,7 +213,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__            
+#if defined (__FreeBSD__) || defined (__OpenBSD__)
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -223,6 +238,21 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				{
 					ret.push_back("/dev/" + fname);
 					bUseDirectPath=true;
+				}
+				// By default, this is the "small UART" on Rasberry 3 boards
+                                        if (fname.find("ttyS0")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
+                                        // serial0 and serial1 are new with Rasbian Jessie
+                                        // Avoids confusion between Raspberry 2 and 3 boards
+                                        // More info at http://spellfoundry.com/2016/05/29/configuring-gpio-serial-port-raspbian-jessie-including-pi-3/
+                                        if (fname.find("serial")!=std::string::npos)
+                                        {
+                                                ret.push_back("/dev/" + fname);
+                                                bUseDirectPath=true;
+                                        }
 				}
 			}
 		}
@@ -252,7 +282,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 
 bool file_exist (const char *filename)
 {
-	struct stat sbuffer;   
+	struct stat sbuffer;
 	return (stat(filename, &sbuffer) == 0);
 }
 
@@ -266,7 +296,7 @@ double CalculateAltitudeFromPressure(double pressure)
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in 캜)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in 째C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -283,7 +313,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in 캜) */
+	/* T = temperature (in 째C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
@@ -292,7 +322,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in 캜)
+(in 째C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -309,7 +339,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in 캜) */
+	/* T = Temperature (in 째C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -356,7 +386,7 @@ double CalculateDewPoint(double temp, int humidity)
 	return dew_numer/dew_denom;
 }
 
-uint32_t IPToUInt(const std::string &ip) 
+uint32_t IPToUInt(const std::string &ip)
 {
 	int a, b, c, d;
 	uint32_t addr = 0;
@@ -435,9 +465,53 @@ int mkdir_deep(const char *szDirName, int secattr)
 	return ret;
 }
 
+int RemoveDir(const std::string &dirnames, std::string &errorPath)
+{
+	std::vector<std::string> splitresults;
+	StringSplit(dirnames, "|", splitresults);
+	int returncode = 0;
+	if (!splitresults.empty())
+	{
+#ifdef WIN32
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			size_t s_szLen = strlen(splitresults[i].c_str());
+			if (s_szLen < MAX_PATH)
+			{
+				char deletePath[MAX_PATH + 1];
+				strcpy_s(deletePath, splitresults[i].c_str());
+				deletePath[s_szLen + 1] = '\0'; // SHFILEOPSTRUCT needs an additional null char
+
+				SHFILEOPSTRUCT shfo = { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
+				if (returncode = SHFileOperation(&shfo))
+				{
+					errorPath = splitresults[i];
+					break;
+				}
+			}
+		}
+#else
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
+			if (returncode)
+			{
+				errorPath = splitresults[i];
+				break;
+			}
+		}
+#endif
+	}
+	return returncode;
+}
+
 double ConvertToCelsius(const double Fahrenheit)
 {
-	return (Fahrenheit-32.0)/1.8;
+	return (Fahrenheit-32.0) * 0.5556;
 }
 
 double ConvertToFahrenheit(const double Celsius)
@@ -459,7 +533,7 @@ double ConvertTemperature(const double tValue, const unsigned char tSign)
 	return RoundDouble(ConvertToFahrenheit(tValue),1);
 }
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode)
 {
 	std::vector<std::string> ret;
 
@@ -483,17 +557,65 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand)
 			}
 			/* close */
 #ifdef WIN32
-			_pclose(fp);
+			returncode = _pclose(fp);
 #else
-			pclose(fp);
+			returncode = pclose(fp);
 #endif
 		}
 	}
 	catch (...)
 	{
-		
+
 	}
 	return ret;
+}
+
+std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
+{
+	struct tm timeinfo;
+	struct timeval tv;
+	std::stringstream sstr;
+	if (ltime == NULL) // current time
+	{
+#ifdef CLOCK_REALTIME
+		struct timespec ts;
+		if (!clock_gettime(CLOCK_REALTIME, &ts))
+		{
+			tv.tv_sec = ts.tv_sec;
+			tv.tv_usec = ts.tv_nsec / 1000;
+		}
+		else
+#endif
+			gettimeofday(&tv, NULL);
+#ifdef WIN32
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
+#else
+		localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+	}
+	else
+		localtime_r(&(*ltime), &timeinfo);
+
+	if (format > TF_Time)
+	{
+		sstr << (timeinfo.tm_year + 1900) << "-"
+		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+	}
+
+	if (format != TF_Date)
+	{
+		sstr
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
+	}
+
+	if (format > TF_DateTime && ltime == NULL)
+		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+
+	return sstr.str();
 }
 
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
@@ -742,3 +864,175 @@ std::string GenerateUserAgent()
 	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36+mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36+sversion);
 	return sstr.str();
 }
+
+std::string MakeHtml(const std::string &txt)
+{
+        std::string sRet = txt;
+
+        stdreplace(sRet, "&", "&amp;");
+        stdreplace(sRet, "\"", "&quot;");
+        stdreplace(sRet, "'", "&apos;");
+        stdreplace(sRet, "<", "&lt;");
+        stdreplace(sRet, ">", "&gt;");
+        stdreplace(sRet, "\r\n", "<br/>");
+        return sRet;
+}
+
+//Prevent against XSS (Cross Site Scripting)
+std::string SafeHtml(const std::string &txt)
+{
+    std::string sRet = txt;
+
+    stdreplace(sRet, "\"", "&quot;");
+    stdreplace(sRet, "'", "&apos;");
+    stdreplace(sRet, "<", "&lt;");
+    stdreplace(sRet, ">", "&gt;");
+    return sRet;
+}
+
+
+#if defined WIN32
+//FILETIME of Jan 1 1970 00:00:00
+static const uint64_t epoch = (const uint64_t)(116444736000000000);
+
+int gettimeofday( timeval * tp, void * tzp)
+{
+	FILETIME    file_time;
+	SYSTEMTIME  system_time;
+	ULARGE_INTEGER ularge;
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	ularge.LowPart = file_time.dwLowDateTime;
+	ularge.HighPart = file_time.dwHighDateTime;
+	tp->tv_sec = (long)((ularge.QuadPart - epoch) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
+
+int getclock(struct timeval *tv) {
+#ifdef CLOCK_MONOTONIC
+	struct timespec ts;
+		if (!clock_gettime(CLOCK_MONOTONIC, &ts)) {
+			tv->tv_sec = ts.tv_sec;
+			tv->tv_usec = ts.tv_nsec / 1000;
+			return 0;
+		}
+#endif
+	return gettimeofday(tv, NULL);
+}
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y) {
+	/* Perform the carry for the later subtraction by updating y. */
+  if (x->tv_usec < y->tv_usec) {
+		int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+    y->tv_usec -= 1000000 * nsec;
+    y->tv_sec += nsec;
+  }
+  if (x->tv_usec - y->tv_usec > 1000000) {
+    int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+    y->tv_usec += 1000000 * nsec;
+    y->tv_sec -= nsec;
+  }
+
+  /* Compute the time remaining to wait.
+     tv_usec is certainly positive. */
+  result->tv_sec = x->tv_sec - y->tv_sec;
+  result->tv_usec = x->tv_usec - y->tv_usec;
+
+  /* Return 1 if result is negative. */
+  return x->tv_sec < y->tv_sec;
+}
+
+const char *szInsecureArgumentOptions[] = {
+	"import",
+	"socket",
+	"process",
+	"os",
+	"|",
+	";",
+	"&",
+	"$",
+	"<",
+	">",
+	NULL
+};
+
+bool IsArgumentSecure(const std::string &arg)
+{
+	std::string larg(arg);
+	std::transform(larg.begin(), larg.end(), larg.begin(), ::tolower);
+
+	int ii = 0;
+	while (szInsecureArgumentOptions[ii] != NULL)
+	{
+		if (larg.find(szInsecureArgumentOptions[ii]) != std::string::npos)
+			return false;
+		ii++;
+	}
+	return true;
+}
+
+uint32_t SystemUptime()
+{
+#if defined(WIN32)
+	return static_cast<uint32_t>(GetTickCount64() / 1000u);
+#elif defined(__linux__) || defined(__linux) || defined(linux)
+	struct sysinfo info;
+	if (sysinfo(&info) != 0)
+		return -1;
+	return info.uptime;
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	struct timeval boottime;
+	std::size_t len = sizeof(boottime);
+	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
+	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0)
+		return -1;
+	return time(NULL) - boottime.tv_sec;
+#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)) && defined(CLOCK_UPTIME)
+	struct timespec ts;
+	if (clock_gettime(CLOCK_UPTIME, &ts) != 0)
+		return -1;
+	return ts.tv_sec;
+#else
+	return 0;
+#endif
+}
+
+// True random number generator (source: http://www.azillionmonkeys.com/qed/random.html)
+static struct
+{
+	int which;
+	time_t t;
+	clock_t c;
+	int counter;
+} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+
+static unsigned char * p = (unsigned char *) (&entropy + 1);
+static int accSeed = 0;
+
+int GenerateRandomNumber(const int range)
+{
+	if (p == ((unsigned char *) (&entropy + 1)))
+	{
+		switch (entropy.which)
+		{
+			case 0:
+				entropy.t += time (NULL);
+				accSeed ^= entropy.t;
+				break;
+			case 1:
+				entropy.c += clock();
+				break;
+			case 2:
+				entropy.counter++;
+				break;
+		}
+		entropy.which = (entropy.which + 1) % 3;
+		p = (unsigned char *) &entropy.t;
+	}
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	p++;
+	srand (accSeed);
+	return (rand() / (RAND_MAX / range));
+}
+

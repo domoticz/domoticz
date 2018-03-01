@@ -76,5 +76,5 @@ Aeotec ZW130 WallMote Quad, base on Engineering Spec 9/27/2016
             <Group index="9" max_associations="5" label="Dimmer control via Button 4"/>
         </Associations>
     </CommandClass>
-    <CommandClass id="142" ForceInstances="true"/>
+    <!--<CommandClass id="142" ForceInstances="true"/>-->
 </Product>

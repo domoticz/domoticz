@@ -1,13 +1,19 @@
 #           Kodi Plugin
 #
-#           Author:     Dnpwwo, 2016
+#           Author:     Dnpwwo, 2016 - 2017
 #
 """
-<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.3.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
+<plugin key="Kodi" name="Kodi Players" author="dnpwwo" version="1.8.0" wikilink="http://www.domoticz.com/wiki/plugins/Kodi.html" externallink="https://kodi.tv/">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="9090"/>
-        <param field="Mode1" label="MAC Address" width="150px" required="false"/>
+        <param field="Mode1" label="Icon" width="100px">
+            <options>
+                <option label="Blue" value="Kodi" default="true" />
+                <option label="Black" value="KodiBlack"/>
+                <option label="Round" value="KodiRound"/>
+            </options>
+        </param>
         <param field="Mode2" label="Shutdown Command" width="100px">
             <options>
                 <option label="Hibernate" value="Hibernate"/>
@@ -22,6 +28,7 @@
                 <option label="False" value="False"  default="true" />
             </options>
         </param>
+        <param field="Mode4" label="Notifier Name" width="100px" default="KodiNotify"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -32,11 +39,11 @@
 </plugin>
 """
 import Domoticz
+import sys
 import json
-import base64
 
 class BasePlugin:
-    isConnected = False
+    KodiConn = None
     nextConnect = 3
     oustandingPings = 0
     canShutdown = False
@@ -55,42 +62,54 @@ class BasePlugin:
     def onStart(self):
         if Parameters["Mode6"] == "Debug":
             Domoticz.Debugging(1)
+            DumpConfigToLog()
+        
+        if ('Kodi'  not in Images): Domoticz.Image('Kodi Icons.zip').Create()
+        if ('KodiBlack' not in Images): Domoticz.Image('KodiBlack Icons.zip').Create()
+        if ('KodiRound' not in Images): Domoticz.Image('KodiRound Icons.zip').Create()
+
         if (len(Devices) == 0):
             Domoticz.Device(Name="Status",  Unit=1, Type=17,  Switchtype=17).Create()
-            Options = "LevelActions:"+stringToBase64("||||")+";LevelNames:"+stringToBase64("Off|Video|Music|TV Shows|Live TV")+";LevelOffHidden:ZmFsc2U=;SelectorStyle:MA=="
+            Options = {"LevelActions": "||||", 
+                       "LevelNames": "Off|Video|Music|TV Shows|Live TV",
+                       "LevelOffHidden": "false",
+                       "SelectorStyle": "1"}
             Domoticz.Device(Name="Source",  Unit=2, TypeName="Selector Switch", Switchtype=18, Image=12, Options=Options).Create()
-            Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, \
-                            Switchtype=7,  Image=8).Create()
-            Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7,  Image=12).Create()
+            Domoticz.Device(Name="Volume",  Unit=3, Type=244, Subtype=73, Switchtype=7, Image=8).Create()
+            Domoticz.Device(Name="Playing", Unit=4, Type=244, Subtype=73, Switchtype=7, Image=12).Create()
             Domoticz.Log("Devices created.")
-        else:
-            if (1 in Devices): self.playerState = Devices[1].nValue
-            if (2 in Devices): self.mediaLevel = Devices[2].nValue
-        DumpConfigToLog()
-        Domoticz.Transport(Transport="TCP/IP", Address=Parameters["Address"], Port=Parameters["Port"])
-        Domoticz.Protocol("JSON")
+        if (1 in Devices):
+            UpdateImage(1)
+            self.playerState = Devices[1].nValue
+        if (2 in Devices):
+            UpdateImage(2)
+            self.mediaLevel = Devices[2].nValue
+        if (4 in Devices):
+            UpdateImage(4)
+            self.mediaLevel = Devices[2].nValue
+        self.KodiConn = Domoticz.Connection(Name="KodiConn", Transport="TCP/IP", Protocol="JSON", Address=Parameters["Address"], Port=Parameters["Port"])
+        self.KodiConn.Connect()
+        if (Parameters["Mode3"] == "True"):
+            Domoticz.Notifier(Parameters["Mode4"])
         Domoticz.Heartbeat(10)
-        Domoticz.Connect()
         return True
 
-    def onConnect(self, Status, Description):
+    def onConnect(self, Connection, Status, Description):
         if (Status == 0):
-            self.isConnected = True
-            Domoticz.Log("Connected successfully to: "+Parameters["Address"]+":"+Parameters["Port"])
+            Domoticz.Log("Connected successfully to: "+Connection.Address+":"+Connection.Port)
             self.playerState = 1
-            Domoticz.Send('{"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007}')
-            Domoticz.Send('{"jsonrpc":"2.0","method":"Application.GetProperties","id":1011,"params":{"properties":["volume","muted"]}}')
-            Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1001}')
+            self.KodiConn.Send('{"jsonrpc":"2.0","method":"System.GetProperties","params":{"properties":["canhibernate","cansuspend","canshutdown"]},"id":1007}')
+            self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.GetProperties","id":1011,"params":{"properties":["volume","muted"]}}')
+            self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1001}')
         else:
-            self.isConnected = False
-            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
-            Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
+            Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port)
+            Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Connection.Address+":"+Connection.Port+" with error: "+Description)
             # Turn devices off in Domoticz
             for Key in Devices:
                 UpdateDevice(Key, 0, Devices[Key].sValue)
         return True
 
-    def onMessage(self, Data, Status, Extra):
+    def onMessage(self, Connection, Data):
         strData = Data.decode("utf-8", "ignore")
         Response = json.loads(strData)
         if ('error' in Response):
@@ -98,7 +117,7 @@ class BasePlugin:
             if (Response["id"] == 1010):
                 Domoticz.Log("Addon execution request failed: "+Data)
             elif (Response["id"] == 2002):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":1,"item":{"directory":"special://profile/playlists/music/'+self.playlistName+'.xsp\", "media":"music"}},"id":2003}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":1,"item":{"directory":"special://profile/playlists/music/'+self.playlistName+'.xsp\", "media":"music"}},"id":2003}')
             elif (Response["id"] == 2003):
                 Domoticz.Error("Playlist '"+self.playlistName+"' could not be added, probably does not exist.")
             else:
@@ -132,16 +151,16 @@ class BasePlugin:
                 else:
                     self.playerState = 9
                 if (self.playerID != -1):
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
             elif (Response["method"] == "Player.OnPause"):
                 Domoticz.Debug("Player.OnPause recieved, Player ID: "+str(self.playerID))
                 self.playerState = 2
                 self.SyncDevices()
             elif (Response["method"] == "Player.OnSeek"):
                 if (self.playerID != -1):
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
                 else:
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1005}')
                 Domoticz.Debug("Player.OnSeek recieved, Player ID: "+str(self.playerID))
             elif (Response["method"] == "System.OnQuit") or (Response["method"] == "System.OnSleep") or (Response["method"] == "System.OnRestart"):
                 Domoticz.Debug("System.OnQuit recieved.")
@@ -156,7 +175,7 @@ class BasePlugin:
                 self.oustandingPings = self.oustandingPings - 1
                 if (len(Response["result"]) > 0) and ('playerid' in Response["result"][0]):
                     self.playerID = Response["result"][0]["playerid"]
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
                 else:
                     self.ClearDevices()
             elif (Response["id"] == 1002):    # PING call when something is playing
@@ -165,7 +184,7 @@ class BasePlugin:
                 if ("live" in Response["result"]) and (Response["result"]["live"] == True):
                     self.mediaLevel = 40
                 if (self.playerState == 2) and ("speed" in Response["result"]) and (Response["result"]["speed"] != 0):
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
                 if ("speed" in Response["result"]) and (Response["result"]["speed"] == 0):
                     self.playerState = 2
                 if ("percentage" in Response["result"]):
@@ -236,7 +255,7 @@ class BasePlugin:
                         self.mediaDescrption = self.mediaDescrption.replace(self.mediaDescrption[self.mediaDescrption.rfind("("):self.mediaDescrption.rfind(")")+1],"")
                     
                     if (mediaType != "picture"):
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
                 else:
                     self.ClearDevices()
             elif (Response["id"] == 1006):
@@ -263,9 +282,9 @@ class BasePlugin:
                 if (Response["result"] != "OK"):
                     Domoticz.Error("Playlist Clear command unsuccessful, response: '"+str(Response["result"])+"'")
             elif (Response["id"] == 2002):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":0,"position":'+self.playlistPos+'}},"id":2004}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":0,"position":'+self.playlistPos+'}},"id":2004}')
             elif (Response["id"] == 2003):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":1,"position":'+self.playlistPos+'}},"id":2004}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"playlistid":1,"position":'+self.playlistPos+'}},"id":2004}')
             elif (Response["id"] == 2004):
                 if (Response["result"] != "OK"):
                     Domoticz.Error("Playlist Open command unsuccessful, response: '"+str(Response["result"])+"'")
@@ -280,7 +299,7 @@ class BasePlugin:
                         if (i == self.playlistPos):
                             if (Favourite["type"] == "media"):
                                 Domoticz.Log("Favourites #"+str(i)+" has path '"+Favourite["path"]+"' and will be played.")
-                                Domoticz.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"file":"'+Favourite["path"]+'"}},"id":2101}')
+                                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.Open","params":{"item":{"file":"'+Favourite["path"]+'"}},"id":2101}')
                                 break
                             else:
                                 Domoticz.Log("Requested Favourite ('"+Favourite["title"]+"') is not playable, next playable item will be selected.")
@@ -296,22 +315,22 @@ class BasePlugin:
         return True
 
     def onCommand(self, Unit, Command, Level, Hue):
-        Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level) + ", Connected: " + str(self.isConnected))
+        Domoticz.Log("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level) + ", Connected: " + str(self.KodiConn.Connected()))
 
         Command = Command.strip()
         action, sep, params = Command.partition(' ')
         action = action.capitalize()
 
-        if (self.isConnected == False):
+        if (self.KodiConn.Connected() == False):
             self.TurnOn()
         else:
             if (action == 'On'):
                 if (Unit == 3):  # Volume control
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":false}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":false}}')
                 elif (Unit == 4):   # Position control
                     if (self.playerID != -1):
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":true}}')
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":true}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetItem","id":1003,"params":{"playerid":' + str(self.playerID) + ',"properties":["artist","album","year","channel","showtitle","season","episode","title"]}}')
                 else:   
                     if (Parameters["Mode1"] == ""):
                         Domoticz.Log( "'On' command ignored, No MAC address configured.")
@@ -320,28 +339,28 @@ class BasePlugin:
                     if (Unit == 2):  # Source selector
                         self.mediaLevel = Level
                         # valid windows name list http://kodi.wiki/view/JSON-RPC_API/v6#GUI.Window
-                        if (self.mediaLevel == 10): Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"music"}}')
-                        if (self.mediaLevel == 20): Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"videos"}}')
-                        if (self.mediaLevel == 30): Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"video"}}')
-                        if (self.mediaLevel == 40): Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"pictures"}}')
-                        if (self.mediaLevel == 50): Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"pvr"}}')
+                        if (self.mediaLevel == 10): self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"music"}}')
+                        if (self.mediaLevel == 20): self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"videos"}}')
+                        if (self.mediaLevel == 30): self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"video"}}')
+                        if (self.mediaLevel == 40): self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"pictures"}}')
+                        if (self.mediaLevel == 50): self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"pvr"}}')
                         self.SyncDevices()
                     elif (Unit == 3):   # Volume control
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":' + str(Level) + '}}')
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":false}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.SetVolume","params":{"volume":' + str(Level) + '}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":false}}')
                     elif (Unit == 4):   # Position control
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Player.Seek","params":{"playerid":' + str(self.playerID) + ',"value":'+str(Level)+'}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.Seek","params":{"playerid":' + str(self.playerID) + ',"value":'+str(Level)+'}}')
                     else:
                         Domoticz.Error( "Unknown Unit number in command "+str(Unit)+".")
             elif (action == 'Play') or (action == 'Pause'):
                 if (self.playerID != -1):
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":false}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":false}}')
             elif (action == 'Stop'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
             elif (action == 'Trigger'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":0},"id":2000}')
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":1},"id":2000}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":0},"id":2000}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Playlist.Clear","params":{"playlistid":1},"id":2000}')
                 action, sep, params = params.partition(' ')
                 action = action.capitalize()
                 self.playlistName = ""
@@ -351,58 +370,66 @@ class BasePlugin:
                     self.playlistName, sep, params = params.partition(' ')
                     if (params.isdigit()):
                         self.playlistPos = int(params)
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":0,"item":{"directory":"special://profile/playlists/music/'+self.playlistName+'.xsp\", "media":"music"}},"id":2002}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Playlist.Add","params":{"playlistid":0,"item":{"directory":"special://profile/playlists/music/'+self.playlistName+'.xsp\", "media":"music"}},"id":2002}')
                 elif (action == 'Favorites') or (action == 'Favourites'):
                     # Command formats: 'Trigger Favorites', 'Trigger Favorites 3'
                     if (params.isdigit()):
                         self.playlistPos = int(params)
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"properties":["path"]},"id":2100}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Favourites.GetFavourites","params":{"properties":["path"]},"id":2100}')
                 else:
                     Domoticz.Error( "Trigger, Unknown target: "+str(action)+", expected Playlist/Favorites.")
             elif (action == 'Run'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"' + params + '"},"id":1010}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"' + params + '"},"id":1010}')
             elif (action == 'Off'):
                 if (Unit == 1) or (Unit == 2):  # Source Selector or Status
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"home"}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"stop"},"id":1006}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"GUI.ActivateWindow","params":{"window":"home"}}')
                     self.TurnOff()
                 elif (Unit == 3):  # Volume control
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":true}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Application.SetMute","params":{"mute":true}}')
                 elif (Unit == 4):   # Position control
                     if (self.playerID != -1):
-                        Domoticz.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":false}}')
+                        self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.PlayPause","params":{"playerid":' + str(self.playerID) + ',"play":false}}')
                 else:
                     Domoticz.Error( "Unknown Unit number in command "+str(Unit)+".")
             elif (action == 'Home'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Home","params":{},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.Home","params":{},"id":1006}')
             elif (action == 'Up'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Up","params":{},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.Up","params":{},"id":1006}')
             elif (action == 'Down'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Down","params":{},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.Down","params":{},"id":1006}')
             elif (action == 'Left'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Left","params":{},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.Left","params":{},"id":1006}')
             elif (action == 'Right'):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.Right","params":{},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.Right","params":{},"id":1006}')
             else:
                 # unknown so just assume its a keypress
-                Domoticz.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"'+action.lower()+'"},"id":1006}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"Input.ExecuteAction","params":{"action":"'+action.lower()+'"},"id":1006}')
 
         return True
 
-    def onNotification(self, Data):
-        Domoticz.Log("Notification: " + str(Data))
-        return
+    def onNotification(self, Name, Subject, Text, Status, Priority, Sound, ImageFile):
+        Domoticz.Log("Notification: " + Name + "," + Subject + "," + Text + "," + Status + "," + str(Priority) + "," + Sound + "," + ImageFile)
+        if Parameters["Mode3"] == "True":
+            import xmbcclient3
+            packet = xmbcclient3.PacketNOTIFICATION(title=str(Name),  message=str(Text), icon_type=xmbcclient3.ICON_PNG, icon_file=str(ImageFile))
+            udpBcastConn = Domoticz.Connection(Name="UDP Broadcast Connection", Transport="UDP/IP", Protocol="None", Address=Parameters["Address"], Port=str(9777))
+            for a in range ( 0, packet.num_packets() ):
+                try:
+                    udpBcastConn.Send(packet.get_udp_message(a+1))
+                except:
+                    return
 
     def onHeartbeat(self):
-        if (self.isConnected == True):
+        if (self.KodiConn.Connected()):
             if (self.oustandingPings > 6):
-                Domoticz.Disconnect()
+                self.KodiConn.Disconnect()
                 self.nextConnect = 0
             else:
                 if (self.playerID == -1):
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1001}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetActivePlayers","id":1001}')
                 else:
-                    Domoticz.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
+                    self.KodiConn.Send('{"jsonrpc":"2.0","method":"Player.GetProperties","id":1002,"params":{"playerid":' + str(self.playerID) + ',"properties":["live","percentage","speed"]}}')
                 self.oustandingPings = self.oustandingPings + 1
         else:
             # if not connected try and reconnected every 3 heartbeats
@@ -410,11 +437,10 @@ class BasePlugin:
             self.nextConnect = self.nextConnect - 1
             if (self.nextConnect <= 0):
                 self.nextConnect = 3
-                Domoticz.Connect()
+                self.KodiConn.Connect()
         return True
 
-    def onDisconnect(self):
-        self.isConnected = False
+    def onDisconnect(self, Connection):
         Domoticz.Log("Device has disconnected")
         return
 
@@ -448,17 +474,17 @@ class BasePlugin:
             Domoticz.Log("'Off' command ignored as configured.")
         elif (Parameters["Mode2"] == "Hibernate"):
             if (self.canHibernate == True):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"System.Hibernate","id":1008}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"System.Hibernate","id":1008}')
             else:
                 Domoticz.Error("Configured Shutdown option: 'Hibernate' not support by attached Kodi.")
         elif (Parameters["Mode2"] == "Suspend"):
             if (self.canSuspend == True):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"System.Suspend","id":1008}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"System.Suspend","id":1008}')
             else:
                 Domoticz.Error("Configured Shutdown option: 'Suspend' not support by attached Kodi.")
         elif (Parameters["Mode2"] == "Shutdown"):
             if (self.canShutdown == True):
-                Domoticz.Send('{"jsonrpc":"2.0","method":"System.Shutdown","id":1008}')
+                self.KodiConn.Send('{"jsonrpc":"2.0","method":"System.Shutdown","id":1008}')
             else:
                 Domoticz.Error("Configured Shutdown option: 'Shutdown' not support by attached Kodi.")
         else:
@@ -498,25 +524,25 @@ def onStop():
     global _plugin
     _plugin.onStop()
 
-def onConnect(Status, Description):
+def onConnect(Connection, Status, Description):
     global _plugin
-    _plugin.onConnect(Status, Description)
+    _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
     _plugin.onCommand(Unit, Command, Level, Hue)
 
-def onNotification(Data):
+def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
     global _plugin
-    _plugin.onNotification(Data)
+    _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
 
-def onDisconnect():
+def onDisconnect(Connection):
     global _plugin
-    _plugin.onDisconnect()
+    _plugin.onDisconnect(Connection)
 
 def onHeartbeat():
     global _plugin
@@ -527,6 +553,12 @@ def DumpConfigToLog():
     for x in Parameters:
         if Parameters[x] != "":
             Domoticz.Debug( "'" + x + "':'" + str(Parameters[x]) + "'")
+    Domoticz.Debug("Settings count: " + str(len(Settings)))
+    for x in Settings:
+        Domoticz.Debug( "'" + x + "':'" + str(Settings[x]) + "'")
+    Domoticz.Debug("Image count: " + str(len(Images)))
+    for x in Images:
+        Domoticz.Debug( "'" + x + "':'" + str(Images[x]) + "'")
     Domoticz.Debug("Device count: " + str(len(Devices)))
     for x in Devices:
         Domoticz.Debug("Device:           " + str(x) + " - " + str(Devices[x]))
@@ -535,11 +567,9 @@ def DumpConfigToLog():
         Domoticz.Debug("Device nValue:    " + str(Devices[x].nValue))
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
+        Domoticz.Debug("Device Image:     " + str(Devices[x].Image))
     return
-
-def stringToBase64(s):
-    return base64.b64encode(s.encode('utf-8')).decode("utf-8")
-  
+ 
 def UpdateDevice(Unit, nValue, sValue):
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
@@ -548,3 +578,10 @@ def UpdateDevice(Unit, nValue, sValue):
             Domoticz.Log("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
 
+# Synchronise images to match parameter in hardware page
+def UpdateImage(Unit):
+    if (Unit in Devices) and (Parameters["Mode1"] in Images):
+        Domoticz.Debug("Device Image update: '" + Parameters["Mode1"] + "', Currently "+str(Devices[Unit].Image)+", should be "+str( Images[Parameters["Mode1"]].ID))
+        if (Devices[Unit].Image != Images[Parameters["Mode1"]].ID):
+            Devices[Unit].Update(nValue=Devices[Unit].nValue, sValue=str(Devices[Unit].sValue), Image=Images[Parameters["Mode1"]].ID)
+    return

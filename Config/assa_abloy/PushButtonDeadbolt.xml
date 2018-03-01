@@ -23,13 +23,23 @@ http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf
 			The number of invalid code entries lock will accept before sending TAMPER Alarm. 
 			When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
 			</Help>
-			<Item label="1" value="1" />
-			<Item label="2" value="2" />
 			<Item label="3" value="3" />
 			<Item label="4" value="4" />
 			<Item label="5" value="5" />
 			<Item label="6" value="6" />
 			<Item label="7" value="7" />
+			<Item label="8" value="8"/>
+			<Item label="9" value="9"/>
+			<Item label="10" value="10"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="5" label="Language" min="1" max="3" value="1">
+			<Help>
+				The number of invalid code entries lock will accept before sending TAMPER Alarm.
+				When number of wrong code entries is exceeded, lock will disable keypad for the time specified by Shutdown Time parameter. (5 = default)
+			</Help>
+			<Item label="English" value="1"/>
+			<Item label="Spanish" value="2"/>
+			<Item label="French" value="3"/>
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="7" label="Shutdown Time" size="1" min="5" max="255" units="seconds" value="30">
 			<Help>number of seconds unit will be inoperable after number of wrong code entries is exceeded (30 = default)</Help>
@@ -42,6 +52,26 @@ http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf
 			<Item label="Normal" value="0" />
 			<Item label="Vacation" value="1" />
 			<Item label="Privacy" value="2" />			
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="11" label="One Touch Locking" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="12" label="Privacy Button" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="13" label="Lock Status LED" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="15" label="Reset to Factory Defaults" value="0">
+			<Help></Help>
+			<Item label="Off" value="0"/>
+			<Item label="On" value="255"/>
 		</Value>
 	</CommandClass>
 	<CommandClass id="113">

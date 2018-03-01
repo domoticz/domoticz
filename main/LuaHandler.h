@@ -3,10 +3,12 @@
 struct lua_State;
 struct lua_Debug;
 
-class CLuaHandler
+#include "LuaCommon.h"
+
+class CLuaHandler : public CLuaCommon
 {
 public:
-	CLuaHandler(int hwdID = 0);
+	explicit CLuaHandler(int hwdID = 0);
 
 	bool executeLuaScript(const std::string &script, const std::string &content);
 	bool executeLuaScript(const std::string &script, const std::string &content, std::vector<std::string>& allParameters);
@@ -18,8 +20,6 @@ private:
 
 	static int l_domoticz_print(lua_State* lua_state);
 	static int l_domoticz_updateDevice(lua_State* lua_state);
-	static int l_domoticz_applyJsonPath(lua_State* lua_state);
-	static int l_domoticz_applyXPath(lua_State* lua_state);
 
 	int m_HwdID;
 };

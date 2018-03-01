@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -74,9 +74,6 @@
     </Filter>
     <Filter Include="Devices\OpenTherm-Gateway">
       <UniqueIdentifier>{9b834e19-65cb-442c-bfd7-c39e44279cb7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Devices\Teleinfo">
-      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Devices\ZWave">
       <UniqueIdentifier>{8541fa16-1ca3-4b1c-8658-7075b91f73a8}</UniqueIdentifier>
@@ -390,9 +387,6 @@
     <Filter Include="Devices\HttpPoller">
       <UniqueIdentifier>{efe2b02b-141c-473d-b168-fd06058fe9d2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Devices\Fitbit">
-      <UniqueIdentifier>{db856641-3bbc-455d-8a88-9955fb74e49e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Devices\Raven">
       <UniqueIdentifier>{0854a79e-fd9c-4b55-a9fd-93077f3bad23}</UniqueIdentifier>
     </Filter>
@@ -461,6 +455,45 @@
     </Filter>
     <Filter Include="Devices\RelayNet">
       <UniqueIdentifier>{9882d591-40c3-4d12-8c0a-af2d53d939ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\SysfsGPIO">
+      <UniqueIdentifier>{301fceaa-95de-4168-b336-04cadc395ff6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\RTL_433">
+      <UniqueIdentifier>{0e8b8072-43d4-44a2-b5de-8a4eb7887d1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\OnkyoAVTCP">
+      <UniqueIdentifier>{64b3714e-88ea-41cb-99ee-398abbc7acb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Teleinfo">
+      <UniqueIdentifier>{b6226872-73d2-4b12-8eba-80be3ad6835f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Teleinfo\TeleinfoBase">
+      <UniqueIdentifier>{9b098c6e-b49d-aaaa-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Teleinfo\TeleinfoSerial">
+      <UniqueIdentifier>{9b098c6e-b49d-404b-b9a2-5904c1d92edd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IFTTT">
+      <UniqueIdentifier>{779670e0-dcb8-4783-8864-1ef443ac8bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\USBtin">
+      <UniqueIdentifier>{d75dcc54-5cb3-4fef-9f27-3ecaf1484067}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\Enphase">
+      <UniqueIdentifier>{aa75f1cf-ae72-4163-96c8-8dc1ed3d29d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pushers\Websocket">
+      <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\eHouse">
+      <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\NestOAuthAPI">
+      <UniqueIdentifier>{879cf5f9-d3b3-4ee3-a4c1-bd157db7abe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Devices\EcoCompteur">
+      <UniqueIdentifier>{eb6a5b30-c80f-4a3f-826b-bfcea2bfc947}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1232,9 +1265,6 @@
     <None Include="..\www\views\lights.html">
       <Filter>www\views</Filter>
     </None>
-    <None Include="..\www\views\lights_bak.html">
-      <Filter>www\views</Filter>
-    </None>
     <None Include="..\www\views\log.html">
       <Filter>www\views</Filter>
     </None>
@@ -1313,6 +1343,41 @@
     <None Include="..\www\views\floorplans.html">
       <Filter>www\views</Filter>
     </None>
+    <None Include="..\www\app\MobileNotificationsController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\views\mobile_notifications.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpgooglepubsub.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\views\dpinflux.html">
+      <Filter>www\views</Filter>
+    </None>
+    <None Include="..\www\app\DPGooglePubSubController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\app\DPInfluxController.js">
+      <Filter>www\app</Filter>
+    </None>
+    <None Include="..\www\styles\default\base.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\custom.js">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\extras_and_animations.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\navigation_main_sidebar.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\styles\default\show_version_number.css">
+      <Filter>www\styles\default</Filter>
+    </None>
+    <None Include="..\www\js\angular-websocket.js" />
+    <None Include="..\www\views\temperatures\temperatureWidget.html" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\webserver\Base64.h">
@@ -1417,9 +1482,6 @@
     <ClInclude Include="..\main\SunRiseSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\WebServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1495,8 +1557,11 @@
     <ClInclude Include="..\hardware\OTGWTCP.h">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\Teleinfo.h">
-      <Filter>Devices\Teleinfo</Filter>
+    <ClInclude Include="..\hardware\TeleinfoSerial.h">
+      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\TeleinfoBase.h">
+      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\ZWaveBase.h">
       <Filter>Devices\ZWave</Filter>
@@ -1591,7 +1656,19 @@
     <ClInclude Include="..\hardware\openzwave\control_panel\ozwcp.h">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\evohome.h">
+    <ClInclude Include="..\hardware\EvohomeBase.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeRadio.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeSerial.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeTCP.h">
+      <Filter>Devices\EvoHome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeWeb.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
     <ClInclude Include="..\zip\ioapi.h">
@@ -1673,6 +1750,9 @@
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\KMTronicTCP.h">
+      <Filter>Devices\KMTronic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\KMTronicUDP.h">
       <Filter>Devices\KMTronic</Filter>
     </ClInclude>
     <ClInclude Include="..\notifications\NotificationKodi.h">
@@ -1801,6 +1881,9 @@
     <ClInclude Include="..\notifications\NotificationPushbullet.h">
       <Filter>Notifications</Filter>
     </ClInclude>
+    <ClInclude Include="..\notifications\NotificationTelegram.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\LogitechMediaServer.h">
       <Filter>Devices\Logitech Media Server</Filter>
     </ClInclude>
@@ -1878,9 +1961,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\RFXBase.h">
       <Filter>Devices\RFXCom</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\Fitbit.h">
-      <Filter>Devices\Fitbit</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\RAVEn.h">
       <Filter>Devices\Raven</Filter>
@@ -1989,6 +2069,87 @@
     </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
       <Filter>Devices\Python Plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\LuaCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\SysfsGPIO.h">
+      <Filter>Devices\SysfsGPIO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EvohomeScript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Rtl433.h">
+      <Filter>Devices\RTL_433</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonDevice.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\EventsPythonModule.h">
+      <Filter>EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\OnkyoAVTCP.h">
+      <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\IFTTT.h">
+      <Filter>IFTTT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\tinyxml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tinyxpath\xpath_processor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
+      <Filter>Devices\Denkovi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\USBtin.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\USBtin_MultiblocV8.h">
+      <Filter>Devices\USBtin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EnphaseAPI.h">
+      <Filter>Devices\Enphase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\Push.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\WebsocketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\push\WebsocketPush.h">
+      <Filter>Pushers\Websocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\notifications\NotificationBrowser.h">
+      <Filter>Notifications</Filter>
+    </ClInclude>
+    <ClInclude Include="..\webserver\Websockets.hpp">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouseTCP.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\EventsCodes.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\globals.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\eHouse\status.h">
+      <Filter>Devices\eHouse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Comm5SMTCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\NestOAuthAPI.h">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\EcoCompteur.h">
+      <Filter>Devices\EcoCompteur</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2151,8 +2312,11 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp">
       <Filter>Devices\OpenTherm-Gateway</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Teleinfo.cpp">
-      <Filter>Devices\Teleinfo</Filter>
+    <ClCompile Include="..\hardware\TeleinfoBase.cpp">
+      <Filter>Devices\Teleinfo\TeleinfoBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\TeleinfoSerial.cpp">
+      <Filter>Devices\Teleinfo\TeleinfoSerial</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ZWaveBase.cpp">
       <Filter>Devices\ZWave</Filter>
@@ -2235,7 +2399,19 @@
     <ClCompile Include="..\hardware\openzwave\control_panel\ozwcp.cpp">
       <Filter>Devices\ZWave\Control Panel</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\evohome.cpp">
+    <ClCompile Include="..\hardware\EvohomeBase.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeRadio.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeSerial.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeTCP.cpp">
+      <Filter>Devices\EvoHome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeWeb.cpp">
       <Filter>Devices\EvoHome</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\MySensorsBase.cpp">
@@ -2299,6 +2475,9 @@
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\KMTronicTCP.cpp">
+      <Filter>Devices\KMTronic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\KMTronicUDP.cpp">
       <Filter>Devices\KMTronic</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationKodi.cpp">
@@ -2413,6 +2592,9 @@
       <Filter>Devices\Tellstick</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationPushbullet.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationTelegram.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\LogitechMediaServer.cpp">
@@ -2538,9 +2720,6 @@
     <ClCompile Include="..\hardware\RFXBase.cpp">
       <Filter>Devices\RFXCom</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\Fitbit.cpp">
-      <Filter>Devices\Fitbit</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\RAVEn.cpp">
       <Filter>Devices\Raven</Filter>
     </ClCompile>
@@ -2642,6 +2821,78 @@
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp">
       <Filter>Devices\Python Plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\LuaCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\SysfsGPIO.cpp">
+      <Filter>Devices\SysfsGPIO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EvohomeScript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Rtl433.cpp">
+      <Filter>Devices\RTL_433</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonDevice.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\EventsPythonModule.cpp">
+      <Filter>EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\OnkyoAVTCP.cpp">
+      <Filter>Devices\OnkyoAVTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\IFTTT.cpp">
+      <Filter>IFTTT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
+      <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin.cpp">
+      <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\USBtin_MultiblocV8.cpp">
+      <Filter>Devices\USBtin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EnphaseAPI.cpp">
+      <Filter>Devices\Enphase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\push\WebsocketPush.cpp">
+      <Filter>Pushers\Websocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
+      <Filter>Notifications</Filter>
+    </ClCompile>
+    <ClCompile Include="..\webserver\Websockets.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouseTCP.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseTcpClient.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseUdpListener.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
+      <Filter>Devices\eHouse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\NestOAuthAPI.cpp">
+      <Filter>Devices\NestOAuthAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\EcoCompteur.cpp">
+      <Filter>Devices\EcoCompteur</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

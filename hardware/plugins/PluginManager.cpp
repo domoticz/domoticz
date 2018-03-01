@@ -3,7 +3,9 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
+
+#include <tinyxml.h>
 
 #include "PluginManager.h"
 #include "Plugins.h"
@@ -13,12 +15,10 @@
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../notifications/NotificationKodi.h"	// Use Kodi specific notifier because it has function to get the icon file name
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "../json/json.h"
-#include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 #ifdef WIN32
 #	include <direct.h>
@@ -27,6 +27,10 @@
 #endif
 
 #include "DelayedLink.h"
+
+#ifdef ENABLE_PYTHON
+#include "../../main/EventsPythonModule.h"
+#endif
 
 #define MINIMUM_PYTHON_VERSION "3.4.0"
 
@@ -54,8 +58,13 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void);
 
+#ifdef ENABLE_PYTHON
+    // Need forward decleration
+    // PyMODINIT_FUNC PyInit_DomoticzEvents(void);
+#endif // ENABLE_PYTHON
+
 	boost::mutex PluginMutex;	// controls accessto the message queue
-	std::queue<CPluginMessage>	PluginMessageQueue;
+	std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	boost::asio::io_service ios;
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
@@ -66,6 +75,8 @@ namespace Plugins {
 		m_bEnabled = false;
 		m_bAllPluginsStarted = false;
 		m_iPollInterval = 10;
+		m_InitialPythonThread = NULL;
+		m_thread = NULL;
 	}
 
 	CPluginSystem::~CPluginSystem(void)
@@ -119,7 +130,14 @@ namespace Plugins {
 				return false;
 			}
 
+			if (PyImport_AppendInittab("DomoticzEvents", PyInit_DomoticzEvents) == -1)
+			{
+				_log.Log(LOG_ERROR, "PluginSystem: Failed to append 'DomoticzEvents' to the existing table of built-in modules.");
+				return false;
+			}
+
 			Py_Initialize();
+			m_InitialPythonThread = PyEval_SaveThread();
 
 			m_bEnabled = true;
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
@@ -192,6 +210,7 @@ namespace Plugins {
 						}
 					}
 				}
+				FileEntries.clear();
 			}
 		}
 	}
@@ -230,8 +249,10 @@ namespace Plugins {
 
 		_log.Log(LOG_STATUS, "PluginSystem: Entering work loop.");
 
+		// Create initial IO Service thread
 		ios.reset();
 		boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
+
 		while (!m_stoprequested)
 		{
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations if there are any transports that need it
@@ -240,7 +261,7 @@ namespace Plugins {
 				for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 				{
 					CPlugin*	pPlugin = (CPlugin*)itt->second;
-					if (pPlugin && pPlugin->m_pTransport && (pPlugin->m_pTransport->IsConnected()) && (pPlugin->m_pTransport->ThreadPoolRequired()))
+					if (pPlugin && pPlugin->IoThreadRequired())
 					{
 						bIos_required = true;
 						break;
@@ -259,16 +280,16 @@ namespace Plugins {
 			bool	bProcessed = true;
 			while (bProcessed)
 			{
-				CPluginMessage Message;
+				CPluginMessageBase* Message = NULL;
 				bProcessed = false;
 
 				// Cycle once through the queue looking for the 1st message that is ready to process
 				for (size_t i = 0; i < PluginMessageQueue.size(); i++)
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
-					CPluginMessage FrontMessage = PluginMessageQueue.front();
+					CPluginMessageBase* FrontMessage = PluginMessageQueue.front();
 					PluginMessageQueue.pop();
-					if (FrontMessage.m_When <= Now)
+					if (FrontMessage->m_When <= Now)
 					{
 						// Message is ready now or was already ready (this is the case for almost all messages)
 						Message = FrontMessage;
@@ -278,27 +299,20 @@ namespace Plugins {
 					PluginMessageQueue.push(FrontMessage);
 				}
 
-				if (Message.m_Type != PMT_NULL)
+				if (Message)
 				{
 					bProcessed = true;
-					if (!m_pPlugins.count(Message.m_HwdID))
+					try
 					{
-						_log.Log(LOG_ERROR, "PluginSystem: Unknown hardware in message: %d.", Message.m_HwdID);
+						Message->Process();
 					}
-					else
+					catch(...)
 					{
-						CPlugin*	pPlugin = (CPlugin*)m_pPlugins[Message.m_HwdID];
-						if (pPlugin)
-						{
-							pPlugin->HandleMessage(Message);
-						}
-						else
-						{
-							_log.Log(LOG_ERROR, "PluginSystem: Plugin for Hardware %d not found in Plugins map.", Message.m_HwdID);
-						}
-
+						_log.Log(LOG_ERROR, "PluginSystem: Exception processing message.");
 					}
 				}
+				// Free the memory for the message
+				if (Message) delete Message;
 			}
 			sleep_milliseconds(50);
 		}
@@ -317,12 +331,6 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
-		if (Py_LoadLibrary())
-		{
-			if (Py_IsInitialized()) {
-				Py_Finalize();
-			}
-		}
 		// Hardware should already be stopped to just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
@@ -332,52 +340,16 @@ namespace Plugins {
 
 		m_pPlugins.clear();
 
+		if (Py_LoadLibrary()  && m_InitialPythonThread)
+		{
+			if (Py_IsInitialized()) {
+				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
+				Py_Finalize();
+			}
+		}
+
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;
-	}
-
-	void CPluginSystem::SendNotification(const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority, const std::string &Sound)
-	{
-		// ExtraData = |Name=Test|SwitchType=9|CustomImage=0|Status=On|
-
-		CNotificationKodi	Notifier;
-#ifdef WIN32
-		std::string	sIconFile = "..\\..\\" + Notifier.GetIconFile(ExtraData);
-#else
-		std::string	sIconFile = Notifier.GetIconFile(ExtraData);
-#endif
-
-		std::string	sName = "Unknown";
-		int	posName = (int)ExtraData.find("|Name=");
-		if (posName >= 0)
-		{
-			posName += 6;
-			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
-		}
-
-		std::string	sStatus = "Unknown";
-		int	posStatus = (int)ExtraData.find("|Status=");
-		if (posStatus >= 0)
-		{
-			posStatus += 8;
-			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
-		}
-
-
-		//	Add command to message queue for every plugin
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
-		{
-			if (itt->second)
-			{
-				NotificationMessage	Message(itt->second->m_HwdID, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
-				PluginMessageQueue.push(Message);
-			}
-			else
-			{
-				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
-			}
-		}
 	}
 
 	void CPluginSystem::LoadSettings()
@@ -388,7 +360,7 @@ namespace Plugins {
 		{
 			if (itt->second)
 			{
-				SettingsDirective	Message(itt->second->m_HwdID);
+				SettingsDirective*	Message = new SettingsDirective((CPlugin*)itt->second);
 				PluginMessageQueue.push(Message);
 			}
 			else
@@ -413,11 +385,13 @@ namespace http {
 				XmlDoc.Parse(it_type->second.c_str());
 				if (XmlDoc.Error())
 				{
-					_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
+					_log.Log(LOG_ERROR, "%s: Parsing '%s', '%s' at line %d column %d in XML '%s'.", __func__, it_type->first.c_str(), XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), it_type->second.c_str());
 				}
 				else
 				{
 					TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+					TiXmlPrinter Xmlprinter;
+					Xmlprinter.SetStreamPrinting();
 					for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
 					{
 						TiXmlElement* pXmlEle = pXmlNode->ToElement();
@@ -429,6 +403,15 @@ namespace http {
 							ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
 							ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
 							ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
+
+							TiXmlElement* pXmlDescNode = (TiXmlElement*)pXmlEle->FirstChild("description");
+							std::string		sDescription;
+							if (pXmlDescNode)
+							{
+								pXmlDescNode->Accept(&Xmlprinter);
+								sDescription = Xmlprinter.CStr();
+							}
+							root[iPluginCnt]["description"] = sDescription;
 
 							TiXmlNode* pXmlParamsNode = pXmlEle->FirstChild("params");
 							int	iParams = 0;
@@ -474,7 +457,7 @@ namespace http {
 						}
 					}
 				}
-			}  
+			}
 		}
 
 		void CWebServer::PluginLoadConfig()

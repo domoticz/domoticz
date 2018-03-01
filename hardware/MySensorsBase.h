@@ -213,6 +213,7 @@ public:
 			batValue = 255;
 			presType = S_UNKNOWN;
 			useAck = false;
+			ackTimeout = 0;
 		}
 		std::vector<_eSetType> GetChildValueTypes()
 		{
@@ -430,7 +431,7 @@ private:
 	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);
 	void UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID);
 
-	bool GetSwitchValue(const unsigned char Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
+	bool GetSwitchValue(const int Idx, const int SubUnit, const int sub_type, std::string &sSwitchValue);
 
 	bool GetBlindsValue(const int NodeID, const int ChildID, int &blind_value);
 

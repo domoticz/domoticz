@@ -14,7 +14,7 @@
 		</Value>
 		<Value type="byte" index="10" genre="config" label="duration" units="10 ms" min="1" max="255" value="3">
 		  <Help>
-		    indicates the time duration of each level.  The resolution is 10 miliseconds.  for example, a default value of 3 means the timer runs out every 30 milliseconds.
+		    indicates the time duration of each level.  The resolution is 10 milliseconds  for example, a default value of 3 means the timer runs out every 30 milliseconds.
 		  </Help>
 		</Value>
 	</CommandClass>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"
@@ -38,14 +38,12 @@ private:
 	int									m_relay_count;
 	int									m_retrycntr;
 	boost::shared_ptr<boost::thread> 	m_thread;
-	tRBUF 								Packet;
+	tRBUF 								m_Packet;
 
 	bool StartHardware();
 	bool StopHardware();
 
 protected:
-
-	int m_socket;
 
 	void Do_Work();
 	void Init();

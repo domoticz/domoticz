@@ -929,7 +929,7 @@ bool CEnOceanESP3::ParseData()
 			m_bBaseIDRequested=false;
 			m_id_base = (m_buffer[1] << 24) + (m_buffer[2] << 16) + (m_buffer[3] << 8) + m_buffer[4];
 			unsigned char changes_left=m_buffer[5];
-			_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08x",m_id_base);
+			_log.Log(LOG_STATUS,"EnOcean: Transceiver ID_Base: 0x%08lx",m_id_base);
 		}
 		if (m_bufferpos==33)
 		{
@@ -950,7 +950,7 @@ bool CEnOceanESP3::ParseData()
 	{
 		char szTmp[100];
 		sprintf(szTmp,"Unhandled Packet Type (0x%02x)",m_ReceivedPacketType);
-		_log.Log(LOG_STATUS,szTmp);
+		_log.Log(LOG_STATUS, "%s", szTmp);
 	}
 /*
 	enocean_data_structure *pFrame=(enocean_data_structure*)&m_buffer;
@@ -1177,7 +1177,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// RORG_4BS_TEACHIN_EEP_BIT is 0 -> Teach-in Variant 1 : data doesn't contain EEP and Manufacturer ID
 						// An EEP profile must be manually allocated per sender ID (see EEP 2.6.2 specification §3.3 p173/197)
-						_log.Log(LOG_NORM, "EnOcean: 4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08X", id);
+						_log.Log(LOG_NORM, "EnOcean: 4BS, Variant 1 Teach-in diagram: Sender_ID: 0x%08lX", id);
 						_log.Log(LOG_NORM, "Teach-in data contains no EEP profile. Created generic A5-02-05 profile (0/40°C temp sensor); please adjust by hand using Setup button on EnOcean adapter in Setup/Hardware menu");
 
 						manufacturer = 0x7FF;			// Generic
@@ -1197,7 +1197,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						profile = DATA_BYTE3 >> 2;
 						ttype = ((DATA_BYTE3 & 3) << 5) | (DATA_BYTE2 >> 3);
 
-						_log.Log(LOG_NORM,"EnOcean: 4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08X\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)", 
+						_log.Log(LOG_NORM,"EnOcean: 4BS, Variant 2 Teach-in diagram: Sender_ID: 0x%08lX\nManufacturer: 0x%02x (%s)\nProfile: 0x%02X\nType: 0x%02X (%s)",
 							id, manufacturer,Get_EnoceanManufacturer(manufacturer),
 							profile,ttype,Get_Enocean4BSType(0xA5,profile,ttype));
  					}
@@ -1209,10 +1209,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 					{
 						// If not found, add it to the database
 						m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manufacturer, profile, ttype);
-						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X inserted in the database", id);
+						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX inserted in the database", id);
 					}
 					else
-						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X already in the database", id);
+						_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX already in the database", id);
 
 				}
 				else	// RORG_4BS_TEACHIN_LRN_BIT is 1 -> Data datagram
@@ -1851,7 +1851,7 @@ void CEnOceanESP3::ParseRadioDatagram()
 						unsigned char ID_BYTE0=m_buffer[11];
 						long id = (ID_BYTE3 << 24) + (ID_BYTE2 << 16) + (ID_BYTE1 << 8) + ID_BYTE0;
 
-						_log.Log(LOG_NORM, "EnOcean: teach-in request received from %08X (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", id, manID, nb_channel, rorg,func,type);
+						_log.Log(LOG_NORM, "EnOcean: teach-in request received from %08lX (manufacturer: %03X). number of channels: %d, device profile: %02X-%02X-%02X", id, manID, nb_channel, rorg,func,type);
 
 						// Record EnOcean device profile
 						{
@@ -1863,10 +1863,10 @@ void CEnOceanESP3::ParseRadioDatagram()
 							{
 								// If not found, add it to the database
 								m_sql.safe_query("INSERT INTO EnoceanSensors (HardwareID, DeviceID, Manufacturer, Profile, [Type]) VALUES (%d,'%q',%d,%d,%d)", m_HwdID, szDeviceID, manID, func, type);
-								_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X inserted in the database", id);
+								_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX inserted in the database", id);
 							}
 							else
-								_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08X already in the database", id);
+								_log.Log(LOG_NORM, "EnOcean: Sender_ID 0x%08lX already in the database", id);
 						}
 
 						if((rorg == 0xD2) && (func == 0x01) && ( (type == 0x12) || (type == 0x0F) ))

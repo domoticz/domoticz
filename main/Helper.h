@@ -1,10 +1,17 @@
-
 #pragma once
+
+enum _eTimeFormat
+{
+	TF_Time = 0,	// 0
+	TF_Date,		// 1
+	TF_DateTime,	// 2
+	TF_DateTimeMs	// 3
+};
 
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results);
 void stdreplace(
 	std::string &inoutstring,
-	const std::string& replaceWhat, 
+	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
 bool file_exist (const char *filename);
@@ -26,12 +33,15 @@ void sleep_milliseconds(const long milliseconds);
 int createdir(const char *szDirName, int secattr);
 int mkdir_deep(const char *szDirName, int secattr);
 
+int RemoveDir(const std::string &dirnames, std::string &errorPath);
+
 double ConvertToCelsius(const double Fahrenheit);
 double ConvertToFahrenheit(const double Celsius);
 double ConvertTemperature(const double tValue, const unsigned char tSign);
 
-std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand);
+std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, int &returncode);
 
+std::string TimeToString(const time_t *ltime, const _eTimeFormat format);
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt="");
 
 void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue = 100.0);
@@ -50,3 +60,16 @@ bool dirent_is_file(std::string dir, struct dirent *ent);
 void DirectoryListing(std::vector<std::string>& entries, const std::string &dir, bool bInclDirs, bool bInclFiles);
 
 std::string GenerateUserAgent();
+std::string MakeHtml(const std::string &txt);
+std::string SafeHtml(const std::string &txt);
+
+#if defined WIN32
+	int gettimeofday(timeval * tp, void * tzp);
+#endif
+int getclock(struct timeval *tv);
+int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval *y);
+
+bool IsArgumentSecure(const std::string &arg);
+uint32_t SystemUptime();
+int GenerateRandomNumber(const int range);
+

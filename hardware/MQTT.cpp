@@ -78,8 +78,10 @@ bool MQTT::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (m_sConnection.connected())
-		m_sConnection.disconnect();
+	if (m_sDeviceReceivedConnection.connected())
+		m_sDeviceReceivedConnection.disconnect();
+	if (m_sSwitchSceneConnection.connected())
+		m_sSwitchSceneConnection.disconnect();
 	m_IsConnected = false;
 	return true;
 }
@@ -101,12 +103,13 @@ void MQTT::on_connect(int rc)
 
 	if (rc == 0){
 		if (m_IsConnected) {
-			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		} else {
-			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
-			m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
 		}
 		subscribe(NULL, m_TopicIn.c_str());
 	}
@@ -274,7 +277,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 		}
-		return;
 	}
 	else if (szCommand == "setcolbrightnessvalue")
 	{
@@ -320,7 +322,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending switch command!");
 		}
-		return;
 	}
 	else if (szCommand == "switchscene")
 	{
@@ -329,13 +330,12 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		if (!root["switchcmd"].isString())
 			goto mqttinvaliddata;
 		std::string switchcmd = root["switchcmd"].asString();
-		if ((switchcmd != "On") && (switchcmd != "Off"))
+		if ((switchcmd != "On") && (switchcmd != "Off") && (switchcmd != "Toggle"))
 			goto mqttinvaliddata;
 		if (!m_mainworker.SwitchScene(idx, switchcmd) == true)
 		{
 			_log.Log(LOG_ERROR, "MQTT: Error sending scene command!");
 		}
-		return;
 	}
 	else if (szCommand == "setuservariable")
 	{
@@ -345,7 +345,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
-		return;
 	}
 	else if (szCommand == "addlogmessage")
 	{
@@ -355,7 +354,6 @@ void MQTT::on_message(const struct mosquitto_message *message)
 			goto mqttinvaliddata;
 		std::string msg = root["message"].asString();
 		_log.Log(LOG_STATUS, "MQTT MSG: %s", msg.c_str());
-		return;
 	}
 	else if (szCommand == "sendnotification")
 	{
@@ -388,13 +386,11 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		m_notifications.SendMessageEx(0, std::string(""), NOTIFYALL, subject, body, std::string(""), priority, sound, true);
 		std::string varvalue = root["value"].asString();
 		m_sql.SetUserVariable(idx, varvalue, true);
-		return;
 	}
 	else if (szCommand == "getdeviceinfo")
 	{
 		int HardwareID = atoi(result[0][0].c_str());
 		SendDeviceInfo(HardwareID, idx, "request device", NULL);
-		return;
 	}
 	else if (szCommand == "getsceneinfo")
 	{
@@ -405,6 +401,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 		_log.Log(LOG_ERROR, "MQTT: Unknown command received: %s", szCommand.c_str());
 		return;
 	}
+	return;
 mqttinvaliddata:
 	_log.Log(LOG_ERROR, "MQTT: Invalid data received!");
 }
@@ -645,11 +642,10 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 
 void MQTT::SendSceneInfo(const uint64_t SceneIdx, const std::string &SceneName)
 {
-	std::vector<std::vector<std::string> > result, result2;
+	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID==%" PRIu64 ") ORDER BY [Order]", SceneIdx);
 	if (result.empty())
 		return;
-	std::vector<std::vector<std::string> >::const_iterator itt;
 	std::vector<std::string> sd = result[0];
 
 	std::string sName = sd[1];

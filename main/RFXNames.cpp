@@ -2,10 +2,10 @@
 #include "RFXNames.h"
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
-#include "../hardware/evohome.h"
+#include "../hardware/EvohomeBase.h"
 #include "Helper.h"
 #include <boost/algorithm/string.hpp>
-//#include "Logger.h"
+#include "Logger.h"
 
 typedef struct _STR_TABLE_SINGLE {
 	unsigned long    id;
@@ -127,6 +127,20 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
 		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
+		{ TTYPE_BEFORESUNATSOUTH, "Before Sun at South" },
+		{ TTYPE_AFTERSUNATSOUTH, "After Sun at South" },
+		{ TTYPE_BEFORECIVTWSTART, "Before Civil Twilight Start" },
+		{ TTYPE_AFTERCIVTWSTART, "After Civil Twilight Start" },
+		{ TTYPE_BEFORECIVTWEND, "Before Civil Twilight End" },
+		{ TTYPE_AFTERCIVTWEND, "After Civil Twilight End" },
+		{ TTYPE_BEFORENAUTTWSTART, "Before Nautical Twilight Start" },
+		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twilight Start" },
+		{ TTYPE_BEFORENAUTTWEND, "Before Nautical Twilight End" },
+		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twilight End" },
+		{ TTYPE_BEFOREASTTWSTART, "Before Astronomical Twilight Start" },
+		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twilight Start" },
+		{ TTYPE_BEFOREASTTWEND, "Before Astronomical Twilight End" },
+		{ TTYPE_AFTERASTTWEND, "After Astronomical Twilight End" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
@@ -169,7 +183,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_PiFace, "PiFace - Raspberry Pi IO expansion board" },
 		{ HTYPE_S0SmartMeterUSB, "S0 Meter USB" },
 		{ HTYPE_OpenThermGateway, "OpenTherm Gateway USB" },
-		{ HTYPE_TeleinfoMeter, "Teleinfo EDF USB" },
+		{ HTYPE_TeleinfoMeter, "Teleinfo EDF" },
 		{ HTYPE_OpenThermGatewayTCP, "OpenTherm Gateway with LAN interface" },
 		{ HTYPE_OpenZWave, "OpenZWave USB" },
 		{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface" },
@@ -184,12 +198,14 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryGPIO, "Raspberry's GPIO port" },
 		{ HTYPE_Meteostick, "Meteostick USB" },
 		{ HTYPE_TOONTHERMOSTAT, "Toon Thermostat" },
-		{ HTYPE_ECODEVICES, "Eco Devices via LAN interface" },
+		{ HTYPE_ECODEVICES, "Eco Devices" },
 		{ HTYPE_HARMONY_HUB, "Logitech Harmony Hub" },
 		{ HTYPE_Mochad, "Mochad CM15Pro/CM19A bridge with LAN interface" },
 		{ HTYPE_Philips_Hue, "Philips Hue Bridge" },
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
+		{ HTYPE_EVOHOME_WEB, "Evohome via Web API" },
+		{ HTYPE_EVOHOME_TCP, "Evohome via LAN (remote HGI/S80)" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
@@ -203,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -213,6 +230,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5SMTCP, "Comm5 SM-XXXX with LAN interface" },
 		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
@@ -224,7 +242,6 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_AtagOne, "Atag One Thermostat" },
 		{ HTYPE_Sterbox, "Sterbox v2-3 PLC with LAN interface" },
 		{ HTYPE_HTTPPOLLER, "HTTP/HTTPS poller" },
-		{ HTYPE_FITBIT, "Fitbit" },
 		{ HTYPE_RAVEn, "Rainforest RAVEn USB" },
 		{ HTYPE_S0SmartMeterTCP, "S0 Meter with LAN interface" },
 		{ HTYPE_DenkoviSmartdenLan, "Denkovi Smartden with LAN interface" },
@@ -248,6 +265,16 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_OpenWebNetUSB, "MyHome OpenWebNet USB" },
 		{ HTYPE_IntergasInComfortLAN2RF, "Intergas InComfort LAN2RF Gateway" },
 		{ HTYPE_RelayNet, "Relay-Net 8 channel LAN Relay and binary Input module" },
+		{ HTYPE_KMTronicUDP, "KMTronic Gateway with LAN/UDP interface" },
+		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
+		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
+		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
+		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
+		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
+		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
+		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
+		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
+		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -263,13 +290,13 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Blinds, "Blinds" },
 		{ STYPE_X10Siren, "X10 Siren" },
 		{ STYPE_SMOKEDETECTOR, "Smoke Detector" },
-        { STYPE_BlindsInverted, "Blinds Inverted" },
+		{ STYPE_BlindsInverted, "Blinds Inverted" },
 		{ STYPE_Dimmer, "Dimmer" },
 		{ STYPE_Motion, "Motion Sensor" },
 		{ STYPE_PushOn, "Push On Button" },
 		{ STYPE_PushOff, "Push Off Button" },
 		{ STYPE_DoorContact, "Door Contact" },
-        { STYPE_Dusk, "Dusk Sensor" },
+		{ STYPE_Dusk, "Dusk Sensor" },
 		{ STYPE_BlindsPercentage, "Blinds Percentage" },
 		{ STYPE_VenetianBlindsUS, "Venetian Blinds US" },
 		{ STYPE_VenetianBlindsEU, "Venetian Blinds EU" },
@@ -291,6 +318,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_WATER, "Water" },
 		{ MTYPE_COUNTER, "Counter" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
+		{ MTYPE_TIME , "Time" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -327,6 +355,7 @@ const char *Notification_Type_Desc(const int nType, const unsigned char snum)
 		{ NTYPE_STOPPED, "Stop Stream", "Q" },
 		{ NTYPE_PLAYING, "Play Stream", "a" },
 		{ NTYPE_VALUE, "Value", "F" },
+		{ NTYPE_LASTUPDATE, "Last Update", "J"},
 		{  0,NULL,NULL }
 	};
 	if (snum==0)
@@ -340,7 +369,7 @@ const char *Notification_Type_Label(const int nType)
 	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "degrees" },
-		{ NTYPE_HUMIDITY, "%%" },
+		{ NTYPE_HUMIDITY, "%" },
 		{ NTYPE_RAIN, "mm" },
 		{ NTYPE_UV, "UVI" },
 		{ NTYPE_WIND, "m/s" },
@@ -355,7 +384,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYGAS, "m3" },
 		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{ NTYPE_SWITCH_OFF, "On" },
-		{ NTYPE_PERCENTAGE, "%%" },
+		{ NTYPE_PERCENTAGE, "%" },
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
 		{ NTYPE_SETPOINT, "degrees" },
@@ -366,6 +395,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_STOPPED, "" },
 		{ NTYPE_PLAYING, "" },
 		{ NTYPE_VALUE, "" },
+		{ NTYPE_LASTUPDATE, "minutes" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, nType);
@@ -743,6 +773,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
 		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
 		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
+		{ pTypeLimitlessLights, sTypeLimitlessLivCol, "LivCol" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -829,7 +860,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
 		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
-		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome DryContact/IRdetec" },
+		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome Contact" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -855,6 +886,20 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeLiwin, "Liwin" },
 		{ pTypeGeneralSwitch, sSwitchBlindsT2, "Legrand MyHome Blind Zigbee" },
 		{ pTypeGeneralSwitch, sSwitchLightT2, "Legrand MyHome Light Zigbee" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Secu, "YW_Secu" },
+		{ pTypeGeneralSwitch, sSwitchTypeMertik_GV60, "Mertik_GV60" },
+		{ pTypeGeneralSwitch, sSwitchTypeNingbo64, "Ningbo64"},
+		{ pTypeGeneralSwitch, sSwitchTypeX2D, "X2D" },
+		{ pTypeGeneralSwitch, sSwitchTypeHRCMotor, "HRCMotor" },
+		{ pTypeGeneralSwitch, sSwitchTypeVelleman, "Velleman" },
+		{ pTypeGeneralSwitch, sSwitchTypeRFCustom, "RFCustom" },
+		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
+		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
+		{ pTypeGeneralSwitch, sSwitchTypeSysfsGpio, "SysfsGpio" },
+		{ pTypeGeneralSwitch, sSwitchTypeHager, "Hager" },
+		{ pTypeGeneralSwitch, sSwitchTypeFaber, "Faber" },
+		{ pTypeGeneralSwitch, sSwitchTypeDrayton, "Drayton" },
+		{ pTypeGeneralSwitch, sSwitchTypeV2Phoenix, "V2Phoenix" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -873,6 +918,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_PLAYING, "Playing" },
 		{ MSTAT_DISCONNECTED, "Disconnected" },
+		{ MSTAT_SLEEPING, "Sleeping" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};
@@ -1478,6 +1524,9 @@ void GetLightStatus(
 		case Limitless_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
+		case Limitless_SetKelvinLevel:
+			lstatus="Set Kelvin Level";
+			break;
 		case Limitless_SetColorToWhite:
 			lstatus="Set to White";
 			break;
@@ -1819,7 +1868,7 @@ void GetLightStatus(
 		break;
 	case pTypeEvohome:
 		llevel=0;
-		lstatus=CEvohome::GetWebAPIModeName(nValue);
+		lstatus=CEvohomeBase::GetWebAPIModeName(nValue);
 		break;
 	case pTypeEvohomeRelay:
 		bHaveDimmer=true;
@@ -1916,6 +1965,8 @@ void GetLightStatus(
 		}
 		break;
 	}
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
+		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 
 /**
@@ -1931,7 +1982,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			ss.clear(); ss.str(""); ss << i;
 			std::string level(ss.str());
 			std::string levelName = *itt;
@@ -1955,7 +2006,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (*itt == levelName) {
 				level = i;
 				break;
@@ -1979,7 +2030,7 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (i == level) {
 				action = *itt;
 				break;
@@ -2260,6 +2311,31 @@ bool GetLightCommand(
 			cmd=light5_sOpen;
  			return true;
 		}
+		else if (switchcmd == "Group Mood 1")
+		{
+			cmd = light5_sMood1;
+			return true;
+		}
+		else if (switchcmd == "Group Mood 2")
+		{
+			cmd = light5_sMood2;
+			return true;
+		}
+		else if (switchcmd == "Group Mood 3")
+		{
+			cmd = light5_sMood3;
+			return true;
+		}
+		else if (switchcmd == "Group Mood 4")
+		{
+			cmd = light5_sMood4;
+			return true;
+		}
+		else if (switchcmd == "Group Mood 5")
+		{
+			cmd = light5_sMood5;
+			return true;
+		}
 		else
 			return false;
 		break;
@@ -2484,6 +2560,11 @@ bool GetLightCommand(
 			cmd=Limitless_SetBrightnessLevel;
 			return true;
 		}
+		else if (switchcmd=="Set Kelvin Level")
+		{
+			cmd=Limitless_SetKelvinLevel;
+			return true;
+		}
 		else if (switchcmd == "Set White")
 		{
 			cmd = Limitless_SetColorToWhite;
@@ -2582,6 +2663,16 @@ bool GetLightCommand(
 		else if (switchcmd == "Speed Down")
 		{
 			cmd = Limitless_DiscoSpeedSlower;
+			return true;
+		}
+		else if (switchcmd == "Speed Minimal")
+		{
+			cmd = Limitless_DiscoSpeedMinimal;
+			return true;
+		}
+		else if (switchcmd == "Speed Maximal")
+		{
+			cmd = Limitless_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")
@@ -3203,6 +3294,49 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_CurrentCostMeter:
 	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
+	case HTYPE_USBtinGateway:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool IsNetworkDevice(const _eHardwareTypes htype)
+{
+	switch (htype) {
+	case HTYPE_RFXLAN:
+	case HTYPE_P1SmartMeterLAN:
+	case HTYPE_YouLess:
+	case HTYPE_RazberryZWave:
+	case HTYPE_OpenThermGatewayTCP:
+	case HTYPE_LimitlessLights:
+	case HTYPE_SolarEdgeTCP:
+	case HTYPE_WOL:
+	case HTYPE_ECODEVICES:
+	case HTYPE_Mochad:
+	case HTYPE_MySensorsTCP:
+	case HTYPE_MySensorsMQTT:
+	case HTYPE_MQTT:
+	case HTYPE_FRITZBOX:
+	case HTYPE_ETH8020:
+	case HTYPE_RelayNet:
+	case HTYPE_Sterbox:
+	case HTYPE_KMTronicTCP:
+	case HTYPE_KMTronicUDP:
+	case HTYPE_SOLARMAXTCP:
+	case HTYPE_SatelIntegra:
+	case HTYPE_RFLINKTCP:
+	case HTYPE_Comm5TCP:
+	case HTYPE_Comm5SMTCP:
+	case HTYPE_CurrentCostMeterLAN:
+	case HTYPE_NefitEastLAN:
+	case HTYPE_DenkoviSmartdenLan:
+	case HTYPE_DenkoviSmartdenIPInOut:
+	case HTYPE_Ec3kMeterTCP:
+	case HTYPE_MultiFun:
+	case HTYPE_ZIBLUETCP:
+	case HTYPE_OnkyoAVTCP:
+	case HTYPE_eHouseTCP:
 		return true;
 	default:
 		return false;

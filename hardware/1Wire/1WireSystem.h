@@ -12,7 +12,7 @@ public:
    virtual void GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const=0;
 
    // Read/write on 1-wire network
-   virtual void SetLightState(const std::string& sId,int unit,bool value)=0;
+   virtual void SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)=0;
    virtual float GetTemperature(const _t1WireDevice& device) const=0;
    virtual float GetHumidity(const _t1WireDevice& device) const=0;
    virtual float GetPressure(const _t1WireDevice& device) const=0;
@@ -21,5 +21,7 @@ public:
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const=0;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const=0;
    virtual float GetIlluminance(const _t1WireDevice& device) const=0;
+   virtual int GetWiper(const _t1WireDevice& device) const = 0;
    virtual void StartSimultaneousTemperatureRead()=0;
+   virtual void PrepareDevices() = 0;
 };

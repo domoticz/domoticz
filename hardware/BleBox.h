@@ -35,20 +35,23 @@ public:
 	void SearchNodes(const std::string &ipmask);
 	std::string GetUptime(const std::string &IPAddress);
 	int GetDeviceType(const std::string &IPAddress);
-
+	Json::Value GetApiDeviceState(const std::string &IPAddress);
+	bool IsNodeExists(const Json::Value &root, const std::string &node);
+	bool IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value);
 private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
+	
+	float m_LimitlessRGBWcHueState;
+	bool m_LimitlessRGBWisWhiteState;
+	int m_LimitlessRGBWbrightnessState;
 
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-
-	bool IsNodeExists(const Json::Value root, const std::string node);
-	bool IsNodesExist(const Json::Value root, const std::string node, const std::string value);
 
 	std::string IdentifyDevice(const std::string &IPAddress);
 	int GetDeviceTypeByApiName(const std::string &apiName);
@@ -56,7 +59,7 @@ private:
 	std::string GetDeviceRevertIP(const tRBUF *id);
 	std::string GetDeviceIP(const std::string &id);
 	std::string IPToHex(const std::string &IPAddress, const int type);
-	Json::Value SendCommand(const std::string &IPAddress, const std::string &command);
+	Json::Value SendCommand(const std::string &IPAddress, const std::string &command, const int timeOut = 3);
 	void GetDevicesState();
 
 	void SendSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const bool bOn, const double Level, const std::string &defaultname);

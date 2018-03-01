@@ -45,25 +45,25 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 			<Item label="LED will follow the status (on/off) of its load but the LED will turn off after 5 seconds" value="1"/>
 			<Item label="Night light mode" value="2"/>
 		</Value>
-		<Value type="int" index="84" genre="config" label="Time set for Night light mode" value="524306">
+		<Value type="int" index="84" genre="config" label="Time set for Night light mode" value="301991936">
 			<Help>
 				Value1: Hour of ON.
 				Value2: Minute of ON.
 				Value3: Hour of OFF.
 				Value4: Minute of OFF.
-				E.g. The default setting is the Night light mode is enabled at 12: 00 and disabled at 8:00.
+				E.g. The default setting is the Night light mode is enabled at 12: 00 and disabled at 8:00 0x12000800.
 			</Help>
 		</Value>
-		<Value type="int" index="85" genre="config" label="Time set for the turning on the output load" value="18906880">
+		<Value type="int" index="86" genre="config" label="Set the ON time of output load" value="8327680">
 			<Help>
 				Value1: 0= Disable / 1= Enable.
 				Value2: Weekday (Bit 0-6 means Monday to Sunday).
-				Value3: Hour of turning ON.
-				Value4: Minute of turning ON
-				E.g. The default setting 0x001207F00
+				Value3: Hour of turning OFF.
+				Value4: Minute of turning OFF
+				E.g. The default setting 0x007F1200
 			</Help>
 		</Value>
-		<Value type="int" index="86" genre="config" label="Time set for the turning OFF the output load" value="24149760">
+		<Value type="int" index="87" genre="config" label="Set the OFF time of output load" value="8328960">
 			<Help>
 				Value1: 0= Disable / 1= Enable.
 				Value2: Weekday (Bit 0-6 means Monday to Sunday).
@@ -149,14 +149,21 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
 		<Value type="int" index="113" genre="config" label="Send Interval for Reporting Group 3" units="seconds" min="0" max="2147483647" value="600">
 			<Help>Defines the time interval when the defined report for group 3 is sent.</Help>
 		</Value>
-		<Value type="list" index="120" genre="config" label="Set the external switch mode" units="" min="0" max="1" size="1" value="0">
-			<Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
-			<Item label="2-state switch" value="0"/>
-			<Item label="momentary button" value="1"/>
+		<Value type="list" index="120" genre="config" label="Set the external S1 mode" units="" min="0" max="3" size="1" value="0">
+			<Help>When the switch mode of S1 is determined or identified or configured, this mode value will not be reset after exclusion</Help>
+			<Item label="Enter automatic identification" value="0"/>
+			<Item label="2-state switch" value="1"/>
 			<Item label="3-way switch" value="2"/>
-			<Item label="Enter automatic identification" value="4"/>
+			<Item label="momentary button" value="3"/>
 		</Value>
-		<Value type="list" index="121" genre="config" label="Set the control destination of the external switch" units="" min="0" max="1" size="1" value="3">
+		<Value type="list" index="121" genre="config" label="Set the external S2 mode" units="" min="0" max="3" size="1" value="0">
+			<Help>When the switch mode of S2 is determined or identified or configured, this mode value will not be reset after exclusion</Help>
+			<Item label="Enter automatic identification" value="0"/>
+			<Item label="2-state switch" value="1"/>
+			<Item label="3-way switch" value="2"/>
+			<Item label="momentary button" value="3"/>
+		</Value>
+		<Value type="list" index="122" genre="config" label="Set the control destination of the external switch" units="" min="0" max="3" size="1" value="3">
 			<Help></Help>
 			<Item label="Control itself" value="1"/>
 			<Item label="Control other nodes in the same network" value="2"/>

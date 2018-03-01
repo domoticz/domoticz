@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenLan_POLL_INTERVAL 60
+#define DenkoviSmartdenLan_POLL_INTERVAL 5
 
 CDenkoviSmartdenLan::CDenkoviSmartdenLan(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
 m_szIPAddress(IPAddress),
@@ -202,13 +202,12 @@ void CDenkoviSmartdenLan::GetMeterDetails()
 	}
 	size_t ii;
 	std::string tmpstr;
-	int pos1;
 	int Idx = -1;
 
 	for (ii = 1; ii < results.size(); ii++)
 	{
 		tmpstr = results[ii];
-		pos1 = tmpstr.find("<Relay");
+		size_t pos1 = tmpstr.find("<Relay");
 		if (pos1 != std::string::npos)
 		{
 			tmpstr = tmpstr.substr(pos1 + strlen("<Relay"));

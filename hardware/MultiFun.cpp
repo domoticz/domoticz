@@ -205,11 +205,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			int change;
 			if (general->cmnd == gswitch_sOn)
 			{ 
-				change = m_LastQuickAccess | (1 << (general->unitcode - 1));
+				change = m_LastQuickAccess | (general->unitcode);
 			}
 			else
 			{ 
-				change = m_LastQuickAccess & ~(1 << (general->unitcode - 1));
+				change = m_LastQuickAccess & ~(general->unitcode);
 			}
 
 			unsigned char buffer[100];
@@ -292,7 +292,7 @@ bool MultiFun::ConnectToDevice()
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -414,7 +414,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					if (((m_LastAlarms != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(0, 255, value ? 4 : 1, "Alarm");
+						SendAlertSensor(0, 255, value ? 4 : 1, "", "Alarm");
 					}
 					m_LastAlarms = value;
 					break;
@@ -436,7 +436,7 @@ void MultiFun::GetRegisters(bool firstTime)
 					}
 					if (((m_LastWarnings != 0) != (value != 0)) || firstTime)
 					{
-						SendAlertSensor(1, 255, value ? 3 : 1, "Warning");
+						SendAlertSensor(1, 255, value ? 3 : 1, "", "Warning");
 					}
 					m_LastWarnings = value;
 					break;
@@ -554,6 +554,7 @@ void MultiFun::GetRegisters(bool firstTime)
 	}
 }
 
+// return length of answer (-1 = error)
 int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, bool write)
 {
 	if (!ConnectToDevice())
@@ -564,7 +565,7 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
 	unsigned char databuffer[BUFFER_LENGHT];
-	int ret;
+	int ret = -1;
 
 	if (m_socket->write((char*)cmd, cmdLength) != cmdLength)
 	{
@@ -577,10 +578,8 @@ int MultiFun::SendCommand(const unsigned char* cmd, const unsigned int cmdLength
 	m_socket->canRead(&bIsDataReadable, 3.0f);
 	if (bIsDataReadable)
 	{
-		if (memset(databuffer, 0, BUFFER_LENGHT) > 0)
-		{
-			ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
-		}
+		memset(databuffer, 0, BUFFER_LENGHT);
+		ret = m_socket->read((char*)databuffer, BUFFER_LENGHT, false);
 	}
 
 	if ((ret <= 0) || (ret >= BUFFER_LENGHT))

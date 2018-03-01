@@ -75,7 +75,7 @@
       <Item label="Enable" value="1"/>
     </Value>
     <Value type="byte" genre="config" instance="1" index="20" label="ADVANCED Impulse length" min="100" max="170" value="110">
-      <Help>This function will enable decreasing the minimum level of the Dimmer by extending the control impulse.[100 - 170]. By changing the minimum level, the user may completely dim LED bulbs. Not all LED bulbs available on the market have the dimmming option. WARNING: Wrong setting of the function may cause incorrect operation of the Dimmer. INFO: THIS PARAMETER IS NOT AVAILABLE IN DEVICE FGD211 v2.1-2.3</Help>
+      <Help>This function will enable decreasing the minimum level of the Dimmer by extending the control impulse.[100 - 170]. By changing the minimum level, the user may completely dim LED bulbs. Not all LED bulbs available on the market have the dimming option. WARNING: Wrong setting of the function may cause incorrect operation of the Dimmer. INFO: THIS PARAMETER IS NOT AVAILABLE IN DEVICE FGD211 v2.1-2.3</Help>
     </Value>
     <Value type="list" genre="config" instance="1" index="30" label="Alarm" size="1" value="3">
       <Help>Alarm of any type (general alarm, water flooding alarm, smoke alarm: CO, CO2, temperature alarm).

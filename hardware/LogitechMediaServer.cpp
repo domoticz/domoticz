@@ -53,7 +53,7 @@ CLogitechMediaServer::~CLogitechMediaServer(void)
 	m_bIsStarted = false;
 }
 
-Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string sPostdata)
+Json::Value CLogitechMediaServer::Query(const std::string &sIP, const int iPort, const std::string &sPostdata)
 {
 	Json::Value root;
 	std::vector<std::string> ExtraHeaders;
@@ -67,6 +67,7 @@ Json::Value CLogitechMediaServer::Query(std::string sIP, int iPort, std::string 
 		sURL << "http://" << sIP << ":" << iPort << "/jsonrpc.js";
 
 	sPostData << sPostdata;
+	
 	HTTPClient::SetTimeout(m_iPingTimeoutms / 1000);
 	bool bRetVal = HTTPClient::POST(sURL.str(), sPostData.str(), ExtraHeaders, sResult);
 
@@ -570,7 +571,7 @@ void CLogitechMediaServer::ReloadNodes()
 	result = m_sql.safe_query("SELECT ID,Name,MacAddress FROM WOLNodes WHERE (HardwareID==%d)", m_HwdID);
 	if (result.size() > 0)
 	{
-		_log.Log(LOG_STATUS, "Logitech Media Server: %i player-switch(es) found.", result.size());
+		_log.Log(LOG_STATUS, "Logitech Media Server: %d player-switch(es) found.", (int)result.size());
 		std::vector<std::vector<std::string> >::const_iterator itt;
 		for (itt = result.begin(); itt != result.end(); ++itt)
 		{

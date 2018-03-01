@@ -13,7 +13,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 	{
 		ZDTYPE_SWITCH_NORMAL = 0,
 		ZDTYPE_SWITCH_DIMMER,
-		ZDTYPE_SWITCH_FGRGBWM441,
+		ZDTYPE_SWITCH_RGBW,
 		ZDTYPE_SWITCH_COLOR,
 
 		ZDTYPE_SENSOR_TEMPERATURE,
@@ -44,6 +44,9 @@ class ZWaveBase : public CDomoticzHardwareBase
 
 		ZDTYPE_ALARM,
 		ZDTYPE_CENTRAL_SCENE,
+
+		ZDTYPE_SENSOR_CUSTOM,
+
 	};
 	struct _tZWaveDevice
 	{
@@ -83,6 +86,7 @@ class ZWaveBase : public CDomoticzHardwareBase
 
 		//label
 		std::string label;
+		std::string custom_label;
 
 		time_t lastreceived;
 		unsigned char sequence_number;

@@ -69,43 +69,45 @@ static void dumpstack(void) {
 }
 #endif
 
-const char *szHelp=
-	"Usage: Domoticz -www port -verbose x\n"
-	"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
-	"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
+const char *szHelp =
+"Usage: Domoticz -www port -verbose x\n"
+"\t-www port (for example -www 8080, or -www 0 to disable http)\n"
+"\t-wwwbind address (for example -wwwbind 0.0.0.0 or -wwwbind 192.168.0.20)\n"
 #ifdef WWW_ENABLE_SSL
-	"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
-	"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
-	"\t-sslkey file_path (if different from certificate file)\n"
-	"\t-sslpass passphrase (to access to server private key in certificate)\n"
-	"\t-sslmethod method (for SSL method)\n"
-	"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
-	"\t-ssldhparam file_path (for SSL DH parameters)\n"
+"\t-sslwww port (for example -sslwww 443, or -sslwww 0 to disable https)\n"
+"\t-sslcert file_path (for example /opt/domoticz/server_cert.pem)\n"
+"\t-sslkey file_path (if different from certificate file)\n"
+"\t-sslpass passphrase (to access to server private key in certificate)\n"
+"\t-sslmethod method (for SSL method)\n"
+"\t-ssloptions options (for SSL options, default is 'default_workarounds,no_sslv2,no_sslv3,no_tlsv1,no_tlsv1_1,single_dh_use')\n"
+"\t-ssldhparam file_path (for SSL DH parameters)\n"
 #endif
 #if defined WIN32
-	"\t-wwwroot file_path (for example D:\\www)\n"
-	"\t-dbase file_path (for example D:\\domoticz.db)\n"
-	"\t-userdata file_path (for example D:\\domoticzdata)\n"
+"\t-wwwroot file_path (for example D:\\www)\n"
+"\t-dbase file_path (for example D:\\domoticz.db)\n"
+"\t-userdata file_path (for example D:\\domoticzdata)\n"
 #else
-	"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
-	"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
-	"\t-userdata file_path (for example /opt/domoticz)\n"
+"\t-wwwroot file_path (for example /opt/domoticz/www)\n"
+"\t-dbase file_path (for example /opt/domoticz/domoticz.db)\n"
+"\t-userdata file_path (for example /opt/domoticz)\n"
 #endif
-	"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
-	"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
-	"\t-startupdelay seconds (default=0)\n"
-	"\t-nowwwpwd (in case you forgot the web server username/password)\n"
-	"\t-nocache (do not return appcache, use only when developing the web pages)\n"
+"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
+"\t-verbose x (where x=0 is none, x=1 is all important, x=2 is debug)\n"
+"\t-startupdelay seconds (default=0)\n"
+"\t-nowwwpwd (in case you forgot the web server username/password)\n"
+"\t-nocache (do not return appcache, use only when developing the web pages)\n"
 #if defined WIN32
-	"\t-nobrowser (do not start web browser (Windows Only)\n"
+"\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
 #if defined WIN32
-	"\t-log file_path (for example D:\\domoticz.log)\n"
+"\t-log file_path (for example D:\\domoticz.log)\n"
 #else
-	"\t-log file_path (for example /var/log/domoticz.log)\n"
+"\t-log file_path (for example /var/log/domoticz.log)\n"
 #endif
-	"\t-loglevel (0=All, 1=Status+Error, 2=Error)\n"
-	"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+"\t-loglevel (0=All, 1=Status+Error, 2=Error , 3= Trace )\n"
+"\t-debug    allow log trace level 3 \n"
+"\t-notimestamps (do not prepend timestamps to logs; useful with syslog, etc.)\n"
+"\t-logthreadids (log thread ids; useful for trouble shooting.)\n"
 	"\t-php_cgi_path (for example /usr/bin/php-cgi)\n"
 #ifndef WIN32
 	"\t-daemon (run as background daemon)\n"
@@ -371,6 +373,87 @@ void daemonize(const char *rundir, const char *pidfile)
 		sysctl(mib, 4, pathName, &cb, NULL, 0);
 		return cb;
 	}
+#elif defined(__OpenBSD__)
+#include <sys/sysctl.h>
+static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+{
+        int mib[4];
+        char **argv;
+        size_t len = 0;
+        const char *comm;
+
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC_ARGS;
+        mib[2] = getpid();
+        mib[3] = KERN_PROC_ARGV;
+        pathName[0] = '\0';
+        if (sysctl(mib, 4, NULL, &len, NULL, 0) < 0)
+        {
+                return 0;
+        }
+
+        if (!(argv = (char**)malloc(len)))
+        {
+                return 0;
+        }
+
+        if (sysctl(mib, 4, argv, &len, NULL, 0) < 0)
+        {
+                len = 0;
+                goto finally;
+        }
+
+	        len = 0;
+        comm = argv[0];
+
+        if (*comm == '/' || *comm == '.')
+        {
+                // In OpenBSD PATH_MAX is 1024
+                char * fullPath = (char*) malloc(PATH_MAX);
+                if(!fullPath)
+                {
+                        goto finally;
+                }
+
+                if (realpath(comm, fullPath))
+                {
+                        if(pathNameCapacity > strnlen(fullPath, PATH_MAX))
+                        {
+                                strlcpy(pathName, fullPath, pathNameCapacity);
+                                len = strnlen(pathName, pathNameCapacity);
+                                free(fullPath);
+                        }
+                }
+        }
+        else
+        {
+                char *sp;
+                char *xpath = strdup(getenv("PATH"));
+                char *path = strtok_r(xpath, ":", &sp);
+                struct stat st;
+
+		if (!xpath)
+                {
+                        goto finally;
+                }
+
+                while (path)
+                {
+                        snprintf(pathName, pathNameCapacity, "%s/%s", path, comm);
+                        if (!stat(pathName, &st) && (st.st_mode & S_IXUSR))
+                        {
+                                break;
+                        }
+                        pathName[0] = '\0';
+                        path = strtok_r(NULL, ":", &sp);
+                }
+                free(xpath);
+        }
+
+  finally:
+        free(argv);
+        return len;
+}
 #elif defined(__APPLE__) /* elif of: #elif defined(__linux__) */
 	#include <mach-o/dyld.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
@@ -456,8 +539,6 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify an output log file");
 			return 1;
 		}
-		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
-		_log.SetOutputFile(logfile.c_str());
 	}
 	if (cmdLine.HasSwitch("-loglevel"))
 	{
@@ -466,14 +547,28 @@ int main(int argc, char**argv)
 			_log.Log(LOG_ERROR, "Please specify logfile output level (0=All, 1=Status+Error, 2=Error)");
 			return 1;
 		}
-		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
-		_log.SetVerboseLevel((_eLogFileVerboseLevel)Level);
 	}
+	if (cmdLine.HasSwitch("-verbose"))
+	{
+		if (cmdLine.GetArgumentCount("-verbose") != 1)
+		{
+			_log.Log(LOG_ERROR, "Please specify a verbose level");
+			return 1;
+		}
+	}
+	if (cmdLine.HasSwitch("-debug"))
+		_log.SetLogDebug(true);
+	else
+		_log.SetLogDebug(false);
 	if (cmdLine.HasSwitch("-notimestamps"))
 	{
 		_log.EnableLogTimestamps(false);
 	}
-
+	if (cmdLine.HasSwitch("-logthreadids"))
+	{
+		_log.EnableLogThreadIDs(true);
+	}
+	
 	if (cmdLine.HasSwitch("-approot"))
 	{
 		if (cmdLine.GetArgumentCount("-approot") != 1)
@@ -573,6 +668,27 @@ int main(int argc, char**argv)
 		szInternalCurrentCommand = "cat /sys/class/power_supply/ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
 		bHasInternalCurrent = true;
 	}
+	//New Armbian Kernal 4.14+
+	if (file_exist("/sys/class/power_supply/axp20x-ac/voltage_now"))
+	{
+		szInternalVoltageCommand = "cat /sys/class/power_supply/axp20x-ac/voltage_now | awk '{ printf (\"volt=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalVoltage = true;
+	}
+	if (file_exist("/sys/class/power_supply/axp20x-ac/current_now"))
+	{
+		szInternalCurrentCommand = "cat /sys/class/power_supply/axp20x-ac/current_now | awk '{ printf (\"curr=%0.2f\\n\",$1/1000000); }'";
+		bHasInternalCurrent = true;
+	}
+
+#if defined (__OpenBSD__)
+
+	szInternalTemperatureCommand="sysctl hw.sensors.acpitz0.temp0|sed -e 's/.*temp0/temp/'|cut -d ' ' -f 1";
+	bHasInternalTemperature = true;
+	szInternalVoltageCommand = "sysctl hw.sensors.acpibat0.volt1|sed -e 's/.*volt1/volt/'|cut -d ' ' -f 1";
+	bHasInternalVoltage = true;
+	//bHasInternalCurrent = true;
+
+#endif
 	_log.Log(LOG_STATUS,"Startup Path: %s", szStartupFolder.c_str());
 #endif
 
@@ -580,7 +696,7 @@ int main(int argc, char**argv)
 
 	if ((cmdLine.HasSwitch("-h")) || (cmdLine.HasSwitch("--help")) || (cmdLine.HasSwitch("/?")))
 	{
-		_log.Log(LOG_NORM, szHelp);
+		_log.Log(LOG_NORM, "%s", szHelp);
 		return 0;
 	}
 
@@ -807,16 +923,6 @@ int main(int argc, char**argv)
 			szWebRoot = szroot;
 	}
 
-	if (cmdLine.HasSwitch("-verbose"))
-	{
-		if (cmdLine.GetArgumentCount("-verbose") != 1)
-		{
-			_log.Log(LOG_ERROR, "Please specify a verbose level");
-			return 1;
-		}
-		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
-		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
-	}
 #if defined WIN32
 	if (cmdLine.HasSwitch("-nobrowser"))
 	{
@@ -915,6 +1021,28 @@ int main(int argc, char**argv)
 		return 1;
 	}
 	m_StartTime = time(NULL);
+
+  //set log level / log output file name verbose level if set on command line
+  //the value as been taken from database in call of GetLogPreference m_mainworker.Start()
+	if (cmdLine.HasSwitch("-log"))
+	{
+		logfile = cmdLine.GetSafeArgument("-log", 0, "domoticz.log");
+		_log.SetOutputFile(logfile.c_str());
+	}
+	if (cmdLine.HasSwitch("-loglevel"))
+	{
+		int Level = atoi(cmdLine.GetSafeArgument("-loglevel", 0, "").c_str());
+		if     (Level==0) _log.SetVerboseLevel(VBL_ALL);
+		else if(Level==1) _log.SetVerboseLevel(VBL_STATUS_ERROR);
+		else if(Level==2) _log.SetVerboseLevel(VBL_ERROR);
+		else if ((Level == 3) && (_log.GetLogDebug())) _log.SetVerboseLevel(VBL_TRACE);
+	}
+	if (cmdLine.HasSwitch("-verbose"))
+	{
+		int Level = atoi(cmdLine.GetSafeArgument("-verbose", 0, "").c_str());
+		m_mainworker.SetVerboseLevel((eVerboseLevel)Level);
+	}
+
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32

@@ -3,7 +3,7 @@
 # Author: Dnpwwo, 2017
 #
 """
-<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.0.0" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
+<plugin key="DSP-W215" name="Dlink smart plug DSP-W215" author="Dnpwwo" version="1.2.1" externallink="https://www.dlink.com.au/home-solutions/dsp-w215-mydlink-wi-fi-smart-plug">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="80"/>
@@ -29,6 +29,7 @@ class BasePlugin:
     sessionCookie = ""
     privateKey = b""
     socketOn = "FALSE"
+    httpConn = None
     
     def __init__(self):
         return
@@ -40,17 +41,16 @@ class BasePlugin:
             Domoticz.Device(Name="Socket 1", Unit=1, TypeName="Switch").Create()
             Domoticz.Log("Device created.")
         DumpConfigToLog()
-        Domoticz.Transport(Transport="TCP/IP", Address=Parameters["Address"], Port=Parameters["Port"])
-        Domoticz.Protocol("HTTP")
+        self.httpConn = Domoticz.Connection(Name="DLink", Transport="TCP/IP", Protocol="HTTP", Address=Parameters["Address"], Port=Parameters["Port"])
+        self.httpConn.Connect()
         Domoticz.Heartbeat(8)
-        Domoticz.Connect()
         if (1 in Devices) and (Devices[1].nValue == 1):
             self.socketOn = "TRUE"
 
     def onStop(self):
         Domoticz.Log("Plugin is stopping.")
 
-    def onConnect(self, Status, Description):
+    def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             Domoticz.Debug("Smart plug connected successfully.")
             data = '<?xml version="1.0" encoding="utf-8"?>' + \
@@ -71,15 +71,16 @@ class BasePlugin:
                         'User-Agent':'Domoticz/1.0', \
                         'SOAPAction' : '"http://purenetworks.com/HNAP1/Login"', \
                         'Content-Length' : "%d"%(len(data)) }
-            Domoticz.Send(data, 'POST', '/HNAP1/', headers)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
             self.pluginState = "GetAuth"
         else:
             self.pluginState = "Not Ready"
             Domoticz.Log("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"])
             Domoticz.Debug("Failed to connect ("+str(Status)+") to: "+Parameters["Address"]+":"+Parameters["Port"]+" with error: "+Description)
 
-    def onMessage(self, Data, Status, Extra):
-        strData = Data.decode("utf-8", "ignore")
+    def onMessage(self, Connection, Data):
+        strData = Data['Data'].decode("utf-8", "ignore")
+        Status = int(Data['Status'])
         if (Status == 200):
             Domoticz.Debug("Good Response received for '"+self.pluginState+"'.")
             if (self.pluginState == "GetAuth"):
@@ -110,7 +111,7 @@ class BasePlugin:
                             'Content-Length' : "%d"%(len(data)), \
                             'Cookie' : 'uid=' + self.sessionCookie
                             }
-                Domoticz.Send(data, 'POST', '/HNAP1/', headers)
+                self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
                 self.pluginState = "Login"
             elif (self.pluginState == "Login"):
                 loginresult = extractTagValue('LoginResult', strData)
@@ -146,16 +147,15 @@ class BasePlugin:
         else:
             self.SetSocketSettings("false")
 
-    def onDisconnect(self):
-        self.isConnected = False
+    def onDisconnect(self, Connection):
         self.pluginState = "Not Ready"
         Domoticz.Log("Device has disconnected")
-        Domoticz.Connect()
+        self.httpConn.Connect()
 
     def onHeartbeat(self):
         Domoticz.Debug("onHeartbeat called")
         if (self.pluginState == "Not Ready"):
-            Domoticz.Connect()
+            self.httpConn.Connect()
         elif (self.pluginState == "Ready"):
             self.GetSocketSettings()
 
@@ -187,9 +187,9 @@ class BasePlugin:
                   }
         # The device resets the connection every 2 minutes, if its not READY assume that is happening and delay the send by 2 seconds  to allow reconnection
         if (self.pluginState == "Ready"):
-            Domoticz.Send(data, 'POST', '/HNAP1/', headers)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
         else:
-            Domoticz.Send(data, 'POST', '/HNAP1/', headers, 2)
+            self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data}, 2)
 
     def GetSocketSettings(self):
         timestamp = str(int(time.time()))
@@ -213,7 +213,7 @@ class BasePlugin:
                    'Content-Length' : "%d"%(len(data)),
                    'Cookie' : 'uid=' + self.sessionCookie
                   }
-        Domoticz.Send(data, 'POST', '/HNAP1/', headers)
+        self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
 
     def genericPOST(self, commandName):
         timestamp = str(int(time.time()))
@@ -235,7 +235,7 @@ class BasePlugin:
                    'Content-Length' : "%d"%(len(data)),
                    'Cookie' : 'uid=' + self.sessionCookie
                   }
-        Domoticz.Send(data, 'POST', '/HNAP1/', headers)
+        self.httpConn.Send({'Verb':'POST', 'URL':'/HNAP1/', "Headers": headers, 'Data': data})
         return
             
 global _plugin
@@ -249,21 +249,21 @@ def onStop():
     global _plugin
     _plugin.onStop()
 
-def onConnect(Status, Description):
+def onConnect(Connection, Status, Description):
     global _plugin
-    _plugin.onConnect(Status, Description)
+    _plugin.onConnect(Connection, Status, Description)
 
-def onMessage(Data, Status, Extra):
+def onMessage(Connection, Data):
     global _plugin
-    _plugin.onMessage(Data, Status, Extra)
+    _plugin.onMessage(Connection, Data)
 
 def onCommand(Unit, Command, Level, Hue):
     global _plugin
     _plugin.onCommand(Unit, Command, Level, Hue)
 
-def onDisconnect():
+def onDisconnect(Connection):
     global _plugin
-    _plugin.onDisconnect()
+    _plugin.onDisconnect(Connection)
 
 def onHeartbeat():
     global _plugin
@@ -290,3 +290,14 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
+def DumpHTTPResponseToLog(httpDict):
+    if isinstance(httpDict, dict):
+        Domoticz.Debug("HTTP Details ("+str(len(httpDict))+"):")
+        for x in httpDict:
+            if isinstance(httpDict[x], dict):
+                Domoticz.Debug("--->'"+x+" ("+str(len(httpDict[x]))+"):")
+                for y in httpDict[x]:
+                    Domoticz.Debug("------->'" + y + "':'" + str(httpDict[x][y]) + "'")
+            else:
+                Domoticz.Debug("--->'" + x + "':'" + str(httpDict[x]) + "'")

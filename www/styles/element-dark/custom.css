@@ -1,3 +1,5 @@
+@import url("../css/legacy.css"); /* Don't remove this line! */
+
 @font-face {
 	font-family: "OpenSans";
 	font-style: normal;
@@ -137,7 +139,7 @@ h2{
 }
 
 body table#itemtablesmall tbody tr,
-body table#itemtablesmalldoubleicon tbody tr
+body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtable tbody tr,
 body table#itemtablenotype tbody tr,
 body table#itemtablenostatus tbody tr,
@@ -145,7 +147,7 @@ body table#itemtabledoubleicon tbody tr,
 body table#itemtabletrippleicon tbody tr,
 body table#itemtablesmalldoubleicon tbody tr,
 body table#itemtablesmalltrippleicon tbody tr,
-body table#mobileitem tbody tr
+body table#mobileitem tbody tr,
 body table#itemtablesmall tbody tr:hover,
 body table#itemtablesmalldoubleicon tbody tr:hover,
 body table#itemtable tbody tr:hover,
@@ -234,14 +236,19 @@ width: 99.5% !important;
 }
 
 #itemtablesmall .dimslider {
-   width: calc(100% - 52px) !important;
+   width: calc(98% - 52px) !important;
    margin-top: 10px !important;
    margin-left: 48px !important;
 }
 
-#rgbw_popup .dimslider {
-   width: calc(100% - 108px) !important;
-   margin-left: 6px !important;
-   margin-top: 10px !important;       
+#itemtabledoubleicon .dimslider {
+   width: calc(98% - 114px) !important;
+   margin-top: 10px !important;
+   margin-left: 110px !important;
 }
 
+#itemtablesmalldoubleicon .dimslider {
+   width: calc(98% - 98px) !important;
+   margin-top: 10px !important;
+   margin-left: 95px !important;
+}

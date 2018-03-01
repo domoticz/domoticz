@@ -1061,7 +1061,7 @@ bool CKodi::WriteToHardware(const char *pdata, const unsigned char length)
 		}
 	}
 
-	_log.Log(LOG_ERROR, "Kodi: (%d) Shutdown. Device not found.", DevID);
+	_log.Log(LOG_ERROR, "Kodi: (%ld) Shutdown. Device not found.", DevID);
 	return false;
 }
 
@@ -1462,7 +1462,7 @@ namespace http {
 						Kodi.SendCommand(idx, sAction);
 						break;
 					}
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
 					case HTYPE_PythonPlugin:
 						Cmd_PluginCommand(session, req, root);
 						break;

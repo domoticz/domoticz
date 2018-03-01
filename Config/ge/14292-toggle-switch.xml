@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Configuration Parameters - per https://products.z-wavealliance.org/products/2502 -->
+	<CommandClass id="112">
+		<Value type="list" index="4" genre="config" label="Invert Switch" min="0" max="1" size="1" value="0">
+			<Help>Change the top of the switch to OFF and the bottom of the switch to ON, if the switch was installed upside down.</Help>
+			<Item label="No" value="0" />
+			<Item label="Yes" value="1" />
+		</Value>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="3">
+			<Group index="1" max_associations="5" label="Lifeline" />
+			<Group index="2" max_associations="5" label="Basic - Local Load" />
+			<Group index="3" max_associations="5" label="Basic - Double Tap" />
+		</Associations>
+	</CommandClass>
+</Product>

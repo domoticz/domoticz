@@ -12,15 +12,14 @@
 #include "NotificationPushsafer.h"
 #include "NotificationPushalot.h"
 #include "NotificationEmail.h"
+#include "NotificationTelegram.h"
 #include "NotificationSMS.h"
 #include "NotificationHTTP.h"
 #include "NotificationKodi.h"
 #include "NotificationLogitechMediaServer.h"
 #include "NotificationGCM.h"
-#ifdef USE_PYTHON_PLUGINS
-#	include "../hardware/plugins/PluginManager.h"
-#endif
 
+#include "NotificationBrowser.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -43,6 +42,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationProwl());
 	AddNotifier(new CNotificationNma());
 	AddNotifier(new CNotificationPushbullet());
+	AddNotifier(new CNotificationTelegram());
 	AddNotifier(new CNotificationPushover());
 	AddNotifier(new CNotificationPushsafer());
 	AddNotifier(new CNotificationPushalot());
@@ -52,6 +52,7 @@ CNotificationHelper::CNotificationHelper()
 	AddNotifier(new CNotificationKodi());
 	AddNotifier(new CNotificationLogitechMediaServer());
 	AddNotifier(new CNotificationGCM());
+	AddNotifier(new CNotificationBrowser());
 }
 
 CNotificationHelper::~CNotificationHelper()
@@ -71,6 +72,11 @@ void CNotificationHelper::AddNotifier(CNotificationBase *notifier)
 	m_notifiers[notifier->GetSubsystemId()] = notifier;
 }
 
+void CNotificationHelper::RemoveNotifier(CNotificationBase *notifier)
+{
+	m_notifiers.erase(notifier->GetSubsystemId());
+}
+
 bool CNotificationHelper::SendMessage(
 	const uint64_t Idx,
 	const std::string &Name,
@@ -82,7 +88,7 @@ bool CNotificationHelper::SendMessage(
 	const std::string &Sound,
 	const bool bFromNotification)
 {
-	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, 0, std::string(""), bFromNotification);
+	return SendMessageEx(Idx, Name, Subsystems, Subject, Text, ExtraData, -100, std::string(""), bFromNotification);
 }
 
 bool CNotificationHelper::SendMessageEx(
@@ -92,11 +98,20 @@ bool CNotificationHelper::SendMessageEx(
 	const std::string &Subject,
 	const std::string &Text,
 	const std::string &ExtraData,
-	const int Priority,
+	int Priority,
 	const std::string &Sound,
 	const bool bFromNotification)
 {
 	bool bRet = false;
+	bool bThread = true;
+
+	if (Priority == -100)
+	{
+		Priority = 0;
+		bThread = false;
+		bRet = true;
+	}
+
 #if defined WIN32
 	//Make a system tray message
 	ShowSystemTrayNotification(Subject.c_str());
@@ -112,16 +127,17 @@ bool CNotificationHelper::SendMessageEx(
 		ActiveSystems[*itt] = 1;
 	}
 
-	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter) {
+	for (it_noti_type iter = m_notifiers.begin(); iter != m_notifiers.end(); ++iter)
+	{
 		std::map<std::string, int>::const_iterator ittSystem = ActiveSystems.find(iter->first);
-		if (ActiveSystems.empty() || (ittSystem!=ActiveSystems.end() && iter->second->IsConfigured())) 
+		if ((ActiveSystems.empty() || ittSystem != ActiveSystems.end()) && iter->second->IsConfigured())
 		{
-			bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
+			if (bThread)
+				boost::thread SendMessageEx(boost::bind(&CNotificationBase::SendMessageEx, iter->second, Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification));
+			else
+				bRet |= iter->second->SendMessageEx(Idx, Name, Subject, Text, ExtraData, Priority, Sound, bFromNotification);
 		}
 	}
-#ifdef USE_PYTHON_PLUGINS
-	Plugins::CPluginSystem::SendNotification(Subject, Text, ExtraData, Priority, Sound);
-#endif
 	return bRet;
 }
 
@@ -169,7 +185,7 @@ void CNotificationHelper::LoadConfig()
 		}
 	}
 	logline << " (" << active << "/" << tot << ")";
-	_log.Log(LOG_NORM, std::string(logline.str()).c_str());
+	_log.Log(LOG_NORM, logline.str());
 }
 
 std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue)
@@ -179,6 +195,20 @@ std::string CNotificationHelper::ParseCustomMessage(const std::string &cMessage,
 	stdreplace(ret, "$value", sValue);
 	return ret;
 }
+
+bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
+{
+	if (((rule == ">") || (rule == ">=")) && (!less) && (!equal))
+		return true;
+	else if (((rule == "<") || (rule == "<=")) && (less))
+		return true;
+	else if (((rule == "=") || (rule == ">=") || (rule == "<=")) && (equal))
+		return true;
+	else if ((rule == "!=") && (!equal))
+		return true;
+	return false;
+}
+
 
 bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 	const uint64_t Idx,
@@ -205,32 +235,43 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 
 	std::string msg = "";
 
+	std::string label = Notification_Type_Label(NTYPE_TEMPERATURE);
 	std::string signtemp = Notification_Type_Desc(NTYPE_TEMPERATURE, 1);
 	std::string signhum = Notification_Type_Desc(NTYPE_HUMIDITY, 1);
 
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
+
+		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
-			if (m_sql.m_tempunit == TEMPUNIT_F)
-			{
-				//Convert to Celsius
-				svalue = (svalue / 1.8f) - 32.0f;
-			}
-
 			bool bSendNotification = false;
+			bool bCustomMessage = false;
+			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if ((ntype == signtemp) && (bHaveTemp))
 			{
 				//temperature
+				if (m_sql.m_tempunit == TEMPUNIT_F)
+				{
+					//Convert to Celsius
+					svalue = static_cast<float>(ConvertToCelsius(svalue));
+				}
+
 				if (temp > 30.0) szExtraData += "Image=temp-gt-30|";
 				else if (temp > 25.0) szExtraData += "Image=temp-25-30|";
 				else if (temp > 20.0) szExtraData += "Image=temp-20-25|";
@@ -238,64 +279,60 @@ bool CNotificationHelper::CheckAndHandleTempHumidityNotification(
 				else if (temp > 10.0) szExtraData += "Image=temp-10-15|";
 				else if (temp > 5.0) szExtraData += "Image=temp-5-10|";
 				else szExtraData += "Image=temp48|";
-				if (bWhenIsGreater)
+				bSendNotification = ApplyRule(splitresults[1], (temp == svalue), (temp < svalue));
+				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					if (temp > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s temperature is %.1f %s [%s %.1f %s]", devicename.c_str(), temp, label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
+					msg = szTmp;
+					sprintf(szTmp, "%.1f", temp);
+					notValue = szTmp;
+				}
+				else if (!bSendNotification && bRecoveryMessage)
+				{
+					bSendNotification = true;
+					msg = recoverymsg;
+					std::string clearstr = "!";
+					CustomRecoveryMessage(itt->ID, clearstr, true);
 				}
 				else
 				{
-					if (temp < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s temperature is %.1f degrees", devicename.c_str(), temp);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", temp);
-					notValue = szTmp;
+					bSendNotification = false;
 				}
 			}
 			else if ((ntype == signhum) && (bHaveHumidity))
 			{
 				//humidity
 				szExtraData += "Image=moisture48|";
-				if (bWhenIsGreater)
+				bSendNotification = ApplyRule(splitresults[1], (humidity == svalue), (humidity < svalue));
+				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					if (humidity > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s Humidity is %d %% [%s %.0f %%]", devicename.c_str(), humidity, splitresults[1].c_str(), svalue);
+					msg = szTmp;
+					sprintf(szTmp, "%d", humidity);
+					notValue = szTmp;
+				}
+				else if (!bSendNotification && bRecoveryMessage)
+				{
+					bSendNotification = true;
+					msg = recoverymsg;
+					std::string clearstr = "!";
+					CustomRecoveryMessage(itt->ID, clearstr, true);
 				}
 				else
 				{
-					if (humidity < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Humidity is %d %%", devicename.c_str(), humidity);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%d", humidity);
-					notValue = szTmp;
+					bSendNotification = false;
 				}
 			}
 			if (bSendNotification)
 			{
-				if (!itt->CustomMessage.empty())
-					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
+				if (bCustomMessage && !bRecoveryMessage)
+					msg = ParseCustomMessage(custommsg, devicename, notValue);
 				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
-				TouchNotification(itt->ID);
+				if (!bRecoveryMessage)
+				{
+					TouchNotification(itt->ID);
+					CustomRecoveryMessage(itt->ID, msg, true);
+				}
 			}
 		}
 	}
@@ -329,6 +366,8 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -337,26 +376,20 @@ bool CNotificationHelper::CheckAndHandleDewPointNotification(
 				continue; //impossible
 			std::string ntype = splitresults[0];
 
-			bool bSendNotification = false;
-
 			if (ntype == signdewpoint)
 			{
 				//dewpoint
 				if (temp <= dewpoint)
 				{
-					bSendNotification = true;
 					sprintf(szTmp, "%s Dew Point reached (%.1f degrees)", devicename.c_str(), temp);
 					msg = szTmp;
 					sprintf(szTmp, "%.1f", temp);
 					notValue = szTmp;
+					if (!itt->CustomMessage.empty())
+						msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
+					SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
+					TouchNotification(itt->ID);
 				}
-			}
-			if (bSendNotification)
-			{
-				if (!itt->CustomMessage.empty())
-					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
-				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
-				TouchNotification(itt->ID);
 			}
 		}
 	}
@@ -388,6 +421,8 @@ bool CNotificationHelper::CheckAndHandleValueNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
 		{
 			std::vector<std::string> splitresults;
@@ -437,114 +472,83 @@ bool CNotificationHelper::CheckAndHandleAmpere123Notification(
 	atime -= m_NotificationSensorInterval;
 
 	std::string msg = "";
+
 	std::string notValue;
 
 	std::string signamp1 = Notification_Type_Desc(NTYPE_AMPERE1, 1);
-	std::string signamp2 = Notification_Type_Desc(NTYPE_AMPERE2, 2);
-	std::string signamp3 = Notification_Type_Desc(NTYPE_AMPERE3, 3);
+	std::string signamp2 = Notification_Type_Desc(NTYPE_AMPERE2, 1);
+	std::string signamp3 = Notification_Type_Desc(NTYPE_AMPERE3, 1);
 
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
+
+		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+			std::string custommsg;
+			std::string ltype;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
-
+			float ampere = 0.0f;
 			bool bSendNotification = false;
+			bool bCustomMessage = false;
+			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == signamp1)
 			{
-				//Ampere1
-				if (bWhenIsGreater)
-				{
-					if (Ampere1 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere1 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere1 is %.1f Ampere", devicename.c_str(), Ampere1);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", Ampere1);
-					notValue = szTmp;
-				}
+				ampere = Ampere1;
+				ltype = Notification_Type_Desc(NTYPE_AMPERE1, 0);
 			}
 			else if (ntype == signamp2)
 			{
-				//Ampere2
-				if (bWhenIsGreater)
-				{
-					if (Ampere2 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere2 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere2 is %.1f Ampere", devicename.c_str(), Ampere2);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", Ampere2);
-					notValue = szTmp;
-				}
+				ampere = Ampere2;
+				ltype = Notification_Type_Desc(NTYPE_AMPERE2, 0);
 			}
 			else if (ntype == signamp3)
 			{
-				//Ampere3
-				if (bWhenIsGreater)
-				{
-					if (Ampere3 > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
-				}
-				else
-				{
-					if (Ampere3 < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s Ampere3 is %.1f Ampere", devicename.c_str(), Ampere3);
-						msg = szTmp;
-					}
-				}
-				if (bSendNotification)
-				{
-					sprintf(szTmp, "%.1f", Ampere3);
-					notValue = szTmp;
-				}
+				ampere = Ampere3;
+				ltype = Notification_Type_Desc(NTYPE_AMPERE3, 0);
+			}
+			bSendNotification = ApplyRule(splitresults[1], (ampere == svalue), (ampere < svalue));
+			if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
+			{
+				sprintf(szTmp, "%s %s is %.1f Ampere [%s %.1f Ampere]", devicename.c_str(), ltype.c_str(), ampere, splitresults[1].c_str(), svalue);
+				msg = szTmp;
+				sprintf(szTmp, "%.1f", ampere);
+				notValue = szTmp;
+			}
+			else if (!bSendNotification && bRecoveryMessage)
+			{
+				bSendNotification = true;
+				msg = recoverymsg;
+				std::string clearstr = "!";
+				CustomRecoveryMessage(itt->ID, clearstr, true);
+			}
+			else
+			{
+				bSendNotification = false;
 			}
 			if (bSendNotification)
 			{
-				if (!itt->CustomMessage.empty())
-					msg = ParseCustomMessage(itt->CustomMessage, devicename, notValue);
+				if (bCustomMessage && !bRecoveryMessage)
+					msg = ParseCustomMessage(custommsg, devicename, notValue);
 				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
-				TouchNotification(itt->ID);
+				if (!bRecoveryMessage)
+				{
+					TouchNotification(itt->ID);
+					CustomRecoveryMessage(itt->ID, msg, true);
+				}
 			}
 		}
 	}
@@ -578,6 +582,8 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
 		std::vector<std::string> splitresults;
 		StringSplit(itt->Params, ";", splitresults);
 		if (splitresults.size() < 1)
@@ -640,57 +646,57 @@ bool CNotificationHelper::CheckAndHandleNotification(
 	std::vector<_tNotification>::const_iterator itt;
 	for (itt = notifications.begin(); itt != notifications.end(); ++itt)
 	{
-		if ((atime >= itt->LastSend) || (itt->SendAlways)) //emergency always goes true
+		if (itt->LastUpdate)
+			TouchLastUpdate(itt->ID);
+
+		if ((atime >= itt->LastSend) || (itt->SendAlways) || (!itt->CustomMessage.empty())) //emergency always goes true
 		{
+			std::string recoverymsg;
+			bool bRecoveryMessage = false;
+			bRecoveryMessage = CustomRecoveryMessage(itt->ID, recoverymsg, true);
+			if ((atime < itt->LastSend) && (!itt->SendAlways) && (!bRecoveryMessage))
+				continue;
 			std::vector<std::string> splitresults;
 			StringSplit(itt->Params, ";", splitresults);
 			if (splitresults.size() < 3)
 				continue; //impossible
 			std::string ntype = splitresults[0];
-			bool bWhenIsGreater = (splitresults[1] == ">");
+			std::string custommsg;
 			float svalue = static_cast<float>(atof(splitresults[2].c_str()));
-
 			bool bSendNotification = false;
+			bool bCustomMessage = false;
+			bCustomMessage = CustomRecoveryMessage(itt->ID, custommsg, false);
 
 			if (ntype == nsign)
 			{
-				if (bWhenIsGreater)
+				bSendNotification = ApplyRule(splitresults[1], (mvalue == svalue), (mvalue < svalue));
+				if (bSendNotification && (!bRecoveryMessage || itt->SendAlways))
 				{
-					if (mvalue > svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
+					sprintf(szTmp, "%s %s is %s %s [%s %.1f %s]", devicename.c_str(), ltype.c_str(), pvalue.c_str(), label.c_str(), splitresults[1].c_str(), svalue, label.c_str());
+					msg = szTmp;
+				}
+				else if (!bSendNotification && bRecoveryMessage)
+				{
+					bSendNotification = true;
+					msg = recoverymsg;
+					std::string clearstr = "!";
+					CustomRecoveryMessage(itt->ID, clearstr, true);
 				}
 				else
 				{
-					if (mvalue < svalue)
-					{
-						bSendNotification = true;
-						sprintf(szTmp, "%s %s is %s %s",
-							devicename.c_str(),
-							ltype.c_str(),
-							pvalue.c_str(),
-							label.c_str()
-							);
-						msg = szTmp;
-					}
+					bSendNotification = false;
 				}
 			}
 			if (bSendNotification)
 			{
-				if (!itt->CustomMessage.empty())
-				{
-					msg = ParseCustomMessage(itt->CustomMessage, devicename, pvalue);
-				}
+				if (bCustomMessage && !bRecoveryMessage)
+					msg = ParseCustomMessage(custommsg, devicename, pvalue);
 				SendMessageEx(Idx, devicename, itt->ActiveSystems, msg, msg, szExtraData, itt->Priority, std::string(""), true);
-				TouchNotification(itt->ID);
+				if (!bRecoveryMessage)
+				{
+					TouchNotification(itt->ID);
+					CustomRecoveryMessage(itt->ID, msg, true);
+				}
 			}
 		}
 	}
@@ -854,7 +860,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					if (!bWhenEqual || iLevel < 10 || iLevel > 100)
 						continue; //invalid
 
-					if (llevel == iLevel) 
+					if (llevel == iLevel)
 					{
 						bSendNotification = true;
 						std::string sLevel = boost::lexical_cast<std::string>(llevel);
@@ -876,7 +882,7 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						}
 					}
 				}
-				else 
+				else
 				{
 					bSendNotification = true;
 					szExtraData += "Status=Off|";
@@ -954,6 +960,92 @@ bool CNotificationHelper::CheckAndHandleRainNotification(
 	return false;
 }
 
+
+void CNotificationHelper::CheckAndHandleLastUpdateNotification()
+{
+	if (m_notifications.size() < 1)
+		return;
+
+	time_t atime = mytime(NULL);
+	atime -= m_NotificationSensorInterval;
+	std::map<uint64_t, std::vector<_tNotification> >::const_iterator itt;
+
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::const_iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (((atime >= itt2->LastSend) || (itt2->SendAlways) || (!itt2->CustomMessage.empty())) && (itt2->LastUpdate)) //emergency always goes true
+			{
+				std::vector<std::string> splitresults;
+				StringSplit(itt2->Params, ";", splitresults);
+				if (splitresults.size() < 3)
+					continue;
+				std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+				if (splitresults[0] == ttype)
+				{
+					std::string recoverymsg;
+					bool bRecoveryMessage = false;
+					bRecoveryMessage = CustomRecoveryMessage(itt2->ID, recoverymsg, true);
+					if ((atime < itt2->LastSend) && (!itt2->SendAlways) && (!bRecoveryMessage))
+						continue;
+					extern time_t m_StartTime;
+					time_t btime = mytime(NULL);
+					std::string msg;
+					std::string szExtraData;
+					std::string custommsg;
+					uint64_t Idx = itt->first;
+					uint32_t SensorTimeOut = static_cast<uint32_t>(atoi(splitresults[2].c_str()));  // minutes
+					uint32_t diff = static_cast<uint32_t>(round(difftime(btime, itt2->LastUpdate)));
+					bool bStartTime = (difftime(btime, m_StartTime) < SensorTimeOut * 60);
+					bool bSendNotification = ApplyRule(splitresults[1], (diff == SensorTimeOut * 60), (diff < SensorTimeOut * 60));
+					bool bCustomMessage = false;
+					bCustomMessage = CustomRecoveryMessage(itt2->ID, custommsg, false);
+
+					if (bSendNotification && !bStartTime && (!bRecoveryMessage || itt2->SendAlways))
+					{
+						if (SystemUptime() < SensorTimeOut * 60 && (!bRecoveryMessage || itt2->SendAlways))
+							continue;
+						std::vector<std::vector<std::string> > result;
+						result = m_sql.safe_query("SELECT SwitchType FROM DeviceStatus WHERE (ID=%" PRIu64 ")", Idx);
+						if (result.size() == 0)
+							continue;
+						szExtraData = "|Name=" + itt2->DeviceName + "|SwitchType=" + result[0][0] + "|";
+						std::string ltype = Notification_Type_Desc(NTYPE_LASTUPDATE, 0);
+						std::string label = Notification_Type_Label(NTYPE_LASTUPDATE);
+						char szDate[50];
+						char szTmp[300];
+						struct tm ltime;
+						localtime_r(&itt2->LastUpdate,&ltime);
+						sprintf(szDate, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday,
+							ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+						sprintf(szTmp,"Sensor %s %s: %s [%s %d %s]", itt2->DeviceName.c_str(), ltype.c_str(), szDate,
+							splitresults[1].c_str(), SensorTimeOut, label.c_str());
+						msg = szTmp;
+					}
+					else if (!bSendNotification && bRecoveryMessage)
+					{
+						msg = recoverymsg;
+						std::string clearstr = "!";
+						CustomRecoveryMessage(itt2->ID, clearstr, true);
+					}
+					else
+						continue;
+
+					if (bCustomMessage && !bRecoveryMessage)
+						msg = ParseCustomMessage(custommsg, itt2->DeviceName, "");
+					SendMessageEx(Idx, itt2->DeviceName, itt2->ActiveSystems, msg, msg, szExtraData, itt2->Priority, std::string(""), true);
+					if (!bRecoveryMessage)
+					{
+						TouchNotification(itt2->ID);
+						CustomRecoveryMessage(itt2->ID, msg, true);
+					}
+				}
+			}
+		}
+	}
+}
+
 void CNotificationHelper::TouchNotification(const uint64_t ID)
 {
 	char szDate[50];
@@ -984,7 +1076,107 @@ void CNotificationHelper::TouchNotification(const uint64_t ID)
 	}
 }
 
-bool CNotificationHelper::AddNotification(const std::string &DevIdx, const std::string &Param, const std::string &CustomMessage, const std::string &ActiveSystems, const int Priority, const bool SendAlways)
+void CNotificationHelper::TouchLastUpdate(const uint64_t ID)
+{
+	time_t atime = mytime(NULL);
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
+	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (itt2->ID == ID)
+			{
+				itt2->LastUpdate = atime;
+				return;
+			}
+		}
+	}
+}
+
+bool CNotificationHelper::CustomRecoveryMessage(const uint64_t ID, std::string &msg, const bool isRecovery)
+{
+	boost::lock_guard<boost::mutex> l(m_mutex);
+
+	std::map<uint64_t, std::vector<_tNotification> >::iterator itt;
+	for (itt = m_notifications.begin(); itt != m_notifications.end(); ++itt)
+	{
+		std::vector<_tNotification>::iterator itt2;
+		for (itt2 = itt->second.begin(); itt2 != itt->second.end(); ++itt2)
+		{
+			if (itt2->ID == ID)
+			{
+				std::vector<std::string> splitresults;
+				if (isRecovery)
+				{
+					StringSplit(itt2->Params, ";", splitresults);
+					if (splitresults.size() < 4)
+						return false;
+					if (splitresults[3] != "1")
+						return false;
+				}
+
+				std::string szTmp;
+				StringSplit(itt2->CustomMessage, ";;", splitresults);
+				if (msg.empty())
+				{
+					if (splitresults.size() > 0)
+					{
+						if (!splitresults[0].empty() && !isRecovery)
+						{
+							szTmp = splitresults[0];
+							msg = szTmp;
+							return true;
+						}
+						if (splitresults.size() > 1)
+						{
+							if (!splitresults[1].empty() && isRecovery)
+							{
+								szTmp = splitresults[1];
+								msg = szTmp;
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+				if (!isRecovery)
+					return false;
+
+				if (splitresults.size() > 0)
+				{
+					if (!splitresults[0].empty())
+						szTmp = splitresults[0];
+				}
+				if ((msg.find("!") != 0) && (msg.size() > 1))
+				{
+					szTmp.append(";;[Recovered] ");
+					szTmp.append(msg);
+				}
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT ID FROM Notifications WHERE (ID=='%" PRIu64 "') AND (Params=='%q')", itt2->ID, itt2->Params.c_str());
+				if (result.size() == 0)
+					return false;
+
+				m_sql.safe_query("UPDATE Notifications SET CustomMessage='%q' WHERE ID=='%" PRIu64 "'", szTmp.c_str(), itt2->ID);
+				itt2->CustomMessage = szTmp;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool CNotificationHelper::AddNotification(
+	const std::string &DevIdx,
+	const std::string &Param,
+	const std::string &CustomMessage,
+	const std::string &ActiveSystems,
+	const int Priority,
+	const bool SendAlways
+	)
 {
 	std::vector<std::vector<std::string> > result;
 
@@ -1068,6 +1260,7 @@ void CNotificationHelper::ReloadNotifications()
 	time_t mtime = mytime(NULL);
 	struct tm atime;
 	localtime_r(&mtime, &atime);
+	std::vector<std::string> splitresults;
 
 	std::stringstream sstr;
 
@@ -1107,7 +1300,27 @@ void CNotificationHelper::ReloadNotifications()
 			struct tm ntime;
 			ParseSQLdatetime(notification.LastSend, ntime, stime, atime.tm_isdst);
 		}
-
+		std::string ttype = Notification_Type_Desc(NTYPE_LASTUPDATE, 1);
+		StringSplit(notification.Params, ";", splitresults);
+		if (splitresults[0] == ttype) {
+			std::vector<std::vector<std::string> > result2;
+			result2 = m_sql.safe_query(
+				"SELECT B.Name, B.LastUpdate "
+				"FROM Notifications AS A "
+				"LEFT OUTER JOIN DeviceStatus AS B "
+				"ON A.DeviceRowID=B.ID "
+				"WHERE (A.Params LIKE '%q%%') "
+				"AND (A.ID=='%" PRIu64 "') "
+				"LIMIT 1",
+				ttype.c_str(), notification.ID
+				);
+			if (result2.size() == 1) {
+				struct tm ntime;
+				notification.DeviceName = result2[0][0];
+				std::string stime = result2[0][1];
+				ParseSQLdatetime(notification.LastUpdate, ntime, stime, atime.tm_isdst);
+			}
+		}
 		m_notifications[Idx].push_back(notification);
 	}
 }

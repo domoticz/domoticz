@@ -18,6 +18,8 @@
 
 using namespace std;
 
+#define HUE_DEFAULT_POLL_INTERVAL 10
+
 //#define DEBUG_PhilipsHue
 
 #ifdef DEBUG_PhilipsHue
@@ -48,13 +50,26 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username) :
+CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
 	m_HwdID=ID;
 	m_Port = Port;
+	m_poll_interval = PollInterval;
 	m_stoprequested=false;
+
+	// Catch uninitialised Mode1 entry.
+	if (m_poll_interval < 1)
+	{
+		m_poll_interval = HUE_DEFAULT_POLL_INTERVAL;
+		_log.Log(LOG_STATUS, "Philips Hue: Using default poll interval of %d secs.", m_poll_interval);
+	}
+	else
+	{
+		_log.Log(LOG_STATUS, "Philips Hue: Using poll interval of %d secs.", m_poll_interval);
+	}
+
 	Init();
 }
 
@@ -88,12 +103,11 @@ bool CPhilipsHue::StopHardware()
     return true;
 }
 
-#define HUE_POLL_INTERVAL 10
 
 void CPhilipsHue::Do_Work()
 {
 	int msec_counter = 0;
-	int sec_counter = HUE_POLL_INTERVAL-2;
+	int sec_counter = m_poll_interval - 1;
 
 	_log.Log(LOG_STATUS,"Philips Hue: Worker started...");
 
@@ -106,7 +120,7 @@ void CPhilipsHue::Do_Work()
 		{
 			msec_counter = 0;
 			sec_counter++;
-			if (sec_counter % HUE_POLL_INTERVAL == 0)
+			if (sec_counter % m_poll_interval == 0)
 			{
 				m_LastHeartbeat = mytime(NULL);
 				GetStates();
@@ -130,7 +144,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	if (packettype == pTypeLighting2)
 	{
 		//light command
-		nodeID = pSen->LIGHTING2.id4;
+		nodeID = (pSen->LIGHTING2.id3 << 8) + pSen->LIGHTING2.id4;
 		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
 		{
 			LCmd = "Off";
@@ -448,7 +462,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 	{
 		//Send as Lighting 2
 		char szID[10];
-		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
+		sprintf(szID, "%07X", (unsigned int)NodeID);
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? light2_sOn : light2_sOff);
 		int level = 0;
@@ -493,7 +507,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			lcmd.LIGHTING2.seqnbr = 1;
 			lcmd.LIGHTING2.id1 = 0;
 			lcmd.LIGHTING2.id2 = 0;
-			lcmd.LIGHTING2.id3 = 0;
+			lcmd.LIGHTING2.id3 = NodeID >> 8;
 			lcmd.LIGHTING2.id4 = NodeID;
 			lcmd.LIGHTING2.unitcode = unitcode;
 			lcmd.LIGHTING2.cmnd = cmd;
@@ -528,7 +542,6 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 bool CPhilipsHue::GetStates()
 {
-	vector<string> ExtraHeaders;
 	string sResult;
 
 #ifdef DEBUG_PhilipsHue
@@ -540,6 +553,7 @@ bool CPhilipsHue::GetStates()
 		<< "/api/" << m_UserName;
 	//Get Data
 	string sURL = sstr2.str();
+	vector<string> ExtraHeaders;
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "Philips Hue: Error getting Light States, (Check IPAddress/Username)");
@@ -641,9 +655,6 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 	return true;
 }
 
-// Note:
-// Some groups have only White lights,
-// We whould find a way to have these working as normal lights instead of RGBW
 bool CPhilipsHue::GetGroups(const Json::Value &root)
 {
 	//Groups (0=All)
@@ -666,6 +677,8 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 			tstate.sat = 0;
 			tstate.hue = 0;
 
+			LType = HLTYPE_NORMAL;
+			
 			if (!group["action"]["on"].empty())
 				tstate.on = group["action"]["on"].asBool();
 			if (!group["action"]["bri"].empty())
@@ -674,19 +687,18 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				tstate.level = int((100.0f / 255.0f)*float(tbri));
+				LType = HLTYPE_DIM;
 			}
-
-			LType = HLTYPE_RGBW;// HLTYPE_NORMAL;
 
 			if (!group["action"]["sat"].empty())
 			{
 				tstate.sat = group["action"]["sat"].asInt();
-				//LType = HLTYPE_RGBW;
+				LType = HLTYPE_RGBW;
 			}
 			if (!group["action"]["hue"].empty())
 			{
 				tstate.hue = group["action"]["hue"].asInt();
-				//LType = HLTYPE_RGBW;
+				LType = HLTYPE_RGBW;
 			}
 			
 			bool bDoSend = true;
@@ -872,17 +884,24 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 		if (sensor.isObject())
 		{
 			bool bDoSend = true;
+			bool bNewSensor = false;
 			int sID = atoi(iSensor.key().asString().c_str());
 
 			CPHSensor hsensor(sensor);
-			// Check if sensor exists and whether an update is needed
+			CPHSensor lsensor;
+			// Check if sensor exists and whether last update is changed
 			if (m_sensors.find(sID) != m_sensors.end())
 			{
-				CPHSensor asensor = m_sensors[sID];
-				if (asensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated)
+				lsensor = m_sensors[sID];
+				if (lsensor.m_state.m_lastupdated == hsensor.m_state.m_lastupdated)
 				{
 					bDoSend = false;
 				}
+			}
+			else
+			{
+				// New sensor found, always update it's value
+				bNewSensor = true;
 			}
 			m_sensors.erase(sID);
 			m_sensors.insert(make_pair(sID, hsensor));
@@ -900,23 +919,39 @@ bool CPhilipsHue::GetSensors(const Json::Value &root)
 				}
 				else if (hsensor.m_type == SensorTypeZLLPresence)
 				{
-					InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+					if ((lsensor.m_state.m_presence != hsensor.m_state.m_presence)
+						|| (bNewSensor))
+					{
+						InsertUpdateSwitch(sID, STYPE_Motion, hsensor.m_state.m_presence, device_name, hsensor.m_config.m_battery);
+					}
 				}
 				else if (hsensor.m_type == SensorTypeZLLTemperature)
 				{
-					SendTempSensor(sID, hsensor.m_config.m_battery, float(hsensor.m_state.m_temperature / 100.0f), device_name);
+					if ((lsensor.m_state.m_temperature != hsensor.m_state.m_temperature)
+						|| (bNewSensor))
+					{
+						SendTempSensor(sID, hsensor.m_config.m_battery, float(hsensor.m_state.m_temperature / 100.0f), device_name);
+					}
 				}
 				else if (hsensor.m_type == SensorTypeZLLLightLevel)
 				{
-					InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
-
-					double lux = 0.00001;
-					if (hsensor.m_state.m_lightlevel != 0)
+					if ((lsensor.m_state.m_dark != hsensor.m_state.m_dark)
+						|| (bNewSensor))
 					{
-						float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
-						lux = pow(10, convertedLightLevel);
+						InsertUpdateSwitch(sID, STYPE_Dusk, hsensor.m_state.m_dark, device_name, hsensor.m_config.m_battery);
 					}
-					SendLuxSensor(sID, 0, hsensor.m_config.m_battery, (const float)lux, hsensor.m_type + " Lux " + hsensor.m_name);
+
+					if ((lsensor.m_state.m_lightlevel != hsensor.m_state.m_lightlevel)
+						|| (bNewSensor))
+					{
+						double lux = 0.00001;
+						if (hsensor.m_state.m_lightlevel != 0)
+						{
+							float convertedLightLevel = float((hsensor.m_state.m_lightlevel - 1) / 10000.00f);
+							lux = pow(10, convertedLightLevel);
+						}
+						SendLuxSensor(sID, 0, hsensor.m_config.m_battery, (const float)lux, hsensor.m_type + " Lux " + hsensor.m_name);
+					}
 				}
 				else
 				{

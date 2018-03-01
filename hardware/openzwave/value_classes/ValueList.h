@@ -70,13 +70,13 @@ namespace OpenZWave
 
 		Item const* GetItem() const;
 
-		int32 const GetItemIdxByLabel( string const& _label );
-		int32 const GetItemIdxByValue( int32 const _value );
+		int32 GetItemIdxByLabel( string const& _label ) const;
+		int32 GetItemIdxByValue( int32 const _value ) const;
 
 		bool GetItemLabels( vector<string>* o_items );
 		bool GetItemValues( vector<int32>* o_values );
 
-		uint8 const GetSize()const{ return m_size; }
+		uint8 GetSize()const{ return m_size; }
 
 	private:
 		vector<Item>	m_items;

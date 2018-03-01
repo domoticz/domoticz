@@ -207,7 +207,7 @@ void CWunderground::GetMeterDetails()
 			if (difftime(tlocal, tobserver) >= 1800)
 			{
 				//When we don't get any valid data in 30 minutes, we also stop using the values
-				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more then 30 minutes)");
+				_log.Log(LOG_ERROR, "WUnderground: Receiving old data from WU! (No new data return for more than 30 minutes)");
 				return;
 			}
 		}
@@ -295,8 +295,6 @@ void CWunderground::GetMeterDetails()
 
 	//Wind
 	int wind_degrees=-1;
-	float wind_mph=-1;
-	float wind_gust_mph=-1;
 	float windspeed_ms=0;
 	float windgust_ms=0;
 	float wind_temp=temp;
@@ -315,9 +313,8 @@ void CWunderground::GetMeterDetails()
 			float temp_wind_mph = static_cast<float>(atof(root["current_observation"]["wind_mph"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
 			{
-				wind_mph=temp_wind_mph;
 				//convert to m/s
-				windspeed_ms=wind_mph*0.44704f;
+				windspeed_ms=temp_wind_mph*0.44704f;
 			}
 		}
 	}
@@ -328,9 +325,8 @@ void CWunderground::GetMeterDetails()
 			float temp_wind_gust_mph = static_cast<float>(atof(root["current_observation"]["wind_gust_mph"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
 			{
-				wind_gust_mph=temp_wind_gust_mph;
 				//convert to m/s
-				windgust_ms=wind_gust_mph*0.44704f;
+				windgust_ms=temp_wind_gust_mph*0.44704f;
 			}
 		}
 	}
@@ -438,7 +434,7 @@ void CWunderground::GetMeterDetails()
 						float rainrateph = static_cast<float>(atof(root["current_observation"]["precip_1hr_metric"].asString().c_str()));
 						if (rainrateph != -9999.00f)
 						{
-							int at10 = round(std::abs(rainrateph*10.0f));
+							int at10 = round(std::abs(rainrateph*100.0f));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 							at10 -= (tsen.RAIN.rainrateh * 256);
 							tsen.RAIN.rainratel = (BYTE)(at10);

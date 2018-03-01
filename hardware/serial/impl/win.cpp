@@ -529,7 +529,7 @@ Serial::SerialImpl::waitForChange ()
   if (is_open_ == false) {
     throw PortNotOpenedException ("Serial::waitForChange");
   }
-  DWORD dwCommEvent;
+  DWORD dwCommEvent = 0;
 
   if (!SetCommMask(fd_, EV_CTS | EV_DSR | EV_RING | EV_RLSD)) {
     // Error setting communications mask

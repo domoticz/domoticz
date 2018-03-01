@@ -13,10 +13,10 @@
 
 #include "../../main/Helper.h"
 
-C1WireByOWFS::C1WireByOWFS(const std::string& path) :
+C1WireByOWFS::C1WireByOWFS(const std::string& path):
 	m_path(path)
 {
-	if (m_path == "")
+	if (m_path.empty())
 		m_path = "/mnt/1wire";
 
 	m_simultaneousTemperaturePath = m_path;
@@ -126,7 +126,7 @@ std::string C1WireByOWFS::readRawData(const std::string& filename) const
     return "";
 }
 
-void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const
+void C1WireByOWFS::writeData(const _t1WireDevice& device, const std::string &propertyName, const std::string &value) const
 {
     std::ofstream file;
     file.open(std::string(device.filename+"/"+propertyName).c_str());
@@ -137,7 +137,7 @@ void C1WireByOWFS::writeData(const _t1WireDevice& device,std::string propertyNam
     file.close();
 }
 
-void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    _t1WireDevice device;
    if (!FindDevice(sId, device))
@@ -179,6 +179,14 @@ void C1WireByOWFS::SetLightState(const std::string& sId,int unit,bool value)
          writeData(device,"control",value?"2":"1");
          break;
       }
+   case digital_potentiometer:
+   {
+	   writeData(device, "chargepump", "1");
+	   unsigned int wiper = static_cast<unsigned int>(level * (255.0 / 15.0));
+	   writeData(device, "wiper", boost::to_string(wiper));
+	   break;
+   }
+
    default:
       return;
    }
@@ -327,7 +335,7 @@ int C1WireByOWFS::GetVoltage(const _t1WireDevice& device,int unit) const
       }
    default:
       {
-         fileName.append("/volt.").append(1,'A'+unit);
+         fileName.append("/volt.").append(1, static_cast<char>('A'+unit));
          break;
       }
    }
@@ -349,6 +357,14 @@ float C1WireByOWFS::GetIlluminance(const _t1WireDevice& device) const
    return (float)(atof(readValue.c_str())*1000.0);
 }
 
+int C1WireByOWFS::GetWiper(const _t1WireDevice& device) const
+{
+	std::string readValue = readRawData(std::string(device.filename + "/wiper"));
+	if (readValue.empty())
+		return -1;
+	return atoi(readValue.c_str());
+}
+
 void C1WireByOWFS::StartSimultaneousTemperatureRead()
 {
 	if (m_mainworker.GetVerboseLevel() == EVBL_DEBUG)
@@ -367,6 +383,10 @@ void C1WireByOWFS::StartSimultaneousTemperatureRead()
 		}
 		sleep_milliseconds(800);
 	}
+}
+
+void C1WireByOWFS::PrepareDevices()
+{
 }
 
 bool C1WireByOWFS::IsValidDir(const struct dirent*const de)

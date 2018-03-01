@@ -3,21 +3,23 @@
 //
 //	Domoticz Plugin System - Dnpwwo, 2016
 //
-#ifdef USE_PYTHON_PLUGINS
+#ifdef ENABLE_PYTHON
+
+#include <tinyxml.h>
 
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
+#include "PythonObjects.h"
 
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
-#include "../tinyxpath/tinyxml.h"
 #include "../main/localtime_r.h"
 
-#include "PythonObjects.h"
+#include "../../notifications/NotificationHelper.h"
 
 #define ADD_STRING_TO_DICT(pDict, key, value) \
 		{	\
@@ -29,13 +31,18 @@
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
+extern std::string szWWWFolder;
+extern std::string szAppVersion;
+extern std::string szAppHash;
+extern std::string szAppDate;
+
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessage>	PluginMessageQueue;
+	extern boost::mutex PluginMutex;	// controls access to the message queue
+	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
 	extern boost::asio::io_service ios;
 
-	boost::mutex PythonMutex;	// only used during startup when multiple threads could use Python
+	boost::mutex PythonMutex;			// controls access to Python
 
 	//
 	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
@@ -130,13 +137,14 @@ namespace Plugins {
 				char* msg;
 				if (!PyArg_ParseTuple(args, "s", &msg))
 				{
+					//TODO: Dump data to aid debugging
 					_log.Log(LOG_ERROR, "(%s) PyDomoticz_Debug failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 					LogPythonException(pModState->pPlugin, std::string(__func__));
 				}
 				else
 				{
 					std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-					_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+					_log.Log((_eLogLevel)LOG_NORM, message);
 				}
 			}
 		}
@@ -161,13 +169,14 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_NORM, message.c_str());
+				_log.Log((_eLogLevel)LOG_NORM, message);
 			}
 		}
 
@@ -191,13 +200,14 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
+				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Error failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
-				_log.Log((_eLogLevel)LOG_ERROR, message.c_str());
+				_log.Log((_eLogLevel)LOG_ERROR, message);
 			}
 		}
 
@@ -235,91 +245,6 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyObject*	PyDomoticz_Transport(PyObject *self, PyObject *args, PyObject *keywds)
-	{
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Transport, unable to obtain module state.");
-		}
-		else if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Transport, illegal operation, Plugin has not started yet.");
-		}
-		else if (pModState->pPlugin->m_stoprequested)
-		{
-			_log.Log(LOG_NORM, "%s, Transport set request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
-		}
-		else
-		{
-			char*	szTransport;
-			char*	szAddress;
-			char*	szPort = NULL;
-			int		iBaud = 115200;
-			static char *kwlist[] = { "Transport", "Address", "Port", "Baud", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, keywds, "ss|si", kwlist, &szTransport, &szAddress, &szPort, &iBaud))
-			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters. Expected: Transport, Address, Port or Transport, Address, Baud.", pModState->pPlugin->Name.c_str());
-				LogPythonException(pModState->pPlugin, std::string(__func__));
-				Py_INCREF(Py_None);
-				return Py_None;
-			}
-
-			//	Add start command to message queue
-			std::string	sTransport = szTransport;
-			CPluginMessage	Message(PMT_Directive, PDT_Transport, pModState->pPlugin->m_HwdID, sTransport);
-			{
-				Message.m_Address = szAddress;
-				if (szPort) Message.m_Port = szPort;
-				Message.m_iValue = iBaud;
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
-		}
-
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
-
-	static PyObject*	PyDomoticz_Protocol(PyObject *self, PyObject *args)
-	{
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Protocol, unable to obtain module state.");
-		}
-		else if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Protocol, illegal operation, Plugin has not started yet.");
-		}
-		else if (pModState->pPlugin->m_stoprequested)
-		{
-			_log.Log(LOG_NORM, "%s, protocol set request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
-		}
-		else
-		{
-			char*	szProtocol;
-			if (!PyArg_ParseTuple(args, "s", &szProtocol))
-			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, string expected.", pModState->pPlugin->Name.c_str());
-				LogPythonException(pModState->pPlugin, std::string(__func__));
-			}
-			else
-			{
-				//	Add start command to message queue
-				std::string	sProtocol = szProtocol;
-				CPluginMessage	Message(PMT_Directive, PDT_Protocol, pModState->pPlugin->m_HwdID, sProtocol);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
-			}
-		}
-
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
-
 	static PyObject*	PyDomoticz_Heartbeat(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
@@ -342,7 +267,7 @@ namespace Plugins {
 			else
 			{
 				//	Add heartbeat command to message queue
-				CPluginMessage	Message(PMT_Directive, PDT_PollInterval, pModState->pPlugin->m_HwdID, iPollinterval);
+				PollIntervalDirective*	Message = new PollIntervalDirective(pModState->pPlugin, iPollinterval);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -354,120 +279,40 @@ namespace Plugins {
 		return Py_None;
 	}
 
-	static PyObject*	PyDomoticz_Connect(PyObject *self, PyObject *args)
+	static PyObject*	PyDomoticz_Notifier(PyObject *self, PyObject *args)
 	{
 		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
 		if (!pModState)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Connect, unable to obtain module state.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 		}
 		else if (!pModState->pPlugin)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Connect, illegal operation, Plugin has not started yet.");
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
 		}
 		else
 		{
-			//	Add connect command to message queue unless already connected
-			if (pModState->pPlugin->m_stoprequested)
+			char*	szNotifier;
+			if (!PyArg_ParseTuple(args, "s", &szNotifier))
 			{
-				_log.Log(LOG_NORM, "%s, connection request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
-			}
-			else if ((pModState->pPlugin->m_pTransport) && (pModState->pPlugin->m_pTransport->IsConnected()))
-			{
-				_log.Log(LOG_ERROR, "%s, connection request from '%s' ignored. Transport is already connected.", __func__, pModState->pPlugin->Name.c_str());
-			}
-			else
-			{
-				CPluginMessage	Message(PMT_Directive, PDT_Connect, pModState->pPlugin->m_HwdID);
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
-		}
-
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
-
-	static PyObject*	PyDomoticz_Send(PyObject *self, PyObject *args, PyObject *keywds)
-	{
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Send, unable to obtain module state.");
-		}
-		else if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Send, illegal operation, Plugin has not started yet.");
-		}
-		else if (pModState->pPlugin->m_stoprequested)
-		{
-			_log.Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
-		}
-		else
-		{
-			char*		szMessage = NULL;
-			char*		szVerb = NULL;
-			char*		szURL = NULL;
-			PyObject*	pHeaders = NULL;
-			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Verb", "URL", "Headers", "Delay", NULL };
-			if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|ssOi", kwlist, &szMessage, &szVerb, &szURL, &pHeaders, &iDelay))
-			{
-				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message,Verb,URL,Headers,Delay expected.", pModState->pPlugin->Name.c_str());
+				_log.Log(LOG_ERROR, "(%s) failed to parse parameters, Notifier Name expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
 			else
 			{
-				//	Add start command to message queue
-				std::string	sMessage = szMessage;
-				CPluginMessage	Message(PMT_Directive, PDT_Write, pModState->pPlugin->m_HwdID, sMessage);
+				std::string		sNotifierName = szNotifier;
+				if ((!sNotifierName.length()) || (sNotifierName.find_first_of(' ') != -1))
 				{
-					if (szURL) Message.m_Address = szURL;
-					if (szVerb) Message.m_Operation = szVerb;
-					if (pHeaders)
-					{
-						Message.m_Object = pHeaders;
-						Py_INCREF(pHeaders);
-					}
-					if (iDelay) Message.m_When += iDelay;
+					_log.Log(LOG_ERROR, "(%s) failed to parse parameters, valid Notifier Name expected, received '%s'.", pModState->pPlugin->Name.c_str(), szNotifier);
+				}
+				else
+				{
+					//	Add notifier command to message queue
+					NotifierDirective*	Message = new NotifierDirective(pModState->pPlugin, szNotifier);
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
 				}
 			}
-		}
-
-		Py_INCREF(Py_None);
-		return Py_None;
-	}
-
-	static PyObject*	PyDomoticz_Disconnect(PyObject *self, PyObject *args)
-	{
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
-		if (!pModState)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Disconnect, unable to obtain module state.");
-		}
-		else if (!pModState->pPlugin)
-		{
-			_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Disconnect, illegal operation, Plugin has not started yet.");
-		}
-		else if (pModState->pPlugin->m_stoprequested)
-		{
-			_log.Log(LOG_NORM, "%s, disconnection request from '%s' ignored. Plugin is stopping.", __func__, pModState->pPlugin->Name.c_str());
-		}
-		else
-		{
-			//	Add disconnect command to message queue
-			if ((pModState->pPlugin->m_pTransport) && (pModState->pPlugin->m_pTransport->IsConnected()))
-			{
-				CPluginMessage	Message(PMT_Directive, PDT_Disconnect, pModState->pPlugin->m_HwdID);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
-			}
-			else
-				_log.Log(LOG_ERROR, "CPlugin:PyDomoticz_Disconnect, disconnect request from '%s' ignored. Transport is not connected.", pModState->pPlugin->Name.c_str());
 		}
 
 		Py_INCREF(Py_None);
@@ -479,12 +324,8 @@ namespace Plugins {
 		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write message to Domoticz log." },
 		{ "Error", PyDomoticz_Error, METH_VARARGS, "Write error message to Domoticz log." },
 		{ "Debugging", PyDomoticz_Debugging, METH_VARARGS, "Set logging level. 1 set verbose logging, all other values use default level" },
-		{ "Transport", (PyCFunction)PyDomoticz_Transport, METH_VARARGS | METH_KEYWORDS, "Set the communication transport: TCP/IP, Serial." },
-		{ "Protocol", PyDomoticz_Protocol, METH_VARARGS, "Set the protocol the messages will use: None, line, JSON, XML, HTTP." },
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
-		{ "Connect", PyDomoticz_Connect, METH_NOARGS, "Connect to remote device using transport details." },
-		{ "Send", (PyCFunction)PyDomoticz_Send, METH_VARARGS | METH_KEYWORDS, "Send the specified message to the remote device." },
-		{ "Disconnect", PyDomoticz_Disconnect, METH_NOARGS, "Disconnectfrom remote device." },
+		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
 		{ NULL, NULL, 0, NULL }
 	};
 
@@ -512,21 +353,30 @@ namespace Plugins {
 
 	PyMODINIT_FUNC PyInit_Domoticz(void)
 	{
+
 		// This is called during the import of the plugin module
 		// triggered by the "import Domoticz" statement
 		PyObject* pModule = PyModule_Create2(&DomoticzModuleDef, PYTHON_API_VERSION);
 
 		if (PyType_Ready(&CDeviceType) < 0)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyInit_Domoticz, Device Type not ready.");
+			_log.Log(LOG_ERROR, "%s, Device Type not ready.", __func__);
 			return pModule;
 		}
 		Py_INCREF((PyObject *)&CDeviceType);
 		PyModule_AddObject(pModule, "Device", (PyObject *)&CDeviceType);
 
+		if (PyType_Ready(&CConnectionType) < 0)
+		{
+			_log.Log(LOG_ERROR, "%s, Connection Type not ready.", __func__);
+			return pModule;
+		}
+		Py_INCREF((PyObject *)&CConnectionType);
+		PyModule_AddObject(pModule, "Connection", (PyObject *)&CConnectionType);
+
 		if (PyType_Ready(&CImageType) < 0)
 		{
-			_log.Log(LOG_ERROR, "CPlugin:PyInit_Domoticz, Image Type not ready.");
+			_log.Log(LOG_ERROR, "%s, Image Type not ready.", __func__);
 			return pModule;
 		}
 		Py_INCREF((PyObject *)&CImageType);
@@ -536,16 +386,16 @@ namespace Plugins {
 	}
 
 
-	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) : 
+	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey) :
 		m_stoprequested(false),
-		m_pProtocol(NULL),
-		m_pTransport(NULL),
 		m_PluginKey(sPluginKey),
 		m_iPollInterval(10),
+		m_Notifier(NULL),
 		m_bDebug(false),
 		m_PyInterpreter(NULL),
 		m_PyModule(NULL),
 		m_DeviceDict(NULL),
+		m_ImageDict(NULL),
 		m_SettingsDict(NULL)
 	{
 		m_HwdID = HwdID;
@@ -555,9 +405,6 @@ namespace Plugins {
 
 	CPlugin::~CPlugin(void)
 	{
-		if (m_pProtocol) delete m_pProtocol;
-		if (m_pTransport) delete m_pTransport;
-
 		m_bIsStarted = false;
 	}
 
@@ -639,7 +486,14 @@ namespace Plugins {
 
 				if (sError.length())
 				{
-					_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %d, offset: %d", Name.c_str(), sError.c_str(), lineno, offset);
+					if ((lineno > 0) && (lineno < 1000))
+					{
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %lld, offset: %lld", Name.c_str(), sError.c_str(), lineno, offset);
+					}
+					else
+					{
+						_log.Log(LOG_ERROR, "(%s) Import detail: %s, Line: %lld", Name.c_str(), sError.c_str(), offset);
+					}
 					sError = "";
 				}
 
@@ -650,6 +504,10 @@ namespace Plugins {
 					_log.Log(LOG_ERROR, "(%s) Error Line '%s'", Name.c_str(), pBytes->ob_sval);
 					Py_XDECREF(pString);
 					Py_XDECREF(pBytes);
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "(%s) Error Line details not available.", Name.c_str());
 				}
 
 				if (sError.length())
@@ -664,7 +522,7 @@ namespace Plugins {
 
 		if (!pExcept && !pValue && !pTraceback)
 		{
-			_log.Log(LOG_ERROR, "(%s) Call to import module '%s' failed, unable to decode exception.", Name.c_str());
+			_log.Log(LOG_ERROR, "(%s) Call to import module failed, unable to decode exception.", Name.c_str());
 		}
 
 		if (pExcept) Py_XDECREF(pExcept);
@@ -736,16 +594,70 @@ namespace Plugins {
 		if (pTraceback) Py_XDECREF(pTraceback);
 	}
 
+	bool CPlugin::IoThreadRequired()
+	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		if (m_Transports.size())
+		{
+			for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+			{
+				CPluginTransport*	pPluginTransport = *itt;
+				if (pPluginTransport && (pPluginTransport->IsConnected()) && (pPluginTransport->ThreadPoolRequired()))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	int CPlugin::PollInterval(int Interval)
+	{
+		if (Interval > 0)
+			m_iPollInterval = Interval;
+		if (m_bDebug) _log.Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", Name.c_str(), m_iPollInterval);
+		return m_iPollInterval;
+	}
+
+	void CPlugin::Notifier(std::string Notifier)
+	{
+		if (m_Notifier)
+			delete m_Notifier;
+		if (m_bDebug) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", Name.c_str(), Notifier.c_str());
+		m_Notifier = new CPluginNotifier(this, Notifier);
+	}
+
+	void CPlugin::AddConnection(CPluginTransport *pTransport)
+	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		m_Transports.push_back(pTransport);
+	}
+
+	void CPlugin::RemoveConnection(CPluginTransport *pTransport)
+	{
+		boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+		for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+		{
+			CPluginTransport*	pPluginTransport = *itt;
+			if (pTransport == pPluginTransport)
+			{
+				m_Transports.erase(itt);
+				break;
+			}
+		}
+	}
+
+
 	bool CPlugin::StartHardware()
 	{
 		if (m_bIsStarted) StopHardware();
 
 		//	Add start command to message queue
-		InitializeMessage	Message(m_HwdID);
+		InitializeMessage*	Message = new InitializeMessage(this);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
+
+		_log.Log(LOG_STATUS, "(%s) Started.", Name.c_str());
 
 		return true;
 	}
@@ -754,37 +666,88 @@ namespace Plugins {
 	{
 		try
 		{
-			m_stoprequested = true;
+			_log.Log(LOG_STATUS, "(%s) Stop directive received.", Name.c_str());
 
-			// Tell transport to disconnect if required
-			if ((m_pTransport) && (m_pTransport->IsConnected()))
+			m_stoprequested = true;
+			if (m_bIsStarted)
 			{
-				CPluginMessage	DisconnectMessage(PMT_Directive, PDT_Disconnect, m_HwdID);
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(DisconnectMessage);
-			}
-			else
-			{
-				// otherwise just signal stop
-				StopMessage	StopMessage(m_HwdID);
+				// If we have connections queue disconnects
+				if (m_Transports.size())
 				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(StopMessage);
+					boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					{
+						CPluginTransport*	pPluginTransport = *itt;
+						// Tell transport to disconnect if required
+						if (pPluginTransport)
+						{
+							DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(this, pPluginTransport->Connection());
+							boost::lock_guard<boost::mutex> l(PluginMutex);
+							PluginMessageQueue.push(onDisconnectCallback);
+						}
+					}
+				}
+				else
+				{
+					// otherwise just signal stop
+					onStopCallback*	Message = new onStopCallback(this);
+					{
+						boost::lock_guard<boost::mutex> l(PluginMutex);
+						PluginMessageQueue.push(Message);
+					}
 				}
 			}
 
 			// loop on stop to be processed
-			int scounter = 0;
-			while (m_bIsStarted && (scounter++ < 50))
+			while (m_bIsStarted)
 			{
-				sleep_milliseconds(100);
+				int scounter = 0;
+				while (m_bIsStarted && (scounter++ < 50))
+				{
+					sleep_milliseconds(100);
+				}
+				if (m_bIsStarted)
+				{
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, flushing event queue...", Name.c_str());
+
+					// Copy the event queue to a temporary one, then copy back the events for other plugins
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
+					while (!PluginMessageQueue.empty())
+						PluginMessageQueue.pop();
+
+					while (!TempMessageQueue.empty())
+					{
+						CPluginMessageBase* FrontMessage = TempMessageQueue.front();
+						TempMessageQueue.pop();
+						if (FrontMessage->m_pPlugin == this)
+						{
+							// log events that will not be processed
+							CCallbackBase* pCallback = dynamic_cast<CCallbackBase*>(FrontMessage);
+							if (pCallback)
+								_log.Log(LOG_ERROR, "(%s) Callback event '%s' (Python call '%s') discarded.", Name.c_str(), FrontMessage->Name(), pCallback->PythonName());
+							else
+								_log.Log(LOG_ERROR, "(%s) Non-callback event '%s' discarded.", Name.c_str(), FrontMessage->Name());
+						}
+						else
+						{
+							// Message is for a different plugin so requeue it
+							PluginMessageQueue.push(FrontMessage);
+						}
+					}
+					m_bIsStarted = false;
+				}
 			}
+
+			_log.Log(LOG_STATUS, "(%s) Stopping threads.", Name.c_str());
 
 			if (m_thread)
 			{
 				m_thread->join();
 				m_thread.reset();
 			}
+
+			if (m_Notifier) delete m_Notifier;
 		}
 		catch (...)
 		{
@@ -798,6 +761,7 @@ namespace Plugins {
 
 	void CPlugin::Do_Work()
 	{
+		_log.Log(LOG_STATUS, "(%s) Entering work loop.", Name.c_str());
 		m_LastHeartbeat = mytime(NULL);
 		int scounter = m_iPollInterval * 2;
 		while (!m_stoprequested)
@@ -805,7 +769,7 @@ namespace Plugins {
 			if (!--scounter)
 			{
 				//	Add heartbeat to message queue
-				HeartbeatMessage	Message(m_HwdID);
+				onHeartbeatCallback*	Message = new onHeartbeatCallback(this);
 				{
 					boost::lock_guard<boost::mutex> l(PluginMutex);
 					PluginMessageQueue.push(Message);
@@ -814,10 +778,29 @@ namespace Plugins {
 
 				m_LastHeartbeat = mytime(NULL);
 			}
+
+			// Check all connections are still valid, vector could be affected by a disconnect on another thread
+			try
+			{
+				boost::lock_guard<boost::mutex> l(m_TransportsMutex);
+				if (m_Transports.size())
+				{
+					for (std::vector<CPluginTransport*>::iterator itt = m_Transports.begin(); itt != m_Transports.end(); itt++)
+					{
+						CPluginTransport*	pPluginTransport = *itt;
+						pPluginTransport->VerifyConnection();
+					}
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_NORM, "(%s) Transport vector changed during %s loop, continuing.", Name.c_str(), __func__);
+			}
+
 			sleep_milliseconds(500);
 		}
 
-		_log.Log(LOG_STATUS, "(%s) Exiting work loop...", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) Exiting work loop.", Name.c_str());
 	}
 
 	void CPlugin::Restart()
@@ -826,215 +809,570 @@ namespace Plugins {
 		StartHardware();
 	}
 
-	void CPlugin::HandleMessage(const CPluginMessage & Message)
+	bool CPlugin::Initialise()
 	{
-		std::string sHandler = "";
-		PyObject* pParams = NULL;
-		switch (Message.m_Type)
-		{
-		case PMT_Initialise:
-			HandleInitialise();
-			break;
-		case PMT_Start:
-			HandleStart();
-			sHandler = "onStart";
-			break;
-		case PMT_Directive:
-			switch (Message.m_Directive)
-			{
-			case PDT_Transport:
-				if (m_pTransport && m_pTransport->IsConnected())
-				{
-					_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
-					return;
-				}
-				if (m_pTransport)
-				{
-					delete m_pTransport;
-					m_pTransport = NULL;
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Previous transport was not connected and has been deleted.", Name.c_str());
-				}
-				if (Message.m_Message == "TCP/IP")
-				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), Message.m_Message.c_str(), Message.m_Address.c_str(), Message.m_Port.c_str());
-					m_pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, Message.m_Address, Message.m_Port);
-				}
-				else if (Message.m_Message == "UDP/IP")
-				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), Message.m_Message.c_str(), Message.m_Address.c_str(), Message.m_Port.c_str());
-					m_pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, Message.m_Address, Message.m_Port);
-				}
-				else if (Message.m_Message == "Serial")
-				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), Message.m_Message.c_str(), Message.m_Address.c_str(), Message.m_iValue);
-					m_pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, Message.m_Address, Message.m_iValue);
-				}
-				else
-				{
-					_log.Log(LOG_ERROR, "(%s) Unknown transport type specified: '%s'.", Name.c_str(), Message.m_Message.c_str());
-				}
-				break;
-			case PDT_Protocol:
-				if (m_pProtocol)
-				{
-					delete m_pProtocol;
-					m_pProtocol = NULL;
-				}
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", Name.c_str(), Message.m_Message.c_str());
-				if (Message.m_Message == "Line") m_pProtocol = (CPluginProtocol*) new CPluginProtocolLine();
-				else if (Message.m_Message == "XML") m_pProtocol = (CPluginProtocol*) new CPluginProtocolXML();
-				else if (Message.m_Message == "JSON") m_pProtocol = (CPluginProtocol*) new CPluginProtocolJSON();
-				else if (Message.m_Message == "HTTP")
-				{
-					CPluginProtocolHTTP*	pProtocol = new CPluginProtocolHTTP();
-					pProtocol->AuthenticationDetails(m_Username, m_Password);
-					m_pProtocol = (CPluginProtocol*)pProtocol;
-				}
-				else m_pProtocol = new CPluginProtocol();
-				break;
-			case PDT_PollInterval:
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Heartbeat interval set to: %d.", Name.c_str(), Message.m_iValue);
-				this->m_iPollInterval = Message.m_iValue;
-				break;
-			case PDT_Connect:
-				if (!m_pTransport)
-				{
-					_log.Log(LOG_ERROR, "(%s) No transport specified, connect directive ignored.", Name.c_str());
-					return;
-				}
-				if (m_pTransport && m_pTransport->IsConnected())
-				{
-					_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
-					return;
-				}
-				if (m_pTransport->handleConnect())
-				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, transport connect initiated successfully.", Name.c_str());
-				}
-				else
-				{
-					_log.Log(LOG_NORM, "(%s) Connect directive received, transport connect initiation failed.", Name.c_str());
-				}
-				break;
-			case PDT_Write:
-				if (!m_pTransport || !m_pTransport->IsConnected())
-				{
-					_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive ignored.", Name.c_str());
-					return;
-				}
-				else
-				{
-					if (!m_pProtocol)
-					{
-						if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-						m_pProtocol = new CPluginProtocol();
-					}
-					std::string	sWriteData = m_pProtocol->ProcessOutbound(Message);
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Sending data: '%s'.", Name.c_str(), sWriteData.c_str());
-					m_pTransport->handleWrite(sWriteData);
-					if (Message.m_Object)
-					{
-						PyObject*	pHeaders = (PyObject*)Message.m_Object;
-						Py_XDECREF(pHeaders);
-					}
-				}
-				break;
-			case PDT_Disconnect:
-				if (m_pTransport && (m_pTransport->IsConnected()))
-				{
-					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Disconnect directive received.", Name.c_str());
-					m_pTransport->handleDisconnect();
-					if (m_pProtocol)
-					{
-						m_pProtocol->Flush(m_HwdID);
-					}
-					// inform the plugin
-					DisconnectMessage	DisconnectMessage(m_HwdID);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(DisconnectMessage);
-				}
-				break;
-			case PDT_Settings:
-				LoadSettings();
-				break;
-			default:
-				_log.Log(LOG_ERROR, "(%s) Unknown directive type in message: %d.", Name.c_str(), Message.m_Directive);
-				return;
-			}
-			break;
-		case PMT_Connected:
-			sHandler = "onConnect";
-			pParams = Py_BuildValue("is", Message.m_iValue, Message.m_Message.c_str());  // 0 is success else socket failure code
-			break;
-		case PMT_Read:
-			if (!m_pProtocol)
-			{
-				if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol not specified, 'None' assumed.", Name.c_str());
-				m_pProtocol = new CPluginProtocol();
-			}
-			m_pProtocol->ProcessInbound(Message.m_HwdID, (std::string&)Message.m_Message);
-			break;
-		case PMT_Message:
-			if (Message.m_Message.length())
-			{
-				sHandler = "onMessage";
-				if (Message.m_Object)
-				{
-					PyObject*	pHeaders = (PyObject*)Message.m_Object;
-					pParams = Py_BuildValue("yiO", (unsigned char*)(Message.m_Message.c_str()), Message.m_iLevel, pHeaders);
-					if (!pParams)
-					{
-						_log.Log(LOG_ERROR, "(%s) Failed to create parameters for inbound message: (%d) %s.", Name.c_str(), Message.m_Message.length(), Message.m_Message.c_str());
-						LogPythonException(sHandler);
-					}
-					Py_XDECREF(pHeaders);
-				}
-				else
-				{
-					Py_INCREF(Py_None);
-					pParams = Py_BuildValue("yiO", Message.m_Message.c_str(), Message.m_iLevel, Py_None);
-				}
-			}
-			break;
-		case PMT_Notification:
-			sHandler = "onNotification";
-			pParams = Py_BuildValue("ssssiss", Message.m_Name.c_str(), Message.m_Subject.c_str(), Message.m_Text.c_str(), Message.m_Status.c_str(), Message.m_Priority, Message.m_Sound.c_str(), Message.m_ImageFile.c_str());
-			break;
-		case PMT_Heartbeat:
-			sHandler = "onHeartbeat";
-			break;
-		case PMT_Disconnect:
-			sHandler = "onDisconnect";
-			if (m_stoprequested) // Plugin exiting, forced stop
-			{
-				StopMessage	StopMessage(m_HwdID);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(StopMessage);
-				}
-			}
-			break;
-		case PMT_Command:
-			sHandler = "onCommand";
-			if (Message.m_fLevel != -273.15f)
-			{
-				pParams = Py_BuildValue("isfi", Message.m_Unit, Message.m_Message.c_str(), Message.m_fLevel, 0);
-			}
-			else
-			{
-				pParams = Py_BuildValue("isii", Message.m_Unit, Message.m_Message.c_str(), Message.m_iLevel, Message.m_iHue);
-			}
-			break;
-		case PMT_Stop:
-			sHandler = "onStop";
-			break;
-		default:
-			_log.Log(LOG_ERROR, "(%s) Unknown message type in message: %d.", Name.c_str(), Message.m_Type);
-			return;
-		}
+		m_bIsStarted = false;
+
+		boost::lock_guard<boost::mutex> l(PythonMutex);
 
 		try
 		{
+			m_PyInterpreter = Py_NewInterpreter();
+			if (!m_PyInterpreter)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
+				return false;
+			}
+
+			// Prepend plugin directory to path so that python will search it early when importing
+	#ifdef WIN32
+			std::wstring	sSeparator = L";";
+	#else
+			std::wstring	sSeparator = L":";
+	#endif
+			std::wstringstream ssPath;
+			std::string		sFind = "key=\"" + m_PluginKey + "\"";
+			CPluginSystem Plugins;
+			std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
+			std::string		sPluginXML;
+			for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
+			{
+				if (it_type->second.find(sFind) != std::string::npos)
+				{
+					m_HomeFolder = it_type->first;
+					ssPath << m_HomeFolder.c_str();
+					sPluginXML = it_type->second;
+					break;
+				}
+			}
+			std::wstring	sPath = ssPath.str() + sSeparator;
+			sPath += Py_GetPath();
+			PySys_SetPath((wchar_t*)sPath.c_str());
+
+			try
+			{
+				m_PyModule = PyImport_ImportModule("plugin");
+				if (!m_PyModule)
+				{
+					_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+					LogPythonException();
+					return false;
+				}
+			}
+			catch (...)
+			{
+				_log.Log(LOG_ERROR, "(%s) exception loading 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
+			}
+
+			// Domoticz callbacks need state so they know which plugin to act on
+			PyObject* pMod = PyState_FindModule(&DomoticzModuleDef);
+			if (!pMod)
+			{
+				_log.Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
+				return false;
+			}
+			module_state*	pModState = ((struct module_state*)PyModule_GetState(pMod));
+			pModState->pPlugin = this;
+
+			//Start worker thread
+			m_stoprequested = false;
+			m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPlugin::Do_Work, this)));
+
+			if (!m_thread)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed start worker thread.", m_PluginKey.c_str());
+				return false;
+			}
+
+			//	Add start command to message queue
+			onStartCallback*	Message = new onStartCallback(this);
+			{
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			std::string		sExtraDetail;
+			TiXmlDocument	XmlDoc;
+			XmlDoc.Parse(sPluginXML.c_str());
+			if (XmlDoc.Error())
+			{
+				_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), sPluginXML.c_str());
+			}
+			else
+			{
+				TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
+				for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
+				{
+					TiXmlElement* pXmlEle = pXmlNode->ToElement();
+					if (pXmlEle)
+					{
+						const char*	pAttributeValue = pXmlEle->Attribute("version");
+						if (pAttributeValue)
+						{
+							m_Version = pAttributeValue;
+							sExtraDetail += "version ";
+							sExtraDetail += pAttributeValue;
+						}
+						pAttributeValue = pXmlEle->Attribute("author");
+						if (pAttributeValue)
+						{
+							m_Author = pAttributeValue;
+							if (sExtraDetail.length()) sExtraDetail += ", ";
+							sExtraDetail += "author '";
+							sExtraDetail += pAttributeValue;
+							sExtraDetail += "'";
+						}
+					}
+				}
+			}
+			_log.Log(LOG_STATUS, "(%s) Initialized %s", Name.c_str(), sExtraDetail.c_str());
+
+			return true;
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
+		}
+
+		return false;
+	}
+
+	bool CPlugin::Start()
+	{
+		try
+		{
+			PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
+			PyObject *pParamsDict = PyDict_New();
+			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
+				return false;
+			}
+			Py_DECREF(pParamsDict);
+
+			PyObject*	pObj = Py_BuildValue("i", m_HwdID);
+			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
+				return false;
+			}
+			Py_DECREF(pObj);
+
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					const char*	pChar = sd[0].c_str();
+					ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
+					ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
+					ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
+					ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
+					ADD_STRING_TO_DICT(pParamsDict, "Address", sd[1]);
+					ADD_STRING_TO_DICT(pParamsDict, "Port", sd[2]);
+					ADD_STRING_TO_DICT(pParamsDict, "SerialPort", sd[3]);
+					ADD_STRING_TO_DICT(pParamsDict, "Username", sd[4]);
+					ADD_STRING_TO_DICT(pParamsDict, "Password", sd[5]);
+					ADD_STRING_TO_DICT(pParamsDict, "Key", sd[6]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode1", sd[7]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode2", sd[8]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode3", sd[9]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode4", sd[10]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode5", sd[11]);
+					ADD_STRING_TO_DICT(pParamsDict, "Mode6", sd[12]);
+
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzVersion", szAppVersion);
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzHash", szAppHash);
+					ADD_STRING_TO_DICT(pParamsDict, "DomoticzBuildTime", szAppDate);
+
+					// Remember these for use with some protocols
+					m_Username = sd[4];
+					m_Password = sd[5];
+				}
+			}
+
+			m_DeviceDict = PyDict_New();
+			if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add Device dictionary.", m_PluginKey.c_str());
+				return false;
+			}
+
+			// load associated devices to make them available to python
+			result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+			if (result.size() > 0)
+			{
+				PyType_Ready(&CDeviceType);
+				// Add device objects into the device dictionary with Unit as the key
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+
+					PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
+					if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+						return false;
+					}
+					pDevice->pPlugin = this;
+					pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
+					pDevice->HwdID = m_HwdID;
+					pDevice->Unit = atoi(sd[0].c_str());
+					CDevice_refresh(pDevice);
+					Py_DECREF(pDevice);
+					Py_DECREF(pKey);
+				}
+			}
+
+			m_ImageDict = PyDict_New();
+			if (PyDict_SetItemString(pModuleDict, "Images", (PyObject*)m_ImageDict) == -1)
+			{
+				_log.Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
+				return false;
+			}
+
+			// load associated custom images to make them available to python
+			result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			if (result.size() > 0)
+			{
+				PyType_Ready(&CImageType);
+				// Add image objects into the image dictionary with ID as the key
+				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
+
+					PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
+					if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
+					{
+						_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+						return false;
+					}
+					pImage->ImageID = atoi(sd[0].c_str()) + 100;
+					pImage->Base = PyUnicode_FromString(sd[1].c_str());
+					pImage->Name = PyUnicode_FromString(sd[2].c_str());
+					pImage->Description = PyUnicode_FromString(sd[3].c_str());
+					Py_DECREF(pImage);
+					Py_DECREF(pKey);
+				}
+			}
+
+			LoadSettings();
+
+			m_bIsStarted = true;
+			return true;
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
+		}
+
+		return false;
+	}
+
+	void CPlugin::ConnectionProtocol(CDirectiveBase * pMess)
+	{
+		ProtocolDirective*	pMessage = (ProtocolDirective*)pMess;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
+		if (pConnection->pProtocol)
+		{
+			delete pConnection->pProtocol;
+			pConnection->pProtocol = NULL;
+		}
+		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
+		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
+		if (m_bDebug) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", Name.c_str(), sProtocol.c_str());
+	}
+
+	void CPlugin::ConnectionConnect(CDirectiveBase * pMess)
+	{
+		ConnectDirective*	pMessage = (ConnectDirective*)pMess;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
+
+		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
+			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
+		}
+
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		if (sTransport == "TCP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			if (!sPort.length())
+			{
+				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
+				return;
+			}
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+		}
+		else if (sTransport == "Serial")
+		{
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', '%s', %d.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), pConnection->Baud);
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportSerial(m_HwdID, (PyObject*)pConnection, sAddress, pConnection->Baud);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for connecting specified: '%s', valid types are TCP/IP and Serial.", Name.c_str(), sTransport.c_str());
+			return;
+		}
+		if (pConnection->pTransport)
+		{
+			AddConnection(pConnection->pTransport);
+		}
+		if (pConnection->pTransport->handleConnect())
+		{
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Connect directive received, action initiated successfully.", Name.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_NORM, "(%s) Connect directive received, action initiation failed.", Name.c_str());
+			RemoveConnection(pConnection->pTransport);
+		}
+	}
+
+	void CPlugin::ConnectionListen(CDirectiveBase * pMess)
+	{
+		ListenDirective*	pMessage = (ListenDirective*)pMess;
+		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
+
+		if (pConnection->pTransport && pConnection->pTransport->IsConnected())
+		{
+			_log.Log(LOG_ERROR, "(%s) Current transport is still connected, directive ignored.", Name.c_str());
+			return;
+		}
+
+		if (!pConnection->pProtocol)
+		{
+			if (m_bDebug)
+			{
+				std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+				_log.Log(LOG_NORM, "(%s) Protocol for '%s' not specified, 'None' assumed.", Name.c_str(), sConnection.c_str());
+			}
+			pConnection->pProtocol = new CPluginProtocol();
+		}
+
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+		if (sTransport == "TCP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			if (!pConnection->pProtocol->Secure())
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, "", sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, "", sPort);
+		}
+		else if (sTransport == "UDP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+		}
+		else if (sTransport == "ICMP/IP")
+		{
+			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+			if (pConnection->pProtocol->Secure())  _log.Log(LOG_ERROR, "(%s) Transport '%s' does not support secure connections.", Name.c_str(), sTransport.c_str());
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
+			pConnection->pTransport = (CPluginTransport*) new CPluginTransportICMP(m_HwdID, (PyObject*)pConnection, sAddress.c_str(), sPort);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "(%s) Invalid transport type for listening specified: '%s', valid types are TCP/IP, UDP/IP and ICMP/IP.", Name.c_str(), sTransport.c_str());
+			return;
+		}
+		if (pConnection->pTransport)
+		{
+			AddConnection(pConnection->pTransport);
+		}
+		if (pConnection->pTransport->handleListen())
+		{
+			if (m_bDebug) _log.Log(LOG_NORM, "(%s) Listen directive received, action initiated successfully.", Name.c_str());
+		}
+		else
+		{
+			_log.Log(LOG_NORM, "(%s) Listen directive received, action initiation failed.", Name.c_str());
+			RemoveConnection(pConnection->pTransport);
+		}
+	}
+
+	void CPlugin::ConnectionRead(CPluginMessageBase * pMess)
+	{
+		ReadMessage*	pMessage = (ReadMessage*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		pConnection->pProtocol->ProcessInbound(pMessage);
+	}
+
+	void CPlugin::ConnectionWrite(CDirectiveBase* pMess)
+	{
+		WriteDirective*	pMessage = (WriteDirective*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+		std::string	sConnection = PyUnicode_AsUTF8(pConnection->Name);
+		if (pConnection->pTransport)
+		{
+			if (sTransport == "UDP/IP")
+			{
+				_log.Log(LOG_ERROR, "(%s) Connectionless Transport is listening, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
+				return;
+			}
+
+			if ((sTransport != "ICMP/IP") && (!pConnection->pTransport->IsConnected()))
+			{
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
+				return;
+			}
+		}
+
+		if (!pConnection->pTransport)
+		{
+			// UDP is connectionless so create a temporary transport and write to it
+			if (sTransport == "UDP/IP")
+			{
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if (m_bDebug)
+				{
+					if (sPort.length())
+						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s for '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str(), sConnection.c_str());
+					else
+						_log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s for '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sConnection.c_str());
+				}
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportUDP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			}
+			else
+			{
+				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
+				return;
+			}
+		}
+
+		std::vector<byte>	vWriteData = pConnection->pProtocol->ProcessOutbound(pMessage);
+		if (m_bDebug)
+		{
+			WriteDebugBuffer(vWriteData, false);
+		}
+
+		pConnection->pTransport->handleWrite(vWriteData);
+
+		// UDP is connectionless so remove the transport after write
+		if (pConnection->pTransport && (sTransport == "UDP/IP"))
+		{
+			delete pConnection->pTransport;
+			pConnection->pTransport = NULL;
+		}
+
+	}
+
+	void CPlugin::ConnectionDisconnect(CDirectiveBase * pMess)
+	{
+		DisconnectDirective*	pMessage = (DisconnectDirective*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+
+		// Return any partial data to plugin
+		if (pConnection->pProtocol)
+		{
+			pConnection->pProtocol->Flush(pMessage->m_pPlugin, (PyObject*)pConnection);
+		}
+
+		if (pConnection->pTransport)
+		{
+			if (m_bDebug)
+			{
+				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if ((sTransport == "Serial") || (!sPort.length()))
+					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s'.", Name.c_str(), sAddress.c_str());
+				else
+					_log.Log(LOG_NORM, "(%s) Disconnect directive received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
+			}
+
+			// If transport is not connected there won't be a Disconnect Event so tidy it up here
+			if (!pConnection->pTransport->IsConnected())
+			{
+				pConnection->pTransport->handleDisconnect();
+				RemoveConnection(pConnection->pTransport);
+				CPluginTransport *pTransport = pConnection->pTransport;
+				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
+			}
+			else
+			{
+				pConnection->pTransport->handleDisconnect();
+			}
+		}
+	}
+
+	void CPlugin::DisconnectEvent(CEventBase * pMess)
+	{
+		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;
+		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
+		if (pConnection->pTransport)
+		{
+			if (m_bDebug)
+			{
+				std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
+				std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
+				std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
+				if ((sTransport == "Serial") || (!sPort.length()))
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s'.", Name.c_str(), sAddress.c_str());
+				else
+					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
+			}
+			{
+				RemoveConnection(pConnection->pTransport);
+				CPluginTransport *pTransport = pConnection->pTransport;
+				delete pConnection->pTransport;
+				pConnection->pTransport = NULL;
+			}
+
+			// inform the plugin
+			{
+				onDisconnectCallback*	Message = new onDisconnectCallback(this, (PyObject*)pConnection);
+				boost::lock_guard<boost::mutex> l(PluginMutex);
+				PluginMessageQueue.push(Message);
+			}
+
+			// Plugin exiting and all connections have disconnect messages queued
+			if (m_stoprequested && !m_Transports.size())
+			{
+				onStopCallback*	Message = new onStopCallback(this);
+				{
+					boost::lock_guard<boost::mutex> l(PluginMutex);
+					PluginMessageQueue.push(Message);
+				}
+			}
+		}
+	}
+
+	void CPlugin::Callback(std::string sHandler, void * pParams)
+	{
+		try
+		{
+			// Callbacks MUST already have taken the PythonMutex lock otherwise bad things will happen
 			if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
 			if (m_PyModule && sHandler.length())
 			{
@@ -1044,7 +1382,7 @@ namespace Plugins {
 					if (m_bDebug) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyObject*	pReturnValue = PyObject_CallObject(pFunc, pParams);
+					PyObject*	pReturnValue = PyObject_CallObject(pFunc, (PyObject*)pParams);
 					if (!pReturnValue)
 					{
 						LogPythonException(sHandler);
@@ -1055,272 +1393,43 @@ namespace Plugins {
 
 			if (pParams) Py_XDECREF(pParams);
 		}
-		catch (std::exception e)
+		catch (std::exception *e)
 		{
-			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e.what());
+			_log.Log(LOG_ERROR, "%s: Execption thrown: %s", __func__, e->what());
 		}
 		catch (...)
 		{
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown", __func__);
 		}
-
-		if (Message.m_Type == PMT_Stop)
-		{
-			try
-			{
-				// Stop Python
-				if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
-				if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
-				Py_XDECREF(m_PyModule);
-			}
-			catch (std::exception e)
-			{
-				_log.Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e.what());
-			}
-			catch (...)
-			{
-				_log.Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
-			}
-			m_PyModule = NULL;
-			m_DeviceDict = NULL;
-			m_PyInterpreter = NULL;
-			m_bIsStarted = false;
-		}
 	}
 
-	bool CPlugin::HandleInitialise()
+	void CPlugin::Stop()
 	{
+		try
+		{
+			PyErr_Clear();
+
+			// Stop Python
+			if (m_DeviceDict) Py_XDECREF(m_DeviceDict);
+			if (m_ImageDict) Py_XDECREF(m_ImageDict);
+			if (m_SettingsDict) Py_XDECREF(m_SettingsDict);
+			if (m_PyInterpreter) Py_EndInterpreter((PyThreadState*)m_PyInterpreter);
+			Py_XDECREF(m_PyModule);
+		}
+		catch (std::exception *e)
+		{
+			_log.Log(LOG_ERROR, "%s: Execption thrown releasing Interpreter: %s", __func__, e->what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
+		}
+		m_PyModule = NULL;
+		m_DeviceDict = NULL;
+		m_ImageDict = NULL;
+		m_SettingsDict = NULL;
+		m_PyInterpreter = NULL;
 		m_bIsStarted = false;
-
-		boost::lock_guard<boost::mutex> l(PythonMutex);
-		m_PyInterpreter = Py_NewInterpreter();
-		if (!m_PyInterpreter)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
-			return false;
-		}
-
-		// Prepend plugin directory to path so that python will search it early when importing
-#ifdef WIN32
-		std::wstring	sSeparator = L";";
-#else
-		std::wstring	sSeparator = L":";
-#endif
-		std::wstringstream ssPath;
-		std::string		sFind = "key=\"" + m_PluginKey + "\"";
-		CPluginSystem Plugins;
-		std::map<std::string, std::string>*	mPluginXml = Plugins.GetManifest();
-		std::string		sPluginXML;
-		for (std::map<std::string, std::string>::iterator it_type = mPluginXml->begin(); it_type != mPluginXml->end(); it_type++)
-		{
-			if (it_type->second.find(sFind) != std::string::npos)
-			{
-				m_HomeFolder = it_type->first;
-				ssPath << m_HomeFolder.c_str();
-				sPluginXML = it_type->second;
-				break;
-			}
-		}
-		std::wstring	sPath = ssPath.str() + sSeparator;
-		sPath += Py_GetPath();
-		PySys_SetPath((wchar_t*)sPath.c_str());
-
-		m_PyModule = PyImport_ImportModule("plugin");
-		if (!m_PyModule)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
-			LogPythonException();
-			return false;
-		}
-
-		// Domoticz callbacks need state so they know which plugin to act on
-		PyObject* pMod = PyState_FindModule(&DomoticzModuleDef);
-		if (!pMod)
-		{
-			_log.Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
-			return false;
-		}
-		module_state*	pModState = ((struct module_state*)PyModule_GetState(pMod));
-		pModState->pPlugin = this;
-
-		//Start worker thread
-		m_stoprequested = false;
-		m_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CPlugin::Do_Work, this)));
-
-		if (!m_thread)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed start worker thread.", m_PluginKey.c_str());
-			return false;
-		}
-
-		//	Add start command to message queue
-		StartMessage	Message(m_HwdID);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
-		}
-
-		std::string		sExtraDetail;
-		TiXmlDocument	XmlDoc;
-		XmlDoc.Parse(sPluginXML.c_str());
-		if (XmlDoc.Error())
-		{
-			_log.Log(LOG_ERROR, "%s: Error '%s' at line %d column %d in XML '%s'.", __func__, XmlDoc.ErrorDesc(), XmlDoc.ErrorRow(), XmlDoc.ErrorCol(), sPluginXML.c_str());
-		}
-		else
-		{
-			TiXmlNode* pXmlNode = XmlDoc.FirstChild("plugin");
-			for (pXmlNode; pXmlNode; pXmlNode = pXmlNode->NextSiblingElement())
-			{
-				TiXmlElement* pXmlEle = pXmlNode->ToElement();
-				if (pXmlEle)
-				{
-					const char*	pAttributeValue = pXmlEle->Attribute("version");
-					if (pAttributeValue)
-					{
-						m_Version = pAttributeValue;
-						sExtraDetail += "version ";
-						sExtraDetail += pAttributeValue;
-					}
-					pAttributeValue = pXmlEle->Attribute("author");
-					if (pAttributeValue)
-					{
-						m_Author = pAttributeValue;
-						if (sExtraDetail.length()) sExtraDetail += ", ";
-						sExtraDetail += "author '";
-						sExtraDetail += pAttributeValue;
-						sExtraDetail += "'";
-					}
-				}
-			}
-		}
-		_log.Log(LOG_STATUS, "(%s) Initialized %s", Name.c_str(), sExtraDetail.c_str());
-
-		return true;
-	}
-
-	bool CPlugin::HandleStart()
-	{
-		PyObject* pModuleDict = PyModule_GetDict((PyObject*)m_PyModule);  // returns a borrowed referece to the __dict__ object for the module
-		PyObject *pParamsDict = PyDict_New();
-		if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
-			return false;
-		}
-		Py_DECREF(pParamsDict);
-
-		PyObject*	pObj = Py_BuildValue("i", m_HwdID);
-		if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%s' to dictionary.", m_PluginKey.c_str(), m_HwdID);
-			return false;
-		}
-		Py_DECREF(pObj);
-
-		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6 FROM Hardware WHERE (ID==%d)", m_HwdID);
-		if (result.size() > 0)
-		{
-			std::vector<std::vector<std::string> >::const_iterator itt;
-			for (itt = result.begin(); itt != result.end(); ++itt)
-			{
-				std::vector<std::string> sd = *itt;
-				const char*	pChar = sd[0].c_str();
-				ADD_STRING_TO_DICT(pParamsDict, "HomeFolder", m_HomeFolder);
-				ADD_STRING_TO_DICT(pParamsDict, "Version", m_Version);
-				ADD_STRING_TO_DICT(pParamsDict, "Author", m_Author);
-				ADD_STRING_TO_DICT(pParamsDict, "Name", sd[0]);
-				ADD_STRING_TO_DICT(pParamsDict, "Address", sd[1]);
-				ADD_STRING_TO_DICT(pParamsDict, "Port", sd[2]);
-				ADD_STRING_TO_DICT(pParamsDict, "SerialPort", sd[3]);
-				ADD_STRING_TO_DICT(pParamsDict, "Username", sd[4]);
-				ADD_STRING_TO_DICT(pParamsDict, "Password", sd[5]);
-				ADD_STRING_TO_DICT(pParamsDict, "Key", sd[6]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode1", sd[7]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode2", sd[8]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode3", sd[9]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode4", sd[10]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode5", sd[11]);
-				ADD_STRING_TO_DICT(pParamsDict, "Mode6", sd[12]);
-
-				// Remember these for use with some protocols
-				m_Username = sd[4];
-				m_Password = sd[5];
-			}
-		}
-
-		m_DeviceDict = PyDict_New();
-		if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to add Device dictionary.", m_PluginKey.c_str());
-			return false;
-		}
-
-		// load associated devices to make them available to python
-		result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
-		if (result.size() > 0)
-		{
-			PyType_Ready(&CDeviceType);
-			// Add device objects into the device dictionary with Unit as the key
-			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-			{
-				std::vector<std::string> sd = *itt;
-				CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
-
-				PyObject*	pKey = PyLong_FromLong(atoi(sd[0].c_str()));
-				if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
-				{
-					_log.Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-					return false;
-				}
-				pDevice->pPlugin = this;
-				pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
-				pDevice->HwdID = m_HwdID;
-				pDevice->Unit = atoi(sd[0].c_str());
-				CDevice_refresh(pDevice);
-				Py_DECREF(pDevice);
-				Py_DECREF(pKey);
-			}
-		}
-
-		m_ImageDict = PyDict_New();
-		if (PyDict_SetItemString(pModuleDict, "Images", (PyObject*)m_ImageDict) == -1)
-		{
-			_log.Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
-			return false;
-		}
-
-		// load associated custom images to make them available to python
-		result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
-		if (result.size() > 0)
-		{
-			PyType_Ready(&CImageType);
-			// Add image objects into the image dictionary with ID as the key
-			for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
-			{
-				std::vector<std::string> sd = *itt;
-				CImage* pImage = (CImage*)CImage_new(&CImageType, (PyObject*)NULL, (PyObject*)NULL);
-
-				PyObject*	pKey = PyUnicode_FromString(sd[1].c_str());
-				if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
-				{
-					_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-					return false;
-				}
-				pImage->ImageID = atoi(sd[0].c_str()) + 100;
-				pImage->Base = PyUnicode_FromString(sd[1].c_str());
-				pImage->Name = PyUnicode_FromString(sd[2].c_str());
-				pImage->Description = PyUnicode_FromString(sd[3].c_str());
-				Py_DECREF(pImage);
-				Py_DECREF(pKey);
-			}
-		}
-
-		LoadSettings();
-
-		m_bIsStarted = true;
-		return true;
 	}
 
 	bool CPlugin::LoadSettings()
@@ -1368,6 +1477,38 @@ namespace Plugins {
 		return true;
 	}
 
+#define DZ_BYTES_PER_LINE 20
+	void CPlugin::WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming)
+	{
+		if (m_bDebug)
+		{
+			if (Incoming)
+				_log.Log(LOG_NORM, "(%s) Received %d bytes of data:", Name.c_str(), (int)Buffer.size());
+			else
+				_log.Log(LOG_NORM, "(%s) Sending %d bytes of data:", Name.c_str(), (int)Buffer.size());
+
+			for (int i = 0; i < (int)Buffer.size(); i = i + DZ_BYTES_PER_LINE)
+			{
+				std::stringstream ssHex;
+				std::string sChars;
+				for (int j = 0; j < DZ_BYTES_PER_LINE; j++)
+				{
+					if (i + j < (int)Buffer.size())
+					{
+						if (Buffer[i + j] < 16)
+							ssHex << '0' << std::hex << (int)Buffer[i + j] << " ";
+						else
+							ssHex << std::hex << (int)Buffer[i + j] << " ";
+						if ((int)Buffer[i + j] > 32) sChars += Buffer[i + j];
+						else sChars += ".";
+					}
+					else ssHex << ".. ";
+				}
+				_log.Log(LOG_NORM, "(%s)     %s    %s", Name.c_str(), ssHex.str().c_str(), sChars.c_str());
+			}
+		}
+	}
+
 	bool CPlugin::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		return true;
@@ -1376,7 +1517,7 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const int hue)
 	{
 		//	Add command to message queue
-		CommandMessage	Message(m_HwdID, Unit, command, level, hue);
+		onCommandCallback*	Message = new onCommandCallback(this, Unit, command, level, hue);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
@@ -1386,11 +1527,284 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)
 	{
 		//	Add command to message queue
-		CommandMessage	Message(m_HwdID, Unit, command, level);
+		onCommandCallback*	Message = new onCommandCallback(this, Unit, command, level);
 		{
 			boost::lock_guard<boost::mutex> l(PluginMutex);
 			PluginMessageQueue.push(Message);
 		}
+	}
+
+	bool CPlugin::HasNodeFailed(const int Unit)
+	{
+		if (!m_DeviceDict)	return true;
+
+		PyObject *key, *value;
+		Py_ssize_t pos = 0;
+		while (PyDict_Next((PyObject*)m_DeviceDict, &pos, &key, &value))
+		{
+			long iKey = PyLong_AsLong(key);
+			if (iKey == -1 && PyErr_Occurred())
+			{
+				PyErr_Clear();
+				return false;
+			}
+
+			if (iKey == Unit)
+			{
+				CDevice*	pDevice = (CDevice*)value;
+				return (pDevice->TimedOut != 0);
+			}
+		}
+
+		return false;
+	}
+
+
+	CPluginNotifier::CPluginNotifier(CPlugin* pPlugin, const std::string &NotifierName) : CNotificationBase(NotifierName, OPTIONS_NONE), m_pPlugin(pPlugin)
+	{
+		m_notifications.AddNotifier(this);
+	}
+
+	CPluginNotifier::~CPluginNotifier()
+	{
+		m_notifications.RemoveNotifier(this);
+	}
+
+	bool CPluginNotifier::IsConfigured()
+	{
+		return true;
+	}
+
+	std::string CPluginNotifier::GetCustomIcon(std::string &szCustom)
+	{
+		int	iIconLine = atoi(szCustom.c_str());
+		std::string szRetVal = "Light48";
+		if (iIconLine < 100)  // default set of custom icons
+		{
+			std::string sLine = "";
+			std::ifstream infile;
+			std::string switchlightsfile = szWWWFolder + "/switch_icons.txt";
+			infile.open(switchlightsfile.c_str());
+			if (infile.is_open())
+			{
+				int index = 0;
+				while (!infile.eof())
+				{
+					getline(infile, sLine);
+					if ((sLine.size() != 0) && (index++ == iIconLine))
+					{
+						std::vector<std::string> results;
+						StringSplit(sLine, ";", results);
+						if (results.size() == 3)
+						{
+							szRetVal = results[0] + "48";
+							break;
+						}
+					}
+				}
+				infile.close();
+			}
+		}
+		else  // Uploaded icons
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			if (result.size() == 1)
+			{
+				std::string sBase = result[0][0];
+				return sBase;
+			}
+		}
+
+		return szRetVal;
+	}
+
+	std::string CPluginNotifier::GetIconFile(const std::string &ExtraData)
+	{
+		std::string	szImageFile;
+#ifdef WIN32
+		std::string	szImageFolder = szWWWFolder + "\\images\\";
+#else
+		std::string	szImageFolder = szWWWFolder + "/images/";
+#endif
+
+		std::string	szStatus = "Off";
+		int	posStatus = (int)ExtraData.find("|Status=");
+		if (posStatus >= 0)
+		{
+			posStatus += 8;
+			szStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+			if (szStatus != "Off") szStatus = "On";
+		}
+
+		// Use image is specified
+		int	posImage = (int)ExtraData.find("|Image=");
+		if (posImage >= 0)
+		{
+			posImage += 7;
+			szImageFile = szImageFolder + ExtraData.substr(posImage, ExtraData.find("|", posImage) - posImage) + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+		}
+
+		// Use uploaded and custom images
+		int	posCustom = (int)ExtraData.find("|CustomImage=");
+		if (posCustom >= 0)
+		{
+			posCustom += 13;
+			std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+			int iCustom = atoi(szCustom.c_str());
+			if (iCustom)
+			{
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + "48_" + szStatus + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+				szImageFile = szImageFolder + GetCustomIcon(szCustom) + ".png";
+				if (file_exist(szImageFile.c_str()))
+				{
+					return szImageFile;
+				}
+			}
+		}
+
+		// if a switch type was supplied try and work out the image
+		int	posType = (int)ExtraData.find("|SwitchType=");
+		if (posType >= 0)
+		{
+			posType += 12;
+			std::string	szType = ExtraData.substr(posType, ExtraData.find("|", posType) - posType);
+			std::string	szTypeImage;
+			_eSwitchType switchtype = (_eSwitchType)atoi(szType.c_str());
+			switch (switchtype)
+			{
+			case STYPE_OnOff:
+				if (posCustom >= 0)
+				{
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Light48";
+				break;
+			case STYPE_Doorbell:
+				szTypeImage = "doorbell48";
+				break;
+			case STYPE_Contact:
+				szTypeImage = "contact48";
+				break;
+			case STYPE_Blinds:
+			case STYPE_BlindsPercentage:
+			case STYPE_VenetianBlindsUS:
+			case STYPE_VenetianBlindsEU:
+			case STYPE_BlindsPercentageInverted:
+			case STYPE_BlindsInverted:
+				szTypeImage = "blinds48";
+				break;
+			case STYPE_X10Siren:
+				szTypeImage = "siren";
+				break;
+			case STYPE_SMOKEDETECTOR:
+				szTypeImage = "smoke48";
+				break;
+			case STYPE_Dimmer:
+				szTypeImage = "Dimmer48";
+				break;
+			case STYPE_Motion:
+				szTypeImage = "motion48";
+				break;
+			case STYPE_PushOn:
+				szTypeImage = "pushon48";
+				break;
+			case STYPE_PushOff:
+				szTypeImage = "pushon48";
+				break;
+			case STYPE_DoorContact:
+				szTypeImage = "door48";
+				break;
+			case STYPE_DoorLock:
+				szTypeImage = "door48open";
+				break;
+			case STYPE_Media:
+				if (posCustom >= 0)
+				{
+					std::string szCustom = ExtraData.substr(posCustom, ExtraData.find("|", posCustom) - posCustom);
+					szTypeImage = GetCustomIcon(szCustom);
+				}
+				else szTypeImage = "Media48";
+				break;
+			default:
+				szTypeImage = "logo";
+			}
+			szImageFile = szImageFolder + szTypeImage + "_" + szStatus + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ((szStatus == "Off") ? "-off" : "-on") + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ((szStatus == "Off") ? "off" : "on") + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+
+			szImageFile = szImageFolder + szTypeImage + ".png";
+			if (file_exist(szImageFile.c_str()))
+			{
+				return szImageFile;
+			}
+		}
+
+		// Image of last resort is the logo
+		szImageFile = szImageFolder + "logo.png";
+		if (!file_exist(szImageFile.c_str()))
+		{
+			_log.Log(LOG_ERROR, "Logo image file does not exist: %s", szImageFile.c_str());
+			szImageFile = "";
+		}
+		return szImageFile;
+	}
+
+	bool CPluginNotifier::SendMessageImplementation(const uint64_t Idx, const std::string & Name, const std::string & Subject, const std::string & Text, const std::string & ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)
+	{
+		// ExtraData = |Name=Test|SwitchType=9|CustomImage=0|Status=On|
+
+		std::string	sIconFile = GetIconFile(ExtraData);
+		std::string	sName = "Unknown";
+		int	posName = (int)ExtraData.find("|Name=");
+		if (posName >= 0)
+		{
+			posName += 6;
+			sName = ExtraData.substr(posName, ExtraData.find("|", posName) - posName);
+		}
+
+		std::string	sStatus = "Unknown";
+		int	posStatus = (int)ExtraData.find("|Status=");
+		if (posStatus >= 0)
+		{
+			posStatus += 8;
+			sStatus = ExtraData.substr(posStatus, ExtraData.find("|", posStatus) - posStatus);
+		}
+
+		//	Add command to message queue for every plugin
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		onNotificationCallback*	Message = new onNotificationCallback(m_pPlugin, Subject, Text, sName, sStatus, Priority, Sound, sIconFile);
+		PluginMessageQueue.push(Message);
+
+		return true;
 	}
 }
 #endif

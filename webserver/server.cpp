@@ -84,6 +84,9 @@ void server_base::run() {
 void server_base::stop() {
 	if (is_running) {
 		// Post a call to the stop function so that server_base::stop() is safe to call from any thread.
+		// Rene, set is_running to false, because the following is an io_service call, which makes is_running
+		// never set to false whilst in the call itself
+		is_running = false;
 		io_service_.post(boost::bind(&server_base::handle_stop, this));
 	} else {
 		// if io_service is not running then the post call will not be performed
@@ -103,6 +106,7 @@ void server_base::stop() {
 		}
 		sleep_milliseconds(500);
 	}
+	io_service_.stop();
 }
 
 void server_base::handle_stop() {
@@ -148,7 +152,7 @@ void server::handle_accept(const boost::system::error_code& e) {
 ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler & user_request_handler) :
 		server_base(ssl_settings, user_request_handler),
 		settings_(ssl_settings),
-		context_(io_service_, ssl_settings.get_ssl_method())
+		context_(ssl_settings.get_ssl_method())
 {
 #ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using ssl_server_settings : %s", ssl_settings.listening_port.c_str(), ssl_settings.to_string().c_str());
@@ -161,7 +165,7 @@ ssl_server::ssl_server(const ssl_server_settings & ssl_settings, request_handler
 ssl_server::ssl_server(const server_settings & settings, request_handler & user_request_handler) :
 		server_base(settings, user_request_handler),
 		settings_(dynamic_cast<ssl_server_settings const &>(settings)),
-		context_(io_service_, dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
+		context_(dynamic_cast<ssl_server_settings const &>(settings).get_ssl_method()) {
 #ifdef DEBUG_WWW
 	_log.Log(LOG_STATUS, "[web:%s] create ssl_server using server_settings : %s", settings.listening_port.c_str(), settings.to_string().c_str());
 #endif
@@ -206,7 +210,7 @@ void ssl_server::init_connection() {
 			_log.Log(LOG_ERROR, "[web:%s] missing SSL verify file parameter !", settings_.listening_port.c_str());
 		} else {
 			context_.load_verify_file(settings_.verify_file_path);
-			boost::asio::ssl::context::verify_mode verify_mode;
+			boost::asio::ssl::context::verify_mode verify_mode = 0;
 			if (settings_.verify_peer) {
 				verify_mode |= boost::asio::ssl::context::verify_peer;
 			}

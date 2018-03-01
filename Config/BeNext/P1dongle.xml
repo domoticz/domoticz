@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="byte" genre="config" instance="1" index="1" label="Set to Default" size="1">
+			<Help>Set all configuration values to default values (factory settings).</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="HW Pullup" size="1" value="0">
+			<Help>For some Smart meters you will need an external pullup resistor to receive the data, one of it is the Kaifa meter. 0x00: disabled. 0x01-0xFF: enabled (default 0x00)</Help>
+		</Value>
+		<Value type="short" genre="config" instance="1" index="4" label="Baud rate" size="2" value="1152">
+			<Help>value x 100 = baud rate</Help>
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="5" label="Data validation" size="1" value="51">
+			<Help>Settings for data validation LED. Bit 7-4: Data received timeout (x 10). Bit 3-0: Framecount when data is valid (default 0x33 (0x30|0x03))</Help>
+		</Value>
+		<Value type="list" genre="config" instance="1" index="6" label="CRC check" size="1" value="1">
+			<Help></Help>
+			<Item label="CRC check enabled" value="1"/>
+			<Item label="CRC check disabled" value="0"/>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="72" label="Channel 1 auto Meter report usage W" size="4" value="1290">
+			<Help>Conditions current usage will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x0000050A (5Watt and 10%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="73" label="Channel 1 auto Meter report usage kWh" size="4" value="25600">
+			<Help>Conditions current usage will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1kWh and 0%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="74" label="Channel 1 auto Meter report delivered W" size="4" value="1290">
+			<Help>Conditions current delivered will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x0000050A (5Watt and 10%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="75" label="Channel 1 auto Meter report delivered kWh" size="4" value="25600">
+			<Help>Conditions current delivered will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1kWh and 0%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="76" label="Channel 2 auto Meter report usage W" size="4" value="1290">
+			<Help>Conditions current usage will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x0000050A (5Watt and 10%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="77" label="Channel 2 auto Meter report usage kWh" size="4" value="25600">
+			<Help>Conditions current usage will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1kWh and 0%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="78" label="Channel 2 auto Meter report delivered W" size="4" value="1290">
+			<Help>Conditions current delivered will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x0000050A (5Watt and 10%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="79" label="Channel 2 auto Meter report delivered kWh" size="4" value="25600">
+			<Help>Conditions current delivered will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1kWh and 0%))</Help>
+		</Value>
+		<Value type="int" genre="config" instance="1" index="81" label="Channel 3 auto Meter report usage m3" size="4" value="25600">
+			<Help>Conditions total used will be automatically reported. Param 1-3: Difference in absolute value. Param 4: Difference in percentage between previous and current value. (default 0x00006400 (0.1m3 and 0%))</Help>
+		</Value>
+	</CommandClass>
+  <!-- Meter v4 as report -->
+	<CommandClass id="50" setasreport="true" />
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="8" label="LifeLine"/>
+		</Associations>
+	</CommandClass>
+</Product>

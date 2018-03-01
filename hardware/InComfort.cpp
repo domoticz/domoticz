@@ -17,10 +17,10 @@
 //#define DEBUG_InComfort
 #endif
 
-CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort)
+CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
+m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
-	m_szIPAddress = IPAddress;
 	m_usIPPort = usIPPort;
 	m_stoprequested = false;
 
@@ -35,7 +35,6 @@ CInComfort::CInComfort(const int ID, const std::string &IPAddress, const unsigne
 	m_LastCentralHeatingTemperature = 0.0;
 	m_LastCentralHeatingPressure = 0.0;
 	m_LastTapWaterTemperature = 0.0;
-	m_LastStatusText = "";
 	m_LastIO = 0;
 
 	Init();
@@ -115,7 +114,6 @@ std::string CInComfort::GetHTTPData(std::string sURL)
 	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
 	{
 		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
-		return NULL;
 	}
 	return sResult;
 }
@@ -127,9 +125,7 @@ std::string CInComfort::SetRoom1SetTemperature(float tempSetpoint)
 	std::stringstream sstr;
 	sstr << "http://" << m_szIPAddress << ":" << m_usIPPort << "/data.json?heater=0&setpoint=" << setpointToSet << "&thermostat=0";
 
-	// Get Data
-	std::string sResult = GetHTTPData(sstr.str());
-	return sResult;
+	return GetHTTPData(sstr.str());
 }
 
 void CInComfort::GetHeaterDetails()
@@ -142,7 +138,7 @@ void CInComfort::GetHeaterDetails()
 
 	// Get Data
 	std::string sResult = GetHTTPData(sstr.str());
-	if (sResult.length() == 0)
+	if (sResult.empty())
 	{
 		_log.Log(LOG_ERROR, "InComfort: Error getting current state!");
 		return;

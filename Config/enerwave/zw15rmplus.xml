@@ -3,7 +3,7 @@
 <Product xmlns='http://code.google.com/p/open-zwave/'>
 	<!-- Configuration Parameters -->
 	<CommandClass id="112">
-		<Value type="list" index="1" genre="config" label="LED mode" size="1" value="0">
+		<Value type="list" index="1" genre="config" label="LED mode" min="0" max="1" size="1" value="0">
 			<Help>Synchronization of load power and LED indicator</Help>
 			<Item label="Power on, LED off" value="0" />
 			<Item label="Power on, LED on" value="1" />
@@ -17,7 +17,7 @@
 		<Value type="byte" index="10" genre="config" label="Accumulated Energy Autosend Interval" units="minutes" min="0" max="255" value="0">
 			<Help>How often to send the energy report for the accumulated energy usage usage (METER_REPORT) automatically in minutes. 0 = disabled.</Help>
 		</Value>
-		<Value type="list" index="11" genre="config" label="Wattage Change Notifications" size="1" value="1">
+		<Value type="list" index="11" genre="config" label="Wattage Change Notifications" size="1" min="0" max="3" value="1">
 			<Help>Enable automatic notifications when there is a change in wattage.</Help>
 			<Item label="No report" value="0" />
 			<Item label="Send METER_REPORT only (default)" value="1" />

@@ -35,7 +35,7 @@ void CHttpPush::Stop()
 
 void CHttpPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("HttpActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -50,7 +50,7 @@ void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx,
 }
 
 void CHttpPush::DoHttpPush()
-{			
+{
 	std::string httpUrl = "";
 	std::string httpData = "";
 	std::string httpHeaders= "";
@@ -64,7 +64,7 @@ void CHttpPush::DoHttpPush()
 	m_sql.GetPreferencesVar("HttpAuthBasicLogin", httpAuthBasicLogin);
 	m_sql.GetPreferencesVar("HttpAuthBasicPassword", httpAuthBasicPassword);
 
-	int httpDebugActiveInt;
+	int httpDebugActiveInt = 0;
 	bool httpDebugActive = false;
 	m_sql.GetPreferencesVar("HttpDebug", httpDebugActiveInt);
 	if (httpDebugActiveInt == 1) {
@@ -118,13 +118,13 @@ void CHttpPush::DoHttpPush()
 			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[16];
+			char szLocalTime[21];
 			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[16];
+			char szLocalTimeUtc[21];
 			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[16];
+			char szLocalTimeMs[21];
 			sprintf(szLocalTimeMs, "%llu", localTime*1000);
-			char szLocalTimeUtcMs[16];
+			char szLocalTimeUtcMs[21];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
@@ -150,7 +150,7 @@ void CHttpPush::DoHttpPush()
 			std::string lunit = getUnit(delpos, metertype);
 			std::string lType = RFX_Type_Desc(dType,1);
 			std::string lSubType = RFX_Type_SubType_Desc(dType,dSubType);
-			
+
 			char hostname[256];
 			gethostname(hostname, sizeof(hostname));
 
@@ -158,15 +158,15 @@ void CHttpPush::DoHttpPush()
 			if (sendValue.find(";")!=std::string::npos)
 			{
 				StringSplit(sendValue, ";", strarray);
-				if (int(strarray.size())>=delpos)
+				if (int(strarray.size())>=delpos && delpos > 0)
 				{
 					std::string rawsendValue = strarray[delpos-1].c_str();
-					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false,metertype);
+					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false, dType, dSubType, metertype);
 				}
 			}
 			else
 			{
-				sendValue = ProcessSendValue(sendValue,delpos,nValue,false,metertype);
+				sendValue = ProcessSendValue(sendValue,delpos,nValue,false, dType, dSubType, metertype);
 			}
 			ltargetDeviceId+="_";
 			ltargetDeviceId+=ldelpos;
@@ -218,7 +218,7 @@ void CHttpPush::DoHttpPush()
 				}
 
 				if (httpMethodInt == 0) {			// GET
-					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult))
+					if (!HTTPClient::GET(httpUrl, ExtraHeaders, sResult, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with GET!");
 					}
@@ -234,13 +234,13 @@ void CHttpPush::DoHttpPush()
 							ExtraHeaders.push_back(ExtraHeaders2[i]);
 						}
 					}
-					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult))
+					if (!HTTPClient::POST(httpUrl, httpData, ExtraHeaders, sResult, true, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with POST!");
 					}
 				}
 				else if(httpMethodInt == 2) {		// PUT
-					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult))
+					if (!HTTPClient::PUT(httpUrl, httpData, ExtraHeaders, sResult, true))
 					{
 						_log.Log(LOG_ERROR, "HttpLink: Error sending data to http with PUT!");
 					}
@@ -248,7 +248,7 @@ void CHttpPush::DoHttpPush()
 
 				// debug
 				if (httpDebugActive) {
-					_log.Log(LOG_NORM, "HttpLink: response ", sResult.c_str());
+					_log.Log(LOG_NORM, "HttpLink: response %s", sResult.c_str());
 				}
 			}
 		}

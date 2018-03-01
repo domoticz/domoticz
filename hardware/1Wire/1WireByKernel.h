@@ -9,7 +9,7 @@ public:
 
    // I_1WireSystem implementation
    virtual void GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const;
-   virtual void SetLightState(const std::string& sId,int unit,bool value);
+   virtual void SetLightState(const std::string& sId,int unit,bool value, const unsigned int level);
    virtual float GetTemperature(const _t1WireDevice& device) const;
    virtual float GetHumidity(const _t1WireDevice& device) const;
    virtual float GetPressure(const _t1WireDevice& device) const;
@@ -18,7 +18,9 @@ public:
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
+   virtual int GetWiper(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
+   virtual void PrepareDevices();
    // END : I_1WireSystem implementation
 
    static bool IsAvailable();
@@ -27,7 +29,7 @@ protected:
    void GetDevice(const std::string& deviceName, /*out*/_t1WireDevice& device) const;
 
    bool sendAndReceiveByRwFile(std::string path,const unsigned char * const cmd,size_t cmdSize,unsigned char * const answer,size_t answerSize) const;
-
+   void ReadStates();
 
    // Thread management
    boost::thread* m_Thread;
@@ -46,7 +48,7 @@ protected:
    class DeviceState
    {
    public:
-	   explicit DeviceState(_t1WireDevice device) : m_Device(device) {}
+	   explicit DeviceState(const _t1WireDevice &device) : m_Device(device) {}
       _t1WireDevice GetDevice() const {return m_Device;}
       union
       {
@@ -57,8 +59,6 @@ protected:
    protected:
       _t1WireDevice m_Device;
    };
-
-   bool m_AllDevicesInitialized;
 
    // Thread-shared data and lock methods
    boost::mutex m_Mutex;

@@ -66,7 +66,7 @@ bool CZiBlueTCP::StopHardware()
 
 void CZiBlueTCP::OnConnect()
 {
-	_log.Log(LOG_STATUS,"ZiBlue: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+	_log.Log(LOG_STATUS,"ZiBlue: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDoRestart=false;
 	m_bIsStarted=true;
 	m_rfbufferpos = 0;
@@ -101,7 +101,7 @@ void CZiBlueTCP::Do_Work()
 			if (atime - m_LastReceivedTime > 30)
 			{
 				//Timeout
-				_log.Log(LOG_ERROR, "ZiBlue: Nothing received for more then 30 seconds, restarting...");
+				_log.Log(LOG_ERROR, "ZiBlue: Nothing received for more than 30 seconds, restarting...");
 				m_retrycntr = 0;
 				m_LastReceivedTime = atime;
 				m_bDoRestart = true;
@@ -177,7 +177,7 @@ void CZiBlueTCP::OnError(const boost::system::error_code& error)
 		(error == boost::asio::error::timed_out)
 		)
 	{
-		_log.Log(LOG_ERROR, "ZiBlue: Can not connect to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_ERROR, "ZiBlue: Can not connect to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	}
 	else if (
 		(error == boost::asio::error::eof) ||

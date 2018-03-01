@@ -134,11 +134,9 @@ std::string ZWaveBase::GenerateDeviceStringID(const _tZWaveDevice *pDevice)
 void ZWaveBase::InsertDevice(_tZWaveDevice device)
 {
 	device.string_id=GenerateDeviceStringID(&device);
-
-	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
-	
 	device.lastreceived=mytime(NULL);
 #ifdef _DEBUG
+	bool bNewDevice=(m_devices.find(device.string_id)==m_devices.end());
 	if (bNewDevice)
 	{
 		_log.Log(LOG_NORM, "New device: %s", device.string_id.c_str());
@@ -176,7 +174,10 @@ bool ZWaveBase::IsNodeRGBW(const unsigned int homeID, const int nodeID)
 	if (result.size() < 1)
 		return false;
 	std::string ProductDescription = result[0][0];
-	return (ProductDescription.find("FGRGBWM441") != std::string::npos);
+	return (
+		(ProductDescription.find("FGRGBWM441") != std::string::npos)
+		|| (ProductDescription.find("ZMNHWD") != std::string::npos)
+		);
 }
 
 void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
@@ -184,7 +185,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 	if (
 		(pDevice->devType!=ZDTYPE_SWITCH_NORMAL)&&
 		(pDevice->devType != ZDTYPE_SWITCH_DIMMER) &&
-		(pDevice->devType != ZDTYPE_SWITCH_FGRGBWM441)&&
+		(pDevice->devType != ZDTYPE_SWITCH_RGBW)&&
 		(pDevice->devType != ZDTYPE_SWITCH_COLOR)
 		)
 		return; //only for switches
@@ -195,7 +196,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		BatLevel = pDevice->batValue;
 	}
 
-	if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
+	if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
 		unsigned char ID2 = 0;
@@ -384,7 +385,7 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		sDecodeRXMessage(this, (const unsigned char *)&gswitch, NULL, BatLevel);
 		return;
 	}
-	else if ((pDevice->devType == ZDTYPE_SWITCH_FGRGBWM441) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
+	else if ((pDevice->devType == ZDTYPE_SWITCH_RGBW) || (pDevice->devType == ZDTYPE_SWITCH_COLOR))
 	{
 		unsigned char ID1 = 0;
 		unsigned char ID2 = 0;
@@ -697,20 +698,22 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_WATER)
 	{
-		SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
+		uint16_t NodeID = (ID3 << 8) | ID4;
+		SendRainSensor(NodeID, BatLevel, pDevice->floatValue*1000.0f, "Water");
+		//SendMeterSensor(ID3, ID4, BatLevel, pDevice->floatValue,"Water");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CO2)
 	{
-		SendAirQualitySensor(ID3, ID4, BatLevel, int(pDevice->floatValue), "CO2 Sensor");
+		SendAirQualitySensor(ID3, (uint8_t)pDevice->orgInstanceID, BatLevel, int(pDevice->floatValue), "CO2 Sensor");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_MOISTURE)
 	{
-		uint16_t NodeID = (ID3 << 8) | ID4;
+		//uint16_t NodeID = (ID3 << 8) | ID4;
 		SendPercentageSensor((int)(ID1 << 24) | (ID2 << 16) | (ID3 << 8) | ID4, 0, BatLevel, pDevice->floatValue, "Moisture");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_TANK_CAPACITY)
 	{
-		uint16_t NodeID = (ID3 << 8) | ID4;
+		//uint16_t NodeID = (ID3 << 8) | ID4;
 		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, "Tank Capacity", "l");
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_SETPOINT)
@@ -763,6 +766,10 @@ void ZWaveBase::SendDevice2Domoticz(const _tZWaveDevice *pDevice)
 		char szTmp[100];
 		sprintf(szTmp, "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice, szTmp, BatLevel);
+	}
+	else if (pDevice->devType == ZDTYPE_SENSOR_CUSTOM)
+	{
+		SendCustomSensor(ID3, ID4, BatLevel, pDevice->floatValue, pDevice->label, pDevice->custom_label);
 	}
 }
 
@@ -1002,7 +1009,7 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 		int nodeID = (ID2 << 8) | ID3;
 		int instanceID = ID4;
 		int indexID = ID1;
-		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_FGRGBWM441);
+		pDevice = FindDevice(nodeID, instanceID, indexID, ZDTYPE_SWITCH_RGBW);
 		if (pDevice)
 		{
 			int svalue = 0;
@@ -1021,10 +1028,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 			else if (pLed->command == Limitless_SetBrightnessLevel)
 			{
 				instanceID = 2;
-				float fvalue = pLed->value;
-				if (fvalue > 99.0f)
-					fvalue = 99.0f; //99 is fully on
-				svalue = round(fvalue);
+				int ivalue = pLed->value;
+				if (ivalue > 99)
+					ivalue = 99; //99 is fully on
+				svalue = ivalue;
 				return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 			}
 			else if (pLed->command == Limitless_SetColorToWhite)
@@ -1088,10 +1095,10 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				else if (pLed->command == Limitless_SetBrightnessLevel)
 				{
 					instanceID = 1;
-					float fvalue = pLed->value;
-					if (fvalue > 99.0f)
-						fvalue = 99.0f; //99 is fully on
-					svalue = round(fvalue);
+					int ivalue = pLed->value;
+					if (ivalue > 99)
+						ivalue = 99; //99 is fully on
+					svalue = ivalue;
 					return SwitchLight(nodeID, instanceID, pDevice->commandClassID, svalue);
 				}
 				else if (pLed->command == Limitless_SetColorToWhite)
@@ -1108,15 +1115,15 @@ bool ZWaveBase::WriteToHardware(const char *pdata, const unsigned char length)
 				else if (pLed->command == Limitless_SetRGBColour)
 				{
 					int red, green, blue;
-					float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
+					float cHue = (360.0f / 255.0f)*float(pLed->value & 0xFFFF);//hue given was in range of 0-255
 
 					int Brightness = 100;
 
 					int dMax = round((255.0f / 100.0f)*float(Brightness));
 					hue2rgb(cHue, red, green, blue, dMax);
 					instanceID = 1;
-					int wWhite = 0;
-					int cWhite = 0;
+					int wWhite = (pLed->value >> 16);
+					int cWhite = 0;// (pLed->value >> 16);
 					sstr << "#"
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
 						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
@@ -1162,7 +1169,7 @@ void ZWaveBase::ForceUpdateForNodeDevices(const unsigned int homeID, const int n
 				{
 					if (IsNodeRGBW(homeID, nodeID))
 					{
-						zdevice.devType = ZDTYPE_SWITCH_FGRGBWM441;
+						zdevice.devType = ZDTYPE_SWITCH_RGBW;
 						zdevice.instanceID = 100;
 						SendDevice2Domoticz(&zdevice);
 					}

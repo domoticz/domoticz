@@ -15,12 +15,12 @@ private:
 	std::string m_simultaneousTemperaturePath; // OWFS mountpoint + "/simultaneous/temperature"
 
 public:
-   C1WireByOWFS(const std::string& path);
+   explicit C1WireByOWFS(const std::string& path);
    virtual ~C1WireByOWFS() {}
 
    // I_1WireSystem implementation
    virtual void GetDevices(/*out*/std::vector<_t1WireDevice>& devices) const;
-   virtual void SetLightState(const std::string& sId,int unit,bool value);
+   virtual void SetLightState(const std::string& sId,int unit,bool value, const unsigned int level);
    virtual float GetTemperature(const _t1WireDevice& device) const;
    virtual float GetHumidity(const _t1WireDevice& device) const;
    virtual float GetPressure(const _t1WireDevice& device) const;
@@ -29,7 +29,9 @@ public:
    virtual unsigned long GetCounter(const _t1WireDevice& device,int unit) const;
    virtual int GetVoltage(const _t1WireDevice& device,int unit) const;
    virtual float GetIlluminance(const _t1WireDevice& device) const;
+   int GetWiper(const _t1WireDevice& device) const;
    virtual void StartSimultaneousTemperatureRead();
+   virtual void PrepareDevices();
    // END : I_1WireSystem implementation
 
 protected:
@@ -39,6 +41,6 @@ protected:
    void GetDevice(const std::string &inDir, const std::string &dirname, /*out*/_t1WireDevice& device) const;
    void GetDevices(const std::string &inDir, /*out*/std::vector<_t1WireDevice>& devices) const;
    std::string readRawData(const std::string& filename) const;
-   void writeData(const _t1WireDevice& device,std::string propertyName,const std::string &value) const;
+   void writeData(const _t1WireDevice& device,const std::string &propertyName,const std::string &value) const;
    std::string nameHelper(const std::string& dirname, const _e1WireFamilyType family) const;
 };

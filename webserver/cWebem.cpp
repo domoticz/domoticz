@@ -16,6 +16,7 @@
 #include "mime_types.hpp"
 #include "utf.hpp"
 #include "Base64.h"
+#include "sha1.hpp"
 #include "GZipHelper.h"
 #include <stdarg.h>
 #include <fstream>
@@ -24,8 +25,8 @@
 #include "../main/localtime_r.h"
 #include "../main/Logger.h"
 
-//10 minutes
-#define SESSION_TIMEOUT 600
+#define SHORT_SESSION_TIMEOUT 600 // 10 minutes
+#define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
 int m_failcounter=0;
 
@@ -43,13 +44,14 @@ cWebem::cWebem(
 		const std::string& doc_root) :
 				m_io_service(),
 				m_settings(settings),
+				m_authmethod(AUTH_LOGIN),
+				mySessionStore(NULL),
 				myRequestHandler(doc_root, this),
 				m_DigistRealm("Domoticz.com"),
 				m_session_clean_timer(m_io_service, boost::posix_time::minutes(1)),
 				m_io_service_thread(boost::bind(&boost::asio::io_service::run, &m_io_service)),
+				m_sessions(), // Rene, make sure we initialize m_sessions first, before starting a server
 				myServer(server_factory::create(settings, myRequestHandler)) {
-	m_authmethod = AUTH_LOGIN;
-	mySessionStore = NULL;
 	// associate handler to timer and schedule the first iteration
 	m_session_clean_timer.async_wait(boost::bind(&cWebem::CleanSessions, this));
 }
@@ -781,6 +783,9 @@ void cWebem::ClearUserPasswords()
 void cWebem::AddLocalNetworks(std::string network)
 {
 	_tIPNetwork ipnetwork;
+	ipnetwork.network = 0;
+	ipnetwork.mask = 0;
+	ipnetwork.hostname = "";
 
 	if (network=="")
 	{
@@ -866,12 +871,12 @@ void cWebem::ClearLocalNetworks()
 	m_localnetworks.clear();
 }
 
-void cWebem::SetDigistRealm(std::string realm)
+void cWebem::SetDigistRealm(const std::string &realm)
 {
-	m_DigistRealm=realm;
+	m_DigistRealm = realm;
 }
 
-void cWebem::SetZipPassword(std::string password)
+void cWebem::SetZipPassword(const std::string &password)
 {
 	m_zippassword = password;
 }
@@ -1136,30 +1141,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 	if (sHost.size()<3)
 		return false;
 
-	std::string host=sHost;
 	std::vector<_tIPNetwork>::const_iterator itt;
-
-	if (host=="127.0.0.1")
-	{
-		//We could be using a proxy server
-		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header=request::get_req_header(&req, "X-Forwarded-For");
-		if (host_header!=NULL)
-		{
-			host=host_header;
-			if (strstr(host_header,",")!=NULL)
-			{
-				//Multiple proxies are used... this is not very common
-				host_header=request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-				if (!host_header)
-				{
-					_log.Log(LOG_ERROR,"Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)",host.c_str());
-					return false;
-				}
-				host=host_header;
-			}
-		}
-	}
 
 	/* RK, this doesn't work with IPv6 addresses.
 	pos=host.find_first_of(":");
@@ -1169,7 +1151,7 @@ bool cWebemRequestHandler::AreWeInLocalNetwork(const std::string &sHost, const r
 
 	for (itt=myWebem->m_localnetworks.begin(); itt!=myWebem->m_localnetworks.end(); ++itt)
 	{
-		if (IsIPInRange(host,*itt))
+		if (IsIPInRange(sHost,*itt))
 		{
 			return true;
 		}
@@ -1204,7 +1186,8 @@ void cWebemRequestHandler::send_remove_cookie(reply& rep)
 {
 	std::stringstream sstr;
 	sstr << "SID=none";
-	sstr << "; path=/; Expires=" << make_web_time(0);
+	// RK, we removed path=/ so you can be logged in to two Domoticz's at the same time on https://my.domoticz.com/.
+	sstr << "; HttpOnly; Expires=" << make_web_time(0);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1263,7 +1246,7 @@ void cWebemRequestHandler::send_cookie(reply& rep, const WebEmSession & session)
 {
 	std::stringstream sstr;
 	sstr << "SID=" << session.id << "_" << session.auth_token << "." << session.expires;
-	sstr << "; path=/; Expires=" << make_web_time(session.expires);
+	sstr << "; HttpOnly; path=/; Expires=" << make_web_time(session.expires);
 	reply::add_header(&rep, "Set-Cookie", sstr.str(), false);
 }
 
@@ -1319,6 +1302,100 @@ bool cWebemRequestHandler::CompressWebOutput(const request& req, reply& rep)
 		}
 	}
 	return false;
+}
+
+std::string cWebemRequestHandler::compute_accept_header(const std::string &websocket_key)
+{
+	// the length of an sha1 hash
+	const int sha1len = 20;
+	// the GUID as specified in RFC 6455
+	const char *GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+	std::string combined = websocket_key + GUID;
+	unsigned char sha1result[sha1len];
+	sha1::calc((void *)combined.c_str(), combined.length(), sha1result);
+	std::string accept = base64_encode(sha1result, sha1len);
+	return accept;
+}
+
+bool cWebemRequestHandler::is_upgrade_request(WebEmSession & session, const request& req, reply& rep)
+{
+	// request method should be GET
+	if (req.method != "GET") {
+		return false;
+	}
+	// http version should be 1.1 at least
+	if (((req.http_version_major * 10) + req.http_version_minor) < 11) {
+		return false;
+	}
+	const char *h;
+	// client MUST include Connection: Upgrade header
+	h = request::get_req_header(&req, "Connection");
+	if (!(h && boost::iequals(h, "Upgrade"))) {
+		return false;
+	};
+	// client MUST include Upgrade: websocket
+	h = request::get_req_header(&req, "Upgrade");
+	if (!(h && boost::iequals(h, "websocket"))) {
+		return false;
+	};
+	// we only have one service until now
+	if (req.uri != "/json") {
+		// todo: request uri could be an absolute URI as well!!!
+		rep = reply::stock_reply(reply::not_found);
+		return true;
+	}
+	h = request::get_req_header(&req, "Host");
+	// request MUST include a host header, even if we don't check it
+	if (h==NULL) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Origin");
+	// request MUST include an origin header, even if we don't check it
+	// we only "allow" connections from browser clients
+	if (h==NULL) {
+		rep = reply::stock_reply(reply::forbidden);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Version");
+	// request MUST include a version number
+	if (h==NULL) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	int version = boost::lexical_cast<int>(h);
+	// we support versions 13 (and higher)
+	if (version < 13) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Protocol");
+	// check if a protocol is given, and it includes "domoticz".
+	std::string protocol_header = h;
+	if (!h || protocol_header.find("domoticz") == std::string::npos) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	h = request::get_req_header(&req, "Sec-Websocket-Key");
+	// request MUST include a sec-websocket-key header and we need to respond to it
+	if (h==NULL) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	std::string websocket_key = h;
+	rep = reply::stock_reply(reply::switching_protocols);
+	reply::add_header(&rep, "Connection", "Upgrade");
+	reply::add_header(&rep, "Upgrade", "websocket");
+
+	std::string accept = compute_accept_header(websocket_key);
+	if (accept.empty()) {
+		rep = reply::stock_reply(reply::internal_server_error);
+		return true;
+	}
+	reply::add_header(&rep, "Sec-Websocket-Accept", accept);
+	// we only speak the domoticz subprotocol
+	reply::add_header(&rep, "Sec-Websocket-Protocol", "domoticz");
+	return true;
 }
 
 static void GetURICommandParameter(const std::string &uri, std::string &cmdparam)
@@ -1585,9 +1662,36 @@ char *cWebemRequestHandler::strftime_t(const char *format, const time_t rawtime)
 
 void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 {
+	if (_log.isTraceEnabled())	  
+		_log.Log(LOG_TRACE, "WEBH : Host:%s Uri;%s", req.host_address.c_str(), req.uri.c_str());
+
 	// Initialize session
 	WebEmSession session;
 	session.remote_host = req.host_address;
+
+	if (session.remote_host == "127.0.0.1")
+	{
+		//We could be using a proxy server
+		//Check if we have the "X-Forwarded-For" (connection via proxy)
+		const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
+		if (host_header != NULL)
+		{
+			session.remote_host = host_header;
+			if (strstr(host_header, ",") != NULL)
+			{
+				//Multiple proxies are used... this is not very common
+				host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+				if (!host_header)
+				{
+					_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+					rep = reply::stock_reply(reply::forbidden);
+					return;
+				}
+				session.remote_host = host_header;
+			}
+		}
+	}
+
 	session.reply_status = reply::ok;
 	session.isnew = false;
 	session.forcelogin = false;
@@ -1612,9 +1716,50 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 
 	// Check authentication on each page or action, if it exists.
+	bool bCheckAuthentication = false;
+	if (isPage || isAction) {
+		bCheckAuthentication = true;
+	}
+	
+	if (isPage && (req.uri.find("dologout") != std::string::npos))
+	{
+		//Remove session id based on cookie
+		const char *cookie;
+		cookie = request::get_req_header(&req, "Cookie");
+		if (cookie != NULL)
+		{
+			std::string scookie = cookie;
+			int fpos = scookie.find("SID=");
+			int upos = scookie.find("_", fpos);
+			if ((fpos != std::string::npos) && (upos != std::string::npos))
+			{
+				std::string sSID = scookie.substr(fpos + 4, upos-fpos-4);
+				_log.Log(LOG_STATUS, "Logout : remove session %s", sSID.c_str());
+				std::map<std::string, WebEmSession>::iterator itt = myWebem->m_sessions.find(sSID);
+				if (itt != myWebem->m_sessions.end())
+				{
+					myWebem->m_sessions.erase(itt);
+				}
+				removeAuthToken(sSID);
+			}
+		}
+		session.username = "";
+		session.rights = -1;
+		session.forcelogin = true;
+		bCheckAuthentication = false; // do not authenticate the user, just logout
+	}
+
+	// Check if this is an upgrade request to a websocket connection
+	if (is_upgrade_request(session, req, rep)) {
+		return;
+	}
 	if ((isPage || isAction) && !CheckAuthentication(session, req, rep)) {
 		return;
 	}
+		// Check user authentication on each page or action, if it exists.
+		if (bCheckAuthentication && !CheckAuthentication(session, req, rep)) {
+			return;
+		}
 
 	// Copy the request to be able to fill its parameters attribute
 	request requestCopy = req;
@@ -1653,6 +1798,13 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		// do normal handling
 		try
 		{
+			if (requestCopy.uri.find("/images/") == 0)
+			{
+				std::string theme_images_path = myWebem->m_actTheme + requestCopy.uri;
+				if (file_exist((doc_root_ + theme_images_path).c_str()))
+					requestCopy.uri = theme_images_path;
+			}
+
 			request_handler::handle_request(requestCopy, rep, mInfo);
 		}
 		catch (...)
@@ -1677,7 +1829,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-			// check if content is not gzipped, include won't work with non-text content
+				// check if content is not gzipped, include won´t work with non-text content
 			if (!rep.bIsGZIP) {
 				// Find and include any special cWebem strings
 				if (!myWebem->Include(rep.content)) {
@@ -1704,7 +1856,27 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-		else if (content_type.find("image/")!=std::string::npos)
+			else if (content_type.find("image/") != std::string::npos)
+			{
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+					return;
+				}
+				//Cache images
+				reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+				reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+			}
+			else {
+				if (mInfo.mtime_support && !mInfo.is_modified) {
+					rep = reply::stock_reply(reply::not_modified);
+					//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+					return;
+				}
+			// tell browser that we are using UTF-8 encoding
+			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
+		}
+		if (content_type.find("image/")!=std::string::npos)
 		{
 			if (mInfo.mtime_support && !mInfo.is_modified) {
 				rep = reply::stock_reply(reply::not_modified);
@@ -1729,6 +1901,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	}
 	else
 	{
+		// RK todo: check this well, this else doesn't belong to is_upgrade_request()
 		if (session.reply_status != reply::ok)
 		{
 			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
@@ -1738,10 +1911,10 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		if (!rep.bIsGZIP) {
 			CompressWebOutput(req, rep);
 		}
-	}
+	} // if (is_upgrade_request())
 
 	// Set timeout to make session in use
-	session.timeout = mytime(NULL) + SESSION_TIMEOUT;
+	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
 		// Create a new session ID
@@ -1749,7 +1922,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.expires = session.timeout;
 		if (session.rememberme) {
 			// Extend session by 30 days
-			session.expires += (86400 * 30);
+			session.expires += LONG_SESSION_TIMEOUT;
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
 		session.isnew = false;
@@ -1772,9 +1945,17 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		if (memSession != NULL)
 		{
 			time_t now = mytime(NULL);
-			if (memSession->expires - 60 < now)
+			// Renew session expiration date if half of session duration has been exceeded ("dont remember me" sessions, 10 minutes)
+			if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
 			{
-				memSession->expires = now + SESSION_TIMEOUT;
+				memSession->expires = now + SHORT_SESSION_TIMEOUT;
+				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
+				send_cookie(rep, *memSession);
+			}
+			// Renew session expiration date if half of session duration has been exceeded ("remember me" sessions, 30 days)
+			else if ((memSession->expires > SHORT_SESSION_TIMEOUT + now) && (memSession->expires - (LONG_SESSION_TIMEOUT / 2) < now))
+			{
+				memSession->expires = now + LONG_SESSION_TIMEOUT;
 				memSession->auth_token = generateAuthToken(*memSession, req); // do it after expires to save it also
 				send_cookie(rep, *memSession);
 			}
@@ -1784,4 +1965,3 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 
 } //namespace server {
 } //namespace http {
-

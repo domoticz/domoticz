@@ -90,7 +90,7 @@ void CDarkSky::Do_Work()
 {
 	_log.Log(LOG_STATUS, "DarkSky: Started...");
 
-	int sec_counter = 590;
+	int sec_counter = 290;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -98,7 +98,7 @@ void CDarkSky::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(NULL);
 		}
-		if (sec_counter % 600 == 0)
+		if (sec_counter % 300 == 0)
 		{
 			GetMeterDetails();
 		}
@@ -127,7 +127,8 @@ void CDarkSky::GetMeterDetails()
 #else
 	std::stringstream sURL;
 	std::string szLoc = m_Location;
-	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc;
+	std::string szExclude = "minutely,hourly,daily,alerts,flags";
+	sURL << "https://api.darksky.net/forecast/" << m_APIKey << "/" << szLoc << "?exclude=" << szExclude;
 	try
 	{
 		bool bret;
@@ -235,8 +236,6 @@ void CDarkSky::GetMeterDetails()
 
 	//Wind
 	int wind_degrees=-1;
-	float wind_mph=-1;
-	float wind_gust_mph=-1;
 	float windspeed_ms=0;
 	float windgust_ms=0;
 	float wind_temp=temp;
@@ -255,9 +254,8 @@ void CDarkSky::GetMeterDetails()
 			float temp_wind_mph = static_cast<float>(atof(root["currently"]["windSpeed"].asString().c_str()));
 			if (temp_wind_mph!=-9999.00f)
 			{
-				wind_mph=temp_wind_mph;
 				//convert to m/s
-				windspeed_ms=wind_mph*0.44704f;
+				windspeed_ms=temp_wind_mph*0.44704f;
 			}
 		}
 	}
@@ -268,9 +266,8 @@ void CDarkSky::GetMeterDetails()
 			float temp_wind_gust_mph = static_cast<float>(atof(root["currently"]["windGust"].asString().c_str()));
 			if (temp_wind_gust_mph!=-9999.00f)
 			{
-				wind_gust_mph=temp_wind_gust_mph;
 				//convert to m/s
-				windgust_ms=wind_gust_mph*0.44704f;
+				windgust_ms=temp_wind_gust_mph*0.44704f;
 			}
 		}
 	}
@@ -337,14 +334,14 @@ void CDarkSky::GetMeterDetails()
 	}
 
 	//UV
-	if (root["currently"]["UV"].empty()==false)
+	if (root["currently"]["uvIndex"].empty() == false)
 	{
-		if ((root["currently"]["UV"] != "N/A") && (root["currently"]["UV"] != "--"))
+		if ((root["currently"]["uvIndex"] != "N/A") && (root["currently"]["uvIndex"] != "--"))
 		{
-			float UV = static_cast<float>(atof(root["currently"]["UV"].asString().c_str()));
-			if ((UV<16)&&(UV>=0))
+			float UV = root["currently"]["uvIndex"].asFloat();
+			if ((UV < 16) && (UV >= 0))
 			{
-				SendUVSensor(0, 1, 255, UV, "UV");
+				SendUVSensor(0, 1, 255, UV, "UV Index");
 			}
 		}
 	}
@@ -369,21 +366,6 @@ void CDarkSky::GetMeterDetails()
 
 				tsen.RAIN.rainrateh=0;
 				tsen.RAIN.rainratel=0;
-
-				if (root["currently"]["precip_1hr_metric"].empty()==false)
-				{
-					if ((root["currently"]["precip_1hr_metric"] != "N/A") && (root["currently"]["precip_1hr_metric"] != "--"))
-					{
-						float rainrateph = static_cast<float>(atof(root["currently"]["precip_1hr_metric"].asString().c_str()));
-						if (rainrateph!=-9999.00f)
-						{
-							int at10=round(std::abs(rainrateph*10.0f));
-							tsen.RAIN.rainrateh=(BYTE)(at10/256);
-							at10-=(tsen.RAIN.rainrateh*256);
-							tsen.RAIN.rainratel=(BYTE)(at10);
-						}
-					}
-				}
 
 				int tr10=int((float(RainCount)*10.0f));
 				tsen.RAIN.raintotal1=0;
@@ -416,13 +398,10 @@ void CDarkSky::GetMeterDetails()
 	{
 		if ((root["currently"]["ozone"] != "N/A") && (root["currently"]["ozone"] != "--"))
 		{
-			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));	//this is in dobson units, need to convert to Watt/m2? (2.69×(10^20) ?
+			float radiation = static_cast<float>(atof(root["currently"]["ozone"].asString().c_str()));
 			if (radiation>=0.0f)
 			{
-				_tGeneralDevice gdevice;
-				gdevice.subtype=sTypeSolarRadiation;
-				gdevice.floatval1=radiation;
-				sDecodeRXMessage(this, (const unsigned char *)&gdevice, NULL, 255);
+				SendCustomSensor(1, 0, 255, radiation, "Ozone Sensor", "DU"); //(dobson units)
 			}
 		}
 	}

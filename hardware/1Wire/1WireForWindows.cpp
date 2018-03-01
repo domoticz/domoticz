@@ -92,7 +92,7 @@ void DisconnectFromService(SOCKET theSocket)
    closesocket(theSocket);
 }
 
-bool Send(SOCKET theSocket,std::string requestToSend)
+bool Send(SOCKET theSocket, const std::string &requestToSend)
 {
    // Send message size
    size_t requestSize = requestToSend.length();
@@ -124,7 +124,7 @@ std::string Receive(SOCKET theSocket)
    return answer;
 }
 
-std::string SendAndReceive(SOCKET theSocket,std::string requestToSend)
+std::string SendAndReceive(SOCKET theSocket,const std::string &requestToSend)
 {
    if (!Send(theSocket,requestToSend))
       return "";
@@ -132,7 +132,7 @@ std::string SendAndReceive(SOCKET theSocket,std::string requestToSend)
    return Receive(theSocket);
 }
 
-std::string C1WireForWindows::SendAndReceive(std::string requestToSend) const
+std::string C1WireForWindows::SendAndReceive(const std::string &requestToSend) const
 {
    // SendAndReceive can be called by 2 different thread contexts : writeData and GetDevices
    // So we have to set protection
@@ -408,11 +408,29 @@ float C1WireForWindows::GetIlluminance(const _t1WireDevice& device) const
    return ansRoot.get("Illuminescence",0.0f).asFloat();
 }
 
+int C1WireForWindows::GetWiper(const _t1WireDevice& device) const
+{
+	Json::Value ansRoot;
+	try
+	{
+		ansRoot = readData(device);
+	}
+	catch (C1WireForWindowsReadException&)
+	{
+		return -1;
+	}
+	return ansRoot.get("Wiper", -1).asUInt();
+}
+
 void C1WireForWindows::StartSimultaneousTemperatureRead()
 {
 }
 
-void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value)
+void C1WireForWindows::PrepareDevices()
+{
+}
+
+void C1WireForWindows::SetLightState(const std::string& sId,int unit,bool value, const unsigned int level)
 {
    if (m_Socket==INVALID_SOCKET)
       return;

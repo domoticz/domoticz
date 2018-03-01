@@ -115,6 +115,9 @@ case "$1" in
         PID=$(pidof_domoticz) || true
         if [ "${PID}" ]; then
                 kill -HUP $PID
+                log_end_msg 0
+        else
+                log_end_msg 1
         fi
         ;;
   restart)
@@ -136,7 +139,7 @@ case "$1" in
         esac
         ;;
   *)
-        echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|status|restart|reload}" >&2
         exit 3
         ;;
 esac

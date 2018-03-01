@@ -297,7 +297,7 @@ bool SatelIntegra::ConnectToIntegra()
 #else
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 #endif
-	_log.Log(LOG_STATUS, "Satel Integra: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "Satel Integra: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }
@@ -771,7 +771,7 @@ void SatelIntegra::ReportZonesViolation(const int Idx, const bool violation)
 
 	m_zonesLastState[Idx - 1] = violation;
 
-	SendAlertSensor(Idx, 255, violation ? 3 : 1, NULL);
+	SendAlertSensor(Idx, 255, violation ? 3 : 1, "", "");
 }
 
 void SatelIntegra::ReportOutputState(const int Idx, const bool state)

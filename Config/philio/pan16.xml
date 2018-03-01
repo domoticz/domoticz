@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Philio Tech: PAN16 Plug-in Switch plus Power Meter
+    http://products.z-wavealliance.org/products/2001
+    -->
+
+    <!-- Configuration  -->
+    <CommandClass id="112">
+        <Value type="short" genre="config" instance="1" index="1" label="Watt Meter Report Period" units="5 seconds" min="1" max="32767" value="720">
+            <Help>The interval at which the device reports its instant power consumption to Group 1 nodes. Unit: 5 secs, Min: 1, Max: 32767, Default: 720 (= 1 hr)</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="2" label="kWh Meter Report Period" units="10 minutes" min="1" max="32767" value="6">
+            <Help>The interval at which the device reports its accumulated energy consumption, in kWh, to all Group 1 nodes. Unit: 10 minutes, min: 1, max: 32767, default: 6 (= 1 hr)</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="3" label="Threshold of current for Load Caution" units="0.01 ampere" min="10" max="1100" value="1100">
+            <Help>When the current through the device exceeds this threshold, a current meter report will be sent to Group 1 nodes. min: 10, max: 1100, default: 1100 (= 11 A)</Help>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="4" label="Threshold of kWh for Load Caution" units="1 kWh" min="1" max="10000" value="10000">
+            <Help>When the energy consumption through the device exceeds this threshold, a kWh report will be sent to Group 1 nodes. min: 1, max: 10000, default: 10000 kWh</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="5" label="Restore switch state mode" min="0" max="2" size="1" value="1">
+            <Help>After loss of power, device state will be set according to this parameter, default: Previous state.</Help>
+            <Item label="Off" value="0"/>
+            <Item label="Previous state" value="1"/>
+            <Item label="On" value="2"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="6" label="Mode of Switch Off function" min="0" max="1" size="1" value="1">
+            <Help>When set to Disable, all commands to switch off the device are ignored, both via radio and the include button. default: Enable</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="7" label="LED indication mode" min="1" max="3" size="1" value="1">
+            <Help>Controls the light indicator in the device
+                Switch State: When switch is on, LED is on. When switch is off, LED is off. (default)
+                Night mode: When switch is on, LED is off. When switch is off, LED is on.
+                One flash: When the device changes state, the LED illuminates for one second.
+            </Help>
+            <Item label="Switch state" value="1"/>
+            <Item label="Night mode" value="2"/>
+            <Item label="One flash" value="3"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="8" label="Auto off timer" units="seconds" min="0" max="32767" value="0">
+            <Help>Controls the auto-off timer
+                0: The auto off timer is disabled (default)
+                1-32767: After switching on, the device will automatically switch off after this time
+            </Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="9" label="RF off command mode" min="0" max="3" size="1" value="0">
+            <Help>Controls how the device reacts to the SWITCH_ALL_OFF command
+                Off: The device switches off (default)
+                Ignore: The switch off command is ignored
+                Toggle: It switches to the inverse of current state
+                On: The device switches on
+            </Help>
+            <Item label="Off" value="0"/>
+            <Item label="Ignore" value="1"/>
+            <Item label="Toggle" value="2"/>
+            <Item label="On" value="3"/>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

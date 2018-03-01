@@ -172,7 +172,7 @@ namespace OpenZWave
 	private:
 
 
-		void MultiEncap();					// Encapsulate the data inside a MultiInstance/Multicommand message
+		void MultiEncap();						// Encapsulate the data inside a MultiInstance/Multicommand message
 
 		string			m_logText;
 		bool			m_bFinal;
@@ -190,14 +190,14 @@ namespace OpenZWave
 		uint8			m_maxSendAttempts;
 
 		uint8			m_instance;
-		uint8			m_endPoint;			// Endpoint to use if the message must be wrapped in a multiInstance or multiChannel command class
+		uint8			m_endPoint;				// Endpoint to use if the message must be wrapped in a multiInstance or multiChannel command class
 		uint8			m_flags;
 
 		bool			m_encrypted;
 		bool			m_noncerecvd;
 		uint8			m_nonce[8];
 		uint32			m_homeId;
-		static uint8		s_nextCallbackId;		// counter to get a unique callback id
+		static uint8	s_nextCallbackId;		// counter to get a unique callback id
 	};
 
 } // namespace OpenZWave
