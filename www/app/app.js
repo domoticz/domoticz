@@ -190,6 +190,31 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}
 
+		app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
+			return {
+				sendRequest: sendRequest,
+				sendCommand: sendCommand
+			};
+	
+			function sendRequest(data) {
+				return $http.get('json.htm', {
+					params: data
+				}).then(function (response) {
+					return response.data;
+				});
+			}
+	
+			function sendCommand(command, data) {
+				var commandParams = { type: 'command', param: command };
+				return sendRequest(Object.assign({}, commandParams, data))
+					.then(function (response) {
+						return response && response.status !== 'OK'
+							? $q.reject(response)
+							: response;
+					});
+			}
+		}]);
+
 		app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 			return {
 				initialised: false,
@@ -338,6 +363,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Devices', angularAMD.route({
 				templateUrl: 'views/devices.html',
 				controller: 'DevicesController'
+			})).
+			when('/Devices/:id/Timers', angularAMD.route({
+				templateUrl: '/views/timers.html',
+				controller: 'DeviceTimersController',
+				controllerUrl: '/app/DeviceTimers.js',
+				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
 				templateUrl: 'views/dpfibaro.html',
