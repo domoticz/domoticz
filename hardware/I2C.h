@@ -22,7 +22,7 @@ public:
 		I2CTYPE_MCP23017
 	};
 
-	explicit I2C(const int ID, const _eI2CType DevType, const int Port);
+	explicit I2C(const int ID, const _eI2CType DevType, const std::string &Address, const std::string &SerialPort, const int Mode1);
 	~I2C();
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 private:
@@ -39,8 +39,10 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
 
-	std::string m_ActI2CBus;
 	_eI2CType m_dev_type;
+	uint8_t m_i2c_addr;
+	std::string m_ActI2CBus;
+	bool m_invert_data;
 
 
 	bool i2c_test(const char *I2CBusName);
@@ -94,17 +96,17 @@ private:
 	void TSL2561_Init();
 	
 	// PCF8574
-	unsigned char	i2c_addr;
 	void			PCF8574_ReadChipDetails();
-	char			PCF8574_WritePin(char pin_number,char  value);
-	char 			readByteI2C(int fd, char *byte, char i2c_addr);
-	char 			writeByteI2C(int fd, char byte, char i2c_addr);
+	int			PCF8574_WritePin(uint8_t pin_number,uint8_t  value);
+	int 			readByteI2C(int fd, uint8_t *byte, uint8_t i2c_addr);
+	int 			writeByteI2C(int fd, uint8_t byte, uint8_t i2c_addr);
 
 	// MCP23017
 	void 			MCP23017_Init();
 	void			MCP23017_ReadChipDetails();
-	int			MCP23017_WritePin(char pin_number,char  value);
+	int				MCP23017_WritePin(uint8_t pin_number,uint8_t  value);
 	int 			I2CWriteReg16(int fd, uint8_t reg, uint16_t value);
 	int		 		I2CReadReg16(int fd, unsigned char reg, i2c_data *data);
 
+	
 };

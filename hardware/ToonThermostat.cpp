@@ -397,12 +397,11 @@ bool CToonThermostat::Login()
 		_log.Log(LOG_ERROR, "ToonThermostat: Invalid data received!");
 		return false;
 	}
-	if (root["success"] == true)
+	if (root["success"].asBool() == true)
 	{
 		m_bDoLogin = false;
 		return true;
 	}
-
 	return false;
 }
 
@@ -502,7 +501,8 @@ bool CToonThermostat::SwitchLight(const std::string &UUID, const int SwitchState
 */
 	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
-	return (root["success"] == true);
+
+	return (root["success"].asBool() == true);
 }
 
 bool CToonThermostat::SwitchAll(const int SwitchState)
@@ -539,7 +539,7 @@ bool CToonThermostat::SwitchAll(const int SwitchState)
 	}
 	m_retry_counter = 0;
 	m_poll_counter = TOON_POLL_INTERVAL_SHORT;
-	return (root["success"] == true);
+	return (root["success"].asBool() == true);
 }
 
 bool CToonThermostat::WriteToHardware(const char *pdata, const unsigned char length)
@@ -937,7 +937,7 @@ void CToonThermostat::SetSetpoint(const int idx, const float temp)
 			m_bDoLogin = true;
 			return;
 		}
-		if (root["success"] == false)
+		if (root["success"].asBool() == false)
 		{
 			_log.Log(LOG_ERROR, "ToonThermostat: setPoint request not successful, restarting..!");
 			m_bDoLogin = true;
@@ -995,7 +995,7 @@ void CToonThermostat::SetProgramState(const int newState)
 		m_bDoLogin = true;
 		return;
 	}
-	if (root["success"] == false)
+	if (root["success"].asBool() == false)
 	{
 		_log.Log(LOG_ERROR, "ToonThermostat: setProgramState request not successful, restarting..!");
 		m_bDoLogin = true;

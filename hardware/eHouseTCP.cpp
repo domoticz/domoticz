@@ -103,7 +103,7 @@ void eHouseTCP::InitStructs(void)
 	to = MAX_AURA_DEVS;
 	for (i = 0; i < to; i++)
 	{
-		(AuraDev[MAX_AURA_DEVS]) = NULL;	// Aura status thermostat
+		(AuraDev[i]) = NULL;	// Aura status thermostat
 		(AuraDevPrv[i]) = NULL;			// previous for detecting changes
 		(AuraN[i]) = NULL;
 	}

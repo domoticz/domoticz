@@ -78,8 +78,10 @@ bool MQTT::StopHardware()
 	{
 		//Don't throw from a Stop command
 	}
-	if (m_sConnection.connected())
-		m_sConnection.disconnect();
+	if (m_sDeviceReceivedConnection.connected())
+		m_sDeviceReceivedConnection.disconnect();
+	if (m_sSwitchSceneConnection.connected())
+		m_sSwitchSceneConnection.disconnect();
 	m_IsConnected = false;
 	return true;
 }
@@ -101,12 +103,13 @@ void MQTT::on_connect(int rc)
 
 	if (rc == 0){
 		if (m_IsConnected) {
-			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "MQTT: re-connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 		} else {
-			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+			_log.Log(LOG_STATUS, "MQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 			m_IsConnected = true;
 			sOnConnected(this);
-			m_sConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+			m_sDeviceReceivedConnection = m_mainworker.sOnDeviceReceived.connect(boost::bind(&MQTT::SendDeviceInfo, this, _1, _2, _3, _4));
+			m_sSwitchSceneConnection = m_mainworker.sOnSwitchScene.connect(boost::bind(&MQTT::SendSceneInfo, this, _1, _2));
 		}
 		subscribe(NULL, m_TopicIn.c_str());
 	}

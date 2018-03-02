@@ -61,7 +61,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	-- IMPORTANT: data must be time-stamped in UTC format
 
 	local newAdded = false
-	if (maxItems == nil or maxItems > MAXLIMIT) then
+	if (maxItems == nil) then
 		maxItems = MAXLIMIT
 	end
 	-- maybe we should make a limit anyhow in the number of items
@@ -238,7 +238,7 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 	end
 
 	function self.getOldest()
-		return self.get(self.size)
+		return self.get(self.size), self.size
 	end
 
 	function self.reset()
@@ -437,27 +437,60 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 		return avg
 	end
 
-	function self.delta(fromIndex, toIndex, smoothRange, default)
+	local function _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
 		if (fromIndex < 1 or
 			fromIndex > self.size-1 or
 			toIndex > self.size or
 			toIndex < 1 or
 			fromIndex > toIndex or
 			toIndex < fromIndex) then
-			return default
+			return nil, nil, nil
 		end
 
 		local value, item, referenceValue
-		if (smoothRange ~= nil) then
-			value = self.smoothItem(toIndex, smoothRange)
-			referenceValue = self.smoothItem(fromIndex, smoothRange)
+
+		-- get the reference value and check if we have to smooth it first
+		if (smoothRangeFrom ~= nil and smoothRangeFrom > 0) then
+			referenceValue = self.smoothItem(fromIndex, smoothRangeFrom)
+		else
+			referenceValue = _getItemData(self.storage[fromIndex])
+		end
+
+		if (referenceValue == nil) then
+			-- no need to compare
+			return nil, nil, nil
+		end
+
+		if (smoothRangeTo ~= nil and smoothRangeTo > 0) then
+			value = self.smoothItem(toIndex, smoothRangeTo)
 		else
 			value = _getItemData(self.storage[toIndex])
-			if (value == nil) then return nil end
-			referenceValue = _getItemData(self.storage[fromIndex])
-			if (referenceValue == nil) then return nil end
 		end
-		return tonumber(referenceValue - value)
+
+		if (value == nil) then
+			-- nothing to compare
+			return nil, nil, nil
+		end
+
+		return tonumber(referenceValue - value), tonumber(referenceValue), tonumber(value)
+	end
+
+	function self.delta(fromIndex, toIndex, smoothRange, default)
+		local res, from, to = _delta(fromIndex, toIndex, smoothRange, smoothRange)
+		if (res == nil) then
+			return default, default, default
+		end
+
+		return res, from, to
+
+	end
+
+	function self.delta2(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+		local res, reffrom, refto = _delta(fromIndex, toIndex, smoothRangeFrom, smoothRangeTo, default)
+		if (res == nil) then
+			return default, default, default
+		end
+		return res, reffrom, refto
 	end
 
 	function self.deltaSince(timeAgo, smoothRange, default)
@@ -467,8 +500,24 @@ local function HistoricalStorage(data, maxItems, maxHours, maxMinutes, getData)
 			return self.delta(1, index, smoothRange, default)
 		end
 
-		return default
+		return default, default, default
 	end
+
+	function self.deltaSinceOrOldest(timeAgo, smoothRangeFrom, smoothRangeTo, default)
+		local item, index = self.getAtTime(timeAgo)
+
+		if (item == nil) then
+			item, index = self.getOldest()
+		end
+
+		if (item ~= nil) then
+			return self.delta2(1, index, smoothRangeFrom, smoothRangeTo)
+		end
+
+		-- there is no data at all
+		return default, default, default
+	end
+
 
 	function self.localMin(smoothRange, default)
 		local min, minVal

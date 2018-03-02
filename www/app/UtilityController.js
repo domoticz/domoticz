@@ -268,7 +268,7 @@ define(['app'], function (app) {
 
 							var DayStr = "";
 							var DayStrOrig = "";
-							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9)) {
+							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9) || ((item.Type >= 14) && (item.Type <= 27))) {
 								var dayflags = parseInt(item.Days);
 								if (dayflags & 0x80)
 									DayStrOrig = "Everyday";
@@ -1357,7 +1357,7 @@ define(['app'], function (app) {
 								'\t      <td id="status">' + status + '</td>\n' +
 								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 								'\t      <td id="type">' + item.Type + ', ' + item.SubType + '</td>\n' +
-								'\t      <td>';
+								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
 									'<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1605,7 +1605,6 @@ define(['app'], function (app) {
 						$("#utilitycontent .span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								$.devIdx.split(' ');
 								var roomid = $("#utilitycontent #comboroom option:selected").val();
 								if (typeof roomid == 'undefined') {
 									roomid = 0;

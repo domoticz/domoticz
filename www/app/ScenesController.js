@@ -164,7 +164,13 @@ define(['app'], function (app) {
 					var bIsLED = (item.SubType.indexOf("RGB") >= 0);
 					if (bIsLED == true) {
 						level = $("#scenecontent #Brightness").val();
-						hue = $("#scenecontent #Hue").val();
+						
+						var thue = $("#scenecontent #Hue").val();
+						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
+						if (white_value<0) white_value=0;
+						if (white_value>255) white_value=255;
+						hue = (white_value << 16) + parseInt(thue);
+
 						var bIsWhite = $('#scenecontent #ledtable #optionsWhite').is(":checked")
 						if (bIsWhite == true) {
 							hue = 1000;
@@ -368,7 +374,7 @@ define(['app'], function (app) {
 							var levelstr = item.Level + " %";
 
 							if (bIsLED) {
-								var hue = item.Hue;
+								var hue = item.Hue & 0xFFFF;
 								var sat = 100;
 								if (hue == 1000) {
 									hue = 0;
@@ -378,7 +384,7 @@ define(['app'], function (app) {
 								cHSB.h = hue;
 								cHSB.s = sat;
 								cHSB.b = item.Level;
-								levelstr += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpickHsbToHex(cHSB) + ';"></div>';
+								levelstr += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpick.hsbToHex(cHSB) + ';"></div>';
 							}
 
 
@@ -442,7 +448,9 @@ define(['app'], function (app) {
 						$("#scenecontent #combolevel").val(level);
 						$('#scenecontent #Brightness').val(level & 255);
 
-						var hue = data["Hue"];
+						var hue = parseInt(data["Hue"]) & 0xFFFF;
+						$('#scenecontent #white_slider').slider('value',(parseInt(data["Hue"]) & 0xFF0000)>>16);
+						
 						var sat = 100;
 						if (hue == 1000) {
 							hue = 0;
@@ -491,7 +499,13 @@ define(['app'], function (app) {
 					var bIsLED = (item.SubType.indexOf("RGB") >= 0);
 					if (bIsLED == true) {
 						level = $("#scenecontent #Brightness").val();
-						hue = $("#scenecontent #Hue").val();
+						
+						var thue = $("#scenecontent #Hue").val();
+						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
+						if (white_value<0) white_value=0;
+						if (white_value>255) white_value=255;
+						hue = (white_value << 16) + parseInt(thue);
+						
 						var bIsWhite = $('#scenecontent #ledtable #optionsWhite').is(":checked")
 						if (bIsWhite == true) {
 							hue = 1000;
@@ -547,11 +561,15 @@ define(['app'], function (app) {
 			}
 			var bShowLevel = false;
 			var bIsLED = false;
+			var bIsRGBW = false;
+			var bIsRGBWW = false;
 			var dimmerLevels = "none";
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					bShowLevel = item.isdimmer;
 					bIsLED = (item.SubType.indexOf("RGB") >= 0);
+					bIsRGBW = (item.SubType.indexOf("RGBW") >= 0);
+					bIsRGBWW = (item.SubType.indexOf("RGBWW") >= 0);
 					dimmerLevels = item.DimmerLevels;
 				}
 			});
@@ -560,6 +578,12 @@ define(['app'], function (app) {
 			$("#scenecontent #LevelDiv").hide();
 			if (bIsLED) {
 				$("#scenecontent #LedColor").show();
+				
+				if ((bIsRGBW == true) || (bIsRGBWW == true)) {
+					$("#scenecontent #optionsWhiteSlider").show();
+				} else {
+					$("#scenecontent #optionsWhiteSlider").hide();
+				}
 			} else {
 				if (bShowLevel == true) {
 					var levelDiv$ = $("#scenecontent #LevelDiv");
@@ -614,11 +638,11 @@ define(['app'], function (app) {
 				$("#scenecontent #CommandHeader").html($.t("State"));
 			}
 
-			$('#scenecontent #picker').colpick({
+			$cpick = $('#scenecontent #picker').colpick({
 				flat: true,
 				layout: 'hex',
 				submit: 0,
-				onChange: function (hsb, hex, rgb, fromSetColor) {
+				onChange: function (hsb, hex, rgb, el, fromSetColor) {
 					if (!fromSetColor) {
 						$('#scenecontent #Hue').val(hsb.h);
 						$('#scenecontent #Brightness').val(hsb.b);
@@ -626,10 +650,48 @@ define(['app'], function (app) {
 						$("#scenecontent #optionsRGB").prop('checked', !bIsWhite);
 						$("#scenecontent #optionsWhite").prop('checked', bIsWhite);
 						clearInterval($.setColValue);
-						$.setColValue = setInterval(function () { SetColValue($.lampIdx, hsb.h, hsb.b); }, 400);
+						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
+						if (white_value<0) white_value=0;
+						if (white_value>255) white_value=255;
+						$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
 					}
 				}
 			});
+			$('#scenecontent #white_slider').slider({
+				//Config
+				range: "min",
+				min: 1,
+				max: 255,
+				value: 0,
+
+				//Slider Events
+				create: function (event, ui) {
+					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
+					$(this).slider("option", "type", $(this).data('type'));
+					$(this).slider("option", "isprotected", $(this).data('isprotected'));
+					$(this).slider("value", $(this).data('svalue') + 1);
+					if ($(this).data('disabled'))
+						$(this).slider("option", "disabled", true);
+				},
+				slide: function (event, ui) { //When the slider is sliding
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				},
+				stop: function (event, ui) {
+					clearInterval($.setColValue);
+					var hsb = $cpick.colpickGetHSB();
+					var bIsWhite = (hsb.s < 20);
+					var white_value = ui.value-1;
+					if (white_value<0) white_value=0;
+					if (white_value>255) white_value=255;
+					$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
+				}
+			});			
 
 			$('#scenecontent #scenedevicestable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
@@ -1013,7 +1075,7 @@ define(['app'], function (app) {
 							}
 							var DayStr = "";
 							var DayStrOrig = "";
-							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9)) {
+							if ((item.Type <= 4) || (item.Type == 8) || (item.Type == 9) || ((item.Type >= 14) && (item.Type <= 27))) {
 								var dayflags = parseInt(item.Days);
 								if (dayflags & 0x80)
 									DayStrOrig = "Everyday";
@@ -1413,7 +1475,8 @@ define(['app'], function (app) {
 
 			$http({
 				url: "json.htm?type=scenes&lastupdate=" + $.LastUpdateTime
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1486,7 +1549,7 @@ define(['app'], function (app) {
 				$scope.mytimer = $interval(function () {
 					RefreshScenes();
 				}, 10000);
-			}).error(function () {
+			}, function errorCallback(response) {
 				$scope.mytimer = $interval(function () {
 					RefreshScenes();
 				}, 10000);
@@ -1671,7 +1734,6 @@ define(['app'], function (app) {
 						$("#scenecontent .span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								$.devIdx.split(' ');
 								$.ajax({
 									url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + $.devIdx,
 									async: false,

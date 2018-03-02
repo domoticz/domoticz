@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1468
+# ref 1483
 
 CACHE:
 # CSS
@@ -112,14 +112,14 @@ images/button.png
 images/camera_default.png
 images/camera-web.png
 images/capture.png
+images/ChristmasTree.png
+images/ChristmasTree48_Off.png
+images/ChristmasTree48_On.png
 images/clock.png
 images/clock48.png
 images/clock48_On.png
 images/collection.png
 images/collection_hover.png
-images/ChristmasTree.png
-images/ChristmasTree48_Off.png
-images/ChristmasTree48_On.png
 images/Computer.png
 images/Computer48_Off.png
 images/Computer48_On.png
@@ -524,7 +524,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.12.0.min.js
+js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js

@@ -115,6 +115,6 @@
 
 	<!-- Remove COMMAND_CLASS_BASIC -->
 	<CommandClass id="32" action="remove"/>
-
-
+	<!-- Force multichannel -->
+	<CommandClass id="142" ForceInstances="true"/>
 </Product>

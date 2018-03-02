@@ -1,25 +1,24 @@
 ﻿<html>
   <head>
     <meta charset="utf-8">
-    <script type="text/javascript" src="js/blockly_compressed.js"></script>
-    <script type="text/javascript" src="js/blocks_compressed.js"></script>
-    <script type="text/javascript" src="js/en_compressed.js"></script>
-    <script type="text/javascript" src="js/jquery-1.12.0.min.js"></script>
+    <script src="js/blockly_compressed.js"></script>
+    <script src="js/blocks_compressed.js"></script>
+    <script src="js/en_compressed.js"></script>
+	<script src="js/jquery-3.3.1.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 	<script src="js/bootbox.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-	<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
-    <script type="text/javascript" src="js/noty/layouts/top.js"></script>
-    <script type="text/javascript" src="js/noty/layouts/topRight.js"></script>
-    <script type="text/javascript" src="js/noty/themes/default.js"></script>
-    <script type="text/javascript" charset="utf-8" src="js/domoticz.js"></script>
-    <script type="text/javascript" src="js/domoticzblocks_messages_en.js"></script>
-    <script type="text/javascript" src="js/domoticzblocks.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+	<script src="js/noty/jquery.noty.js"></script>
+    <script src="js/noty/layouts/top.js"></script>
+    <script src="js/noty/layouts/topRight.js"></script>
+    <script src="js/noty/themes/default.js"></script>
+    <script charset="utf-8" src="js/domoticz.js"></script>
+    <script src="js/domoticzblocks_messages_en.js"></script>
+    <script src="js/domoticzblocks.js"></script>
 	<script src="js/i18next-1.8.0.min.js"></script>
-	<script type="text/javascript" src="js/bootbox.min.js"></script>
-	<script type="text/javascript" src="js/ace/ace.js"></script>
-	<script type="text/javascript" src="js/ace/ext-language_tools.js"></script>
-	<!-- <script type="text/javascript" charset="utf-8" src="acttheme/custom.js"></script> -->
+	<script src="js/bootbox.min.js"></script>
+	<script src="js/ace/ace.js"></script>
+	<script src="js/ace/ext-language_tools.js"></script>
 	<link rel="stylesheet" href="css/bootstrap.css">
     <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
     <link type="text/css" rel="stylesheet" href="css/ui-darkness/jquery-ui.min.css" />
@@ -751,6 +750,10 @@
 				eventName == 'Time' ||
 				eventName == 'TimedCommand' ||
 				eventName == 'Utils' ||
+                eventName == 'Timer' ||
+                eventName == 'Security' ||
+                eventName == 'lodash' ||
+                eventName == 'JSON' ||
 				eventName == 'Variable') {
 				bootbox.alert('You cannot use these names for your scripts: Device, Domoticz, dzVents, EventHelpers, HistoricalStorage, persistence, Time, TimedCommand, Utils or Variable. It interferes with the dzVents subsystem. Please rename your script.');
 				return;
@@ -1171,6 +1174,8 @@
 						<option value="Scene">Scene</option>
 						<option value="Timer">Timer</option>
 						<option value="UserVariable">User variable</option>
+                        <option value="HTTPRequest">HTTP request</option>
+                        <option value="global_data">global_data</option>
 					</select>
 					<p>
 						<input type="checkbox" id="eventActive" name="eventActive" /><label for="eventActive"><span data-i18n="Event active">Event active</span></label>

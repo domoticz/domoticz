@@ -51,7 +51,7 @@ void CGooglePubSubPush::Stop()
 
 void CGooglePubSubPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("GooglePubSubActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -106,7 +106,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 {
 	std::string googlePubSubData = "";
 
-	int googlePubSubDebugActiveInt;
+	int googlePubSubDebugActiveInt = 0;
 	bool googlePubSubDebugActive = false;
 	m_sql.GetPreferencesVar("GooglePubSubDebug", googlePubSubDebugActiveInt);
 	if (googlePubSubDebugActiveInt == 1) {
