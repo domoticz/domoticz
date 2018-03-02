@@ -3539,7 +3539,7 @@ define(['app'], function (app) {
 				bIsType5 = 1;
 				totunits = 0;
 			}
-			else if ((lighttype == 105)) {
+			else if (lighttype == 105) {
 				//ASA
 				bIsType5 = 1;
 				totunits = 16;
