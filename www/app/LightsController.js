@@ -698,13 +698,13 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #optionsRGBW").hide();
 			}
-			
+
 			if (($.bIsRGBW == true) || ($.bIsRGBWW == true)) {
 				$("#lightcontent #optionsWhiteSlider").show();
 			} else {
 				$("#lightcontent #optionsWhiteSlider").hide();
 			}
-			
+
 			$cpick = $('#lightcontent #picker').colpick({
 				flat: true,
 				layout: 'hex',
@@ -758,7 +758,7 @@ define(['app'], function (app) {
 					if (white_value>255) white_value=255;
 					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
 				}
-			});			
+			});
 
 			$("#lightcontent #optionRGB").prop('checked', (sat == 180));
 			$("#lightcontent #optionWhite").prop('checked', !(sat == 180));
@@ -1570,7 +1570,7 @@ define(['app'], function (app) {
 			$.isslave = isslave;
 			$.stype = stype;
 			$.strUnit = strUnit;
-			$.bIsSelectorSwitch = (devsubtype === "Selector Switch");
+			$.bIsSelectorSwitch = (devsubtype === "Selector Switch" && switchtype === 18);
 
 			ConfigureEditLightSettings();
 
@@ -1740,7 +1740,7 @@ define(['app'], function (app) {
 					if (white_value>255) white_value=255;
 					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
 				}
-			});			
+			});
 			$("#lightcontent #optionRGB").prop('checked', (sat == 100));
 			$("#lightcontent #optionWhite").prop('checked', !(sat == 100));
 
@@ -1785,7 +1785,17 @@ define(['app'], function (app) {
 						$("#lightcontent #SwitchIconDiv").show();
 					}
 					if (switchtype == 18) {
+						// Add default value required to correctly display the switch options
+						//LevelNames:Off|Level1|Level2|Level3
+						$("#lightcontent #selectorlevelstable").data('levelNames', typeof $.selectorSwitchLevels !== "undefined" ? $.selectorSwitchLevels.join('|') : 'Off|Level1|Level2|Level3');
+						$("#lightcontent #selectoractionstable").data('levelActions', typeof $.selectorSwitchActions !== "undefined" ? $.selectorSwitchActions.join('|') : '|||');
+						$("#lightcontent .selector-switch-options.level-off-hidden input[type=checkbox]").prop('checked', typeof $.selectorSwitchLevelOffHidden !== "undefined" ? $.selectorSwitchLevelOffHidden : false);
+						BuildSelectorActionsTable();
+						BuildSelectorLevelsTable();
+						$.bIsSelectorSwitch = true;
+
 						$("#lightcontent .selector-switch-options").show();
+						$("#lightcontent .selector-switch-options.style input[value=0]").attr('checked', typeof $.selectorSwitchStyle !== "undefined" ? $.selectorSwitchStyle : true);
 					}
 				});
 
