@@ -1015,10 +1015,15 @@ define(['app'], function (app) {
 					if (switchtype == 8) {
 						addjvalstr = "&addjvalue=" + $("#lightcontent #motionoffdelay").val();
 					}
-					else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 11) || (switchtype == 18)) {
+					if ((switchtype == 19) || (switchtype == 20)){
+						addjvalstr = "&addjvalue=" + $("#lightcontent #offdelay").val();
+					}
+					else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 18)) {
+						
 						addjvalstr = "&addjvalue=" + $("#lightcontent #offdelay").val();
 						addjvalstr += "&addjvalue2=" + $("#lightcontent #ondelay").val();
 					}
+					
 					var CustomImage = 0;
 
 					if ((switchtype == 0) || (switchtype == 7) || (switchtype == 17) || (switchtype == 18)) {
@@ -1774,7 +1779,11 @@ define(['app'], function (app) {
 						$("#lightcontent #MotionDiv").show();
 						$("#lightcontent #motionoffdelay").val(addjvalue);
 					}
-					else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 11) || (switchtype == 18)) {
+					if ((switchtype == 19) || (switchtype == 20)){
+						$("#lightcontent #OffDelayDiv").show();
+						$("#lightcontent #offdelay").val(addjvalue);
+					}
+					else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 18)) {
 						$("#lightcontent #OnDelayDiv").show();
 						$("#lightcontent #OffDelayDiv").show();
 						$("#lightcontent #offdelay").val(addjvalue);
@@ -1799,7 +1808,11 @@ define(['app'], function (app) {
 					$("#lightcontent #MotionDiv").show();
 					$("#lightcontent #motionoffdelay").val(addjvalue);
 				}
-				else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 11) || (switchtype == 18)) {
+				if ((switchtype == 19) || (switchtype == 20)){
+					$("#lightcontent #OffDelayDiv").show()
+					$("#lightcontent #offdelay").val(addjvalue);
+				}
+				else if ((switchtype == 0) || (switchtype == 7) || (switchtype == 9) || (switchtype == 18)) {
 					$("#lightcontent #OnDelayDiv").show();
 					$("#lightcontent #OffDelayDiv").show();
 					$("#lightcontent #offdelay").val(addjvalue);
@@ -1808,6 +1821,7 @@ define(['app'], function (app) {
 				if ((switchtype == 0) || (switchtype == 7) || (switchtype == 17) || (switchtype == 18)) {
 					$("#lightcontent #SwitchIconDiv").show();
 				}
+				
 				if (switchtype == 18) {
 					var dialog_renameselectorlevel_buttons = {}, dialog_editselectoraction_buttons = {};
 					dialog_renameselectorlevel_buttons[$.t("Rename")] = function () {
@@ -2286,6 +2300,14 @@ define(['app'], function (app) {
 									}
 									else {
 										img = '<img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+									}
+								}
+								else if (item.SwitchType == "Door Lock Inverted") {
+									if (item.InternalState == "Unlocked") {
+										img = '<img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
+									}
+									else {
+										img = '<img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 									}
 								}
 								else if (item.SwitchType == "Push Off Button") {
@@ -2851,6 +2873,15 @@ define(['app'], function (app) {
 								}
 								else {
 									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								}
+								bAddTimer = false;
+							}
+							else if (item.SwitchType == "Door Lock Inverted") {
+								if (item.InternalState == "Unlocked") {
+									xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Lock") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								}
+								else {
+									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Unlock") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 								}
 								bAddTimer = false;
 							}

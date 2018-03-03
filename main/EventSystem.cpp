@@ -3920,6 +3920,18 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 			lstatus = "Unlocked";
 		}
 	}
+	else if (switchtype == STYPE_DoorLockInverted)
+	{
+		bool bIsOn = IsLightSwitchOn(lstatus);
+		if (bIsOn)
+		{
+			lstatus = "Unlocked";
+		}
+		else if (lstatus == "Off")
+		{
+			lstatus = "Locked";
+		}
+	}
 	else if (switchtype == STYPE_Blinds)
 	{
 		if (lstatus == "On")

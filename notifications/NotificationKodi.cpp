@@ -165,6 +165,9 @@ std::string CNotificationKodi::GetIconFile(const std::string &ExtraData)
 			case STYPE_DoorLock:
 				szTypeImage = "door48open";
 				break;
+			case STYPE_DoorLockInverted:
+				szTypeImage = "door48";
+				break;
 			case STYPE_Media:
 				if (posCustom >= 0)
 				{
