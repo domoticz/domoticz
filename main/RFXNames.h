@@ -27,6 +27,7 @@ enum _eSwitchType
 	STYPE_Media,					//17
 	STYPE_Selector,					//18
 	STYPE_DoorLock,					//19
+	STYPE_DoorLockInverted,					//20
 	STYPE_END
 };
 
