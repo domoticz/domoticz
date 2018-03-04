@@ -23,7 +23,8 @@ define(['app'], function (app) {
 			}
 			$http({
 				url: "json.htm?type=command&param=rfxfirmwaregetpercentage&hardwareid=" + $rootScope.hwidx
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (data.status == "ERR") {
 					HideNotify();
 					bootbox.alert($.t('Problem updating firmware') + "<br>" + $.t(data.message));
@@ -46,7 +47,8 @@ define(['app'], function (app) {
 						$scope.progressupload();
 					}, 1000);
 				}
-			}).error(function () {
+			}, function errorCallback(response) {
+				var data = response.data;
 				HideNotify();
 				bootbox.alert($.t('Problem updating firmware') + "<br>" + $.t(data.message));
 				SwitchLayout('Dashboard');
@@ -76,16 +78,14 @@ define(['app'], function (app) {
 					delete headers['Content-Type'];
 					return formData;
 				}
-			})
-				.success(function (data) {
-					$scope.isUpdating = true;
-					$scope.mytimer = $interval(function () {
-						$scope.progressupload();
-					}, 1000);
-				})
-				.error(function (data, status) {
-					$window.location = '/#Dashboard';
-				});
+			}).then(function successCallback(response) {
+				$scope.isUpdating = true;
+				$scope.mytimer = $interval(function () {
+					$scope.progressupload();
+				}, 1000);
+			}, function errorCallback(response) {
+				$window.location = '/#Dashboard';
+			});
 		};
 
 		$scope.init = function () {

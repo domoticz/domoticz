@@ -11,7 +11,8 @@ https://products.z-wavealliance.org/products/2656
   <CommandClass id="133">
     <Associations num_groups="2">
       <Group index="1" max_associations="1" label="Lifeline" />
-      <Group index="2" max_associations="4" label="Control" />
+      <Group index="2" max_associations="4" label="Control" auto="true"/>
     </Associations>
   </CommandClass>
+
 </Product>

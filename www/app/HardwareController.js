@@ -3685,9 +3685,9 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
 				async: true,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
 				$('#IncludeZWaveDialog').modal('hide');
-			}).error(function () {
+			}, function errorCallback(response) {
 				$('#IncludeZWaveDialog').modal('hide');
 			});
 		}
@@ -3763,9 +3763,9 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
 				async: true,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
 				$('#ExcludeZWaveDialog').modal('hide');
-			}).error(function () {
+			}, function errorCallback(response) {
 				$('#ExcludeZWaveDialog').modal('hide');
 			});
 		}
