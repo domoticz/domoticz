@@ -11,6 +11,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
+#include "../notifications/NotificationHelper.h"
 #include "PythonObjects.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -777,6 +778,7 @@ namespace Plugins {
 			int			iSubType = self->SubType;
 			int			iSwitchType = self->SwitchType;
 			int			iUsed = self->Used;
+			uint64_t 		DevRowIdx;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
@@ -795,21 +797,21 @@ namespace Plugins {
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+			DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
 			// Notify MQTT and various push mechanisms
 			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
-
+			
 			std::string sID = SSTR(self->ID);
 
 			if (TypeName) {
 				// Reset nValue and sValue when changing device types
 				nValue = 0;
-				std::string sValue = "";
+				std::string stdsValue = "";
 
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, sValue, pOptionsDict, pOptionsDict);
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
-				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue.c_str(), sName, true);
+				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
 
 				// Notify MQTT and various push mechanisms
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
@@ -889,6 +891,199 @@ namespace Plugins {
 			if (iTimedOut != self->TimedOut)
 			{
 				self->TimedOut = iTimedOut;
+			}
+
+			if (DevRowIdx != -1) {
+				int HardwareID = self->HwdID;
+				const char* ID = sDeviceID.c_str();
+				unsigned char unit = self->Unit;
+				unsigned char cType = iType;
+				unsigned char cSubType = iSubType;
+				int meterType = 0;
+				float fValue = atof(sValue);
+				std::vector<std::string> strarray;
+				switch(cType) {
+					case pTypeInterfaceMessage:
+					case pTypeInterfaceControl:
+					case pTypeRecXmitMessage:
+					case pTypeUndecoded:
+					case pTypeLighting1:
+					case pTypeLighting2:
+					case pTypeLighting3:
+					case pTypeLighting4:
+					case pTypeLighting5:
+					case pTypeLighting6:
+					case pTypeFan:
+					case pTypeCurtain:
+					case pTypeBlinds:
+					case pTypeRFY:
+					case pTypeSecurity1:
+					case pTypeSecurity2:
+					case pTypeEvohome:
+					case pTypeEvohomeZone:
+					case pTypeEvohomeWater:
+					case pTypeEvohomeRelay:
+					case pTypeCamera:
+					case pTypeRemote:
+					case pTypeThermostat:
+					case pTypeThermostat1:
+					case pTypeThermostat2:
+					case pTypeThermostat3:
+					case pTypeThermostat4:
+					case pTypeRadiator1:
+					case pTypeDT:
+					case pTypeENERGY:
+					case pTypeGAS:
+					case pTypeWATER:
+					case pTypeRFXMeter:
+					case pTypeP1Power:
+					case pTypeP1Gas:
+					case pTypeRego6XXValue:
+					case pTypeFS20:
+					case pTypeChime:
+					case pTypeBBQ:
+					case pTypeLimitlessLights:
+					case pTypeGeneralSwitch:
+					case pTypePOWER:
+					case pTypeHomeConfort:
+					case pTypeCARTELECTRONIC:
+						break;
+					case pTypeHUM:
+						m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, 0.0, nValue, false, true);
+						break;
+					case pTypeTEMP_HUM:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 3) {
+							float Temp = (float)atof(strarray[0].c_str());
+							int Hum = atoi(strarray[1].c_str());
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+							float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+							m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+						}
+						break;
+					case pTypeTEMP_HUM_BARO:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 5) {
+							float Temp = (float)atof(strarray[0].c_str());
+							int Hum = atoi(strarray[1].c_str());
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+							float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+							m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+							m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+						}
+						break;
+					case pTypeTEMP_RAIN:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2) {
+							float Temp = (float)atof(strarray[0].c_str());
+							float Rain = (float)atof(strarray[1].c_str());
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+							m_notifications.CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, Rain);
+						}
+						break;
+					case pTypeTEMP_BARO:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2) {
+							float Temp = (float)atof(strarray[0].c_str());
+							float Baro = (float)atof(strarray[1].c_str());
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+							m_notifications.CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+						}
+						break;
+					case pTypeRAIN:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2) {
+							float TotalRain = (float)atof(strarray[1].c_str());
+							m_notifications.CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, TotalRain);
+						}
+						break;
+					case pTypeUV:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 2) {
+							float Level = (float)atof(strarray[0].c_str());
+							float Temp = (float)atof(strarray[1].c_str());
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+							m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_UV, Level);
+						}
+						break;
+					case pTypeCURRENT:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 3) {
+							float CurrentChannel1 = (float)atof(strarray[0].c_str());
+							float CurrentChannel2 = (float)atof(strarray[1].c_str());
+							float CurrentChannel3 = (float)atof(strarray[2].c_str());
+							m_notifications.CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+						}
+						break;
+					case pTypeCURRENTENERGY:
+						StringSplit(sValue, ";", strarray);
+						if (strarray.size() == 4) {
+							float CurrentChannel1 = (float)atof(strarray[0].c_str());
+							float CurrentChannel2 = (float)atof(strarray[1].c_str());
+							float CurrentChannel3 = (float)atof(strarray[2].c_str());
+							m_notifications.CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+						}
+						break;
+					case pTypeWIND:
+						if (strarray.size() == 6) {
+							float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
+							float temp = (float)atof(strarray[4].c_str());
+							m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
+							m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
+						}
+						break;
+					case pTypeYouLess:
+						if (strarray.size() == 2) {
+							float usagecurrent = (float)atof(strarray[1].c_str());
+							m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, usagecurrent);
+						}
+						break;
+					case pTypeAirQuality:
+						m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TODAYCOUNTER, (float)nValue);
+						break;
+					case pTypeRego6XXTemp:
+						m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
+						break;
+					default:
+						switch(cSubType) {
+							case sTypeZWaveClock:
+							case sTypeZWaveThermostatMode:
+							case sTypeZWaveThermostatFanMode:
+							case sTypeTextStatus:
+								break;
+							case sTypeVisibility:
+								m_sql.GetMeterType(HardwareID, ID, unit, cType, cSubType, meterType);
+								if (meterType == 1) {
+									//miles
+									fValue *= 0.6214f;
+								}								
+								m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+								break;						
+							case sTypeDistance:
+								m_sql.GetMeterType(HardwareID, ID, unit, cType, cSubType, meterType);
+								if (meterType == 1) {
+									//inches
+									fValue *= 0.393701f;
+								}								
+								m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+								break;						
+							case sTypeZWaveAlarm:
+								m_notifications.CheckAndHandleValueNotification(DevRowIdx, sName, nValue);
+								break;
+							case sTypeSoilMoisture:
+							case sTypeLeafWetness:
+							case sTypeFan:
+							case sTypeAlert:
+							case sTypeSoundLevel:
+								m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+								break;
+							default:
+								// default fallback is sValue used as float for NTYPE_USAGE notification
+								m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+								break;
+						}
+						break;
+				}
 			}
 
 			CDevice_refresh(self);
