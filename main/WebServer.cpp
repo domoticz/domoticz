@@ -16511,15 +16511,52 @@ namespace http {
 						sendDew = true;
 					}
 
-					if (sgraphtype == "1")
+					if ((sgraphtype == "1") || (sgraphtype == "2") || (sgraphtype == "3") || (sgraphtype == "4"))
 					{
 						// Need to get all values of the end date so 23:59:59 is appended to the date string
-						result = m_sql.safe_query(
-							"SELECT Temperature, Chill, Humidity, Barometer,"
-							" Date, DewPoint, SetPoint "
-							"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
-							" AND Date>='%q' AND Date<='%q 23:59:59') ORDER BY Date ASC",
-							idx, szDateStart.c_str(), szDateEnd.c_str());
+						if (sgraphtype == "1")
+						{
+							result = m_sql.safe_query(
+								"SELECT Temperature, Chill, Humidity, Barometer,"
+								" Date, DewPoint, SetPoint "
+								"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
+								" AND Date>='%q' AND Date<='%q 23:59:59') ORDER BY Date ASC",
+								idx, szDateStart.c_str(), szDateEnd.c_str());
+						}
+						else if (sgraphtype == "2")
+						{
+							result = m_sql.safe_query(
+								"SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity,"
+								" ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(DewPoint),1) AS DewPoint, ROUND(AVG(SetPoint),1) AS SetPoint "
+								"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
+								" AND Date>='%q' AND Date<='%q 23:59:59')"
+								" GROUP BY strftime('%%Y-%%m-%%d %%H', Date), (strftime('%%M',Date)/15)"
+								" ORDER BY Date ASC",
+								idx, szDateStart.c_str(), szDateEnd.c_str());
+						}
+						else if (sgraphtype == "3")
+						{
+							result = m_sql.safe_query(
+								"SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity,"
+								" ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(DewPoint),1) AS DewPoint, ROUND(AVG(SetPoint),1) AS SetPoint "
+								"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
+								" AND Date>='%q' AND Date<='%q 23:59:59')"
+								" GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30)"
+								" ORDER BY Date ASC",
+								idx, szDateStart.c_str(), szDateEnd.c_str());
+						}
+						else
+						{
+								result = m_sql.safe_query(
+								"SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity,"
+								" ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(DewPoint),1) AS DewPoint, ROUND(AVG(SetPoint),1) AS SetPoint "
+								"FROM Temperature WHERE (DeviceRowID==%" PRIu64 ""
+								" AND Date>='%q' AND Date<='%q 23:59:59')"
+								" GROUP BY strftime('%%Y-%%m-%%d %%H',Date)"
+								" ORDER BY Date ASC",
+								idx, szDateStart.c_str(), szDateEnd.c_str());
+						}
+
 						int ii = 0;
 						if (result.size() > 0)
 						{
