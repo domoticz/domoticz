@@ -13191,6 +13191,7 @@ bool MainWorker::manageNotification(const uint64_t DevRowIdx, const int Hardware
 
 bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
+	bool r1, r2, r3;
 	
 	if (DevRowIdx != -1) {
 		int meterType = 0;
@@ -13230,8 +13231,9 @@ bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int 
 					float Temp = (float)atof(strarray[0].c_str());
 					int Hum = atoi(strarray[1].c_str());
 					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
-					m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
-					return m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					r1 = m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					return r1 && r2;
 				}
 				break;
 			case pTypeTEMP_HUM_BARO:
@@ -13240,9 +13242,10 @@ bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int 
 					float Temp = (float)atof(strarray[0].c_str());
 					int Hum = atoi(strarray[1].c_str());
 					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
-					m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
-					m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
-					return m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+					r1 = m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = m_notifications.CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					r3 = m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+					return r1 && r2 && r3;
 				}
 				break;
 			case pTypeRAIN:
@@ -13257,8 +13260,9 @@ bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int 
 				if (strarray.size() == 4) {
 					float Temp = (float)atof(strarray[0].c_str());
 					float Baro = (float)atof(strarray[1].c_str());
-					m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
-					return m_notifications.CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+					r1 = m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+					r2 = m_notifications.CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+					return r1 && r2;
 				}
 				break;
 			case pTypeUV:
@@ -13266,8 +13270,9 @@ bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int 
 				if (strarray.size() == 2) {
 					float Level = (float)atof(strarray[0].c_str());
 					float Temp = (float)atof(strarray[1].c_str());					
-					m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
-					return m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_UV, Level);
+					r1 = m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+					r2 = m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_UV, Level);
+					return r1 && r2;
 				}
 				break;
 			case pTypeCURRENT:
@@ -13292,8 +13297,9 @@ bool MainWorker::internalManageNotification(const uint64_t DevRowIdx, const int 
 				if (strarray.size() == 6) {
 					float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
 					float temp = (float)atof(strarray[4].c_str());
-					m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
-					return m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
+					r1 = m_notifications.CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
+					r2 = m_notifications.CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false) && r1;
+					return r1 && r2;
 				}
 				break;
 			case pTypeYouLess:
