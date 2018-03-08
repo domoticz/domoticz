@@ -345,6 +345,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/Honeywell.cpp
 hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
