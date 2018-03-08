@@ -135,6 +135,7 @@
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EcoCompteur.h"
+#include "../hardware/Honeywell.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -1004,6 +1005,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_THERMOSMART:
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
+	case HTYPE_Honeywell:
+			pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+			break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
 		break;

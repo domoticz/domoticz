@@ -1277,6 +1277,9 @@ namespace http {
 					return;
 				mode1 = atoi(mill_id.c_str());
 			}
+			else if (htype == HTYPE_Honeywell) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
@@ -1651,6 +1654,9 @@ namespace http {
 					(sport.empty())
 					)
 					return;
+			}
+			else if (htype == HTYPE_Honeywell) {
+				//All fine here
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
 				//All fine here
