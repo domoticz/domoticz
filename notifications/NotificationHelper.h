@@ -69,6 +69,44 @@ public:
 	bool HasNotifications(const uint64_t DevIdx);
 	bool HasNotifications(const std::string &DevIdx);
 
+	bool CheckAndHandleNotification(
+		const uint64_t DevRowIdx,
+		const int HardwareID,
+		const std::string &ID,
+		const std::string &sName,
+		const unsigned char unit,
+		const unsigned char cType,
+		const unsigned char cSubType,
+		const int nValue);
+	bool CheckAndHandleNotification(
+		const uint64_t DevRowIdx,
+		const int HardwareID,
+		const std::string &ID,
+		const std::string &sName,
+		const unsigned char unit,
+		const unsigned char cType,
+		const unsigned char cSubType,
+		const float fValue);
+	bool CheckAndHandleNotification(
+		const uint64_t DevRowIdx,
+		const int HardwareID,
+		const std::string &ID,
+		const std::string &sName,
+		const unsigned char unit,
+		const unsigned char cType, 
+		const unsigned char cSubType,
+		const std::string &sValue);
+	bool CheckAndHandleNotification(
+		const uint64_t DevRowIdx,
+		const int HardwareID,
+		const std::string &ID,
+		const std::string &sName,
+		const unsigned char unit,
+		const unsigned char cType,
+		const unsigned char cSubType,
+		const int nValue,
+		const std::string &sValue);
+
 	bool CheckAndHandleTempHumidityNotification(
 		const uint64_t Idx,
 		const std::string &DeviceName,
@@ -127,6 +165,17 @@ public:
 protected:
 	void SetConfigValue(const std::string &key, const std::string &value);
 private:
+	bool InternalCheckAndHandleNotification(
+		const uint64_t DevRowIdx,
+		const int HardwareID,
+		const std::string &ID,
+		const std::string &sName,
+		const unsigned char unit,
+		const unsigned char cType,
+		const unsigned char cSubType,
+		const int nValue,
+		const std::string &sValue,
+		const float fValue);
 	std::string ParseCustomMessage(const std::string &cMessage, const std::string &sName, const std::string &sValue);
 	bool ApplyRule(std::string rule, bool equal, bool less);
 	boost::mutex m_mutex;

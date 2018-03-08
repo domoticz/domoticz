@@ -893,7 +893,7 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 			
-			m_mainworker.manageNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 			CDevice_refresh(self);
 		}
