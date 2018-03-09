@@ -369,6 +369,31 @@ namespace Plugins {
 			}
 		}
 	}
+
+	void CPluginSystem::DeviceModified(uint64_t ID)
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID == '%d')", ID);
+		if (result.size() > 0)
+		{
+			std::vector<std::string> sd = result[0];
+			std::string sHwdID = sd[0];
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
+			if (pHardware != NULL)
+			{
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (ID == '%d')", ID);
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					std::string Unit = sd[0];
+					_log.Log(LOG_TRACE, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+					Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+					pPlugin->DeviceModified(atoi(Unit.c_str()));
+				}
+			}
+		}
+	}
 }
 
 //Webserver helpers
