@@ -220,10 +220,10 @@ void CHoneywell::GetMeterDetails() {
 	int devNr = 0;
 	mDeviceList.clear();
 	mLocationList.clear();
-	for (int locCnt = 0; locCnt < root.size(); locCnt++) {
+	for (size_t locCnt = 0; locCnt < root.size(); locCnt++) {
 		Json::Value location = root[locCnt];
 		Json::Value devices = location["devices"];
-		for (int devCnt = 0; devCnt < devices.size(); devCnt++) {
+		for (size_t devCnt = 0; devCnt < devices.size(); devCnt++) {
 			Json::Value device = devices[devCnt];
 			std::string deviceName = device["name"].asString();
 			mDeviceList[devNr] = device;
