@@ -1864,3 +1864,9 @@ tspan {
 .ui-selectmenu-menu .selectorlevels-menu {
 	font-size: 0.9em;
 }
+
+#rgbw_popup .dimslider, #rgbw_popup .dimslider .white_slider{
+   width: calc(100% - 38px) !important;
+   margin-left: 6px !important;
+   margin-top: 10px !important;       
+}

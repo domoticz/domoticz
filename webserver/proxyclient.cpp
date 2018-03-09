@@ -508,6 +508,7 @@ namespace http {
 
 			if (!authenticated) {
 				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
+				return;
 			}
 			DomoticzTCP *slave = sharedData.findSlaveConnection(instanceparam);
 			if (slave) {

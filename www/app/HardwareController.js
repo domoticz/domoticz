@@ -3685,9 +3685,9 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
 				async: true,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
 				$('#IncludeZWaveDialog').modal('hide');
-			}).error(function () {
+			}, function errorCallback(response) {
 				$('#IncludeZWaveDialog').modal('hide');
 			});
 		}
@@ -3763,9 +3763,9 @@ define(['app'], function (app) {
 				url: "json.htm?type=command&param=zwavecancel&idx=" + $.devIdx,
 				async: true,
 				dataType: 'json'
-			}).success(function (data) {
+			}).then(function successCallback(response) {
 				$('#ExcludeZWaveDialog').modal('hide');
-			}).error(function () {
+			}, function errorCallback(response) {
 				$('#ExcludeZWaveDialog').modal('hide');
 			});
 		}
@@ -6036,6 +6036,9 @@ define(['app'], function (app) {
 								if (item.externalURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Product URL">Product URL</span>:</td>' +
 										'<td><a href="' + item.externalURL + '">' + item.externalURL + '</a></td></tr>';
+								}
+								if (item.description.length > 0) {
+									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
 								}
 								$.each(item.parameters, function (i, param) {
 									PluginParams += '<tr><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';

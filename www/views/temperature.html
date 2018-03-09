@@ -110,6 +110,5 @@
 		<div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
 		<dztemperaturewidget ng-repeat-end class="span4" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
 	</div>
-
 </div>
 

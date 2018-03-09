@@ -1407,7 +1407,7 @@ void CEventSystem::EventQueueThread()
 #endif
 		for (itt = items.begin(); itt != items.end(); itt++)
 		{
-			if ((itt->DeviceID == item.DeviceID && itt->reason <= REASON_SCENEGROUP) ||
+			if ((itt->DeviceID == item.DeviceID && itt->reason <= REASON_SCENEGROUP && itt->reason == item.reason) ||
 				(itt->reason == REASON_USERVARIABLE && itt->varId == item.varId))
 			{
 				EvaluateEvent(items);
@@ -1497,6 +1497,10 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 	std::vector<std::string> FileEntries;
 	std::vector<std::string>::const_iterator itt2;
 	std::string filename;
+#ifdef ENABLE_PYTHON
+	std::vector<std::string> FileEntriesPython;
+	DirectoryListing(FileEntriesPython, m_python_Dir, false, true);
+#endif
 
 	if (!m_sql.m_bDisableDzVentsSystem)
 	{
@@ -1571,9 +1575,7 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 		try
 		{
-			FileEntries.clear();
-			DirectoryListing(FileEntries, m_python_Dir, false, true);
-			for (itt2 = FileEntries.begin(); itt2 != FileEntries.end(); ++itt2)
+			for (itt2 = FileEntriesPython.begin(); itt2 != FileEntriesPython.end(); ++itt2)
 			{
 				filename = *itt2;
 				if (filename.length() > 3 &&
@@ -2542,7 +2544,7 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 				_log.Log(LOG_ERROR, "EventSystem: SetPoint, not enough parameters!");
 				return false;
 		}
-		
+
 		return true;
 	}
 	return ScheduleEvent(ID, Action,eventName);
@@ -2561,16 +2563,17 @@ void CEventSystem::EvaluatePython(const _tEventQueue &item, const std::string &f
 
 #endif // ENABLE_PYTHON
 
-void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
+void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item)
 {
-	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock2(m_devicestatesMutex);
+	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
+
 	std::map<uint64_t, _tDeviceStatus>::iterator iterator;
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.nValueWording.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.nValueWording.c_str() : iterator->second.nValueWording.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices");
@@ -2578,9 +2581,9 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.lastUpdate.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.lastUpdate.c_str() : iterator->second.lastUpdate.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastupdate");
@@ -2588,18 +2591,17 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushstring(lua_state, sitem.sValue.c_str());
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushstring(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			 item.sValue.c_str() : iterator->second.sValue.c_str());
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_svalues");
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushnumber(lua_state, (lua_Number)sitem.ID);
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushnumber(lua_state, (lua_Number)iterator->second.ID);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_idx");
@@ -2607,13 +2609,12 @@ void CEventSystem::ExportDeviceStatesToLua(lua_State *lua_state)
 	lua_createtable(lua_state, (int)m_devicestates.size(), 0);
 	for (iterator = m_devicestates.begin(); iterator != m_devicestates.end(); ++iterator)
 	{
-		_tDeviceStatus sitem = iterator->second;
-		lua_pushstring(lua_state, sitem.deviceName.c_str());
-		lua_pushnumber(lua_state, sitem.lastLevel);
+		lua_pushstring(lua_state, iterator->second.deviceName.c_str());
+		lua_pushnumber(lua_state, (iterator->first == item.DeviceID && item.reason == REASON_DEVICE) ?
+			item.lastLevel : iterator->second.lastLevel);
 		lua_rawset(lua_state, -3);
 	}
 	lua_setglobal(lua_state, "otherdevices_lastlevel");
-	devicestatesMutexLock2.unlock();
 }
 
 void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &item, const int secStatus)
@@ -2946,7 +2947,7 @@ void CEventSystem::EvaluateLuaClassic(lua_State *lua_state, const _tEventQueue &
 		}
 	}
 
-	ExportDeviceStatesToLua(lua_state);
+	ExportDeviceStatesToLua(lua_state, item);
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	lua_createtable(lua_state, (int)m_uservariables.size(), 0);
@@ -3696,8 +3697,8 @@ bool CEventSystem::ScheduleEvent(int deviceID, std::string Action, bool isScene,
 {
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 	std::string previousState = m_devicestates[deviceID].nValueWording;
-	unsigned char previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
-	unsigned char level = 0;
+	int previousLevel = calculateDimLevel(deviceID, m_devicestates[deviceID].lastLevel);
+	int level = 0;
 	devicestatesMutexLock.unlock();
 
 	struct _tActionParseResults oParseResults = { "", 0, 0, 0, 1, 0, true };
@@ -4102,14 +4103,12 @@ bool CEventSystem::isEventscheduled(const std::string &eventName)
 }
 
 
-unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
+int CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 {
-
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %d)",
-		deviceID);
-	unsigned char ilevel = 0;
-	if (result.size()>0)
+	result = m_sql.safe_query("SELECT Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID == %d)", deviceID);
+	int iLevel = 0;
+	if (result.size() > 0)
 	{
 		std::vector<std::string> sd = result[0];
 
@@ -4122,29 +4121,37 @@ unsigned char CEventSystem::calculateDimLevel(int deviceID, int percentageLevel)
 		bool bHaveGroupCmd = false;
 		int maxDimLevel = 0;
 
-		GetLightStatus(dType, dSubType, switchtype,0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-		ilevel = maxDimLevel;
+		GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+		iLevel = maxDimLevel;
 
 		if (maxDimLevel != 0)
 		{
 			if ((switchtype == STYPE_Dimmer) || (switchtype == STYPE_BlindsPercentage) || (switchtype == STYPE_BlindsPercentageInverted))
 			{
-				float fLevel = (maxDimLevel / 100.0f)*percentageLevel;
+				float fLevel = (maxDimLevel / 100.0f) * percentageLevel;
 				if (fLevel > 100)
 					fLevel = 100;
-				ilevel = int(fLevel);
-			} else if (switchtype == STYPE_Selector) {
+				iLevel = int(fLevel);
+			}
+			else if (switchtype == STYPE_Selector)
+			{
 				// llevel cannot be get without sValue so level is getting from percentageLevel
-				ilevel = percentageLevel;
-				if (ilevel > 100) {
-					ilevel = 100;
-				} else if (ilevel < 0) {
-					ilevel = 0;
+				iLevel = percentageLevel;
+				int maxLevel = 100;
+				if (!sd[3].empty())
+				{
+					std::map<std::string, std::string> statuses;
+					GetSelectorSwitchStatuses(m_sql.BuildDeviceOptions(sd[3]), statuses);
+					maxLevel = (statuses.size() - 1) * 10;
 				}
+				if (iLevel > maxLevel)
+					iLevel = maxLevel;
+				else if (iLevel < 0)
+					iLevel = 0;
 			}
 		}
 	}
-	return ilevel;
+	return iLevel;
 }
 
 //Webserver helpers

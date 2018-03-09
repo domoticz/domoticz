@@ -3209,7 +3209,7 @@ define(['app'], function (app) {
 								}
 							}
 							xhtm += '</td>\n' +
-								'\t      <td>';
+								'\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
 									'<img src="images/nofavorite.png" title="' + $.t('Add to Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',1);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -3302,7 +3302,6 @@ define(['app'], function (app) {
 						$("#lightcontent .span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								$.devIdx.split(' ');
 								var roomid = $("#lightcontent #comboroom option:selected").val();
 								if (typeof roomid == 'undefined') {
 									roomid = 0;

@@ -677,73 +677,80 @@ namespace Plugins {
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-				if (result.size() == 0)
+				if (m_sql.m_bAcceptNewHardware)
 				{
-					std::string	sValue = PyUnicode_AsUTF8(self->sValue);
-					std::string	sLongName = self->pPlugin->Name + " - " + sName;
-					if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					if (result.size() == 0)
 					{
-						PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
-						std::string sOptionValue;
-						if (pValueDict == NULL)
-							sOptionValue = "";
+						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
+						std::string	sLongName = self->pPlugin->Name + " - " + sName;
+						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						{
+							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
+							std::string sOptionValue;
+							if (pValueDict == NULL)
+								sOptionValue = "";
+							else
+								sOptionValue = PyUnicode_AsUTF8(pValueDict);
+
+							m_sql.safe_query(
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
+						}
 						else
-							sOptionValue = PyUnicode_AsUTF8(pValueDict);
-
-						m_sql.safe_query(
-							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
-					}
-					else
-					{
-						m_sql.safe_query(
-							"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage) "
-							"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d)",
-							self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image);
-					}
-
-					result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
-					if (result.size())
-					{
-						self->ID = atoi(result[0][0].c_str());
-
-						PyObject*	pKey = PyLong_FromLong(self->Unit);
-						if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
 						{
-							_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->Name.c_str(), self->Unit);
-							Py_INCREF(Py_None);
-							return Py_None;
+							m_sql.safe_query(
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d)",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image);
 						}
 
-						// Device successfully created, now set the options when supplied
-						if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
+						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+						if (result.size())
 						{
-							PyObject *pKeyDict, *pValueDict;
-							Py_ssize_t pos = 0;
-							std::map<std::string, std::string> mpOptions;
-							while(PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
-								std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
-								std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
-								mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+							self->ID = atoi(result[0][0].c_str());
+
+							PyObject*	pKey = PyLong_FromLong(self->Unit);
+							if (PyDict_SetItem((PyObject*)self->pPlugin->m_DeviceDict, pKey, (PyObject*)self) == -1)
+							{
+								_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", self->pPlugin->Name.c_str(), self->Unit);
+								Py_INCREF(Py_None);
+								return Py_None;
 							}
-							m_sql.SetDeviceOptions(self->ID, mpOptions);
-						}
 
-						// Refresh device data to ensure it is usable straight away
-						PyObject* pRetVal = CDevice_refresh(self);
-						Py_DECREF(pRetVal);
+							// Device successfully created, now set the options when supplied
+							if ((self->SubType != sTypeCustom) && (PyDict_Size(self->Options) > 0))
+							{
+								PyObject *pKeyDict, *pValueDict;
+								Py_ssize_t pos = 0;
+								std::map<std::string, std::string> mpOptions;
+								while (PyDict_Next(self->Options, &pos, &pKeyDict, &pValueDict)) {
+									std::string sOptionName = PyUnicode_AsUTF8(pKeyDict);
+									std::string sOptionValue = PyUnicode_AsUTF8(pValueDict);
+									mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+								}
+								m_sql.SetDeviceOptions(self->ID, mpOptions);
+							}
+
+							// Refresh device data to ensure it is usable straight away
+							PyObject* pRetVal = CDevice_refresh(self);
+							Py_DECREF(pRetVal);
+						}
+						else
+						{
+							_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+						}
 					}
 					else
 					{
-						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) not found in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
 					}
 				}
 				else
 				{
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
+					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
 				}
 			}
 			else
