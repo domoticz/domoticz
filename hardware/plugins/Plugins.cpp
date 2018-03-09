@@ -1326,6 +1326,76 @@ namespace Plugins {
 		}
 	}
 
+	void CPlugin::onDeviceAdded(int Unit)
+	{
+		CDevice* pDevice = (CDevice*)CDevice_new(&CDeviceType, (PyObject*)NULL, (PyObject*)NULL);
+
+		PyObject*	pKey = PyLong_FromLong(Unit);
+		if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to add unit '%d' to device dictionary.", m_PluginKey.c_str(), Unit);
+			return;
+		}
+		pDevice->pPlugin = this;
+		pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
+		pDevice->HwdID = m_HwdID;
+		pDevice->Unit = Unit;
+		CDevice_refresh(pDevice);
+		Py_DECREF(pDevice);
+		Py_DECREF(pKey);
+	}
+
+	void CPlugin::onDeviceModified(int Unit)
+	{
+		PyObject*	pKey = PyLong_FromLong(Unit);
+
+		CDevice* pDevice = (CDevice*)PyDict_GetItem((PyObject*)m_DeviceDict, pKey);
+
+		if (!pDevice)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to refresh unit '%u' in device dictionary.", m_PluginKey.c_str(), Unit);
+			return;
+		}
+
+		CDevice_refresh(pDevice);
+	}
+
+	void CPlugin::onDeviceRemoved(int Unit)
+	{
+		PyObject*	pKey = PyLong_FromLong(Unit);
+		if (PyDict_DelItem((PyObject*)m_DeviceDict, pKey) == -1)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to remove unit '%u' from device dictionary.", m_PluginKey.c_str(), Unit);
+		}
+	}
+
+	void CPlugin::MessagePlugin(CPluginMessageBase *pMessage)
+	{
+		//	Add notification to message queue
+		{
+			boost::lock_guard<boost::mutex> l(PluginMutex);
+			PluginMessageQueue.push(pMessage);
+		}
+	}
+
+	void CPlugin::DeviceAdded(int Unit)
+	{
+		CPluginMessageBase*	pMessage = new onDeviceAddedCallback(this, Unit);
+		MessagePlugin(pMessage);
+	}
+
+	void CPlugin::DeviceModified(int Unit)
+	{
+		CPluginMessageBase*	pMessage = new onDeviceModifiedCallback(this, Unit);
+		MessagePlugin(pMessage);
+	}
+
+	void CPlugin::DeviceRemoved(int Unit)
+	{
+		CPluginMessageBase*	pMessage = new onDeviceRemovedCallback(this, Unit);
+		MessagePlugin(pMessage);
+	}
+
 	void CPlugin::DisconnectEvent(CEventBase * pMess)
 	{
 		DisconnectedEvent*	pMessage = (DisconnectedEvent*)pMess;

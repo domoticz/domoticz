@@ -211,22 +211,22 @@ bool CNotificationHelper::ApplyRule(std::string rule, bool equal, bool less)
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue) {
-	return InternalCheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, "", 0.0);
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, "", 0.0);
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const float fValue) {
-	return InternalCheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, "", fValue);
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, "", fValue);
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const std::string &sValue) {
-	return InternalCheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, sValue, atof(sValue.c_str()));
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, 0, sValue, atof(sValue.c_str()));
 }
 
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue) {
-	return InternalCheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, sValue, atof(sValue.c_str()));
+	return CheckAndHandleNotification(DevRowIdx, HardwareID, ID, sName, unit, cType, cSubType, nValue, sValue, atof(sValue.c_str()));
 }
 
-bool CNotificationHelper::InternalCheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
+bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
 	bool r1, r2, r3;
 	

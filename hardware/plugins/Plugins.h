@@ -69,7 +69,15 @@ namespace Plugins {
 		void	Restart();
 		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
-			
+
+		void	onDeviceAdded(int Unit);
+		void	onDeviceModified(int Unit);
+		void	onDeviceRemoved(int Unit);
+		void	MessagePlugin(CPluginMessageBase *pMessage);
+		void	DeviceAdded(int Unit);
+		void	DeviceModified(int Unit);
+		void	DeviceRemoved(int Unit);
+
 		bool	HasNodeFailed(const int Unit);
 
 		std::string			m_PluginKey;
