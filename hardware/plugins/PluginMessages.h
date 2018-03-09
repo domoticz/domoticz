@@ -174,6 +174,48 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		};
 	};
 
+	class onDeviceAddedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceAddedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			m_pPlugin->onDeviceAdded(m_Unit);
+
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+		};
+	};
+
+	class onDeviceModifiedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceModifiedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceModified") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			m_pPlugin->onDeviceModified(m_Unit);
+
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+		};
+	};
+
+	class onDeviceRemovedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceRemovedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+
+			m_pPlugin->onDeviceRemoved(m_Unit);
+		};
+	};
+
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
