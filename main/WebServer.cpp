@@ -1278,6 +1278,9 @@ namespace http {
 					return;
 				mode1 = atoi(mill_id.c_str());
 			}
+			else if (htype == HTYPE_Honeywell) {
+				//all fine here!
+			}
 			else if (htype == HTYPE_RaspberryGPIO) {
 				//all fine here!
 			}
@@ -1652,6 +1655,9 @@ namespace http {
 					(sport.empty())
 					)
 					return;
+			}
+			else if (htype == HTYPE_Honeywell) {
+				//All fine here
 			}
 			else if (htype == HTYPE_OpenWebNetTCP) {
 				//All fine here
@@ -4727,6 +4733,26 @@ namespace http {
 				int subtype = 0;
 				std::string sunitcode;
 				std::string devid;
+
+#ifdef ENABLE_PYTHON
+				//check if HW is plugin
+				{
+					std::vector<std::vector<std::string> > result;
+					result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == '%q')", hwdid.c_str());
+					if (result.size() > 0)
+					{
+						std::vector<std::string> sd = result[0];
+						_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
+						if (Type == HTYPE_PythonPlugin)
+						{
+							// Not allowed to add device to plugin HW (plugin framework does not use key column "ID" but instead uses column "unit" as key)
+							_log.Log(LOG_ERROR, "CWebServer::HandleCommand addswitch: Not allowed to add device owned by plugin %u!", atoi(hwdid.c_str()));
+							root["message"] = "Not allowed to add switch to plugin HW!";
+							return;
+						}
+					}
+				}
+#endif
 
 				if (lighttype == 70)
 				{
@@ -11757,6 +11783,11 @@ namespace http {
 			uint64_t ullidx;
 			sstridx >> ullidx;
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, sname, m_mainworker.m_eventsystem.REASON_DEVICE);
+
+#ifdef ENABLE_PYTHON
+			// Notify plugin framework about the change
+			m_mainworker.m_pluginsystem.DeviceModified(idx);
+#endif
 		}
 
 		void CWebServer::Cmd_RenameScene(WebEmSession & session, const request& req, Json::Value &root)
@@ -11803,6 +11834,10 @@ namespace http {
 			if (m_sql.m_bEnableEventSystem)
 				m_mainworker.m_eventsystem.RemoveSingleState(idx, m_mainworker.m_eventsystem.REASON_DEVICE);
 
+#ifdef ENABLE_PYTHON
+			// Notify plugin framework about the change
+			m_mainworker.m_pluginsystem.DeviceModified(idx);
+#endif
 		}
 
 		void CWebServer::Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root)
@@ -12222,7 +12257,8 @@ namespace http {
 
 			unsigned char dType = atoi(sd[0].c_str());
 			//unsigned char dSubType=atoi(sd[1].c_str());
-			//int HwdID = atoi(sd[2].c_str());
+			int HwdID = atoi(sd[2].c_str());
+			std::string sHwdID = sd[2];
 
 			if (setPoint != "" || state != "")
 			{
@@ -12340,8 +12376,27 @@ namespace http {
 
 			if (!strunit.empty())
 			{
-				m_sql.safe_query("UPDATE DeviceStatus SET Unit='%q' WHERE (ID == '%q')",
-					strunit.c_str(), idx.c_str());
+				bool bUpdateUnit = true;
+#ifdef ENABLE_PYTHON
+				//check if HW is plugin
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == %d)", HwdID);
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					_eHardwareTypes Type = (_eHardwareTypes)atoi(sd[0].c_str());
+					if (Type == HTYPE_PythonPlugin)
+					{
+						bUpdateUnit = false;
+						_log.Log(LOG_ERROR, "CWebServer::RType_SetUsed: Not allowed to change unit of device owned by plugin %u!", HwdID);
+					}
+				}
+#endif
+				if (bUpdateUnit)
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Unit='%q' WHERE (ID == '%q')",
+						strunit.c_str(), idx.c_str());
+				}
 			}
 			//FIXME evohome ...we need the zone id to update the correct zone...but this should be ok as a generic call?
 			if (!deviceid.empty())
@@ -12428,6 +12483,13 @@ namespace http {
 			{
 				//really remove it, including log etc
 				m_sql.DeleteDevices(idx);
+			}
+			else
+			{
+#ifdef ENABLE_PYTHON
+				// Notify plugin framework about the change
+				m_mainworker.m_pluginsystem.DeviceModified(atoi(idx.c_str()));
+#endif
 			}
 			if (result.size() > 0)
 			{
