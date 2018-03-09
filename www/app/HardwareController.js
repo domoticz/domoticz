@@ -3505,13 +3505,15 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
-							var addId = oTable.fnAddData({
-								"DT_RowId": item.idx,
-								"Name": item.Name,
-								"Mac": item.Mac,
-								"0": item.idx,
-								"1": item.Name,
-								"2": item.Mac
+						    var addId = oTable.fnAddData({
+						        "DT_RowId": item.idx,
+						        "Name": item.Name,
+						        "Mac": item.Mac,
+						        "Timeout": item.Status,
+						        "0": item.idx,
+						        "1": item.Name,
+						        "2": item.Mac,
+						        "3": item.Status
 							});
 						});
 					}
@@ -3542,6 +3544,26 @@ define(['app'], function (app) {
 					ShowNotify($.t('Problem Updating Settings!'), 2500, true);
 				}
 			});
+		}
+
+		DeleteUnusedLMSDevices = function () {
+		    bootbox.confirm($.t("Are you sure to delete all unused devices?"), function (result) {
+		        if (result == true) {
+		            $.ajax({
+		                url: "json.htm?type=command&param=lmsdeleteunuseddevices" +
+                        "&idx=" + $.devIdx,
+		                async: false,
+		                dataType: 'json',
+		                success: function (data) {
+		                    RefreshLMSNodeTable();
+		                    bootbox.alert($.t('Devices deleted'));
+		                },
+		                error: function () {
+		                    ShowNotify($.t('Problem Deleting devices!'), 2500, true);
+		                }
+		            });
+		        }
+		    });
 		}
 
 		EditLMS = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {

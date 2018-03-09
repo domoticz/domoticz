@@ -84,39 +84,39 @@ struct _tGuiLanguage {
 static const _tGuiLanguage guiLanguage[] =
 {
 	{ "en", "English" },
-	{ "ar", "Arabic" },
-	{ "bg", "Bulgarian" },
-	{ "ca", "Catalan" },
-	{ "zh", "Chinese" },
-	{ "cs", "Czech" },
-	{ "da", "Danish" },
-	{ "nl", "Dutch" },
-	{ "et", "Estonian" },
-	{ "de", "German" },
-	{ "el", "Greek" },
-	{ "fr", "French" },
-	{ "fi", "Finnish" },
-	{ "he", "Hebrew" },
-	{ "hu", "Hungarian" },
-	{ "is", "Icelandic" },
-	{ "it", "Italian" },
-	{ "lt", "Lithuanian" },
-	{ "lv", "Latvian" },
-	{ "mk", "Macedonian" },
-	{ "no", "Norwegian" },
-	{ "fa", "Persian" },
-	{ "pl", "Polish" },
-	{ "pt", "Portuguese" },
-	{ "ro", "Romanian" },
-	{ "ru", "Russian" },
-	{ "sr", "Serbian" },
-	{ "sk", "Slovak" },
-	{ "sl", "Slovenian" },
-	{ "es", "Spanish" },
-	{ "sv", "Swedish" },
-	{ "tr", "Turkish" },
-	{ "uk", "Ukrainian" },
-	{ NULL, NULL }
+{ "ar", "Arabic" },
+{ "bg", "Bulgarian" },
+{ "ca", "Catalan" },
+{ "zh", "Chinese" },
+{ "cs", "Czech" },
+{ "da", "Danish" },
+{ "nl", "Dutch" },
+{ "et", "Estonian" },
+{ "de", "German" },
+{ "el", "Greek" },
+{ "fr", "French" },
+{ "fi", "Finnish" },
+{ "he", "Hebrew" },
+{ "hu", "Hungarian" },
+{ "is", "Icelandic" },
+{ "it", "Italian" },
+{ "lt", "Lithuanian" },
+{ "lv", "Latvian" },
+{ "mk", "Macedonian" },
+{ "no", "Norwegian" },
+{ "fa", "Persian" },
+{ "pl", "Polish" },
+{ "pt", "Portuguese" },
+{ "ro", "Romanian" },
+{ "ru", "Russian" },
+{ "sr", "Serbian" },
+{ "sk", "Slovak" },
+{ "sl", "Slovenian" },
+{ "es", "Spanish" },
+{ "sv", "Swedish" },
+{ "tr", "Turkish" },
+{ "uk", "Ukrainian" },
+{ NULL, NULL }
 };
 
 extern http::server::CWebServerHelper m_webservers;
@@ -431,6 +431,7 @@ namespace http {
 			RegisterCommandCode("bleboxupdatefirmware", boost::bind(&CWebServer::Cmd_BleBoxUpdateFirmware, this, _1, _2, _3));
 
 			RegisterCommandCode("lmssetmode", boost::bind(&CWebServer::Cmd_LMSSetMode, this, _1, _2, _3));
+			RegisterCommandCode("lmsdeleteunuseddevices", boost::bind(&CWebServer::Cmd_LMSDeleteUnusedDevices, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetplaylists", boost::bind(&CWebServer::Cmd_LMSGetPlaylists, this, _1, _2, _3));
 			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1, _2, _3));
@@ -997,7 +998,7 @@ namespace http {
 					}
 #endif
 
-		}
+				}
 #endif
 #endif
 #ifndef WITH_OPENZWAVE
@@ -1019,7 +1020,7 @@ namespace http {
 					bDoAdd = false;
 				if (bDoAdd)
 					_htypes[Hardware_Type_Desc(ii)] = ii;
-	}
+			}
 			//return a sorted hardware list
 			std::map<std::string, int>::const_iterator itt;
 			int ii = 0;
@@ -1034,7 +1035,7 @@ namespace http {
 			// Append Plugin list as well
 			PluginList(root["result"]);
 #endif
-}
+		}
 
 		void CWebServer::Cmd_AddHardware(WebEmSession & session, const request& req, Json::Value &root)
 		{
@@ -3071,9 +3072,9 @@ namespace http {
 				{
 					_log.Log(LOG_ERROR, "Error executing script command (%s). returned: %d", lscript.c_str(), ret);
 					return;
-			}
+				}
 #endif
-		}
+			}
 			else
 			{
 				//add script to background worker
@@ -3252,7 +3253,7 @@ namespace http {
 				return true;
 			if (pSession->rights == 0)
 				return false; //viewer
-			//User
+							  //User
 			int iUser = FindUser(pSession->username.c_str());
 			if ((iUser < 0) || (iUser >= (int)m_users.size()))
 				return false;
@@ -3741,8 +3742,8 @@ namespace http {
 						root["result"][ii]["idx"] = pin.GetPin();
 						root["result"][ii]["Name"] = pin.ToString();
 						ii++;
-			}
-		}
+					}
+				}
 #else
 				root["status"] = "OK";
 				root["result"][0]["idx"] = 0;
@@ -3768,7 +3769,7 @@ namespace http {
 						root["status"] = "OK";
 						root["result"][ii]["idx"] = gpio_ids[ii];
 						root["result"][ii]["Name"] = gpio_names[ii];
-			}
+					}
 				}
 #else
 				root["status"] = "OK";
@@ -3970,7 +3971,7 @@ namespace http {
 					}
 				}//end light/switches
 
-				//Add Scenes
+				 //Add Scenes
 				result = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
 				if (result.size() > 0)
 				{
@@ -4195,7 +4196,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -4258,7 +4259,7 @@ namespace http {
 						root["status"] = "ERROR";
 						root["message"] = "Given pin is not configured for output";
 						return;
-			}
+					}
 #else
 					root["status"] = "ERROR";
 					root["message"] = "GPIO support is disabled";
@@ -4771,7 +4772,7 @@ namespace http {
 					CDomoticzHardwareBase *pBaseHardware = reinterpret_cast<CDomoticzHardwareBase*>(m_mainworker.GetHardware(atoi(hwdid.c_str())));
 					if (pBaseHardware == NULL)
 						return;
-					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3) 
+					if ((pBaseHardware->HwdType != HTYPE_EnOceanESP2) && (pBaseHardware->HwdType != HTYPE_EnOceanESP3)
 						&& (pBaseHardware->HwdType != HTYPE_USBtinGateway) )
 						return;
 					unsigned long rID = 0;
@@ -6468,9 +6469,9 @@ namespace http {
 				std::string until = request::findValue(&req, "until");//optional until date / time as applicable
 				std::string action = request::findValue(&req, "action");//Run action or not (update status only)
 				std::string onlyonchange = request::findValue(&req, "ooc");//No update unless the value changed (check if updated)
-				//The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
-				//If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
-				//""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
+																		   //The on action is used to call a script to update the real device so we only want to use it when altering the status in the Domoticz Web Client
+																		   //If we're posting the status from the real device to domoticz we don't want to run the on action script ("action"!=1) to avoid loops and contention
+																		   //""... we only want to log a change (and trigger an event) when the status has actually changed ("ooc"==1) i.e. suppress non transient updates
 				if ((idx.empty()) || (switchcmd.empty()))
 					return;
 
@@ -8135,7 +8136,7 @@ namespace http {
 							" LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==1)"
 							" ORDER BY ");
 						szQuery += szOrderBy;
-                                                result = m_sql.safe_query(szQuery.c_str(), order.c_str());
+						result = m_sql.safe_query(szQuery.c_str(), order.c_str());
 					}
 
 					if (result.size() > 0)
@@ -9081,7 +9082,7 @@ namespace http {
 						//Rob: Dont know who did this, but this should be solved in GetLightCommand
 						//Now we had double Set Level/Level notations
 						//if (llevel != 0)
-							//sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
+						//sprintf(szData, "%s, Level: %d %%", lstatus.c_str(), llevel);
 						//else
 						sprintf(szData, "%s", lstatus.c_str());
 						root["result"][ii]["Data"] = szData;
@@ -17177,8 +17178,8 @@ namespace http {
 		}
 
 		/**
-		 * Retrieve user session from store, without remote host.
-		 */
+		* Retrieve user session from store, without remote host.
+		*/
 		const WebEmStoredSession CWebServer::GetSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : get...");
 			WebEmStoredSession session;
@@ -17208,8 +17209,8 @@ namespace http {
 		}
 
 		/**
-		 * Save user session.
-		 */
+		* Save user session.
+		*/
 		void CWebServer::StoreSession(const WebEmStoredSession & session) {
 			//_log.Log(LOG_STATUS, "SessionStore : store...");
 			if (session.id.empty()) {
@@ -17246,8 +17247,8 @@ namespace http {
 		}
 
 		/**
-		 * Remove user session and expired sessions.
-		 */
+		* Remove user session and expired sessions.
+		*/
 		void CWebServer::RemoveSession(const std::string & sessionId) {
 			//_log.Log(LOG_STATUS, "SessionStore : remove...");
 			if (sessionId.empty()) {
@@ -17259,8 +17260,8 @@ namespace http {
 		}
 
 		/**
-		 * Remove all expired user sessions.
-		 */
+		* Remove all expired user sessions.
+		*/
 		void CWebServer::CleanSessions() {
 			//_log.Log(LOG_STATUS, "SessionStore : clean...");
 			m_sql.safe_query(
@@ -17268,12 +17269,12 @@ namespace http {
 		}
 
 		/**
-		 * Delete all user's session, except the session used to modify the username or password.
-		 * username must have been hashed
-		 *
-		 * Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
-		 * because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
-		 */
+		* Delete all user's session, except the session used to modify the username or password.
+		* username must have been hashed
+		*
+		* Note : on the WebUserName modification, this method will not delete the session, but the session will be deleted anyway
+		* because the username will be unknown (see cWebemRequestHandler::checkAuthToken).
+		*/
 		void CWebServer::RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession) {
 			m_sql.safe_query("DELETE FROM UserSessions WHERE (Username=='%q') and (SessionID!='%q')", username.c_str(), exceptSession.id.c_str());
 		}

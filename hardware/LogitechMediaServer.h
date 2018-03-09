@@ -46,7 +46,7 @@ private:
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	void Do_Work();
 	void GetPlayerInfo();
-	void InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);
+	void UpsertPlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);
 
 	bool StartHardware();
 	bool StopHardware();
