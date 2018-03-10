@@ -269,7 +269,7 @@ define(['app'], function (app) {
 
                     $.each(data.result, function(i,item)
                     {
-                        if (isday>=1) {
+                        if (isday==1) {
                             if (typeof item.te != 'undefined') {
                                 datatablete.push( [GetUTCFromString(item.d), parseFloat(item.te) ] );
                             }
