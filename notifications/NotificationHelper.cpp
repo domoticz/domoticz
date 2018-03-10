@@ -3,7 +3,6 @@
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
-#include "../main/RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
