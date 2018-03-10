@@ -56,21 +56,21 @@ bool CHoneywell::StartHardware() {
 	mLastMinute = -1;
 	//Start worker thread
 	mThread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&CHoneywell::Do_Work, this)));
-	mIsStarted=true;
+	mIsStarted = true;
 	sOnConnected(this);
-	return (mThread!=NULL);
+	return (mThread != NULL);
 }
 
 bool CHoneywell::StopHardware() {
-	if (mThread!=NULL)
+	if (mThread != NULL)
 	{
 		assert(mThread);
 		mStopRequested = true;
 		mThread->join();
 	}
 
-	mIsStarted=false;
-  return true;
+	mIsStarted = false;
+	return true;
 }
 
 #define HONEYWELL_POLL_INTERVAL 300 // 5 minutes
@@ -79,21 +79,21 @@ bool CHoneywell::StopHardware() {
 // worker thread
 //
 void CHoneywell::Do_Work() {
-	_log.Log(LOG_STATUS,"Honeywell: Worker started...");
-	int sec_counter = HONEYWELL_POLL_INTERVAL-5;
+	_log.Log(LOG_STATUS, "Honeywell: Worker started...");
+	int sec_counter = HONEYWELL_POLL_INTERVAL - 5;
 	while (!mStopRequested)
 	{
 		sleep_seconds(1);
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
 		}
 		if (sec_counter % HONEYWELL_POLL_INTERVAL == 0)
 		{
 			GetMeterDetails();
 		}
 	}
-	_log.Log(LOG_STATUS,"Honeywell: Worker stopped...");
+	_log.Log(LOG_STATUS, "Honeywell: Worker stopped...");
 }
 
 
@@ -220,10 +220,12 @@ void CHoneywell::GetMeterDetails() {
 	int devNr = 0;
 	mDeviceList.clear();
 	mLocationList.clear();
-	for (size_t locCnt = 0; locCnt < root.size(); locCnt++) {
+	for (int locCnt = 0; locCnt < (int)root.size(); locCnt++)
+	{
 		Json::Value location = root[locCnt];
 		Json::Value devices = location["devices"];
-		for (size_t devCnt = 0; devCnt < devices.size(); devCnt++) {
+		for (int devCnt = 0; devCnt < (int)devices.size(); devCnt++)
+		{
 			Json::Value device = devices[devCnt];
 			std::string deviceName = device["name"].asString();
 			mDeviceList[devNr] = device;
@@ -233,23 +235,23 @@ void CHoneywell::GetMeterDetails() {
 			temperature = (float)device["indoorTemperature"].asFloat();
 			std::string desc = kRoomTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendTempSensor(10*devNr + 1, 255, temperature, desc);
+			SendTempSensor(10 * devNr + 1, 255, temperature, desc);
 
 			temperature = (float)device["outdoorTemperature"].asFloat();
 			desc = kOutdoorTempDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendTempSensor(10*devNr + 2, 255, temperature, desc);
+			SendTempSensor(10 * devNr + 2, 255, temperature, desc);
 
 			std::string mode = device["changeableValues"]["mode"].asString();
 			bool bHeating = (mode == "Heat");
 			desc = kHeatingDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSwitch(10*devNr + 3, 1, 255, bHeating, 0, desc);
+			SendSwitch(10 * devNr + 3, 1, 255, bHeating, 0, desc);
 
 			temperature = (float)device["changeableValues"]["heatSetpoint"].asFloat();
 			desc = kHeatSetPointDesc;
 			stdreplace(desc, "[devicename]", deviceName);
-			SendSetPointSensor(10*devNr + 4, temperature, desc);
+			SendSetPointSensor(10 * devNr + 4, temperature, desc);
 			devNr++;
 		}
 	}
@@ -261,14 +263,14 @@ void CHoneywell::GetMeterDetails() {
 void CHoneywell::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname)
 {
 	_tThermostat thermos;
-	thermos.subtype=sTypeThermSetpoint;
-	thermos.id1=0;
-	thermos.id2=0;
-	thermos.id3=0;
-	thermos.id4=Idx;
-	thermos.dunit=0;
+	thermos.subtype = sTypeThermSetpoint;
+	thermos.id1 = 0;
+	thermos.id2 = 0;
+	thermos.id3 = 0;
+	thermos.id4 = Idx;
+	thermos.dunit = 0;
 
-	thermos.temp=Temp;
+	thermos.temp = Temp;
 
 	sDecodeRXMessage(this, (const unsigned char *)&thermos, defaultname.c_str(), 255);
 }
@@ -300,7 +302,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bHeating, const int nodeid)
 
 	std::string desc = kHeatingDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSwitch(10*idx + 3, 1, 255, bHeating, 0, desc);
+	SendSwitch(10 * idx + 3, 1, 255, bHeating, 0, desc);
 }
 
 //
@@ -330,9 +332,9 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 
 	std::string desc = kHeatSetPointDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSetPointSensor(10*idx + 4, temp, desc);
+	SendSetPointSensor(10 * idx + 4, temp, desc);
 
 	desc = kHeatingDesc;
 	stdreplace(desc, "[devicename]", mDeviceList[idx]["name"].asString());
-	SendSwitch(10*idx + 3, 1, 255, true, 0, desc);
+	SendSwitch(10 * idx + 3, 1, 255, true, 0, desc);
 }
