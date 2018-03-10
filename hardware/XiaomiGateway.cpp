@@ -881,14 +881,14 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						name = "Xiaomi Wireless Dual Wall Switch";
 						type = STYPE_Selector;
 					}
-					else if (model == "ctrl_neutral2" || model == "ctrl_ln2") {
+					else if (model == "ctrl_neutral2" || model == "ctrl_ln2" || model == "ctrl_ln2.aq1") {
 						name = "Xiaomi Wired Dual Wall Switch";
 						//type = STYPE_Selector;
 					}
 					else if (model == "gateway") {
 						name = "Xiaomi RGB Gateway";
 					}
-					else if (model == "ctrl_neutral1" || model == "ctrl_ln1") {
+					else if (model == "ctrl_neutral1" || model == "ctrl_ln1" || model == "ctrl_ln1.aq1") {
 						name = "Xiaomi Wired Single Wall Switch";
 						//type = STYPE_Selector;
 					}

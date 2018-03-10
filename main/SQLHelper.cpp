@@ -4006,6 +4006,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			if (
 				(stype == STYPE_DoorContact) ||
 				(stype == STYPE_DoorLock) ||
+				(stype == STYPE_DoorLockInverted) ||
 				(stype == STYPE_Contact)
 				)
 			{
@@ -4222,6 +4223,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						(switchtype == STYPE_PushOn) ||
 						(switchtype == STYPE_DoorContact) ||
 						(switchtype == STYPE_DoorLock) ||
+						(switchtype == STYPE_DoorLockInverted) ||
 						(switchtype == STYPE_Selector)
 						)
 					{

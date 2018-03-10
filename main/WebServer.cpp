@@ -8850,9 +8850,9 @@ namespace http {
 						bHasTimers = m_sql.HasTimers(sd[0]);
 
 						bHaveTimeout = false;
+#ifdef WITH_OPENZWAVE
 						if (pHardware != NULL)
 						{
-#ifdef WITH_OPENZWAVE
 							if (pHardware->HwdType == HTYPE_OpenZWave)
 							{
 								COpenZWave *pZWave = (COpenZWave*)pHardware;
@@ -8863,15 +8863,8 @@ namespace http {
 								int nodeID = (ID & 0x0000FF00) >> 8;
 								bHaveTimeout = pZWave->HasNodeFailed(nodeID);
 							}
-#endif
-#ifdef ENABLE_PYTHON
-							if (pHardware->HwdType == HTYPE_PythonPlugin)
-							{
-								Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-								bHaveTimeout = pPlugin->HasNodeFailed(atoi(sd[2].c_str()));
-							}
-#endif
 						}
+#endif
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						std::string lstatus = "";
@@ -8963,6 +8956,19 @@ namespace http {
 							}
 							else {
 								lstatus = "Unlocked";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
+						else if (switchtype == STYPE_DoorLockInverted)
+						{
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
+							if (bIsOn) {
+								lstatus = "Unlocked";
+							}
+							else {
+								lstatus = "Locked";
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
@@ -10688,6 +10694,17 @@ namespace http {
 						break;
 						}
 					}
+#ifdef ENABLE_PYTHON
+					if (pHardware != NULL)
+					{
+						if (pHardware->HwdType == HTYPE_PythonPlugin)
+						{
+							Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+							bHaveTimeout = pPlugin->HasNodeFailed(atoi(sd[2].c_str()));
+							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+						}
+					}
+#endif
 					root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
 					ii++;
 				}

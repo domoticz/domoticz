@@ -766,6 +766,10 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 						notValue = "Locked";
 						szExtraData += "Image=door48|";
 						break;
+					case STYPE_DoorLockInverted:
+						notValue = "Unlocked";
+						szExtraData += "Image=door48open|";
+						break;
 					case STYPE_Motion:
 						notValue = "movement detected";
 						break;
@@ -788,6 +792,10 @@ bool CNotificationHelper::CheckAndHandleSwitchNotification(
 					case STYPE_DoorLock:
 						notValue = "Unlocked";
 						szExtraData += "Image=door48open|";
+						break;
+					case STYPE_DoorLockInverted:
+						notValue = "Locked";
+						szExtraData += "Image=door48|";
 						break;
 					default:
 						notValue = ">> OFF";

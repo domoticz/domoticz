@@ -305,6 +305,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
+		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
