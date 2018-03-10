@@ -12,7 +12,7 @@
 
 
 #ifdef _DEBUG
-	#define DEBUG_KMTrinicR
+	//#define DEBUG_KMTrinicR
 #endif
 
 #ifdef DEBUG_KMTrinicR
