@@ -8966,6 +8966,19 @@ namespace http {
 							}
 							root["result"][ii]["Status"] = lstatus;
 						}
+						else if (switchtype == STYPE_DoorLockInverted)
+						{
+							root["result"][ii]["TypeImg"] = "door";
+							bool bIsOn = IsLightSwitchOn(lstatus);
+							root["result"][ii]["InternalState"] = (bIsOn == true) ? "Unlocked" : "Locked";
+							if (bIsOn) {
+								lstatus = "Unlocked";
+							}
+							else {
+								lstatus = "Locked";
+							}
+							root["result"][ii]["Status"] = lstatus;
+						}
 						else if (switchtype == STYPE_PushOn)
 						{
 							root["result"][ii]["TypeImg"] = "push";
