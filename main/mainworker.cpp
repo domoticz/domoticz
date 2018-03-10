@@ -1633,9 +1633,7 @@ void MainWorker::Do_Work()
 			for (itt = m_devicestorestart.begin(); itt != m_devicestorestart.end(); ++itt)
 			{
 				int hwid = (*itt);
-				std::stringstream sstr;
-				sstr << hwid;
-				std::string idx = sstr.str();
+				std::string idx = std::to_string(hwid);
 
 				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Name FROM Hardware WHERE (ID=='%q')",

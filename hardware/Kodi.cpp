@@ -42,7 +42,7 @@ std::string	CKodiNode::CKodiStatus::LogMessage()
 		if (m_sType == "episode")
 		{
 			if (m_sShowTitle.length()) sLogText = m_sShowTitle;
-			if (m_iSeason) sLogText += " [S" + SSTR(m_iSeason) + "E" + SSTR(m_iEpisode) + "]";
+			if (m_iSeason) sLogText += " [S" + std::to_string(m_iSeason) + "E" + std::to_string(m_iEpisode) + "]";
 			if (m_sTitle.length()) sLogText += ", " + m_sTitle;
 			if ((m_sLabel != m_sTitle) && (m_sLabel.length())) sLogText += ", " + m_sLabel;
 		}
