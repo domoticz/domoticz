@@ -23,8 +23,7 @@ before_install:
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   # lookup boost version
   #- sudo apt-cache search libboost
-  # Get latest rvm
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rvm get stable; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi  
 
 # Build matrix definition
 # * Two builds
