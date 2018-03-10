@@ -434,6 +434,7 @@ namespace http {
 			RegisterCommandCode("lmsgetnodes", boost::bind(&CWebServer::Cmd_LMSGetNodes, this, _1, _2, _3));
 			RegisterCommandCode("lmsgetplaylists", boost::bind(&CWebServer::Cmd_LMSGetPlaylists, this, _1, _2, _3));
 			RegisterCommandCode("lmsmediacommand", boost::bind(&CWebServer::Cmd_LMSMediaCommand, this, _1, _2, _3));
+			RegisterCommandCode("lmsdeleteunuseddevices", boost::bind(&CWebServer::Cmd_LMSDeleteUnusedDevices, this, _1, _2, _3));
 
 			RegisterCommandCode("savefibarolinkconfig", boost::bind(&CWebServer::Cmd_SaveFibaroLinkConfig, this, _1, _2, _3));
 			RegisterCommandCode("getfibarolinkconfig", boost::bind(&CWebServer::Cmd_GetFibaroLinkConfig, this, _1, _2, _3));
@@ -1106,7 +1107,7 @@ namespace http {
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 			}
-			else if (IsNetworkDevice(htype))
+			else if (IsNetworkDevice(htype)) 
 			{
 				//Lan
 				if (address.empty() || port == 0)
@@ -4829,7 +4830,7 @@ namespace http {
 					CGpioPin *pPin = CGpio::GetPPinById(atoi(sunitcode.c_str()));
 					if (pPin == NULL) {
 						return;
-					}
+			}
 #else
 					return;
 #endif
