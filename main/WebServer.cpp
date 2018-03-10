@@ -9468,8 +9468,8 @@ namespace http {
 								std::vector<std::string> sd2 = result2[0];
 								if (dSubType != sTypeRAINWU)
 								{
-									float total_min = static_cast<float>(atof(sd2[0].c_str()));
-									float total_max = static_cast<float>(atof(strarray[1].c_str()));
+									double total_min = atof(sd2[0].c_str());
+									double total_max = atof(strarray[1].c_str());
 									total_real = total_max - total_min;
 								}
 								else
