@@ -135,6 +135,7 @@
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EcoCompteur.h"
+#include "../hardware/Honeywell.h"
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
 
@@ -1004,6 +1005,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_THERMOSMART:
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
+	case HTYPE_Honeywell:
+			pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+			break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
 		break;
@@ -2484,6 +2488,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		WriteMessageEnd();
 	}
 
+	//TODO: Notify plugin?
+	
 	//Send to connected Sharing Users
 	m_sharedserver.SendToAll(pHardware->m_HwdID, DeviceRowIdx, (const char*)pRXCommand, pRXCommand[0] + 1, pClient2Ignore);
 
@@ -12968,20 +12974,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	{
 		std::vector<std::vector<std::string> > result;
 
-		if (pHardware->HwdType == HTYPE_PythonPlugin)
-		{
-#ifdef ENABLE_PYTHON
-			int hindex=FindDomoticzHardware(HardwareID);
-			if (hindex == -1)
-			{
-				_log.Log(LOG_ERROR, "Switch command not send!, Hardware device disabled or not found!");
-				return false;
-			}
-			((Plugins::CPlugin*)m_hardwaredevices[hindex])->SendCommand(unit, "udevice",  static_cast<float>(atof(sValue.c_str())));
-#endif
-			return true;
-		}
-
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HardwareID, DeviceID.c_str(), unit, devType, subType);
@@ -13223,6 +13215,11 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	);
 	if (devidx == -1)
 		return false;
+
+#ifdef ENABLE_PYTHON
+	// notify plugin
+	m_pluginsystem.DeviceModified(devidx);
+#endif
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
 	if ((pHardware) && (parseTrigger))

@@ -844,6 +844,29 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
+				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(accessToken) +
+					"&password=" + encodeURIComponent(refreshToken) +
+					"&Mode1=" + Mode1 +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
@@ -1266,12 +1289,12 @@ define(['app'], function (app) {
 				hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				var i2cpath = $("#hardwareparamsi2clocal #i2cpath").val();
 				var i2caddress = "";
-				
+
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
-					
+
 				}
 				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
@@ -1736,6 +1759,26 @@ define(['app'], function (app) {
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
 					"&Mode1=" + encodeURIComponent(mill_id) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
+				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(accessToken) +
+					"&password=" + encodeURIComponent(refreshToken) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout,
 					async: false,
@@ -5091,7 +5134,7 @@ define(['app'], function (app) {
 							else if (item.Type == 93 || item.Type == 109) {
 								dispAddress = "I2C-" + dispAddress;
 							}
-							
+
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Username": item.Username,
@@ -5385,6 +5428,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
 						}
+						else if (data["Type"].indexOf("Honeywell") >= 0) {
+							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
+						}
 						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 						}
@@ -5568,6 +5615,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
+			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
@@ -5848,6 +5896,16 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divwinddelen").show();
+			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #username").hide();
+				$("#hardwarecontent #lblusername").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divhoneywell").show();
 			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				$("#hardwarecontent #divserial").hide();
