@@ -344,7 +344,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			case pTypeAirQuality:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
 			case pTypeLux:
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, static_cast<float>(atof(sValue.c_str())));
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 			case pTypeRego6XXTemp:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
 			case pTypePOWER:
