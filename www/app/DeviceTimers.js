@@ -244,6 +244,8 @@ define(['app'], function (app) {
         var $element = $('.js-device-timers:last');
         var setColorTimerId;
         var timers = [];
+		vm.selectedTimerIdx = null;
+
 
         vm.addTimer = addTimer;
         vm.updateTimer = updateTimer;
@@ -299,7 +301,6 @@ define(['app'], function (app) {
             
             fillTimerEditFormOptions();
 
-            vm.selectedTimerIdx = null;
             vm.timerSettings = {
                 active: true,
                 timertype: vm.typeOptions[0].value,
@@ -516,6 +517,8 @@ define(['app'], function (app) {
             var isLED = vm.isLED;
             var containerId = '#timertable';
             var timersTable;
+
+			vm.selectedTimerIdx = null;
 
             if ($.fn.dataTable.isDataTable(containerId)) {
                 timersTable = $element.find(containerId).dataTable();

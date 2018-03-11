@@ -41,15 +41,10 @@
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td>
-                <button id="timerupdate" type="button" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
-                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Update">
-                    Update
-                </button>
-                &nbsp;&nbsp;&nbsp;
-                <button id="timerdelete" type="button" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
-                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Delete">
-                    Delete
-                </button>
+				<a id="timerupdate" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
+                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
+				<a id="timerdelete" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
+                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Delete">Delete</a>
             </td>
             <td align="right">
                 <a class="btnstyle3" ng-click="vm.clearTimers()" data-i18n="Clear">Clear</a>
@@ -293,7 +288,5 @@
         </tr>
     </table>
     <br>
-    <button type="button" class="btnstyle3" ng-click="vm.addTimer()" data-i18n="Add">
-        Add
-    </button>
+    <a class="btnstyle3" ng-click="vm.addTimer()" data-i18n="Add">Add</a>
 </div>
