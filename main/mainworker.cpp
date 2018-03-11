@@ -9594,8 +9594,6 @@ void MainWorker::decode_Thermostat(const int HwdID, const _eHardwareTypes HwdTyp
 
 	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, devType, subType, pMeter->temp);
 
-	//m_notifications.CheckAndHandleNotification(DevRowIdx, m_LastDeviceName,devType, subType, NTYPE_USAGE, pMeter->fLux);
-
 	if (m_verboselevel >= EVBL_ALL)
 	{
 		WriteMessageStart();
@@ -12940,6 +12938,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			dName = sd[1];
 		}
 
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
+
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -13037,8 +13038,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			}
 			else if (subType == sTypeKwh)
 			{
-				std::vector<std::string> strarray;
-				StringSplit(sValue, ";", strarray);
 				if (strarray.size() == 2)
 				{
 					_tGeneralDevice gDevice;
@@ -13085,22 +13084,32 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 				DecodeRXMessage(pHardware, (const unsigned char *)&gDevice, NULL, batterylevel);
 				return true;
 			}
+			else
+			{
+				m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, sValue);
+			}
 		}
-		else if ((devType == pTypeAirQuality) && (subType == sTypeVoltcraft))
-		{
-			m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, (const float)nValue);
-		}
-		else if (devType == pTypeTEMP)
+		else if (
+			(devType == pTypeTEMP)
+			|| (devType == pTypeTEMP_HUM)
+			|| (devType == pTypeTEMP_HUM_BARO)
+			|| (devType == pTypeTEMP_BARO)
+			|| (devType == pTypeRAIN)
+			|| (devType == pTypeWIND)
+			|| (devType == pTypeUV)
+			|| (devType == pTypeCURRENT)
+			|| (devType == pTypeP1Power)
+			|| (devType == pTypeLux)
+			)
 		{
 			m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, sValue);
 		}
-		else if (devType == pTypeTEMP_HUM)
+		else if (
+			(devType == pTypeHUM)
+			||(devType == pTypeAirQuality)
+			)
 		{
-			m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, sValue);
-		}
-		else if (devType == pTypeTEMP_HUM_BARO)
-		{
-			m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, sValue);
+			m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, nValue);
 		}
 		/*
 				else if (devType == pTypeGeneralSwitch)
