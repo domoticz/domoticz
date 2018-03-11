@@ -1475,7 +1475,8 @@ define(['app'], function (app) {
 
 			$http({
 				url: "json.htm?type=scenes&lastupdate=" + $.LastUpdateTime
-			}).success(function (data) {
+			}).then(function successCallback(response) {
+				var data = response.data;
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -1548,7 +1549,7 @@ define(['app'], function (app) {
 				$scope.mytimer = $interval(function () {
 					RefreshScenes();
 				}, 10000);
-			}).error(function () {
+			}, function errorCallback(response) {
 				$scope.mytimer = $interval(function () {
 					RefreshScenes();
 				}, 10000);
@@ -1733,7 +1734,6 @@ define(['app'], function (app) {
 						$("#scenecontent .span4").droppable({
 							drop: function () {
 								var myid = $(this).attr("id");
-								$.devIdx.split(' ');
 								$.ajax({
 									url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + $.devIdx,
 									async: false,

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+    Sensative Strips Comfort
+    https://products.z-wavealliance.org/products/2737
+    -->
+    <!-- Configuration Parameters -->
+    <CommandClass id="112">
+        <Value type="list" index="2" genre="config" label="Led alarm reporting" size="1" value="1">
+            <Help>Led alarm reporting</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="3" genre="config" label="Temperature and light reporting" size="1" value="1">
+            <Help>Temperature and light reporting</Help>
+            <Item label="Normal" value="1"/>
+            <Item label="Frequent" value="2"/>
+        </Value>
+        <Value type="list" index="4" genre="config" label="Temperature reporting" size="1" value="1">
+            <Help>Does not affect temperature alarms</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="list" index="5" genre="config" label="Temperature reporting unit" size="1" value="0">
+            <Help>Temperature reporting unit</Help>
+            <Item label="Celsius" value="0"/>
+            <Item label="Fahrenheit" value="1"/>
+        </Value>
+        <Value type="list" index="6" genre="config" label="Temperature alarms" size="1" value="0">
+            <Help>Temperature alarms</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="7" label="High temperature level" value="60" min="0" max="148">
+            <Help>
+                -20 to 60C
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="8" label="Low temperature level" value="147" min="0" max="147">
+            <Help>
+                -20 to 60C
+            </Help>
+        </Value>
+        <Value type="list" index="9" genre="config" label="Ambient light reporting " size="1" value="1">
+            <Help>Ambient light reporting</Help>
+            <Item label="Off" value="0"/>
+            <Item label="On" value="1"/>
+            <Item label="Report only threshold" value="2"/>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="10" label="High Ambient light report level" value="40000" units="lux" min="3" max="64000" >
+            <Help>
+                3 to 64000
+            </Help>
+        </Value>
+        <Value type="int" genre="config" instance="1" index="11" label="Low ambient light report level " value="5000" units="lux" min="1" max="42000" >
+            <Help>
+                1 to 42000
+            </Help>
+        </Value>
+        <Value type="list" index="12" genre="config" label="Leakage alarm" size="1" value="0">
+            <Help>Leakage alarm</Help>
+            <Item label="Disable" value="0"/>
+            <Item label="Enable" value="1"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="13" label="Leakage alarm level" value="10" min="1" max="100">
+            <Help>
+                1 to 100 (1 = almost dry, 100 = wet)
+            </Help>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="14" label="Moisture reporting period" units="Hours" value="0" min="0" max="120">
+            <Help>
+                0-120 (Hours between reports)
+            </Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="1">
+            <Group index="1" max_associations="1" label="Lifeline"/>
+        </Associations>
+    </CommandClass>
+</Product>

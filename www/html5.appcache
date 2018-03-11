@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1479
+# ref 1486
 
 CACHE:
 # CSS
@@ -462,6 +462,7 @@ app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
 app/DevicesController.js
+app/DeviceTimers.js
 app/DPFibaroController.js
 app/DPHttpController.js
 app/DPInfluxController.js
@@ -504,12 +505,14 @@ js/angular-tree-control.js
 js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
+js/babel-polyfill-6.26.0.js
 js/blockly_compressed.js
 js/blocks_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
 js/d3.min.js
+js/dataTables.select.min.js
 js/dataTables.tableTools.min.js
 js/date.format.js
 js/domoticz.js
@@ -524,7 +527,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.12.0.min.js
+js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
@@ -592,6 +595,7 @@ views/temperature.html
 views/temperature_widget.html
 views/temperature_custom_temp_log.html
 views/timerplan.html
+views/timers.html
 views/update.html
 views/users.html
 views/utility.html
