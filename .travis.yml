@@ -95,7 +95,7 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  script: curl -v --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
+  script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
     branch: development
     repo: domoticz/domoticz
