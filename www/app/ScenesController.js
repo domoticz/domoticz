@@ -1639,8 +1639,8 @@ define(['app'], function (app) {
 							}
 							xhtm +=
 								'\t    <tr>\n' +
-								'\t      <td id="name" class="name"><span>' + item.Name + '</span></td>\n' +
-								'\t      <td id="bigtext" class="bigtext"><span class="wrapper">';
+								'\t      <td class="name" id="name" class="name"><span>' + item.Name + '</span></td>\n' +
+								'\t      <td class="bigtext" id="bigtext" class="bigtext"><span class="wrapper">';
 							var bigtext = TranslateStatusShort(item.Status);
 							if (item.UsedByCamera == true) {
 								var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="16" width="16">';
@@ -1650,8 +1650,8 @@ define(['app'], function (app) {
 							xhtm += bigtext + '</span></td>\n';
 
 							if (item.Type == "Scene") {
-								xhtm += '<td id="img1" class="img img1"><img src="images/push48.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
-								xhtm += '\t      <td id="status" class="status"><span>&nbsp;</span></td>\n';
+								xhtm += '<td class="img img1" id="img1" class="img img1"><img src="images/push48.png" title="' + $.t('Activate scene') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
+								xhtm += '\t      <td class="status" id="status" class="status"><span>&nbsp;</span></td>\n';
 							}
 							else {
 								var onclass = "";
@@ -1665,13 +1665,13 @@ define(['app'], function (app) {
 									offclass = "transimg";
 								}
 
-								xhtm += '<td id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '<td id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
-								xhtm += '\t      <td id="status" class="status"><span class="wrapper">&nbsp;</span></td>\n';
+								xhtm += '<td class="img img1" id="img1" class="img img1"><img class="lcursor ' + onclass + '" src="images/push48.png" title="' + $.t('Turn On') + '" onclick="SwitchScene(' + item.idx + ',\'On\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '<td class="img img2" id="img2" class="img img2"><img class="lcursor ' + offclass + '"src="images/pushoff48.png" title="' + $.t('Turn Off') + '" onclick="SwitchScene(' + item.idx + ',\'Off\',RefreshScenes, ' + item.Protected + ');" height="48" width="48"></td>\n';
+								xhtm += '\t      <td class="status" id="status" class="status"><span class="wrapper">&nbsp;</span></td>\n';
 							}
 							xhtm +=
-								'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
-								'\t      <td id="type">' + $.t(item.Type) + '</td>\n';
+								'\t      <td class="lastupdate" id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n' +
+								'\t      <td class="type" id="type">' + $.t(item.Type) + '</td>\n';
 							xhtm += '\t      <td class="options">';
 							if (item.Favorite == 0) {
 								xhtm +=
