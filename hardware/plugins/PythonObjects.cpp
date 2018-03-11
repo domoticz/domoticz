@@ -11,6 +11,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
+#include "../notifications/NotificationHelper.h"
 #include "PythonObjects.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -798,6 +799,7 @@ namespace Plugins {
 			int			iSubType = self->SubType;
 			int			iSwitchType = self->SwitchType;
 			int			iUsed = self->Used;
+			uint64_t 		DevRowIdx;
 			char*		Description = NULL;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
@@ -818,21 +820,21 @@ namespace Plugins {
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+			DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
 			// Notify MQTT and various push mechanisms
 			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
-
+			
 			std::string sID = SSTR(self->ID);
 
 			if (TypeName) {
 				// Reset nValue and sValue when changing device types
 				nValue = 0;
-				std::string sValue = "";
+				std::string stdsValue = "";
 
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, sValue, pOptionsDict, pOptionsDict);
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
-				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue.c_str(), sName, true);
+				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
 
 				// Notify MQTT and various push mechanisms
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
@@ -841,7 +843,7 @@ namespace Plugins {
 			// Name change
 			if (Name)
 			{
-				std::string sName = Name;
+				sName = Name;
 				m_sql.UpdateDeviceValue("Name", sName, sID);
 			}
 
@@ -920,6 +922,8 @@ namespace Plugins {
 			{
 				self->TimedOut = iTimedOut;
 			}
+			
+			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 			CDevice_refresh(self);
 		}
