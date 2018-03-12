@@ -1552,7 +1552,7 @@ define(['app'], function (app) {
 
 										if (typeof item.Counter != 'undefined') {
 											if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
-												status = "";
+												status = $.t("Total") + ': ' + item.Data;
 												bigtext = item.CounterToday;
 											}
 											else {
@@ -1636,7 +1636,8 @@ define(['app'], function (app) {
 											if (item.Type != "P1 Smart Meter") {
 												if ($scope.config.DashboardType == 0) {
 													if (typeof item.CounterToday != 'undefined') {
-														status += '<br>' + $.t("Today") + ': ' + item.CounterToday;
+														status += $.t("Today") + ': ' + item.CounterToday;
+														status += '<br />' + $.t("Total") + ': ' + item.Data;
 													}
 												}
 												else {
@@ -3725,13 +3726,11 @@ define(['app'], function (app) {
 												imagehtml += 'Counter48.png" class="lcursor" onclick="ShowCounterLog(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 											}
 										}
-										if ((item.SubType != "Gas") && (item.SubType != "RFXMeter counter")) { // this is weird..
-											statushtml = '' + $.t("Usage") + ': ' + item.CounterToday;
-										}
-										else if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) { // added this to fill the status value. If it's the same as the bigtext, then it won't be shown again.
-											statushtml += "";
+
+										if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+											statushtml = $.t("Total") + ': ' + item.Data;
 										} else {
-											statushtml = "";
+											statushtml = $.t("Usage") + ': ' + item.CounterToday;
 										}
 									}
 									else if ((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
@@ -3827,9 +3826,9 @@ define(['app'], function (app) {
 									if (typeof item.Usage != 'undefined') {
 										if (item.Type != "P1 Smart Meter") {
 											if ($scope.config.DashboardType == 0) {
-												//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 												if (typeof item.CounterToday != 'undefined') {
-													statushtml += '</span><span class="value2">' + $.t("Today") + ': ' + item.CounterToday;
+													statushtml += $.t("Today") + ': ' + item.CounterToday;
+													statushtml += '<br />' + $.t("Total") + ': ' + item.Data;
 												}
 											}
 											else {
