@@ -49,7 +49,7 @@ define(['app', 'timers/factories'], function (app) {
                 element.datepicker({
                     minDate: now,
                     defaultDate: now,
-                    dateFormat: "mm/dd/yy",
+                    dateFormat: window.myglobals.DateFormat,
                     showWeek: true,
                     firstDay: 1,
                     onSelect: function (date) {
