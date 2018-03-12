@@ -15,6 +15,20 @@ namespace Plugins {
 	class CPluginNotifier;
 	class CPluginTransport;
 
+	enum PluginDebugMask
+	{
+		PDM_NONE = 0,
+		// 1 is mapped to PDM_ALL in code for backwards compatibility
+		PDM_PYTHON = 2,
+		PDM_PLUGIN = 4,
+		PDM_DEVICE = 8,
+		PDM_CONNECTION = 16,
+		PDM_IMAGE = 32,
+		PDM_MESSAGE = 64,
+		PDM_QUEUE = 128,
+		PDM_ALL = 65535
+	};
+
 	class CPlugin : public CDomoticzHardwareBase
 	{
 	private:
@@ -87,7 +101,7 @@ namespace Plugins {
 		void*				m_ImageDict;
 		void*				m_SettingsDict;
 		std::string			m_HomeFolder;
-		bool				m_bDebug;
+		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
 	};
 

@@ -30,6 +30,7 @@ namespace Plugins {
 		};
 	public:
 		virtual const char* Name() { return m_Name.c_str(); };
+		virtual const CPlugin*	Plugin() { return m_pPlugin; };
 		virtual void Process() = 0;
 	};
 

@@ -156,7 +156,7 @@ namespace Plugins {
 			{
 				if (sFilename.length())
 				{
-					if (self->pPlugin->m_bDebug)
+					if (self->pPlugin->m_bDebug & PDM_IMAGE)
 					{
 						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str());
 					}
@@ -226,7 +226,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ImageID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -685,7 +685,7 @@ namespace Plugins {
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			if (self->ID == -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -816,7 +816,7 @@ namespace Plugins {
 				return Py_None;
 			}
 
-			if (self->pPlugin->m_bDebug)
+			if (self->pPlugin->m_bDebug & PDM_DEVICE)
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
@@ -923,7 +923,9 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 			
-			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+			if (!IsLightOrSwitch(iType, iSubType)) {
+				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+			}
 
 			CDevice_refresh(self);
 		}
@@ -943,7 +945,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -989,7 +991,7 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin && self->pPlugin->m_bDebug)
+		if (self->pPlugin && (self->pPlugin->m_bDebug & PDM_CONNECTION))
 		{
 			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}

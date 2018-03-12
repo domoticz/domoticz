@@ -25,9 +25,6 @@
 
 namespace Plugins {
 
-	extern 	std::queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern	boost::mutex PluginMutex;
-
 	CPluginProtocol * CPluginProtocol::Create(std::string sProtocol, std::string sUsername, std::string sPassword)
 	{
 		if (sProtocol == "Line") return (CPluginProtocol*) new CPluginProtocolLine();
@@ -52,11 +49,7 @@ namespace Plugins {
 	void CPluginProtocol::ProcessInbound(const ReadMessage* Message)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
-		onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer);
-		{
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(RecvMessage);
-		}
+		Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer));
 	}
 
 	std::vector<byte> CPluginProtocol::ProcessOutbound(const WriteDirective* WriteMessage)
@@ -97,11 +90,7 @@ namespace Plugins {
 		if (m_sRetainedData.size())
 		{
 			// Forced buffer clear, make sure the plugin gets a look at the data in case it wants it
-			onMessageCallback*	RecvMessage = new onMessageCallback(pPlugin, pConnection, m_sRetainedData);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(RecvMessage);
-			}
+			pPlugin->MessagePlugin(new onMessageCallback(pPlugin, pConnection, m_sRetainedData));
 			m_sRetainedData.clear();
 		}
 	}
@@ -118,11 +107,7 @@ namespace Plugins {
 		int iPos = sData.find_first_of('\r');		//  Look for message terminator
 		while (iPos != std::string::npos)
 		{
-			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos]));
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(RecvMessage);
-			}
+			Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, std::vector<byte>(&sData[0], &sData[iPos])));
 
 			if (sData[iPos + 1] == '\n') iPos++;				//  Handle \r\n
 			sData = sData.substr(iPos + 1);
@@ -149,11 +134,7 @@ namespace Plugins {
 				if ((sData.substr(sData.length() - 1, 1) == "}") &&
 					(std::count(sData.begin(), sData.end(), '{') == std::count(sData.begin(), sData.end(), '}'))) // whole message so queue the whole buffer
 				{
-					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData);
-					{
-						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(RecvMessage);
-					}
+					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData));
 					sData.clear();
 				}
 			}
@@ -161,11 +142,7 @@ namespace Plugins {
 			{
 				std::string sMessage = sData.substr(0, iPos);
 				sData = sData.substr(iPos);
-				onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(RecvMessage);
-				}
+				Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sMessage));
 			}
 		}
 
@@ -216,11 +193,7 @@ namespace Plugins {
 				if (iPos != std::string::npos)
 				{
 					int iEnd = iPos + m_Tag.length() + 3;
-					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData.substr(0, iEnd));
-					{
-						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(RecvMessage);
-					}
+					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, sData.substr(0, iEnd)));
 
 					if (iEnd == sData.length())
 					{
@@ -390,9 +363,7 @@ namespace Plugins {
 							Py_DECREF(pObj);
 						}
 
-						onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
-						boost::lock_guard<boost::mutex> l(PluginMutex);
-						PluginMessageQueue.push(RecvMessage);
+						Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict));
 						m_sRetainedData.clear();
 					}
 				}
@@ -435,9 +406,7 @@ namespace Plugins {
 									Py_DECREF(pObj);
 								}
 
-								onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
-								boost::lock_guard<boost::mutex> l(PluginMutex);
-								PluginMessageQueue.push(RecvMessage);
+								Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict));
 								m_sRetainedData.clear();
 								break;
 							}
@@ -503,9 +472,7 @@ namespace Plugins {
 						Py_DECREF(pObj);
 					}
 
-					onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, DataDict);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(RecvMessage);
+					Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, DataDict));
 					m_sRetainedData.clear();
 				}
 			}
@@ -845,9 +812,7 @@ namespace Plugins {
 
 		if (pDataDict)
 		{
-			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict);
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(RecvMessage);
+			Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pDataDict));
 		}
 	}
 
@@ -1078,9 +1043,7 @@ namespace Plugins {
 				continue;
 			}
 
-			onMessageCallback*	RecvMessage = new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict);
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(RecvMessage);
+			Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, pMqttDict));
 
 			m_sRetainedData.erase(m_sRetainedData.begin(),pktend);
 		} while (m_sRetainedData.size() > 0);
