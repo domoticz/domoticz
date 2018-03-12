@@ -943,7 +943,16 @@ define(['app'], function (app) {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
 										bigtext = item.CounterToday;
 									}
-									status =  $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+
+									if ((item.SubType == "Gas")) {
+										status = $.t("Total") + ': ' + item.Data;
+									}
+									else if ((item.SubType == "RFXMeter counter")) {
+										status = item.Counter;
+									}
+									else {
+										status = $.t("Today") + ': ' + item.CounterToday + '<br />' + $.t("Total") + ': ' + item.Counter;
+									}
 								}
 								else if (item.Type == "Current") {
 									status = "";
@@ -952,6 +961,7 @@ define(['app'], function (app) {
 								else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
 									if (typeof item.CounterToday != 'undefined') {
 										status += $.t("Today") + ': ' + item.CounterToday;
+										status += '<br />' + $.t("Total") + ': ' + item.Data;
 									}
 								}
 								else if (item.SubType == "Percentage") {
@@ -1246,11 +1256,14 @@ define(['app'], function (app) {
 										xhtm += 'Counter48.png" height="48" width="48"></td>\n';
 									}
 								}
-								if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter")) {
+								if ((item.SubType == "Gas")) {
+									status = $.t("Total") + ': ' + item.Data;
+								}
+								else if ((item.SubType == "RFXMeter counter")) {
 									status = item.Counter;
 								}
 								else {
-									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									status = $.t("Today") + ': ' + item.CounterToday + '<br />' + $.t("Total") + ': ' + item.Counter;
 								}
 							}
 							else if (item.Type == "Current") {
@@ -1266,6 +1279,7 @@ define(['app'], function (app) {
 								}
 								if (typeof item.CounterToday != 'undefined') {
 									status += $.t("Today") + ': ' + item.CounterToday;
+									status += '<br />' + $.t("Total") + ': ' + item.Data;
 								}
 							}
 							else if (item.Type == "Air Quality") {
