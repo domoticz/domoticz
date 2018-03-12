@@ -232,11 +232,21 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	float fValue2;
 	bool r1, r2, r3;
 	
+	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
+	if (!IsLightOrSwitch(cType, cSubType)) {
+		return false;
+	}
+	
 	if (DevRowIdx != -1) {
 		int meterType = 0;
 		std::vector<std::string> strarray;
 		StringSplit(sValue, ";", strarray);
 		switch(cType) {
+			case pTypeP1Power:
+				if (strarray.size() == 6) {
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)atof(strarray[4].c_str()));
+				}
+				break;
 			case pTypeRFXSensor:
 				switch(cSubType) {
 					case sTypeRFXSensorTemp:
@@ -362,12 +372,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeUsage:
-				switch(cSubType) {
-					case sTypeElectric:
-						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_ENERGYINSTANT, fValue);
-					default:
-						break;
-				}
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_ENERGYINSTANT, fValue);
 				break;
 			case pTypeGeneral:
 				switch(cSubType) {
@@ -410,9 +415,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					case sTypeWaterflow:
 					case sTypeCustom:
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+					case sTypeTextStatus:
+						//no notification for text
+						return false;
 					default:
 						//try at least to handle as NTYPE_USAGE?
-						_log.Log(LOG_ERROR, "Notification NOT handled, please report on GitHub!");
 						//return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 						break;
 				}
@@ -433,10 +440,10 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			case pTypeLighting2:
 				return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF));
 			default:
-				_log.Log(LOG_ERROR, "Notification NOT handled, please report on GitHub!");
 				break;
 		}
 	}
+	_log.Log(LOG_ERROR, "Notification NOT handled (type: %d, subtype: %d), please report on GitHub!", cType, cSubType);
 	return false;
 }
 

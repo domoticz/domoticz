@@ -5193,7 +5193,7 @@ void CSQLHelper::UpdateMeter()
 			{
 				sprintf(szTmp,"%d",nValue);
 				sValue=szTmp;
-				m_notifications.CheckAndHandleNotification(ID, devname, dType, dSubType, NTYPE_USAGE, (float)nValue);
+				m_notifications.CheckAndHandleNotification(ID, hardwareID, DeviceID, devname, Unit, dType, dSubType, (int)nValue);
 			}
 			else if ((dType==pTypeGeneral)&&((dSubType==sTypeSoilMoisture)||(dSubType==sTypeLeafWetness)))
 			{
