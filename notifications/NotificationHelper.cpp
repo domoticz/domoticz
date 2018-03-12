@@ -417,6 +417,21 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 						break;
 				}
 				break;
+			case pTypeGeneralSwitch:
+				switch (cSubType)
+				{
+				case sSwitchGeneralSwitch:
+				case sSwitchTypeSelector:
+					return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF), nValue);
+					break;
+				default:
+					_log.Log(LOG_ERROR, "Notification NOT handled, please report on GitHub!");
+					break;
+				}
+				break;
+			case pTypeLighting1:
+			case pTypeLighting2:
+				return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF));
 			default:
 				_log.Log(LOG_ERROR, "Notification NOT handled, please report on GitHub!");
 				break;

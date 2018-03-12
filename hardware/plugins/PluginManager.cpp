@@ -304,6 +304,11 @@ namespace Plugins {
 					bProcessed = true;
 					try
 					{
+						const CPlugin* pPlugin = Message->Plugin();
+						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
+						{
+							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") processing '" + std::string(Message->Name()) + "' message");
+						}
 						Message->Process();
 					}
 					catch(...)
@@ -331,10 +336,16 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
-		// Hardware should already be stopped to just flush the queue (should already be empty)
+		// Hardware should already be stopped so just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
+			CPluginMessageBase* Message = PluginMessageQueue.front();
+			const CPlugin* pPlugin = Message->Plugin();
+			if (pPlugin)
+			{
+				_log.Log(LOG_NORM, "(" + pPlugin->Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
+			}
 			PluginMessageQueue.pop();
 		}
 
@@ -355,13 +366,12 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		boost::lock_guard<boost::mutex> l(PluginMutex);
 		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 		{
 			if (itt->second)
 			{
-				SettingsDirective*	Message = new SettingsDirective((CPlugin*)itt->second);
-				PluginMessageQueue.push(Message);
+				CPlugin*	pPlugin = (CPlugin*)itt->second;
+				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
 			}
 			else
 			{
