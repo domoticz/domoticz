@@ -13125,8 +13125,21 @@ namespace http {
 				if (sensor == "temp") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
+					int nValue=0;	
+					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+					if (nValue<=7)
+					{
+						result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else if(nValue<=14)
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity, ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(SetPoint),1) AS SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity, ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(SetPoint),1) AS SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
 
-					result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					if (result.size() > 0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13210,8 +13223,20 @@ namespace http {
 				else if (sensor == "Percentage") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-
-					result = m_sql.safe_query("SELECT Percentage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					int nValue=0;
+					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+					if (nValue<=7)
+					{
+						result = m_sql.safe_query("SELECT Percentage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else if (nValue<=14)
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Percentage),1) AS Percentage, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Percentage),1) AS Percentage, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
 					if (result.size() > 0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13229,8 +13254,20 @@ namespace http {
 				else if (sensor == "fan") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-
-					result = m_sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					int nValue=0;
+					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
+					if (nValue<=7)
+					{
+						result = m_sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else else if(nValue<=14)
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Speed),0) AS Speed, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Speed),0) AS Speed, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
 					if (result.size() > 0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
