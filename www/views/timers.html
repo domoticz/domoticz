@@ -1,4 +1,4 @@
-<div id="deviceTimers" class="js-device-timers">
+<div id="deviceTimers" class="container js-device-timers">
     <table class="bannav" id="bannav" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td>
@@ -41,13 +41,14 @@
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
             <td>
-				<a id="timerupdate" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
-                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Update">Update</a>&nbsp;&nbsp;&nbsp;
-				<a id="timerdelete" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
-                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Delete">Delete</a>
+				<button id="timerupdate" ng-click="vm.updateTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
+                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Update">Update</button>
+                &nbsp;&nbsp;&nbsp;
+				<button id="timerdelete" ng-click="vm.deleteTimer(vm.selectedTimerIdx)" ng-class="{'btnstyle3-dis': !vm.selectedTimerIdx, 'btnstyle3': vm.selectedTimerIdx}"
+                    ng-disabled="!vm.selectedTimerIdx" data-i18n="Delete">Delete</button>
             </td>
             <td align="right">
-                <a class="btnstyle3" ng-click="vm.clearTimers()" data-i18n="Clear">Clear</a>
+                <button class="btnstyle3" ng-click="vm.clearTimers()" data-i18n="Clear">Clear</button>
             </td>
         </tr>
     </table>
@@ -97,7 +98,7 @@
                 <span data-i18n="(hour/minute)"></span>
             </td>
         </tr>
-        <tr>
+        <tr ng-hide="::vm.isSetpointTimers">
             <td align="right" style="width:80px">
                 <label for="randomness" data-i18n="Randomness"></label>:
             </td>
@@ -105,7 +106,7 @@
                 <input id="randomness" type="checkbox" ng-model="vm.timerSettings.randomness">
             </td>
         </tr>
-        <tr>
+        <tr ng-hide="::vm.isSetpointTimers">
             <td align="right" style="width:80px">
                 <label for="combocommand" data-i18n="Command"></label>:
             </td>
@@ -113,6 +114,14 @@
                 <select id="combocommand" style="width:90px" class="combobox ui-corner-all" ng-disabled="vm.isCommandSelectionDisabled" ng-model="vm.timerSettings.command"
                     ng-options="item.value as item.label for item in ::vm.commandOptions">
                 </select>
+            </td>
+        </tr>
+        <tr ng-show="::vm.isSetpointTimers">
+            <td align="right" style="width:80px">
+                <label for="tvalue"><span data-i18n="Value"></span>:</label>
+            </td>
+            <td>
+                <input type="text" id="tvalue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" ng-model="vm.timerSettings.tvalue">
             </td>
         </tr>
         <tr id="LevelDiv" ng-show="vm.isLevelVisible()">
@@ -288,5 +297,5 @@
         </tr>
     </table>
     <br>
-    <a class="btnstyle3" ng-click="vm.addTimer()" data-i18n="Add">Add</a>
+    <button class="btnstyle3" ng-click="vm.addTimer()" data-i18n="Add">Add</button>
 </div>

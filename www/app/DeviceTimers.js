@@ -49,15 +49,13 @@ define(['app'], function (app) {
         }
     });
 
-    app.factory('deviceTimers', function ($q, domoticzApi) {
+    app.factory('deviceRegularTimers', function ($q, domoticzApi) {
         return {
             addTimer: addTimer,
             updateTimer: updateTimer,
             clearTimers: clearTimers,
             deleteTimer: deleteTimer,
-            getDeviceTimers: getDeviceTimers,
-            getTimerConfigErrors: getTimerConfigErrors,
-            getTimerConfigWarnings: getTimerConfigWarnings
+            getDeviceTimers: getDeviceTimers
         };
 
         
@@ -85,6 +83,48 @@ define(['app'], function (app) {
         function deleteTimer(timerIdx) {
             return domoticzApi.sendCommand('deletetimer', { idx: timerIdx });
         }
+    });
+
+    app.factory('deviceSetpointTimers', function($q, domoticzApi) {
+        return {
+            addTimer: addTimer,
+            updateTimer: updateTimer,
+            clearTimers: clearTimers,
+            deleteTimer: deleteTimer,
+            getDeviceTimers: getDeviceTimers
+        };
+
+        function getDeviceTimers(deviceIdx) {
+            return domoticzApi.sendRequest({ type: 'setpointtimers', idx: deviceIdx })
+                .then(function (data) {
+                    return data.status === 'OK'
+                        ? data.result || []
+                        : $q.reject(data);
+                });
+        }
+
+        function addTimer(deviceIdx, config) {
+            return domoticzApi.sendCommand('addsetpointtimer', Object.assign({}, config, { idx: deviceIdx }));
+        }
+
+        function updateTimer(timerIdx, config) {
+            return domoticzApi.sendCommand('updatesetpointtimer', Object.assign({}, config, { idx: timerIdx }));
+        }
+
+        function clearTimers(deviceIdx) {
+            return domoticzApi.sendCommand('clearsetpointtimers', { idx: deviceIdx });
+        }
+
+        function deleteTimer(timerIdx) {
+            return domoticzApi.sendCommand('deletesetpointtimer', { idx: timerIdx });
+        }
+    });
+
+    app.factory('deviceTimerConfigUtils', function() {
+        return {
+            getTimerConfigErrors: getTimerConfigErrors,
+            getTimerConfigWarnings: getTimerConfigWarnings
+        };
 
         function getTimerConfigErrors(config) {
             if (config.timertype == 5) {
@@ -239,13 +279,12 @@ define(['app'], function (app) {
         }
     });
 
-    app.controller('DeviceTimersController', ['$scope', '$rootScope', '$routeParams', '$location', '$window', 'device', 'deviceTimers', 'deviceTimerOptions', function ($scope, $rootScope, $routeParams, $location, $window, device, deviceTimers, deviceTimerOptions) {
+    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, $window, device, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
         var vm = this;
         var $element = $('.js-device-timers:last');
         var setColorTimerId;
         var timers = [];
-		vm.selectedTimerIdx = null;
-
+        var deviceTimers;
 
         vm.addTimer = addTimer;
         vm.updateTimer = updateTimer;
@@ -264,6 +303,7 @@ define(['app'], function (app) {
 
         function init() {
             vm.deviceIdx = $routeParams.id;
+            vm.selectedTimerIdx = null;
 
             device.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.deviceName = device.Name;
@@ -273,6 +313,11 @@ define(['app'], function (app) {
                 vm.isRGBW = (device.SubType.indexOf("RGBW") >= 0);
                 vm.isLED = (device.SubType.indexOf("RGB") >= 0);
                 vm.isCommandSelectionDisabled = vm.isSelector && device.LevelOffHidden;
+                vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
+
+                deviceTimers = vm.isSetpointTimers
+                    ? deviceSetpointTimers
+                    : deviceRegularTimers;
 
                 if (vm.isSelector) {
                     vm.levelOptions = device.LevelNames
@@ -298,7 +343,6 @@ define(['app'], function (app) {
             $rootScope.RefreshTimeAndSun();
             $element.i18n();
 
-            
             fillTimerEditFormOptions();
 
             vm.timerSettings = {
@@ -310,6 +354,7 @@ define(['app'], function (app) {
                 randomness: false,
                 command: vm.commandOptions[0].value,
                 level: vm.levelOptions[0].value,
+                tvalue: '',
                 days: 0x80,
                 hue: 0,
                 mday: vm.dayOptions[0].value,
@@ -320,7 +365,6 @@ define(['app'], function (app) {
 
             initDatePicker();
             initDaysSelection();
-            
         };
 
         function initDaysSelection() {
@@ -530,15 +574,17 @@ define(['app'], function (app) {
                     "bProcessing": true,
                     "bStateSave": true,
                     "bJQueryUI": true,
-                    "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-                    "iDisplayLength": 25,
-                    "sPaginationType": "full_numbers",
+                    lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                    pageLength: 25,
+                    pagingType: 'full_numbers',
                     select: {
                         className: 'row_selected',
                         style: 'single'
                     },
                     language: $.DataTableLanguage
                 });
+
+                timersTable.api().column('4').visible(vm.isSetpointTimers === false);
 
                 timersTable.on('select.dt', function (e, dt, type, indexes) {
                     var data = dt.rows(indexes).data()[0];
@@ -554,6 +600,7 @@ define(['app'], function (app) {
                     vm.timerSettings.min = parseInt(timer.Time.substring(3, 5));
                     vm.timerSettings.command = timer.Cmd;
                     vm.timerSettings.level = timer.Level;
+                    vm.timerSettings.tvalue = timer.Temperature;
                     vm.timerSettings.date = timer.Date.replace(/-/g, '/');
                     vm.timerSettings.days = timer.Days;
                     vm.timerSettings.mday = timer.MDay;
@@ -584,9 +631,11 @@ define(['app'], function (app) {
                     var Command = timer.Cmd === 1 ? 'Off' : 'On';
                     var tCommand;
 
-                    if (Command === 'On' && isSelector) {
+                    if (vm.isSetpointTimers) {
+                        tCommand = $.t('Temperature') + ', ' + timer.Temperature;
+                    } else if (Command === 'On' && isSelector) {
                         var levelName = deviceTimerOptions.getLabelForValue(vm.levelOptions, timer.Level);
-                        tCommand = Command + " (" +  deviceTimerOptions.getLabelForValue(vm.levelOptions, timer.Level) + ")";
+                        tCommand = Command + " (" + levelName + ")";
                     } else if (Command === 'On' && isDimmer) {
                         tCommand = $.t(Command) + " (" + timer.Level + "%)";
 
@@ -622,11 +671,7 @@ define(['app'], function (app) {
                         "3": timer.Time,
                         "4": $.t(rEnabled),
                         "5": $.t(tCommand),
-                        "6": DayStrTranslated,
-                        "7": timer.Month,
-                        "8": timer.MDay,
-                        "9": timer.Occurence,
-                        "10": Math.log(parseInt(timer.Days)) / Math.log(2)
+                        "6": DayStrTranslated
                     });
                 })
             });
@@ -693,7 +738,7 @@ define(['app'], function (app) {
         }
 
         function getTimerConfig() {
-            const config = Object.assign({}, vm.timerSettings);
+            var config = Object.assign({}, vm.timerSettings);
 
             if (!isDayScheduleVisible()) {
                 config.days = 0;
@@ -703,7 +748,7 @@ define(['app'], function (app) {
                 config.days = 0x80;
             }
 
-            if ([11, 13].includes(config.timertype)) {
+            if (isROccurenceVisible()) {
                 config.days = Math.pow(2, config.weekday);
             }
 
@@ -714,22 +759,26 @@ define(['app'], function (app) {
                     : (vm.lightSettings.whiteLevel << 16) + vm.lightSettings.hue;
             }
 
-            Object.assign({}, config, {
-                date: isDateVisible() ? config.data : '',
-                mday: isRDaysVisible() ? config.mday : 0,
-                month: isRMonthsVisible() ? config.month : 0,
-                days: isROccurenceVisible() ? Math.pow(2, config.weekday) : config.days,
-                occurence: isROccurenceVisible() ? config.occurence : 0
+            config = Object.assign({}, config, {
+                date: isDateVisible() ? config.date : undefined,
+                mday: isRDaysVisible() ? config.mday : undefined,
+                month: isRMonthsVisible() ? config.month : undefined,
+                occurence: isROccurenceVisible() ? config.occurence : undefined,
+                weekday: undefined,
+                hue: vm.isLED ? config.hue : undefined,
+                tvalue: vm.isSetpointTimers ? config.tvalue : undefined,
+                command: vm.isSetpointTimers ? undefined : config.command,
+                randomness: vm.isSetpointTimers ? undefined : config.randomness
             });
 
-            var error = deviceTimers.getTimerConfigErrors(config);
+            var error = deviceTimerConfigUtils.getTimerConfigErrors(config);
 
             if (error) {
                 ShowNotify(error, 2500, true);
                 return false;
             }
 
-            var warning = deviceTimers.getTimerConfigWarnings(config);
+            var warning = deviceTimerConfigUtils.getTimerConfigWarnings(config);
 
             if (warning) {
                 ShowNotify(error, 2500, true);
@@ -836,5 +885,5 @@ define(['app'], function (app) {
         function goBack() {
             $window.history.back();
         }
-    }]);
+    });
 });
