@@ -13260,7 +13260,7 @@ namespace http {
 					{
 						result = m_sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else else if(nValue<=14)
+					else if(nValue<=14)
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Speed),0) AS Speed, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
