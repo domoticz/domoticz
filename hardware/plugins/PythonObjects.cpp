@@ -923,9 +923,7 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 			
-			if (!IsLightOrSwitch(iType, iSubType)) {
-				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
-			}
+			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 			CDevice_refresh(self);
 		}
