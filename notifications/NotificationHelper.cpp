@@ -420,18 +420,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 						return false;
 				}
 				break;
-			case pTypeGeneralSwitch:
-				switch (cSubType)
-				{
-				case sSwitchGeneralSwitch:
-				case sSwitchTypeSelector:
-					return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF), nValue);
-					break;
-				}
-				break;
-			case pTypeLighting1:
-			case pTypeLighting2:
-				return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF));
 			default:
 				break;
 		}
