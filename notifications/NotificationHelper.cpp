@@ -233,7 +233,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	bool r1, r2, r3;
 	
 	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
-	if (!IsLightOrSwitch(cType, cSubType)) {
+	if (IsLightOrSwitch(cType, cSubType)) {
 		return false;
 	}
 	
