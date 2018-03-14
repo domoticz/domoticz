@@ -1442,13 +1442,13 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	if (myWebem->m_userpasswords.size() == 0)
 	{
 		session.rights = 2;
-		return true;//no username/password we are admin
+//		return true;//no username/password we are admin
 	}
 
 	if (AreWeInLocalNetwork(session.remote_host, req))
 	{
 		session.rights = 2;
-		return true;//we are in the local network, no authentication needed, we are admin
+//		return true;//we are in the local network, no authentication needed, we are admin
 	}
 
 	//Check cookie if still valid
@@ -1490,9 +1490,22 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			expired = stime < now;
 		}
 
+		if (session.rights == 2)
+		{
+			if (!sSID.empty()) {
+				WebEmSession* oldSession = myWebem->GetSession(sSID);
+				if ((oldSession == NULL) || (oldSession->expires < now)) {
+					expired = true;
+				}
+			}
+			if (sSID.empty() || expired)
+				session.isnew = true;
+			return true;
+		}
+
 		if (!(sSID.empty() || sAuthToken.empty() || szTime.empty())) {
 			WebEmSession* oldSession = myWebem->GetSession(sSID);
-			if ((oldSession != NULL) && (oldSession->expires < now)) {
+			if ((oldSession == NULL) || (oldSession->expires < now)) {
 				// Check if session stored in memory is not expired (prevent from spoofing expiration time)
 				expired = true;
 			}
@@ -1543,6 +1556,12 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				return false;
 			}
 		}
+	}
+
+	if (session.rights == 2)
+	{
+		session.isnew = true;
+		return true;
 	}
 
 	//patch to let always support basic authentication function for script calls
@@ -1931,6 +1950,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
+		_log.Log(LOG_STATUS,"Incoming connection from: %s", session.remote_host.c_str());
 		// Create a new session ID
 		session.id = generateSessionID();
 		session.expires = session.timeout;
