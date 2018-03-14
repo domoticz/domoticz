@@ -169,6 +169,7 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 	myWhitelistURLs.push_back(idname);
 }
 
+
 /**
 
   Do not call from application code, used by server to include generated text.
@@ -635,10 +636,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			//browser support to prevent XSS
-			reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
-			reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
-			//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 		}
 		else
 		{
@@ -670,10 +667,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Cache-Control", "no-cache");
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-	//browser support to prevent XSS
-	reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
-	reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
-	//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 
 	return true;
 }
@@ -877,6 +870,16 @@ void cWebem::AddLocalNetworks(std::string network)
 void cWebem::ClearLocalNetworks()
 {
 	m_localnetworks.clear();
+}
+
+void cWebem::AddRemoteProxyIPs(const std::string ipaddr)
+{
+	myRemoteProxyIPs.push_back(ipaddr);
+}
+
+void cWebem::ClearRemoteProxyIPs()
+{
+	myRemoteProxyIPs.clear();
 }
 
 void cWebem::SetDigistRealm(const std::string &realm)
@@ -1677,25 +1680,28 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	WebEmSession session;
 	session.remote_host = req.host_address;
 
-	if (session.remote_host == "127.0.0.1")
+	if (myWebem->myRemoteProxyIPs.size() > 0)
 	{
-		//We could be using a proxy server
-		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
-		if (host_header != NULL)
+		for (std::vector<std::string>::size_type i = 0; i < myWebem->myRemoteProxyIPs.size(); ++i)
 		{
-			session.remote_host = host_header;
-			if (strstr(host_header, ",") != NULL)
+			if (session.remote_host == myWebem->myRemoteProxyIPs[i])
 			{
-				//Multiple proxies are used... this is not very common
-				host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-				if (!host_header)
+				const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
+				if (host_header != NULL)
 				{
-					_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-					rep = reply::stock_reply(reply::forbidden);
-					return;
+					if (strstr(host_header, ",") != NULL)
+					{
+						//Multiple proxies are used... this is not very common
+						host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+						if (!host_header)
+						{
+							_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+							rep = reply::stock_reply(reply::forbidden);
+							return;
+						}
+					}
+					session.remote_host = host_header;
 				}
-				session.remote_host = host_header;
 			}
 		}
 	}
