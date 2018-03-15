@@ -360,7 +360,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			case pTypePOWER:
 				if (strarray.size() == 2) {
 					fValue2 = (float)atof(strarray[0].c_str());
-					return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 				}
 				break;
 			case pTypeRFXMeter:
