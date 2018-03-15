@@ -28,10 +28,27 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
+//GB
+#include<stdio.h>
+#include<stdlib.h>
+#ifndef _WIN32
+#define sprintf_s(buffer, buffer_size, stringbuffer, ...) (sprintf(buffer, stringbuffer, __VA_ARGS__))
+#endif
+
 int m_failcounter=0;
 
 namespace http {
 	namespace server {
+
+//GB
+std::string time2str(const time_t gtime)
+{
+	struct tm ltime;
+	localtime_r(&gtime, &ltime);
+	char c_until[40];
+	sprintf_s(c_until,40,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
+	return std::string(c_until);
+}
 
 /**
 Webem constructor
@@ -1442,13 +1459,11 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	if (myWebem->m_userpasswords.size() == 0)
 	{
 		session.rights = 2;
-//		return true;//no username/password we are admin
 	}
 
 	if (AreWeInLocalNetwork(session.remote_host, req))
 	{
 		session.rights = 2;
-//		return true;//we are in the local network, no authentication needed, we are admin
 	}
 
 	//Check cookie if still valid
@@ -1494,10 +1509,17 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		{
 			if (!sSID.empty()) {
 				WebEmSession* oldSession = myWebem->GetSession(sSID);
-				if ((oldSession == NULL) || (oldSession->expires < now))
-					expired = true;
+				if (oldSession == NULL)
+				{
+					session.id = sSID;
+					session.auth_token = sAuthToken;
+					expired = (!checkAuthToken(session));
+				}
 				else
+				{
 					session = *oldSession;
+					expired = (oldSession->expires < now);
+				}
 			}
 			if (sSID.empty() || expired)
 				session.isnew = true;
@@ -1637,6 +1659,24 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	_log.Log(LOG_STATUS, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
+	if (session.rights == 2)
+	{
+		// we are already admin - restore session from db
+		session.expires = storedSession.expires;
+		time_t now = mytime(NULL);
+		if (session.expires < now)
+		{
+			removeAuthToken(session.id);
+			return false;
+		}
+		else
+		{
+			session.timeout = now + SHORT_SESSION_TIMEOUT;
+			myWebem->AddSession(session);
+			return true;
+		}
+	}
+
 	if (session.username.empty()) {
 		// Restore session if user exists and session does not already exist
 		bool userExists = false;
@@ -1665,6 +1705,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 
 		WebEmSession* oldSession = myWebem->GetSession(session.id);
 		if (oldSession == NULL) {
+
 #ifdef DEBUG_WWW
 			_log.Log(LOG_STATUS, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
