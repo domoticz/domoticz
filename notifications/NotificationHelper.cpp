@@ -428,6 +428,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					case sTypeCounterIncremental:
 						//no notification
 						return false;
+					default:
+						break;
 				}
 				break;
 			default:
