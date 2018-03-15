@@ -357,15 +357,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 			case pTypeRego6XXTemp:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
-			case pTypeRego6XXValue:
-				switch(cSubType) {
-					case sTypeRego6XXCounter:
-						// silent ignore, it is handled in SQLHelper
-						return false;
-					default:
-						break;
-				}
-				break;
 			case pTypePOWER:
 				if (strarray.size() == 2) {
 					fValue2 = (float)atof(strarray[0].c_str());
@@ -424,12 +415,9 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					case sTypeWaterflow:
 					case sTypeCustom:
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-					case sTypeTextStatus:
-					case sTypeCounterIncremental:
-						//no notification
-						return false;
 					default:
-						break;
+						// silently ignore other general devices
+						return false;
 				}
 				break;
 			default:
