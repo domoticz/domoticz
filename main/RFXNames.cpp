@@ -3415,7 +3415,7 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		s_strid >> deviceid;
 		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
 		char szTmp[20];
-		sprintf(szTmp, "%lx", deviceid);
+		sprintf(szTmp, "%08lX", deviceid);
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 		devid = szTmp;
 	}
