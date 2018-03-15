@@ -1494,9 +1494,10 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		{
 			if (!sSID.empty()) {
 				WebEmSession* oldSession = myWebem->GetSession(sSID);
-				if ((oldSession == NULL) || (oldSession->expires < now)) {
+				if ((oldSession == NULL) || (oldSession->expires < now))
 					expired = true;
-				}
+				else
+					session = *oldSession;
 			}
 			if (sSID.empty() || expired)
 				session.isnew = true;
