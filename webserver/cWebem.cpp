@@ -28,27 +28,10 @@
 #define SHORT_SESSION_TIMEOUT 600 // 10 minutes
 #define LONG_SESSION_TIMEOUT (30 * 86400) // 30 days
 
-//GB
-#include<stdio.h>
-#include<stdlib.h>
-#ifndef _WIN32
-#define sprintf_s(buffer, buffer_size, stringbuffer, ...) (sprintf(buffer, stringbuffer, __VA_ARGS__))
-#endif
-
 int m_failcounter=0;
 
 namespace http {
 	namespace server {
-
-//GB
-std::string time2str(const time_t gtime)
-{
-	struct tm ltime;
-	localtime_r(&gtime, &ltime);
-	char c_until[40];
-	sprintf_s(c_until,40,"%04d-%02d-%02d %02d:%02d:%02d",ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,ltime.tm_hour,ltime.tm_min,ltime.tm_sec);
-	return std::string(c_until);
-}
 
 /**
 Webem constructor
