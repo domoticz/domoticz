@@ -8779,6 +8779,8 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 	if (DevRowIdx == -1)
 		return;
 
+	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, devType, subType, weight);
+	
 	if (m_verboselevel >= EVBL_ALL)
 	{
 		WriteMessageStart();
