@@ -12919,6 +12919,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	std::stringstream s_strid;
 	s_strid << std::hex << DeviceID;
 	s_strid >> ID;
+	uint64_t dID = 0;
+	std::string dName = "";
+
 
 	if (pHardware)
 	{
@@ -12927,9 +12930,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 		result = m_sql.safe_query(
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HardwareID, DeviceID.c_str(), unit, devType, subType);
-
-		uint64_t dID = 0;
-		std::string dName = "";
 
 		if (!result.empty())
 		{
@@ -12972,9 +12972,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2, NULL, batterylevel);
 			return true;
 		}
-
-		//Handle Notification
-		m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, nValue, sValue);
 	}
 
 	std::string devname = "Unknown";
@@ -13025,6 +13022,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
 		SetZWaveThermostatFanMode(sidx.str(), nValue);
+	}
+	else if (pHardware) {
+		//Handle Notification
+		m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, nValue, sValue);
 	}
 	return true;
 }
