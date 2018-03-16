@@ -12919,9 +12919,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	std::stringstream s_strid;
 	s_strid << std::hex << DeviceID;
 	s_strid >> ID;
-	uint64_t dID = 0;
-	std::string dName = "";
-
 
 	if (pHardware)
 	{
@@ -12931,6 +12928,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			"SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
 			HardwareID, DeviceID.c_str(), unit, devType, subType);
 
+		uint64_t dID = 0;
+		std::string dName = "";
+		
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
@@ -13025,7 +13025,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	}
 	else if (pHardware) {
 		//Handle Notification
-		m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, nValue, sValue);
+		m_notifications.CheckAndHandleNotification(devidx, HardwareID, DeviceID, devname, unit, devType, subType, nValue, sValue);
 	}
 	return true;
 }
