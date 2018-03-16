@@ -341,7 +341,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
 					float temp = (float)atof(strarray[4].c_str());
 					r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
-					r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false) && r1;
+					r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
 					return r1 && r2;
 				}
 				break;
@@ -372,7 +372,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeUsage:
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_ENERGYINSTANT, fValue);
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 				break;
 			case pTypeGeneral:
 				switch(cSubType) {
