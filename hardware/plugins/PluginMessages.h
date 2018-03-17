@@ -318,7 +318,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_Name = __func__;
 			m_Subject = Subject;
 			m_Text = Text;
-			m_Name = Name;
+			m_SuppliedName = Name;
 			m_Status = Status;
 			m_Priority = Priority;
 			m_Sound = Sound;
@@ -327,7 +327,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 
 		std::string				m_Subject;
 		std::string				m_Text;
-		std::string				m_Name;
+		std::string				m_SuppliedName;
 		std::string				m_Status;
 		int						m_Priority;
 		std::string				m_Sound;
@@ -336,7 +336,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 		virtual void ProcessLocked()
 		{
-			PyObject*	pParams = Py_BuildValue("ssssiss", m_Name.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
+			PyObject*	pParams = Py_BuildValue("ssssiss", m_SuppliedName.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
 			Callback(pParams);
 		};
 	};
@@ -428,9 +428,9 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class NotifierDirective : public CDirectiveBase
 	{
 	public:
-		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_Name(Name) { m_Name = __func__; };
-		std::string		m_Name;
-		virtual void Process() { m_pPlugin->Notifier(m_Name); };
+		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_NotifierName(Name) { m_Name = __func__; };
+		std::string		m_NotifierName;
+		virtual void Process() { m_pPlugin->Notifier(m_NotifierName); };
 	};
 
 	// Base event message class
