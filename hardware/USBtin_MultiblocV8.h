@@ -69,6 +69,6 @@ private:
 	void USBtin_MultiblocV8_Send_SFSP_LearnCommand_OnCAN(long baseID_ToSend,char Commande);
 	void InsertUpdateControlSwitch(const int NodeID, const int ChildID, const std::string &defaultname);
 	void SetOutputBlinkInDomoticz (unsigned long sID,int OutputNumber,bool Blink);
-
+	void Traitement_Trame_EtatBloc(const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int rxDLC,unsigned int bufferdata[8]);
 };
 

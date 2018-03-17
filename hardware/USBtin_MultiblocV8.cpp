@@ -310,7 +310,12 @@ void USBtin_MultiblocV8::Traitement_MultiblocV8(int IDhexNumber,unsigned int rxD
 				//_log.Log(LOG_NORM,"MultiblocV8: Life Frame, ref: %#x Codage : %d Network: %d",RefBloc,Codage,SsReseau);
 				Traitement_Trame_Vie(RefBloc,Codage,SsReseau,rxDLC,Buffer_Octets);
 				break;
-				
+			
+			case type_ETAT_BLOC:
+				//traitement ETAT BLOC reçu :
+				Traitement_Trame_EtatBloc(RefBloc,Codage,SsReseau,rxDLC,Buffer_Octets);
+				break;
+			
 			case type_STATE_S_TOR_1_TO_2 :
 			case type_STATE_S_TOR_3_TO_4 :
 			case type_STATE_S_TOR_5_TO_6 :
@@ -490,6 +495,10 @@ void USBtin_MultiblocV8::InsertUpdateControlSwitch(const int NodeID, const int C
 		"VALUES (%d,'%q',%d,%d,%d,%d,0, 12,255,'%q',0,' ')",
 		m_HwdID, szIdx, ChildID, pTypeLighting2, sTypeAC, int(STYPE_PushOn), defaultname.c_str() );
 	}
+	else{ //sinon on remet à 0 les état ici
+		m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 
+			0, m_HwdID, szIdx,pTypeLighting2,sTypeAC, ChildID);
+	}
 }
 
 //call every 3 sec...
@@ -547,6 +556,50 @@ void USBtin_MultiblocV8::Traitement_Trame_Vie(const unsigned char RefBloc, const
 	if( rxDLC == 5 ) BlocList_GetInfo(RefBloc,Codage,Ssreseau,bufferdata);
 }
 
+//Traitement trame Etat_Bloc / States_Bloc frame treatement  :
+void USBtin_MultiblocV8::Traitement_Trame_EtatBloc(const unsigned char RefBloc, const char Codage, const char Ssreseau,unsigned int rxDLC,unsigned int bufferdata[8])
+{
+	int i = 0;
+	int Command = 0;
+	char szDeviceID[10];
+	std::vector<std::vector<std::string> > result;
+	//for searching the good commands switches :
+	unsigned long sID=(type_COMMANDE_ETAT_BLOC<<SHIFT_TYPE_TRAME)+(RefBloc<<SHIFT_INDEX_MODULE)+(Codage<<SHIFT_CODAGE_MODULE)+Ssreseau;
+	sprintf(szDeviceID,"%07X",(unsigned int)sID);
+	if( rxDLC == 1 ){
+		_log.Log(LOG_NORM,"MultiblocV8: Check Etat Bloc with hardwarId: %d and id: %s receive: %d",m_HwdID,szDeviceID, bufferdata[0] );
+		//search the 3 switches (LEARN ENTRY / EXIT and CLEAR) associates to this return EtatBloc frame
+		//in fact we can return each switch to it's normal states after a good sequence !
+		if( bufferdata[0] == BLOC_NORMAL_STATES ){ //retour en mode normal / return in normal mode
+			for(i = 0;i < (BLOC_STATES_CLEARING+1); i++){
+				result = m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 
+					0, m_HwdID, szDeviceID,pTypeLighting2,sTypeAC, i);
+				/*result = m_sql.safe_query("SELECT ID,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (Subtype==%d) AND (Unit==%d)", 
+				m_HwdID, szDeviceID,pTypeLighting2,sTypeAC, i);
+				//if(!result.empty() ){ //if command exist in db :
+					//Refresh it !
+					tRBUF lcmd;
+					memset(&lcmd, 0, sizeof(RBUF));
+					lcmd.LIGHTING2.packetlength = sizeof(lcmd.LIGHTING2) - 1;
+					lcmd.LIGHTING2.packettype = pTypeLighting2;
+					lcmd.LIGHTING2.subtype = sTypeAC;
+					lcmd.LIGHTING2.id1 = (sID>>24)&0xff;
+					lcmd.LIGHTING2.id2 = (sID>>16)&0xff;
+					lcmd.LIGHTING2.id3 = (sID>>8)&0xff;
+					lcmd.LIGHTING2.id4 = sID&0xff;
+					lcmd.LIGHTING2.cmnd = light2_sOff; //Off !
+					lcmd.LIGHTING2.unitcode = i; //SubUnit = command index
+					lcmd.LIGHTING2.level = 0; //level_value;		
+					lcmd.LIGHTING2.filler = 2;
+					lcmd.LIGHTING2.rssi = 12;
+					sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, NULL, 255);
+					
+				}*/
+			}
+		}
+		
+	}
+}
 //check if an output has changed...
 
 bool USBtin_MultiblocV8::CheckOutputChange(unsigned long sID,int OutputNumber,bool CdeReceive,int LevelReceive){
