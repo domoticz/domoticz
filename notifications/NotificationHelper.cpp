@@ -4,6 +4,8 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/RFXtrx.h"
+#include "../main/mainworker.h"
+#include "../hardware/DomoticzHardware.h"
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
@@ -443,12 +445,23 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				break;
 		}
 	}
-	if (nexpected > 0) {
-		_log.Log(LOG_STATUS, "Warning: Expecting svalue with %d elements separated by semicolon, %d elements received, notification not sent (ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	
+	std::string hName;
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+	if (pHardware == NULL) {
+		hName = "";
 	}
 	else {
-		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+		hName = pHardware->Name;
 	}
+	
+	if (nexpected > 0) {
+		_log.Log(LOG_STATUS, "Warning: Expecting svalue with %d elements separated by semicolon, %d elements received (\"%s\"), notification not sent (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, sValue.c_str(), HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	}
+	else {
+		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	}
+	
 	return false;
 }
 
