@@ -3900,6 +3900,17 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 	return devRowID;
 }
 
+bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	if (result.size()==0) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 		//TODO: 'unsigned char unit' only allows 256 devices / plugin
 {

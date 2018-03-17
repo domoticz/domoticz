@@ -444,10 +444,10 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		}
 	}
 	if (nexpected > 0) {
-		_log.Log(LOG_STATUS, "Warning: Expecting svalue with %d elements separated by semicolon, %d elements received, notification not sent (type: %02X - %s, subtype: %d - %s)", nexpected, nsize, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+		_log.Log(LOG_STATUS, "Warning: Expecting svalue with %d elements separated by semicolon, %d elements received, notification not sent (ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
 	}
 	else {
-		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (type: %02X - %s, subtype: %d - %s), please report on GitHub!", cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
 	}
 	return false;
 }
