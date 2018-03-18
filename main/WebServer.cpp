@@ -71,6 +71,7 @@ extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
+extern std::string szPyVersion;
 
 extern time_t m_StartTime;
 
@@ -2521,6 +2522,7 @@ namespace http {
 			root["build_time"] = szAppDate;
 			CdzVents* dzvents = CdzVents::GetInstance();
 			root["dzvents_version"] = dzvents->GetVersion();
+			root["python_version"] = szPyVersion;
 
 			if (session.rights != 2)
 			{

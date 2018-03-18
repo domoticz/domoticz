@@ -676,6 +676,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			appversion: 0,
 			apphash: 0,
 			appdate: 0,
+			pythonversion: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true
 		};
@@ -792,6 +793,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.apphash = data.hash;
 					$rootScope.config.appdate = data.build_time;
 					$rootScope.config.dzventsversion = data.dzvents_version;
+					$rootScope.config.pythonversion = data.python_version;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 					$("#appversion").text("V" + data.version);
 					if (data.SystemName != "windows") {
