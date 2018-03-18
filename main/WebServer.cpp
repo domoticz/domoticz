@@ -13003,7 +13003,7 @@ namespace http {
 				s_str >> idx;
 			}
 
-			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> > result,result2;
 			char szTmp[300];
 
 			std::string sensor = request::findValue(&req, "sensor");
@@ -13125,17 +13125,16 @@ namespace http {
 				if (sensor == "temp") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-					int nValue=0;	
-					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-					if (nValue<=7)
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+					if (result2.size() <= 864) //Less than 3 days
 					{
 						result = m_sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else if(nValue<=14)
+					else if(result2.size() <= 5184) //Less than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity, ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(SetPoint),1) AS SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else
+					else //More than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Temperature),1) AS Temperature, ROUND(AVG(Chill),1) AS Chill, ROUND(AVG(Humidity),0) AS Humidity, ROUND(AVG(Barometer),0) AS Barometer, MIN(Date) AS Date, ROUND(AVG(SetPoint),1) AS SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
@@ -13223,17 +13222,16 @@ namespace http {
 				else if (sensor == "Percentage") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-					int nValue=0;
-					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-					if (nValue<=7)
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+					if (result2.size() <= 864) //Less than 3 days
 					{
 						result = m_sql.safe_query("SELECT Percentage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else if (nValue<=14)
+					else if (result2.size() <= 5184) //Less than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Percentage),1) AS Percentage, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else
+					else //More than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Percentage),1) AS Percentage, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
@@ -13254,17 +13252,16 @@ namespace http {
 				else if (sensor == "fan") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-					int nValue=0;
-					m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
-					if (nValue<=7)
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+					if (result2.size() <= 864) //Less than 3 days
 					{
 						result = m_sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else if(nValue<=14)
+					else if (result2.size() <= 5184) //Less than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Speed),0) AS Speed, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
-					else
+					else  //More than 18 days
 					{
 						result = m_sql.safe_query("SELECT ROUND(AVG(Speed),0) AS Speed, MIN(Date) AS Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
 					}
@@ -13291,7 +13288,19 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 
 						// P1 counter values can only increment, so these are more reliable for sorting than time which can decrement (when DST is turned off)
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Value1 ASC, Value5 ASC, Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Value1 ASC, Value5 ASC, Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0) AS Value1, ROUND(AVG(Value2),0) AS Value2, ROUND(AVG(Value3),0) AS Value3, ROUND(AVG(Value4),0) AS Value4, ROUND(AVG(Value5),0) AS Value5, ROUND(AVG(Value6),0) AS Value5, MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Value1 ASC, Value5 ASC, Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0) AS Value1, ROUND(AVG(Value2),0) AS Value2, ROUND(AVG(Value3),0) AS Value3, ROUND(AVG(Value4),0) AS Value4, ROUND(AVG(Value5),0) AS Value5, ROUND(AVG(Value6),0) AS Value5, MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Value1 ASC, Value5 ASC, Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13440,13 +13449,13 @@ namespace http {
 											int mon = ltime.tm_mon + 1;
 											int day = ltime.tm_mday;
 											sprintf(szTmp, "%04d-%02d-%02d", year, mon, day);
-											std::vector<std::vector<std::string> > result2;
-											result2 = m_sql.safe_query(
+											std::vector<std::vector<std::string> > result3;
+											result3 = m_sql.safe_query(
 												"SELECT Counter1, Counter2, Counter3, Counter4 FROM Multimeter_Calendar WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q')",
 												idx, szTmp);
-											if (!result2.empty())
+											if (!result3.empty())
 											{
-												std::vector<std::string> sd = result2[0];
+												std::vector<std::string> sd = result3[0];
 												std::stringstream s_str1(sd[0]);
 												s_str1 >> firstUsage1;
 												std::stringstream s_str2(sd[1]);
@@ -13491,7 +13500,19 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13511,7 +13532,19 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13546,7 +13579,19 @@ namespace http {
 						{
 							vdiv = 1000.0f;
 						}
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13574,8 +13619,19 @@ namespace http {
 					{//day
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
-
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13595,7 +13651,19 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13614,8 +13682,19 @@ namespace http {
 					{//day
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
-
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13636,7 +13715,19 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
 
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13663,8 +13754,19 @@ namespace http {
 						m_sql.GetPreferencesVar("ElectricVoltage", voltage);
 
 						root["displaytype"] = displaytype;
-
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0), ROUND(AVG(Value2),0), ROUND(AVG(Value3),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0), ROUND(AVG(Value2),0), ROUND(AVG(Value3),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13739,7 +13841,19 @@ namespace http {
 
 						root["displaytype"] = displaytype;
 
-						result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0), ROUND(AVG(Value2),0), ROUND(AVG(Value3),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value1),0), ROUND(AVG(Value2),0), ROUND(AVG(Value3),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 						if (result.size() > 0)
 						{
 							std::vector<std::vector<std::string> >::const_iterator itt;
@@ -13847,7 +13961,19 @@ namespace http {
 						}
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value,[Usage], Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), ROUND(AVG(Usage),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), ROUND(AVG(Usage),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
@@ -14013,7 +14139,19 @@ namespace http {
 							EnergyDivider *= 100.0f;
 
 						int ii = 0;
-						result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+						if (result2.size() <= 864) //Less than 3 days
+						{
+							result = m_sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else if(result2.size() <= 5184) //Less than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
+						else //More than 18 days
+						{
+							result = m_sql.safe_query("SELECT ROUND(AVG(Value),0), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+						}
 
 						int method = 0;
 						std::string sMethod = request::findValue(&req, "method");
@@ -14199,8 +14337,19 @@ namespace http {
 				else if (sensor == "uv") {
 					root["status"] = "OK";
 					root["title"] = "Graph " + sensor + " " + srange;
-
-					result = m_sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					result2 = m_sql.safe_query("SELECT COUNT(*) FROM %s WHERE (DeviceRowID==%" PRIu64 ")", dbasetable.c_str(), idx);
+					if (result2.size() <= 864) //Less than 3 days
+					{
+						result = m_sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else if(result2.size() <= 5184) //Less than 18 days
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Level),1), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date),(strftime('%%M',Date)/30) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
+					else //More than 18 days
+					{
+						result = m_sql.safe_query("SELECT ROUND(AVG(Level),1), MIN(Date) FROM %s WHERE (DeviceRowID==%" PRIu64 ") GROUP BY strftime('%%Y-%%m-%%d %%H',Date) ORDER BY Date ASC", dbasetable.c_str(), idx);
+					}
 					if (result.size() > 0)
 					{
 						std::vector<std::vector<std::string> >::const_iterator itt;
