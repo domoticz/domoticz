@@ -233,7 +233,7 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	bool r1, r2, r3;
 	
 	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
-	if (!IsLightOrSwitch(cType, cSubType)) {
+	if (IsLightOrSwitch(cType, cSubType)) {
 		return false;
 	}
 	
@@ -418,32 +418,13 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					case sTypeTextStatus:
 						//no notification for text
 						return false;
-					default:
-						//try at least to handle as NTYPE_USAGE?
-						//return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-						break;
 				}
 				break;
-			case pTypeGeneralSwitch:
-				switch (cSubType)
-				{
-				case sSwitchGeneralSwitch:
-				case sSwitchTypeSelector:
-					return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF), nValue);
-					break;
-				default:
-					_log.Log(LOG_ERROR, "Notification NOT handled (type: %02X - %s, subtype: %d - %s), please report on GitHub!", cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
-					break;
-				}
-				break;
-			case pTypeLighting1:
-			case pTypeLighting2:
-				return CheckAndHandleSwitchNotification(DevRowIdx, sName, (nValue ? NTYPE_SWITCH_ON : NTYPE_SWITCH_OFF));
 			default:
 				break;
 		}
 	}
-	_log.Log(LOG_ERROR, "Notification NOT handled (type: %02X - %s, subtype: %d - %s), please report on GitHub!", cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	_log.Log(LOG_STATUS, "Warning: Notification NOT handled (type: %02X - %s, subtype: %d - %s), please report on GitHub!", cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
 	return false;
 }
 

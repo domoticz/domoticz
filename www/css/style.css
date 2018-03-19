@@ -283,6 +283,7 @@ strong {
 	height: 2.00em;
 	padding: 0em 1.25em 0em 1.25em;
 	background: url(images/img03b.jpg) repeat right top;
+	border: none;
 	border-radius: 5px;
 	line-height: 2.00em;
 	text-decoration: none;
@@ -298,6 +299,7 @@ strong {
 	height: 2.00em;
 	padding: 0em 1.25em 0em 1.25em;
 	background: url(images/img03bd.png) repeat right top;
+	border: none;
 	border-radius: 5px;
 	line-height: 2.00em;
 	text-decoration: none;
