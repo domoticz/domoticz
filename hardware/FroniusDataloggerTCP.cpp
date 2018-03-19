@@ -263,7 +263,7 @@ void FroniusDataLoggerTCP::Do_Work()
 				}
 				catch (...)
 				{
-					_log.Log(LOG_ERROR, "Fronis Error: Error parsing JSon data!");
+					_log.Log(LOG_ERROR, "Fronis: Error parsing JSon data!");
 				}
 			}
 		}
