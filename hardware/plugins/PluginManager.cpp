@@ -51,6 +51,7 @@
 		}
 
 extern std::string szUserDataFolder;
+extern std::string szPyVersion;
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -105,7 +106,7 @@ namespace Plugins {
 
 		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
 
-		std::string sVersion(Py_GetVersion());
+		szPyVersion = Py_GetVersion();
 
 		try
 		{
@@ -114,7 +115,7 @@ namespace Plugins {
 				Py_Finalize();
 			}
 
-			sVersion = sVersion.substr(0, sVersion.find_first_of(' '));
+			std::string sVersion = szPyVersion.substr(0, szPyVersion.find_first_of(' '));
 			if (sVersion < MINIMUM_PYTHON_VERSION)
 			{
 				_log.Log(LOG_STATUS, "PluginSystem: Invalid Python version '%s' found, '%s' or above required.", sVersion.c_str(), MINIMUM_PYTHON_VERSION);
@@ -143,7 +144,7 @@ namespace Plugins {
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
 		}
 		catch (...) {
-			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", sVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
+			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", szPyVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
 			return false;
 		}
 
