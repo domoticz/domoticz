@@ -157,21 +157,23 @@ writers = {
 			end;
 		end;
 	["function"] = function (file, item)
-			-- Does only work for "normal" functions, not those
-			-- with upvalues or c functions
-			local dInfo = debug.getinfo(item, "uS");
-			if dInfo.nups > 0 then
-				--file:write("nil --[[functions with upvalue not supported]]");
-			elseif dInfo.what ~= "Lua" then
-				--file:write("nil --[[non-lua function not supported]]");
-			else
-				local r, s = pcall(string.dump,item);
-				if r then
-					file:write(string.format("loadstring(%q)", s));
-				else
-					--file:write("nil --[[function could not be dumped]]");
-				end
-			end
+			file:write("nil --[[function]]\n");
+
+			-- -- Does only work for "normal" functions, not those
+			-- -- with upvalues or c functions
+			-- local dInfo = debug.getinfo(item, "uS");
+			-- if dInfo.nups > 0 then
+			-- 	--file:write("nil --[[functions with upvalue not supported]]");
+			-- elseif dInfo.what ~= "Lua" then
+			-- 	--file:write("nil --[[non-lua function not supported]]");
+			-- else
+			-- 	local r, s = pcall(string.dump,item);
+			-- 	if r then
+			-- 		file:write(string.format("loadstring(%q)", s));
+			-- 	else
+			-- 		--file:write("nil --[[function could not be dumped]]");
+			-- 	end
+			-- end
 		end;
 	["thread"] = function (file, item)
 			file:write("nil --[[thread]]\n");

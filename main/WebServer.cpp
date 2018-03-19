@@ -8,6 +8,7 @@
 #include "Helper.h"
 #include "localtime_r.h"
 #include "EventSystem.h"
+#include "dzVents.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/1Wire.h"
@@ -1023,7 +1024,7 @@ namespace http {
 			for (itt = _htypes.begin(); itt != _htypes.end(); ++itt)
 			{
 				root["result"][ii]["idx"] = itt->second;
-				root["result"][ii]["name"] = itt->first;
+				root["result"][ii]["name"] = SafeHtml(itt->first);
 				ii++;
 			}
 
@@ -1041,7 +1042,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = SafeHtml(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
 			std::string address = request::findValue(&req, "address");
@@ -1103,29 +1104,19 @@ namespace http {
 					m_sql.UpdatePreferencesVar("SmartMeterType", 0);
 				}
 			}
-			else if (
-				(htype == HTYPE_RFXLAN) || (htype == HTYPE_P1SmartMeterLAN) || (htype == HTYPE_YouLess) || (htype == HTYPE_RazberryZWave) || (htype == HTYPE_OpenThermGatewayTCP) || (htype == HTYPE_LimitlessLights) ||
-				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) || (htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) ||
-				(htype == HTYPE_ETH8020) || (htype == HTYPE_RelayNet) || (htype == HTYPE_Sterbox) || (htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_RFLINKTCP) || (htype == HTYPE_Comm5TCP) || (htype == HTYPE_CurrentCostMeterLAN) ||
-				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPInOut) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype==HTYPE_eHouseTCP) || (htype == HTYPE_FRONIUSTCP)
-				) {
+			else if (IsNetworkDevice(htype)) 
+			{
 				//Lan
 				if (address.empty() || port == 0)
 					return;
 
-				if (htype == HTYPE_MySensorsMQTT) {
+				if (htype == HTYPE_MySensorsMQTT || htype == HTYPE_MQTT) {
 					std::string modeqStr = request::findValue(&req, "mode1");
 					if (!modeqStr.empty()) {
 						mode1 = atoi(modeqStr.c_str());
 					}
 				}
 
-				if (htype == HTYPE_MQTT) {
-					std::string modeqStr = request::findValue(&req, "mode1");
-					if (!modeqStr.empty()) {
-						mode1 = atoi(modeqStr.c_str());
-					}
-				}
 				if (htype == HTYPE_ECODEVICES) {
 					// EcoDevices always have decimals. Chances to have a P1 and a EcoDevice/Teleinfo device on the same
 					// Domoticz instance are very low as both are national standards (NL and FR)
@@ -1432,7 +1423,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = CURLEncode::URLDecode(request::findValue(&req, "name"));
+			std::string name = SafeHtml(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string shtype = request::findValue(&req, "htype");
 			std::string address = request::findValue(&req, "address");
@@ -1481,7 +1472,7 @@ namespace http {
 				(htype == HTYPE_SolarEdgeTCP) || (htype == HTYPE_WOL) || (htype == HTYPE_S0SmartMeterTCP) || (htype == HTYPE_ECODEVICES) || (htype == HTYPE_Mochad) ||
 				(htype == HTYPE_MySensorsTCP) || (htype == HTYPE_MySensorsMQTT) || (htype == HTYPE_MQTT) || (htype == HTYPE_FRITZBOX) || (htype == HTYPE_ETH8020) || (htype == HTYPE_Sterbox) ||
 				(htype == HTYPE_KMTronicTCP) || (htype == HTYPE_KMTronicUDP) || (htype == HTYPE_SOLARMAXTCP) || (htype == HTYPE_RelayNet) || (htype == HTYPE_SatelIntegra) || (htype == HTYPE_eHouseTCP) || (htype == HTYPE_RFLINKTCP) ||
-				(htype == HTYPE_Comm5TCP || (htype == HTYPE_CurrentCostMeterLAN)) ||
+				(htype == HTYPE_Comm5TCP || (htype == HTYPE_Comm5SMTCP) || (htype == HTYPE_CurrentCostMeterLAN)) ||
 				(htype == HTYPE_NefitEastLAN) || (htype == HTYPE_DenkoviSmartdenLan) || (htype == HTYPE_DenkoviSmartdenIPInOut) || (htype == HTYPE_Ec3kMeterTCP) || (htype == HTYPE_MultiFun) || (htype == HTYPE_ZIBLUETCP) || (htype == HTYPE_OnkyoAVTCP) || (htype == HTYPE_FRONIUSTCP)
 				) {
 				//Lan
@@ -1856,7 +1847,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 			std::string idx = request::findValue(&req, "idx");
-			std::string variablename = request::findValue(&req, "vname");
+			std::string variablename = SafeHtml(request::findValue(&req, "vname"));
 			std::string variablevalue = request::findValue(&req, "vvalue");
 			std::string variabletype = request::findValue(&req, "vtype");
 
@@ -1898,7 +1889,7 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					root["result"][ii]["Type"] = sd[2];
 					root["result"][ii]["Value"] = sd[3];
 					root["result"][ii]["LastUpdate"] = sd[4];
@@ -1928,7 +1919,7 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					root["result"][ii]["Type"] = sd[2];
 					root["result"][ii]["Value"] = sd[3];
 					root["result"][ii]["LastUpdate"] = sd[4];
@@ -2036,7 +2027,7 @@ namespace http {
 				return; //Only admin user allowed
 			}
 
-			std::string name = request::findValue(&req, "name");
+			std::string name = SafeHtml(request::findValue(&req, "name"));
 			root["status"] = "OK";
 			root["title"] = "AddPlan";
 			m_sql.safe_query(
@@ -2056,7 +2047,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = SafeHtml(request::findValue(&req, "name"));
 			if (
 				(name.empty())
 				)
@@ -2128,7 +2119,7 @@ namespace http {
 						std::string Name = "[" + sd[4] + "] " + sd[1] + " (" + RFX_Type_Desc(_dtype, 1) + "/" + RFX_Type_SubType_Desc(_dtype, atoi(sd[3].c_str())) + ")";
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = Name;
+						root["result"][ii]["Name"] = SafeHtml(Name);
 						ii++;
 					}
 				}
@@ -2153,7 +2144,8 @@ namespace http {
 					{
 						root["result"][ii]["type"] = 1;
 						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = "[Scene] " + sd[1];
+						std::string sname = "[Scene] " + sd[1];
+						root["result"][ii]["Name"] = SafeHtml(sname);
 						ii++;
 					}
 				}
@@ -2248,7 +2240,7 @@ namespace http {
 						root["result"][ii]["type"] = DevSceneType;
 						root["result"][ii]["DevSceneRowID"] = DevSceneRowID;
 						root["result"][ii]["order"] = sd[3];
-						root["result"][ii]["Name"] = Name;
+						root["result"][ii]["Name"] = SafeHtml(Name);
 						ii++;
 					}
 				}
@@ -2422,7 +2414,7 @@ namespace http {
 				{
 					std::vector<std::string> sd = *itt;
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					ii++;
 				}
 			}
@@ -2453,7 +2445,7 @@ namespace http {
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
-			std::string name = request::findValue(&req, "name");
+			std::string name = SafeHtml(request::findValue(&req, "name"));
 			if (
 				(name.empty())
 				)
@@ -2501,7 +2493,8 @@ namespace http {
 			root["version"] = szAppVersion;
 			root["hash"] = szAppHash;
 			root["build_time"] = szAppDate;
-			root["dzvents_version"] = m_mainworker.m_eventsystem.m_dzvents.GetVersion();
+			CdzVents* dzvents = CdzVents::GetInstance();
+			root["dzvents_version"] = dzvents->GetVersion();
 
 			if (session.rights != 2)
 			{
@@ -3517,7 +3510,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 
 						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
+						root["result"][ii]["Name"] = SafeHtml(sd[1]);
 						ii++;
 					}
 				}
@@ -3548,7 +3541,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 
 						root["result"][ii]["ID"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
+						root["result"][ii]["Name"] = SafeHtml(sd[1]);
 						root["result"][ii]["DevID"] = sd[2];
 						root["result"][ii]["DevRealIdx"] = sd[9];
 						root["result"][ii]["Order"] = atoi(sd[10].c_str());
@@ -3697,7 +3690,7 @@ namespace http {
 							)
 						{
 							root["result"][ii]["idx"] = ID;
-							root["result"][ii]["Name"] = Name;
+							root["result"][ii]["Name"] = SafeHtml(Name);
 							ii++;
 						}
 					}
@@ -3823,7 +3816,7 @@ namespace http {
 								if (!IsIdxForUser(&session, idx))
 									continue;
 								root["result"][ii]["idx"] = ID;
-								root["result"][ii]["Name"] = Name;
+								root["result"][ii]["Name"] = SafeHtml(Name);
 								root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
 								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
 								bool bIsDimmer = (
@@ -3902,7 +3895,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 
 						std::string ID = sd[0];
-						std::string Name = sd[1];
+						std::string Name = SafeHtml(sd[1]);
 						int Type = atoi(sd[2].c_str());
 						int SubType = atoi(sd[3].c_str());
 						int used = atoi(sd[4].c_str());
@@ -3961,7 +3954,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 
 						std::string ID = sd[0];
-						std::string Name = sd[1];
+						std::string Name = SafeHtml(sd[1]);
 
 						root["result"][ii]["type"] = 1;
 						root["result"][ii]["idx"] = ID;
@@ -4023,7 +4016,7 @@ namespace http {
 							root["result"][ii]["DevSceneRowID"] = DevSceneRowID;
 							root["result"][ii]["when"] = DevSceneWhen;
 							root["result"][ii]["delay"] = DevSceneDelay;
-							root["result"][ii]["Name"] = Name;
+							root["result"][ii]["Name"] = SafeHtml(Name);
 							ii++;
 						}
 					}
@@ -4683,7 +4676,7 @@ namespace http {
 				}
 
 				std::string hwdid = request::findValue(&req, "hwdid");
-				std::string name = request::findValue(&req, "name");
+				std::string name = SafeHtml(request::findValue(&req, "name"));
 				std::string sswitchtype = request::findValue(&req, "switchtype");
 				std::string slighttype = request::findValue(&req, "lighttype");
 				std::string maindeviceidx = request::findValue(&req, "maindeviceidx");
@@ -6061,7 +6054,7 @@ namespace http {
 				}
 
 				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
+				std::string username = SafeHtml(request::findValue(&req, "username"));
 				std::string password = request::findValue(&req, "password");
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
@@ -6109,7 +6102,7 @@ namespace http {
 				if (idx.empty())
 					return;
 				std::string senabled = request::findValue(&req, "enabled");
-				std::string username = request::findValue(&req, "username");
+				std::string username = SafeHtml(request::findValue(&req, "username"));
 				std::string password = request::findValue(&req, "password");
 				std::string srights = request::findValue(&req, "rights");
 				std::string sRemoteSharing = request::findValue(&req, "RemoteSharing");
@@ -6299,7 +6292,7 @@ namespace http {
 						root["title"] = "LearnSW";
 						root["ID"] = m_sql.m_LastSwitchID;
 						root["idx"] = m_sql.m_LastSwitchRowID;
-						root["Name"] = result[0][0];
+						root["Name"] = SafeHtml(result[0][0]);
 						root["Used"] = atoi(result[0][1].c_str());
 						root["Cmd"] = atoi(result[0][2].c_str());
 					}
@@ -6579,7 +6572,7 @@ namespace http {
 				{
 					std::vector<std::string> strarray;
 					StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-					if (strarray.size() == 2)
+					if (strarray.size() == 10)
 					{
 						struct tm loctime;
 						time_t now = mytime(NULL);
@@ -6593,6 +6586,14 @@ namespace http {
 						root["ServerTime"] = szTmp;
 						root["Sunrise"] = strarray[0];
 						root["Sunset"] = strarray[1];
+						root["SunAtSouth"] = strarray[2];
+						root["CivTwilightStart"] = strarray[3];
+						root["CivTwilightEnd"] = strarray[4];
+						root["NautTwilightStart"] = strarray[5];
+						root["NautTwilightEnd"] = strarray[6];
+						root["AstrTwilightStart"] = strarray[7];
+						root["AstrTwilightEnd"] = strarray[8];
+						root["DayLength"] = strarray[9];
 					}
 				}
 			}
@@ -7079,7 +7080,7 @@ namespace http {
 					return; //Only admin user allowed
 				}
 
-				std::string name = request::findValue(&req, "name");
+				std::string name = SafeHtml(request::findValue(&req, "name"));
 				std::string imagefile = request::findValue(&req, "image");
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
@@ -7110,7 +7111,7 @@ namespace http {
 				std::string idx = request::findValue(&req, "idx");
 				if (idx.empty())
 					return;
-				std::string name = request::findValue(&req, "name");
+				std::string name = SafeHtml(request::findValue(&req, "name"));
 				std::string imagefile = request::findValue(&req, "image");
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
@@ -7236,7 +7237,7 @@ namespace http {
 
 						root["result"][ii]["type"] = 0;
 						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
+						root["result"][ii]["Name"] = SafeHtml(sd[1]);
 						ii++;
 					}
 				}
@@ -7260,7 +7261,7 @@ namespace http {
 						std::vector<std::string> sd = *itt;
 
 						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = sd[1];
+						root["result"][ii]["Name"] = SafeHtml(sd[1]);
 						root["result"][ii]["Area"] = sd[2];
 						ii++;
 					}
@@ -7754,6 +7755,11 @@ namespace http {
 			int iDisableDzVentsSystem = (DisableDzVentsSystem == "on" ? 0 : 1);
 			m_sql.UpdatePreferencesVar("DisableDzVentsSystem", iDisableDzVentsSystem);
 			m_sql.m_bDisableDzVentsSystem = (iDisableDzVentsSystem == 1);
+			if (m_sql.m_bEnableEventSystem && !iDisableDzVentsSystem && iDisableDzVentsSystem != rnOldvalue)
+			{
+				m_mainworker.m_eventsystem.LoadEvents();
+				m_mainworker.m_eventsystem.GetCurrentStates();
+			}
 			m_sql.UpdatePreferencesVar("DzVentsLogLevel", atoi(request::findValue(&req, "DzVentsLogLevel").c_str()));
 
 			std::string LogEventScriptTrigger = request::findValue(&req, "LogEventScriptTrigger");
@@ -7964,13 +7970,21 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-				if (strarray.size() == 2)
+				if (strarray.size() == 10)
 				{
 					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
 					strftime(szTmp, 80, "%Y-%m-%d %X", &tm1);
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
+					root["SunAtSouth"] = strarray[2];
+					root["CivTwilightStart"] = strarray[3];
+					root["CivTwilightEnd"] = strarray[4];
+					root["NautTwilightStart"] = strarray[5];
+					root["NautTwilightEnd"] = strarray[6];
+					root["AstrTwilightStart"] = strarray[7];
+					root["AstrTwilightEnd"] = strarray[8];
+					root["DayLength"] = strarray[9];
 				}
 			}
 
@@ -8114,7 +8128,7 @@ namespace http {
 							}
 
 							root["result"][ii]["idx"] = sd[0];
-							root["result"][ii]["Name"] = sSceneName;
+							root["result"][ii]["Name"] = SafeHtml(sSceneName);
 							root["result"][ii]["Description"] = sd[10];
 							root["result"][ii]["Favorite"] = favorite;
 							root["result"][ii]["Protected"] = (iProtected != 0);
@@ -8618,7 +8632,7 @@ namespace http {
 					}
 					else
 					{
-						root["result"][ii]["HardwareName"] = _hardwareNames[hardwareID].Name;
+						root["result"][ii]["HardwareName"] = SafeHtml(_hardwareNames[hardwareID].Name);
 						root["result"][ii]["HardwareTypeVal"] = _hardwareNames[hardwareID].HardwareTypeVal;
 						root["result"][ii]["HardwareType"] = _hardwareNames[hardwareID].HardwareType;
 					}
@@ -8708,7 +8722,7 @@ namespace http {
 					root["result"][ii]["Type"] = RFX_Type_Desc(dType, 1);
 					root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(dType, dSubType);
 					root["result"][ii]["TypeImg"] = RFX_Type_Desc(dType, 2);
-					root["result"][ii]["Name"] = sDeviceName;
+					root["result"][ii]["Name"] = SafeHtml(sDeviceName);
 					root["result"][ii]["Description"] = Description;
 					root["result"][ii]["Used"] = used;
 					root["result"][ii]["Favorite"] = favorite;
@@ -9398,18 +9412,18 @@ namespace http {
 								total_real *= AddjMulti;
 								rate = (static_cast<float>(atof(strarray[0].c_str())) / 100.0f)*float(AddjMulti);
 
-								sprintf(szTmp, "%.1f", total_real);
+								sprintf(szTmp, "%g", total_real);
 								root["result"][ii]["Rain"] = szTmp;
-								sprintf(szTmp, "%.1f", rate);
+								sprintf(szTmp, "%g", rate);
 								root["result"][ii]["RainRate"] = szTmp;
 								root["result"][ii]["Data"] = sValue;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
 							else
 							{
-								root["result"][ii]["Rain"] = "0.0";
-								root["result"][ii]["RainRate"] = "0.0";
-								root["result"][ii]["Data"] = "0.0";
+								root["result"][ii]["Rain"] = "0";
+								root["result"][ii]["RainRate"] = "0";
+								root["result"][ii]["Data"] = "0";
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							}
 						}
@@ -9471,11 +9485,11 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%.03f kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / (WaterDivider / 1000.0f);
@@ -9503,22 +9517,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9588,15 +9602,15 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%.03f kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9620,22 +9634,22 @@ namespace http {
 						{
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
-							sprintf(szTmp, "%.03f kWh", meteroffset + (dvalue / EnergyDivider));
+							sprintf(szTmp, "%g kWh", meteroffset + (dvalue / EnergyDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_GAS:
-							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / GasDivider));
+							sprintf(szTmp, "%gm3", meteroffset + (dvalue / GasDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.03f m3", meteroffset + (dvalue / WaterDivider));
+							sprintf(szTmp, "%g m3", meteroffset + (dvalue / WaterDivider));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.0f %s", meteroffset + dvalue, ValueUnits.c_str());
+							sprintf(szTmp, "%g %s", meteroffset + dvalue, ValueUnits.c_str());
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
@@ -9706,15 +9720,15 @@ namespace http {
 							case MTYPE_ENERGY:
 							case MTYPE_ENERGY_GENERATED:
 								musage = float(total_real) / EnergyDivider;
-								sprintf(szTmp, "%.03f kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								break;
 							case MTYPE_GAS:
 								musage = float(total_real) / GasDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_WATER:
 								musage = float(total_real) / WaterDivider;
-								sprintf(szTmp, "%.03f m3", musage);
+								sprintf(szTmp, "%g m3", musage);
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%llu %s", total_real, ValueUnits.c_str());
@@ -9768,15 +9782,15 @@ namespace http {
 						case MTYPE_ENERGY:
 						case MTYPE_ENERGY_GENERATED:
 							musage = float(acounter) / EnergyDivider;
-							sprintf(szTmp, "%.03f kWh %s Watt", musage, splitresults[1].c_str());
+							sprintf(szTmp, "%g kWh %s Watt", musage, splitresults[1].c_str());
 							break;
 						case MTYPE_GAS:
 							musage = float(acounter) / GasDivider;
-							sprintf(szTmp, "%.03f m3", musage);
+							sprintf(szTmp, "%g m3", musage);
 							break;
 						case MTYPE_WATER:
 							musage = float(acounter) / WaterDivider;
-							sprintf(szTmp, "%.03f m3", musage);
+							sprintf(szTmp, "%g m3", musage);
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%llu %s", acounter, ValueUnits.c_str());
@@ -9920,15 +9934,15 @@ namespace http {
 								total_real_deliv = powerdeliv - (total_min_deliv_1 + total_min_deliv_2);
 
 								musage = double(total_real_usage) / EnergyDivider;
-								sprintf(szTmp, "%.03f kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								root["result"][ii]["CounterToday"] = szTmp;
 								musage = double(total_real_deliv) / EnergyDivider;
-								sprintf(szTmp, "%.03f kWh", musage);
+								sprintf(szTmp, "%g kWh", musage);
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
 							else
 							{
-								sprintf(szTmp, "%.03f kWh", 0.0f);
+								sprintf(szTmp, "%g kWh", 0.0f);
 								root["result"][ii]["CounterToday"] = szTmp;
 								root["result"][ii]["CounterDelivToday"] = szTmp;
 							}
@@ -10102,7 +10116,7 @@ namespace http {
 								}
 								root["result"][ii]["Usage"] = szData;
 								root["result"][ii]["HaveTimeout"] = bHaveTimeout;
-								sprintf(szTmp, "%.03f kWh", total - minimum);
+								sprintf(szTmp, "%g kWh", total - minimum);
 								root["result"][ii]["CounterToday"] = szTmp;
 							}
 							else
@@ -10256,7 +10270,7 @@ namespace http {
 						}
 						else if (dSubType == sTypePercentage)
 						{
-							sprintf(szData, "%.2f%%", atof(sValue.c_str()));
+							sprintf(szData, "%g%%", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Computer";
@@ -10264,7 +10278,7 @@ namespace http {
 						}
 						else if (dSubType == sTypeWaterflow)
 						{
-							sprintf(szData, "%.2f l/min", atof(sValue.c_str()));
+							sprintf(szData, "%g l/min", atof(sValue.c_str()));
 							root["result"][ii]["Data"] = szData;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							root["result"][ii]["Image"] = "Moisture";
@@ -10626,7 +10640,18 @@ namespace http {
 #endif
 			if (m_sql.BackupDatabase(OutputFileName))
 			{
-				reply::set_content_from_file(&rep, OutputFileName, "domoticz.db", true);
+				std::string szAttachmentName = "domoticz.db";
+				std::string szVar;
+				if (m_sql.GetPreferencesVar("Title", szVar))
+				{
+					stdreplace(szVar, " ", "_");
+					stdreplace(szVar, "/", "_");
+					stdreplace(szVar, "\\", "_");
+					if (!szVar.empty()) {
+						szAttachmentName = szVar + ".db";
+			}
+		}
+				reply::set_content_from_file(&rep, OutputFileName, szAttachmentName, true);
 			}
 		}
 
@@ -10721,7 +10746,7 @@ namespace http {
 			}
 
 			std::string idx = request::findValue(&req, "idx");
-			std::string name = request::findValue(&req, "name");
+			std::string name = SafeHtml(request::findValue(&req, "name"));
 			std::string description = request::findValue(&req, "description");
 			if ((idx.empty()) || (name.empty()))
 				return;
@@ -10805,7 +10830,7 @@ namespace http {
 					if ((bDisplayHidden) || (!bIsHidden))
 					{
 						root["result"][ii]["idx"] = sd[0];
-						root["result"][ii]["Name"] = Name;
+						root["result"][ii]["Name"] = SafeHtml(Name);
 						root["result"][ii]["Order"] = sd[2];
 
 						unsigned int totDevices = 0;
@@ -10891,7 +10916,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					root["result"][ii]["Image"] = sd[2];
 					root["result"][ii]["ScaleFactor"] = sd[3];
 					root["result"][ii]["Order"] = sd[4];
@@ -10969,7 +10994,7 @@ namespace http {
 					std::string offaction = base64_encode((const unsigned char*)sd[9].c_str(), sd[9].size());
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sName;
+					root["result"][ii]["Name"] = SafeHtml(sName);
 					root["result"][ii]["Description"] = sd[10];
 					root["result"][ii]["Favorite"] = atoi(sd[3].c_str());
 					root["result"][ii]["Protected"] = (iProtected != 0);
@@ -11008,7 +11033,7 @@ namespace http {
 			{
 				std::vector<std::string> strarray;
 				StringSplit(m_mainworker.m_LastSunriseSet, ";", strarray);
-				if (strarray.size() == 2)
+				if (strarray.size() == 10)
 				{
 					char szTmp[100];
 					//strftime(szTmp, 80, "%b %d %Y %X", &tm1);
@@ -11016,6 +11041,14 @@ namespace http {
 					root["ServerTime"] = szTmp;
 					root["Sunrise"] = strarray[0];
 					root["Sunset"] = strarray[1];
+					root["SunAtSouth"] = strarray[2];
+					root["CivTwilightStart"] = strarray[3];
+					root["CivTwilightEnd"] = strarray[4];
+					root["NautTwilightStart"] = strarray[5];
+					root["NautTwilightEnd"] = strarray[6];
+					root["AstrTwilightStart"] = strarray[7];
+					root["AstrTwilightEnd"] = strarray[8];
+					root["DayLength"] = strarray[9];
 				}
 			}
 		}
@@ -11043,7 +11076,7 @@ namespace http {
 					if (hType == HTYPE_DomoticzInternal)
 						continue;
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					root["result"][ii]["Enabled"] = (sd[2] == "1") ? "true" : "false";
 					root["result"][ii]["Type"] = hType;
 					root["result"][ii]["Address"] = sd[4];
@@ -11223,7 +11256,7 @@ namespace http {
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Enabled"] = (sd[1] == "1") ? "true" : "false";
-					root["result"][ii]["Name"] = sd[2];
+					root["result"][ii]["Name"] = SafeHtml(sd[2]);
 					root["result"][ii]["UUID"] = sd[3];
 					root["result"][ii]["LastUpdate"] = sd[4];
 					root["result"][ii]["DeviceType"] = sd[5];
@@ -11330,7 +11363,7 @@ namespace http {
 						sstr << sID;
 						sstr >> dID;
 						root["result"][ii]["idx"] = dID;
-						root["result"][ii]["name"] = sd[0];
+						root["result"][ii]["name"] = SafeHtml(sd[0]);
 						root["result"][ii]["code"] = sCode;
 						root["result"][ii]["codestr"] = lstatus;
 						ii++;
@@ -11530,7 +11563,7 @@ namespace http {
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;
-					root["result"][ii]["name"] = sd[1];
+					root["result"][ii]["name"] = SafeHtml(sd[1]);
 					root["result"][ii]["value"] = sd[0];
 					ii++;
 				}
@@ -11641,7 +11674,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = SafeHtml(request::findValue(&req, "name"));
 			std::string sdescription = request::findValue(&req, "description");
 			if (
 				(sidx.empty()) ||
@@ -11667,7 +11700,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = SafeHtml(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11693,7 +11726,7 @@ namespace http {
 			}
 
 			std::string sidx = request::findValue(&req, "idx");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = SafeHtml(request::findValue(&req, "name"));
 			if (
 				(sidx.empty()) ||
 				(sname.empty())
@@ -11775,7 +11808,7 @@ namespace http {
 		{
 			std::string suuid = request::findValue(&req, "uuid");
 			std::string ssenderid = request::findValue(&req, "senderid");
-			std::string sname = request::findValue(&req, "name");
+			std::string sname = SafeHtml(request::findValue(&req, "name"));
 			std::string sdevtype = request::findValue(&req, "devicetype");
 			std::string sactive = request::findValue(&req, "active");
 			if (
@@ -11836,7 +11869,7 @@ namespace http {
 			}
 			std::string sidx = request::findValue(&req, "idx");
 			std::string enabled = request::findValue(&req, "enabled");
-			std::string name = request::findValue(&req, "name");
+			std::string name = SafeHtml(request::findValue(&req, "name"));
 
 			if (
 				(sidx.empty()) ||
@@ -11916,7 +11949,7 @@ namespace http {
 					std::vector<std::string> sd = *itt;
 
 					root["result"][ii]["idx"] = sd[0];
-					root["result"][ii]["Name"] = sd[1];
+					root["result"][ii]["Name"] = SafeHtml(sd[1]);
 					ii++;
 				}
 			}
@@ -12133,7 +12166,7 @@ namespace http {
 				CustomImage = atoi(sCustomImage.c_str());
 
 			//Strip trailing spaces in 'name'
-			name = stdstring_trim(name);
+			name = SafeHtml(stdstring_trim(name));
 
 			//Strip trailing spaces in 'description'
 			description = stdstring_trim(description);
@@ -13775,6 +13808,14 @@ namespace http {
 								{
 									//bars / hour
 									std::string actDateTimeHour = sd[2].substr(0, 13);
+
+									std::stringstream s_str1(sd[0]);
+									long long actValue;
+									s_str1 >> actValue;
+
+									if (actValue >= ulLastValue)
+										ulLastValue = actValue;
+
 									if (actDateTimeHour != LastDateTime || ((method == 1) && (itt + 1 == result.end())))
 									{
 										if (bHaveFirstValue)
@@ -13816,12 +13857,6 @@ namespace http {
 										LastDateTime = actDateTimeHour;
 										bHaveFirstValue = false;
 									}
-									std::stringstream s_str1(sd[0]);
-									long long actValue;
-									s_str1 >> actValue;
-
-									if (actValue >= ulLastValue)
-										ulLastValue = actValue;
 
 									if (!bHaveFirstValue)
 									{
@@ -16586,8 +16621,8 @@ namespace http {
 									root["result"][ii]["se"] = se;
 									root["result"][ii]["sx"] = sx;
 									char szTmp[1024];
-									sprintf(szTmp, "%.1f %.1f %.1f", sm, se, sx);
-									_log.Log(LOG_STATUS, szTmp);
+									snprintf(szTmp, sizeof(szTmp), "%.1f %.1f %.1f", sm, se, sx);
+									_log.Log(LOG_STATUS, "%s", szTmp);
 
 								}
 								ii++;

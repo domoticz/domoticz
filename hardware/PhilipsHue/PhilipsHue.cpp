@@ -144,7 +144,7 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 	if (packettype == pTypeLighting2)
 	{
 		//light command
-		nodeID = pSen->LIGHTING2.id4;
+		nodeID = (pSen->LIGHTING2.id3 << 8) + pSen->LIGHTING2.id4;
 		if ((pSen->LIGHTING2.cmnd == light2_sOff) || (pSen->LIGHTING2.cmnd == light2_sGroupOff))
 		{
 			LCmd = "Off";
@@ -462,7 +462,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 	{
 		//Send as Lighting 2
 		char szID[10];
-		sprintf(szID, "%X%02X%02X%02X", 0, 0, 0, NodeID);
+		sprintf(szID, "%07X", (unsigned int)NodeID);
 		unsigned char unitcode = 1;
 		int cmd = (bIsOn ? light2_sOn : light2_sOff);
 		int level = 0;
@@ -507,7 +507,7 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 			lcmd.LIGHTING2.seqnbr = 1;
 			lcmd.LIGHTING2.id1 = 0;
 			lcmd.LIGHTING2.id2 = 0;
-			lcmd.LIGHTING2.id3 = 0;
+			lcmd.LIGHTING2.id3 = NodeID >> 8;
 			lcmd.LIGHTING2.id4 = NodeID;
 			lcmd.LIGHTING2.unitcode = unitcode;
 			lcmd.LIGHTING2.cmnd = cmd;
@@ -655,9 +655,6 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 	return true;
 }
 
-// Note:
-// Some groups have only White lights,
-// We whould find a way to have these working as normal lights instead of RGBW
 bool CPhilipsHue::GetGroups(const Json::Value &root)
 {
 	//Groups (0=All)
@@ -680,6 +677,8 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 			tstate.sat = 0;
 			tstate.hue = 0;
 
+			LType = HLTYPE_NORMAL;
+			
 			if (!group["action"]["on"].empty())
 				tstate.on = group["action"]["on"].asBool();
 			if (!group["action"]["bri"].empty())
@@ -688,19 +687,18 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 				if ((tbri != 0) && (tbri != 255))
 					tbri += 1; //hue reports 255 as 254
 				tstate.level = int((100.0f / 255.0f)*float(tbri));
+				LType = HLTYPE_DIM;
 			}
-
-			LType = HLTYPE_RGBW;// HLTYPE_NORMAL;
 
 			if (!group["action"]["sat"].empty())
 			{
 				tstate.sat = group["action"]["sat"].asInt();
-				//LType = HLTYPE_RGBW;
+				LType = HLTYPE_RGBW;
 			}
 			if (!group["action"]["hue"].empty())
 			{
 				tstate.hue = group["action"]["hue"].asInt();
-				//LType = HLTYPE_RGBW;
+				LType = HLTYPE_RGBW;
 			}
 			
 			bool bDoSend = true;

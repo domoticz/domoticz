@@ -5,9 +5,16 @@ In order to run the integration tests from the command line you have to
 * Install busted: `luarocks install busted`
 * Install lodash: `luarocks install lodash`
 * Install luasocket: `luarocks install luasocket`
+* Install nodejs (v6.11+) https://nodejs.org/en/download/
+  * go to `runtime/integration-tests` and run `npm install`. This should create a node_modules folder inside that folder.
 
-Make sure you have Domoticz running with an empty database from the commandline so you can see the log files.
+Then:
+ * Make sure you have Domoticz running with an empty database from the commandline so you can see the log files.
+ * Start the node http server: in `runtime/integration-tests` run `npm start`.
 
+ So at this point you have Domoticz running and a test nodejs http server.
+
+#Warning!!
 DO NOT RUN THIS SCRIPT ON YOUR PRODUCTION DATABASE AS IT WILL DELETE EVERYTHING IN YOUR DATABASE!!!!!
 
 Then go to the test folder and run the tests:

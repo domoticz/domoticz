@@ -63,7 +63,7 @@ return {
 			dz.devices('switchDimmerResults').updateText('FAILED')
 		else
 			log('Results vdSwitchDimmer: SUCCEEDED')
-			dz.devices('switchDimmerResults').updateText('SUCCEEDED')
+			dz.devices('switchDimmerResults').updateText('DIMMER SUCCEEDED')
 		end
 	end
 }

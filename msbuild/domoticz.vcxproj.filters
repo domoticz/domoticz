@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -2131,6 +2131,9 @@
     <ClInclude Include="..\webserver\Websockets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Comm5SMTCP.h">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2853,20 +2856,8 @@
     <ClCompile Include="..\hardware\eHouse\EhouseEvents.cpp">
       <Filter>Devices\eHouse</Filter>
     </ClCompile>
-    <ClCompile Include="..\hardware\eHouseTCP.cpp">
-      <Filter>Devices\eHouse</Filter>
-    </ClCompile>
-    <ClCompile Include="..\notifications\NotificationBrowser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\push\WebsocketPush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\hardware\Comm5SMTCP.cpp">
+      <Filter>Devices\Comm5 MA-5XXX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

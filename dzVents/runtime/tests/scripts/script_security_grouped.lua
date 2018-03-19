@@ -8,6 +8,6 @@ return {
 		}
 	},
 	execute = function(domoticz, security, info)
-		return 'script_security: ' .. tostring(security) .. ' ' .. tostring(info['trigger'])
+		return 'script_security: ' .. tostring(security.state) .. ' ' .. tostring(info['trigger'])
 	end
 }

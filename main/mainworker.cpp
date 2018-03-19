@@ -96,6 +96,7 @@
 #include "../hardware/SatelIntegra.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/Comm5TCP.h"
+#include "../hardware/Comm5SMTCP.h"
 #include "../hardware/Comm5Serial.h"
 #include "../hardware/CurrentCostMeterSerial.h"
 #include "../hardware/CurrentCostMeterTCP.h"
@@ -225,6 +226,8 @@ MainWorker::MainWorker()
 	m_ScheduleLastHourTime = 0;
 	m_ScheduleLastDayTime = 0;
 	m_LastSunriseSet = "";
+	m_SunRiseSetMins.clear();
+	m_DayLength = "";
 
 	m_bHaveDownloadedDomoticzUpdate = false;
 	m_bHaveDownloadedDomoticzUpdateSuccessFull = false;
@@ -360,12 +363,12 @@ void MainWorker::SendResetCommand(CDomoticzHardwareBase *pHardware)
 	//Send Reset
 	SendCommand(pHardware->m_HwdID, cmdRESET, "Reset");
 	//wait at least 500ms
-	boost::this_thread::sleep(boost::posix_time::millisec(500));
+	sleep_milliseconds(500);
 	pHardware->m_rxbufferpos = 0;
 	pHardware->m_bEnableReceive = true;
 
 	SendCommand(pHardware->m_HwdID, cmdStartRec, "Start Receiver");
-	boost::this_thread::sleep(boost::posix_time::millisec(50));
+	sleep_milliseconds(50);
 
 	SendCommand(pHardware->m_HwdID, cmdSTATUS, "Status");
 }
@@ -385,23 +388,26 @@ void MainWorker::AddDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
-	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+	// Separate the Stop() from the device removal from the vector.
+	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
+	CDomoticzHardwareBase *pOrgDevice = NULL;
 	{
-		CDomoticzHardwareBase *pOrgDevice = *itt;
-		if (pOrgDevice == pHardware) {
-			try
-			{
-				pOrgDevice->Stop();
-				delete pOrgDevice;
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		std::vector<CDomoticzHardwareBase*>::iterator itt;
+		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		{
+			pOrgDevice = *itt;
+			if (pOrgDevice == pHardware) {
 				m_hardwaredevices.erase(itt);
+				break;
 			}
-			catch (...)
-			{
-			}
-			return;
 		}
+	}
+
+	if (pOrgDevice == pHardware)
+	{
+		pOrgDevice->Stop();
+		delete pOrgDevice;
 	}
 }
 
@@ -525,19 +531,76 @@ bool MainWorker::GetSunSettings()
 
 	std::string sunrise;
 	std::string sunset;
+	std::string daylength;
+	std::string sunatsouth;
+	std::string civtwstart;
+	std::string civtwend;
+	std::string nauttwstart;
+	std::string nauttwend;
+	std::string asttwstart;
+	std::string asttwend;
 
 	char szRiseSet[30];
 	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunRiseHour, sresult.SunRiseMin);
 	sunrise = szRiseSet;
 	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunSetHour, sresult.SunSetMin);
 	sunset = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.DaylengthHours, sresult.DaylengthMins);
+	daylength = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.SunAtSouthHour, sresult.SunAtSouthMin);
+	sunatsouth = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightStartHour, sresult.CivilTwilightStartMin);
+	civtwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.CivilTwilightEndHour, sresult.CivilTwilightEndMin);
+	civtwend = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightStartHour, sresult.NauticalTwilightStartMin);
+	nauttwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.NauticalTwilightEndHour, sresult.NauticalTwilightEndMin);
+	nauttwend = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightStartHour, sresult.AstronomicalTwilightStartMin);
+	asttwstart = szRiseSet;
+	sprintf(szRiseSet, "%02d:%02d:00", sresult.AstronomicalTwilightEndHour, sresult.AstronomicalTwilightEndMin);
+	asttwend = szRiseSet;
 
-	m_scheduler.SetSunRiseSetTimers(sunrise, sunset);
-	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunrise.size() - 3); //make a short version
+	m_scheduler.SetSunRiseSetTimers(sunrise, sunset, sunatsouth, civtwstart, civtwend, nauttwstart, nauttwend, asttwstart, asttwend); // Do not change the order
+	std::string riseset = sunrise.substr(0, sunrise.size() - 3) + ";" + sunset.substr(0, sunset.size() - 3) + ";" + sunatsouth.substr(0, sunatsouth.size() - 3) + ";" + civtwstart.substr(0, civtwstart.size() - 3) + ";" + civtwend.substr(0, civtwend.size() - 3) + ";" + nauttwstart.substr(0, nauttwstart.size() - 3) + ";" + nauttwend.substr(0, nauttwend.size() - 3) + ";" + asttwstart.substr(0, asttwstart.size() - 3) + ";" + asttwend.substr(0, asttwend.size() - 3)+ ";" + daylength.substr(0, daylength.size() - 3); //make a short version
 	if (m_LastSunriseSet != riseset)
 	{
+		m_DayLength = daylength;
 		m_LastSunriseSet = riseset;
-		_log.Log(LOG_NORM, "Sunrise: %s SunSet:%s", sunrise.c_str(), sunset.c_str());
+
+		// Now store all the time stamps e.g. "08:42;09:12" etc, found in m_LastSunriseSet into
+		// a new vector after that we've first converted them to minutes after midnight.
+		std::vector<std::string> strarray;
+		std::vector<std::string> hourMinItem;
+		StringSplit(m_LastSunriseSet, ";", strarray);
+
+		for(std::vector<std::string>::iterator it = strarray.begin(); it != strarray.end(); ++it) {
+			StringSplit(*it, ":", hourMinItem);
+			int intMins = (atoi(hourMinItem[0].c_str()) * 60) + atoi(hourMinItem[1].c_str());
+			m_SunRiseSetMins.push_back(intMins);
+		}
+
+		if (sunrise == sunset)
+			if (m_DayLength == "00:00:00")
+				_log.Log(LOG_NORM, "Sun below horizon in the space of 24 hours");
+			else
+				_log.Log(LOG_NORM, "Sun above horizon in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Sunrise: %s SunSet: %s", sunrise.c_str(), sunset.c_str());
+		_log.Log(LOG_NORM, "Day length: %s Sun at south: %s", daylength.c_str(), sunatsouth.c_str());
+		if (civtwstart == civtwend)
+			_log.Log(LOG_NORM, "There is no civil twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Civil twilight start: %s Civil twilight end: %s", civtwstart.c_str(), civtwend.c_str());
+		if (nauttwstart == nauttwend)
+			_log.Log(LOG_NORM, "There is no nautical twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Nautical twilight start: %s Nautical twilight end: %s", nauttwstart.c_str(), nauttwend.c_str());
+		if (asttwstart == asttwend)
+			_log.Log(LOG_NORM, "There is no astronomical twilight in the space of 24 hours");
+		else
+			_log.Log(LOG_NORM, "Astronomical twilight start: %s Astronomical twilight end: %s", asttwstart.c_str(), asttwend.c_str());
 
 		// ToDo: add here some condition to avoid double events loading on application startup. check if m_LastSunriseSet was empty?
 		m_eventsystem.LoadEvents(); // reloads all events from database to refresh blocky events sunrise/sunset what are already replaced with time
@@ -875,23 +938,23 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 #endif
 	case HTYPE_RaspberryBMP085:
-		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_BMP085, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryHTU21D:
-		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_HTU21D, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryTSL2561:
-		pHardware = new I2C(ID, I2C::I2CTYPE_TSL2561, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_TSL2561, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryPCF8574:
-		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Port);
+		pHardware = new I2C(ID, I2C::I2CTYPE_PCF8574, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryBME280:
-		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, 0);
+		pHardware = new I2C(ID, I2C::I2CTYPE_BME280, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_RaspberryMCP23017:
 		_log.Log(LOG_NORM, "MainWorker::AddHardwareFromParams HTYPE_RaspberryMCP23017");
-		pHardware = new I2C(ID, I2C::I2CTYPE_MCP23017, Port);
+		pHardware = new I2C(ID, I2C::I2CTYPE_MCP23017, Address, SerialPort, Mode1);
 		break;
 	case HTYPE_Wunderground:
 		pHardware = new CWunderground(ID, Username, Password);
@@ -984,7 +1047,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNetTCP:
-		pHardware = new COpenWebNetTCP(ID, Address, Port, Password);
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1);
@@ -1036,6 +1099,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_EnphaseAPI:
 		pHardware = new EnphaseAPI(ID, Address, Port);
+		break;
+	case HTYPE_Comm5SMTCP:
+		pHardware = new Comm5SMTCP(ID, Address, Port);
 		break;
 	}
 
@@ -1330,6 +1396,18 @@ void MainWorker::HandleAutomaticBackups()
 	m_sql.GetLastBackupNo("Day", lastDayBackup);
 	m_sql.GetLastBackupNo("Month", lastMonthBackup);
 
+	std::string szInstanceName = "domoticz";
+	std::string szVar;
+	if (m_sql.GetPreferencesVar("Title", szVar))
+	{
+		stdreplace(szVar, " ", "_");
+		stdreplace(szVar, "/", "_");
+		stdreplace(szVar, "\\", "_");
+		if (!szVar.empty()) {
+			szInstanceName = szVar;
+		}
+	}
+
 	DIR *lDir;
 	//struct dirent *ent;
 	if ((lastHourBackup == -1) || (lastHourBackup != hour)) {
@@ -1337,7 +1415,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirH.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << ".db";
+			sTmp << "backup-hour-" << std::setw(2) << std::setfill('0') << hour << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirH + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1357,7 +1435,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirD.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << ".db";
+			sTmp << "backup-day-" << std::setw(2) << std::setfill('0') << day << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirD + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -1376,7 +1454,7 @@ void MainWorker::HandleAutomaticBackups()
 		if ((lDir = opendir(sbackup_DirM.c_str())) != NULL)
 		{
 			std::stringstream sTmp;
-			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << ".db";
+			sTmp << "backup-month-" << std::setw(2) << std::setfill('0') << month + 1 << "-" << szInstanceName << ".db";
 
 			std::string OutputFileName = sbackup_DirM + sTmp.str();
 			if (m_sql.BackupDatabase(OutputFileName)) {
@@ -11779,7 +11857,7 @@ bool MainWorker::SwitchLight(const std::string &idx, const std::string &switchcm
 bool MainWorker::SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay)
 {
 	//Get Device details
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLight idx:%d cmd:%s lvl:%d ", (long)idx, switchcmd.c_str(), level);
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLight idx:%" PRId64 " cmd:%s lvl:%d ", idx, switchcmd.c_str(), level);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query(
 		"SELECT HardwareID,DeviceID,Unit,Type,SubType,SwitchType,AddjValue2,nValue,sValue,Name,Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")",

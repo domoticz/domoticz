@@ -8,7 +8,7 @@ return {
 
 		domoticz.globalData.repeatSwitch.add( {
 			state = switch.state,
-			delta = domoticz.round((latest.time.msAgo / 1000))
+			delta = domoticz.utils.round((latest.time.msAgo / 1000))
 		} )
 
 
