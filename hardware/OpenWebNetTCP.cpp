@@ -538,7 +538,7 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
         int nvalue = atoi(result[0][0].c_str());
         int svalue = atoi(result[0][1].c_str());
      		
-        if (Command == nvalue && iLevel == -1) return; //check for Automation Normal
+        if (Command == nvalue && iLevel < 0) return; //check for Automation Normal
         if (iLevel == svalue && iLevel >= 0) return;//check for Automation Advanced
 	}
 	else
@@ -555,46 +555,42 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 		    }
 		    else
 		  	{	//is  Advanced motor actuator
-		      //insert to set SwitchType = STYPE_BlindsPercentage
+		      //insert to set SwitchType = STYPE_BlindsPercentageInverted
 		      m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Name, Used) "
 		                       "VALUES (%d,'%s', %d,%d,%d,%d,'%q',0)",
-		                      m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_BlindsPercentage, devname);
+		                      m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_BlindsPercentageInverted, devname);
 		    }
   }
     	
   	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (SwitchType==%d)",
-                           m_HwdID, szIdx, unit,STYPE_BlindsPercentage);
+                           m_HwdID, szIdx, unit,STYPE_BlindsPercentageInverted);
                           
 		_tGeneralSwitch gswitch;
 		if (iLevel < 0 && result.empty()) //is a Normal Frame and device is standard 
 		{
 			gswitch.cmnd = Command;
-			gswitch.level = 100;
+			gswitch.level = iLevel;
 			gswitch.subtype = sSwitchBlindsT1;
-    	gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
-    	gswitch.unitcode = 0;
-    	gswitch.battery_level = BatteryLevel;
-    	gswitch.rssi = 12;
-    	gswitch.seqnbr = 0;
-    	sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
+  		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
+  		gswitch.unitcode = 0;
+  		gswitch.battery_level = BatteryLevel;
+  		gswitch.rssi = 12;
+  		gswitch.seqnbr = 0;
+  		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 		}
 		if (iLevel >= 0 && !result.empty()) //is a Meseaure Frame (percentual) and device is Advanced 
 		{
 			gswitch.cmnd = gswitch_sSetLevel;
     	gswitch.level = iLevel;
-			gswitch.subtype = sSwitchBlindsT1;
-    	gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
-    	gswitch.unitcode = 0;
-    	gswitch.battery_level = BatteryLevel;
-    	gswitch.rssi = 12;
-    	gswitch.seqnbr = 0;
-    	sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
+    	gswitch.subtype = sSwitchBlindsT1;
+  		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
+  		gswitch.unitcode = 0;
+  		gswitch.battery_level = BatteryLevel;
+  		gswitch.rssi = 12;
+  		gswitch.seqnbr = 0;
+  		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
 		}
-   
-   
-    
-
-    
+		
 }
 
 /**
@@ -801,28 +797,12 @@ void COpenWebNetTCP::UpdateDeviceValue(vector<bt_openwebnet>::iterator iter)
 			if (iter->IsMeasureFrame()) // Advanced motor actuator (percentual) *#2*19*10*10*65*000*0##    
 				{
 					string level = iter->Extract_value(1);
-					iLevel = 100 - atoi(level.c_str());
+					iLevel = atoi(level.c_str());
 					iAppValue = atoi(value.c_str());
 					
 					if (iAppValue == 1000) // What = 1000 (Command translation)
 						iAppValue = atoi(whatParam[0].c_str());
-		
-					switch (iAppValue)
-					{
-					case AUTOMATION_WHAT_STOP_ADVANCED:  // 10
-						iAppValue = gswitch_sStop;
-						break;
-					case AUTOMATION_WHAT_UP_ADVANCED:    // 11
-						iAppValue = gswitch_sOff;
-						break;
-					case AUTOMATION_WHAT_DOWN_ADVANCED:  // 12
-						iAppValue = gswitch_sOn;
-						break;
-					default:
-						_log.Log(LOG_ERROR, "COpenWebNetTCP: Who=%s, What=%s invalid!", who.c_str(), what.c_str());
-						return;
-					}
-		
+	
 					iWhere = atoi(where.c_str());
 		
 					devname = OPENWEBNET_AUTOMATION;
@@ -1203,6 +1183,16 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
 	int where = 0;
 	int iInterface = pCmd->unitcode;
 	int Level = -1;
+	std::vector<std::vector<std::string> > result;
+	
+	unsigned char ID1 ;
+	unsigned char ID2 ;
+	unsigned char ID3 ;
+	unsigned char ID4 ;
+	char szIdx[10];
+	
+
+
 	// Test packet type
 	switch(packettype){
         case pTypeGeneralSwitch:
@@ -1211,31 +1201,53 @@ bool COpenWebNetTCP:: WriteToHardware(const char *pdata, const unsigned char len
                 case sSwitchBlindsT1:
                     //Blinds/Window command
                     who = WHO_AUTOMATION;
-                	where = (int)(pCmd->id & 0xFFFF);
+                		where = (int)(pCmd->id & 0xFFFF);
+                			ID1 = (unsigned char)((who & 0xFF00) >> 8);
+											ID2 = (unsigned char)(who & 0xFF);
+											ID3 = (unsigned char)((where & 0xFF00) >> 8);
+											ID4 = (unsigned char)(where & 0xFF);
+											sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
-                    if (pCmd->cmnd == gswitch_sOff)
+										result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d)  AND (DeviceID=='%s') AND (SwitchType==%d)",  //*******is there a better method for get 
+                           m_HwdID, szIdx,STYPE_BlindsPercentageInverted);																																					//*******SUBtype (STYPE_BlindsPercentageInverted) ??
+    
+                    if (result.empty())// from a normal button  
+                    { 
+                    	if (pCmd->cmnd == gswitch_sOff)
+                    	{
+                       	 what = AUTOMATION_WHAT_UP;
+                    	}
+                    	else if (pCmd->cmnd == gswitch_sOn)
+                    	{
+                     	   what = AUTOMATION_WHAT_DOWN;
+                    	}
+                    	else if (pCmd->cmnd == gswitch_sStop)
+                    	{
+                     	   what = AUTOMATION_WHAT_STOP;
+                    	}
+                    }	
+                    else // advanced button
                     {
-                        what = AUTOMATION_WHAT_UP;
-                    }
-                    else if (pCmd->cmnd == gswitch_sOn)
-                    {
-                        what = AUTOMATION_WHAT_DOWN;
-                    }
-                    else if (pCmd->cmnd == gswitch_sStop)
-                    {
-                        what = AUTOMATION_WHAT_STOP;
-                    }
-                    else if (pCmd->cmnd == gswitch_sSetLevel)
-                    {
-                        // setting level of Blinds
-                        if (pCmd->level != 0)
-                        {
-                           Level = 100 - int(pCmd->level);
-                        }else
-                        {
-                        	 what = AUTOMATION_WHAT_DOWN;	
-                        }	
-                    }
+                    
+	                    if (pCmd->cmnd == gswitch_sOn)
+	                    {
+	                        what = AUTOMATION_WHAT_UP;
+	                    }
+	                    else if (pCmd->cmnd == gswitch_sOff)
+	                    {
+	                        what = AUTOMATION_WHAT_DOWN;
+	                    }
+	                    
+	                    else if (pCmd->cmnd == gswitch_sSetLevel)
+	                    {
+	                        // setting level of Blinds
+	                        if (pCmd->level >= 0)
+	                        {
+	                           Level = int(pCmd->level);
+	                        }
+	                    }
+	                   }
+	                   
                     break;
                 case sSwitchLightT1:
                     //Light/Switch command
@@ -1722,7 +1734,7 @@ bool COpenWebNetTCP::FindDevice(int who, int where, int iInterface, int* used)
 	int subUnit = iInterface;
 
     		//make device ID
-    unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
 	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)(where & 0xFF);
