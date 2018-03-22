@@ -383,6 +383,16 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 				{
 					
 				}
+				if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+				{
+					// possible incorrect root reference
+					size_t q = req.uri.find(m_webRoot);
+					if (q != 0)
+					{
+						std::string olduri = req.uri;
+						req.uri = m_webRoot + olduri;
+					}
+				}
 				return true;
 			}
 		}
@@ -430,6 +440,16 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	catch (...)
 	{
 		
+	}
+	if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+	{
+		// possible incorrect root reference
+		size_t q = req.uri.find(m_webRoot);
+		if (q != 0)
+		{
+			std::string olduri = req.uri;
+			req.uri = m_webRoot + olduri;
+		}
 	}
 
 	return true;
