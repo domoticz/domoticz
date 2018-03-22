@@ -686,7 +686,7 @@ void cWebem::SetWebTheme(const std::string &themename)
 void cWebem::SetWebRoot(const std::string &webRoot)
 {
 	// remove trailing slash if required
-	if(m_webRoot.size() > 0 && m_webRoot[m_webRoot.size() - 1] != '/')
+	if(webRoot.size() > 0 && webRoot[webRoot.size() - 1] == '/')
 	{
 		m_webRoot = webRoot.substr(0, webRoot.size() - 1);
 	}
