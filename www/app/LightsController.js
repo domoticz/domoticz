@@ -2391,7 +2391,7 @@ define(['app'], function (app) {
 									'<img src="images/favorite.png" title="' + $.t('Remove from Dashboard') + '" onclick="MakeFavorite(' + item.idx + ',0);" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;';
 							}
 							xhtm +=
-								'<a class="btnsmall" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#lightcontent\', \'ShowLights\');" data-i18n="Log">Log</a> ';
+								'<a class="btnsmall" href="#/Devices/' + item.idx + '/LightLog" data-i18n="Log">Log</a> ';
 							if (permissions.hasPermission("Admin")) {
 								xhtm +=
 									'<a class="btnsmall" onclick="EditLightDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + '\'' + item.Type + '\', ' + item.SwitchTypeVal + ', ' + item.AddjValue + ', ' + item.AddjValue2 + ', ' + item.IsSubDevice + ', ' + item.CustomImage + ', \'' + item.SubType + '\', \'' + item.StrParam1 + '\', \'' + item.StrParam2 + '\',' + item.Protected + ',' + item.Unit + ');" data-i18n="Edit">Edit</a> ';

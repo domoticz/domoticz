@@ -1,54 +1,5 @@
 define(['app'], function (app) {
 
-    // TODO: move to app.js level once it will be used by different controllers
-    app.factory('device', function($q, domoticzApi, permissions) {
-        return {
-            getDeviceInfo: getDeviceInfo,
-            setHexColor: setHexColor,
-            setHsbColor: setHsbColor
-        };
-
-        function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
-                .then(function (data) {
-                    return data && data.result && data.result.length === 1
-                        ? data.result[0]
-                        : $q.reject(data);
-                });
-        }
-
-        function setHexColor(deviceIdx, color) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hex: color,
-                brightness: 100
-            });
-        }
-
-        function setHsbColor(deviceIdx, hue, brightness, whiteValue, isWhite) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hue: (whiteValue << 16) + hue,
-                brightness: brightness,
-                iswhite: isWhite
-            });
-        }
-    });
-
     app.factory('deviceRegularTimers', function ($q, domoticzApi) {
         return {
             addTimer: addTimer,
@@ -279,7 +230,7 @@ define(['app'], function (app) {
         }
     });
 
-    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, $window, device, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
+    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, deviceApi, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
         var vm = this;
         var $element = $('.js-device-timers:last');
         var setColorTimerId;
@@ -297,7 +248,6 @@ define(['app'], function (app) {
         vm.isRMonthsVisible = isRMonthsVisible;
         vm.isDateVisible = isDateVisible;
         vm.isDaySelectonAvailable = isDaySelectonAvailable;
-        vm.goBack = goBack;
 
         init();
 
@@ -305,7 +255,7 @@ define(['app'], function (app) {
             vm.deviceIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
 
-            device.getDeviceInfo(vm.deviceIdx).then(function (device) {
+            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.deviceName = device.Name;
                 vm.isDimmer = ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(device.SwitchType);
                 vm.isSelector = device.SubType === "Selector Switch";
@@ -526,7 +476,7 @@ define(['app'], function (app) {
             clearTimeout(setColorTimerId);
 
             setColorTimerId = setTimeout(function () {
-                device.setHsbColor(
+                deviceApi.setHsbColor(
                     vm.deviceIdx, 
                     vm.lightSettings.hue, 
                     vm.lightSettings.brightness, 
@@ -880,10 +830,6 @@ define(['app'], function (app) {
 
         function isDaySelectonAvailable() {
             return vm.week.type === 'SelectedDays';
-        }
-
-        function goBack() {
-            $window.history.back();
         }
     });
 });
