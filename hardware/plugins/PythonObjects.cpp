@@ -11,6 +11,7 @@
 #include "../main/localtime_r.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
+#include "../notifications/NotificationHelper.h"
 #include "PythonObjects.h"
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
@@ -155,7 +156,7 @@ namespace Plugins {
 			{
 				if (sFilename.length())
 				{
-					if (self->pPlugin->m_bDebug)
+					if (self->pPlugin->m_bDebug & PDM_IMAGE)
 					{
 						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->Name.c_str(), sFilename.c_str());
 					}
@@ -225,7 +226,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ImageID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting Image '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -272,6 +273,7 @@ namespace Plugins {
 	void CDevice_dealloc(CDevice* self)
 	{
 		Py_XDECREF(self->Name);
+		Py_XDECREF(self->Description);
 		Py_XDECREF(self->sValue);
 		PyDict_Clear(self->Options);
 		Py_XDECREF(self->Options);
@@ -307,6 +309,11 @@ namespace Plugins {
 				self->LastLevel = 0;
 				self->Name = PyUnicode_FromString("");
 				if (self->Name == NULL) {
+					Py_DECREF(self);
+					return NULL;
+				}
+				self->Description = PyUnicode_FromString("");
+				if (self->Description == NULL) {
 					Py_DECREF(self);
 					return NULL;
 				}
@@ -485,7 +492,8 @@ namespace Plugins {
 		int			Image = -1;
 		PyObject*	Options = NULL;
 		int			Used = -1;
-		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", NULL };
+		char*		Description = NULL;
+		static char *kwlist[] = { "Name", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "DeviceID", "Description", NULL };
 
 		try
 		{
@@ -509,7 +517,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOis", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID))
+			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -517,6 +525,10 @@ namespace Plugins {
 				if (Name) {
 					Py_DECREF(self->Name);
 					self->Name = PyUnicode_FromString(Name);
+				}
+				if (Description) {
+					Py_DECREF(self->Description);
+					self->Description = PyUnicode_FromString(Description);
 				}
 				if ((Unit > 0) && (Unit < 256))
 				{
@@ -601,7 +613,7 @@ namespace Plugins {
 		{
 			// load associated devices to make them available to python
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
+			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, DeviceID, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) ORDER BY Unit ASC", self->HwdID, self->Unit);
 			if (result.size() > 0)
 			{
 				for (std::vector<std::vector<std::string> >::const_iterator itt = result.begin(); itt != result.end(); ++itt)
@@ -651,6 +663,8 @@ namespace Plugins {
 							}
 						}
 					}
+					Py_XDECREF(self->Description);
+					self->Description = PyUnicode_FromString(sd[15].c_str());
 				}
 			}
 		}
@@ -671,7 +685,7 @@ namespace Plugins {
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			if (self->ID == -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -684,6 +698,7 @@ namespace Plugins {
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
 						std::string	sLongName = self->pPlugin->Name + " - " + sName;
+						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
 						{
 							PyObject *pValueDict = PyDict_GetItemString(self->Options, "Custom");
@@ -694,16 +709,16 @@ namespace Plugins {
 								sOptionValue = PyUnicode_AsUTF8(pValueDict);
 
 							m_sql.safe_query(
-								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Options) "
-								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
-								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sOptionValue.c_str());
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Options) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q', '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str(), sOptionValue.c_str());
 						}
 						else
 						{
 							m_sql.safe_query(
-								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage) "
-								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d)",
-								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image);
+								"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description) "
+								"VALUES (%d, '%q', %d, %d, %d, %d, %d, 12, 255, '%q', 0, '%q', %d, '%q')",
+								self->HwdID, sDeviceID.c_str(), self->Unit, self->Type, self->SubType, self->SwitchType, self->Used, sLongName.c_str(), sValue.c_str(), self->Image, sDescription.c_str());
 						}
 
 						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
@@ -784,39 +799,42 @@ namespace Plugins {
 			int			iSubType = self->SubType;
 			int			iSwitchType = self->SwitchType;
 			int			iUsed = self->Used;
+			uint64_t 		DevRowIdx;
+			char*		Description = NULL;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
-			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", NULL };
+			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiii", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiis", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description))
 				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype' or 'Used' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used' or 'Description' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
 
-			if (self->pPlugin->m_bDebug)
+			if (self->pPlugin->m_bDebug & PDM_DEVICE)
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, std::string(sValue).c_str(), sName, true);
+			DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
 			// Notify MQTT and various push mechanisms
 			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
-
+			
 			std::string sID = SSTR(self->ID);
 
 			if (TypeName) {
 				// Reset nValue and sValue when changing device types
 				nValue = 0;
-				std::string sValue = "";
+				std::string stdsValue = "";
 
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, sValue, pOptionsDict, pOptionsDict);
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
-				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue.c_str(), sName, true);
+				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
 
 				// Notify MQTT and various push mechanisms
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
@@ -825,8 +843,15 @@ namespace Plugins {
 			// Name change
 			if (Name)
 			{
-				std::string sName = Name;
+				sName = Name;
 				m_sql.UpdateDeviceValue("Name", sName, sID);
+			}
+
+			// Description change
+			if (Description)
+			{
+				std::string sDescription = Description;
+				m_sql.UpdateDeviceValue("Description", sDescription, sID);
 			}
 
 			// Type change
@@ -897,6 +922,8 @@ namespace Plugins {
 			{
 				self->TimedOut = iTimedOut;
 			}
+			
+			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
 
 			CDevice_refresh(self);
 		}
@@ -916,7 +943,7 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			if (self->ID != -1)
 			{
-				if (self->pPlugin->m_bDebug)
+				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
 					_log.Log(LOG_NORM, "(%s) Deleting device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
@@ -962,7 +989,7 @@ namespace Plugins {
 
 	void CConnection_dealloc(CConnection * self)
 	{
-		if (self->pPlugin && self->pPlugin->m_bDebug)
+		if (self->pPlugin && (self->pPlugin->m_bDebug & PDM_CONNECTION))
 		{
 			_log.Log(LOG_NORM, "(%s) Deallocating connection object '%s' (%s:%s).", self->pPlugin->Name.c_str(), PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}

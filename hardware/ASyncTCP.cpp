@@ -24,7 +24,7 @@ ASyncTCP::ASyncTCP()
 	: mIsConnected(false), mIsClosing(false),
 	mSocket(mIos), mReconnectTimer(mIos),
 	mDoReconnect(true), mIsReconnecting(false)
-{	
+{
 }
 
 ASyncTCP::~ASyncTCP(void)
@@ -43,7 +43,7 @@ void ASyncTCP::update()
 void ASyncTCP::connect(const std::string &ip, unsigned short port)
 {
 	// connect socket
-	try 
+	try
 	{
 		std::string fip = ip;
 
@@ -70,7 +70,7 @@ void ASyncTCP::connect(const std::string &ip, unsigned short port)
 
 		connect(endpoint);
 	}
-	catch(const std::exception &e) 
+	catch(const std::exception &e)
 	{
 		OnError(e);
 		_log.Log(LOG_ERROR,"TCP: Exception: %s", e.what());
@@ -84,16 +84,22 @@ void ASyncTCP::connect(boost::asio::ip::tcp::endpoint& endpoint)
 
 	mEndPoint = endpoint;
 
+	// restart IO service if it has been stopped
+	if (mIos.stopped()) {
+		_log.Log(LOG_STATUS, "ASyncTCP::connect: reset IO service");
+		mIos.reset();
+	}
+
 	// try to connect, then call handle_connect
 	mSocket.async_connect(endpoint,
         boost::bind(&ASyncTCP::handle_connect, this, boost::asio::placeholders::error));
 }
 
 void ASyncTCP::disconnect()
-{		
+{
 	// tell socket to close the connection
 	close();
-	
+
 	// tell the IO service to stop
 	mIos.stop();
 
@@ -176,10 +182,10 @@ bool ASyncTCP::set_tcp_keepalive()
 
 // callbacks
 
-void ASyncTCP::handle_connect(const boost::system::error_code& error) 
+void ASyncTCP::handle_connect(const boost::system::error_code& error)
 {
 	if(mIsClosing) return;
-	
+
 	if (!error) {
 		// we are connected!
 		mIsConnected = true;
@@ -212,7 +218,7 @@ void ASyncTCP::handle_connect(const boost::system::error_code& error)
 		{
 			mIsReconnecting = true;
 			_log.Log(LOG_STATUS, "TCP: Reconnecting in %d seconds...", RECONNECT_TIME);
-			// schedule a timer to reconnect after 30 seconds		
+			// schedule a timer to reconnect after 30 seconds
 			mReconnectTimer.expires_from_now(boost::posix_time::seconds(RECONNECT_TIME));
 			mReconnectTimer.async_wait(boost::bind(&ASyncTCP::do_reconnect, this, boost::asio::placeholders::error));
 		}
@@ -316,7 +322,7 @@ void ASyncTCP::write(const std::string &msg)
 void ASyncTCP::do_close()
 {
 	if(mIsClosing) return;
-	
+
 	mIsClosing = true;
 
 	mSocket.close();

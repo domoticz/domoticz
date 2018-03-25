@@ -15,6 +15,12 @@ public:
 private:
 	bool StartHardware();
 	bool StopHardware();
+
+	void ParseRelays(const std::string &sResult);
+	void ParseTemps(const std::string &sResult);
+
+	std::string GenerateURL(const bool bIsTempDevice);
+
 protected:
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
@@ -28,5 +34,8 @@ protected:
 
 	boost::shared_ptr<boost::thread> m_thread;
 	volatile bool m_stoprequested;
+
+	bool m_bCheckedForTempDevice;
+	bool m_bIsTempDevice;
 };
 

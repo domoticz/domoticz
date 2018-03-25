@@ -23,9 +23,6 @@
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls access to the message queue
-	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
-
 	void CPluginTransport::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
 		_log.Log(LOG_ERROR, "CPluginTransport: Base handleRead invoked for Hardware %d", m_HwdID);
@@ -41,11 +38,8 @@ namespace Plugins {
 		// If the Python CConnection object reference count ever drops to one the the connection is out of scope so shut it down
 		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
 		{
-			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(onDisconnectCallback);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
 	}
@@ -72,7 +66,7 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
@@ -81,9 +75,8 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
 
@@ -110,9 +103,8 @@ namespace Plugins {
 			}
 
 			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 		}
 	}
 
@@ -127,22 +119,26 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
 		}
 		else
 		{
-			delete m_Socket;
-			m_Socket = NULL;
-			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+			if (err != boost::asio::error::operation_aborted)  // clean up will be covered by disconnect
+			{
+				if (m_Socket)
+				{
+					delete m_Socket;
+					m_Socket = NULL;
+					//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
+				}
+			}
 		}
 
-		onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
-
+		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 		m_bConnecting = false;
 	}
 
@@ -167,7 +163,7 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
@@ -176,9 +172,8 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//			_log.Log(LOG_ERROR, "Plugin: Connection Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
 
@@ -225,12 +220,9 @@ namespace Plugins {
 
 			// Create Protocol object to handle connection's traffic
 			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
-				PluginMessageQueue.push(pMessage);
+				pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection));
 				//  and signal connection
-				onConnectCallback*	Message = new onConnectCallback(pConnection->pPlugin, (PyObject*)pConnection, err.value(), err.message());
-				PluginMessageQueue.push(Message);
+				pConnection->pPlugin->MessagePlugin(new onConnectCallback(pConnection->pPlugin, (PyObject*)pConnection, err.value(), err.message()));
 			}
 
 			pTcpTransport->m_Socket->async_read_some(boost::asio::buffer(pTcpTransport->m_Buffer, sizeof pTcpTransport->m_Buffer),
@@ -247,11 +239,8 @@ namespace Plugins {
 			if (err != boost::asio::error::operation_aborted)
 				_log.Log(LOG_ERROR, "Plugin: Accept Exception: '%s' connecting to '%s:%s'", err.message().c_str(), m_IP.c_str(), m_Port.c_str());
 
-			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(pDisconnectedEvent);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
 	}
@@ -260,11 +249,8 @@ namespace Plugins {
 	{
 		if (!e)
 		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -282,15 +268,13 @@ namespace Plugins {
 			if ((e.value() != 2) && 
 				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
 				(e.value() != 125) &&	// Operation canceled
+				(e != boost::asio::error::address_in_use) &&
 				(e != boost::asio::error::operation_aborted) &&
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
 
-			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(pDisconnectedEvent);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
 	}
@@ -316,7 +300,7 @@ namespace Plugins {
 
 	bool CPluginTransportTCP::handleDisconnect()
 	{
-		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 		{
 			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
 		}
@@ -377,6 +361,7 @@ namespace Plugins {
 
 			m_TLSSock = new boost::asio::ssl::stream<boost::asio::ip::tcp::socket&>(*m_Socket, *m_Context);
 			m_TLSSock->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
+			SSL_set_tlsext_host_name(m_TLSSock->native_handle(), m_IP.c_str());			// Enable SNI
 
 			//m_TLSSock->set_verify_mode(boost::asio::ssl::verify_peer);
 			m_TLSSock->set_verify_mode(boost::asio::ssl::verify_none);
@@ -393,7 +378,7 @@ namespace Plugins {
 				if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 				{
 					ios.reset();
-					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+					if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 						_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 					boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 				}
@@ -418,9 +403,8 @@ namespace Plugins {
 			}
 		}
 
-		onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, err.value(), err.message());
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
+		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+		pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, err.value(), err.message()));
 
 		m_bConnecting = false;
 	}
@@ -437,7 +421,7 @@ namespace Plugins {
 		char subject_name[256];
 		X509* cert = X509_STORE_CTX_get_current_cert(ctx.native_handle());
 		X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
-		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 		{
 			_log.Log(LOG_NORM, "(%s): TLS Certificate found '%s'", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), subject_name);
 		}
@@ -449,13 +433,10 @@ namespace Plugins {
 
 	void CPluginTransportTCPSecure::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
+		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!e)
 		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
+			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -477,11 +458,7 @@ namespace Plugins {
 				(e.value() != 1236))	// local disconnect cause by hardware reload
 				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
 
-			DisconnectedEvent*	pDisconnectedEvent = new DisconnectedEvent(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(pDisconnectedEvent);
-			}
+			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
 	}
@@ -509,7 +486,7 @@ namespace Plugins {
 	{
 		CPluginTransportTCP::handleDisconnect();
 
-		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 		{
 			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
 		}
@@ -561,7 +538,7 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
@@ -569,9 +546,8 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			//	_log.Log(LOG_ERROR, "Plugin: Listen Exception: '%s' connecting to '%s:%s'", e.what(), m_IP.c_str(), m_Port.c_str());
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
 
@@ -603,17 +579,8 @@ namespace Plugins {
 			pConnection->pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 
 			// Create Protocol object to handle connection's traffic
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				ProtocolDirective*	pMessage = new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection);
-				PluginMessageQueue.push(pMessage);
-			}
-
-			ReadMessage*	Message = new ReadMessage(((CConnection*)pConnection)->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
+			pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection));
+			pConnection->pPlugin->MessagePlugin(new ReadMessage(pConnection->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -636,11 +603,8 @@ namespace Plugins {
 			if (!m_bDisconnectQueued)
 			{
 				m_bDisconnectQueued = true;
-				DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(onDisconnectCallback);
-				}
+				CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+				pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 			}
 		}
 	}
@@ -726,11 +690,8 @@ namespace Plugins {
 		}
 		else
 		{
-			DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(onDisconnectCallback);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 		}
 	}
 
@@ -767,7 +728,7 @@ namespace Plugins {
 			if (ios.stopped())  // make sure that there is a boost thread to service i/o operations
 			{
 				ios.reset();
-				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug)
+				if (((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 					_log.Log(LOG_NORM, "PluginSystem: Starting I/O service thread.");
 				boost::thread bt(boost::bind(&boost::asio::io_service::run, &ios));
 			}
@@ -775,9 +736,8 @@ namespace Plugins {
 		catch (std::exception& e)
 		{
 			_log.Log(LOG_ERROR, "%s Exception: '%s' failed connecting to '%s'", __func__, e.what(), m_IP.c_str());
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
 
@@ -788,12 +748,8 @@ namespace Plugins {
 	{
 		if (!ec)  // Timeout, no response
 		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, NULL);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
-
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, 0, NULL));
 		}
 		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
@@ -831,11 +787,8 @@ namespace Plugins {
 					m_Timer->cancel();
 				}
 
-				ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, m_Buffer, (iMsElapsed ? iMsElapsed : 1));
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+				CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+				pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer, (iMsElapsed ? iMsElapsed : 1)));
 
 				m_tLastSeen = time(0);
 				m_iTotalBytes += bytes_transferred;
@@ -856,11 +809,8 @@ namespace Plugins {
 			if (!m_bDisconnectQueued)
 			{
 				m_bDisconnectQueued = true;
-				DisconnectDirective*	onDisconnectCallback = new DisconnectDirective(((CConnection*)m_pConnection)->pPlugin, m_pConnection);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(onDisconnectCallback);
-				}
+				CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+				pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 			}
 		}
 	}
@@ -962,25 +912,22 @@ namespace Plugins {
 				m_tLastSeen = time(0);
 				m_bConnected = isOpen();
 
-				onConnectCallback*	Message = NULL;
+				CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 				if (m_bConnected)
 				{
-					Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully.");
+					pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, 0, "SerialPort " + m_Port + " opened successfully."));
 					setReadCallback(boost::bind(&CPluginTransportSerial::handleRead, this, _1, _2));
 				}
 				else
 				{
-					Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details.");
+					pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, "SerialPort " + m_Port + " open failed, check log for details."));
 				}
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
 			}
 		}
 		catch (std::exception& e)
 		{
-			onConnectCallback*	Message = new onConnectCallback(((CConnection*)m_pConnection)->pPlugin, m_pConnection, -1, std::string(e.what()));
-			boost::lock_guard<boost::mutex> l(PluginMutex);
-			PluginMessageQueue.push(Message);
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new onConnectCallback(pPlugin, m_pConnection, -1, std::string(e.what())));
 			return false;
 		}
 
@@ -991,11 +938,8 @@ namespace Plugins {
 	{
 		if (bytes_transferred)
 		{
-			ReadMessage*	Message = new ReadMessage(((CConnection*)m_pConnection)->pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data);
-			{
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
-			}
+			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;

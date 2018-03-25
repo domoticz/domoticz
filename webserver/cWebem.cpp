@@ -635,6 +635,10 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+			//browser support to prevent XSS
+			reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
+			reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
+			//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 		}
 		else
 		{
@@ -666,6 +670,10 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Cache-Control", "no-cache");
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+	//browser support to prevent XSS
+	reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
+	reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
+	//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 
 	return true;
 }

@@ -14,8 +14,8 @@ https://products.z-wavealliance.org/products/2535/configs
 		</Value>
 		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
 			<Help></Help>
-			<Item label="On" value="0" />
-			<Item label="Off" value="255" />
+			<Item label="On" value="255" />
+			<Item label="Off" value="0" />
 		</Value>
 		<Value type="byte" genre="config" instance="1" index="3" label="Auto-re-lock Time" size="1" min="7" max="60" units="seconds" value="30">
 			<Help>seconds; after successful code entry and unit unlocks, it will automatically re-lock after specified time (30 = default value)</Help>

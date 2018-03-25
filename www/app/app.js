@@ -190,6 +190,31 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}
 
+		app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
+			return {
+				sendRequest: sendRequest,
+				sendCommand: sendCommand
+			};
+	
+			function sendRequest(data) {
+				return $http.get('json.htm', {
+					params: data
+				}).then(function (response) {
+					return response.data;
+				});
+			}
+	
+			function sendCommand(command, data) {
+				var commandParams = { type: 'command', param: command };
+				return sendRequest(Object.assign({}, commandParams, data))
+					.then(function (response) {
+						return response && response.status !== 'OK'
+							? $q.reject(response)
+							: response;
+					});
+			}
+		}]);
+
 		app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 			return {
 				initialised: false,
@@ -211,7 +236,11 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
                         http_uri += loc.pathname;
 						// get via json get
                         url = http_uri + url;
-						$http.get(url).success(callback_fn);
+						$http({
+							url: url,
+						}).then(function successCallback(response) {
+							callback_fn();
+				        });               
 					}
 					else {
 						var settings = {
@@ -325,6 +354,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 		}]);
 	app.config(function ($routeProvider, $locationProvider) {
+		$locationProvider.hashPrefix('');
 		$routeProvider.
 			when('/Dashboard', angularAMD.route({
 				templateUrl: 'views/dashboard.html',
@@ -333,6 +363,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Devices', angularAMD.route({
 				templateUrl: 'views/devices.html',
 				controller: 'DevicesController'
+			})).
+			when('/Devices/:id/Timers', angularAMD.route({
+				templateUrl: '/views/timers.html',
+				controller: 'DeviceTimersController',
+				controllerUrl: '/app/DeviceTimers.js',
+				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
 				templateUrl: 'views/dpfibaro.html',
@@ -640,6 +676,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			appversion: 0,
 			apphash: 0,
 			appdate: 0,
+			pythonversion: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true
 		};
@@ -756,6 +793,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					$rootScope.config.apphash = data.hash;
 					$rootScope.config.appdate = data.build_time;
 					$rootScope.config.dzventsversion = data.dzvents_version;
+					$rootScope.config.pythonversion = data.python_version;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 					$("#appversion").text("V" + data.version);
 					if (data.SystemName != "windows") {
@@ -892,7 +930,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 					url: "json.htm?type=command&param=getSunRiseSet",
 					async: true,
 					dataType: 'json'
-				}).success(function (data) {
+				}).then(function successCallback(response) {
+					var data = response.data;
 					if (typeof data.Sunrise != 'undefined') {
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
