@@ -22,9 +22,6 @@
 
 namespace Plugins {
 
-	extern boost::mutex PluginMutex;	// controls accessto the message queue
-	extern std::queue<CPluginMessageBase*>	PluginMessageQueue;
-	extern boost::asio::io_service ios;
 	extern struct PyModuleDef DomoticzModuleDef;
 	extern void LogPythonException(CPlugin* pPlugin, const std::string &sHandler);
 
@@ -1136,9 +1133,7 @@ namespace Plugins {
 				{
 					Py_XDECREF(self->Protocol);
 					self->Protocol = PyUnicode_FromString(pProtocol);
-					ProtocolDirective*	Message = new ProtocolDirective(self->pPlugin, (PyObject*)self);
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
+					self->pPlugin->MessagePlugin(new ProtocolDirective(self->pPlugin, (PyObject*)self));
 				}
 			}
 			else
@@ -1190,9 +1185,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		ConnectDirective*	Message = new ConnectDirective(self->pPlugin, (PyObject*)self);
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
+		self->pPlugin->MessagePlugin(new ConnectDirective(self->pPlugin, (PyObject*)self));
 
 		return Py_None;
 	}
@@ -1226,9 +1219,7 @@ namespace Plugins {
 			return Py_None;
 		}
 
-		ListenDirective*	Message = new ListenDirective(self->pPlugin, (PyObject*)self);
-		boost::lock_guard<boost::mutex> l(PluginMutex);
-		PluginMessageQueue.push(Message);
+		self->pPlugin->MessagePlugin(new ListenDirective(self->pPlugin, (PyObject*)self));
 
 		return Py_None;
 	}
@@ -1256,11 +1247,7 @@ namespace Plugins {
 			else
 			{
 				//	Add start command to message queue
-				WriteDirective*	Message = new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay);
-				{
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					PluginMessageQueue.push(Message);
-				}
+				self->pPlugin->MessagePlugin(new WriteDirective(self->pPlugin, (PyObject*)self, pData, iDelay));
 			}
 		}
 
@@ -1274,9 +1261,7 @@ namespace Plugins {
 		{
 			if (self->pTransport->IsConnecting() || self->pTransport->IsConnected())
 			{
-				DisconnectDirective*	Message = new DisconnectDirective(self->pPlugin, (PyObject*)self);
-				boost::lock_guard<boost::mutex> l(PluginMutex);
-				PluginMessageQueue.push(Message);
+				self->pPlugin->MessagePlugin(new DisconnectDirective(self->pPlugin, (PyObject*)self));
 			}
 			else
 				_log.Log(LOG_ERROR, "%s, disconnection request from '%s' ignored. Transport is not connecting or connected.", __func__, self->pPlugin->Name.c_str());

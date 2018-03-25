@@ -87,7 +87,6 @@ namespace Plugins {
 		virtual	void		handleAsyncConnect(const boost::system::error_code& err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
 		virtual void		handleRead(const boost::system::error_code& e, std::size_t bytes_transferred);
 		virtual void		handleWrite(const std::vector<byte>& pMessage);
-		virtual bool		handleDisconnect();
 		~CPluginTransportTCPSecure();
 
 	protected:

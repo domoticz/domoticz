@@ -36,9 +36,14 @@ namespace Plugins {
 	void CPluginTransport::VerifyConnection()
 	{
 		// If the Python CConnection object reference count ever drops to one the the connection is out of scope so shut it down
-		if (!m_bDisconnectQueued && (m_pConnection->ob_refcnt <= 1))
+		CConnection*	pConnection = (CConnection*)m_pConnection;
+		CPlugin*		pPlugin = pConnection ? pConnection->pPlugin : NULL;
+		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_refcnt <= 1))
 		{
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
+			_log.Log(LOG_NORM, "(%s) Connection released by Python, reference count is %d.", pPlugin->Name.c_str(), m_pConnection->ob_refcnt);
+		}
+		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_refcnt <= 1) && pPlugin)
+		{
 			pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
@@ -247,10 +252,10 @@ namespace Plugins {
 
 	void CPluginTransportTCP::handleRead(const boost::system::error_code& e, std::size_t bytes_transferred)
 	{
+		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!e)
 		{
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
+			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -265,15 +270,21 @@ namespace Plugins {
 		}
 		else
 		{
-			if ((e.value() != 2) && 
-				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation canceled
-				(e != boost::asio::error::address_in_use) &&
-				(e != boost::asio::error::operation_aborted) &&
-				(e.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
+			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) &&
+					((e == boost::asio::error::operation_aborted) ||	// Client side connections (from connecting)
+					 (e == boost::asio::error::eof)))					// Server side connections (from listening)
+				_log.Log(LOG_NORM, "(%s) Queued asyncronous read aborted (%s:%s).", pPlugin->Name.c_str(), m_IP.c_str(), m_Port.c_str());
+			else
+			{
+				if ((e != boost::asio::error::eof) &&
+					(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+					(e.value() != 125) &&	// Operation canceled
+					(e != boost::asio::error::address_in_use) &&
+					(e != boost::asio::error::operation_aborted) &&
+					(e.value() != 1236))	// local disconnect cause by hardware reload
+					_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
+			}
 
-			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
 		}
@@ -302,7 +313,7 @@ namespace Plugins {
 	{
 		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
+			_log.Log(LOG_NORM, "(%s) Handling disconnect, socket (%s:%s) is %sconnected", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), m_IP.c_str(), m_Port.c_str(), (m_bConnected?"":"not "));
 		}
 
 		m_tLastSeen = time(0);
@@ -322,8 +333,6 @@ namespace Plugins {
 				{
 					m_Socket->close();
 				}
-				delete m_Socket;
-				m_Socket = NULL;
 			}
 		}
 
@@ -332,23 +341,23 @@ namespace Plugins {
 			m_Acceptor->cancel();
 		}
 
-		m_bDisconnectQueued = false;
-
 		return true;
 	}
 
 	CPluginTransportTCP::~CPluginTransportTCP()
 	{
-		if (m_Socket)
-		{
-			handleDisconnect();
-			delete m_Socket;
-		}
-
 		if (m_Acceptor)
 		{
 			delete m_Acceptor;
+			m_Acceptor = NULL;
 		}
+
+		if (m_Socket)
+		{
+			delete m_Socket;
+			m_Socket = NULL;
+		}
+
 	};
 
 	void CPluginTransportTCPSecure::handleAsyncConnect(const boost::system::error_code & err, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
@@ -423,7 +432,7 @@ namespace Plugins {
 		X509_NAME_oneline(X509_get_subject_name(cert), subject_name, 256);
 		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
 		{
-			_log.Log(LOG_NORM, "(%s): TLS Certificate found '%s'", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), subject_name);
+			_log.Log(LOG_NORM, "(%s) TLS Certificate found '%s'", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), subject_name);
 		}
 
 		// TODO: Add some certificate checking
@@ -436,7 +445,7 @@ namespace Plugins {
 		CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 		if (!e)
 		{
-			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
+			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -451,12 +460,17 @@ namespace Plugins {
 		}
 		else
 		{
-			if ((e.value() != 2) &&
-				(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
-				(e.value() != 125) &&	// Operation canceled
-				(e != boost::asio::error::operation_aborted) &&
-				(e.value() != 1236))	// local disconnect cause by hardware reload
-				_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), e.value(), e.message().c_str());
+			if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (e == boost::asio::error::operation_aborted))
+				_log.Log(LOG_NORM, "(%s) Queued asyncronous secure read aborted.", pPlugin->Name.c_str());
+			else
+			{
+				if ((e.value() != 2) &&
+					(e.value() != 121) &&	// Semaphore timeout expiry or end of file aka 'lost contact'
+					(e.value() != 125) &&	// Operation canceled
+					(e != boost::asio::error::operation_aborted) &&
+					(e.value() != 1236))	// local disconnect cause by hardware reload
+					_log.Log(LOG_ERROR, "(%s): Async Read Exception: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
+			}
 
 			pPlugin->MessagePlugin(new DisconnectedEvent(pPlugin, m_pConnection));
 			m_bDisconnectQueued = true;
@@ -482,13 +496,12 @@ namespace Plugins {
 		}
 	}
 
-	bool CPluginTransportTCPSecure::handleDisconnect()
+	CPluginTransportTCPSecure::~CPluginTransportTCPSecure()
 	{
-		CPluginTransportTCP::handleDisconnect();
-
-		if (m_pConnection && ((CConnection*)m_pConnection)->pPlugin->m_bDebug & PDM_CONNECTION)
+		if (m_bConnected)
 		{
-			_log.Log(LOG_NORM, "(%s): CPluginTransportTCP::%s", ((CConnection*)m_pConnection)->pPlugin->Name.c_str(), __func__);
+			_log.Log(LOG_ERROR, "(%s) Secure socket still is connected during destruction", ((CConnection*)m_pConnection)->pPlugin->Name.c_str());
+			handleDisconnect();
 		}
 
 		if (m_TLSSock)
@@ -503,12 +516,6 @@ namespace Plugins {
 			m_Context = NULL;
 		}
 
-		return true;
-	}
-
-	CPluginTransportTCPSecure::~CPluginTransportTCPSecure()
-	{
-		handleDisconnect();
 	};
 
 	bool CPluginTransportUDP::handleListen()
@@ -580,7 +587,7 @@ namespace Plugins {
 
 			// Create Protocol object to handle connection's traffic
 			pConnection->pPlugin->MessagePlugin(new ProtocolDirective(pConnection->pPlugin, (PyObject*)pConnection));
-			pConnection->pPlugin->MessagePlugin(new ReadMessage(pConnection->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer));
+			pConnection->pPlugin->MessagePlugin(new ReadEvent(pConnection->pPlugin, (PyObject*)pConnection, bytes_transferred, m_Buffer));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
@@ -749,7 +756,7 @@ namespace Plugins {
 		if (!ec)  // Timeout, no response
 		{
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, 0, NULL));
+			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, 0, NULL));
 		}
 		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
@@ -788,7 +795,7 @@ namespace Plugins {
 				}
 
 				CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-				pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, m_Buffer, (iMsElapsed ? iMsElapsed : 1)));
+				pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, m_Buffer, (iMsElapsed ? iMsElapsed : 1)));
 
 				m_tLastSeen = time(0);
 				m_iTotalBytes += bytes_transferred;
@@ -939,7 +946,7 @@ namespace Plugins {
 		if (bytes_transferred)
 		{
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
-			pPlugin->MessagePlugin(new ReadMessage(pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data));
+			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, bytes_transferred, (const unsigned char*)data));
 
 			m_tLastSeen = time(0);
 			m_iTotalBytes += bytes_transferred;
