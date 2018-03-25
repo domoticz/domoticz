@@ -40,7 +40,7 @@ namespace Plugins {
 		CPlugin*		pPlugin = pConnection ? pConnection->pPlugin : NULL;
 		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && m_pConnection && (m_pConnection->ob_refcnt <= 1))
 		{
-			_log.Log(LOG_NORM, "(%s) Connection released by Python, reference count is %d.", pPlugin->Name.c_str(), m_pConnection->ob_refcnt);
+			_log.Log(LOG_NORM, "(%s) Connection released by Python, reference count is %d.", pPlugin->Name.c_str(), (int)m_pConnection->ob_refcnt);
 		}
 		if (!m_bDisconnectQueued && m_pConnection && (m_pConnection->ob_refcnt <= 1) && pPlugin)
 		{
