@@ -9,7 +9,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenLan_POLL_INTERVAL 5
+#define DenkoviSmartdenLan_POLL_INTERVAL 1
 
 CDenkoviSmartdenLan::CDenkoviSmartdenLan(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
 m_szIPAddress(IPAddress),
