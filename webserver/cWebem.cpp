@@ -169,6 +169,7 @@ void cWebem::RegisterWhitelistURLString(const char* idname)
 	myWhitelistURLs.push_back(idname);
 }
 
+
 /**
 
   Do not call from application code, used by server to include generated text.
@@ -655,10 +656,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 			reply::add_header(&rep, "Cache-Control", "no-cache");
 			reply::add_header(&rep, "Pragma", "no-cache");
 			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			//browser support to prevent XSS
-			reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
-			reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
-			//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 		}
 		else
 		{
@@ -690,10 +687,6 @@ bool cWebem::CheckForPageOverride(WebEmSession & session, request& req, reply& r
 	reply::add_header(&rep, "Cache-Control", "no-cache");
 	reply::add_header(&rep, "Pragma", "no-cache");
 	reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-	//browser support to prevent XSS
-	reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
-	reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
-	//reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
 
 	return true;
 }
@@ -897,6 +890,16 @@ void cWebem::AddLocalNetworks(std::string network)
 void cWebem::ClearLocalNetworks()
 {
 	m_localnetworks.clear();
+}
+
+void cWebem::AddRemoteProxyIPs(const std::string ipaddr)
+{
+	myRemoteProxyIPs.push_back(ipaddr);
+}
+
+void cWebem::ClearRemoteProxyIPs()
+{
+	myRemoteProxyIPs.clear();
 }
 
 void cWebem::SetDigistRealm(const std::string &realm)
@@ -1459,13 +1462,11 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 	if (myWebem->m_userpasswords.size() == 0)
 	{
 		session.rights = 2;
-		return true;//no username/password we are admin
 	}
 
 	if (AreWeInLocalNetwork(session.remote_host, req))
 	{
 		session.rights = 2;
-		return true;//we are in the local network, no authentication needed, we are admin
 	}
 
 	//Check cookie if still valid
@@ -1507,9 +1508,30 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 			expired = stime < now;
 		}
 
+		if (session.rights == 2)
+		{
+			if (!sSID.empty()) {
+				WebEmSession* oldSession = myWebem->GetSession(sSID);
+				if (oldSession == NULL)
+				{
+					session.id = sSID;
+					session.auth_token = sAuthToken;
+					expired = (!checkAuthToken(session));
+				}
+				else
+				{
+					session = *oldSession;
+					expired = (oldSession->expires < now);
+				}
+			}
+			if (sSID.empty() || expired)
+				session.isnew = true;
+			return true;
+		}
+
 		if (!(sSID.empty() || sAuthToken.empty() || szTime.empty())) {
 			WebEmSession* oldSession = myWebem->GetSession(sSID);
-			if ((oldSession != NULL) && (oldSession->expires < now)) {
+			if ((oldSession == NULL) || (oldSession->expires < now)) {
 				// Check if session stored in memory is not expired (prevent from spoofing expiration time)
 				expired = true;
 			}
@@ -1560,6 +1582,12 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 				return false;
 			}
 		}
+	}
+
+	if (session.rights == 2)
+	{
+		session.isnew = true;
+		return true;
 	}
 
 	//patch to let always support basic authentication function for script calls
@@ -1634,6 +1662,24 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 	_log.Log(LOG_STATUS, "[web:%s] CheckAuthToken(%s_%s_%s) : user authenticated", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
 
+	if (session.rights == 2)
+	{
+		// we are already admin - restore session from db
+		session.expires = storedSession.expires;
+		time_t now = mytime(NULL);
+		if (session.expires < now)
+		{
+			removeAuthToken(session.id);
+			return false;
+		}
+		else
+		{
+			session.timeout = now + SHORT_SESSION_TIMEOUT;
+			myWebem->AddSession(session);
+			return true;
+		}
+	}
+
 	if (session.username.empty()) {
 		// Restore session if user exists and session does not already exist
 		bool userExists = false;
@@ -1662,6 +1708,7 @@ bool cWebemRequestHandler::checkAuthToken(WebEmSession & session) {
 
 		WebEmSession* oldSession = myWebem->GetSession(session.id);
 		if (oldSession == NULL) {
+
 #ifdef DEBUG_WWW
 			_log.Log(LOG_STATUS, "[web:%s] CheckAuthToken(%s_%s_%s) : restore session", myWebem->GetPort().c_str(), session.id.c_str(), session.auth_token.c_str(), session.username.c_str());
 #endif
@@ -1697,25 +1744,28 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	WebEmSession session;
 	session.remote_host = req.host_address;
 
-	if (session.remote_host == "127.0.0.1")
+	if (myWebem->myRemoteProxyIPs.size() > 0)
 	{
-		//We could be using a proxy server
-		//Check if we have the "X-Forwarded-For" (connection via proxy)
-		const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
-		if (host_header != NULL)
+		for (std::vector<std::string>::size_type i = 0; i < myWebem->myRemoteProxyIPs.size(); ++i)
 		{
-			session.remote_host = host_header;
-			if (strstr(host_header, ",") != NULL)
+			if (session.remote_host == myWebem->myRemoteProxyIPs[i])
 			{
-				//Multiple proxies are used... this is not very common
-				host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
-				if (!host_header)
+				const char *host_header = request::get_req_header(&req, "X-Forwarded-For");
+				if (host_header != NULL)
 				{
-					_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
-					rep = reply::stock_reply(reply::forbidden);
-					return;
+					if (strstr(host_header, ",") != NULL)
+					{
+						//Multiple proxies are used... this is not very common
+						host_header = request::get_req_header(&req, "X-Real-IP"); //try our NGINX header
+						if (!host_header)
+						{
+							_log.Log(LOG_ERROR, "Webserver: Multiple proxies are used (Or possible spoofing attempt), ignoring client request (remote address: %s)", session.remote_host.c_str());
+							rep = reply::stock_reply(reply::forbidden);
+							return;
+						}
+					}
+					session.remote_host = host_header;
 				}
-				session.remote_host = host_header;
 			}
 		}
 	}
@@ -1945,6 +1995,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
+		_log.Log(LOG_STATUS,"Incoming connection from: %s", session.remote_host.c_str());
 		// Create a new session ID
 		session.id = generateSessionID();
 		session.expires = session.timeout;
