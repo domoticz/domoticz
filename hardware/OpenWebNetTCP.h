@@ -58,7 +58,7 @@ protected:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-    std::string m_ownPassword;
+    	std::string m_ownPassword;
 	unsigned short m_ownScanTime;
 
 	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot;
@@ -68,9 +68,9 @@ protected:
 	boost::shared_ptr<boost::thread> m_monitorThread;
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
-    volatile uint32_t mask_request_status;
-    uint32_t ownCalcPass(string password, string nonce);
-    bool nonceHashAuthentication(csocket *connectionSocket);
+    	volatile uint32_t mask_request_status;
+    	uint32_t ownCalcPass(string password, string nonce);
+    	bool nonceHashAuthentication(csocket *connectionSocket);
 	csocket* connectGwOwn(const char *connectionMode);
 	void disconnect();
 	int m_heartbeatcntr;
@@ -90,14 +90,13 @@ protected:
 	void UpdatePower(const int who, const int where, double fval, const int BatteryLevel, const char *devname);
 	void UpdateEnergy(const int who, const int where, double fval, const int BatteryLevel, const char *devname);
 	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
-	
-  void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
-  void scan_automation_lighting(const int cen_area);
-  void scan_temperature_control();
-  void scan_device();
-  void requestTime();
-  void setTime();
-  void requestBurglarAlarmStatus();
+	void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
+  	void scan_automation_lighting(const int cen_area);
+  	void scan_temperature_control();
+  	void scan_device();
+  	void requestTime();
+  	void setTime();
+  	void requestBurglarAlarmStatus();
 	void requestDryContactIRDetectionStatus();
 	void requestEnergyTotalizer();
 	void requestAutomaticUpdatePower(int time);
