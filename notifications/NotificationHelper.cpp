@@ -4,6 +4,8 @@
 #include "../main/SQLHelper.h"
 #include "../main/localtime_r.h"
 #include "../main/RFXtrx.h"
+#include "../main/mainworker.h"
+#include "../hardware/DomoticzHardware.h"
 #include "../hardware/hardwaretypes.h"
 #include "NotificationHelper.h"
 #include "NotificationProwl.h"
@@ -231,6 +233,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, const int HardwareID, const std::string &ID, const std::string &sName, const unsigned char unit, const unsigned char cType, const unsigned char cSubType, const int nValue, const std::string &sValue, const float fValue) {
 	float fValue2;
 	bool r1, r2, r3;
+	int nsize;
+	int nexpected = 0;
 	
 	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
 	if (IsLightOrSwitch(cType, cSubType)) {
@@ -241,9 +245,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 		int meterType = 0;
 		std::vector<std::string> strarray;
 		StringSplit(sValue, ";", strarray);
+		nsize = strarray.size();
 		switch(cType) {
 			case pTypeP1Power:
-				if (strarray.size() == 6) {
+				nexpected = 6;
+				if (nsize == nexpected) {
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)atof(strarray[4].c_str()));
 				}
 				break;
@@ -271,7 +277,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			case pTypeHUM:
 				return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, 0.0, nValue, false, true);
 			case pTypeTEMP_HUM:
-				if (strarray.size() == 3) {
+				nexpected = 3;
+				if (nsize == nexpected) {
 					float Temp = (float)atof(strarray[0].c_str());
 					int Hum = atoi(strarray[1].c_str());
 					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
@@ -281,7 +288,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeTEMP_HUM_BARO:
-				if (strarray.size() == 5) {
+				nexpected = 5;
+				if (nsize == nexpected) {
 					float Temp = (float)atof(strarray[0].c_str());
 					int Hum = atoi(strarray[1].c_str());
 					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
@@ -292,7 +300,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeRAIN:
-				if (strarray.size() == 2) {
+				nexpected = 2;
+				if (nsize == nexpected) {
 					fValue2 = (float)atof(strarray[1].c_str());
 					return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
 				}
@@ -307,7 +316,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeUV:
-				if (strarray.size() == 2) {
+				nexpected = 2;
+				if (nsize == nexpected) {
 					float Level = (float)atof(strarray[0].c_str());
 					float Temp = (float)atof(strarray[1].c_str());
 					if (cSubType == sTypeUV3)
@@ -321,7 +331,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeCURRENT:
-				if (strarray.size() == 3) {
+				nexpected = 3;
+				if (nsize == nexpected) {
 					float CurrentChannel1 = (float)atof(strarray[0].c_str());
 					float CurrentChannel2 = (float)atof(strarray[1].c_str());
 					float CurrentChannel3 = (float)atof(strarray[2].c_str());
@@ -329,7 +340,8 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeCURRENTENERGY:
-				if (strarray.size() == 4) {
+				nexpected = 4;
+				if (nsize == nexpected) {
 					float CurrentChannel1 = (float)atof(strarray[0].c_str());
 					float CurrentChannel2 = (float)atof(strarray[1].c_str());
 					float CurrentChannel3 = (float)atof(strarray[2].c_str());
@@ -337,30 +349,34 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeWIND:
-				if (strarray.size() == 6) {
+				nexpected = 6;
+				if (nsize == nexpected) {
 					float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
 					float temp = (float)atof(strarray[4].c_str());
 					r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
-					r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false) && r1;
+					r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
 					return r1 && r2;
 				}
 				break;
 			case pTypeYouLess:
-				if (strarray.size() == 2) {
+				nexpected = 2;
+				if (nsize == nexpected) {
 					float usagecurrent = (float)atof(strarray[1].c_str());
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, usagecurrent);
 				}
 				break;
 			case pTypeAirQuality:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+			case pTypeWEIGHT:
 			case pTypeLux:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 			case pTypeRego6XXTemp:
 				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
 			case pTypePOWER:
-				if (strarray.size() == 2) {
+				nexpected = 2;
+				if (nsize == nexpected) {
 					fValue2 = (float)atof(strarray[0].c_str());
-					return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 				}
 				break;
 			case pTypeRFXMeter:
@@ -372,8 +388,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				}
 				break;
 			case pTypeUsage:
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_ENERGYINSTANT, fValue);
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
 				break;
+			case pTypeP1Gas:
+				// ignore, notification is done day by day in SQLHelper
+				return false;
 			case pTypeGeneral:
 				switch(cSubType) {
 					case sTypeVisibility:
@@ -394,13 +413,16 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 					case sTypeBaro:
 					case sTypeKwh:
-						if (strarray.size() == 2) {
+						nexpected = 2;
+						if (nsize == nexpected) {
 							fValue2 = (float)atof(strarray[0].c_str());
 							return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
 						}
 						break;
 					case sTypeZWaveAlarm:
 						return CheckAndHandleValueNotification(DevRowIdx, sName, nValue);
+					case sTypePercentage:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
 					case sTypeSoilMoisture:
 					case sTypeLeafWetness:
 					case sTypeAlert:
@@ -411,12 +433,11 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 					case sTypeVoltage:
 					case sTypeCurrent:
 					case sTypePressure:
-					case sTypePercentage:
 					case sTypeWaterflow:
 					case sTypeCustom:
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-					case sTypeTextStatus:
-						//no notification for text
+					default:
+						// silently ignore other general devices
 						return false;
 				}
 				break;
@@ -424,7 +445,23 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 				break;
 		}
 	}
-	_log.Log(LOG_STATUS, "Warning: Notification NOT handled (type: %02X - %s, subtype: %d - %s), please report on GitHub!", cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	
+	std::string hName;
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+	if (pHardware == NULL) {
+		hName = "";
+	}
+	else {
+		hName = pHardware->Name;
+	}
+	
+	if (nexpected > 0) {
+		_log.Log(LOG_STATUS, "Warning: Expecting svalue with %d elements separated by semicolon, %d elements received (\"%s\"), notification not sent (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s)", nexpected, nsize, sValue.c_str(), HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	}
+	else {
+		_log.Log(LOG_STATUS, "Warning: Notification NOT handled (Hardware: %d - %s, ID: %s, Unit: %d, Type: %02X - %s, SubType: %d - %s), please report on GitHub!", HardwareID, hName.c_str(), ID.c_str(), unit, cType, RFX_Type_Desc(cType, 1), cSubType, RFX_Type_SubType_Desc(cType, cSubType));
+	}
+	
 	return false;
 }
 

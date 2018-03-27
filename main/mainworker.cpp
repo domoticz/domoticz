@@ -8779,6 +8779,8 @@ void MainWorker::decode_Weight(const int HwdID, const _eHardwareTypes HwdType, c
 	if (DevRowIdx == -1)
 		return;
 
+	m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, Unit, devType, subType, weight);
+	
 	if (m_verboselevel >= EVBL_ALL)
 	{
 		WriteMessageStart();
@@ -10421,7 +10423,7 @@ void MainWorker::decode_CartelectronicTIC(const int HwdID,
 			if (DevRowIdx == -1)
 				return;
 
-			m_notifications.CheckAndHandleNotification(DevRowIdx, HwdID, ID, procResult.DeviceName, 1, pTypeUsage, sTypeElectric, (float)apparentPower);
+			m_notifications.CheckAndHandleNotification(DevRowIdx, procResult.DeviceName, pTypeUsage, sTypeElectric, NTYPE_ENERGYINSTANT, (const float)apparentPower);
 		}
 
 		switch (contractType)
@@ -12913,6 +12915,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 {
 	CDomoticzHardwareBase *pHardware = GetHardware(HardwareID);
 
+	// Prevent hazardous modification of DB from JSON calls
+	if (!m_sql.DoesDeviceExist(HardwareID, DeviceID.c_str(), unit, devType, subType))
+		return false;
+	
 	unsigned long ID = 0;
 	std::stringstream s_strid;
 	s_strid << std::hex << DeviceID;
@@ -12928,7 +12934,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 		uint64_t dID = 0;
 		std::string dName = "";
-
+		
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
@@ -12970,9 +12976,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			DecodeRXMessage(pHardware, (const unsigned char *)&lcmd.LIGHTING2, NULL, batterylevel);
 			return true;
 		}
-
-		//Handle Notification
-		m_notifications.CheckAndHandleNotification(dID, HardwareID, DeviceID, dName, unit, devType, subType, nValue, sValue);
 	}
 
 	std::string devname = "Unknown";
@@ -13023,6 +13026,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	{
 		_log.Log(LOG_NORM, "Sending Thermostat Fan Mode to device....");
 		SetZWaveThermostatFanMode(sidx.str(), nValue);
+	}
+	else if (pHardware) {
+		//Handle Notification
+		m_notifications.CheckAndHandleNotification(devidx, HardwareID, DeviceID, devname, unit, devType, subType, nValue, sValue);
 	}
 	return true;
 }
