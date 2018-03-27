@@ -384,6 +384,16 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 				{
 					
 				}
+				if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+				{
+					// possible incorrect root reference
+					size_t q = req.uri.find(m_webRoot);
+					if (q != 0)
+					{
+						std::string olduri = req.uri;
+						req.uri = m_webRoot + olduri;
+					}
+				}
 				return true;
 			}
 		}
@@ -431,6 +441,16 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 	catch (...)
 	{
 		
+	}
+	if ((req.uri[0] == '/') && (m_webRoot.length() > 0))
+	{
+		// possible incorrect root reference
+		size_t q = req.uri.find(m_webRoot);
+		if (q != 0)
+		{
+			std::string olduri = req.uri;
+			req.uri = m_webRoot + olduri;
+		}
 	}
 
 	return true;
@@ -679,7 +699,7 @@ void cWebem::SetWebTheme(const std::string &themename)
 void cWebem::SetWebRoot(const std::string &webRoot)
 {
 	// remove trailing slash if required
-	if(m_webRoot.size() > 0 && m_webRoot[m_webRoot.size() - 1] != '/')
+	if(webRoot.size() > 0 && webRoot[webRoot.size() - 1] == '/')
 	{
 		m_webRoot = webRoot.substr(0, webRoot.size() - 1);
 	}
