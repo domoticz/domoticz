@@ -305,7 +305,7 @@ define(['app'], function (app) {
 									if ((item.SubType == "Gas") || (item.SubType == "RFXMeter counter") || (item.SubType == "Counter Incremental")) {
 										bigtext = item.CounterToday;
 									}
-									status =  $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
+									status = $.t("Today") + ': ' + item.CounterToday + ', ' + item.Counter;
 								}
 								else if (item.Type == "Current") {
 									status = "";

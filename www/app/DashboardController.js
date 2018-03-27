@@ -1636,7 +1636,7 @@ define(['app'], function (app) {
 											if (item.Type != "P1 Smart Meter") {
 												if ($scope.config.DashboardType == 0) {
 													if (typeof item.CounterToday != 'undefined') {
-														status += '<br>' + $.t("Today") + ': ' + item.CounterToday;
+														status += $.t("Today") + ': ' + item.CounterToday;
 													}
 												}
 												else {
@@ -3829,7 +3829,7 @@ define(['app'], function (app) {
 											if ($scope.config.DashboardType == 0) {
 												//status+='<br>' + $.t("Actual") + ': ' + item.Usage;
 												if (typeof item.CounterToday != 'undefined') {
-													statushtml += '</span><span class="value2">' + $.t("Today") + ': ' + item.CounterToday;
+													statushtml += $.t("Today") + ': ' + item.CounterToday;
 												}
 											}
 											else {
