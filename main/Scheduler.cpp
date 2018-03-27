@@ -407,6 +407,9 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	struct tm tm1;
 	tm1.tm_isdst = -1;
 
+	if (bForceAddDay)
+		ltime.tm_mday++;
+
 	unsigned long HourMinuteOffset = (pItem->startHour * 3600) + (pItem->startMin * 60);
 
 	int nRandomTimerFrame = 15;
@@ -446,6 +449,13 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 		(pItem->timerType == TTYPE_WEEKSEVEN))
 	{
 		constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,pItem->startHour,pItem->startMin,roffset*60,isdst);
+		while (rtime < atime + 60)
+		{
+			ltime.tm_mday++;
+			constructTime(rtime,tm1,ltime.tm_year+1900,ltime.tm_mon+1,ltime.tm_mday,pItem->startHour,pItem->startMin,roffset*60,isdst);
+		}
+		pItem->startTime = rtime;
+		return true;
 	}
 	else if (pItem->timerType == TTYPE_FIXEDDATETIME)
 	{
@@ -660,25 +670,39 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	else
 		return false; //unknown timer type
 
-	// Adjust timer by 1 day if item is scheduled for next day or we are in the past
-        while (bForceAddDay || (rtime < atime + 60) )
-        {
-                if (tm1.tm_isdst == -1) // rtime was loaded from sunset/sunrise values; need to initialize tm1
-		{
-                        localtime_r(&rtime, &tm1);
+	if (tm1.tm_isdst == -1) // rtime was loaded from sunset/sunrise values; need to initialize tm1
+	{
+		if (bForceAddDay) // Adjust timer by 1 day if item is scheduled for next day
+			rtime += 86400;
 
-			//FIXME: because we are referencing the wrong date for sunset/sunrise values (i.e. today)
-			//	 we actually need to add 24 hours rather than a day and NOT correct for DST change
-			isdst = -1;
-	                tm1.tm_mday--;
-			tm1.tm_hour += 24;
-			// end of FIXME block
+		//FIXME: because we are referencing the wrong date for sunset/sunrise values (i.e. today)
+		//	 it may lead to incorrect results if we use localtime_r for finding the correct time
+		while (rtime < atime + 60)
+		{
+			rtime += 86400;
 		}
-                tm1.tm_mday++;
-                struct tm tm2;
-                constructTime(rtime, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec, isdst);
-                bForceAddDay = false;
-        }
+		pItem->startTime = rtime;
+		return true;
+		// end of FIXME block
+
+		//FIXME: keep for future reference
+		//tm1.tm_isdst = isdst; // load our current DST value and allow localtime_r to correct our 'mistake'
+		//localtime_r(&rtime, &tm1);
+		//isdst = tm1.tm_isdst;
+	}
+
+	// Adjust timer by 1 day if we are in the past
+	//FIXME: this part of the code currently seems impossible to reach, but I may be overseeing something. Therefore:
+	//	 it should be noted that constructTime() can return a time where tm1.tm_hour is different from pItem->startHour
+	//	 The main cause for this to happen is that startHour is not a valid time on that day due to changing to Summertime
+	//	 in which case the hour will be incremented by 1. By using tm1.tm_hour here this adjustment will propagate into
+	//	 whatever following day may result from this loop and cause the timer to be set 1 hour later than it should be.
+	while (rtime < atime + 60)
+	{
+		tm1.tm_mday++;
+		struct tm tm2;
+		constructTime(rtime, tm2, tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec, isdst);
+	}
 
 	pItem->startTime = rtime;
 	return true;
