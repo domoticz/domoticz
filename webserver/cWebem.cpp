@@ -1995,6 +1995,13 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
 	if (session.isnew == true) {
+		bool isJson = (req.uri.find("json.htm") != std::string::npos);
+		if (isJson && (session.remote_host == "127.0.0.1"))
+		{
+			// never create sessions for script connections that originate from localhost
+			return;
+		}
+
 		_log.Log(LOG_STATUS,"Incoming connection from: %s", session.remote_host.c_str());
 		// Create a new session ID
 		session.id = generateSessionID();
@@ -2005,7 +2012,9 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		}
 		session.auth_token = generateAuthToken(session, req); // do it after expires to save it also
 		session.isnew = false;
-		myWebem->AddSession(session);
+		//GB3 Todo: need sane way to keep track of scripts running on other hosts
+		if (!isJson)
+			myWebem->AddSession(session);
 		send_cookie(rep, session);
 
 	} else if (session.forcelogin == true) {
