@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 122
+#define DB_VERSION 123
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2339,7 +2339,6 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-
 		if (dbversion < 122)
 		{
 			//Patch for Darksky ozone sensor
@@ -2414,6 +2413,11 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 123)
+		{
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenLan);
 		}
 	}
 	else if (bNewInstall)

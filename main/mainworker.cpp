@@ -913,11 +913,11 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_DenkoviSmartdenLan:
 		//LAN
-		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password);
+		pHardware = new CDenkoviSmartdenLan(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_DenkoviSmartdenIPInOut:
 		//LAN
-		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password);
+		pHardware = new CDenkoviSmartdenIPInOut(ID, Address, Port, Password, Mode1);
 		break;
 	case HTYPE_HEOS:
 		//HEOS by DENON

@@ -9,16 +9,21 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 
-#define DenkoviSmartdenLan_POLL_INTERVAL 5
+#define MAX_POLL_INTERVAL 30*1000
 
-CDenkoviSmartdenLan::CDenkoviSmartdenLan(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password) :
+CDenkoviSmartdenLan::CDenkoviSmartdenLan(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &password, const int pollInterval) :
 m_szIPAddress(IPAddress),
-m_Password(CURLEncode::URLEncode(password))
+m_Password(CURLEncode::URLEncode(password)),
+m_pollInterval(pollInterval)
 {
 	m_HwdID=ID;
 	m_usIPPort=usIPPort;
 	m_stoprequested=false;
 	m_bOutputLog = false;
+	if (m_pollInterval < 500)
+		m_pollInterval = 500;
+	else if (m_pollInterval > MAX_POLL_INTERVAL)
+		m_pollInterval = MAX_POLL_INTERVAL;
 	Init();
 }
 
@@ -55,18 +60,19 @@ bool CDenkoviSmartdenLan::StopHardware()
 
 void CDenkoviSmartdenLan::Do_Work()
 {
-	int sec_counter = DenkoviSmartdenLan_POLL_INTERVAL - 2;
+	int poll_interval = m_pollInterval / 100;
+	int poll_counter = poll_interval - 2;
 
 	while (!m_stoprequested)
 	{
-		sleep_seconds(1);
-		sec_counter++;
+		sleep_milliseconds(100);
+		poll_counter++;
 
-		if (sec_counter % 12 == 0) {
-			m_LastHeartbeat=mytime(NULL);
+		if (poll_counter % 12 * 10 == 0) { //10 steps = 1 second (10 * 100)
+			m_LastHeartbeat = mytime(NULL);
 		}
 
-		if (sec_counter % DenkoviSmartdenLan_POLL_INTERVAL == 0)
+		if (poll_counter % poll_interval == 0)
 		{
 			GetMeterDetails();
 		}
