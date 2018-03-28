@@ -12918,7 +12918,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	// Prevent hazardous modification of DB from JSON calls
 	if (!m_sql.DoesDeviceExist(HardwareID, DeviceID.c_str(), unit, devType, subType))
 		return false;
-	
+
 	unsigned long ID = 0;
 	std::stringstream s_strid;
 	s_strid << std::hex << DeviceID;
@@ -12934,7 +12934,7 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 
 		uint64_t dID = 0;
 		std::string dName = "";
-		
+
 		if (!result.empty())
 		{
 			std::vector<std::string> sd = result[0];
