@@ -46,7 +46,7 @@ namespace Plugins {
 		else return new CPluginProtocol();
 	}
 
-	void CPluginProtocol::ProcessInbound(const ReadMessage* Message)
+	void CPluginProtocol::ProcessInbound(const ReadEvent* Message)
 	{
 		// Raw protocol is to just always dispatch data to plugin without interpretation
 		Message->m_pPlugin->MessagePlugin(new onMessageCallback(Message->m_pPlugin, Message->m_pConnection, Message->m_Buffer));
@@ -95,7 +95,7 @@ namespace Plugins {
 		}
 	}
 
-	void CPluginProtocolLine::ProcessInbound(const ReadMessage* Message)
+	void CPluginProtocolLine::ProcessInbound(const ReadEvent* Message)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
@@ -117,7 +117,7 @@ namespace Plugins {
 		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolJSON::ProcessInbound(const ReadMessage* Message)
+	void CPluginProtocolJSON::ProcessInbound(const ReadEvent* Message)
 	{
 		//
 		//	Handles the cases where a read contains a partial message or multiple messages
@@ -149,7 +149,7 @@ namespace Plugins {
 		m_sRetainedData.assign(sData.c_str(), sData.c_str() + sData.length()); // retain any residual for next time
 	}
 
-	void CPluginProtocolXML::ProcessInbound(const ReadMessage* Message)
+	void CPluginProtocolXML::ProcessInbound(const ReadEvent* Message)
 	{
 		//
 		//	Only returns whole XML messages. Does not handle <tag /> as the top level tag
@@ -279,7 +279,7 @@ namespace Plugins {
 			Py_DECREF(pObj);	\
 		}
 
-	void CPluginProtocolHTTP::ProcessInbound(const ReadMessage* Message)
+	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
 	{
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
@@ -656,7 +656,7 @@ namespace Plugins {
 		return retVal;
 	}
 
-	void CPluginProtocolICMP::ProcessInbound(const ReadMessage * Message)
+	void CPluginProtocolICMP::ProcessInbound(const ReadEvent * Message)
 	{
 		PyObject*	pObj = NULL;
 		PyObject*	pDataDict = PyDict_New();
@@ -850,7 +850,7 @@ namespace Plugins {
 		vVector.insert(vVector.end(), sString.begin(), sString.end());
 	}
 
-	void CPluginProtocolMQTT::ProcessInbound(const ReadMessage * Message)
+	void CPluginProtocolMQTT::ProcessInbound(const ReadEvent * Message)
 	{
 		byte loop = 0;
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());

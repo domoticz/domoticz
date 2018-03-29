@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 122
+#define DB_VERSION 123
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2339,7 +2339,6 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 		}
-
 		if (dbversion < 122)
 		{
 			//Patch for Darksky ozone sensor
@@ -2414,6 +2413,11 @@ bool CSQLHelper::OpenDatabase()
 					}
 				}
 			}
+		}
+		if (dbversion < 123)
+		{
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
+			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenLan);
 		}
 	}
 	else if (bNewInstall)
@@ -3898,6 +3902,17 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 		// TODO: Should plugin be notified?
 	}
 	return devRowID;
+}
+
+bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
+	std::vector<std::vector<std::string> > result;
+	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
+	if (result.size()==0) {
+		return false;
+	}
+	else {
+		return true;
+	}
 }
 
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)

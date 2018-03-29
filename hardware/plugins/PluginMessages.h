@@ -59,25 +59,6 @@ namespace Plugins {
 		};
 	};
 
-	class ReadMessage : public CPluginMessageBase, public CHasConnection
-	{
-	public:
-		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
-		{
-			m_Name = __func__;
-			m_ElapsedMs = ElapsedMs;
-			m_Buffer.reserve(ByteCount);
-			m_Buffer.assign(Data, Data + ByteCount);
-		};
-		std::vector<byte>		m_Buffer;
-		int						m_ElapsedMs;
-		virtual void Process()
-		{
-			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
-			m_pPlugin->ConnectionRead(this);
-		};
-	};
-
 	// Base callback message class
 	class CCallbackBase : public CPluginMessageBase
 	{
@@ -439,6 +420,25 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	public:
 		CEventBase(CPlugin* pPlugin) : CPluginMessageBase(pPlugin) {};
 		virtual void Process() { throw "Base event class Handle called"; };
+	};
+
+	class ReadEvent : public CEventBase, public CHasConnection
+	{
+	public:
+		ReadEvent(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
+		{
+			m_Name = __func__;
+			m_ElapsedMs = ElapsedMs;
+			m_Buffer.reserve(ByteCount);
+			m_Buffer.assign(Data, Data + ByteCount);
+		};
+		std::vector<byte>		m_Buffer;
+		int						m_ElapsedMs;
+		virtual void Process()
+		{
+			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+			m_pPlugin->ConnectionRead(this);
+		};
 	};
 
 	class DisconnectedEvent : public CEventBase, public CHasConnection

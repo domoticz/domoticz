@@ -448,9 +448,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controller: 'DevicesController'
 			})).
 			when('/Devices/:id/Timers', angularAMD.route({
-				templateUrl: '/views/timers.html',
+				templateUrl: 'views/timers.html',
 				controller: 'DeviceTimersController',
-				controllerUrl: '/app/DeviceTimers.js',
+				controllerUrl: 'app/DeviceTimers.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightLog', angularAMD.route({
