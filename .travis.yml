@@ -61,8 +61,6 @@ matrix:
           - git
           - libdigest-sha-perl
           - python3-dev
-          - lftp
-          - sshpass
     script:
       - (cd open-zwave-read-only; wget http://www.domoticz.com/domo.patch; patch -p1 < domo.patch; make)
       - cmake -DCMAKE_BUILD_TYPE=Release -DUSE_OPENSSL_STATIC="NO" -DCMAKE_LIBRARY_PATH=open-zwave-read-only CMakeLists.txt
@@ -90,7 +88,6 @@ matrix:
 # What to do with the build artifacts
 # - Upload to the Domoticz file server
 before_deploy:
-  - gzip -k www/js/domoticz.js
   - tar czf domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz domoticz History.txt License.txt domoticz.sh server_cert.pem updatebeta updaterelease www/ scripts/ Config/ dzVents/
   - shasum -a 256 domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz > domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum
   - cp appversion.h.txt version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h
@@ -98,9 +95,7 @@ before_deploy:
 deploy:
   skip_cleanup: true
   provider: script
-  #script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
-  script: bash copyfiles.sh
+  script: curl --ftp-ssl -T "{domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz,domoticz_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.tgz.sha256sum,version_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.h,history_${TRAVIS_OS_NAME}_${TARGET_ARCHITECTURE}.txt,History.txt}" -k -u "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/beta/"
   on:
-    branch: rgbww_dev_merge
-    repo: emontnemery/domoticz
-    condition: $TRAVIS_OS_NAME = linux
+    branch: development
+    repo: domoticz/domoticz
