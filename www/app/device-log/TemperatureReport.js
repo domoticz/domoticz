@@ -356,11 +356,22 @@ define(['app'], function (app) {
             var chartElement = $element.find('#usagegraph');
 
             var chartData = data.items.map(function (item) {
+                var color = 'rgba(3,190,252,0.8)';
+
+                if (item.min === data.min) {
+                    color = '#1100CC';
+                }
+
+                if (item.max === data.max) {
+                    color = '#FF0000';
+                }
+
                 return {
                     x: vm.isMonthView
                         ? Date.UTC.apply(Date, item.date.split('-'))
                         : Date.UTC(vm.selectedYear, item.date - 1, 1),
-                    y: parseFloat(item.avg.toFixed(1))
+                    y: parseFloat(item.avg.toFixed(1)),
+                    color: color
                 }
             });
 
@@ -435,11 +446,16 @@ define(['app'], function (app) {
                 }
             });
 
+            var avgData = data.items.map(function (item) {
+                return {
+                    x: vm.isMonthView
+                        ? Date.UTC.apply(Date, item.date.split('-'))
+                        : Date.UTC(vm.selectedYear, item.date - 1, 1),
+                    y: parseFloat(item.avg.toFixed(1))
+                }
+            });
+
             chartElement.highcharts({
-                chart: {
-                    type: 'columnrange',
-                    inverted: true
-                },
                 credits: {
                     enabled: true,
                     href: "http://www.domoticz.com",
@@ -462,6 +478,7 @@ define(['app'], function (app) {
                     }
                 },
                 tooltip: {
+                    shared: true,
                     valueSuffix: data.isOnlyHumidity
                         ? '%'
                         : ' °' + vm.degreeType
@@ -479,13 +496,24 @@ define(['app'], function (app) {
                 legend: {
                     enabled: false
                 },
-                series: [{
-                    name: data.isOnlyHumidity
-                        ? $.t('Humidity')
-                        : $.t('Temperature'),
-                    color: 'rgba(3,190,252,0.8)',
-                    data: chartData
-                }]
+                series: [
+                    {
+                        type: 'spline',
+                        name: data.isOnlyHumidity
+                            ? $.t('Average Humidity')
+                            : $.t('Average Temperature'),
+                        color: 'yellow',
+                        data: avgData
+                    }, {
+                        type: 'areasplinerange',
+                        name: data.isOnlyHumidity
+                            ? $.t('Humidity Variation')
+                            : $.t('Temperature Variation'),
+                        color: 'rgb(3,190,252)',
+                        fillOpacity: 0.3,
+                        data: chartData
+                    }
+                ]
             });
         }
     });
