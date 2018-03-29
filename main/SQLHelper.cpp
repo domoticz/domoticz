@@ -2419,7 +2419,7 @@ bool CSQLHelper::OpenDatabase()
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenLan);
 		}
-		if (dbversion < 123)
+		if (dbversion < 124)
 		{
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Color] TEXT DEFAULT NULL");
 			query("ALTER TABLE Timers ADD COLUMN [Color] TEXT DEFAULT NULL");
