@@ -1610,7 +1610,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		if (!(sSID.empty() || sAuthToken.empty() || szTime.empty()))
 		{
 			WebEmSession* oldSession = myWebem->GetSession(sSID);
-			if ((oldSession == NULL) || (oldSession->expires < now))
+			if ((oldSession != NULL) && (oldSession->expires < now))
 			{
 				// Check if session stored in memory is not expired (prevent from spoofing expiration time)
 				expired = true;
