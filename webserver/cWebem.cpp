@@ -1458,6 +1458,7 @@ static void GetURICommandParameter(const std::string &uri, std::string &cmdparam
 bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const request& req, reply& rep)
 {
 	session.rights = -1; // no rights
+	session.id = "";
 
 	if (myWebem->m_userpasswords.size() == 0)
 	{
@@ -1584,7 +1585,7 @@ bool cWebemRequestHandler::CheckAuthentication(WebEmSession & session, const req
 		}
 	}
 
-	if (session.rights == 2)
+	if ((session.rights == 2) && (session.id.empty()))
 	{
 		session.isnew = true;
 		return true;
@@ -1994,6 +1995,43 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
+	if ((session.isnew == true) && (session.rights == 2) && (req.uri.find("json.htm") != std::string::npos))
+	{
+		// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
+		WebEmSession* memSession = myWebem->GetSession(session.remote_host);
+		time_t now = mytime(NULL);
+		if (memSession != NULL)
+		{
+			if (memSession->expires < now)
+			{
+				myWebem->RemoveSession(session.remote_host);
+			}
+			else
+			{
+				session.isnew = false;
+				if (memSession->expires - (SHORT_SESSION_TIMEOUT / 2) < now)
+				{
+					memSession->expires = now + SHORT_SESSION_TIMEOUT;
+
+					// unsure about the point of the forced removal of 'live' sessions and restore from
+					// database but these 'fake' sessions are memory only and can't be restored that way.
+					// Should I do a RemoveSession() followed by a AddSession()?
+					// For now: keep 'timeout' in sync with 'expires'
+					memSession->timeout = memSession->expires;
+				}
+			}
+		}
+
+		if (session.isnew == true) {
+			// register a 'fake' IP based session so we can reference that if the client returns here
+			session.id = session.remote_host; 
+			session.rights = -1; // predictable session ID must have no rights
+			session.expires = session.timeout;
+			myWebem->AddSession(session);
+			session.rights = 2; // restore session rights
+		}
+	}
+
 	if (session.isnew == true) {
 		_log.Log(LOG_STATUS,"Incoming connection from: %s", session.remote_host.c_str());
 		// Create a new session ID
@@ -2007,7 +2045,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 		session.isnew = false;
 		myWebem->AddSession(session);
 		send_cookie(rep, session);
-
 	} else if (session.forcelogin == true) {
 #ifdef DEBUG_WWW
 		_log.Log(LOG_STATUS, "[web:%s] Logout : remove session %s", myWebem->GetPort().c_str(), session.id.c_str());
