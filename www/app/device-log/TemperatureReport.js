@@ -368,7 +368,7 @@ define(['app'], function (app) {
 
                 return {
                     x: vm.isMonthView
-                        ? Date.UTC.apply(Date, item.date.split('-'))
+                        ? +(new Date(item.date))
                         : Date.UTC(vm.selectedYear, item.date - 1, 1),
                     y: parseFloat(item.avg.toFixed(1)),
                     color: color
@@ -439,7 +439,7 @@ define(['app'], function (app) {
             var chartData = data.items.map(function (item) {
                 return {
                     x: vm.isMonthView
-                        ? Date.UTC.apply(Date, item.date.split('-'))
+                        ? +(new Date(item.date))
                         : Date.UTC(vm.selectedYear, item.date - 1, 1),
                     low: parseFloat(item.min.toFixed(1)),
                     high: parseFloat(item.max.toFixed(1)),
@@ -449,7 +449,7 @@ define(['app'], function (app) {
             var avgData = data.items.map(function (item) {
                 return {
                     x: vm.isMonthView
-                        ? Date.UTC.apply(Date, item.date.split('-'))
+                        ? +(new Date(item.date))
                         : Date.UTC(vm.selectedYear, item.date - 1, 1),
                     y: parseFloat(item.avg.toFixed(1))
                 }
