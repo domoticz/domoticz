@@ -454,21 +454,21 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightLog', angularAMD.route({
-				templateUrl: '/views/device_light_log.html',
+				templateUrl: 'views/device_light_log.html',
 				controller: 'DeviceLightLogController',
-				controllerUrl: '/app/device-log/LightLog.js',
+				controllerUrl: 'app/device-log/LightLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({
-				templateUrl: '/views/device_temperature_log.html',
+				templateUrl: 'views/device_temperature_log.html',
 				controller: 'DeviceTemperatureLogController',
-				controllerUrl: '/app/device-log/TemperatureLog.js',
+				controllerUrl: 'app/device-log/TemperatureLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
-				templateUrl: '/views/device_temperature_report.html',
+				templateUrl: 'views/device_temperature_report.html',
 				controller: 'DeviceTemperatureReportController',
-				controllerUrl: '/app/device-log/TemperatureReport.js',
+				controllerUrl: 'app/device-log/TemperatureReport.js',
 				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
