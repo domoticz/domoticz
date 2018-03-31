@@ -2094,7 +2094,7 @@ bool CSQLHelper::OpenDatabase()
 			//Adjust Limited device id's to uppercase HEX
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeLimitlessLights << ")";
+			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeColorSwitch << ")";
 			result = query(szQuery2.str());
 			if (result.size() > 0)
 			{
@@ -2475,7 +2475,7 @@ bool CSQLHelper::OpenDatabase()
 				}
 			}
 
-			//Patch for ZWave, change device type from sTypeLimitlessRGBW to sTypeLimitlessRGBWZ
+			//Patch for ZWave, change device type from sTypeColor_RGB_W to sTypeColor_RGB_W_Z
 			szQuery2.clear();
 			szQuery2.str("");
 			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenZWave << ")";
@@ -2488,7 +2488,7 @@ bool CSQLHelper::OpenDatabase()
 					std::vector<std::string> sd = *itt;
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeLimitlessLights << ") AND (SubType=" << (int)sTypeLimitlessRGBW << ") AND (HardwareID=" << sd[0] << ")";
+					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeColorSwitch << ") AND (SubType=" << (int)sTypeColor_RGB_W << ") AND (HardwareID=" << sd[0] << ")";
 					result2 = query(szQuery2.str());
 
 					std::vector<std::vector<std::string> >::const_iterator itt2;
@@ -2499,7 +2499,7 @@ bool CSQLHelper::OpenDatabase()
 						//Change device type
 						szQuery2.clear();
 						szQuery2.str("");
-						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeLimitlessRGBWZ << " WHERE (ID=" << sd[0] << ")";
+						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeColor_RGB_W_Z << " WHERE (ID=" << sd[0] << ")";
 						query(szQuery2.str());
 					}
 				}
@@ -3072,7 +3072,7 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting3:
 					case pTypeLighting5:
 					case pTypeLighting6:
-					case pTypeLimitlessLights:
+					case pTypeColorSwitch:
 					case pTypeGeneralSwitch:
 					case pTypeHomeConfort:
 						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor);
@@ -3711,17 +3711,17 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		break;
 	}
 
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	{
 		switch (SensorSubType)
 		{
-		case sTypeLimitlessRGB:    //RGB switch
-		case sTypeLimitlessRGBW:   //RGBW switch
-		case sTypeLimitlessRGBWW:  //RGBWW switch
-		case sTypeLimitlessRGBWZ:  //RGBWZ switch
-		case sTypeLimitlessRGBWWZ: //RGBWWZ switch
-		case sTypeLimitlessWhite:  //Monochrome white switch
-		case sTypeLimitlessWW:     //Adjustable color temperature white switch
+		case sTypeColor_RGB:         //RGB switch
+		case sTypeColor_RGB_W:       //RGBW switch
+		case sTypeColor_RGB_CW_WW:   //RGBWW switch
+		case sTypeColor_RGB_W_Z:     //RGBWZ switch
+		case sTypeColor_RGB_CW_WW_Z: //RGBWWZ switch
+		case sTypeColor_White:       //Monochrome white switch
+		case sTypeColor_CW_WW:       //Adjustable color temperature white switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -3843,8 +3843,8 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeLighting6:
 						newnValue=light6_sOff;
 						break;
-					case pTypeLimitlessLights:
-						newnValue=Limitless_LedOff;
+					case pTypeColorSwitch:
+						newnValue=Color_LedOff;
 						break;
 					case pTypeSecurity1:
 						newnValue=sStatusNormal;
@@ -3929,8 +3929,8 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			case pTypeLighting6:
 				newnValue=light6_sOff;
 				break;
-			case pTypeLimitlessLights:
-				newnValue=Limitless_LedOff;
+			case pTypeColorSwitch:
+				newnValue=Color_LedOff;
 				break;
 			case pTypeSecurity1:
 				newnValue=sStatusNormal;
@@ -4143,7 +4143,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeEvohome:
@@ -4348,8 +4348,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						case pTypeRemote:
 							cmd=light2_sOff;
 							break;
-						case pTypeLimitlessLights:
-							cmd=Limitless_LedOff;
+						case pTypeColorSwitch:
+							cmd=Color_LedOff;
 							bAdd2DelayQueue=true;
 							break;
 						case pTypeRFY:
@@ -7423,7 +7423,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeLighting6,
 		pTypeFan,
 		pTypeRadiator1,
-		pTypeLimitlessLights,
+		pTypeColorSwitch,
 		pTypeSecurity1,
 		pTypeCurtain,
 		pTypeBlinds,

@@ -1247,7 +1247,7 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 	}
 	else if ((sub_type == V_RGB) || (sub_type == V_RGBW))
 	{
-		sSwitchValue = (nvalue == Limitless_LedOn) ? "1" : "0";
+		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
 	}
 
@@ -1440,10 +1440,10 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeColorSwitch)
 	{
 		//RGW/RGBW command
-		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
+		_tColorSwitch *pLed = (_tColorSwitch *)pdata;
 		//unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		//unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
@@ -1462,7 +1462,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 
 			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != NULL);
-			if (pLed->command == Limitless_SetRGBColour)
+			if (pLed->command == Color_SetColor)
 			{
 				std::stringstream sstr;
 				//TODO: OK to scale color instead of sending separate V_PERCENTAGE?
@@ -1495,7 +1495,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Limitless_SetColorToWhite)
+			else if (pLed->command == Color_SetColorToWhite)
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
@@ -1513,7 +1513,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Limitless_SetBrightnessLevel)
+			else if (pLed->command == Color_SetBrightnessLevel)
 			{
 				int svalue = pLed->value;
 				if (svalue > 100)
@@ -1522,9 +1522,9 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				sstr << svalue;
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
+			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
-				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
+				std::string lState = (pLed->command == Color_LedOn) ? "1" : "0";
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
 		}

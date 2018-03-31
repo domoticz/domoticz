@@ -3824,7 +3824,7 @@ namespace http {
 						case pTypeLighting5:
 						case pTypeLighting6:
 						case pTypeFan:
-						case pTypeLimitlessLights:
+						case pTypeColorSwitch:
 						case pTypeSecurity1:
 						case pTypeSecurity2:
 						case pTypeEvohome:
@@ -3953,7 +3953,7 @@ namespace http {
 							case pTypeLighting5:
 							case pTypeLighting6:
 							case pTypeFan:
-							case pTypeLimitlessLights:
+							case pTypeColorSwitch:
 							case pTypeSecurity1:
 							case pTypeSecurity2:
 							case pTypeEvohome:
@@ -5384,7 +5384,7 @@ namespace http {
 					(dType == pTypeLighting4) ||
 					(dType == pTypeLighting5) ||
 					(dType == pTypeLighting6) ||
-					(dType == pTypeLimitlessLights) ||
+					(dType == pTypeColorSwitch) ||
 					(dType == pTypeSecurity1) ||
 					(dType == pTypeSecurity2) ||
 					(dType == pTypeEvohome) ||
@@ -6296,7 +6296,7 @@ namespace http {
 					(dType != pTypeLighting5) &&
 					(dType != pTypeLighting6) &&
 					(dType != pTypeFan) &&
-					(dType != pTypeLimitlessLights) &&
+					(dType != pTypeColorSwitch) &&
 					(dType != pTypeSecurity1) &&
 					(dType != pTypeSecurity2) &&
 					(dType != pTypeEvohome) &&
@@ -8633,7 +8633,7 @@ namespace http {
 								(dType != pTypeLighting5) &&
 								(dType != pTypeLighting6) &&
 								(dType != pTypeFan) &&
-								(dType != pTypeLimitlessLights) &&
+								(dType != pTypeColorSwitch) &&
 								(dType != pTypeSecurity1) &&
 								(dType != pTypeSecurity2) &&
 								(dType != pTypeEvohome) &&
@@ -8916,7 +8916,7 @@ namespace http {
 						(dType == pTypeLighting5) ||
 						(dType == pTypeLighting6) ||
 						(dType == pTypeFan) ||
-						(dType == pTypeLimitlessLights) ||
+						(dType == pTypeColorSwitch) ||
 						(dType == pTypeCurtain) ||
 						(dType == pTypeBlinds) ||
 						(dType == pTypeRFY) ||
@@ -8977,7 +8977,7 @@ namespace http {
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							if (dType == pTypeLimitlessLights)
+							if (dType == pTypeColorSwitch)
 							{
 								_tColor color(sColor);
 								std::string jsonColor = color.toJSON();
@@ -13013,7 +13013,7 @@ namespace http {
 				(dType != pTypeLighting5) &&
 				(dType != pTypeLighting6) &&
 				(dType != pTypeFan) &&
-				(dType != pTypeLimitlessLights) &&
+				(dType != pTypeColorSwitch) &&
 				(dType != pTypeSecurity1) &&
 				(dType != pTypeSecurity2) &&
 				(dType != pTypeEvohome) &&

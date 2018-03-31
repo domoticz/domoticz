@@ -3547,7 +3547,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		case pTypeLighting5:
 		case pTypeLighting6:
 		case pTypeFan:
-		case pTypeLimitlessLights:
+		case pTypeColorSwitch:
 		case pTypeSecurity1:
 		case pTypeSecurity2:
 		case pTypeEvohome:

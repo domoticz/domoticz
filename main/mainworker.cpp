@@ -1865,9 +1865,9 @@ uint64_t MainWorker::PerformRealActionFromDomoticzClient(const unsigned char *pR
 			Unit = pResponse->RADIATOR1.unitcode;
 		}
 		break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	{
-		_tLimitlessLights *pLed = (_tLimitlessLights *)pResponse;
+		_tColorSwitch *pLed = (_tColorSwitch *)pResponse;
 		ID = "1";
 		Unit = pLed->dunit;
 	}
@@ -2216,7 +2216,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 			case pTypeLighting4:
 			case pTypeLighting5:
 			case pTypeLighting6:
-			case pTypeLimitlessLights:
+			case pTypeColorSwitch:
 			case pTypeCurtain:
 			case pTypeBlinds:
 			case pTypeRFY:
@@ -2436,8 +2436,8 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase *pHardware, const 
 		case pTypePOWER:
 			decode_Power(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
-		case pTypeLimitlessLights:
-			decode_LimitlessLights(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
+		case pTypeColorSwitch:
+			decode_ColorSwitch(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
 			break;
 		case pTypeGeneralSwitch:
 			decode_GeneralSwitch(HwdID, HwdType, reinterpret_cast<const tRBUF *>(pRXCommand), procResult);
@@ -5546,12 +5546,12 @@ void MainWorker::decode_HomeConfort(const int HwdID, const _eHardwareTypes HwdTy
 	procResult.DeviceRowIdx = DevRowIdx;
 }
 
-void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
+void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult)
 {
 	char szTmp[300];
-	_tLimitlessLights *pLed = (_tLimitlessLights*)pResponse;
+	_tColorSwitch *pLed = (_tColorSwitch*)pResponse;
 
-	unsigned char devType = pTypeLimitlessLights;
+	unsigned char devType = pTypeColorSwitch;
 	unsigned char subType = pLed->subtype;
 	if (pLed->id == 1)
 		sprintf(szTmp, "%d", 1);
@@ -5572,7 +5572,7 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 	CheckSceneCode(DevRowIdx, devType, subType, cmnd, szTmp);
 
 	// TODO: Why don't we let database update be handled by CSQLHelper::UpdateValue?
-	if (cmnd == Limitless_SetBrightnessLevel || cmnd == Limitless_SetRGBColour)
+	if (cmnd == Color_SetBrightnessLevel || cmnd == Color_SetColor)
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
@@ -5593,7 +5593,7 @@ void MainWorker::decode_LimitlessLights(const int HwdID, const _eHardwareTypes H
 
 	}
 
-	if (cmnd == Limitless_SetRGBColour)
+	if (cmnd == Color_SetColor)
 	{
 		std::vector<std::vector<std::string> > result;
 		result = m_sql.safe_query(
@@ -11282,11 +11282,9 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		return true;
 	}
 	break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	{
-		_tLimitlessLights lcmd;
-		lcmd.len = sizeof(_tLimitlessLights) - 1;
-		lcmd.type = dType;
+		_tColorSwitch lcmd;
 		lcmd.subtype = dSubType;
 		lcmd.id = ID;
 		lcmd.dunit = Unit;
@@ -11305,7 +11303,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		if (!GetLightCommand(dType, dSubType, switchtype, switchcmd, lcmd.command, options))
 			return false;
-		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tLimitlessLights)))
+		if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(_tColorSwitch)))
 			return false;
 		if (!IsTesting) {
 			//send to internal for now (later we use the ACK)

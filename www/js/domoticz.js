@@ -11085,7 +11085,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		$(selector + ' #popup_picker').wheelColorPicker('redrawSliders');
 	}
 	
-	/**enum _tColorMode {
+	/**enum ColorMode {
 		ColorModeNone = 0, // Illegal
 		ColorModeWhite,    // White. Valid fields: none
 		ColorModeTemp,     // White with color temperature. Valid fields: t

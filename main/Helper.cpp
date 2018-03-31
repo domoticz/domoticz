@@ -765,7 +765,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeFan:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeCurtain:

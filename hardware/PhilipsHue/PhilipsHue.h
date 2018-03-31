@@ -15,10 +15,10 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	{
 		HLTYPE_NORMAL,
 		HLTYPE_DIM,
-		HLTYPE_RGBW,
+		HLTYPE_RGB_W,
 		HLTYPE_SCENE,
-		HLTYPE_WW,
-		HLTYPE_RGBWW
+		HLTYPE_CW_WW,
+		HLTYPE_RGB_CW_WW
 	};
 	struct _tHueLight
 	{

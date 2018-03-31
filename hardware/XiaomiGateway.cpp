@@ -177,20 +177,20 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			message = "{\"cmd\":\"write\",\"model\":\"curtain\",\"sid\":\"158d00" + sid + "\",\"short_id\":9844,\"data\":\"{\\\"curtain_level\\\":\\\"" + ss.str() + "\\\",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
 	}
-	else if (packettype == pTypeLimitlessLights) {
+	else if (packettype == pTypeColorSwitch) {
 		//Gateway RGB Controller
-		_tLimitlessLights *xcmd = (_tLimitlessLights*)pdata;
+		_tColorSwitch *xcmd = (_tColorSwitch*)pdata;
 
 
-		if (xcmd->command == Limitless_LedOn) {
+		if (xcmd->command == Color_LedOn) {
 			m_GatewayBrightnessInt = 100;
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":4294967295,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if (xcmd->command == Limitless_LedOff) {
+		else if (xcmd->command == Color_LedOff) {
 			m_GatewayBrightnessInt = 0;
 			message = "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" + m_GatewaySID + "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":0,\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 		}
-		else if (xcmd->command == Limitless_SetRGBColour) {
+		else if (xcmd->command == Color_SetColor) {
 			if (xcmd->color.mode == ColorModeRGB)
 			{
 				m_GatewayRgbR = xcmd->color.r;
@@ -209,12 +209,12 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 				_log.Log(LOG_STATUS, "XiaomiGateway: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", xcmd->color.mode);
 			}
 		}
-		else if ((xcmd->command == Limitless_SetBrightnessLevel) || (xcmd->command == Limitless_SetBrightUp) || (xcmd->command == Limitless_SetBrightDown)) {
+		else if ((xcmd->command == Color_SetBrightnessLevel) || (xcmd->command == Color_SetBrightUp) || (xcmd->command == Color_SetBrightDown)) {
 			//add the brightness
-			if (xcmd->command == Limitless_SetBrightUp) {
+			if (xcmd->command == Color_SetBrightUp) {
 				//m_GatewayBrightnessInt = std::min(m_GatewayBrightnessInt + 10, 100);
 			}
-			else if (xcmd->command == Limitless_SetBrightDown) {
+			else if (xcmd->command == Color_SetBrightDown) {
 				//m_GatewayBrightnessInt = std::max(m_GatewayBrightnessInt - 10, 0);
 			}
 			else {
@@ -227,8 +227,8 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 			ss << "{\"cmd\":\"write\",\"model\":\"gateway\",\"sid\":\"" << m_GatewaySID << "\",\"short_id\":0,\"data\":\"{\\\"rgb\\\":" << value << ",\\\"key\\\":\\\"@gatewaykey\\\"}\" }";
 			message = ss.str();
 		}
-		else if (xcmd->command == Limitless_SetColorToWhite) {
-			//ignore Limitless_SetColorToWhite
+		else if (xcmd->command == Color_SetColorToWhite) {
+			//ignore Color_SetColorToWhite
 		}
 		else {
 			_log.Log(LOG_ERROR, "XiaomiGateway: Unknown command %d", xcmd->command);
@@ -339,27 +339,25 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 	int nvalue = 0;
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeLimitlessLights, sTypeLimitlessRGBW);
+	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, sTypeColor_RGB_W);
 
 	if (result.size() < 1)
 	{
 		_log.Log(LOG_STATUS, "XiaomiGateway: New Gateway Found (%s/%s)", str.c_str(), Name.c_str());
 		//int value = atoi(brightness.c_str());
 		//int value = hue; // atoi(hue.c_str());
-		int cmd = Limitless_LedOn;
+		int cmd = Color_LedOn;
 		if (!bIsOn) {
-			cmd = Limitless_LedOff;
+			cmd = Color_LedOff;
 		}
-		_tLimitlessLights ycmd;
-		ycmd.len = sizeof(_tLimitlessLights) - 1;
-		ycmd.type = pTypeLimitlessLights;
-		ycmd.subtype = sTypeLimitlessRGBW;
+		_tColorSwitch ycmd;
+		ycmd.subtype = sTypeColor_RGB_W;
 		ycmd.id = sID;
 		//ycmd.dunit = 0;
 		ycmd.value = brightness;
 		ycmd.command = cmd;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&ycmd, NULL, -1);
-		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID, pTypeLimitlessLights);
+		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%s') AND (Type == %d)", Name.c_str(), (STYPE_Dimmer), brightness, m_HwdID, szDeviceID, pTypeColorSwitch);
 	}
 	else {
 		nvalue = atoi(result[0][0].c_str());
@@ -368,14 +366,12 @@ void XiaomiGateway::InsertUpdateRGBGateway(const std::string & nodeid, const std
 		//int value = atoi(brightness.c_str());
 		if ((bIsOn != tIsOn) || (brightness != lastLevel))
 		{
-			int cmd = Limitless_LedOn;
+			int cmd = Color_LedOn;
 			if (!bIsOn) {
-				cmd = Limitless_LedOff;
+				cmd = Color_LedOff;
 			}
-			_tLimitlessLights ycmd;
-			ycmd.len = sizeof(_tLimitlessLights) - 1;
-			ycmd.type = pTypeLimitlessLights;
-			ycmd.subtype = sTypeLimitlessRGBW;
+			_tColorSwitch ycmd;
+			ycmd.subtype = sTypeColor_RGB_W;
 			ycmd.id = sID;
 			//ycmd.dunit = 0;
 			ycmd.value = brightness;

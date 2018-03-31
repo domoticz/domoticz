@@ -1570,7 +1570,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 		strncpy((char *)&eHn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_RS485, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_RS485, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);	//rollers names
 
 	for (i = 0; i < sizeof(eHn[nr]->Outs) / sizeof(eHn[nr]->Outs[0]); i += 2)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1711,7 +1711,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		strncpy((char *)&eHEn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHEn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);		//rollers names
 
 	for (i = 0; i < sizeof(eHEn[nr]->Rollers) / sizeof(eHEn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1849,7 +1849,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 		strncpy((char *)&ECMn->Dimmers[i], (char *)&GetLine, sizeof(ECMn->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rolers names
 
 	for (i = 0; i < sizeof(ECMn->Rollers) / sizeof(ECMn->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1998,7 +1998,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		strncpy((char *)&eHouseProN->Dimmers[i], (char *)&GetLine, sizeof(eHouseProN->Dimmers[i]));
 		//    UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *) &GetLine, true, 100);
 	}
-	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHouseProN->Rollers) / sizeof(eHouseProN->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -2186,7 +2186,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 		strncpy((char *)&eHWIFIn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHWIFIn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHWIFIn[nr]->Rollers) / sizeof(eHWIFIn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1

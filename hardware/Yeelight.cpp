@@ -93,7 +93,7 @@ bool Yeelight::StopHardware()
 	return true;
 }
 
-#define Limitless_POLL_INTERVAL 60
+#define YEELIGHT_POLL_INTERVAL 60
 
 void Yeelight::Do_Work()
 {
@@ -101,7 +101,7 @@ void Yeelight::Do_Work()
 
 	boost::asio::io_service io_service;
 	udp_server server(io_service, m_HwdID);
-	int sec_counter = Limitless_POLL_INTERVAL - 5;
+	int sec_counter = YEELIGHT_POLL_INTERVAL - 5;
 	while (!m_stoprequested)
 	{
 		sleep_seconds(1);
@@ -140,7 +140,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	int nvalue = 0;
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeLimitlessLights, YeeType);
+	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
 		_log.Log(LOG_STATUS, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
@@ -149,15 +149,13 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	{
 		_log.Log(LOG_STATUS, "YeeLight: New Light Found (%s/%s)", Location.c_str(), lightName.c_str());
 		int value = atoi(yeelightBright.c_str());
-		int cmd = Limitless_LedOn;
+		int cmd = Color_LedOn;
 		int level = 100;
 		if (!bIsOn) {
-			cmd = Limitless_LedOff;
+			cmd = Color_LedOff;
 			level = 0;
 		}
-		_tLimitlessLights ycmd;
-		ycmd.len = sizeof(_tLimitlessLights) - 1;
-		ycmd.type = pTypeLimitlessLights;
+		_tColorSwitch ycmd;
 		ycmd.subtype = YeeType;
 		ycmd.id = sID;
 		ycmd.dunit = 0;
@@ -175,16 +173,14 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		int value = atoi(yeelightBright.c_str());
 		if ((bIsOn != tIsOn) || (value != lastLevel))
 		{
-			int cmd = Limitless_LedOn;
+			int cmd = Color_LedOn;
 			if (!bIsOn) {
-				cmd = Limitless_LedOff;
+				cmd = Color_LedOff;
 			}
 			if (value != lastLevel) {
-				cmd = Limitless_SetBrightnessLevel;
+				cmd = Color_SetBrightnessLevel;
 			}
-			_tLimitlessLights ycmd;
-			ycmd.len = sizeof(_tLimitlessLights) - 1;
-			ycmd.type = pTypeLimitlessLights;
+			_tColorSwitch ycmd;
 			ycmd.subtype = YeeType;
 			ycmd.id = sID;
 			ycmd.dunit = 0;
@@ -200,7 +196,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	//_log.Log(LOG_STATUS, "YeeLight: WriteToHardware...............................");
-	_tLimitlessLights *pLed = (_tLimitlessLights*)pdata;
+	_tColorSwitch *pLed = (_tColorSwitch*)pdata;
 	uint8_t command = pLed->command;
 	std::vector<std::vector<std::string> > result;
 	unsigned long lID;
@@ -248,54 +244,54 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 
 	switch (pLed->command)
 	{
-	case Limitless_LedOn:
+	case Color_LedOn:
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_LedOff:
+	case Color_LedOff:
 		message = "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\", \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_LedNight:
-		if (pLed->subtype == sTypeLimitlessRGBW) {
+	case Color_LedNight:
+		if (pLed->subtype == sTypeColor_RGB_W) {
 			message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]}\r\n";
 		}
 		else {
 			message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
 		}
 		break;
-	case Limitless_LedFull:
+	case Color_LedFull:
 		message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_BrightnessUp:
+	case Color_BrightnessUp:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		break;
-	case Limitless_BrightnessDown:
+	case Color_BrightnessDown:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		break;
-	case Limitless_ColorTempUp:
+	case Color_ColorTempUp:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"ct\"]}\r\n";
 		break;
-	case Limitless_ColorTempDown:
+	case Color_ColorTempDown:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"ct\"]}\r\n";
 		break;
-	case Limitless_SetColorToWhite:
+	case Color_SetColorToWhite:
 		sendOnFirst = true;
-		if (pLed->subtype == sTypeLimitlessRGBW) {
+		if (pLed->subtype == sTypeColor_RGB_W) {
 			message = "{\"id\":1,\"method\":\"set_rgb\",\"params\":[16777215, \"smooth\", 500]}\r\n";
 		}
 		else {
 			message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
 		}
 		break;
-	case Limitless_SetBrightnessLevel:
+	case Color_SetBrightnessLevel:
 		sendOnFirst = true;
 		ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[" << int(pLed->value) << ", \"smooth\", 500]}\r\n";
 		message = ss.str();
 		break;
-	case Limitless_SetRGBColour: {
+	case Color_SetColor: {
 			sendOnFirst = true;
 			if (pLed->color.mode == ColorModeWhite)
 			{
-				if (pLed->subtype == sTypeLimitlessRGB || pLed->subtype == sTypeLimitlessRGBW || pLed->subtype == sTypeLimitlessRGBWW) {
+				if (pLed->subtype == sTypeColor_RGB || pLed->subtype == sTypeColor_RGB_W || pLed->subtype == sTypeColor_RGB_CW_WW) {
 					int w = 255; // Full white, scaled by separate brightness command
 					int rgb = (w << 16) + (w << 8) + pLed->color.b;
 					ss << "{\"id\":1,\"method\":\"set_rgb\",\"params\":[" << rgb << ", \"smooth\", 500]}\r\n";
@@ -326,35 +322,35 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 			message2 = ss.str();
 		}
 		break;
-	case Limitless_SetBrightUp:
+	case Color_SetBrightUp:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		break;
-	case Limitless_SetBrightDown:
+	case Color_SetBrightDown:
 		message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		break;
-	case Limitless_WarmWhiteIncrease:
+	case Color_WarmWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"increase\", \"bright\"]}\r\n";
 		message = "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[3500, \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_CoolWhiteIncrease:
+	case Color_CoolWhiteIncrease:
 		//message = "{\"id\":1,\"method\":\"set_adjust\",\"params\":[\"decrease\", \"bright\"]}\r\n";
 		message = "{\"id\":1,\"method\":\"set_ct_abx\",\"params\":[6000, \"smooth\", 500]}\r\n";
 		break;
-	case Limitless_NightMode:
-		if (pLed->subtype == sTypeLimitlessRGBW) {
+	case Color_NightMode:
+		if (pLed->subtype == sTypeColor_RGB_W) {
 			message = "{\"id\":1,\"method\":\"set_scene\", \"params\": [\"color\", 16750848, 1]}\r\n";
 		}
 		else {
 			message = "{\"id\":1,\"method\":\"set_bright\",\"params\":[1, \"smooth\", 500]}\r\n";
 		}
 		break;
-	case Limitless_FullBrightness: {
+	case Color_FullBrightness: {
 			sendOnFirst = true;
 			ss << "{\"id\":1,\"method\":\"set_bright\",\"params\":[100, \"smooth\", 500]}\r\n";
 			message = ss.str();
 		}
 		break;
-	case Limitless_DiscoMode:
+	case Color_DiscoMode:
 		sendOnFirst = true;
 		// simulate strobe effect - at time of writing, minimum timing allowed by Yeelight is 50ms
 		_log.Log(LOG_STATUS, "Yeelight: Disco Mode - simulate strobe effect, if you have a suggestion for what it should do, please post on the Domoticz forum");
@@ -362,7 +358,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 		message += "50, 2, 5000, 100, ";
 		message += "50, 2, 5000, 1\"]}\r\n";
 		break;
-	case Limitless_DiscoSpeedFasterLong:
+	case Color_DiscoSpeedFasterLong:
 		_log.Log(LOG_STATUS, "Yeelight: Exclude Lamp - This command is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum");
 		break;
 	default:
@@ -529,7 +525,7 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	if (yeelightStatus == "on") {
 		bIsOn = true;
 	}
-	int sType = sTypeLimitlessWhite;
+	int sType = sTypeColor_White;
 
 	std::vector<std::string> tmp;
 	StringSplit(yeelightSupport, " ", tmp);
@@ -538,19 +534,19 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 	if (support.find("set_ct_abx") != support.end())
 	{
 		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_ct_abx");
-		sType = sTypeLimitlessWW;
+		sType = sTypeColor_CW_WW;
 	}
 
 	if (support.find("set_rgb") != support.end())
 	{
 		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_rgb");
-		sType = sTypeLimitlessRGB;
+		sType = sTypeColor_RGB;
 	}
 
 	if (support.find("set_rgb") != support.end() && support.find("set_ct_abx") != support.end())
 	{
 		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_rgb and set_ct_abx");
-		sType = sTypeLimitlessRGBWW;
+		sType = sTypeColor_RGB_CW_WW;
 	}
 
 	std::string yeelightName = "";
@@ -604,7 +600,7 @@ namespace http {
 
 			Yeelight yeelight(HwdID);
 			//TODO: Add support for other bulb types to WebUI (WW, RGB, RGBWW)
-			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeLimitlessWhite : sTypeLimitlessRGBW, sipaddress, false, "0", "0", "", "", "", "");
+			yeelight.InsertUpdateSwitch("123", sname, (stype == "0") ? sTypeColor_White : sTypeColor_RGB_W, sipaddress, false, "0", "0", "", "", "", "");
 		}
 	}
 }

@@ -649,7 +649,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		if (switchType == STYPE_Dimmer)
 		{
 			root["Level"] = LastLevel;
-			if (dType == pTypeLimitlessLights)
+			if (dType == pTypeColorSwitch)
 			{
 				_tColor color(sColor);
 				std::string jsonColor = color.toJSON();

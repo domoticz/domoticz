@@ -761,8 +761,8 @@ define(['app'], function (app) {
 
 			let LEDType = getLEDType(devsubtype);
 			let bIsWhite = (devsubtype == "White");
-			//Only Limitless type bulbs
-			let bIsLimitless = (stype.indexOf("Limitless") >= 0);
+			//Only ColorSwitch type bulbs
+			let bIsColorSwitch = (stype.indexOf("Color Switch") >= 0);
 			//
 
 			if (LEDType.bIsLED == true) {
@@ -771,13 +771,13 @@ define(['app'], function (app) {
 			else {
 				$("#lightcontent #LightsLedColor").hide();
 			}
-			if (LEDType.bHasRGB == true && $.strUnit == "0" && bIsLimitless == true) {
+			if (LEDType.bHasRGB == true && $.strUnit == "0" && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBLimit").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBLimit").hide();
 			}
-			if (LEDType.bHasTemperature == true && bIsLimitless == true) {
+			if (LEDType.bHasTemperature == true && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBWWLimit").show();
 			}
 			else {
@@ -788,7 +788,7 @@ define(['app'], function (app) {
 			} else {
 				$("#lightcontent #optionsWhiteSlider").hide();
 			}
-			if (LEDType.bHasWhite && LEDType.bHasTemperature == false && bIsLimitless == true) {
+			if (LEDType.bHasWhite && LEDType.bHasTemperature == false && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBWLimit").show();
 			}
 			else {

@@ -46,9 +46,9 @@ private:
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
 	
-	_tColor m_LimitlessRGBWColorState;
-	bool m_LimitlessRGBWisWhiteState;
-	int m_LimitlessRGBWbrightnessState;
+	_tColor m_RGBWColorState;
+	bool m_RGBWisWhiteState;
+	int m_RGBWbrightnessState;
 
 	bool StartHardware();
 	bool StopHardware();

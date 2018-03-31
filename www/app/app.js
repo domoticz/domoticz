@@ -253,8 +253,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	app.factory('deviceApi', function($q, domoticzApi, permissions) {
 		return {
 			getDeviceInfo: getDeviceInfo,
-			setHexColor: setHexColor,
-			setHsbColor: setHsbColor
+			setColor: setColor
 		};
 
 		function getDeviceInfo(deviceIdx) {

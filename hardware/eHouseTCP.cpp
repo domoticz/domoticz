@@ -991,12 +991,12 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 
 
-	if ((output->ICMND.packettype == pTypeLimitlessLights) && (output->LIGHTING2.subtype == sTypeLimitlessRGBW))
+	if ((output->ICMND.packettype == pTypeColorSwitch) && (output->LIGHTING2.subtype == sTypeColor_RGB_W))
 	{
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		id = pLed->id;
 		cmd = pLed->command;
-		if (cmd == Limitless_SetRGBColour)
+		if (cmd == Color_SetColor)
 		{
 			if (pLed->color.mode == ColorModeRGB)
 			{
