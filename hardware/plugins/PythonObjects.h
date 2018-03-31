@@ -110,6 +110,7 @@ namespace Plugins {
 	PyObject* CDevice_refresh(CDevice* self);
 	PyObject* CDevice_insert(CDevice* self);
 	PyObject* CDevice_update(CDevice *self, PyObject *args, PyObject *kwds);
+	PyObject* CDevice_updateMeter(CDevice *self, PyObject *args, PyObject *kwds);
 	PyObject* CDevice_delete(CDevice* self);
 	PyObject* CDevice_str(CDevice* self);
 
@@ -138,6 +139,7 @@ namespace Plugins {
 		{ "Refresh", (PyCFunction)CDevice_refresh, METH_NOARGS, "Refresh device details" },
 		{ "Create", (PyCFunction)CDevice_insert, METH_NOARGS, "Create the device in Domoticz." },
 		{ "Update", (PyCFunction)CDevice_update, METH_VARARGS | METH_KEYWORDS, "Update the device values in Domoticz." },
+		{ "UpdateMeter", (PyCFunction)CDevice_updateMeter, METH_VARARGS | METH_KEYWORDS, "Update the device meter values in Domoticz." },
 		{ "Delete", (PyCFunction)CDevice_delete, METH_NOARGS, "Delete the device in Domoticz." },
 		{ NULL }  /* Sentinel */
 	};

@@ -187,7 +187,8 @@ private:
 	void Cmd_GetConfig(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SendNotification(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_EmailCameraSnapshot(WebEmSession & session, const request& req, Json::Value &root);
-	void Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateCalendarMeter(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UpdateDevice(WebEmSession & session, const request& req, Json::Value &root);	
 	void Cmd_UpdateDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SetThermostatState(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SystemShutdown(WebEmSession & session, const request& req, Json::Value &root);

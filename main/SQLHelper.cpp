@@ -5066,23 +5066,35 @@ void CSQLHelper::UpdateUVLog()
 	}
 }
 
-void CSQLHelper::UpdateMeter()
+bool CSQLHelper::isMultiMeter(const unsigned char devType, const unsigned char subType)
 {
-	time_t now = mytime(NULL);
-	if (now==0)
-		return;
-	struct tm tm1;
-	localtime_r(&now,&tm1);
+	if (
+		(devType!=pTypeAirQuality)&&
+		(devType!=pTypeRFXSensor)&&
+		(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
+		(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
+		(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
+		(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
+		(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
+		(!((devType == pTypeGeneral) && (subType == sTypeVoltage))) &&
+		(!((devType == pTypeGeneral) && (subType == sTypeCurrent))) &&
+		(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
+		(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
+		(devType != pTypeLux) &&
+		(devType!=pTypeWEIGHT)&&
+		(devType!=pTypeUsage)
+		)
+	{
+		return false;
+	}
+	else {
+		return true;
+	}
+}
 
-	int SensorTimeOut=60;
-	GetPreferencesVar("SensorTimeout", SensorTimeOut);
-
-	std::vector<std::vector<std::string> > result;
-	std::vector<std::vector<std::string> > result2;
-
-	result=safe_query(
-		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
-		"Type=%d OR " //pTypeRFXMeter
+std::string CSQLHelper::getMeterFilter()
+{
+	char model[] = "Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
 		"Type=%d OR " //pTypeENERGY
@@ -5105,7 +5117,10 @@ void CSQLHelper::UpdateMeter()
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypePressure
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
 		"(Type=%d AND SubType=%d)"     //pTypeGeneral,sTypeKwh
-		")",
+	;
+	char buff[2*sizeof(model)];
+	
+	sprintf(buff, model, 
 		pTypeRFXMeter,
 		pTypeP1Gas,
 		pTypeYouLess,
@@ -5130,6 +5145,158 @@ void CSQLHelper::UpdateMeter()
 		pTypeGeneral, sTypeCounterIncremental,
 		pTypeGeneral, sTypeKwh
 		);
+	std::string result(buff);
+	return result;
+}
+
+bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float value,  const char* date, float usage, float counter, float min, float max, const bool dayCalendar, const char* clearAfterDate, const char* clearBeforeDate)
+{
+	std::vector<std::vector<std::string> > result;
+	std::string filter = getMeterFilter();
+	char szTmp[200];
+	
+	if((date == NULL) || (date[0] == '\0')) {
+		return false;
+	}
+	
+	result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d AND (%s))", 
+		HardwareID, DeviceID, unit, devType, subType, filter.c_str());
+		
+	if (result.empty()) {
+		return false;
+	}
+	
+	uint64_t DeviceRowID;
+
+	std::vector<std::string> sd = result[0];
+	std::stringstream s_strid;
+	s_strid << sd[0];
+	s_strid >> DeviceRowID;
+	
+	if (dayCalendar)
+	{
+		if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
+			safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+		}
+
+		sprintf(szTmp, "%.0f", value);		
+		long long MeterValue;
+		std::stringstream s_str2;
+		s_str2 << boost::to_string(value);
+		s_str2 >> MeterValue;
+
+		sprintf(szTmp, "%.0f", usage);		
+		long long MeterUsage;
+		std::stringstream s_str3;
+		s_str3 << boost::to_string(szTmp);
+		s_str3 >> MeterUsage;
+
+		//insert or replace record
+		result = safe_query(
+			"SELECT DeviceRowID FROM Meter "
+			"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+			DeviceRowID, date
+		);
+		if (result.empty())
+		{
+			safe_query(
+				"INSERT INTO Meter (DeviceRowID, Value, Usage, Date) "
+				"VALUES ('%" PRIu64 "','%lld','%lld','%q')",
+				DeviceRowID, MeterValue, MeterUsage, date
+			);
+		}
+		else
+		{
+			safe_query(
+				"UPDATE Meter SET DeviceRowID='%" PRIu64 "', Value='%lld', Usage='%lld', Date='%q' "
+				"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+				DeviceRowID, MeterValue, MeterUsage, date,
+				DeviceRowID, date
+			);
+		}
+	}
+	else
+	{
+		if (!isMultiMeter(devType, subType))
+		{
+			if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
+				safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+			}
+				 
+			//insert into calendar table
+			result = safe_query(
+				"SELECT DeviceRowID FROM Meter_Calendar "
+                                "WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
+				DeviceRowID, date
+			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Date) "
+					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%q')",
+					DeviceRowID, value, counter, date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE Meter_Calendar SET DeviceRowID='%" PRIu64 "', Value='%.2f', Counter='%.2f', Date='%q' "
+					"WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
+					DeviceRowID, value, counter, date,
+					DeviceRowID, date
+				);
+			}
+		}
+		else
+		{
+			if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
+				safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+			}
+			//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
+			result = safe_query(
+				"SELECT DeviceRowID FROM MultiMeter_Calendar "
+                                "WHERE (DeviceRowID=='%" PRIu64 "') AND (Date=='%q')",
+				DeviceRowID, date
+			);
+			if (result.empty())
+			{
+				safe_query(
+					"INSERT INTO MultiMeter_Calendar (DeviceRowID, Value1, Value2, Value3, Value4, Value5, Value6, Date) "
+					"VALUES ('%" PRIu64 "', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%.2f', '%q')",
+					DeviceRowID, min, max, value, 0.0f, 0.0f, 0.0f, date
+				);
+			}
+			else
+			{
+				safe_query(
+					"UPDATE MultiMeter_Calendar SET DeviceRowID='%" PRIu64 "', Value1='%.2f', Value2='%.2f', Value3='%.2f', Value4='%.2f', Value5='%.2f', Value6='%.2f', Date='%q' "
+					"WHERE ((DeviceRowID=='%" PRIu64 "') AND (Date=='%q'))",
+					DeviceRowID, min, max, value, 0.0f, 0.0f, 0.0f, date,
+					DeviceRowID, date
+				);
+			}
+		}
+	}
+	return true;
+}
+
+void CSQLHelper::UpdateMeter()
+{
+	time_t now = mytime(NULL);
+	if (now==0)
+		return;
+	struct tm tm1;
+	localtime_r(&now,&tm1);
+
+	int SensorTimeOut=60;
+	GetPreferencesVar("SensorTimeout", SensorTimeOut);
+
+	std::vector<std::vector<std::string> > result;
+	std::vector<std::vector<std::string> > result2;
+
+	std::string filter = getMeterFilter();
+	result = safe_query("SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE(%s)", filter.c_str());
+	
 	if (result.size()>0)
 	{
 		std::vector<std::vector<std::string> >::const_iterator itt;
@@ -5819,22 +5986,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 			double total_max = (double)atof(sd[1].c_str());
 			double avg_value = (double)atof(sd[2].c_str());
 
-			if (
-				(devType!=pTypeAirQuality)&&
-				(devType!=pTypeRFXSensor)&&
-				(!((devType==pTypeGeneral)&&(subType==sTypeVisibility)))&&
-				(!((devType == pTypeGeneral) && (subType == sTypeDistance))) &&
-				(!((devType == pTypeGeneral) && (subType == sTypeSolarRadiation))) &&
-				(!((devType==pTypeGeneral)&&(subType==sTypeSoilMoisture)))&&
-				(!((devType==pTypeGeneral)&&(subType==sTypeLeafWetness)))&&
-				(!((devType == pTypeGeneral) && (subType == sTypeVoltage))) &&
-				(!((devType == pTypeGeneral) && (subType == sTypeCurrent))) &&
-				(!((devType == pTypeGeneral) && (subType == sTypePressure))) &&
-				(!((devType == pTypeGeneral) && (subType == sTypeSoundLevel))) &&
-				(devType != pTypeLux) &&
-				(devType!=pTypeWEIGHT)&&
-				(devType!=pTypeUsage)
-				)
+			if (!isMultiMeter(devType, subType))
 			{
 				double total_real=total_max-total_min;
 				double counter = total_max;

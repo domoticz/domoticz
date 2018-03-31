@@ -933,6 +933,45 @@ namespace Plugins {
 		return Py_None;
 	}
 
+	PyObject* CDevice_updateMeter(CDevice *self, PyObject *args, PyObject *kwds)
+	{
+		if (self->pPlugin)
+		{
+			float		value = 0.0;
+			char*		date = NULL;
+			float		counter = 0.0;
+			float		usage = 0.0;
+			float		min = 0.0;
+			float		max = 0.0;
+			bool		dayCalendar = false;
+			char*		clearAfterDate = NULL;
+			char*		clearBeforeDate = NULL;
+
+			std::string	sName = PyUnicode_AsUTF8(self->Name);
+			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
+			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+			static char *kwlist[] =   { "value", "date", "usage", "counter", "min", "max", "day", "clearafterdate", "clearbeforedate", NULL };
+
+			// Try to extract parameters needed to update device settings
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "fs|ffffps", kwlist, &value, &date, &usage, &counter, &min, &max, &dayCalendar, &clearAfterDate, &clearBeforeDate))
+				{
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'value', 'date', ['usage', 'counter', 'min', 'max', 'day', 'clearafterdate', 'clearbeforedate'] expected.", __func__, sName.c_str());
+				LogPythonException(self->pPlugin, __func__);
+				Py_INCREF(Py_None);
+				return Py_None;
+			}
+
+			m_sql.UpdateCalendarMeter(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, value, date, usage, counter, min, max, dayCalendar, clearAfterDate, clearBeforeDate);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Meter update failed, Device object is not associated with a plugin.");
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
 	PyObject* CDevice_delete(CDevice* self)
 	{
 		if (self->pPlugin)
