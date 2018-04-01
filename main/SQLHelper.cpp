@@ -5163,7 +5163,7 @@ void CSQLHelper::UpdateMeter()
 	std::vector<std::vector<std::string> > result2;
 
 	result=safe_query(
-		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate FROM DeviceStatus WHERE ("
+		"SELECT ID,Name,HardwareID,DeviceID,Unit,Type,SubType,nValue,sValue,LastUpdate,Options FROM DeviceStatus WHERE ("
 		"Type=%d OR " //pTypeRFXMeter
 		"Type=%d OR " //pTypeP1Gas
 		"Type=%d OR " //pTypeYouLess
@@ -5219,6 +5219,13 @@ void CSQLHelper::UpdateMeter()
 		{
 			char szTmp[200];
 			std::vector<std::string> sd=*itt;
+			std::string sOptions = sd[10];
+			std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+			// We don't want to update meter if externally managed
+			if (options["Managed"] == "true")
+			{
+				continue;
+			}
 
 			uint64_t ID;
 			std::stringstream s_str( sd[0] );
@@ -5858,10 +5865,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		s_str >> ID;
 
 		//Get Device Information
-		result=safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType FROM DeviceStatus WHERE (ID='%" PRIu64 "')",ID);
+		result=safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')",ID);
 		if (result.size()<1)
 			continue;
 		std::vector<std::string> sd=result[0];
+		std::string sOptions = sd[7];
+		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
+		// We don't want to update meter if externally managed
+		if (options["Managed"] == "true")
+		{
+			continue;
+		}
 		std::string devname = sd[0];
 		//int hardwareID= atoi(sd[1].c_str());
 		//std::string DeviceID=sd[2];

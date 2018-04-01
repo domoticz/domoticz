@@ -9671,7 +9671,7 @@ namespace http {
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
-						root["result"][ii]["Managed"] = options["Managed"];;
+						root["result"][ii]["Managed"] = options["Managed"] == "true";
 
 						double meteroffset = AddjValue;
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
@@ -13944,7 +13944,6 @@ namespace http {
 						root["title"] = "Graph " + sensor + " " + srange;
 						root["ValueQuantity"] = options["ValueQuantity"];
 						root["ValueUnits"] = options["ValueUnits"];
-						root["Managed"] = options["Managed"];
 
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;

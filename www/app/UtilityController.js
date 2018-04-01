@@ -128,7 +128,7 @@ define(['app'], function (app) {
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits, managed) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits, ismanaged) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -157,9 +157,7 @@ define(['app'], function (app) {
 				}
 			});
 
-			$('#dialog-editmeterdevice input:radio[name=managed][value="' + managed + '"]').attr('checked', true);
-			$('#dialog-editmeterdevice input:radio[name=managed][value="' + managed + '"]').prop('checked', true);
-			$('#dialog-editmeterdevice input:radio[name=managed][value="' + managed + '"]').trigger('change');
+			$('#dialog-editmeterdevice #managed').prop('checked', (ismanaged == true));
 			$("#dialog-editmeterdevice").i18n();
 			$("#dialog-editmeterdevice").dialog("open");
 		}
@@ -747,7 +745,7 @@ define(['app'], function (app) {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 									else {
-										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', \'' + escape(item.Managed) + '\');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', ' + item.Managed + ');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
@@ -1223,7 +1221,7 @@ define(['app'], function (app) {
 				if (bValid) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
 					devOptions.push("Managed:");
-					devOptions.push($("#dialog-editmeterdevice input:radio[name=managed]:checked").val());
+					devOptions.push($("#dialog-editmeterdevice #managed").is(":checked"));
 					devOptions.push(";");
 					if (meterType == 3) //Counter
 					{
