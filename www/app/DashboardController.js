@@ -3905,7 +3905,7 @@ define(['app'], function (app) {
 					'<table "border="0" cellpadding="0" cellspacing="0" width="100%">' +
 					'<tr>' +
 					'<td align="left" valign="top" id="timesun"></td>' +
-					'<td align="right">' +
+					'<td align="right" valign="top">' +
 					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" class="combobox ui-corner-all">' +
 					'<option value="0" data-i18n="All">All</option>' +
 					'</select>' +
