@@ -991,33 +991,35 @@ bool eHouseTCP::WriteToHardware(const char *pdata, const unsigned char length)
 
 
 
-	if ((output->ICMND.packettype == pTypeLimitlessLights) && (output->LIGHTING2.subtype == sTypeLimitlessRGBW))
+	if ((output->ICMND.packettype == pTypeColorSwitch) && (output->LIGHTING2.subtype == sTypeColor_RGB_W))
 	{
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		id = pLed->id;
 		cmd = pLed->command;
-		int red, green, blue;
-		if (cmd == Limitless_SetRGBColour)
+		if (cmd == Color_SetColor)
 		{
-			float cHue = (360.0f / 255.0f) * float(pLed->value);//hue given was in range of 0-255
-			hue2rgb(cHue, red, green, blue);
-			AddrH = id >> 24;              //address high
-			AddrL = (id >> 16) & 0xff;     //address low
-			gettype(AddrH, AddrL);
-			eHCMD = (id >> 8) & 0xff;     //ehouse visual code
-			nr = id & 0xff;              // i/o  nr
-			//Compose eHouse Event
-			ev[0] = AddrH;
-			ev[1] = AddrL;
-			ev[2] = 4;					//SET DIMMER
-			ev[3] = nr;					//starting channel
-			red = (red * 255) / 100;
-			green = (green * 255) / 100;
-			blue = (blue * 255) / 100;
-			ev[4] = (unsigned char)red;
-			ev[5] = (unsigned char)green;
-			ev[6] = (unsigned char)blue;
-			AddToLocalEvent(ev, 0);
+			if (pLed->color.mode == ColorModeRGB)
+			{
+				AddrH = id >> 24;              //address high
+				AddrL = (id >> 16) & 0xff;     //address low
+				gettype(AddrH, AddrL);
+				eHCMD = (id >> 8) & 0xff;     //ehouse visual code
+				nr = id & 0xff;              // i/o  nr
+				//Compose eHouse Event
+				ev[0] = AddrH;
+				ev[1] = AddrL;
+				ev[2] = 4;					//SET DIMMER
+				ev[3] = nr;					//starting channel
+				ev[4] = pLed->color.r * pLed->value / 100;
+				ev[5] = pLed->color.g * pLed->value / 100;
+				ev[6] = pLed->color.b * pLed->value / 100;
+				AddToLocalEvent(ev, 0);
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "eHouse TCP: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				return false;
+			}
 		}
 		return true;
 	}

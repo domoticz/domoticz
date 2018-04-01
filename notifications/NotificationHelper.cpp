@@ -394,19 +394,6 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 			case pTypeP1Gas:
 				// ignore, notification is done day by day in SQLHelper
 				return false;
-			case pTypeENERGY:
-				switch(cSubType) {
-					case sTypeKwh:
-						nexpected = 1;
-						if (nsize >= nexpected) {
-							fValue2 = (float)atof(strarray[0].c_str());
-							return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
-						}
-						break;
-					default:
-						break;
-				}
-				break;
 			case pTypeGeneral:
 				switch(cSubType) {
 					case sTypeVisibility:

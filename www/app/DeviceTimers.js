@@ -1,54 +1,5 @@
 define(['app'], function (app) {
 
-    // TODO: move to app.js level once it will be used by different controllers
-    app.factory('device', function($q, domoticzApi, permissions) {
-        return {
-            getDeviceInfo: getDeviceInfo,
-            setHexColor: setHexColor,
-            setHsbColor: setHsbColor
-        };
-
-        function getDeviceInfo(deviceIdx) {
-            return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
-                .then(function (data) {
-                    return data && data.result && data.result.length === 1
-                        ? data.result[0]
-                        : $q.reject(data);
-                });
-        }
-
-        function setHexColor(deviceIdx, color) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hex: color,
-                brightness: 100
-            });
-        }
-
-        function setHsbColor(deviceIdx, hue, brightness, whiteValue, isWhite) {
-            if (permissions.hasPermission('Viewer')) {
-                var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-            }
-            
-            return domoticzApi.sendCommand('setcolbrightnessvalue', {
-                idx: deviceIdx,
-                hue: (whiteValue << 16) + hue,
-                brightness: brightness,
-                iswhite: isWhite
-            });
-        }
-    });
-
     app.factory('deviceRegularTimers', function ($q, domoticzApi) {
         return {
             addTimer: addTimer,
@@ -279,7 +230,7 @@ define(['app'], function (app) {
         }
     });
 
-    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, $window, device, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
+    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, deviceApi, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
         var vm = this;
         var $element = $('.js-device-timers:last');
         var setColorTimerId;
@@ -297,7 +248,6 @@ define(['app'], function (app) {
         vm.isRMonthsVisible = isRMonthsVisible;
         vm.isDateVisible = isDateVisible;
         vm.isDaySelectonAvailable = isDaySelectonAvailable;
-        vm.goBack = goBack;
 
         init();
 
@@ -305,13 +255,12 @@ define(['app'], function (app) {
             vm.deviceIdx = $routeParams.id;
             vm.selectedTimerIdx = null;
 
-            device.getDeviceInfo(vm.deviceIdx).then(function (device) {
+            deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.deviceName = device.Name;
                 vm.isDimmer = ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(device.SwitchType);
                 vm.isSelector = device.SubType === "Selector Switch";
-                vm.isRGBWW = (device.SubType.indexOf("RGBWW") >= 0);
-                vm.isRGBW = (device.SubType.indexOf("RGBW") >= 0);
-                vm.isLED = (device.SubType.indexOf("RGB") >= 0);
+                vm.subType = device.SubType;
+                vm.isLED = (isLED(device.SubType));
                 vm.isCommandSelectionDisabled = vm.isSelector && device.LevelOffHidden;
                 vm.isSetpointTimers = (device.Type === 'Thermostat' && device.SubType == 'SetPoint') || (device.Type === 'Radiator 1');
 
@@ -356,7 +305,7 @@ define(['app'], function (app) {
                 level: vm.levelOptions[0].value,
                 tvalue: '',
                 days: 0x80,
-                hue: 0,
+                color: "", // Empty string, intentionally illegal JSON
                 mday: vm.dayOptions[0].value,
                 month: 1,
                 occurence: vm.occurenceOptions[0].value,
@@ -437,62 +386,26 @@ define(['app'], function (app) {
         }
 
         function initLEDLightSettings() {
-            var $picker = $element.find('#picker');
-            var $whiteSlider = $element.find('#ledtable #white_slider');
-
             vm.lightSettings = {
-                hue: 128,
+                color: "", // Empty string, intentionally illegal JSON
                 s: 180,
-                brightness: 100,
-                whiteLevel: 0,
-                isWhite: false
+                brightness: 100
             };
 
-            $picker.colpick({
-				flat: true,
-				layout: 'hex',
-				submit: 0,
-                color: {
-                    h: vm.lightSettings.hue,
-                    s: vm.lightSettings.s,
-                    b: vm.lightSettings.brightness
-                },
-				onChange: function (hsb, hex, rgb, el, fromSetColor) {
-					if (!fromSetColor) {
-                        vm.lightSettings.hue = hsb.h;
-                        vm.lightSettings.brightness = hsb.b;
-                        vm.lightSettings.s = hsb.s;
-                        vm.lightSettings.isWhite = (hsb.s < 20);
+            let MaxDimLevel = 100; // Always 100 for LED type
+            ShowRGBWPicker('#TimersLedColor', vm.deviceIdx, 0, MaxDimLevel, vm.lightSettings.brightness, vm.lightSettings.color, vm.subType);
+
+            // TODO: Rewrite..
+            SetColValue = function (idx, color, brightness) {
+                clearInterval($.setColValue);
+                vm.lightSettings.color = color;
+                vm.lightSettings.brightness = brightness;
                         $scope.$apply();
-					}
-				}
-            });
-            
-            $whiteSlider.slider({
-                range: "min",
-				min: 1,
-				max: 255,
-                value: 0,
-                slide: function (event, ui) {
-                    vm.lightSettings.whiteLevel = ui.value-1;
-                    $scope.$apply();
-                },
-                stop: function (event, ui) {
-                    vm.lightSettings.whiteLevel = ui.value-1;
-                    $scope.$apply();
-                }
-            });
+            }
 
             $scope.$watch('vm.lightSettings', function(newValue, oldValue) {
-                $picker.colpickSetColor({
-                    h: vm.lightSettings.hue,
-                    s: vm.lightSettings.s,
-                    b: vm.lightSettings.brightness
-                });
-
-                if (oldValue.whiteLevel != newValue.whiteLevel) {
-                    $whiteSlider.slider('value', vm.lightSettings.whiteLevel);
-                }
+                let MaxDimLevel = 100; // Always 100 for LED type
+                ShowRGBWPicker('#TimersLedColor', vm.deviceIdx, 0, MaxDimLevel, vm.lightSettings.brightness, vm.lightSettings.color, vm.subType);
 
                 setColorDebounce();
             }, true)
@@ -526,12 +439,10 @@ define(['app'], function (app) {
             clearTimeout(setColorTimerId);
 
             setColorTimerId = setTimeout(function () {
-                device.setHsbColor(
-                    vm.deviceIdx, 
-                    vm.lightSettings.hue, 
-                    vm.lightSettings.brightness, 
-                    vm.lightSettings.whiteLevel,
-                    vm.lightSettings.isWhite
+                deviceApi.setColor(
+                    vm.deviceIdx,
+                    vm.lightSettings.color,
+                    vm.lightSettings.brightness
                 );
             }, 400);
         }
@@ -608,9 +519,8 @@ define(['app'], function (app) {
                     vm.timerSettings.occurence = timer.Occurence
 
                     if (vm.isLED) {
-                        vm.lightSettings.hue = timer.Hue & 0xFFFF;
+                        vm.lightSettings.color = timer.Color;
                         vm.lightSettings.brightness = timer.Level;
-                        vm.lightSettings.whiteLevel = (timer.Hue & 0xFF0000) >> 16;
                     }
 
                     $scope.$apply();
@@ -640,13 +550,39 @@ define(['app'], function (app) {
                         tCommand = $.t(Command) + " (" + timer.Level + "%)";
 
                         if (isLED) {
-                            var hue = timer.Hue & 0xFFFF;
-                            var cHSB = {
-                                h: hue === 1000 ? 0 : hue,
-                                s: hue === 1000 ? 0 : 100,
-                                b: timer.Level
-                            };
-                            tCommand += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpick.hsbToHex(cHSB) + ';"></div>';
+                            let color = {};
+                            try {
+                                color = JSON.parse(timer.Color);
+                            }
+                            catch(e) {
+                                // forget about it :)
+                            }
+                            //TODO: Refactor to some nice helper function
+                            //TODO: Calculate color if color mode is white/temperature.
+                            let rgbhex = "808080";
+                            if (color.m == 1 || color.m == 2) { // White or color temperature
+                                let whex = Math.round(255*timer.Level/100).toString(16);
+                                if( whex.length == 1) {
+                                    whex = "0" + whex;
+                                }
+                                rgbhex = whex + whex + whex;
+                            }
+                            if (color.m == 3 || color.m == 4) { // RGB or custom
+                                let rhex = Math.round(color.r).toString(16);
+                                if( rhex.length == 1) {
+                                    rhex = "0" + rhex;
+                                }
+                                let ghex = Math.round(color.g).toString(16);
+                                if( ghex.length == 1) {
+                                    ghex = "0" + ghex;
+                                }
+                                let bhex = Math.round(color.b).toString(16);
+                                if( bhex.length == 1) {
+                                    bhex = "0" + bhex;
+                                }
+                                rgbhex = rhex + ghex + bhex;
+                            }
+                            tCommand += '<div id="picker4" class="ex-color-box" style="background-color: #' + rgbhex + ';"></div>';
                         }
                     } else {
                         tCommand = Command;
@@ -754,9 +690,7 @@ define(['app'], function (app) {
 
             if (vm.isLED) {
                 config.level = vm.lightSettings.brightness;
-                config.hue = vm.lightSettings.isWhite 
-                    ? 1000 
-                    : (vm.lightSettings.whiteLevel << 16) + vm.lightSettings.hue;
+                config.color = vm.lightSettings.color;
             }
 
             config = Object.assign({}, config, {
@@ -765,7 +699,7 @@ define(['app'], function (app) {
                 month: isRMonthsVisible() ? config.month : undefined,
                 occurence: isROccurenceVisible() ? config.occurence : undefined,
                 weekday: undefined,
-                hue: vm.isLED ? config.hue : undefined,
+                color: vm.isLED ? config.color : undefined,
                 tvalue: vm.isSetpointTimers ? config.tvalue : undefined,
                 command: vm.isSetpointTimers ? undefined : config.command,
                 randomness: vm.isSetpointTimers ? undefined : config.randomness
@@ -880,10 +814,6 @@ define(['app'], function (app) {
 
         function isDaySelectonAvailable() {
             return vm.week.type === 'SelectedDays';
-        }
-
-        function goBack() {
-            $window.history.back();
         }
     });
 });

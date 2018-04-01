@@ -195,6 +195,10 @@ strong {
 
 /* Button Style 2 */
 
+a.btn {
+	text-decoration: none;
+}
+
 .button-style2 a {
 	display: inline-block;
 	height: 2.60em;
@@ -815,7 +819,7 @@ html, body {
 }
 
 .bannercontent {
-	padding-top: 60px;
+	padding-top: 26px;
 	padding-bottom: 22px;
 }
 

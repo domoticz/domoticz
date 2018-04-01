@@ -110,6 +110,7 @@ namespace http {
 			{ 1001,0x56, 0x04 } //Wind+Temp+Chill
 		};
 
+		//TODO: Is this function called from anywhere, or can it be removed?
 		void CWebServer::RType_CreateMappedSensor(WebEmSession & session, const request& req, Json::Value &root)
 		{ // deprecated (for dzVents). Use RType_CreateDevice
 			if (session.rights != 2)

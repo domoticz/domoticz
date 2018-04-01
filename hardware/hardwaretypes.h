@@ -1,5 +1,8 @@
 #pragma once
 
+#include "../main/Helper.h"
+#include "../json/json.h"
+
 #define sTypeDomoticzSecurity 0x83
 #define sTypeSmartwaresSwitchRadiator 0x84
 
@@ -27,12 +30,15 @@
 #define bmpbaroforecast_unknown			0x05
 #define bmpbaroforecast_rain			0x06 //when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
 
-#define pTypeLimitlessLights	0xF1
-#define sTypeLimitlessRGBW		0x01
-#define sTypeLimitlessRGB		0x02
-#define sTypeLimitlessWhite		0x03
-#define sTypeLimitlessRGBWW		0x04
-#define sTypeLimitlessLivCol	0x05
+#define pTypeColorSwitch		0xF1
+#define sTypeColor_RGB_W		0x01 // RGB + white, either RGB or white can be lit
+#define sTypeColor_RGB			0x02 // RGB
+#define sTypeColor_White		0x03 // Monochrome white
+#define sTypeColor_RGB_CW_WW	0x04 // RGB + cold white + warm white, either RGB or white can be lit
+#define sTypeColor_LivCol		0x05
+#define sTypeColor_RGB_W_Z		0x06 // Like RGBW, but allows combining RGB and white
+#define sTypeColor_RGB_CW_WW_Z	0x07 // Like RGBWW, but allows combining RGB and white
+#define sTypeColor_CW_WW		0x08 // Cold white + Warm white
 
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
@@ -495,62 +501,206 @@ typedef struct _tP1Gas {
 	}
 } P1Gas;
 
-typedef struct _tLimitlessLights {
+enum ColorMode {
+	ColorModeNone = 0, // Illegal
+	ColorModeWhite,    // White. Valid fields: none
+	ColorModeTemp,     // White with color temperature. Valid fields: t
+	ColorModeRGB,      // Color. Valid fields: r, g, b.
+	                   // Color must be normalized to full brightness in this mode.
+	                   // Normalization is done automatically by MQTT and WebServer command handlers.
+	ColorModeCustom,   // Custom (color + white). Valid fields: r, g, b, cw, ww, depending on device capabilities
+	ColorModeLast = ColorModeCustom,
+};
+
+struct _tColor {
+	ColorMode mode;
+	//uint8_t level; // Range:0..255, Master brightness (potential for future use)
+	uint8_t t;     // Range:0..255, Color temperature (warm / cold ratio, 0 is coldest, 255 is warmest)
+	uint8_t r;     // Range:0..255, Red level
+	uint8_t g;     // Range:0..255, Green level
+	uint8_t b;     // Range:0..255, Blue level
+	uint8_t cw;    // Range:0..255, Cold white level
+	uint8_t ww;    // Range:0..255, Warm white level (also used as level for monochrome white)
+
+	_tColor()
+	{
+		//level = 0;
+		t = r = g = b = cw = ww = 0;
+		mode = ColorModeNone;
+	}
+
+	explicit _tColor(Json::Value json)
+	{
+		fromJSON(json);
+	}
+
+	explicit _tColor(const std::string sRaw) //explicit to avoid unintentional conversion of string to _tColor
+	{
+		fromString(sRaw);
+	}
+
+	explicit _tColor(const uint8_t ir, const uint8_t ig, const uint8_t ib, const uint8_t icw, const uint8_t iww, ColorMode imode)
+	{
+		mode = imode;
+		//level=ilevel;
+		r=ir; g=ig; b=ib; cw=icw; ww=iww;
+	}
+
+	explicit _tColor(uint8_t x, ColorMode imode)
+	{
+		_tColor();
+		if (imode == ColorModeWhite)
+		{
+			mode = imode;
+			ww = 0xff;
+			cw = 0xff;
+		}
+		else if (imode == ColorModeTemp)
+		{
+			mode = imode;
+			ww = x;
+			cw = 255-x;
+			t = x;
+		}
+	}
+
+	std::string getrgbwwhex() const
+	{
+		char tmp[13];
+		snprintf(tmp, sizeof(tmp), "%02x%02x%02x%02x%02x", r, g, b, cw, ww);
+		return std::string(tmp);
+	}
+
+	void fromJSON(Json::Value root)
+	{
+		mode = ColorModeNone;
+		int tmp;
+		try {
+			tmp = root.get("m", 0).asInt();
+			if (tmp == ColorModeNone || tmp > ColorModeLast) return;
+			mode = ColorMode(tmp);
+			t = root.get("t", 0).asInt();
+			r = root.get("r", 0).asInt();
+			g = root.get("g", 0).asInt();
+			b = root.get("b", 0).asInt();
+			cw = root.get("cw", 0).asInt();
+			ww = root.get("ww", 0).asInt();
+			//level = root.get("l", 0).asInt();
+		}
+		catch (...) {
+		}
+	}
+
+	void fromString(std::string s)
+	{
+		Json::Value root;
+		Json::Reader reader(Json::Features::strictMode());
+		mode = ColorModeNone;
+		try {
+			bool parsingSuccessful = reader.parse(s.c_str(), root);     //parse process
+			if ( !parsingSuccessful )
+			{
+				mode = ColorModeNone;
+				return;
+			}
+			fromJSON(root);
+		}
+		catch (...) {
+		}
+	}
+
+	std::string toJSON() const
+	{
+		// Return the empty string if the color is not valid
+		if (mode == ColorModeNone || mode > ColorModeLast) return "";
+
+		Json::Value root;
+		root["m"] = mode;
+		//root["l"] = level;
+		root["t"] = t;
+		root["r"] = r;
+		root["g"] = g;
+		root["b"] = b;
+		root["cw"] = cw;
+		root["ww"] = ww;
+
+		Json::FastWriter fastwriter;
+		fastwriter.omitEndingLineFeed();
+		return fastwriter.write(root);
+	}
+
+	std::string toString() const
+	{
+		char tmp[1024];
+		// Return the empty string if the color is not valid
+		if (mode == ColorModeNone || mode > ColorModeLast) return "{INVALID}";
+
+		snprintf(tmp, sizeof(tmp), "{m: %u, RGB: %02x%02x%02x, CWWW: %02x%02x, CT: %u}", mode, r, g, b, cw, ww, t);
+
+		return std::string(tmp);
+	}
+};
+
+const _tColor NoColor = _tColor();
+
+struct _tColorSwitch {
 	uint8_t len;
 	uint8_t type;
 	uint8_t subtype;
 	uint32_t id;
 	uint8_t dunit; //0=All, 1=Group1,2=Group2,3=Group3,4=Group4, 5=IboxLed
 	uint8_t command;
-	uint32_t value; //Hue, or later RGBW
-	_tLimitlessLights()
+	uint32_t value;  // Value of command
+	_tColor color;   // Color
+	_tColorSwitch()
 	{
 		id = 1;
 		dunit = 1;
-		len=sizeof(_tLimitlessLights)-1;
-		type=pTypeLimitlessLights;
-		subtype=sTypeLimitlessRGBW;
+		len=sizeof(_tColorSwitch)-1;
+		type=pTypeColorSwitch;
+		subtype=sTypeColor_RGB_W;
 		command=0;
 		value=0;
+		color=NoColor;
 	}
-} _tLimitlessLights;
+};
 
-#define Limitless_LedOff 0
-#define Limitless_LedOn 1
-#define Limitless_LedNight 2
-#define Limitless_LedFull 3
-#define Limitless_BrightnessUp 4
-#define Limitless_BrightnessDown 5
-#define Limitless_ColorTempUp 6
-#define Limitless_ColorTempDown 7
-#define Limitless_RGBDiscoNext 8
-#define Limitless_RGBDiscoPrevious 9
-#define Limitless_SetRGBColour 10
-#define Limitless_DiscoSpeedSlower 11
-#define Limitless_DiscoSpeedFaster 12
-#define Limitless_DiscoMode 13
-#define Limitless_SetColorToWhite 14
-#define Limitless_SetBrightnessLevel 15
-#define Limitless_SetBrightUp 16
-#define Limitless_SetBrightDown 17
-#define Limitless_WarmWhiteIncrease 18
-#define Limitless_CoolWhiteIncrease 19
-#define Limitless_NightMode 20
-#define Limitless_FullBrightness 21
-#define Limitless_DiscoSpeedFasterLong 22 //exclude RGB
-#define Limitless_SetHEXColour 23
-#define Limitless_DiscoMode_1 24
-#define Limitless_DiscoMode_2 25
-#define Limitless_DiscoMode_3 26
-#define Limitless_DiscoMode_4 27
-#define Limitless_DiscoMode_5 28
-#define Limitless_DiscoMode_6 29
-#define Limitless_DiscoMode_7 30
-#define Limitless_DiscoMode_8 31
-#define Limitless_DiscoMode_9 32
-#define Limitless_SetKelvinLevel 33
-#define Limitless_DiscoSpeedMinimal 34
-#define Limitless_DiscoSpeedMaximal 35
+#define Color_LedOff 0
+#define Color_LedOn 1
+#define Color_LedNight 2
+#define Color_LedFull 3
+#define Color_BrightnessUp 4
+#define Color_BrightnessDown 5
+#define Color_ColorTempUp 6
+#define Color_ColorTempDown 7
+#define Color_RGBDiscoNext 8
+#define Color_RGBDiscoPrevious 9
+#define Color_SetColor 10
+#define Color_DiscoSpeedSlower 11
+#define Color_DiscoSpeedFaster 12
+#define Color_DiscoMode 13
+#define Color_SetColorToWhite 14
+#define Color_SetBrightnessLevel 15
+#define Color_SetBrightUp 16
+#define Color_SetBrightDown 17
+#define Color_WarmWhiteIncrease 18
+#define Color_CoolWhiteIncrease 19
+#define Color_NightMode 20
+#define Color_FullBrightness 21
+#define Color_DiscoSpeedFasterLong 22 //exclude RGB
+//#define Color_SetHEXColor 23
+#define Color_DiscoMode_1 24
+#define Color_DiscoMode_2 25
+#define Color_DiscoMode_3 26
+#define Color_DiscoMode_4 27
+#define Color_DiscoMode_5 28
+#define Color_DiscoMode_6 29
+#define Color_DiscoMode_7 30
+#define Color_DiscoMode_8 31
+#define Color_DiscoMode_9 32
+//#define Color_SetKelvinLevel 33
+#define Color_DiscoSpeedMinimal 34
+#define Color_DiscoSpeedMaximal 35
 
 
 typedef union tREVOBUF {

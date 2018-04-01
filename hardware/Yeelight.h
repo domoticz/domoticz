@@ -12,7 +12,8 @@ public:
 	Yeelight(const int ID);
 	~Yeelight(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
-	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue);
+	void InsertUpdateSwitch(const std::string &nodeID, const std::string &SketchName, const int &YeeType, const std::string &Location, const bool bIsOn, const std::string &yeelightBright, const std::string &yeelightHue,
+	                        const std::string &yeelightSat, const std::string &yeelightRGB, const std::string &yeelightCT, const std::string &yeelightColorMode);
 
 public:
 	//signals

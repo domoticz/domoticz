@@ -1,6 +1,8 @@
 define(['app'], function (app) {
 	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
 
+		let SceneIdx = 0;
+
 		RemoveCode = function (idx, code) {
 			if ($("#scenecontent #removecode").hasClass('disabled')) {
 				return false;
@@ -8,11 +10,11 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to delete this Device?\n\nThis action can not be undone..."), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=command&param=removescenecode&sceneidx=" + $.SceneIdx + "&idx=" + idx + "&code=" + code,
+						url: "json.htm?type=command&param=removescenecode&sceneidx=" + SceneIdx + "&idx=" + idx + "&code=" + code,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefresActivators();
+							RefreshActivators();
 						}
 					});
 				}
@@ -46,11 +48,11 @@ define(['app'], function (app) {
 				setTimeout(function () {
 					if (bHaveFoundDevice == true) {
 						$.ajax({
-							url: "json.htm?type=command&param=addscenecode&sceneidx=" + $.SceneIdx + "&idx=" + deviceidx + "&cmnd=" + Cmd,
+							url: "json.htm?type=command&param=addscenecode&sceneidx=" + SceneIdx + "&idx=" + deviceidx + "&cmnd=" + Cmd,
 							async: false,
 							dataType: 'json',
 							success: function (data) {
-								RefresActivators();
+								RefreshActivators();
 							}
 						});
 					}
@@ -66,11 +68,11 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=command&param=clearscenecodes&sceneidx=" + $.SceneIdx,
+						url: "json.htm?type=command&param=clearscenecodes&sceneidx=" + SceneIdx,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefresActivators();
+							RefreshActivators();
 						}
 					});
 				}
@@ -85,7 +87,7 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to remove this Scene?"), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=deletescene&idx=" + $.devIdx,
+						url: "json.htm?type=deletescene&idx=" + SceneIdx,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -132,7 +134,7 @@ define(['app'], function (app) {
 				var SceneType = $("#scenecontent #combotype").val();
 				var bIsProtected = $('#scenecontent #protected').is(":checked");
 				$.ajax({
-					url: "json.htm?type=updatescene&idx=" + $.devIdx +
+					url: "json.htm?type=updatescene&idx=" + SceneIdx +
 					"&scenetype=" + SceneType +
 					"&name=" + encodeURIComponent($("#scenecontent #devicename").val()) +
 					"&description=" + encodeURIComponent($("#scenecontent #devicedescription").val()) +
@@ -158,23 +160,13 @@ define(['app'], function (app) {
 			var Command = $("#scenecontent #combocommand option:selected").val();
 
 			var level = 100;
-			var hue = 0;
+			let colorJSON = ""; // Empty string, intentionally illegal JSON
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
-					var bIsLED = (item.SubType.indexOf("RGB") >= 0);
-					if (bIsLED == true) {
-						level = $("#scenecontent #Brightness").val();
-						
-						var thue = $("#scenecontent #Hue").val();
-						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
-						if (white_value<0) white_value=0;
-						if (white_value>255) white_value=255;
-						hue = (white_value << 16) + parseInt(thue);
-
-						var bIsWhite = $('#scenecontent #ledtable #optionsWhite').is(":checked")
-						if (bIsWhite == true) {
-							hue = 1000;
-						}
+					if (isLED(item.SubType)) {
+						let color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						level = Math.round((color.m*99)+1); // 1..100
+						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
 					}
 					else {
 						if (item.isdimmer == true) {
@@ -187,12 +179,12 @@ define(['app'], function (app) {
 			var offdelay = $("#scenecontent #offdelaytime").val();
 
 			$.ajax({
-				url: "json.htm?type=command&param=addscenedevice&idx=" + $.devIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
+				url: "json.htm?type=command&param=addscenedevice&idx=" + SceneIdx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&color=" + colorJSON + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
 					if (data.status == 'OK') {
-						RefreshDeviceTable($.devIdx);
+						RefreshDeviceTable(SceneIdx);
 					}
 					else {
 						ShowNotify($.t('Problem adding Device!'), 2500, true);
@@ -210,11 +202,11 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to delete ALL Devices?\n\nThis action can not be undone!"), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=command&param=deleteallscenedevices&idx=" + $.devIdx,
+						url: "json.htm?type=command&param=deleteallscenedevices&idx=" + SceneIdx,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefreshDeviceTable($.devIdx);
+							RefreshDeviceTable(SceneIdx);
 						}
 					});
 				}
@@ -258,33 +250,32 @@ define(['app'], function (app) {
 			});
 		}
 
-		SetColValue = function (idx, hue, brightness) {
+		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
-			var bIsWhite = $('#scenecontent #ledtable #optionsWhite').is(":checked");
 			$.ajax({
-				url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + bIsWhite,
+				url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&color=" + color + "&brightness=" + brightness,
 				async: false,
 				dataType: 'json'
 			});
 		}
 
 		RefreshDeviceTableEx = function () {
-			RefreshDeviceTable($.SceneIdx);
+			RefreshDeviceTable(SceneIdx);
 		}
 
-		RefresActivators = function () {
+		RefreshActivators = function () {
 			$('#scenecontent #delclract #removecode').attr("class", "btnstyle3-dis");
 
 			var oTable = $('#scenecontent #scenedactivationtable').dataTable();
 			oTable.fnClearTable();
 
 			$.ajax({
-				url: "json.htm?type=command&param=getsceneactivations&idx=" + $.SceneIdx,
+				url: "json.htm?type=command&param=getsceneactivations&idx=" + SceneIdx,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -331,8 +322,6 @@ define(['app'], function (app) {
 		RefreshDeviceTable = function (idx) {
 			$('#modal').show();
 
-			$.SceneIdx = idx;
-
 			$('#scenecontent #delclr #devicedelete').attr("class", "btnstyle3-dis");
 			$('#scenecontent #delclr #updatedelete').attr("class", "btnstyle3-dis");
 
@@ -348,7 +337,6 @@ define(['app'], function (app) {
 					if (typeof data.result != 'undefined') {
 						var totalItems = data.result.length;
 						$.each(data.result, function (i, item) {
-							var bIsLED = (item.SubType.indexOf("RGB") >= 0);
 							var command = "-";
 							if ($.isScene == true) {
 								command = item.Command;
@@ -373,18 +361,40 @@ define(['app'], function (app) {
 							}
 							var levelstr = item.Level + " %";
 
-							if (bIsLED) {
-								var hue = item.Hue & 0xFFFF;
-								var sat = 100;
-								if (hue == 1000) {
-									hue = 0;
-									sat = 0;
+							if (isLED(item.SubType)) {
+								let color = {};
+								try {
+									color = JSON.parse(item.Color);
 								}
-								var cHSB = [];
-								cHSB.h = hue;
-								cHSB.s = sat;
-								cHSB.b = item.Level;
-								levelstr += '<div id="picker4" class="ex-color-box" style="background-color: #' + $.colpick.hsbToHex(cHSB) + ';"></div>';
+								catch(e) {
+									// forget about it :)
+								}
+								//TODO: Refactor to some nice helper function, ensuring range of 0..ff etc
+								//TODO: Calculate color if color mode is white/temperature.
+								let rgbhex = "808080";
+								if (color.m == 1 || color.m == 2) { // White or color temperature
+									let whex = Math.round(255*item.Level/100).toString(16);
+									if( whex.length == 1) {
+										whex = "0" + whex;
+									}
+									rgbhex = whex + whex + whex;
+								}
+								if (color.m == 3 || color.m == 4) { // RGB or custom
+									let rhex = Math.round(color.r).toString(16);
+									if( rhex.length == 1) {
+										rhex = "0" + rhex;
+									}
+									let ghex = Math.round(color.g).toString(16);
+									if( ghex.length == 1) {
+										ghex = "0" + ghex;
+									}
+									let bhex = Math.round(color.b).toString(16);
+									if( bhex.length == 1) {
+										bhex = "0" + bhex;
+									}
+									rgbhex = rhex + ghex + bhex;
+								}
+								levelstr += '<div id="picker4" class="ex-color-box" style="background-color: #' + rgbhex + ';"></div>';
 							}
 
 
@@ -393,7 +403,7 @@ define(['app'], function (app) {
 								"Command": item.Command,
 								"RealIdx": item.DevRealIdx,
 								"Level": item.Level,
-								"Hue": item.Hue,
+								"Color": item.Color,
 								"OnDelay": item.OnDelay,
 								"OffDelay": item.OffDelay,
 								"Order": item.Order,
@@ -446,26 +456,16 @@ define(['app'], function (app) {
 
 						var level = data["Level"];
 						$("#scenecontent #combolevel").val(level);
-						$('#scenecontent #Brightness').val(level & 255);
-
-						var hue = parseInt(data["Hue"]) & 0xFFFF;
-						$('#scenecontent #white_slider').slider('value',(parseInt(data["Hue"]) & 0xFF0000)>>16);
 						
-						var sat = 100;
-						if (hue == 1000) {
-							hue = 0;
-							sat = 0;
-						}
-						$('#scenecontent #Hue').val(hue);
-						var cHSB = [];
-						cHSB.h = hue;
-						cHSB.s = sat;
-						cHSB.b = level;
-
-						$("#scenecontent #optionsRGB").prop('checked', (sat == 100));
-						$("#scenecontent #optionsWhite").prop('checked', !(sat == 100));
-
-						$('#scenecontent #picker').colpickSetColor(cHSB);
+						let SubType = "";
+						$.each($.LightsAndSwitches, function (i, item) {
+							if (item.idx == devidx) {
+								SubType = item.SubType;
+							}
+						});
+						let MaxDimLevel = 100; // Always 100 for LED type
+						if (isLED(SubType))
+							ShowRGBWPicker('#scenecontent #ScenesLedColor', devidx, 0, MaxDimLevel, level, data["Color"], SubType);
 
 						$("#scenecontent #ondelaytime").val(data["OnDelay"]);
 						$("#scenecontent #offdelaytime").val(data["OffDelay"]);
@@ -490,26 +490,16 @@ define(['app'], function (app) {
 			var Command = $("#scenecontent #combocommand option:selected").val();
 
 			var level = 100;
-			var hue = 0;
+			let colorJSON = ""; // Empty string, intentionally illegal JSON
 			var ondelay = $("#scenecontent #ondelaytime").val();
 			var offdelay = $("#scenecontent #offdelaytime").val();
 
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
-					var bIsLED = (item.SubType.indexOf("RGB") >= 0);
-					if (bIsLED == true) {
-						level = $("#scenecontent #Brightness").val();
-						
-						var thue = $("#scenecontent #Hue").val();
-						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
-						if (white_value<0) white_value=0;
-						if (white_value>255) white_value=255;
-						hue = (white_value << 16) + parseInt(thue);
-						
-						var bIsWhite = $('#scenecontent #ledtable #optionsWhite').is(":checked")
-						if (bIsWhite == true) {
-							hue = 1000;
-						}
+					if (isLED(item.SubType)) {
+						let color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						level = Math.round((color.m*99)+1); // 1..100
+						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
 					}
 					else {
 						if (item.isdimmer == true) {
@@ -520,12 +510,12 @@ define(['app'], function (app) {
 			});
 
 			$.ajax({
-				url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&hue=" + hue + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
+				url: "json.htm?type=command&param=updatescenedevice&idx=" + idx + "&isscene=" + $.isScene + "&devidx=" + DeviceIdx + "&command=" + Command + "&level=" + level + "&color=" + colorJSON + "&ondelay=" + ondelay + "&offdelay=" + offdelay,
 				async: false,
 				dataType: 'json',
 				success: function (data) {
 					if (data.status == 'OK') {
-						RefreshDeviceTable($.devIdx);
+						RefreshDeviceTable(SceneIdx);
 					}
 					else {
 						ShowNotify($.t('Problem updating Device!'), 2500, true);
@@ -546,7 +536,7 @@ define(['app'], function (app) {
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefreshDeviceTable($.devIdx);
+							RefreshDeviceTable(SceneIdx);
 						}
 					});
 				}
@@ -560,30 +550,20 @@ define(['app'], function (app) {
 				return;
 			}
 			var bShowLevel = false;
-			var bIsLED = false;
-			var bIsRGBW = false;
-			var bIsRGBWW = false;
 			var dimmerLevels = "none";
+			var SubType = "";
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					bShowLevel = item.isdimmer;
-					bIsLED = (item.SubType.indexOf("RGB") >= 0);
-					bIsRGBW = (item.SubType.indexOf("RGBW") >= 0);
-					bIsRGBWW = (item.SubType.indexOf("RGBWW") >= 0);
 					dimmerLevels = item.DimmerLevels;
+					SubType = item.SubType;
 				}
 			});
 
-			$("#scenecontent #LedColor").hide();
+			$("#ScenesLedColor").hide();
 			$("#scenecontent #LevelDiv").hide();
-			if (bIsLED) {
-				$("#scenecontent #LedColor").show();
-				
-				if ((bIsRGBW == true) || (bIsRGBWW == true)) {
-					$("#scenecontent #optionsWhiteSlider").show();
-				} else {
-					$("#scenecontent #optionsWhiteSlider").hide();
-				}
+			if (isLED(SubType)) {
+				$("#ScenesLedColor").show();
 			} else {
 				if (bShowLevel == true) {
 					var levelDiv$ = $("#scenecontent #LevelDiv");
@@ -610,7 +590,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			$.devIdx = idx;
+			SceneIdx = idx;
 
 			var bIsScene = (type == "Scene");
 			$.isScene = bIsScene;
@@ -620,7 +600,7 @@ define(['app'], function (app) {
 			$('#scenecontent').html(GetBackbuttonHTMLTable('ShowScenes') + htmlcontent);
 			$('#scenecontent').i18n();
 			$("#scenecontent #LevelDiv").hide();
-			$("#scenecontent #LedColor").hide();
+			$("#ScenesLedColor").hide();
 
 			$("#scenecontent #onaction").val(atob(onaction));
 			$("#scenecontent #offaction").val(atob(offaction));
@@ -637,61 +617,6 @@ define(['app'], function (app) {
 				$("#scenecontent #CommandDiv").hide();
 				$("#scenecontent #CommandHeader").html($.t("State"));
 			}
-
-			$cpick = $('#scenecontent #picker').colpick({
-				flat: true,
-				layout: 'hex',
-				submit: 0,
-				onChange: function (hsb, hex, rgb, el, fromSetColor) {
-					if (!fromSetColor) {
-						$('#scenecontent #Hue').val(hsb.h);
-						$('#scenecontent #Brightness').val(hsb.b);
-						var bIsWhite = (hsb.s < 20);
-						$("#scenecontent #optionsRGB").prop('checked', !bIsWhite);
-						$("#scenecontent #optionsWhite").prop('checked', bIsWhite);
-						clearInterval($.setColValue);
-						var white_value = $('#scenecontent #white_slider').slider("option", "value") - 1;
-						if (white_value<0) white_value=0;
-						if (white_value>255) white_value=255;
-						$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-					}
-				}
-			});
-			$('#scenecontent #white_slider').slider({
-				//Config
-				range: "min",
-				min: 1,
-				max: 255,
-				value: 0,
-
-				//Slider Events
-				create: function (event, ui) {
-					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
-					$(this).slider("option", "type", $(this).data('type'));
-					$(this).slider("option", "isprotected", $(this).data('isprotected'));
-					$(this).slider("value", $(this).data('svalue') + 1);
-					if ($(this).data('disabled'))
-						$(this).slider("option", "disabled", true);
-				},
-				slide: function (event, ui) { //When the slider is sliding
-					clearInterval($.setColValue);
-					var hsb = $cpick.colpickGetHSB();
-					var bIsWhite = (hsb.s < 20);
-					var white_value = ui.value-1;
-					if (white_value<0) white_value=0;
-					if (white_value>255) white_value=255;
-					$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-				},
-				stop: function (event, ui) {
-					clearInterval($.setColValue);
-					var hsb = $cpick.colpickGetHSB();
-					var bIsWhite = (hsb.s < 20);
-					var white_value = ui.value-1;
-					if (white_value<0) white_value=0;
-					if (white_value>255) white_value=255;
-					$.setColValue = setInterval(function () { SetColValue($.lampIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-				}
-			});			
 
 			$('#scenecontent #scenedevicestable').dataTable({
 				"sDom": '<"H"lfrC>t<"F"ip>',
@@ -747,6 +672,19 @@ define(['app'], function (app) {
 
 			$("#scenecontent #combodevice").change(function () {
 				OnSelChangeDevice();
+
+				var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
+				if (typeof DeviceIdx != 'undefined') {
+					let SubType = "";
+					$.each($.LightsAndSwitches, function (i, item) {
+						if (item.idx == DeviceIdx) {
+							SubType = item.SubType;
+						}
+					});
+					let MaxDimLevel = 100; // Always 100 for LED type
+					if (isLED(SubType))
+						ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType);
+				}
 			});
 			$('#scenecontent #combodevice').keypress(function () {
 				$(this).change();
@@ -755,7 +693,7 @@ define(['app'], function (app) {
 			OnSelChangeDevice();
 
 			RefreshDeviceTable(idx);
-			RefresActivators();
+			RefreshActivators();
 		}
 
 		RefreshLightSwitchesComboArray = function () {
@@ -803,11 +741,11 @@ define(['app'], function (app) {
 			bootbox.confirm($.t("Are you sure to delete ALL timers?\n\nThis action can not be undone!"), function (result) {
 				if (result == true) {
 					$.ajax({
-						url: "json.htm?type=command&param=clearscenetimers&idx=" + $.devIdx,
+						url: "json.htm?type=command&param=clearscenetimers&idx=" + SceneIdx,
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefreshTimerTable($.devIdx);
+							RefreshTimerTable(SceneIdx);
 						},
 						error: function () {
 							HideNotify();
@@ -826,7 +764,7 @@ define(['app'], function (app) {
 						async: false,
 						dataType: 'json',
 						success: function (data) {
-							RefreshTimerTable($.devIdx);
+							RefreshTimerTable(SceneIdx);
 						},
 						error: function () {
 							HideNotify();
@@ -950,7 +888,7 @@ define(['app'], function (app) {
 				async: false,
 				dataType: 'json',
 				success: function (data) {
-					RefreshTimerTable($.devIdx);
+					RefreshTimerTable(SceneIdx);
 				},
 				error: function () {
 					HideNotify();
@@ -1008,7 +946,7 @@ define(['app'], function (app) {
 				return;
 			}
 			$.ajax({
-				url: "json.htm?type=command&param=addscenetimer&idx=" + $.devIdx +
+				url: "json.htm?type=command&param=addscenetimer&idx=" + SceneIdx +
 				"&active=" + tsettings.Active +
 				"&timertype=" + tsettings.timertype +
 				"&date=" + tsettings.date +
@@ -1294,7 +1232,7 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			$.devIdx = id;
+			SceneIdx = id;
 			$.isDimmer = false;
 
 			var oTable;
@@ -1726,7 +1664,7 @@ define(['app'], function (app) {
 									$interval.cancel($scope.mytimer);
 									$scope.mytimer = undefined;
 								}
-								$.devIdx = $(this).attr("id");
+								SceneIdx = $(this).attr("id");
 								$(this).css("z-index", 2);
 							},
 							revert: true
@@ -1735,7 +1673,7 @@ define(['app'], function (app) {
 							drop: function () {
 								var myid = $(this).attr("id");
 								$.ajax({
-									url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + $.devIdx,
+									url: "json.htm?type=command&param=switchsceneorder&idx1=" + myid + "&idx2=" + SceneIdx,
 									async: false,
 									dataType: 'json',
 									success: function (data) {
@@ -1756,7 +1694,7 @@ define(['app'], function (app) {
 		init();
 
 		function init() {
-			$.devIdx = 0;
+			SceneIdx = 0;
 			$.myglobals = {
 				TimerTypesStr: [],
 				CommandStr: [],
