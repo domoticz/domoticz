@@ -1567,10 +1567,11 @@ namespace Plugins {
 		return true;
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const int hue)
+	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const _tColor color)
 	{
 		//	Add command to message queue
-		MessagePlugin(new onCommandCallback(this, Unit, command, level, hue));
+		std::string JSONColor = color.toJSON();
+		MessagePlugin(new onCommandCallback(this, Unit, command, level, JSONColor));
 	}
 
 	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)

@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 123
+#define DB_VERSION 124
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -68,7 +68,8 @@ const char *sqlCreateDeviceStatus =
 "[Protected] INTEGER DEFAULT 0, "
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
-"[Options] TEXT DEFAULT null);";
+"[Options] TEXT DEFAULT null, "
+"[Color] TEXT DEFAULT NULL);";
 
 const char *sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -166,7 +167,7 @@ const char *sqlCreateTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
-"[Hue] INTEGER DEFAULT 0, "
+"[Color] TEXT DEFAULT NULL, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL, "
@@ -372,7 +373,7 @@ const char *sqlCreateSceneDevices =
 "[DeviceRowID] BIGINT NOT NULL, "
 "[Cmd] INTEGER DEFAULT 1, "
 "[Level] INTEGER DEFAULT 100, "
-"[Hue] INTEGER DEFAULT 0, "
+"[Color] TEXT DEFAULT NULL, "
 "[OnDelay] INTEGER DEFAULT 0, "
 "[OffDelay] INTEGER DEFAULT 0);";
 
@@ -397,7 +398,6 @@ const char *sqlCreateSceneTimers =
 "[Type] INTEGER NOT NULL, "
 "[Cmd] INTEGER NOT NULL, "
 "[Level] INTEGER DEFAULT 15, "
-"[Hue] INTEGER DEFAULT 0, "
 "[UseRandomness] INTEGER DEFAULT 0, "
 "[TimerPlan] INTEGER DEFAULT 0, "
 "[Days] INTEGER NOT NULL, "
@@ -2094,7 +2094,7 @@ bool CSQLHelper::OpenDatabase()
 			//Adjust Limited device id's to uppercase HEX
 			std::stringstream szQuery2;
 			std::vector<std::vector<std::string> > result;
-			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeLimitlessLights << ")";
+			szQuery2 << "SELECT ID, DeviceID FROM DeviceStatus WHERE([Type]==" << pTypeColorSwitch << ")";
 			result = query(szQuery2.str());
 			if (result.size() > 0)
 			{
@@ -2418,6 +2418,92 @@ bool CSQLHelper::OpenDatabase()
 		{
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenIPInOut);
 			safe_query("UPDATE Hardware SET Mode1 = 5000 WHERE Type = %d", HTYPE_DenkoviSmartdenLan);
+		}
+		if (dbversion < 124)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Color] TEXT DEFAULT NULL");
+			query("ALTER TABLE Timers ADD COLUMN [Color] TEXT DEFAULT NULL");
+			query("ALTER TABLE SceneDevices ADD COLUMN [Color] TEXT DEFAULT NULL");
+
+			std::stringstream szQuery2;
+			std::vector<std::vector<std::string> > result;
+			std::vector<std::vector<std::string> > result2;
+
+			//Convert stored Hue in Timers to color
+			result = query("SELECT ID, Hue FROM Timers WHERE(Hue!=0)");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int r, g, b;
+
+					//convert hue to RGB
+					float iHue = float(atof(sd[1].c_str()));
+					hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+
+					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE Timers SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
+
+			//Convert stored Hue in SceneDevices to color
+			result = query("SELECT ID, Hue FROM SceneDevices WHERE(Hue!=0)");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+
+					int r, g, b;
+
+					//convert hue to RGB
+					float iHue = float(atof(sd[1].c_str()));
+					hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+
+					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "UPDATE SceneDevices SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					query(szQuery2.str());
+				}
+			}
+
+			//Patch for ZWave, change device type from sTypeColor_RGB_W to sTypeColor_RGB_W_Z
+			szQuery2.clear();
+			szQuery2.str("");
+			szQuery2 << "SELECT ID FROM Hardware WHERE([Type]==" << HTYPE_OpenZWave << ")";
+			result = query(szQuery2.str());
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					szQuery2.clear();
+					szQuery2.str("");
+					szQuery2 << "SELECT ID FROM DeviceStatus WHERE ([Type]=" << (int)pTypeColorSwitch << ") AND (SubType=" << (int)sTypeColor_RGB_W << ") AND (HardwareID=" << sd[0] << ")";
+					result2 = query(szQuery2.str());
+
+					std::vector<std::vector<std::string> >::const_iterator itt2;
+					for (itt2 = result2.begin(); itt2 != result2.end(); ++itt2)
+					{
+						sd = *itt2;
+
+						//Change device type
+						szQuery2.clear();
+						szQuery2.str("");
+						szQuery2 << "UPDATE DeviceStatus SET SubType=" << (int)sTypeColor_RGB_W_Z << " WHERE (ID=" << sd[0] << ")";
+						query(szQuery2.str());
+					}
+				}
+			}
 		}
 	}
 	else if (bNewInstall)
@@ -2888,16 +2974,13 @@ bool CSQLHelper::StartThread()
 	return (m_background_task_thread!=NULL);
 }
 
-bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue)
+bool CSQLHelper::SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color)
 {
-	uint64_t ID;
-	std::stringstream s_str(idx);
-	s_str >> ID;
-
-	return SwitchLightFromTasker(ID, switchcmd, atoi(level.c_str()), atoi(hue.c_str()));
+	_tColor ocolor(color);
+	return SwitchLightFromTasker(strtoui64(idx), switchcmd, atoi(level.c_str()), ocolor);
 }
 
-bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, int hue)
+bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color)
 {
 	//Get Device details
 	std::vector<std::vector<std::string> > result;
@@ -2906,7 +2989,7 @@ bool CSQLHelper::SwitchLightFromTasker(uint64_t idx, const std::string &switchcm
 		return false;
 
 	std::vector<std::string> sd = result[0];
-	return m_mainworker.SwitchLightInt(sd, switchcmd, level, hue, false);
+	return m_mainworker.SwitchLightInt(sd, switchcmd, level, color, false);
 }
 
 void CSQLHelper::Do_Work()
@@ -2989,16 +3072,16 @@ void CSQLHelper::Do_Work()
 					case pTypeLighting3:
 					case pTypeLighting5:
 					case pTypeLighting6:
-					case pTypeLimitlessLights:
+					case pTypeColorSwitch:
 					case pTypeGeneralSwitch:
 					case pTypeHomeConfort:
-						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor);
 						break;
 					case pTypeSecurity1:
 						switch (itt->_subType)
 						{
 						case sTypeSecX10M:
-							SwitchLightFromTasker(itt->_idx, "No Motion", 0, -1);
+							SwitchLightFromTasker(itt->_idx, "No Motion", 0, NoColor);
 							break;
 						default:
 							//just update internally
@@ -3025,7 +3108,7 @@ void CSQLHelper::Do_Work()
 						UpdateValueInt(itt->_HardwareID, itt->_ID.c_str(), itt->_unit, itt->_devType, itt->_subType, itt->_signallevel, itt->_batterylevel, itt->_nValue, itt->_sValue.c_str(), devname, true);
 					}
 					else
-						SwitchLightFromTasker(itt->_idx, "Off", 0, -1);
+						SwitchLightFromTasker(itt->_idx, "Off", 0, NoColor);
 				}
 			}
 			else if (itt->_ItemType == TITEM_EXECUTE_SCRIPT)
@@ -3137,7 +3220,7 @@ void CSQLHelper::Do_Work()
 			}
 			else if (itt->_ItemType == TITEM_SWITCHCMD_EVENT)
 			{
-				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Hue);
+				SwitchLightFromTasker(itt->_idx, itt->_command.c_str(), itt->_level, itt->_Color);
 			}
 
 			else if (itt->_ItemType == TITEM_SWITCHCMD_SCENE)
@@ -3628,23 +3711,17 @@ uint64_t CSQLHelper::CreateDevice(const int HardwareID, const int SensorType, co
 		break;
 	}
 
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	{
 		switch (SensorSubType)
 		{
-		case sTypeLimitlessRGB:		//RGB switch
-		{
-			std::string rID = std::string(ID);
-			padLeft(rID, 8, '0');
-			DeviceRowIdx = UpdateValue(HardwareID, rID.c_str(), 1, SensorType, SensorSubType, 12, 255, 1, devname);
-			if (DeviceRowIdx != -1)
-			{
-				//Set switch type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%" PRIu64 ")", STYPE_Dimmer, DeviceRowIdx);
-			}
-		}
-		break;
-		case sTypeLimitlessRGBW:		//RGBW switch
+		case sTypeColor_RGB:         //RGB switch
+		case sTypeColor_RGB_W:       //RGBW switch
+		case sTypeColor_RGB_CW_WW:   //RGBWW switch
+		case sTypeColor_RGB_W_Z:     //RGBWZ switch
+		case sTypeColor_RGB_CW_WW_Z: //RGBWWZ switch
+		case sTypeColor_White:       //Monochrome white switch
+		case sTypeColor_CW_WW:       //Adjustable color temperature white switch
 		{
 			std::string rID = std::string(ID);
 			padLeft(rID, 8, '0');
@@ -3766,8 +3843,8 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 					case pTypeLighting6:
 						newnValue=light6_sOff;
 						break;
-					case pTypeLimitlessLights:
-						newnValue=Limitless_LedOff;
+					case pTypeColorSwitch:
+						newnValue=Color_LedOff;
 						break;
 					case pTypeSecurity1:
 						newnValue=sStatusNormal;
@@ -3852,8 +3929,8 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 			case pTypeLighting6:
 				newnValue=light6_sOff;
 				break;
-			case pTypeLimitlessLights:
-				newnValue=Limitless_LedOff;
+			case pTypeColorSwitch:
+				newnValue=Color_LedOff;
 				break;
 			case pTypeSecurity1:
 				newnValue=sStatusNormal;
@@ -4005,9 +4082,9 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			sprintf(sCompValue, "%s;%.1f", parts[0].c_str(), nEnergy);
 			sValue = sCompValue;
 		}
-	        //~ use different update queries based on the device type
-	        if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
-        	{
+		//~ use different update queries based on the device type
+		if (devType == pTypeGeneral && subType == sTypeCounterIncremental)
+		{
 			result = safe_query(
 				"UPDATE DeviceStatus SET SignalLevel=%d, BatteryLevel=%d, nValue= nValue + %d, sValue= sValue + '%q', LastUpdate='%04d-%02d-%02d %02d:%02d:%02d' "
 				"WHERE (ID = %" PRIu64 ")",
@@ -4015,7 +4092,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				nValue,sValue,
 				ltime.tm_year+1900,ltime.tm_mon+1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec,
 				ulID);
-	        }
+		}
 		else
 		{
 			if (
@@ -4066,7 +4143,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	case pTypeLighting4:
 	case pTypeLighting5:
 	case pTypeLighting6:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeEvohome:
@@ -4271,8 +4348,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 						case pTypeRemote:
 							cmd=light2_sOff;
 							break;
-						case pTypeLimitlessLights:
-							cmd=Limitless_LedOff;
+						case pTypeColorSwitch:
+							cmd=Color_LedOff;
 							bAdd2DelayQueue=true;
 							break;
 						case pTypeRFY:
@@ -6849,7 +6926,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 
 	// Check if an event for the same device is already in queue, and if so, replace it
 	if (_log.isTraceEnabled())
-	   _log.Log(LOG_TRACE, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Hue, tItem._relatedEvent.c_str());
+	   _log.Log(LOG_TRACE, "SQLH AddTask: Request to add task: idx=%" PRIu64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", tItem._idx, tItem._DelayTime, tItem._command.c_str(), tItem._level, tItem._Color.toString().c_str(), tItem._relatedEvent.c_str());
 	// Remove any previous task linked to the same device
 
 	if (
@@ -6863,7 +6940,7 @@ void CSQLHelper::AddTaskItem(const _tTaskItem &tItem, const bool cancelItem)
 		while (itt != m_background_task_queue.end())
 		{
 			if (_log.isTraceEnabled())
-				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%" PRId64 ", DelayTime=%f, Command='%s', Level=%d, Hue=%d, RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Hue, itt->_relatedEvent.c_str());
+				 _log.Log(LOG_TRACE, "SQLH AddTask: Comparing with item in queue: idx=%" PRId64 ", DelayTime=%f, Command='%s', Level=%d, Color='%s', RelatedEvent='%s'", itt->_idx, itt->_DelayTime, itt->_command.c_str(), itt->_level, itt->_Color.toString().c_str(), itt->_relatedEvent.c_str());
 			if (itt->_idx == tItem._idx && itt->_ItemType == tItem._ItemType)
 			{
 				float iDelayDiff = tItem._DelayTime - itt->_DelayTime;
@@ -7346,7 +7423,7 @@ void CSQLHelper::CheckDeviceTimeout()
 		pTypeLighting6,
 		pTypeFan,
 		pTypeRadiator1,
-		pTypeLimitlessLights,
+		pTypeColorSwitch,
 		pTypeSecurity1,
 		pTypeCurtain,
 		pTypeBlinds,

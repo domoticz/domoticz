@@ -286,15 +286,16 @@ define(['app'], function (app) {
 			});
 		}
 
-		SetColValue = function (idx, hue, brightness, isWhite) {
+		SetColValue = function (idx, color, brightness) {
 			clearInterval($.setColValue);
 			if (permissions.hasPermission("Viewer")) {
 				HideNotify();
 				ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 				return;
 			}
+			//TODO: Update local copy of device color instead of waiting for periodic AJAX poll of devices
 			$.ajax({
-				url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&hue=" + hue + "&brightness=" + brightness + "&iswhite=" + isWhite,
+				url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&color=" + color + "&brightness=" + brightness,
 				async: false,
 				dataType: 'json'
 			});
@@ -758,129 +759,57 @@ define(['app'], function (app) {
 				language: $.DataTableLanguage
 			});
 
-			var sat = 100;
-			var cHSB = [];
-			cHSB.h = 128;
-			cHSB.s = sat;
-			cHSB.b = 100;
-			$('#lightcontent #Brightness').val(100);
-			$('#lightcontent #Hue').val(128);
-
-			//For later use with slider: chris
-			//			var kelvin=100;
-			//			$('#lightcontent #Temperature').val(75);
-			//chris
-
-			$.bIsLED = (devsubtype.indexOf("RGB") >= 0);
-			$.bIsRGB = (devsubtype == "RGB");
-			$.bIsRGBW = (devsubtype.indexOf("RGBW") >= 0);
-			$.bIsRGBWW = (devsubtype.indexOf("RGBWW") >= 0);
-			$.bIsWhite = (devsubtype == "White");
-			//Only Limitless type bulbs
-			$.bIsLimitless = (stype.indexOf("Limitless") >= 0);
+			let LEDType = getLEDType(devsubtype);
+			let bIsWhite = (devsubtype == "White");
+			//Only ColorSwitch type bulbs
+			let bIsColorSwitch = (stype.indexOf("Color Switch") >= 0);
 			//
 
-
-			if ($.bIsLED == true) {
-				$("#lightcontent #LedColor").show();
+			if (LEDType.bIsLED == true) {
+				$("#lightcontent #LightsLedColor").show();
 			}
 			else {
-				$("#lightcontent #LedColor").hide();
+				$("#lightcontent #LightsLedColor").hide();
 			}
-			if ($.bIsRGB == true && $.strUnit == "0" && $.bIsLimitless == true) {
+			if (LEDType.bHasRGB == true && $.strUnit == "0" && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBLimit").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBLimit").hide();
 			}
-			if ($.bIsRGBWW == true && $.bIsLimitless == true) {
+			if (LEDType.bHasTemperature == true && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBWWLimit").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBWWLimit").hide();
 			}
-			if (($.bIsRGBW == true) || ($.bIsRGBWW == true)) {
+			if (LEDType.bHasWhite) {
 				$("#lightcontent #optionsWhiteSlider").show();
 			} else {
 				$("#lightcontent #optionsWhiteSlider").hide();
 			}
-			if ($.bIsRGBW == true && $.bIsRGBWW == false && $.bIsLimitless == true) {
+			if (LEDType.bHasWhite && LEDType.bHasTemperature == false && bIsColorSwitch == true) {
 				$("#lightcontent #optionsRGBWLimit").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBWLimit").hide();
 			}
-			if ($.bIsRGBW == true) {
+			if (LEDType.bHasWhite) {
 				$("#lightcontent #optionsRGBW").show();
 			}
 			else {
 				$("#lightcontent #optionsRGBW").hide();
 			}
-			if ($.bIsWhite) {
+			if (bIsWhite) {
 				$("#lightcontent #optionsWhite").show();
 			}
 			else {
 				$("#lightcontent #optionsWhite").hide();
 			}
-			$cpick = $('#lightcontent #picker').colpick({
-				flat: true,
-				layout: 'hex',
-				submit: 0,
-				onChange: function (hsb, hex, rgb, el, fromSetColor) {
-					if (!fromSetColor) {
-						$('#lightcontent #Hue').val(hsb.h);
-						$('#lightcontent #Brightness').val(hsb.b);
-						var bIsWhite = (hsb.s < 20);
-						$("#lightcontent #optionRGB").prop('checked', !bIsWhite);
-						$("#lightcontent #optionWhite").prop('checked', bIsWhite);
-						clearInterval($.setColValue);
-
-						var white_value = $('#lightcontent #white_slider').slider("option", "value") - 1;
-						if (white_value<0) white_value=0;
-						if (white_value>255) white_value=255;
-						$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-					}
-				}
-			});
-			$('#lightcontent #white_slider').slider({
-				//Config
-				range: "min",
-				min: 1,
-				max: 255,
-				value: 0,
-
-				//Slider Events
-				create: function (event, ui) {
-					$(this).slider("option", "max", $(this).data('maxlevel') + 1);
-					$(this).slider("option", "type", $(this).data('type'));
-					$(this).slider("option", "isprotected", $(this).data('isprotected'));
-					$(this).slider("value", $(this).data('svalue') + 1);
-					if ($(this).data('disabled'))
-						$(this).slider("option", "disabled", true);
-				},
-				slide: function (event, ui) { //When the slider is sliding
-					clearInterval($.setColValue);
-					var hsb = $cpick.colpickGetHSB();
-					var bIsWhite = (hsb.s < 20);
-					var white_value = ui.value-1;
-					if (white_value<0) white_value=0;
-					if (white_value>255) white_value=255;
-					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-				},
-				stop: function (event, ui) {
-					clearInterval($.setColValue);
-					var hsb = $cpick.colpickGetHSB();
-					var bIsWhite = (hsb.s < 20);
-					var white_value = ui.value-1;
-					if (white_value<0) white_value=0;
-					if (white_value>255) white_value=255;
-					$.setColValue = setInterval(function () { SetColValue($.devIdx, (white_value << 16) + hsb.h, hsb.b, bIsWhite); }, 400);
-				}
-			});
-			$("#lightcontent #optionRGB").prop('checked', (sat == 100));
-			$("#lightcontent #optionWhite").prop('checked', !(sat == 100));
-
-			$('#lightcontent #picker').colpickSetColor(cHSB);
+			let MaxDimLevel = 100; // Always 100 for LED type
+			//TODO: Dig up set color and level
+			if (isLED(devsubtype))
+				ShowRGBWPicker('#lightcontent #LightsLedColor', idx, 0, MaxDimLevel, 50, "", devsubtype);
 
 			$("#lightcontent #devicename").val(unescape(name));
 			$("#lightcontent #devicedescription").val(unescape(description));
@@ -1630,22 +1559,16 @@ define(['app'], function (app) {
 										(item.Status == 'Group On') ||
 										(item.Status.indexOf('Set ') == 0)
 									) {
-										if (item.SubType == "RGB") {
-											img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
-										}
-										else if (item.SubType.indexOf("RGBW") >= 0) {
-											img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+										if (isLED(item.SubType)) {
+											img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="48" width="48">';
 										}
 										else {
 											img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
 										}
 									}
 									else {
-										if (item.SubType == "RGB") {
-											img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
-										}
-										else if (item.SubType.indexOf("RGBW") >= 0) {
-											img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48">';
+										if (isLED(item.SubType)) {
+											img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="48" width="48">';
 										}
 										else {
 											img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48">';
@@ -2228,22 +2151,16 @@ define(['app'], function (app) {
 									(item.Status.indexOf('NightMode') == 0) ||
 									(item.Status.indexOf('Disco ') == 0)
 								) {
-									if (item.SubType == "RGB") {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
-									}
-									else if (item.SubType.indexOf("RGBW") >= 0) {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
+									if (isLED(item.SubType)) {
+										xhtm += '\t      <td id="img"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="48" width="48"></td>\n';
 									}
 									else {
 										xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',\'RefreshLights\',' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
 									}
 								}
 								else {
-									if (item.SubType == "RGB") {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
-									}
-									else if (item.SubType.indexOf("RGBW") >= 0) {
-										xhtm += '\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ',\'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',' + item.Hue + ');" class="lcursor" height="48" width="48"></td>\n';
+									if (isLED(item.SubType)) {
+										xhtm += '\t      <td id="img"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshLights\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="48" width="48"></td>\n';
 									}
 									else {
 										xhtm += '\t      <td id="img"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshLights,' + item.Protected + ');" class="lcursor" height="48" width="48"></td>\n';
@@ -2330,7 +2247,8 @@ define(['app'], function (app) {
 								'\t      <td id="lastupdate">' + item.LastUpdate + '</td>\n' +
 								'\t      <td id="type">' + item.Type + ', ' + item.SubType + ', ' + item.SwitchType;
 							if (item.SwitchType == "Dimmer") {
-								if ((item.SubType.indexOf("RGBW") >= 0) || (item.SubType == "RGB")) {
+								if (isLED(item.SubType)) {
+									//TODO: Why not show dimmer slider for LED type?
 								}
 								else {
 									xhtm += '<br><br><div style="margin-left:60px;" class="dimslider" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div>';

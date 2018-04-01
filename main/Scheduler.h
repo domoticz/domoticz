@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RFXNames.h"
+#include "../hardware/hardwaretypes.h"
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ struct tScheduleItem
 	_eTimerType	timerType; 
 	_eTimerCommand timerCmd;
 	int Level;
-	int Hue;
+	_tColor Color;
 	float Temperature;
 	bool bUseRandomness;
 	int Days;

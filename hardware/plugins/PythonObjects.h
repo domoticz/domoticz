@@ -101,6 +101,7 @@ namespace Plugins {
 		int			Used;
 		int			TimedOut;
 		PyObject*	Description;
+		PyObject*	Color;
 		CPlugin*	pPlugin;
 	} CDevice;
 
@@ -131,6 +132,7 @@ namespace Plugins {
 		{ "Used", T_INT, offsetof(CDevice, Used), READONLY, "Numeric device Used flag" },
 		{ "TimedOut", T_INT, offsetof(CDevice, TimedOut), READONLY, "Is the device marked as timed out" },
 		{ "Description", T_OBJECT, offsetof(CDevice, Description), READONLY, "Description" },
+		{ "Color", T_OBJECT, offsetof(CDevice, Color), READONLY, "Color JSON dictionary" },
 		{ NULL }  /* Sentinel */
 	};
 

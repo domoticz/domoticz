@@ -204,7 +204,7 @@ bool CDaikin::WriteToHardware(const char *pdata, const unsigned char length)
 			SetF_DirLevel(pSwitch->level);
 		}
 	}
-	else if (packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeColorSwitch)
 	{
 		//RGW/RGBW command
 	}

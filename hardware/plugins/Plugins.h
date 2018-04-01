@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../DomoticzHardware.h"
+#include "../hardwaretypes.h"
 #include "../../notifications/NotificationBase.h"
 
 #ifndef byte
@@ -81,7 +82,7 @@ namespace Plugins {
 
 		bool	WriteToHardware(const char *pdata, const unsigned char length);
 		void	Restart();
-		void	SendCommand(const int Unit, const std::string &command, const int level, const int hue);
+		void	SendCommand(const int Unit, const std::string &command, const int level, const _tColor color);
 		void	SendCommand(const int Unit, const std::string &command, const float level);
 
 		void	onDeviceAdded(int Unit);
