@@ -2769,7 +2769,9 @@ void eHouseTCP::Do_Work()
 						eHEStatusReceived++;
 					}
 					else    //Not CM
+					{
 						if (devaddrl != 0)
+						{
 							if (devaddrl >= INITIAL_ADDRESS_LAN)
 							{
 								if (devaddrl - INITIAL_ADDRESS_LAN <= ETHERNET_EHOUSE_RM_MAX)   //Ethernet eHouse LAN Controllers
@@ -2895,7 +2897,7 @@ void eHouseTCP::Do_Work()
 												AuraDev[aindex]->Temp = AuraN[aindex]->ParamValue[m];
 												AuraDev[aindex]->Temp /= 10;
 												//                                                 AuraDev[aindex]->TempSet = AuraN[aindex]->ParamPreset[m];
-												  //                                               AuraDev[aindex]->TempSet/= 10;
+												//                                               AuraDev[aindex]->TempSet/= 10;
 												AuraDev[aindex]->LocalTempSet = AuraN[aindex]->ParamPreset[m];
 												AuraDev[aindex]->LocalTempSet /= 10;
 												if (AuraDev[aindex]->LocalTempSet != AuraDev[aindex]->PrevLocalTempSet)
@@ -2922,14 +2924,14 @@ void eHouseTCP::Do_Work()
 													//eHPROaloc(0, SrvAddrH, SrvAddrL);
 
 													eHouseProStatus->status.AdcVal[aindex] = AuraN[aindex]->ParamValue[0];// temp * 10;//.MSB<<8) + eHouseProStatus.status.AdcVal[nr_of_ch].LSB;
-													//adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
+																														  //adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
 													adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0] + 3;
 													adcs[aindex]->ADCLow = AuraN[aindex]->ParamPreset[0] - 3;
 													AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
 													AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
 													nr_of_ch = aindex;
 													//        PerformADC();       //Perform Adc measurement process
-//                                                                    AuraN[aindex]->TextStatus[0] = 0;
+													//                                                                    AuraN[aindex]->TextStatus[0] = 0;
 												}
 
 
@@ -3046,6 +3048,8 @@ void eHouseTCP::Do_Work()
 									UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
 								}
 							}
+						}
+					}
 				}
 			}
 			else
