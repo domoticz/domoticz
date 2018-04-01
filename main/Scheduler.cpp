@@ -405,6 +405,7 @@ bool CScheduler::AdjustScheduleItem(tScheduleItem *pItem, bool bForceAddDay)
 	localtime_r(&atime, &ltime);
 	int isdst = ltime.tm_isdst;
 	struct tm tm1;
+	memset(&tm1, 0, sizeof(tm));
 	tm1.tm_isdst = -1;
 
 	if (bForceAddDay)
