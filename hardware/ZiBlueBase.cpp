@@ -603,9 +603,9 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					pSen->hygro);
 #endif
 				if (pSen->hygro > 0)
-					SendTempHumSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, "Temp+Hum");
+					SendTempHumSensor(pSen->idPHY^pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, "Temp+Hum");
 				else
-					SendTempSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, "Temp");
+					SendTempSensor(pSen->idPHY^pSen->idChannel, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, "Temp");
 			}
 			break;
 		case INFOS_TYPE5:
@@ -624,7 +624,7 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 					pSen->pressure
 					);
 #endif
-				SendTempHumBaroSensor(pSen->idPHY, (pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure, 0, "Temp+Hum+Baro");
+				SendTempHumBaroSensor(pSen->idPHY^pSen->idChannel,(pSen->qualifier & 0x01) ? 0 : 100, float(pSen->temp) / 10.0f, pSen->hygro, pSen->pressure, 0, "Temp+Hum+Baro");
 			}
 			break;
 		case INFOS_TYPE6:
