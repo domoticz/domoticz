@@ -209,6 +209,7 @@ define(['app'], function (app) {
 									(item.Type.indexOf('Thermostat 2') == 0) ||
 									(item.Type.indexOf('Thermostat 3') == 0) ||
 									(item.Type.indexOf('Chime') == 0) ||
+									(item.Type.indexOf('Color Switch') == 0) ||
 									(item.Type.indexOf('RFY') == 0) ||
 									(item.Type.indexOf('ASA') == 0) ||
 									(item.SubType == "Smartwares Mode") ||
@@ -1905,6 +1906,7 @@ define(['app'], function (app) {
 									(item.Type.indexOf('Thermostat 2') == 0) ||
 									(item.Type.indexOf('Thermostat 3') == 0) ||
 									(item.Type.indexOf('Chime') == 0) ||
+									(item.Type.indexOf('Color Switch') == 0) ||
 									(item.Type.indexOf('RFY') == 0) ||
 									(item.Type.indexOf('ASA') == 0) ||
 									(item.SubType == "Relay") ||
