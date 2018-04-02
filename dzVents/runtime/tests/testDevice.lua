@@ -649,7 +649,7 @@ describe('device', function()
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?param=udevice&type=command&idx=1&nvalue=0&svalue=14', res)
 		end)
 
 		it('should detect a Z-Wave Thermostat mode device', function()
