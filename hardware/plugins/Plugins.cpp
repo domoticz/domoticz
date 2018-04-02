@@ -1296,13 +1296,19 @@ namespace Plugins {
 			}
 
 			// If transport is not connected there won't be a Disconnect Event so tidy it up here
-			if (!pConnection->pTransport->IsConnected())
+			if (!pConnection->pTransport->IsConnected() && !pConnection->pTransport->IsConnecting())
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
 				delete pConnection->pTransport;
 				pConnection->pTransport = NULL;
+
+				// Plugin exiting and all connections have disconnect messages queued
+				if (m_stoprequested && !m_Transports.size())
+				{
+					MessagePlugin(new onStopCallback(this));
+				}
 			}
 			else
 			{
@@ -1400,15 +1406,17 @@ namespace Plugins {
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
-			{
-				RemoveConnection(pConnection->pTransport);
-				CPluginTransport *pTransport = pConnection->pTransport;
-				delete pConnection->pTransport;
-				pConnection->pTransport = NULL;
-			}
 
-			// inform the plugin
-			MessagePlugin(new onDisconnectCallback(this, (PyObject*)pConnection));
+			RemoveConnection(pConnection->pTransport);
+			CPluginTransport *pTransport = pConnection->pTransport;
+			delete pConnection->pTransport;
+			pConnection->pTransport = NULL;
+
+			// inform the plugin if transport is connection based
+			if (pMessage->bNotifyPlugin)
+			{
+				MessagePlugin(new onDisconnectCallback(this, (PyObject*)pConnection));
+			}
 
 			// Plugin exiting and all connections have disconnect messages queued
 			if (m_stoprequested && !m_Transports.size())
