@@ -9671,7 +9671,7 @@ namespace http {
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
-						root["result"][ii]["Managed"] = options["Managed"] == "true";
+						root["result"][ii]["ExternallyManaged"] = options["ExternallyManaged"] == "true";
 
 						double meteroffset = AddjValue;
 						double dvalue = static_cast<double>(atof(sValue.c_str()));

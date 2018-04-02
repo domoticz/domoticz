@@ -5222,7 +5222,7 @@ void CSQLHelper::UpdateMeter()
 			std::string sOptions = sd[10];
 			std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
 			// We don't want to update meter if externally managed
-			if (options["Managed"] == "true")
+			if (options["ExternallyManaged"] == "true")
 			{
 				continue;
 			}
@@ -5872,7 +5872,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		std::string sOptions = sd[7];
 		std::map<std::string, std::string> options = BuildDeviceOptions(sOptions);
 		// We don't want to update meter if externally managed
-		if (options["Managed"] == "true")
+		if (options["ExternallyManaged"] == "true")
 		{
 			continue;
 		}

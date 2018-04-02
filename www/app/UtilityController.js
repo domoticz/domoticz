@@ -128,7 +128,7 @@ define(['app'], function (app) {
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits, ismanaged) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, valuequantity, valueunits, isexternallymanaged) {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
@@ -157,7 +157,7 @@ define(['app'], function (app) {
 				}
 			});
 
-			$('#dialog-editmeterdevice #managed').prop('checked', (ismanaged == true));
+			$('#dialog-editmeterdevice #externallymanaged').prop('checked', (isexternallymanaged == true));
 			$("#dialog-editmeterdevice").i18n();
 			$("#dialog-editmeterdevice").dialog("open");
 		}
@@ -745,7 +745,7 @@ define(['app'], function (app) {
 										xhtm += '<a class="btnsmall" onclick="EditUtilityDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\');" data-i18n="Edit">Edit</a> ';
 									}
 									else {
-										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', ' + item.Managed + ');" data-i18n="Edit">Edit</a> ';
+										xhtm += '<a class="btnsmall" onclick="EditMeterDevice(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SwitchTypeVal + ',' + item.AddjValue + ',\'' + escape(item.ValueQuantity) + '\',\'' + escape(item.ValueUnits) + '\', ' + item.ExternallyManaged + ');" data-i18n="Edit">Edit</a> ';
 									}
 								}
 							}
@@ -1220,8 +1220,8 @@ define(['app'], function (app) {
 				bValid = bValid && checkLength($("#dialog-editmeterdevice #devicename"), 2, 100);
 				if (bValid) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
-					devOptions.push("Managed:");
-					devOptions.push($("#dialog-editmeterdevice #managed").is(":checked"));
+					devOptions.push("ExternallyManaged:");
+					devOptions.push($("#dialog-editmeterdevice #externallymanaged").is(":checked"));
 					devOptions.push(";");
 					if (meterType == 3) //Counter
 					{
