@@ -5,7 +5,7 @@ return {
 	name = 'RGB(W) device adapter',
 
 	matches = function (device, adapterManager)
-		local res = device.deviceType == 'Lighting Limitless/Applamp'
+		local res = device.deviceType == 'Color Switch'
 		adapterManager.addDummyMethod(device, 'setKelvin')
 		adapterManager.addDummyMethod(device, 'setWhiteMode')
 		adapterManager.addDummyMethod(device, 'increaseBrightness')

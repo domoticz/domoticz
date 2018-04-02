@@ -7,7 +7,7 @@ return {
 	name = 'Evohome device adapter',
 
 	matches = function (device, adapterManager)
-		local res = (device.hardwareTypeValue == 39 and device.deviceSubType == 'Zone')
+		local res = ((device.hardwareTypeValue == 39 or device.hardwareTypeValue == 75) and device.deviceSubType == 'Zone')
 		if (not res) then
 			adapterManager.addDummyMethod(device, 'updateSetPoint')
 		end

@@ -1215,7 +1215,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'Set Kelvin Level',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1251,7 +1251,7 @@ describe('device', function()
 			device = getDevice(domoticz, {
 				['name'] = 'myRGBW',
 				['state'] = 'Set To White',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1260,7 +1260,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'NightMode',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1269,7 +1269,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'Off',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 		end)
