@@ -937,8 +937,10 @@ namespace Plugins {
 	{
 		if (self->pPlugin)
 		{
+			bool		validValue = false;
+			PyObject*	pValues = NULL;
 			float		value = 0.0;
-			char*		date = NULL;
+			std::string	sDate;
 			float		counter = 0.0;
 			float		usage = 0.0;
 			float		min = 0.0;
@@ -950,18 +952,64 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] =   { "value", "date", "usage", "counter", "min", "max", "day", "clearafterdate", "clearbeforedate", NULL };
+			static char *kwlist[] =   { "Day", "Values", "ClearAfterDate", "ClearBeforeDate", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "fs|ffffps", kwlist, &value, &date, &usage, &counter, &min, &max, &dayCalendar, &clearAfterDate, &clearBeforeDate))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds, "p|Oss", kwlist, &dayCalendar, &pValues, &clearAfterDate, &clearBeforeDate))
 				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'value', 'date', ['usage', 'counter', 'min', 'max', 'day', 'clearafterdate', 'clearbeforedate'] expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'Day', ['Values', 'ClearAfterDate', 'ClearBeforeDate'] expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
 			}
+			
+			if (pValues && PyDict_Check(pValues) && (PyDict_Size(pValues) > 0)) {
+				PyObject *pValue;
+				if (pValue = PyDict_GetItemString(pValues, "Value"))
+				{
+					value = (float)PyFloat_AsDouble(pValue);
+					if (PyErr_Occurred()) {
+						value = 0.0;
+					}
+					else {
+						validValue = true;
+					}
+				}
+				if (pValue = PyDict_GetItemString(pValues, "Date"))
+				{
+					sDate = PyUnicode_AsUTF8(pValue);
+				}
+				if (pValue = PyDict_GetItemString(pValues, "Counter"))
+				{
+					counter = (float)PyFloat_AsDouble(pValue);
+					if (PyErr_Occurred()) {
+						counter = 0.0;
+					}
+				}
+				if (pValue = PyDict_GetItemString(pValues, "Usage"))
+				{
+					usage = (float)PyFloat_AsDouble(pValue);
+					if (PyErr_Occurred()) {
+						usage = 0.0;
+					}
+				}
+				if (pValue = PyDict_GetItemString(pValues, "Max"))
+				{
+					max = (float)PyFloat_AsDouble(pValue);
+					if (PyErr_Occurred()) {
+						max = 0.0;
+					}
+				}
+				if (pValue = PyDict_GetItemString(pValues, "Min"))
+				{
+					min = (float)PyFloat_AsDouble(pValue);
+					if (PyErr_Occurred()) {
+						min = 0.0;
+					}
+				}
+			}
 
-			m_sql.UpdateCalendarMeter(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, value, date, usage, counter, min, max, dayCalendar, clearAfterDate, clearBeforeDate);
+			m_sql.UpdateCalendarMeter(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, validValue, value, sDate.c_str(), usage, counter, min, max, dayCalendar, clearAfterDate, clearBeforeDate);
 		}
 		else
 		{

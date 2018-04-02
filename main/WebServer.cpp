@@ -2879,6 +2879,7 @@ namespace http {
 			std::string dtype = request::findValue(&req, "dtype");
 			std::string dsubtype = request::findValue(&req, "dsubtype");
 
+			bool validValue = !request::findValue(&req, "value").empty();
 			float value = atof(request::findValue(&req, "value").c_str());
 			std::string date = request::findValue(&req, "date");
 			float usage = atof(request::findValue(&req, "usage").c_str());
@@ -2886,8 +2887,8 @@ namespace http {
 			float min = atof(request::findValue(&req, "min").c_str());
 			float max = atof(request::findValue(&req, "max").c_str());
 			bool dayCalendar = !request::findValue(&req, "day").empty();
-			std::string clearbefore = request::findValue(&req, "clearafterdate");
-			std::string clearafter = request::findValue(&req, "clearbeforedate");
+			std::string clearafter = request::findValue(&req, "clearafterdate");
+			std::string clearbefore = request::findValue(&req, "clearbeforedate");
 
 			if (idx.empty())
 			{
@@ -2922,7 +2923,7 @@ namespace http {
 			int devType = atoi(dtype.c_str());
 			int subType = atoi(dsubtype.c_str());
 
-			if (m_sql.UpdateCalendarMeter(HardwareID, DeviceID.c_str(), unit, devType, subType, value, date.c_str(), usage, counter, min, max, dayCalendar, clearafter.c_str(), clearbefore.c_str()))
+			if (m_sql.UpdateCalendarMeter(HardwareID, DeviceID.c_str(), unit, devType, subType, validValue, value, date.c_str(), usage, counter, min, max, dayCalendar, clearafter.c_str(), clearbefore.c_str()))
 			{
 				root["status"] = "OK";
 				root["title"] = "Update Device";

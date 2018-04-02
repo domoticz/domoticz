@@ -5149,17 +5149,17 @@ std::string CSQLHelper::getMeterFilter()
 	return result;
 }
 
-bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, float value,  const char* date, float usage, float counter, float min, float max, const bool dayCalendar, const char* clearAfterDate, const char* clearBeforeDate)
+bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, bool validValue, float value,  const char* date, float usage, float counter, float min, float max, const bool dayCalendar, const char* clearAfterDate, const char* clearBeforeDate)
 {
 	std::vector<std::vector<std::string> > result;
 	std::string filter = getMeterFilter();
 	char szTmp[200];
 	
-	if((date == NULL) || (date[0] == '\0')) {
+	if(validValue & ((date == NULL) || (date[0] == '\0'))) {
 		return false;
 	}
 	
-	result = safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d AND (%s))", 
+	result = safe_query("SELECT ID, Name, SwitchType FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d AND (%s))", 
 		HardwareID, DeviceID, unit, devType, subType, filter.c_str());
 		
 	if (result.empty()) {
@@ -5172,11 +5172,18 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 	std::stringstream s_strid;
 	s_strid << sd[0];
 	s_strid >> DeviceRowID;
+	std::string devname = sd[1];
+	_eSwitchType switchtype=(_eSwitchType) atoi(sd[2].c_str());
 	
 	if (dayCalendar)
 	{
 		if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
-			safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+			_log.Log(LOG_ERROR,"DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%s') AND (Date<='%s')", DeviceRowID, clearAfterDate, clearBeforeDate);
+			safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%q') AND (Date<='%q')", DeviceRowID, clearAfterDate, clearBeforeDate);
+		}
+
+		if (!validValue) {
+			return true;
 		}
 
 		sprintf(szTmp, "%.0f", value);		
@@ -5220,9 +5227,14 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 		if (!isMultiMeter(devType, subType))
 		{
 			if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
-				safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+				_log.Log(LOG_ERROR,"DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%s') AND (Date<='%s')", DeviceRowID, clearAfterDate, clearBeforeDate);
+				safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%q') AND (Date<='%q')", DeviceRowID, clearAfterDate, clearBeforeDate);
 			}
-				 
+
+			if (!validValue) {
+				return true;
+			}
+
 			//insert into calendar table
 			result = safe_query(
 				"SELECT DeviceRowID FROM Meter_Calendar "
@@ -5246,12 +5258,82 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 					DeviceRowID, date
 				);
 			}
+			
+			float EnergyDivider=1000.0f;
+			float GasDivider=100.0f;
+			float WaterDivider=100.0f;
+			float musage=0;
+			int tValue;
+			if (GetPreferencesVar("MeterDividerEnergy", tValue))
+			{
+				EnergyDivider=float(tValue);
+			}
+			if (GetPreferencesVar("MeterDividerGas", tValue))
+			{
+				GasDivider=float(tValue);
+			}
+			if (GetPreferencesVar("MeterDividerWater", tValue))
+			{
+				WaterDivider=float(tValue);
+			}
+			
+			_eMeterType metertype=(_eMeterType)switchtype;
+
+			float tGasDivider=GasDivider;
+
+			if (devType==pTypeP1Power)
+			{
+				metertype=MTYPE_ENERGY;
+			}
+			else if (devType==pTypeP1Gas)
+			{
+				metertype=MTYPE_GAS;
+				tGasDivider=1000.0f;
+			}
+			else if ((devType==pTypeRego6XXValue) && (subType==sTypeRego6XXCounter))
+			{
+				metertype=MTYPE_COUNTER;
+			}
+			//Check for Notification
+			switch (metertype)
+			{
+			case MTYPE_ENERGY:
+			case MTYPE_ENERGY_GENERATED:
+				musage = value / EnergyDivider;
+				if (musage!=0)
+					m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYENERGY, musage);
+				break;
+			case MTYPE_GAS:
+				musage = value / tGasDivider;
+				if (musage!=0)
+					m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYGAS, musage);
+				break;
+			case MTYPE_WATER:
+				musage = value / WaterDivider;
+				if (musage!=0)
+					m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYGAS, musage);
+				break;
+			case MTYPE_COUNTER:
+				musage = value;
+				if (musage!=0)
+					m_notifications.CheckAndHandleNotification(DeviceRowID, devname, devType, subType, NTYPE_TODAYCOUNTER, musage);
+				break;
+			default:
+				//Unhandled
+				musage = 0;
+				break;
+			}
 		}
 		else
 		{
 			if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
-				safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date<='%q') AND (Date<='%q')", DeviceRowID, clearBeforeDate, clearAfterDate);
+				safe_query("DELETE FROM MultiMeter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%q') AND (Date<='%q')", DeviceRowID, clearAfterDate, clearBeforeDate);
 			}
+
+			if (!validValue) {
+				return true;
+			}
+
 			//AirQuality/Usage Meter/Moisture/RFXSensor/Voltage/Lux/SoundLevel insert into MultiMeter_Calendar table
 			result = safe_query(
 				"SELECT DeviceRowID FROM MultiMeter_Calendar "
