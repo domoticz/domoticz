@@ -770,7 +770,7 @@ namespace Plugins {
 		}
 		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
-			_log.Log(LOG_ERROR, "(%s) %s: %d, %s", pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
+			_log.Log(LOG_ERROR, "(%s) ICMP timeout: %d, %s", pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
 		}
 		else if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
