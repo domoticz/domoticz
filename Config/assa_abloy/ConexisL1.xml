@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+<!-- Yale Conexis L1 (SD-L1000-CH)
+http://ozw.my-ho.st/Yale/Yale%20ZWave%20Developer%20Guide.pdf 
+https://products.z-wavealliance.org/products/2535/configs
+-->
+	<!-- Configuration -->
+	<CommandClass id="112">
+		<Value type="list" size="1" genre="config" instance="1" index="1" label="Volume" value="3">
+			<Help>Volume of the tones</Help>
+			<Item label="Silent" value="1" />
+			<Item label="Low" value="2" />
+			<Item label="High" value="3" />
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="2" label="Auto Relock" value="0">
+			<Help></Help>
+			<Item label="On" value="255" />
+			<Item label="Off" value="0" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="3" label="Auto-re-lock Time" size="1" min="7" max="60" units="seconds" value="30">
+			<Help>seconds; after successful code entry and unit unlocks, it will automatically re-lock after specified time (30 = default value)</Help>
+		</Value>
+		<Value type="list" size="1" genre="config" instance="1" index="4" label="Wrong Tag Limit" min="1" max="20" value="5">
+			<Help>
+		    Number of incorrect tags before lock will accept before sending TAMPER Alarm. 
+			When number of wrong code entries is exceeded, lock will disable for the time specified by Wrong tag timeout parameter. (5 = default)
+			</Help>
+			<Item label="1" value="1" />
+			<Item label="2" value="2" />
+			<Item label="3" value="3" />
+			<Item label="4" value="4" />
+			<Item label="5" value="5" />
+			<Item label="6" value="6" />
+			<Item label="7" value="7" />
+			<Item label="8" value="8" />
+			<Item label="9" value="9" />
+			<Item label="10" value="10" />
+			<Item label="11" value="11" />
+			<Item label="12" value="12" />
+			<Item label="13" value="13" />
+			<Item label="14" value="14" />
+			<Item label="15" value="15" />
+			<Item label="16" value="16" />
+			<Item label="17" value="17" />
+			<Item label="18" value="18" />
+			<Item label="19" value="19" />
+			<Item label="20" value="20" />
+		</Value>
+		<Value type="byte" genre="config" instance="1" index="7" label="Wrong tag timeout" size="1" min="1" max="250" units="seconds" value="30">
+			<Help>number of seconds unit will be inoperable after number of Wrong tag attempts is exceeded (30 = default)</Help>
+		</Value>
+	</CommandClass>
+	<CommandClass id="113">
+		<!-- These Door Locks don't send a DoorLockReport when the
+		Lock Status is Changed, but instead send a Alarm Message -
+		So we trigger a Refresh of the DoorLock Command Class when
+		we recieve a Alarm Message Instead -->
+		<TriggerRefreshValue Genre="user" Index="0" Instance="1">
+			<RefreshClassValue CommandClass="98" RequestFlags="0" Index="1" Instance="1" />
+		</TriggerRefreshValue>
+	</CommandClass>
+	<!-- Association Groups -->
+	<CommandClass id="133">
+		<Associations num_groups="1">
+			<Group index="1" max_associations="5" label="Lifeline"/>			
+		</Associations>
+	</CommandClass>
+</Product>

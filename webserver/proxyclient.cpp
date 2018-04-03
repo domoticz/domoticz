@@ -169,7 +169,7 @@ namespace http {
 			}
 			boost::unique_lock<boost::mutex>(writeMutex);
 			if (bytes_transferred != SockWriteBuf.length()) {
-				_log.Log(LOG_ERROR, "Only wrote %zu of %lu bytes.", bytes_transferred, SockWriteBuf.length());
+				_log.Log(LOG_ERROR, "Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 			}
 			SockWriteBuf.clear();
 			ProxyPdu *pdu;
@@ -182,7 +182,7 @@ namespace http {
 				break;
 			case status_connected:
 				if (bytes_transferred < SockWriteBuf.length()) {
-					_log.Log(LOG_ERROR, "PROXY: Only wrote %zd of %zd bytes.", bytes_transferred, SockWriteBuf.length());
+					_log.Log(LOG_ERROR, "PROXY: Only wrote %d of %d bytes.", (int)bytes_transferred, (int)SockWriteBuf.length());
 				}
 			if (error) {
 				_log.Log(LOG_ERROR, "PROXY: Write failed, code = %d, %s", error.value(), error.message().c_str());
@@ -508,6 +508,7 @@ namespace http {
 
 			if (!authenticated) {
 				_log.Log(LOG_ERROR, "PROXY: Could not log in to slave: %s", reason.c_str());
+				return;
 			}
 			DomoticzTCP *slave = sharedData.findSlaveConnection(instanceparam);
 			if (slave) {

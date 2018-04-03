@@ -761,7 +761,8 @@ define(['app'], function (app) {
 					Device.useSVGtags = true;
 					$http({
 						url: "json.htm?type=devices&filter=all&used=true&order=Name&plan=" + $("#floorplangroup")[0].getAttribute("planidx") + "&lastupdate=" + window.myglobals.LastUpdate
-					}).success(function (data) {
+					}).then(function successCallback(response) {
+						var data = response.data;
 						if (typeof data.ActTime != 'undefined') {
 							window.myglobals.LastUpdate = data.ActTime;
 						}
@@ -815,7 +816,7 @@ define(['app'], function (app) {
 						$scope.mytimer = $interval(function () {
 							RefreshDevices();
 						}, 10000);
-					}).error(function (data) {
+					}, function errorCallback(response) {
 						$scope.mytimer = $interval(function () {
 							RefreshDevices();
 						}, 10000);

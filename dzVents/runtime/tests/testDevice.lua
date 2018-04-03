@@ -649,7 +649,7 @@ describe('device', function()
 
 			device.updateSetPoint(14)
 
-			assert.is_same('http://127.0.0.1:8080/json.htm?type=command&param=udevice&idx=1&nvalue=0&svalue=14', res)
+			assert.is_same('http://127.0.0.1:8080/json.htm?param=udevice&type=command&idx=1&nvalue=0&svalue=14', res)
 		end)
 
 		it('should detect a Z-Wave Thermostat mode device', function()
@@ -1215,7 +1215,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'Set Kelvin Level',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1251,7 +1251,7 @@ describe('device', function()
 			device = getDevice(domoticz, {
 				['name'] = 'myRGBW',
 				['state'] = 'Set To White',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1260,7 +1260,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'NightMode',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 			assert.is_true(device.active)
@@ -1269,7 +1269,7 @@ describe('device', function()
 				['name'] = 'myRGBW',
 				['state'] = 'Off',
 				['subType'] = 'RGBWW',
-				['type'] = 'Lighting Limitless/Applamp'
+				['type'] = 'Color Switch'
 			})
 
 		end)

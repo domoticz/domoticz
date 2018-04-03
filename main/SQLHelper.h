@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "RFXNames.h"
+#include "../hardware/hardwaretypes.h"
 #include "Helper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
@@ -68,8 +69,8 @@ struct _tTaskItem
 	std::string _sValue;
 	std::string _command;
 	std::string _sUntil;
-	unsigned char _level;
-	int _Hue;
+	int _level;
+	_tColor _Color;
 	std::string _relatedEvent;
 	timeval _DelayTimeBegin;
 
@@ -78,7 +79,7 @@ struct _tTaskItem
 
 	}
 
-	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const bool Protected, const bool bEventTrigger)
+	static _tTaskItem UpdateDevice(const float DelayTime, const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_UPDATEDEVICE;
@@ -86,7 +87,7 @@ struct _tTaskItem
 		tItem._idx = idx;
 		tItem._nValue = nValue;
 		tItem._sValue = sValue;
-		tItem._HardwareID = Protected ? 1 : 0;
+		tItem._HardwareID = Protected;
 		tItem._switchtype = bEventTrigger ? 1 : 0;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
@@ -179,7 +180,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const unsigned char Level, const int Hue, const std::string &eventName)
+	static _tTaskItem SwitchLightEvent(const float DelayTime, const uint64_t idx, const std::string &Command, const int Level, const _tColor Color, const std::string &eventName)
 	{
 		_tTaskItem tItem;
 		tItem._ItemType=TITEM_SWITCHCMD_EVENT;
@@ -187,7 +188,7 @@ struct _tTaskItem
 		tItem._idx=idx;
 		tItem._command= Command;
 		tItem._level= Level;
-		tItem._Hue=Hue;
+		tItem._Color=Color;
 		tItem._relatedEvent = eventName;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
@@ -291,6 +292,8 @@ public:
 	uint64_t UpdateValue(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction=true);
 	uint64_t UpdateValueLighting2GroupCmd(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction = true);
 	uint64_t UpdateValueHomeConfortGroupCmd(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction = true);
+	
+	bool DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType);
 
 	bool GetLastValue(const int HardwareID, const char* DeviceID, const unsigned char unit, const unsigned char devType, const unsigned char subType, int &nvalue, std::string &sValue, struct tm &LastUpdateTime);
 
@@ -429,8 +432,8 @@ private:
 	bool StartThread();
 	void Do_Work();
 
-	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &hue);
-	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, int hue);
+	bool SwitchLightFromTasker(const std::string &idx, const std::string &switchcmd, const std::string &level, const std::string &color);
+	bool SwitchLightFromTasker(uint64_t idx, const std::string &switchcmd, int level, _tColor color);
 
 	void FixDaylightSavingTableSimple(const std::string &TableName);
 	void FixDaylightSaving();

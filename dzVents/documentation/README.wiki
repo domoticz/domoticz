@@ -1905,6 +1905,12 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = Change log =
 
+== [2.4.2] ==
+
+* Fixed RGBW device adapter
+* Fixed EvoHome device adapter
+* Changed param ordering opentherm gateway command (https://www.domoticz.com/forum/viewtopic.php?f=59&amp;t=21620&amp;p=170469#p170469)
+
 == [2.4.1] ==
 
 * Fixed week number problems on Windows
@@ -2143,4 +2149,3 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 = [0.9.7] =
 
 * Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
-

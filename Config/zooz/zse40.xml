@@ -21,14 +21,14 @@
                 Minimum humidity change (%) that will trigger a report to the controller. 10 = 10% (default).
             </Help>
         </Value>
-        <Value type="byte" index="4" genre="config" label="Light Change Notif" units="%" min="1" max="50" value="10">
+        <Value type="byte" index="4" genre="config" label="Light Change Notif" units="%" min="5" max="50" value="10">
             <Help>
                 Minimum light sensor change (%) that will trigger a report to the controller. 10 = 10% (default).
             </Help>
         </Value>
-        <Value type="byte" index="5" genre="config" label="Motion Sensor Trigger Interval" units="minute" min="1" max="255" value="3">
+        <Value type="byte" index="5" genre="config" label="Motion Sensor Trigger Interval" units="second" min="15" max="60" value="15">
             <Help>
-                After initial motion, sensor will wait this long before reporting again. 1 = 1 minute; 3 = 3 minutes (default); 255 = 255 minutes.
+                After initial motion, sensor will wait this long before reporting again. 15 = 15 seconds (default); 60 = 60 seconds.
             </Help>
         </Value>
         <Value type="list" index="6" genre="config" label="Motion Sensor Sensitivity" units="" min="1" max="7" value="4" size="1">
@@ -43,7 +43,7 @@
             <Item label="Low" value="6" />
             <Item label="Very Low" value="7" />
         </Value>
-        <Value type="list" index="7" genre="config" label="LED indicator mode" units="" min="1" max="4" value="3" size="1">
+        <Value type="list" index="7" genre="config" label="LED indicator mode" units="" min="1" max="4" value="4" size="1">
             <Help>
                 Color LED behavior. 1 = LED off; 2 = pulsing light for temperature, flashing light for motion (high battery drain); 3 = flashing light for temperature and motion (default); 4 = flashing light for motion.
             </Help>

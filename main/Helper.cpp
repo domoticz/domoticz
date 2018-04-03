@@ -48,6 +48,24 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
+uint64_t strtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << str;
+	ss >> ul;
+	return ul;
+}
+
+uint64_t hexstrtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << std::hex << str;
+	ss >> ul;
+	return ul;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
@@ -296,7 +314,7 @@ double CalculateAltitudeFromPressure(double pressure)
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in 캜)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in 째C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -313,7 +331,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in 캜) */
+	/* T = temperature (in 째C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
@@ -322,7 +340,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in 캜)
+(in 째C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -339,7 +357,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in 캜) */
+	/* T = Temperature (in 째C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -631,17 +649,21 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	return mdString;
 }
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
+void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue/* = 100.0 */)
 {
 	double      hh, p, q, t, ff;
 	long        i;
+
+	if(saturation <= 0.0) {
+		outR = int(vlue*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(vlue*maxValue);
+	}
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
 	i = (long)hh;
 	ff = hh - i;
-	double saturation = 1.0;
-	double vlue = 1.0;
 	p = vlue * (1.0 - saturation);
 	q = vlue * (1.0 - (saturation * ff));
 	t = vlue * (1.0 - (saturation * (1.0 - ff)));
@@ -743,7 +765,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeFan:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeCurtain:
@@ -881,25 +903,13 @@ std::string MakeHtml(const std::string &txt)
 //Prevent against XSS (Cross Site Scripting)
 std::string SafeHtml(const std::string &txt)
 {
-	std::string tmpstr = txt;
-	stdupper(tmpstr);
+    std::string sRet = txt;
 
-	bool bHaveFoundDirtyHTML = false;
-
-	if (tmpstr.find("<SCRIPT>") != std::string::npos)
-	{
-		stdreplace(tmpstr, "<SCRIPT>", "<DOMO>");
-		stdreplace(tmpstr, "</SCRIPT>", "</DOMO>");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (tmpstr.find("JAVASCRIPT") != std::string::npos)
-	{
-		stdreplace(tmpstr, "JAVASCRIPT", "DOMOSCRIPT");
-		bHaveFoundDirtyHTML = true;
-	}
-	if (bHaveFoundDirtyHTML)
-		return tmpstr;
-	return txt;
+    stdreplace(sRet, "\"", "&quot;");
+    stdreplace(sRet, "'", "&apos;");
+    stdreplace(sRet, "<", "&lt;");
+    stdreplace(sRet, ">", "&gt;");
+    return sRet;
 }
 
 

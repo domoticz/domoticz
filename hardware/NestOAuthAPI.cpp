@@ -559,7 +559,7 @@ void CNestOAuthAPI::GetMeterDetails()
 			Json::Value ndevice = deviceRoot["thermostats"][devID];
 			if (!ndevice.isObject())
 			{
-				_log.Log(LOG_ERROR, ("NestOAuthAPI: Structure referenced thermostat " + devID + " but it was not found.").c_str());
+				_log.Log(LOG_ERROR, "NestOAuthAPI: Structure referenced thermostat %s but it was not found.", devID.c_str());
 				continue;
 			}
 

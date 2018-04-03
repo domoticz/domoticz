@@ -198,6 +198,11 @@ namespace http {
 			std::string m_DigistRealm;
 			void SetZipPassword(const std::string &password);
 
+			//IPs that are allowed to pass proxy headers
+			std::vector < std::string > myRemoteProxyIPs;
+			void AddRemoteProxyIPs(const std::string ipaddr);
+			void ClearRemoteProxyIPs();
+
 			// Session store manager
 			void SetSessionStore(session_store_impl_ptr sessionStore);
 			session_store_impl_ptr GetSessionStore();

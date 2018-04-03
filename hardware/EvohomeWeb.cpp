@@ -636,6 +636,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 				_log.Log(LOG_STATUS, "(%s) register new zone '%s'", this->Name.c_str(), ssnewname.str().c_str());
 		}
 	}
+
+	// Notify MQTT and various push mechanisms
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, (*hz->installationInfo)["name"].asString(), NULL);
 }
 
 
@@ -703,6 +706,9 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 
 	std::string sdevname;
 	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
+
+	// Notify MQTT and various push mechanisms
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, "Hot Water", NULL);
 }
 
 
@@ -753,7 +759,7 @@ uint8_t CEvohomeWeb::GetUnit_by_ID(unsigned long evoID)
 				if (DevRowIdx == -1)
 					return -1;
 				char devname[8];
-				sprintf(devname, "zone %zu", row);
+				sprintf(devname, "zone %d", (int)row);
 				sprintf(ID, "%lu", evoID);
 				m_sql.safe_query("UPDATE DeviceStatus SET Name='%q',DeviceID='%q' WHERE (ID == %" PRIu64 ")", devname, ID, DevRowIdx);
 				m_zones[row] = evoID;

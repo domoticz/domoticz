@@ -81,7 +81,7 @@ namespace OpenZWave
 		bool GetChangeVerified() { return m_verifyChanges; }
 
 		virtual string const GetAsString() const { return ""; }
-		virtual bool SetFromString( string const& _value ) { return false; }
+		virtual bool SetFromString( string const& ) { return false; }
 
 		bool Set();							// For the user to change a value in a device
 

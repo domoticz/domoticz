@@ -59,9 +59,9 @@ public:
 	void DecodeRXMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 	void PushAndWaitRxMessage(const CDomoticzHardwareBase *pHardware, const unsigned char *pRXCommand, const char *defaultName, const int BatteryLevel);
 
-	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &hue, const std::string &ooc, const int ExtraDelay);
-	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const int hue, const bool ooc, const int ExtraDelay);
-	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, int hue, const bool IsTesting);
+	bool SwitchLight(const std::string &idx, const std::string &switchcmd,const std::string &level, const std::string &color, const std::string &ooc, const int ExtraDelay);
+	bool SwitchLight(const uint64_t idx, const std::string &switchcmd, const int level, const _tColor color, const bool ooc, const int ExtraDelay);
+	bool SwitchLightInt(const std::vector<std::string> &sd, std::string switchcmd, int level, _tColor color, const bool IsTesting);
 
 	bool SwitchScene(const std::string &idx, const std::string &switchcmd);
 	bool SwitchScene(const uint64_t idx, std::string switchcmd);
@@ -115,6 +115,7 @@ public:
 	bool UpdateDevice(const int HardwareID, const std::string &DeviceID, const int unit, const int devType, const int subType, const int nValue, const std::string &sValue, const int signallevel, const int batterylevel, const bool parseTrigger = true);
 
 	boost::signals2::signal<void(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)> sOnDeviceReceived;
+	boost::signals2::signal<void(const uint64_t SceneIdx, const std::string &SceneName)> sOnSwitchScene;
 
 	CScheduler m_scheduler;
 	CEventSystem m_eventsystem;
@@ -291,7 +292,7 @@ private:
 	void decode_Chime(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_BBQ(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Power(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
-	void decode_LimitlessLights(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome1(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome2(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_evohome3(const int HwdID, const _eHardwareTypes HwdType, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

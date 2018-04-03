@@ -1570,7 +1570,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 		strncpy((char *)&eHn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_RS485, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_RS485, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);	//rollers names
 
 	for (i = 0; i < sizeof(eHn[nr]->Outs) / sizeof(eHn[nr]->Outs[0]); i += 2)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1711,7 +1711,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		strncpy((char *)&eHEn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHEn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);		//rollers names
 
 	for (i = 0; i < sizeof(eHEn[nr]->Rollers) / sizeof(eHEn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1849,7 +1849,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 		strncpy((char *)&ECMn->Dimmers[i], (char *)&GetLine, sizeof(ECMn->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rolers names
 
 	for (i = 0; i < sizeof(ECMn->Rollers) / sizeof(ECMn->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1998,7 +1998,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		strncpy((char *)&eHouseProN->Dimmers[i], (char *)&GetLine, sizeof(eHouseProN->Dimmers[i]));
 		//    UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *) &GetLine, true, 100);
 	}
-	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHouseProN->Rollers) / sizeof(eHouseProN->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -2186,7 +2186,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 		strncpy((char *)&eHWIFIn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHWIFIn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHWIFIn[nr]->Rollers) / sizeof(eHWIFIn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -2769,7 +2769,9 @@ void eHouseTCP::Do_Work()
 						eHEStatusReceived++;
 					}
 					else    //Not CM
+					{
 						if (devaddrl != 0)
+						{
 							if (devaddrl >= INITIAL_ADDRESS_LAN)
 							{
 								if (devaddrl - INITIAL_ADDRESS_LAN <= ETHERNET_EHOUSE_RM_MAX)   //Ethernet eHouse LAN Controllers
@@ -2811,244 +2813,244 @@ void eHouseTCP::Do_Work()
 									}
 								}
 							}
+							else if (devaddrl >= INITIAL_ADDRESS_WIFI)     //eHouse WiFi Controllers
+							{
+								if (devaddrl - INITIAL_ADDRESS_WIFI <= EHOUSE_WIFI_MAX)
+								{
+									unsigned char eHWiFiIndex = (devaddrl - INITIAL_ADDRESS_WIFI) % STATUS_WIFI_ARRAYS_SIZE;
+									eHWIFIaloc(eHWiFiIndex, devaddrh, devaddrl);
+									{
+										if (memcmp(eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes) != 0) CloudStatusChanged = 1;
+										memcpy(eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes);
+										eHWIFIn[eHWiFiIndex]->BinaryStatusLength = nbytes;
+										eHWIFIs[eHWiFiIndex]->eHWIFI.AddrH = devaddrh;
+										eHWIFIs[eHWiFiIndex]->eHWIFI.AddrL = devaddrl;
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Size = nbytes;
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Code = 's';
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Outs[0] = udp_status[OUT_OFFSET_WIFI];
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Inputs[0] = udp_status[IN_OFFSET_WIFI];
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[0] = udp_status[DIMM_OFFSET_WIFI];
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[1] = udp_status[DIMM_OFFSET_WIFI + 1];
+										eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[2] = udp_status[DIMM_OFFSET_WIFI + 2];
+										//eHWIFIs[index].eHWIFI.Dimmers[3] = udp_status[DIMM_OFFSET_WIFI+3];
+										eHWIFIn[eHWiFiIndex]->TCPQuery++;
+										memcpy(&eHWiFi[eHWiFiIndex]->data[0], &udp_status[1], sizeof(union WiFiStatusT));          //ERMs, EHM -Ethernet
+										CalculateAdcWiFi(eHWiFiIndex);
+										if (CloudStatusChanged)
+										{
+
+											UpdateWiFiToSQL(devaddrh, devaddrl, eHWiFiIndex);
+											CloudStatusChanged = 0;
+										}
+										eHWiFiStatusReceived++;
+									}
+								}
+							}
 							else
-								if (devaddrl >= INITIAL_ADDRESS_WIFI)     //eHouse WiFi Controllers
+							{
+								if ((devaddrh == 0x81))       //Aura Thermostats Via eHouse PRO
 								{
-									if (devaddrl - INITIAL_ADDRESS_WIFI <= EHOUSE_WIFI_MAX)
+									if (devaddrl >= MAX_AURA_DEVS) continue;
+									unsigned char aindex = 0;
+									aindex = devaddrl - 1;
+									eAURAaloc(aindex, devaddrh, devaddrl);
+									memcpy(AuraN[aindex]->BinaryStatus, &udp_status, sizeof(AuraN[aindex]->BinaryStatus));
+
+									AuraDev[aindex]->Addr = devaddrl;		// address l
+									i = 3;
+									AuraDev[aindex]->ID = AuraN[aindex]->BinaryStatus[i++];
+									AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
+									AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
+									AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
+									AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
+									AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
+									AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
+									if (DEBUG_AURA) LOG(LOG_STATUS, "[Aura UDP %d] ID: %lx\t", aindex + 1, (long int)AuraDev[aindex]->ID);
+									AuraDev[aindex]->DType = AuraN[aindex]->BinaryStatus[i++];            //device type
+									if (DEBUG_AURA) LOG(LOG_STATUS, " DevType: %d\t", AuraDev[index]->DType);
+									i++;//params count
+									int m, k = 0;
+									int bkpi = i + 2;
+									char FirstTime = 0;
+									for (m = 0; m < sizeof(AuraN[aindex]->ParamSymbol); m++)
 									{
-										unsigned char eHWiFiIndex = (devaddrl - INITIAL_ADDRESS_WIFI) % STATUS_WIFI_ARRAYS_SIZE;
-										eHWIFIaloc(eHWiFiIndex, devaddrh, devaddrl);
+										//if ((AuraDev[index].ParamSize>2) && (!FirstTime))
 										{
-											if (memcmp(eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes) != 0) CloudStatusChanged = 1;
-											memcpy(eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes);
-											eHWIFIn[eHWiFiIndex]->BinaryStatusLength = nbytes;
-											eHWIFIs[eHWiFiIndex]->eHWIFI.AddrH = devaddrh;
-											eHWIFIs[eHWiFiIndex]->eHWIFI.AddrL = devaddrl;
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Size = nbytes;
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Code = 's';
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Outs[0] = udp_status[OUT_OFFSET_WIFI];
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Inputs[0] = udp_status[IN_OFFSET_WIFI];
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[0] = udp_status[DIMM_OFFSET_WIFI];
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[1] = udp_status[DIMM_OFFSET_WIFI + 1];
-											eHWIFIs[eHWiFiIndex]->eHWIFI.Dimmers[2] = udp_status[DIMM_OFFSET_WIFI + 2];
-											//eHWIFIs[index].eHWIFI.Dimmers[3] = udp_status[DIMM_OFFSET_WIFI+3];
-											eHWIFIn[eHWiFiIndex]->TCPQuery++;
-											memcpy(&eHWiFi[eHWiFiIndex]->data[0], &udp_status[1], sizeof(union WiFiStatusT));          //ERMs, EHM -Ethernet
-											CalculateAdcWiFi(eHWiFiIndex);
-											if (CloudStatusChanged)
+
+											AuraN[aindex]->ParamValue[m] = AuraN[aindex]->BinaryStatus[i++];
+											AuraN[aindex]->ParamValue[m] = AuraN[aindex]->ParamValue[m] << 8;
+											AuraN[aindex]->ParamValue[m] |= AuraN[aindex]->BinaryStatus[i++];
+											//if (AuraDev[index].ParamValue[i]>0x8000)
+
+
+											AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->BinaryStatus[i++];
+											AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->ParamPreset[m] << 8;
+											AuraN[aindex]->ParamPreset[m] |= AuraN[aindex]->BinaryStatus[i++];
+
+											AuraN[aindex]->ParamSymbol[m] = AuraN[aindex]->BinaryStatus[i++];
+
+
+											if (((AuraN[aindex]->ParamSymbol[m] == 'C') || (AuraN[aindex]->ParamSymbol[m] == 'T')) && (!FirstTime))
 											{
-
-												UpdateWiFiToSQL(devaddrh, devaddrl, eHWiFiIndex);
-												CloudStatusChanged = 0;
-											}
-											eHWiFiStatusReceived++;
-										}
-									}
-								}
-								else
-								{
-									if ((devaddrh == 0x81))       //Aura Thermostats Via eHouse PRO
-									{
-										if (devaddrl >= MAX_AURA_DEVS) continue;
-										unsigned char aindex = 0;
-										aindex = devaddrl - 1;
-										eAURAaloc(aindex, devaddrh, devaddrl);
-										memcpy(AuraN[aindex]->BinaryStatus, &udp_status, sizeof(AuraN[aindex]->BinaryStatus));
-
-										AuraDev[aindex]->Addr = devaddrl;		// address l
-										i = 3;
-										AuraDev[aindex]->ID = AuraN[aindex]->BinaryStatus[i++];
-										AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
-										AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
-										AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
-										AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
-										AuraDev[aindex]->ID = AuraDev[aindex]->ID << 8;
-										AuraDev[aindex]->ID |= AuraN[aindex]->BinaryStatus[i++];
-										if (DEBUG_AURA) LOG(LOG_STATUS, "[Aura UDP %d] ID: %lx\t", aindex + 1, (long int)AuraDev[aindex]->ID);
-										AuraDev[aindex]->DType = AuraN[aindex]->BinaryStatus[i++];            //device type
-										if (DEBUG_AURA) LOG(LOG_STATUS, " DevType: %d\t", AuraDev[index]->DType);
-										i++;//params count
-										int m, k = 0;
-										int bkpi = i + 2;
-										char FirstTime = 0;
-										for (m = 0; m < sizeof(AuraN[aindex]->ParamSymbol); m++)
-										{
-											//if ((AuraDev[index].ParamSize>2) && (!FirstTime))
-											{
-
-												AuraN[aindex]->ParamValue[m] = AuraN[aindex]->BinaryStatus[i++];
-												AuraN[aindex]->ParamValue[m] = AuraN[aindex]->ParamValue[m] << 8;
-												AuraN[aindex]->ParamValue[m] |= AuraN[aindex]->BinaryStatus[i++];
-												//if (AuraDev[index].ParamValue[i]>0x8000)
-
-
-												AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->BinaryStatus[i++];
-												AuraN[aindex]->ParamPreset[m] = AuraN[aindex]->ParamPreset[m] << 8;
-												AuraN[aindex]->ParamPreset[m] |= AuraN[aindex]->BinaryStatus[i++];
-
-												AuraN[aindex]->ParamSymbol[m] = AuraN[aindex]->BinaryStatus[i++];
-
-
-												if (((AuraN[aindex]->ParamSymbol[m] == 'C') || (AuraN[aindex]->ParamSymbol[m] == 'T')) && (!FirstTime))
+												FirstTime++;
+												AuraN[aindex]->ADCUnit[aindex] = 'T';
+												AuraDev[aindex]->Temp = AuraN[aindex]->ParamValue[m];
+												AuraDev[aindex]->Temp /= 10;
+												//                                                 AuraDev[aindex]->TempSet = AuraN[aindex]->ParamPreset[m];
+												//                                               AuraDev[aindex]->TempSet/= 10;
+												AuraDev[aindex]->LocalTempSet = AuraN[aindex]->ParamPreset[m];
+												AuraDev[aindex]->LocalTempSet /= 10;
+												if (AuraDev[aindex]->LocalTempSet != AuraDev[aindex]->PrevLocalTempSet)
 												{
-													FirstTime++;
-													AuraN[aindex]->ADCUnit[aindex] = 'T';
-													AuraDev[aindex]->Temp = AuraN[aindex]->ParamValue[m];
-													AuraDev[aindex]->Temp /= 10;
-													//                                                 AuraDev[aindex]->TempSet = AuraN[aindex]->ParamPreset[m];
-													  //                                               AuraDev[aindex]->TempSet/= 10;
-													AuraDev[aindex]->LocalTempSet = AuraN[aindex]->ParamPreset[m];
-													AuraDev[aindex]->LocalTempSet /= 10;
-													if (AuraDev[aindex]->LocalTempSet != AuraDev[aindex]->PrevLocalTempSet)
-													{
-														AuraDev[aindex]->PrevLocalTempSet = AuraDev[aindex]->LocalTempSet;
-														AuraDev[aindex]->TempSet = AuraDev[aindex]->LocalTempSet;
-														AuraDev[aindex]->ServerTempSet = AuraDev[aindex]->LocalTempSet;
-														AuraDev[aindex]->PrevServerTempSet = AuraDev[aindex]->LocalTempSet;
-														if (DEBUG_AURA) LOG(LOG_STATUS, "LTempC: %f\t", AuraDev[aindex]->TempSet);
-													}
-													if (AuraDev[aindex]->ServerTempSet != AuraDev[aindex]->PrevServerTempSet)
-													{
-														//AuraDev[auraindex].PrevLocalTempSet = AuraDev[auraindex].ServerTempSet;
-														AuraDev[aindex]->TempSet = AuraDev[aindex]->ServerTempSet;
-														//AuraDev[auraindex].LocalTempSet = AuraDev[auraindex].ServerTempSet;
-														AuraDev[aindex]->PrevServerTempSet = AuraDev[aindex]->ServerTempSet;
-														if (DEBUG_AURA) LOG(LOG_STATUS, "STempC: %f\t", AuraDev[aindex]->TempSet);
-														//AuraN[auraindex].ParamPreset[0] = (unsigned int) (AuraDev[auraindex].TempSet*10);
-													}
-													//for (i = 0; i<AuraDev[auraindex].ParamsCount; i++)
-													{
-														AuraN[aindex]->ParamPreset[0] = (unsigned int)(AuraDev[aindex]->TempSet * 10);
-
-														//eHPROaloc(0, SrvAddrH, SrvAddrL);
-
-														eHouseProStatus->status.AdcVal[aindex] = AuraN[aindex]->ParamValue[0];// temp * 10;//.MSB<<8) + eHouseProStatus.status.AdcVal[nr_of_ch].LSB;
-														//adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
-														adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0] + 3;
-														adcs[aindex]->ADCLow = AuraN[aindex]->ParamPreset[0] - 3;
-														AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
-														AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
-														nr_of_ch = aindex;
-														//        PerformADC();       //Perform Adc measurement process
-//                                                                    AuraN[aindex]->TextStatus[0] = 0;
-													}
-
-
+													AuraDev[aindex]->PrevLocalTempSet = AuraDev[aindex]->LocalTempSet;
+													AuraDev[aindex]->TempSet = AuraDev[aindex]->LocalTempSet;
+													AuraDev[aindex]->ServerTempSet = AuraDev[aindex]->LocalTempSet;
+													AuraDev[aindex]->PrevServerTempSet = AuraDev[aindex]->LocalTempSet;
+													if (DEBUG_AURA) LOG(LOG_STATUS, "LTempC: %f\t", AuraDev[aindex]->TempSet);
 												}
+												if (AuraDev[aindex]->ServerTempSet != AuraDev[aindex]->PrevServerTempSet)
+												{
+													//AuraDev[auraindex].PrevLocalTempSet = AuraDev[auraindex].ServerTempSet;
+													AuraDev[aindex]->TempSet = AuraDev[aindex]->ServerTempSet;
+													//AuraDev[auraindex].LocalTempSet = AuraDev[auraindex].ServerTempSet;
+													AuraDev[aindex]->PrevServerTempSet = AuraDev[aindex]->ServerTempSet;
+													if (DEBUG_AURA) LOG(LOG_STATUS, "STempC: %f\t", AuraDev[aindex]->TempSet);
+													//AuraN[auraindex].ParamPreset[0] = (unsigned int) (AuraDev[auraindex].TempSet*10);
+												}
+												//for (i = 0; i<AuraDev[auraindex].ParamsCount; i++)
+												{
+													AuraN[aindex]->ParamPreset[0] = (unsigned int)(AuraDev[aindex]->TempSet * 10);
+
+													//eHPROaloc(0, SrvAddrH, SrvAddrL);
+
+													eHouseProStatus->status.AdcVal[aindex] = AuraN[aindex]->ParamValue[0];// temp * 10;//.MSB<<8) + eHouseProStatus.status.AdcVal[nr_of_ch].LSB;
+																														  //adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
+													adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0] + 3;
+													adcs[aindex]->ADCLow = AuraN[aindex]->ParamPreset[0] - 3;
+													AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
+													AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
+													nr_of_ch = aindex;
+													//        PerformADC();       //Perform Adc measurement process
+													//                                                                    AuraN[aindex]->TextStatus[0] = 0;
+												}
+
+
 											}
 										}
-										AuraDev[aindex]->RSSI = -(255 - AuraN[aindex]->BinaryStatus[i++]);
-										if (DEBUG_AURA) LOG(LOG_STATUS, " RSSI: %d\t", AuraDev[aindex]->RSSI);
-										AuraN[aindex]->Vcc = AuraN[aindex]->BinaryStatus[i++];
-										AuraDev[aindex]->volt = AuraN[aindex]->Vcc;
-										AuraDev[aindex]->volt /= 10;
-										if (DEBUG_AURA) LOG(LOG_STATUS, " Vcc: %d\t", AuraN[aindex]->Vcc);
-										AuraDev[aindex]->Direction = AuraN[aindex]->BinaryStatus[i++];
-										if (DEBUG_AURA) LOG(LOG_STATUS, "Direction: %d\t", AuraDev[aindex]->Direction);
-										AuraDev[aindex]->DoorState = AuraN[aindex]->BinaryStatus[i++];
-										switch (AuraDev[aindex]->DoorState & 0x7)
-										{
-										case 0: AuraDev[aindex]->Door = '|';
-											adcs[aindex]->door = 0;
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_CLOSE;
-											AuraDev[aindex]->WINDOW_CLOSE = 1;
-											break;
-
-										case 1: AuraDev[aindex]->Door = '<';
-											AuraDev[aindex]->WINDOW_OPEN = 1;
-											adcs[aindex]->door = 10;
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
-											adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
-											break;
-										case 2:
-											AuraDev[aindex]->WINDOW_SMALL = 1;
-											adcs[aindex]->door = 2;
-											AuraDev[aindex]->Door = '/';
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_SMALL;
-											adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableFan = 0;    //Disable Ventilation if flag is set
-											break;
-										case 3:
-											adcs[aindex]->door = 10;
-											AuraDev[aindex]->WINDOW_OPEN = 1;
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
-											AuraDev[aindex]->Door = '>';
-											adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
-											break;
-										case 4:
-											AuraDev[aindex]->WINDOW_UNPROOF = 1;
-											AuraDev[aindex]->Door = '~';
-											adcs[aindex]->door = 1;
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_UNPROOF;
-											break;
-										case 5:
-											adcs[aindex]->door = 10;
-											adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
-											AuraDev[aindex]->Door = 'X';
-											adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
-											adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
-											adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
-											break;
-										case 6: AuraDev[aindex]->Door = '-'; break;
-										case 7: AuraDev[aindex]->Door = '-'; break;
-										}
-										if (AuraDev[aindex]->DoorState & 0x8)
-										{
-											AuraDev[aindex]->LOCK = 1;
-											AuraDev[aindex]->Lock = 1;
-										}
-										else
-										{
-											AuraDev[aindex]->Lock = 0;
-										}
-										if (DEBUG_AURA) LOG(LOG_STATUS, "DoorState: %d\t", AuraDev[aindex]->DoorState);
-										AuraDev[aindex]->Door = AuraN[aindex]->BinaryStatus[i++];
-										if (DEBUG_AURA) LOG(LOG_STATUS, "Door: %d\t", AuraDev[aindex]->Door);
-										adcs[aindex]->flagsa = AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
-										adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
-										adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
-										adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
-										if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsA: %lx\t", adcs[aindex]->flagsa);
-
-										adcs[aindex]->flagsb = AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
-										adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
-										adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
-										adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
-										adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
-										unsigned int time = AuraN[aindex]->BinaryStatus[i++];
-										time = time << 8;
-										time += AuraN[aindex]->BinaryStatus[i++];
-										AuraDev[aindex]->ServerTempSet = time;
-										AuraDev[aindex]->ServerTempSet /= 10;
-										if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsB: %lx\t", (long unsigned int) adcs[aindex]->flagsb);
-										AuraDev[aindex]->LQI = AuraN[aindex]->BinaryStatus[i++];
-										if (DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", AuraDev[aindex]->LQI);
-										AuraN[aindex]->BinaryStatusLength = AuraN[aindex]->BinaryStatus[0];//nbytes;
-										AuraN[aindex]->TCPQuery++;
-										AuraN[aindex]->StatusTimeOut = 15u;
-										UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
 									}
-								}
-				}
+									AuraDev[aindex]->RSSI = -(255 - AuraN[aindex]->BinaryStatus[i++]);
+									if (DEBUG_AURA) LOG(LOG_STATUS, " RSSI: %d\t", AuraDev[aindex]->RSSI);
+									AuraN[aindex]->Vcc = AuraN[aindex]->BinaryStatus[i++];
+									AuraDev[aindex]->volt = AuraN[aindex]->Vcc;
+									AuraDev[aindex]->volt /= 10;
+									if (DEBUG_AURA) LOG(LOG_STATUS, " Vcc: %d\t", AuraN[aindex]->Vcc);
+									AuraDev[aindex]->Direction = AuraN[aindex]->BinaryStatus[i++];
+									if (DEBUG_AURA) LOG(LOG_STATUS, "Direction: %d\t", AuraDev[aindex]->Direction);
+									AuraDev[aindex]->DoorState = AuraN[aindex]->BinaryStatus[i++];
+									switch (AuraDev[aindex]->DoorState & 0x7)
+									{
+									case 0: AuraDev[aindex]->Door = '|';
+										adcs[aindex]->door = 0;
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_CLOSE;
+										AuraDev[aindex]->WINDOW_CLOSE = 1;
+										break;
 
+									case 1: AuraDev[aindex]->Door = '<';
+										AuraDev[aindex]->WINDOW_OPEN = 1;
+										adcs[aindex]->door = 10;
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
+										adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
+										break;
+									case 2:
+										AuraDev[aindex]->WINDOW_SMALL = 1;
+										adcs[aindex]->door = 2;
+										AuraDev[aindex]->Door = '/';
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_SMALL;
+										adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableFan = 0;    //Disable Ventilation if flag is set
+										break;
+									case 3:
+										adcs[aindex]->door = 10;
+										AuraDev[aindex]->WINDOW_OPEN = 1;
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
+										AuraDev[aindex]->Door = '>';
+										adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
+										break;
+									case 4:
+										AuraDev[aindex]->WINDOW_UNPROOF = 1;
+										AuraDev[aindex]->Door = '~';
+										adcs[aindex]->door = 1;
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_UNPROOF;
+										break;
+									case 5:
+										adcs[aindex]->door = 10;
+										adcs[aindex]->flagsa |= AURA_STAT_WINDOW_OPEN;
+										AuraDev[aindex]->Door = 'X';
+										adcs[aindex]->DisableVent = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableHeating = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableRecu = 1;    //Disable Ventilation if flag is set
+										adcs[aindex]->DisableCooling = 1; //Disable Heating if flag is set
+										adcs[aindex]->DisableFan = 1;    //Disable Ventilation if flag is set
+										break;
+									case 6: AuraDev[aindex]->Door = '-'; break;
+									case 7: AuraDev[aindex]->Door = '-'; break;
+									}
+									if (AuraDev[aindex]->DoorState & 0x8)
+									{
+										AuraDev[aindex]->LOCK = 1;
+										AuraDev[aindex]->Lock = 1;
+									}
+									else
+									{
+										AuraDev[aindex]->Lock = 0;
+									}
+									if (DEBUG_AURA) LOG(LOG_STATUS, "DoorState: %d\t", AuraDev[aindex]->DoorState);
+									AuraDev[aindex]->Door = AuraN[aindex]->BinaryStatus[i++];
+									if (DEBUG_AURA) LOG(LOG_STATUS, "Door: %d\t", AuraDev[aindex]->Door);
+									adcs[aindex]->flagsa = AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
+									adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
+									adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsa = adcs[aindex]->flagsa << 8;
+									adcs[aindex]->flagsa |= AuraN[aindex]->BinaryStatus[i++];
+									if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsA: %lx\t", adcs[aindex]->flagsa);
+
+									adcs[aindex]->flagsb = AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
+									adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
+									adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+									adcs[aindex]->flagsb = adcs[aindex]->flagsb << 8;
+									adcs[aindex]->flagsb |= AuraN[aindex]->BinaryStatus[i++];
+									unsigned int time = AuraN[aindex]->BinaryStatus[i++];
+									time = time << 8;
+									time += AuraN[aindex]->BinaryStatus[i++];
+									AuraDev[aindex]->ServerTempSet = time;
+									AuraDev[aindex]->ServerTempSet /= 10;
+									if (DEBUG_AURA) LOG(LOG_STATUS, "FlagsB: %lx\t", (long unsigned int) adcs[aindex]->flagsb);
+									AuraDev[aindex]->LQI = AuraN[aindex]->BinaryStatus[i++];
+									if (DEBUG_AURA) LOG(LOG_STATUS, "LQI: %d\t", AuraDev[aindex]->LQI);
+									AuraN[aindex]->BinaryStatusLength = AuraN[aindex]->BinaryStatus[0];//nbytes;
+									AuraN[aindex]->TCPQuery++;
+									AuraN[aindex]->StatusTimeOut = 15u;
+									UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
+								}
+							}
+						}
+					}
+				}
 			}
 			else
 			{
@@ -3064,7 +3066,6 @@ void eHouseTCP::Do_Work()
 			devaddrl = 0;
 			devaddrh = 0;
 			//memset(udp_status, 0, sizeof(udp_status));
-
 		}
 	}
 	//close(connected);

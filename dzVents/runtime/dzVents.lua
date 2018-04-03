@@ -37,7 +37,7 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMOD
 
 	local events, length = helpers.getEventSummary()
 	if (length > 0) then
-		print('Debug: dzVents version: 2.4.1')
+		print('Debug: dzVents version: 2.4.2')
 
 		print('Debug: Event triggers:')
 		for i, event in pairs(events) do
