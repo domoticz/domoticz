@@ -21,6 +21,7 @@
 
 // Base URL of API including trailing slash
 const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
+const std::string NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL = "https://api.home.nest.com/oauth2/access_token";
 
 CNestOAuthAPI::CNestOAuthAPI(const int ID, const std::string &apikey, const std::string &extradata) : m_OAuthApiAccessToken(apikey)
 {
@@ -160,6 +161,60 @@ void CNestOAuthAPI::UpdateSwitch(const unsigned char Idx, const bool bOn, const 
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
+bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
+	std::string sResult;
+
+	// Let's get a list of structures to see if the supplied Access Token works
+	try {
+		std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
+		_log.Log(LOG_NORM, "NestOAuthAPI: Trying to access API on " + sURL);
+		std::vector<std::string> ExtraHeaders;
+		std::vector<std::string> vHeaderData;
+
+		HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false);
+		if (!&sResult || sResult.size() == 0) {
+			std::string sErrorMsg = "Got empty response body while getting structures. ";
+			if (&vHeaderData && vHeaderData.size() > 0) {
+				sErrorMsg += "Response code: " + vHeaderData[0];
+			}
+			throw std::exception(sErrorMsg.c_str());
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error while performing login: " + what);
+		return false;
+	}
+
+	Json::Value root;
+	Json::Reader jReader;
+	bool bRet = jReader.parse(sResult, root);
+	if ((!bRet) || (!root.isObject()))
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse received JSON data.");
+		return false;
+	}
+	if (root.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: JSON data parsed but resulted in no nodes.");
+		return false;
+	}
+
+	std::vector<std::string> vRootMembers = root.getMemberNames();
+	Json::Value oFirstElement = root.get(vRootMembers[0], "");
+
+	if (oFirstElement["name"].empty())
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Did not get name for first structure!");
+		return false;
+	}
+	// _log.Log(LOG_NORM, ("NestOAuthAPI: Got first structure name: "+oFirstElement["name"].asString()).c_str());
+	
+	_log.Log(LOG_NORM, "NestOAuthAPI: Access token appears to be valid.");
+	return true;
+}
+
 bool CNestOAuthAPI::Login()
 {
 	// If we don't have an access token available
@@ -168,39 +223,39 @@ bool CNestOAuthAPI::Login()
 		_log.Log(LOG_NORM, "NestOAuthAPI: No API key available.");
 		// Check if we do have a productid, secret and pin code
 		if (m_ProductId.size() != 0 && m_ProductSecret.size() != 0 && m_PinCode.size() != 0) {
-			_log.Log(LOG_NORM, "NestOAuthAPI: Will request an API key based on Product Id, Product Secret and PIN code.");
+			_log.Log(LOG_NORM, "NestOAuthAPI: Access token missing. Will request an API key based on Product Id, Product Secret and PIN code.");
 
 			std::string sTmpToken = "";
-			// Request the token
 			try
 			{
+				// Request the token using the information that we already have.
 				sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
+
+				if (sTmpToken.size() > 0) {
+					_log.Log(LOG_NORM, ("NestOAuthAPI: Received an access token to use for future requests: " + sTmpToken).c_str());
+					
+					// Store the access token in the database and set the application to use it.
+					SetOAuthAccessToken(m_HwdID, sTmpToken);
+				}
+				else {
+					throw std::exception("Received access token does not appear to be valid.");
+				}
 			}
 			catch (std::exception& e)
 			{
+				// Apparently something went wrong fetching the access token.
 				std::string what = e.what();
-				_log.Log(LOG_ERROR, ("NestOAuthAPI: Error retrieving API key: " + what).c_str());
+				_log.Log(LOG_ERROR, ("NestOAuthAPI: Error retrieving access token: " + what).c_str());
 				return false;
 			}
-
-			if (sTmpToken.size() > 0) {
-				_log.Log(LOG_NORM, ("NestOAuthAPI: Received an API key to use for future requests: " + sTmpToken).c_str());
-
-				// Use the newly obtained access token
-				m_OAuthApiAccessToken = sTmpToken;
-
-				// Store the access token in the database
-				SetOAuthAccessToken(m_HwdID, sTmpToken);
-			}
-			else _log.Log(LOG_NORM, "NestOAuthAPI: API call to request an API key failed.");
 		}
-		else _log.Log(LOG_NORM, "NestOAuthAPI: Will not attempt to request an API key based on Product Id, Product Secret and PIN code since at least one of these is empty.");
+		else _log.Log(LOG_NORM, "NestOAuthAPI: Access token missing. Will not attempt to request one using Product Id, Product Secret and PIN code since at least one of these is empty.");
 	}
 
 	// Check if we still don't have an access token available
 	if (m_OAuthApiAccessToken.empty() || m_OAuthApiAccessToken.size() == 0)
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: API Key was not supplied and failed to fetch one.");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: access token was not supplied and failed to fetch one.");
 		Logout();
 
 		// Clear the retrieved tokens and secrets so we won't be 
@@ -212,48 +267,16 @@ bool CNestOAuthAPI::Login()
 		return false;
 	}
 
-
-	// Let's get a list of structures to see if the supplied Access Token works
-	std::string sURL = NEST_OAUTHAPI_BASE + "structures.json?auth=" + m_OAuthApiAccessToken;
-	std::vector<std::string> ExtraHeaders;
-	std::string sResult;
-	// _log.Log(LOG_NORM, ("NestOAuthAPI: Trying to access api on " + sURL).c_str());
-
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	if (ValidateNestApiAccessToken(m_OAuthApiAccessToken)) 
 	{
-		_log.Log(LOG_ERROR,"NestOAuthAPI: Error login!");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Login success. Token successfully validated.");
+		m_bDoLogin = false;
+		return true;
+	}
+	else {
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Login failed: token did not validate.");
 		return false;
 	}
-
-	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
-	if ((!bRet) || (!root.isObject()))
-	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid data received, or invalid access token!");
-		return false;
-	}
-	if (root.size() == 0)
-	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Invalid data received, or invalid access token!");
-		return false;
-	}
-
-	std::vector<std::string> vRootMembers = root.getMemberNames();
-
-	Json::Value oFirstElement = root.get(vRootMembers[0], "");
-	
-	if (oFirstElement["name"].empty())
-	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Did not get name for first structure!");
-		return false;
-	}
-	// _log.Log(LOG_NORM, ("NestOAuthAPI: Got first structure name: "+oFirstElement["name"].asString()).c_str());
-
-	_log.Log(LOG_NORM, "NestOAuthAPI: Access token appears to be valid.");
-
-	m_bDoLogin = false;
-	return true;
 }
 
 void CNestOAuthAPI::Logout()
@@ -276,10 +299,16 @@ bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char lengt
 
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
-	if (node_id % 3 == 0)
+	if ((node_id - 3) % 3 == 0)
 	{
 		//Away
 		return SetAway(node_id, bIsOn);
+	}
+
+	if ((node_id - 4) % 3 == 0) 
+	{
+		// Manual Eco Mode
+		return SetManualEcoMode(node_id, bIsOn);
 	}
 
 	return false;
@@ -499,20 +528,24 @@ void CNestOAuthAPI::GetMeterDetails()
 	}
 
 	size_t iThermostat = 0;
+	size_t iStructure = 0;
 	for (Json::Value::iterator ittStructure = structureRoot.begin(); ittStructure != structureRoot.end(); ++ittStructure)
 	{
 		// Get general structure information
 		Json::Value nstructure = *ittStructure;
-		if (!nstructure.isObject())
-			continue;
-		std::string StructureID = nstructure["structure_id"].asString();
-		std::string StructureName = nstructure["name"].asString();
+		if (!nstructure.isObject()) continue;
+
+		// Store the structure information in a map.
+		_tNestStructure nstruct;
+		nstruct.Name = nstructure["name"].asString();
+		nstruct.StructureId = nstructure["structure_id"].asString();
+		m_structures[iStructure] = nstruct;
 
 		// Away is determined for a structure, not for a thermostat.
 		if (!nstructure["away"].empty())
 		{
 			bool bIsAway = (nstructure["away"].asString() == "away" || nstructure["away"].asString() == "auto-away");
-			SendSwitch((iThermostat * 3) + 3, 1, 255, bIsAway, 0, StructureName + " Away");
+			SendSwitch((iStructure * 3) + 3, 1, 255, bIsAway, 0, nstruct.Name + " Away");
 		}
 
 		// Find out which thermostats are available under this structure
@@ -534,19 +567,24 @@ void CNestOAuthAPI::GetMeterDetails()
 			std::string WhereName = ndevice["where_name"].asString();
 			if (!WhereName.empty())
 			{
-				Name = StructureName + " " + WhereName;
+				Name = nstruct.Name + " " + WhereName;
 			}
 			
 			_tNestThemostat ntherm;
-			ntherm.StructureID = StructureID;
+			ntherm.StructureID = nstruct.StructureId;
 			ntherm.Name = Name;
 			ntherm.Serial = devID;
+			ntherm.CanCool = ndevice["can_cool"].asBool();
+			ntherm.CanHeat = ndevice["can_heat"].asBool();
 
 			m_thermostats[iThermostat] = ntherm;
 
 			// Find out if we're using C or F.
 			std::string temperatureScale = ndevice["temperature_scale"].asString();
 			boost::to_lower(temperatureScale);
+
+			std::string sHvacMode = ndevice["hvac_mode"].asString();
+			std::string sHvacState = ndevice["hvac_state"].asString();
 
 			//Setpoint
 			if (!ndevice["target_temperature_"+temperatureScale].empty())
@@ -563,21 +601,30 @@ void CNestOAuthAPI::GetMeterDetails()
 			}
 
 			// Check if thermostat is currently Heating
-			if (ndevice["can_heat"].asBool() && !ndevice["hvac_state"].empty())
+			if (ntherm.CanHeat && !sHvacState.empty())
 			{
-				bool bIsHeating = (ndevice["hvac_state"].asString() == "heating");
+				bool bIsHeating = (sHvacState == "heating");
 				UpdateSwitch((unsigned char)(113 + (iThermostat * 3)), bIsHeating, Name + " HeatingOn");
 			}
 
 			// Check if thermostat is currently Cooling
-			if (ndevice["can_cool"].asBool() && !ndevice["hvac_state"].empty())
+			if (ntherm.CanCool && !sHvacState.empty())
 			{
-				bool bIsCooling = (ndevice["hvac_state"].asString() == "cooling");
+				bool bIsCooling = (sHvacState == "cooling");
 				UpdateSwitch((unsigned char)(114 + (iThermostat * 3)), bIsCooling, Name + " CoolingOn");
 			}
 
+			// Indicates HVAC system heating/cooling modes, like Heat/Cool for systems with heating and cooling capacity, or Eco Temperatures for energy savings.
+			// "heat", "cool", "heat-cool", "eco", "off"
+
+			bool bManualEcomodeEnabled = (!sHvacMode.empty() && sHvacMode == "off");
+
+			// UpdateSwitch(115 + (iThermostat * 3), bManualEcomodeEnabled, Name + " Manual Eco Mode");
+			SendSwitch((iThermostat * 3) + 4, 1, 255, bManualEcomodeEnabled, 0, Name + " Manual Eco Mode");
+
 			iThermostat++;
 		}
+		iStructure++;
 	}
 }
 
@@ -629,39 +676,94 @@ void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 	GetMeterDetails();
 }
 
-bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
+bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIsOn) 
 {
-	if (m_OAuthApiAccessToken.size() == 0)
+	// Determine the index for the thermostat.
+	size_t iThermostat = (node_id - 4) / 3;
+
+	// Check if we even got that many thermostats.
+	if (iThermostat > m_thermostats.size()) return false;
+
+	// Grab a reference to that thermostat.
+	_tNestThemostat thermostat = m_thermostats[iThermostat];
+
+	if (!&thermostat || thermostat.Serial.empty())
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + std::to_string(iThermostat) + " has not been initialized yet. Try again later.");
 		return false;
-	
+	}
+
+	// Figure out if the thermostat can heat, cool or both
+	// We can't just set heat-cool since that only works on devices that can do both.
+	// If it can heat-cool, then do that, else set to whatever thing it can do.
+	Json::Value root;
+	std::string sNewHvacMode;
+	if (thermostat.CanCool && thermostat.CanHeat) sNewHvacMode = "heat-cool";
+	else if (thermostat.CanCool) sNewHvacMode = "cool";
+	else if (thermostat.CanHeat) sNewHvacMode = "heat";
+	root["hvac_mode"] = (bIsOn ? "off" : sNewHvacMode);
+
+	std::string sResult;
+	std::string sURL = NEST_OAUTHAPI_BASE + "devices/thermostats/" + m_thermostats[iThermostat].Serial;
+
+	if (!PushToNestApi("PUT", sURL, root, sResult))
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error setting manual eco mode!");
+		// Failure, request a fresh login.
+		m_bDoLogin = true;
+		return false;
+	}
+	return true;
+}
+
+bool CNestOAuthAPI::PushToNestApi(const std::string sMethod, const std::string sUrl, const Json::Value jPostData, std::string &sResult)
+{
+	if (m_OAuthApiAccessToken.size() == 0) 
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to push information to Nest Api: No access token supplied.");
+		return false;
+	}
+
 	if (m_bDoLogin == true)
 	{
 		if (!Login())
 			return false;
 	}
 
-	size_t iThermostat = (Idx - 3) / 3;
-	if (iThermostat > m_thermostats.size())
-		return false;
-
-	if (m_thermostats[iThermostat].Serial.empty())
-	{
-		_log.Log(LOG_NORM, "NestOAuthAPI: Thermostat has not been initialized yet. Try again later.");
-		return false;
-	}
-
+	// Prepare the authentication headers
 	std::vector<std::string> ExtraHeaders;
-
 	ExtraHeaders.push_back("Authorization:Bearer " + m_OAuthApiAccessToken);
 	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sPostData = jPostData.toStyledString();
+
+	if (!HTTPClient::PUT(sUrl, sPostData, ExtraHeaders, sResult))
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error pushing information to Nest Api.");
+		return false;
+	}
+	return true;
+}
+
+bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
+{
+	size_t iStructure = (Idx - 3) / 3;
+	if (iStructure > m_structures.size())
+		return false;
+
+	if (m_structures[iStructure].StructureId.empty())
+	{
+		_log.Log(LOG_NORM, "NestOAuthAPI: Structure "+std::to_string(iStructure)+" has not been initialized yet. Try again later.");
+		return false;
+	}
 
 	Json::Value root;
 	root["away"] = (bIsAway ? "away" : "home");
 
 	std::string sResult;
 
-	std::string sURL = NEST_OAUTHAPI_BASE + "structures" + "/" + m_thermostats[iThermostat].StructureID;
-	if (!HTTPClient::PUT(sURL, root.toStyledString(), ExtraHeaders, sResult))
+	std::string sURL = NEST_OAUTHAPI_BASE + "structures" + "/" + m_structures[iStructure].StructureId;
+	if (!PushToNestApi("PUT", sURL, root, sResult))
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Error setting away mode!");
 		m_bDoLogin = true;
@@ -697,7 +799,6 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 
 	_log.Log(LOG_NORM, "NestOAuthAPI: Preparing URL");
 
-	std::string sURL = "https://api.home.nest.com/oauth2/access_token";
 	std::vector<std::string> ExtraHeaders;
 	std::string sResult;
 	std::ostringstream s;
@@ -706,6 +807,8 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 	std::string sSecret = secret;
 	std::string sPincode = pincode;
 
+	std::string sReceivedAccessToken;
+
 	boost::trim(sProductid);
 	boost::trim(sSecret);
 	boost::trim(sPincode);
@@ -713,48 +816,72 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 	s << "code=" << sPincode << "&client_id=" << sProductid << "&client_secret=" << sSecret << "&grant_type=authorization_code";
 	std::string sPostData = s.str();
 
-	_log.Log(LOG_NORM, "NestOAuthAPI: postdata= " + sPostData);
-	_log.Log(LOG_NORM, "NestOAuthAPI: Doing POST request to URL: " + sURL);
-	if (!HTTPClient::POST(sURL, sPostData, ExtraHeaders, sResult, true))
-	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Error performing access token fetch request.");
-		return "";
-	}
-	_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
+	_log.Log(LOG_TRACE, "NestOAuthAPI: postdata= " + sPostData);
+	_log.Log(LOG_NORM, "NestOAuthAPI: Doing POST request to URL: " + NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL);
 
-	_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
-	Json::Value root;
-	Json::Reader jReader;
-	bool bRet = jReader.parse(sResult, root);
-	_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
-	if ((!bRet) || (!root.isObject()))
+	try 
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse JSON data or no data received.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Will now attempt to fetch access token.");
+
+		std::vector<std::string> vResponseHeaders;
+		if (!HTTPClient::POST(NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL, sPostData, ExtraHeaders, sResult, vResponseHeaders, true, false))
+		{
+			std::string sErrorMsg = "Failed to fetch token from API. ";
+			if (&vResponseHeaders && vResponseHeaders.size() > 0) {
+				sErrorMsg += "Response code: " + vResponseHeaders[0];
+			}
+			throw std::exception(sErrorMsg.c_str());
+		}
+		_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
+
+		if (!&sResult || sResult.size() == 0) 
+		{
+			throw std::exception("Received empty response from API.");
+		}
+
+		try 
+		{
+			_log.Log(LOG_NORM, "NestOAuthAPI: Will now parse result to JSON");
+			Json::Value root;
+			Json::Reader jReader;
+			bool bRet = jReader.parse(sResult, root);
+			_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
+			
+			if ((!bRet) || (!root.isObject())) throw std::exception("Failed to parse JSON data.");
+			_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
+
+			if (root.size() == 0) throw std::exception("Parsed JSON data contains no elements.");
+			_log.Log(LOG_NORM, "NestOAuthAPI: parsed JSON data contains more than 0 elements");
+
+			_log.Log(LOG_NORM, "NestOAuthAPI: Fetching access_token from JSON object");
+			sReceivedAccessToken = root["access_token"].asString();
+
+			if (sReceivedAccessToken.empty()) throw std::exception("Received an empty access token from parsed JSON data.");
+			_log.Log(LOG_NORM, ("NestOAuthAPI: Returning fetched access token: " + sReceivedAccessToken));
+			return sReceivedAccessToken;
+		}
+		catch (std::exception &e) 
+		{
+			std::string what = e.what();
+			throw "Error parsing received JSON data: "+what;
+		}
+	}
+	catch (std::exception &e) 
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Error getting access token: "+ what);
 		return "";
 	}
-	else {
-		_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
-	}
-	if (root.size() == 0)
-	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: parsed JSON data contains no elements!");
-		return "";
-	}
-	else {
-		_log.Log(LOG_NORM, "NestOAuthAPI: parsed JSON data contains more than 0 elements");
-	}
-	
-	_log.Log(LOG_NORM, "NestOAuthAPI: Fetching access_token from JSON object");
-	std::string sReceivedAccessToken = root["access_token"].asString();
-	_log.Log(LOG_NORM, ("NestOAuthAPI: Fetched access token: " + sReceivedAccessToken));
-	return sReceivedAccessToken;
 }
 
 bool CNestOAuthAPI::SetOAuthAccessToken(const unsigned int ID, std::string &newToken)
 {
+	// Set the application to use the new token.
+	m_OAuthApiAccessToken = newToken;
+
 	_log.Log(LOG_NORM, ("NestOAuthAPI: Storing received access token " + newToken + " and clearing token request information.").c_str());
 
-	// std::vector<std::vector<std::string> > result;
+	// This can be done some much better. For now let's assume things will succeed.
 	m_sql.safe_query("UPDATE Hardware SET Username='%q', Extra='' WHERE (ID==%d)", newToken.c_str(), ID);
 
 	return true;
