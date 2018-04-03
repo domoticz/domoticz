@@ -331,7 +331,7 @@ namespace Plugins {
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->TimedOut = 0;
-				self->Color = PyUnicode_FromString("");
+				self->Color = PyUnicode_FromString(NoColor.toJSON().c_str());
 				if (self->Color == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -669,7 +669,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(sd[16].c_str());
+					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSON().c_str()); //Parse the color to detect incorrectly formatted color data
 				}
 			}
 		}
@@ -894,7 +894,7 @@ namespace Plugins {
 			// Color change
 			if (Color)
 			{
-				std::string sColor = Color;
+				std::string	sColor = _tColor(std::string(Color)).toJSON(); //Parse the color to detect incorrectly formatted color data
 				m_sql.UpdateDeviceValue("Color", sColor, sID);
 
 				// TODO: Notify MQTT and various push mechanisms?
