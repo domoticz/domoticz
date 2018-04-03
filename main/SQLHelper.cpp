@@ -5178,7 +5178,6 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 	if (dayCalendar)
 	{
 		if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
-			_log.Log(LOG_ERROR,"DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%s') AND (Date<='%s')", DeviceRowID, clearAfterDate, clearBeforeDate);
 			safe_query("DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%q') AND (Date<='%q')", DeviceRowID, clearAfterDate, clearBeforeDate);
 		}
 
@@ -5227,7 +5226,6 @@ bool CSQLHelper::UpdateCalendarMeter(const int HardwareID, const char* DeviceID,
 		if (!isMultiMeter(devType, subType))
 		{
 			if((clearBeforeDate != NULL) && (clearBeforeDate[0] != '\0') && (clearAfterDate != NULL) && (clearAfterDate[0] != '\0')) {
-				_log.Log(LOG_ERROR,"DELETE FROM Meter WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%s') AND (Date<='%s')", DeviceRowID, clearAfterDate, clearBeforeDate);
 				safe_query("DELETE FROM Meter_Calendar WHERE (DeviceRowID=='%" PRIu64 "') AND (Date>='%q') AND (Date<='%q')", DeviceRowID, clearAfterDate, clearBeforeDate);
 			}
 
