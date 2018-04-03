@@ -1362,7 +1362,8 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 		_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
-	_log.Log(LOG_STATUS, "OpenZWave::SwitchColor Manufacturer_id: '%s', Product_type: '%s', Product_id: '%s', Application_version: %u",
+	// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "OpenZWave::SwitchColor Manufacturer_id: '%s', Product_type: '%s', Product_id: '%s', Application_version: %u",
 	         pNode->Manufacturer_id.c_str(), pNode->Product_type.c_str(), pNode->Product_id.c_str(), pNode->Application_version);
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
@@ -1408,8 +1409,8 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
 
 						OutColorStr = sstr.str();
-
-						_log.Log(LOG_STATUS, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
+						// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
+						if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
 						         ColorStr.c_str(), OutColorStr.c_str());
 					}
 				}
