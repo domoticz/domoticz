@@ -88,7 +88,7 @@ local function DomoticzTestTools(port, debug, webroot)
     end
 
     function self.createHardware(name, type)
-    	local url = "type=command&param=addhardware&htype=" .. tostring(type) .. "&name=" .. name .. "&enabled=true&datatimeout=0"
+    	local url = "param=addhardware&type=command&htype=" .. tostring(type) .. "&name=" .. name .. "&enabled=true&datatimeout=0"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	local idx = json.idx
     	return ok, idx, json, result, respcode, respheaders, respstatus
@@ -136,7 +136,7 @@ local function DomoticzTestTools(port, debug, webroot)
     function self.createVariable(name, type, value)
 		-- todo, encode value
     	--type=command&param=saveuservariable&vname=myint&vtype=0&vvalue=1
-    	local url = "type=command&param=saveuservariable&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
+    	local url = "param=saveuservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
 
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
@@ -203,14 +203,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteVariable(idx)
     	--type=command&param=deleteuservariable&idx=1
-    	local url = "type=command&param=deleteuservariable&idx=" .. tostring(idx)
+    	local url = "param=deleteuservariable&type=command&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
 
     function self.deleteAllVariables()
-    	-- type=command&param=getuservariables
-    	local url = "type=command&param=getuservariables"
+    	-- type=commandparam=onkyoeiscm=getuservariables
+    	local url = "param=getuservariables&type=command"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
         local res = true
     	if (ok) then
@@ -232,7 +232,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteHardware(idx)
     	-- http://localhost:8080/json.htm?type=command&param=deletehardware&idx=2
-    	local url = "type=command&param=deletehardware&idx=" .. tostring(idx)
+    	local url = "param=deletehardware&type=command&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
@@ -260,14 +260,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteScript(idx)
     	--type=events&param=delete&event=1
-    	local url = "type=events&param=delete&event=" .. tostring(idx)
+    	local url = "param=delete&type=events&event=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
 
     function self.deleteAllScripts()
     	-- type=events&param=list
-    	local url = "type=events&param=list"
+    	local url = "param=list&type=events"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
         local res = true
     	if (ok) then
@@ -304,14 +304,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.switch(idx, cmd)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=0&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=" .. cmd .. "&level=0&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
 
     function self.dimTo(idx, cmd, level)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
@@ -319,7 +319,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.switchSelector(idx, level)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=Set%20Level&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=Set%20Level&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
@@ -327,14 +327,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.switchGroup(idx, cmd)
     	--http://localhost:8080/json.htm?type=command&param=switchscene&idx=2&switchcmd=On&passcode=
-    	local url = "type=command&param=switchscene&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
+    	local url = "param=switchscene&type=command&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
 
     function self.addSceneDevice(sceneIdx, devIdx)
     	-- http://localhost:8080/json.htm?type=command&param=addscenedevice&idx=2&isscene=false&devidx=1&command=On&level=100&hue=0&ondelay=&offdelay=
-    	local url = "type=command&param=addscenedevice&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
+    	local url = "param=addscenedevice&type=command&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
     	return ok
@@ -398,7 +398,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.setDisarmed()
     	-- http://localhost:8080/json.htm?type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b
-    	local url = "type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b"
+    	local url = "param=setsecstatus&type=command&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
