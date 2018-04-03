@@ -962,7 +962,7 @@ define(['app'], function (app) {
 				async: false,
 				dataType: 'json',
 				success: function (data) {
-					RefreshTimerTable($.devIdx);
+					RefreshTimerTable(SceneIdx);
 				},
 				error: function () {
 					HideNotify();
