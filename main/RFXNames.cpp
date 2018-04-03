@@ -275,6 +275,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
 		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
 		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
+		{ HTYPE_Honeywell, "Honeywell Thermostat" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -304,6 +305,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
+		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -465,7 +467,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
 		{ pTypeHomeConfort, "Home Confort" , "lightbulb" },
-		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
+		{ pTypeColorSwitch, "Color Switch" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
 		{ pTypeSecurity1, "Security", "security" },
@@ -769,11 +771,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypePOWER, sTypeELEC5, "Revolt" },
 
-		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
-		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
-		{ pTypeLimitlessLights, sTypeLimitlessLivCol, "LivCol" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W, "RGBW" },
+		{ pTypeColorSwitch, sTypeColor_RGB, "RGB" },
+		{ pTypeColorSwitch, sTypeColor_White, "White" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW, "RGBWW" },
+		{ pTypeColorSwitch, sTypeColor_LivCol, "RGB" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W_Z, "RGBWZ" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW_Z, "RGBWWZ" },
+		{ pTypeColorSwitch, sTypeColor_CW_WW, "WW" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -1510,54 +1515,58 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 		bHaveDimmer=true;
 		maxDimLevel=100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+		llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+
 		switch (nValue)
 		{
-		case Limitless_LedOff:
+		case Color_LedOff:
 			lstatus="Off";
 			break;
-		case Limitless_LedOn:
+		case Color_LedOn:
 			lstatus="On";
 			break;
-		case Limitless_SetBrightnessLevel:
+		case Color_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
-		case Limitless_SetKelvinLevel:
-			lstatus="Set Kelvin Level";
-			break;
-		case Limitless_SetColorToWhite:
+		case Color_SetColorToWhite:
 			lstatus="Set to White";
 			break;
-		case Limitless_NightMode:
+		case Color_SetColor:
+			lstatus="Set Color";
+			break;
+		case Color_NightMode:
 			lstatus="NightMode";
 			break;
-		case Limitless_DiscoMode_1:
+		case Color_DiscoMode_1:
 			lstatus="Disco Mode 1";
 			break;
-		case Limitless_DiscoMode_2:
+		case Color_DiscoMode_2:
 			lstatus="Disco Mode 2";
 			break;
-		case Limitless_DiscoMode_3:
+		case Color_DiscoMode_3:
 			lstatus="Disco Mode 3";
 			break;
-		case Limitless_DiscoMode_4:
+		case Color_DiscoMode_4:
 			lstatus="Disco Mode 4";
 			break;
-		case Limitless_DiscoMode_5:
+		case Color_DiscoMode_5:
 			lstatus="Disco Mode 5";
 			break;
-		case Limitless_DiscoMode_6:
+		case Color_DiscoMode_6:
 			lstatus="Disco Mode 6";
 			break;
-		case Limitless_DiscoMode_7:
+		case Color_DiscoMode_7:
 			lstatus="Disco Mode 7";
 			break;
-		case Limitless_DiscoMode_8:
+		case Color_DiscoMode_8:
 			lstatus="Disco Mode 8";
 			break;
-		case Limitless_DiscoMode_9:
+		case Color_DiscoMode_9:
 			lstatus="Disco Mode 9";
 			break;
 		}
@@ -2536,20 +2545,20 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 		if (switchcmd=="Off")
 		{
-			cmd=Limitless_LedOff;
+			cmd=Color_LedOff;
 			return true;
 		}
 		else if (switchcmd=="On")
 		{
-			cmd=Limitless_LedOn;
+			cmd=Color_LedOn;
 			return true;
 		}
 		else if (switchcmd=="Set Color")
 		{
-			cmd=Limitless_SetRGBColour;
+			cmd=Color_SetColor;
 			return true;
 		}
 		else if (
@@ -2557,132 +2566,127 @@ bool GetLightCommand(
 			(switchcmd=="Set Level")
 			)
 		{
-			cmd=Limitless_SetBrightnessLevel;
-			return true;
-		}
-		else if (switchcmd=="Set Kelvin Level")
-		{
-			cmd=Limitless_SetKelvinLevel;
+			cmd=Color_SetBrightnessLevel;
 			return true;
 		}
 		else if (switchcmd == "Set White")
 		{
-			cmd = Limitless_SetColorToWhite;
+			cmd = Color_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Full")
 		{
-			cmd=Limitless_SetColorToWhite;
+			cmd=Color_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Night")
 		{
-			cmd = Limitless_NightMode;
+			cmd = Color_NightMode;
 			return true;
 		}
 		else if (switchcmd == "Bright Up")
 		{
-			cmd = Limitless_SetBrightUp;
+			cmd = Color_SetBrightUp;
 			return true;
 		}
 		else if (switchcmd == "Bright Down")
 		{
-			cmd = Limitless_SetBrightDown;
+			cmd = Color_SetBrightDown;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode")
 		{
-			cmd = Limitless_DiscoMode;
+			cmd = Color_DiscoMode;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 1")
 		{
-			cmd = Limitless_DiscoMode_1;
+			cmd = Color_DiscoMode_1;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 2")
 		{
-			cmd = Limitless_DiscoMode_2;
+			cmd = Color_DiscoMode_2;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 3")
 		{
-			cmd = Limitless_DiscoMode_3;
+			cmd = Color_DiscoMode_3;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 4")
 		{
-			cmd = Limitless_DiscoMode_4;
+			cmd = Color_DiscoMode_4;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 5")
 		{
-			cmd = Limitless_DiscoMode_5;
+			cmd = Color_DiscoMode_5;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 6")
 		{
-			cmd = Limitless_DiscoMode_6;
+			cmd = Color_DiscoMode_6;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 7")
 		{
-			cmd = Limitless_DiscoMode_7;
+			cmd = Color_DiscoMode_7;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 8")
 		{
-			cmd = Limitless_DiscoMode_8;
+			cmd = Color_DiscoMode_8;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 9")
 		{
-			cmd = Limitless_DiscoMode_9;
+			cmd = Color_DiscoMode_9;
 			return true;
 		}
 		else if (switchcmd == "Disco Up")
 		{
-			cmd = Limitless_RGBDiscoNext;
+			cmd = Color_RGBDiscoNext;
 			return true;
 		}
 		else if (switchcmd == "Disco Down")
 		{
-			cmd = Limitless_RGBDiscoPrevious;
+			cmd = Color_RGBDiscoPrevious;
 			return true;
 		}
 		else if (switchcmd == "Speed Up")
 		{
-			cmd = Limitless_DiscoSpeedFaster;
+			cmd = Color_DiscoSpeedFaster;
 			return true;
 		}
 		else if (switchcmd == "Speed Up Long")
 		{
-			cmd = Limitless_DiscoSpeedFasterLong;
+			cmd = Color_DiscoSpeedFasterLong;
 			return true;
 		}
 		else if (switchcmd == "Speed Down")
 		{
-			cmd = Limitless_DiscoSpeedSlower;
+			cmd = Color_DiscoSpeedSlower;
 			return true;
 		}
 		else if (switchcmd == "Speed Minimal")
 		{
-			cmd = Limitless_DiscoSpeedMinimal;
+			cmd = Color_DiscoSpeedMinimal;
 			return true;
 		}
 		else if (switchcmd == "Speed Maximal")
 		{
-			cmd = Limitless_DiscoSpeedMaximal;
+			cmd = Color_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")
 		{
-			cmd = Limitless_WarmWhiteIncrease;
+			cmd = Color_WarmWhiteIncrease;
 			return true;
 		}
 		else if (switchcmd == "Cooler")
 		{
-			cmd = Limitless_CoolWhiteIncrease;
+			cmd = Color_CoolWhiteIncrease;
 			return true;
 		}
 		else
@@ -3413,7 +3417,7 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		s_strid >> deviceid;
 		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
 		char szTmp[20];
-		sprintf(szTmp, "%lx", deviceid);
+		sprintf(szTmp, "%08lX", deviceid);
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 		devid = szTmp;
 	}

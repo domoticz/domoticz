@@ -23,6 +23,7 @@ before_install:
   - git clone https://github.com/OpenZWave/open-zwave.git open-zwave-read-only
   # lookup boost version
   #- sudo apt-cache search libboost
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi  
 
 # Build matrix definition
 # * Two builds
@@ -35,7 +36,7 @@ matrix:
     dist: trusty
     sudo: required
     compiler: gcc
-    env: 
+    env:
           - TARGET_ARCHITECTURE=x86_64
           - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     addons:
@@ -72,14 +73,13 @@ matrix:
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
-      - brew install libusb
-      - brew install libusb-compat
+      # - brew install libusb
+      # - brew install libusb-compat
       - brew install zlib || true
       - brew install openssl
       - brew link openssl --force
       - brew install md5sha1sum
-      - brew install python3
-      - brew linkapps python3
+      - brew upgrade python
       - export OPENSSL_ROOT_DIR=/usr/local/opt/openssl
     script:
       - CPPFLAGS="-std=c++11" cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_INCLUDE_DIR=$(python3-config --prefix)/Headers -DPYTHON_LIBRARY=$(python3-config --prefix)/lib/libpython3.6.dylib

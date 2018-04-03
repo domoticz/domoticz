@@ -68,6 +68,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyDict_Size, PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItem, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyDict_GetItemString, PyObject* COMMA const char*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItemString, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyDict_SetItem, PyObject* COMMA PyObject* COMMA PyObject*);
@@ -175,6 +176,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Clear);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Size);
+					RESOLVE_PYTHON_SYMBOL(PyDict_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyDict_GetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItemString);
 					RESOLVE_PYTHON_SYMBOL(PyDict_SetItem);
@@ -342,6 +344,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Clear			pythonLib->PyDict_Clear
 #define PyDict_Size				pythonLib->PyDict_Size
+#define PyDict_GetItem			pythonLib->PyDict_GetItem
 #define PyDict_GetItemString	pythonLib->PyDict_GetItemString
 #define PyDict_SetItemString	pythonLib->PyDict_SetItemString
 #define PyDict_SetItem			pythonLib->PyDict_SetItem

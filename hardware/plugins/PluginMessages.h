@@ -30,6 +30,7 @@ namespace Plugins {
 		};
 	public:
 		virtual const char* Name() { return m_Name.c_str(); };
+		virtual const CPlugin*	Plugin() { return m_pPlugin; };
 		virtual void Process() = 0;
 	};
 
@@ -55,25 +56,6 @@ namespace Plugins {
 		virtual void Process()
 		{
 			m_pPlugin->Initialise();
-		};
-	};
-
-	class ReadMessage : public CPluginMessageBase, public CHasConnection
-	{
-	public:
-		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
-		{
-			m_Name = __func__;
-			m_ElapsedMs = ElapsedMs;
-			m_Buffer.reserve(ByteCount);
-			m_Buffer.assign(Data, Data + ByteCount);
-		};
-		std::vector<byte>		m_Buffer;
-		int						m_ElapsedMs;
-		virtual void Process()
-		{
-			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
-			m_pPlugin->ConnectionRead(this);
 		};
 	};
 
@@ -174,17 +156,59 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		};
 	};
 
+	class onDeviceAddedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceAddedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceAdded") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			m_pPlugin->onDeviceAdded(m_Unit);
+
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+		};
+	};
+
+	class onDeviceModifiedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceModifiedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceModified") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			m_pPlugin->onDeviceModified(m_Unit);
+
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+		};
+	};
+
+	class onDeviceRemovedCallback : public CCallbackBase
+	{
+	public:
+		onDeviceRemovedCallback(CPlugin* pPlugin, int Unit) : CCallbackBase(pPlugin, "onDeviceRemoved") { m_Unit = Unit; };
+	protected:
+		virtual void ProcessLocked()
+		{
+			PyObject*	pParams = Py_BuildValue("(i)", m_Unit);
+			Callback(pParams);
+
+			m_pPlugin->onDeviceRemoved(m_Unit);
+		};
+	};
+
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, std::string color) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
 			m_Unit = Unit;
 			m_fLevel = -273.15f;
 			m_Command = Command;
 			m_iLevel = level;
-			m_iHue = hue;
+			m_iColor = color;
 		};
 		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
@@ -193,10 +217,10 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_fLevel = level;
 			m_Command = Command;
 			m_iLevel = -1;
-			m_iHue = -1;
+			m_iColor = "";
 		};
 		std::string				m_Command;
-		int						m_iHue;
+		std::string				m_iColor;
 		int						m_iLevel;
 		float					m_fLevel;
 
@@ -206,11 +230,11 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			PyObject*	pParams;
 			if (m_fLevel != -273.15f)
 			{
-				pParams = Py_BuildValue("isfi", m_Unit, m_Command.c_str(), m_fLevel, 0);
+				pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
 			}
 			else
 			{
-				pParams = Py_BuildValue("isii", m_Unit, m_Command.c_str(), m_iLevel, m_iHue);
+				pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
 			}
 			Callback(pParams);
 		};
@@ -275,7 +299,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_Name = __func__;
 			m_Subject = Subject;
 			m_Text = Text;
-			m_Name = Name;
+			m_SuppliedName = Name;
 			m_Status = Status;
 			m_Priority = Priority;
 			m_Sound = Sound;
@@ -284,7 +308,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 
 		std::string				m_Subject;
 		std::string				m_Text;
-		std::string				m_Name;
+		std::string				m_SuppliedName;
 		std::string				m_Status;
 		int						m_Priority;
 		std::string				m_Sound;
@@ -293,7 +317,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 		virtual void ProcessLocked()
 		{
-			PyObject*	pParams = Py_BuildValue("ssssiss", m_Name.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
+			PyObject*	pParams = Py_BuildValue("ssssiss", m_SuppliedName.c_str(), m_Subject.c_str(), m_Text.c_str(), m_Status.c_str(), m_Priority, m_Sound.c_str(), m_ImageFile.c_str());
 			Callback(pParams);
 		};
 	};
@@ -385,9 +409,9 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class NotifierDirective : public CDirectiveBase
 	{
 	public:
-		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_Name(Name) { m_Name = __func__; };
-		std::string		m_Name;
-		virtual void Process() { m_pPlugin->Notifier(m_Name); };
+		NotifierDirective(CPlugin* pPlugin, const char* Name) : CDirectiveBase(pPlugin), m_NotifierName(Name) { m_Name = __func__; };
+		std::string		m_NotifierName;
+		virtual void Process() { m_pPlugin->Notifier(m_NotifierName); };
 	};
 
 	// Base event message class
@@ -398,10 +422,31 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		virtual void Process() { throw "Base event class Handle called"; };
 	};
 
+	class ReadEvent : public CEventBase, public CHasConnection
+	{
+	public:
+		ReadEvent(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
+		{
+			m_Name = __func__;
+			m_ElapsedMs = ElapsedMs;
+			m_Buffer.reserve(ByteCount);
+			m_Buffer.assign(Data, Data + ByteCount);
+		};
+		std::vector<byte>		m_Buffer;
+		int						m_ElapsedMs;
+		virtual void Process()
+		{
+			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+			m_pPlugin->ConnectionRead(this);
+		};
+	};
+
 	class DisconnectedEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection, bool NotifyPlugin) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
 		virtual void Process() { m_pPlugin->DisconnectEvent(this); };
+		bool	bNotifyPlugin;
 	};
 }

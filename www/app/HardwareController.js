@@ -405,7 +405,7 @@ define(['app'], function (app) {
 					}
 					Mode1 = pollinterval;
 				}
-				if (text.indexOf("eHouse") >= 0) {
+				else if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
 					if (pollinterval == "") {
 						ShowNotify($.t('Please enter poll interval!'), 2500, true);
@@ -417,8 +417,16 @@ define(['app'], function (app) {
 					Mode4 = $("#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery").prop("checked") ? 1 : 0;
 					Mode5 = $("#hardwarecontent #hardwareparamsehouse #ehouseopts").val();
 					Mode6 = $("#hardwarecontent #hardwareparamsehouse #ehouseopts2").val();
+				}
+				if (text.indexOf("Denkovi") >= 0) {
+					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+					if (pollinterval == "") {
+						ShowNotify($.t('Please enter poll interval!'), 2500, true);
+						return;
 					}
-				if (text.indexOf("Relay-Net") >= 0) {
+					Mode1 = pollinterval;
+				}
+				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
 					Mode2 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollrelays').prop("checked") ? 1 : 0;
 					var pollinterval = $("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinterval").val();
@@ -830,6 +838,29 @@ define(['app'], function (app) {
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
 					"&Mode1=" + encodeURIComponent(mill_id) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
+				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(accessToken) +
+					"&password=" + encodeURIComponent(refreshToken) +
+					"&Mode1=" + Mode1 +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout +
@@ -1266,12 +1297,12 @@ define(['app'], function (app) {
 				hardwaretype = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').val();
 				var i2cpath = $("#hardwareparamsi2clocal #i2cpath").val();
 				var i2caddress = "";
-				
+
 				var text1 = $("#hardwareparamsi2clocal #comboi2clocal").find('option:selected').text();
 				if (text1.indexOf("I2C sensor PIO 8bit expander PCF8574") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
 					var i2cinvert = $("#hardwareparami2cinvert #i2cinvert").prop("checked") ? 1 : 0;
-					
+
 				}
 				else if (text1.indexOf("I2C sensor GPIO 16bit expander MCP23017") >= 0) {
 					var i2caddress = $("#hardwareparami2caddress #i2caddress").val();
@@ -1464,8 +1495,15 @@ define(['app'], function (app) {
 					}
 					Mode1 = pollinterval;
 				}
-
-				if (text.indexOf("eHouse") >= 0) {
+				else if (text.indexOf("Denkovi") >= 0) {
+					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
+					if (pollinterval == "") {
+						ShowNotify($.t('Please enter poll interval!'), 2500, true);
+						return;
+					}
+					Mode1 = pollinterval;
+				}
+				else if (text.indexOf("eHouse") >= 0) {
 					var pollinterval = $("#hardwarecontent #hardwareparamspollinterval #pollinterval").val();
 					Mode2 = $('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked") ? 1 : 0;
 					Mode3 = $('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked") ? 1 : 0;
@@ -1477,9 +1515,8 @@ define(['app'], function (app) {
 						return;
 						}
 					Mode1 = pollinterval;
-					}
-
-				if (text.indexOf("Relay-Net") >= 0) {
+				}
+				else if (text.indexOf("Relay-Net") >= 0) {
 					Mode1 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs').prop("checked") ? 1 : 0;
 					Mode2 = $('#hardwarecontent #hardwareparamsrelaynet #relaynetpollrelays').prop("checked") ? 1 : 0;
 					var pollinterval = $("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinterval").val();
@@ -1736,6 +1773,26 @@ define(['app'], function (app) {
 					"&address=" + encodeURIComponent(mill_name) +
 					"&port=" + encodeURIComponent(nrofwinddelen) +
 					"&Mode1=" + encodeURIComponent(mill_id) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				var accessToken = $("#hardwarecontent #divhoneywell #hwAccessToken").val();
+				var refreshToken = $("#hardwarecontent #divhoneywell #hwRefreshToken").val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(accessToken) +
+					"&password=" + encodeURIComponent(refreshToken) +
 					"&enabled=" + bEnabled +
 					"&datatimeout=" + datatimeout,
 					async: false,
@@ -3466,9 +3523,11 @@ define(['app'], function (app) {
 								"DT_RowId": item.idx,
 								"Name": item.Name,
 								"Mac": item.Mac,
+								"Timeout": item.Status,
 								"0": item.idx,
 								"1": item.Name,
-								"2": item.Mac
+								"2": item.Mac,
+								"3": item.Status
 							});
 						});
 					}
@@ -3532,6 +3591,26 @@ define(['app'], function (app) {
 			$('#hardwarecontent #idx').val(idx);
 
 			RefreshLMSNodeTable();
+		}
+
+		DeleteUnusedLMSDevices = function () {
+			bootbox.confirm($.t("Are you sure to delete all unused devices?"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=lmsdeleteunuseddevices" +
+							"&idx=" + $.devIdx,
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							RefreshLMSNodeTable();
+							bootbox.alert($.t('Devices deleted'));
+						},
+						error: function () {
+							ShowNotify($.t('Problem Deleting devices!'), 2500, true);
+						}
+					});
+				}
+			});
 		}
 
 		EditSBFSpot = function (idx, name, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6) {
@@ -5069,7 +5148,7 @@ define(['app'], function (app) {
 							else if (item.Type == 93 || item.Type == 109) {
 								dispAddress = "I2C-" + dispAddress;
 							}
-							
+
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Username": item.Username,
@@ -5253,7 +5332,18 @@ define(['app'], function (app) {
 								$("#hardwarecontent #divevohometcp #controlleridevohometcp").val(data["Extra"]);
 							}
 						}
-						else if ((((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || (data["Type"].indexOf("Domoticz") >= 0) || (data["Type"].indexOf("Denkovi") >= 0) || (data["Type"].indexOf("Relay-Net") >= 0) || (data["Type"].indexOf("Satel Integra") >= 0) || (data["Type"].indexOf("eHouse") >= 0) || (data["Type"].indexOf("Logitech Media Server") >= 0) || (data["Type"].indexOf("HEOS by DENON") >= 0) || (data["Type"].indexOf("Xiaomi Gateway") >= 0) || (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)) {
+						else if (
+							(((data["Type"].indexOf("LAN") >= 0) || data["Type"].indexOf("MySensors Gateway with MQTT") >= 0) && (data["Type"].indexOf("YouLess") >= 0)) || 
+							(data["Type"].indexOf("Domoticz") >= 0) || 
+							(data["Type"].indexOf("Denkovi") >= 0) || 
+							(data["Type"].indexOf("Relay-Net") >= 0) || 
+							(data["Type"].indexOf("Satel Integra") >= 0) || 
+							(data["Type"].indexOf("eHouse") >= 0) || 
+							(data["Type"].indexOf("Logitech Media Server") >= 0) || 
+							(data["Type"].indexOf("HEOS by DENON") >= 0) || 
+							(data["Type"].indexOf("Xiaomi Gateway") >= 0) || 
+							(data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0)
+							) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
@@ -5261,30 +5351,30 @@ define(['app'], function (app) {
 							if (data["Type"].indexOf("Satel Integra") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 							}
-
-                            if (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                            else if (data["Type"].indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                                 var RateLimit = parseInt(data["Mode1"]);
                                 if (RateLimit && (RateLimit < 300)) {
                                     RateLimit = 300;
                                 }
                                 $("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(RateLimit);
                             }
-
-							if (data["Type"].indexOf("eHouse") >= 0) {
+							else if (data["Type"].indexOf("eHouse") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 					 			$('#hardwarecontent #hardwareparamsehouse #ehouseautodiscovery').prop("checked",data["Mode2"] == 1);
 								$('#hardwarecontent #hardwareparamsehouse #ehouseaddalarmin').prop("checked",data["Mode3"] == 1);
 								$('#hardwarecontent #hardwareparamsehouse #ehouseprodiscovery').prop("checked",data["Mode4"] == 1);
 								$('#hardwarecontent #hardwareparamsehouse #ehouseopts').val(data["Mode5"]);
 								$('#hardwarecontent #hardwareparamsehouse #ehouseopts2').val(data["Mode6"]);
-								}
-
-							if (data["Type"].indexOf("Relay-Net") >= 0) {
+							}
+							else if (data["Type"].indexOf("Relay-Net") >= 0) {
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinputs").prop("checked", data["Mode1"] == 1);
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetpollrelays").prop("checked", data["Mode2"] == 1);
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetpollinterval").val(data["Mode3"]);
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetinputcount").val(data["Mode4"]);
 								$("#hardwarecontent #hardwareparamsrelaynet #relaynetrelaycount").val(data["Mode5"]);
+							}
+							else if (data["Type"].indexOf("Denkovi") >= 0) {
+								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
 							}
 						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0) || (data["Type"].indexOf("Open Weather Map") >= 0)) {
@@ -5363,6 +5453,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamswinddelen #nrofwinddelen").val(data["Port"]);
 						}
+						else if (data["Type"].indexOf("Honeywell") >= 0) {
+							$("#hardwarecontent #hardwareparamshoneywell #hwAccessToken").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamshoneywell #hwRefreshToken").val(data["Password"]);
+						}
 						else if (data["Type"].indexOf("Goodwe solar inverter via Web") >= 0) {
 							$("#hardwarecontent #hardwareparamsgoodweweb #username").val(data["Username"]);
 						}
@@ -5428,8 +5522,6 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divevohomeweb #comboevogateway").val((Location >>> 8) & 15);
 							$("#hardwarecontent #divevohomeweb #comboevotcs").val((Location >>> 4) & 15);
 						}
-
-						UpdateHardwareParamControls();
 					}
 				}
 			});
@@ -5546,6 +5638,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
+			$("#hardwarecontent #divhoneywell").hide();
 			$("#hardwarecontent #divmqtt").hide();
 			$("#hardwarecontent #divmysensorsmqtt").hide();
 			$("#hardwarecontent #divsolaredgeapi").hide();
@@ -5694,12 +5787,11 @@ define(['app'], function (app) {
 					$("#hardwarecontent #divlogin").hide();
 					$("#hardwarecontent #divrelaynet").show();
 				}
-
-				if (text.indexOf("Satel Integra") >= 0) {
+				else if (text.indexOf("Satel Integra") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
 				}
-				if (text.indexOf("eHouse") >= 0) {
+				else if (text.indexOf("eHouse") >= 0) {
 					$("#hardwarecontent #divpollinterval").show();
 					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(1000);
 					//$("#hardwarecontent #password").show();
@@ -5707,11 +5799,14 @@ define(['app'], function (app) {
 					//$("#hardwarecontent #divlogin").hide();
 					$("#hardwarecontent #divehouse").show();
 				}
-
-                if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
+                else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
                     $("#hardwarecontent #divratelimitp1").show();
                     $("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
                     $("#hardwarecontent #divratelimitp1").val(300);
+				}
+				else if (text.indexOf("Denkovi") >= 0) {
+					$("#hardwarecontent #divpollinterval").show();
+					$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(10000);
 				}
 			}
 			else if (text.indexOf("Domoticz") >= 0) {
@@ -5826,6 +5921,16 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divunderground").hide();
 				$("#hardwarecontent #divhttppoller").hide();
 				$("#hardwarecontent #divwinddelen").show();
+			}
+			else if (text.indexOf("Honeywell") >= 0) {
+				$("#hardwarecontent #divserial").hide();
+				$("#hardwarecontent #divremote").hide();
+				$("#hardwarecontent #divlogin").hide();
+				$("#hardwarecontent #username").hide();
+				$("#hardwarecontent #lblusername").hide();
+				$("#hardwarecontent #divunderground").hide();
+				$("#hardwarecontent #divhttppoller").hide();
+				$("#hardwarecontent #divhoneywell").show();
 			}
 			else if (text.indexOf("Logitech Media Server") >= 0) {
 				$("#hardwarecontent #divserial").hide();

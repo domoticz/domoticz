@@ -48,6 +48,24 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	}
 }
 
+uint64_t strtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << str;
+	ss >> ul;
+	return ul;
+}
+
+uint64_t hexstrtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << std::hex << str;
+	ss >> ul;
+	return ul;
+}
+
 void stdreplace(
 	std::string &inoutstring,
 	const std::string& replaceWhat,
@@ -631,17 +649,21 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	return mdString;
 }
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
+void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue/* = 100.0 */)
 {
 	double      hh, p, q, t, ff;
 	long        i;
+
+	if(saturation <= 0.0) {
+		outR = int(vlue*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(vlue*maxValue);
+	}
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
 	i = (long)hh;
 	ff = hh - i;
-	double saturation = 1.0;
-	double vlue = 1.0;
 	p = vlue * (1.0 - saturation);
 	q = vlue * (1.0 - (saturation * ff));
 	t = vlue * (1.0 - (saturation * (1.0 - ff)));
@@ -743,7 +765,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeFan:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeCurtain:

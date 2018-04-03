@@ -1,4 +1,4 @@
-//
+﻿//
 // request_handler.cpp
 // ~~~~~~~~~~~~~~~~~~~
 //
@@ -412,6 +412,11 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+  //browser support to prevent XSS
+  reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
+  reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
+  //reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
+
   if (bHaveGZipSupport && bHaveLoadedgzip)
   {
 	reply::add_header(&rep, "Content-Encoding", "gzip");

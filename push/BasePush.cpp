@@ -260,10 +260,13 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypePOWER, sTypeELEC5, "Instant,Usage" },
 
-		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB, "Status" },
+		{ pTypeColorSwitch, sTypeColor_White, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W_Z, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW_Z, "Status" },
+		{ pTypeColorSwitch, sTypeColor_CW_WW, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFY2, "Status" },

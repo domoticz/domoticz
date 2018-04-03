@@ -44,17 +44,17 @@ const char CEvohomeBase::m_szZoneMode[7][20]={"Auto","PermanentOverride","Tempor
 
 const char* CEvohomeBase::GetControllerModeName(uint8_t nControllerMode)
 {
-	return m_szControllerMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion otherwise windef.h macros will conflict here
+	return m_szControllerMode[std::min(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohomeBase::GetWebAPIModeName(uint8_t nControllerMode)
 {
-	return m_szWebAPIMode[(std::min)(nControllerMode,(uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	return m_szWebAPIMode[std::min(nControllerMode,(uint8_t)6)];
 }
 
 const char* CEvohomeBase::GetZoneModeName(uint8_t nZoneMode)
 {
-	return m_szZoneMode[(std::min)(nZoneMode, (uint8_t)6)]; //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	return m_szZoneMode[std::min(nZoneMode, (uint8_t)6)];
 }
 
 
@@ -88,7 +88,7 @@ bool CEvohomeBase::SetZoneCount(uint8_t nZoneCount)
 bool CEvohomeBase::SetMaxZoneCount(uint8_t nZoneCount)
 {
 	boost::lock_guard<boost::mutex> l(m_mtxZoneCount);
-	int nMaxZones=(std::max)(m_nZoneCount,nZoneCount); //parentheses around function name apparently avoids macro expansion windef.h macros will conflict here
+	int nMaxZones=std::max(m_nZoneCount,nZoneCount);
 	bool bRet=(m_nZoneCount!=nMaxZones);
 	m_nZoneCount=nMaxZones;
 	return bRet;

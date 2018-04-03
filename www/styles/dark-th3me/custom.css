@@ -959,3 +959,9 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
   background: #555555 !important;
   color: yellow !important;
 }
+.dropdown-menu .divider {
+    border-bottom: 1px solid #676D79;
+}
+.dropdown-submenu > a:after {
+    margin-right: 0px;
+}

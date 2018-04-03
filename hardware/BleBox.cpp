@@ -16,7 +16,7 @@ const _STR_DEVICE DevicesType[TOT_TYPE] =
 	{ 0, "switchBox", "Switch Box",pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" },
 	{ 1, "shutterBox", "Shutter Box", pTypeLighting2, sTypeAC, STYPE_BlindsPercentageInverted, "shutter" },
 	{ 2, "wLightBoxS", "Light Box S", pTypeLighting2, sTypeAC, STYPE_Dimmer, "light" },
-	{ 3, "wLightBox", "Light Box", pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, "rgbw" },
+	{ 3, "wLightBox", "Light Box", pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, "rgbw" },
 	{ 4, "gateBox", "Gate Box", pTypeGeneral, sTypePercentage, 0, "gate" },
 	{ 5, "dimmerBox", "Dimmer Box", pTypeLighting2, sTypeAC, STYPE_Dimmer, "dimmer" },
 	{ 6, "switchBoxD", "Switch Box D", pTypeLighting2, sTypeAC, STYPE_OnOff, "relay" }
@@ -27,9 +27,8 @@ BleBox::BleBox(const int id, const int pollIntervalsec) :
 {
 	_log.Log(LOG_STATUS, "BleBox: Create instance");
 	m_HwdID = id;
-	m_LimitlessRGBWcHueState = 0.0;
-	m_LimitlessRGBWisWhiteState = true;
-	m_LimitlessRGBWbrightnessState = 255;
+	m_RGBWisWhiteState = true;
+	m_RGBWbrightnessState = 255;
 	SetSettings(pollIntervalsec);
 }
 
@@ -253,7 +252,7 @@ std::string BleBox::IPToHex(const std::string &IPAddress, const int type)
 
 	char szIdx[10];
 	// because exists inconsistency when comparing deviceID in method decode_xxx in mainworker(Limitless uses small letter, lighting2 etc uses capital letter)
-	if (type != pTypeLimitlessLights)
+	if (type != pTypeColorSwitch)
 	{
 		uint32_t sID = (uint32_t)(atoi(strarray[0].c_str()) << 24) | (uint32_t)(atoi(strarray[1].c_str()) << 16) | (atoi(strarray[2].c_str()) << 8) | atoi(strarray[3].c_str());
 		sprintf(szIdx, "%08X", (unsigned int)sID);
@@ -515,20 +514,22 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 		return true;
 	}
 
-	if (output->ICMND.packettype == pTypeLimitlessLights && output->LIGHTING2.subtype == sTypeLimitlessRGBW)
+	if (output->ICMND.packettype == pTypeColorSwitch && output->LIGHTING2.subtype == sTypeColor_RGB_W)
 	{
 		std::string IPAddress = GetDeviceRevertIP(output);
 
-		const _tLimitlessLights *pLed = reinterpret_cast<const _tLimitlessLights *>(pdata);
+		const _tColorSwitch *pLed = reinterpret_cast<const _tColorSwitch *>(pdata);
 		int red, green, blue, white;
 		bool setColor = true;
 
 		switch (pLed->command)
 		{
-			case Limitless_LedOn: {
-				if(m_LimitlessRGBWcHueState != 0.0 && !m_LimitlessRGBWisWhiteState)
+			case Color_LedOn: {
+				if(m_RGBWColorState.mode != ColorModeNone && !m_RGBWisWhiteState)
 				{
-					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, m_LimitlessRGBWbrightnessState);
+					red = int(round(m_RGBWColorState.r*m_RGBWbrightnessState/255.0f));
+					green = int(round(m_RGBWColorState.g*m_RGBWbrightnessState/255.0f));
+					blue = int(round(m_RGBWColorState.b*m_RGBWbrightnessState/255.0f));
 					white = 0;
 				}
 				else
@@ -536,35 +537,45 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 					red = 0;
 					green = 0;
 					blue = 0;
-					white = m_LimitlessRGBWbrightnessState;
+					white = m_RGBWbrightnessState;
 				}
 				break;
 			}
-			case Limitless_LedOff:
+			case Color_LedOff:
 				red = 0;
 				green = 0;
 				blue = 0;
 				white = 0;
 				break;
-			case Limitless_SetColorToWhite: {
-				m_LimitlessRGBWisWhiteState = true;
-				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
+			case Color_SetColorToWhite: {
+				m_RGBWisWhiteState = true;
+				m_RGBWColorState = pLed->color; //TODO: Is there any point of doing this?
 				setColor = false;//Sending is done by SetBrightnessLevel
 				break;
 			}
-			case Limitless_SetRGBColour: {
-				m_LimitlessRGBWisWhiteState = false;
-				m_LimitlessRGBWcHueState = (360.0f/255.0f)*float(pLed->value);//hue given was in range of 0-255 - Store Hue value to object
-				setColor = false;//Sending is done by SetBrightnessLevel
-				break;
+			case Color_SetColor: {
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					m_RGBWisWhiteState = true;
+					m_RGBWColorState = pLed->color; //TODO: Is there any point of doing this?
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					m_RGBWisWhiteState = false;
+					m_RGBWColorState = pLed->color;
+				}
+				else{
+					_log.Log(LOG_STATUS, "Blebox: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				}
+				// No break, fall through to send combined color + brightness command
 			}
-			case Limitless_SetBrightnessLevel: {
+			case Color_SetBrightnessLevel: {
 				int BrightnessBase = (int)pLed->value;
 				int dMax_Send = (int)(round((255.0f / 100.0f)*float(BrightnessBase)));
 
-				m_LimitlessRGBWbrightnessState = dMax_Send;
+				m_RGBWbrightnessState = dMax_Send;
 
-				if(m_LimitlessRGBWisWhiteState)
+				if(m_RGBWisWhiteState) // TODO: Check m_RGBWColorState.mode instead
 				{
 					red = 0;
 					green = 0;
@@ -573,7 +584,9 @@ bool BleBox::WriteToHardware(const char *pdata, const unsigned char length)
 				}
 				else
 				{
-					hue2rgb(m_LimitlessRGBWcHueState, red, green, blue, dMax_Send);
+					red = int(round(m_RGBWColorState.r*dMax_Send/255.0f));
+					green = int(round(m_RGBWColorState.g*dMax_Send/255.0f));
+					blue = int(round(m_RGBWColorState.b*dMax_Send/255.0f));
 					white = 0;
 				}
 				break;

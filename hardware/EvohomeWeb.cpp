@@ -636,6 +636,9 @@ void CEvohomeWeb::DecodeZone(zone* hz)
 				_log.Log(LOG_STATUS, "(%s) register new zone '%s'", this->Name.c_str(), ssnewname.str().c_str());
 		}
 	}
+
+	// Notify MQTT and various push mechanisms
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, (*hz->installationInfo)["name"].asString(), NULL);
 }
 
 
@@ -703,6 +706,9 @@ void CEvohomeWeb::DecodeDHWState(temperatureControlSystem* tcs)
 
 	std::string sdevname;
 	uint64_t DevRowIdx = m_sql.UpdateValue(this->m_HwdID, szId.c_str(), 1, pTypeEvohomeWater, sTypeEvohomeWater, 10, 255, 50, ssUpdateStat.str().c_str(), sdevname);
+
+	// Notify MQTT and various push mechanisms
+	m_mainworker.sOnDeviceReceived(this->m_HwdID, DevRowIdx, "Hot Water", NULL);
 }
 
 

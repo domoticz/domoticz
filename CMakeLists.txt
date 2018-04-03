@@ -231,8 +231,10 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
       LIST(APPEND _compiler_FLAGS "-I${item}")
     ENDFOREACH(item)
 
-    GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
-    LIST(APPEND _compiler_FLAGS ${_directory_flags})
+    GET_DIRECTORY_PROPERTY(_directory_flags COMPILE_DEFINITIONS)
+    FOREACH(item ${_directory_flags})
+      LIST(APPEND _compiler_FLAGS "-D${item}")
+    ENDFOREACH(item)
 
     SEPARATE_ARGUMENTS(_compiler_FLAGS)
     MESSAGE("${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}")
@@ -345,6 +347,7 @@ hardware/Gpio.cpp
 hardware/GpioPin.cpp
 hardware/HardwareMonitor.cpp
 hardware/HarmonyHub.cpp
+hardware/Honeywell.cpp
 hardware/HEOS.cpp
 hardware/I2C.cpp
 hardware/ICYThermostat.cpp
