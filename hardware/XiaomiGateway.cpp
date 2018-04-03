@@ -235,7 +235,7 @@ bool XiaomiGateway::WriteToHardware(const char * pdata, const unsigned char leng
 		}
 	}
 	if (!message.empty()) {
-		_log.Log(LOG_STATUS, "XiaomiGateway: message: '%s'", message.c_str());
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "XiaomiGateway: message: '%s'", message.c_str());
 		result = SendMessageToGateway(message);
 		if (result == false) {
 			//send the message again

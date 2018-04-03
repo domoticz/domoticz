@@ -143,7 +143,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
-		_log.Log(LOG_STATUS, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
 	}
 	if (result.size() < 1)
 	{
@@ -373,14 +373,14 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	if (sendOnFirst) {
 		strcpy(request, "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\", \"smooth\", 500]}\r\n");
 		request_length = strlen(request);
-		_log.Log(LOG_STATUS, "Yeelight: sending request '%s'", request);
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 	}
 
 	strcpy(request, message.c_str());
 	request_length = strlen(request);
-	_log.Log(LOG_STATUS, "Yeelight: sending request '%s'", request);
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
 	boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 	sleep_milliseconds(50);
 
@@ -388,7 +388,7 @@ bool Yeelight::WriteToHardware(const char *pdata, const unsigned char length)
 	{
 		strcpy(request, message2.c_str());
 		request_length = strlen(request);
-		_log.Log(LOG_STATUS, "Yeelight: sending request '%s'", request);
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight: sending request '%s'", request);
 		boost::asio::write(sendSocket, boost::asio::buffer(request, request_length));
 		sleep_milliseconds(50);
 	}
@@ -490,8 +490,8 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 		return false;
 
 	std::string yeelightSupport = "";
-	/*if (!*/YeeLightGetTag(szData, "support: ", yeelightSupport)/*)
-		return false*/;
+	if (!YeeLightGetTag(szData, "support: ", yeelightSupport))
+		return false;
 
 	std::string yeelightStatus;
 	if (!YeeLightGetTag(szData, "power: ", yeelightStatus))
@@ -533,19 +533,16 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 
 	if (support.find("set_ct_abx") != support.end())
 	{
-		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_ct_abx");
 		sType = sTypeColor_CW_WW;
 	}
 
 	if (support.find("set_rgb") != support.end())
 	{
-		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_rgb");
 		sType = sTypeColor_RGB;
 	}
 
 	if (support.find("set_rgb") != support.end() && support.find("set_ct_abx") != support.end())
 	{
-		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming found set_rgb and set_ct_abx");
 		sType = sTypeColor_RGB_CW_WW;
 	}
 
@@ -566,11 +563,6 @@ bool Yeelight::udp_server::HandleIncoming(const std::string &szData, std::vector
 		yeelightName = "YeeLight LED (BSLamp)";
 	}
 	Yeelight yeelight(hardwareId);
-
-	//TODO: Tmp for debugging, remove
-	if (atoi(yeelightColorMode.c_str()) > 0) {
-		_log.Log(LOG_STATUS, "Yeelight::udp_server::HandleIncoming mode: %s, Support: %s", yeelightColorMode.c_str(), yeelightSupport.c_str());
-	}
 
 	yeelight.InsertUpdateSwitch(yeelightId, yeelightName, sType, yeelightLocation, bIsOn, yeelightBright, yeelightHue, yeelightSat, yeelightRGB, yeelightCT, yeelightColorMode);
 	return true;

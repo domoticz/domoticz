@@ -10906,7 +10906,7 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		{
 			level = atoi(result[0][0].c_str());
 		}
-		_log.Log(LOG_STATUS, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
+		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "MAIN SwitchLightInt : switchcmd==\"On\" || level < 0, new level:%d", level);
 	}
 	// TODO: Something smarter if level is not valid?
 	level = max(level,0);

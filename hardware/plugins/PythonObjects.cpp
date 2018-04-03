@@ -331,7 +331,7 @@ namespace Plugins {
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->TimedOut = 0;
-				self->Color = PyUnicode_FromString("");
+				self->Color = PyUnicode_FromString(NoColor.toJSON().c_str());
 				if (self->Color == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -669,7 +669,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(sd[16].c_str());
+					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSON().c_str()); //Parse the color to detect incorrectly formatted color data
 				}
 			}
 		}
@@ -808,16 +808,17 @@ namespace Plugins {
 			uint64_t 		DevRowIdx;
 			char*		Description = NULL;
 			char*		Color = NULL;
+			bool		SuppressTriggers = false;
 
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
-			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", NULL };
+			static char *kwlist[] =   { "nValue", "sValue", "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut", "Name", "TypeName", "Type", "Subtype", "Switchtype", "Used", "Description", "Color", "SuppressTriggers", NULL };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiiss", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color))
+			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
 				{
-				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description' or 'Color' expected.", __func__, sName.c_str());
+				_log.Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
 				LogPythonException(self->pPlugin, __func__);
 				Py_INCREF(Py_None);
 				return Py_None;
@@ -827,10 +828,16 @@ namespace Plugins {
 			{
 				_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 			}
-			DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+			if (!SuppressTriggers)
+			{
+				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
 
-			// Notify MQTT and various push mechanisms
-			m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+				// Trigger any associated scene / groups
+				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue);
+
+				// Notify MQTT and various push mechanisms
+				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
+			}
 
 			std::string sID = SSTR(self->ID);
 
@@ -841,7 +848,10 @@ namespace Plugins {
 
 				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
 
-				m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
+				if (!SuppressTriggers)
+				{
+					m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, stdsValue.c_str(), sName, true);
+				}
 
 				// Notify MQTT and various push mechanisms
 				m_mainworker.sOnDeviceReceived(self->pPlugin->m_HwdID, self->ID, self->pPlugin->Name, NULL);
@@ -894,7 +904,7 @@ namespace Plugins {
 			// Color change
 			if (Color)
 			{
-				std::string sColor = Color;
+				std::string	sColor = _tColor(std::string(Color)).toJSON(); //Parse the color to detect incorrectly formatted color data
 				m_sql.UpdateDeviceValue("Color", sColor, sID);
 
 				// TODO: Notify MQTT and various push mechanisms?
@@ -940,7 +950,10 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 
-			m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+			if (!SuppressTriggers)
+			{
+				m_notifications.CheckAndHandleNotification(DevRowIdx, self->HwdID, sDeviceID, sName, self->Unit, iType, iSubType, nValue, sValue);
+			}
 
 			CDevice_refresh(self);
 		}
