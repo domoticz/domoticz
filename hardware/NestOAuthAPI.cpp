@@ -177,7 +177,7 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
 			if (&vHeaderData && vHeaderData.size() > 0) {
 				sErrorMsg += "Response code: " + vHeaderData[0];
 			}
-			throw std::exception(sErrorMsg.c_str());
+			throw std::runtime_error(sErrorMsg.c_str());
 		}
 	}
 	catch (std::exception& e)
@@ -238,7 +238,7 @@ bool CNestOAuthAPI::Login()
 					SetOAuthAccessToken(m_HwdID, sTmpToken);
 				}
 				else {
-					throw std::exception("Received access token does not appear to be valid.");
+					throw std::runtime_error("Received access token does not appear to be valid.");
 				}
 			}
 			catch (std::exception& e)
@@ -269,7 +269,7 @@ bool CNestOAuthAPI::Login()
 
 	if (ValidateNestApiAccessToken(m_OAuthApiAccessToken)) 
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Login success. Token successfully validated.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Login success. Token successfully validated.");
 		m_bDoLogin = false;
 		return true;
 	}
@@ -689,7 +689,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 
 	if (!&thermostat || thermostat.Serial.empty())
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + std::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
 		return false;
 	}
 
@@ -753,7 +753,7 @@ bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 
 	if (m_structures[iStructure].StructureId.empty())
 	{
-		_log.Log(LOG_NORM, "NestOAuthAPI: Structure "+std::to_string(iStructure)+" has not been initialized yet. Try again later.");
+		_log.Log(LOG_NORM, "NestOAuthAPI: Structure "+boost::to_string(iStructure)+" has not been initialized yet. Try again later.");
 		return false;
 	}
 
@@ -830,13 +830,13 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 			if (&vResponseHeaders && vResponseHeaders.size() > 0) {
 				sErrorMsg += "Response code: " + vResponseHeaders[0];
 			}
-			throw std::exception(sErrorMsg.c_str());
+			throw std::runtime_error(sErrorMsg.c_str());
 		}
 		_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
 
 		if (!&sResult || sResult.size() == 0) 
 		{
-			throw std::exception("Received empty response from API.");
+			throw std::runtime_error("Received empty response from API.");
 		}
 
 		try 
@@ -847,16 +847,16 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 			bool bRet = jReader.parse(sResult, root);
 			_log.Log(LOG_NORM, "NestOAuthAPI: JSON data parse call returned.");
 			
-			if ((!bRet) || (!root.isObject())) throw std::exception("Failed to parse JSON data.");
+			if ((!bRet) || (!root.isObject())) throw std::runtime_error("Failed to parse JSON data.");
 			_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
 
-			if (root.size() == 0) throw std::exception("Parsed JSON data contains no elements.");
+			if (root.size() == 0) throw std::runtime_error("Parsed JSON data contains no elements.");
 			_log.Log(LOG_NORM, "NestOAuthAPI: parsed JSON data contains more than 0 elements");
 
 			_log.Log(LOG_NORM, "NestOAuthAPI: Fetching access_token from JSON object");
 			sReceivedAccessToken = root["access_token"].asString();
 
-			if (sReceivedAccessToken.empty()) throw std::exception("Received an empty access token from parsed JSON data.");
+			if (sReceivedAccessToken.empty()) throw std::runtime_error("Received an empty access token from parsed JSON data.");
 			_log.Log(LOG_NORM, ("NestOAuthAPI: Returning fetched access token: " + sReceivedAccessToken));
 			return sReceivedAccessToken;
 		}
