@@ -236,227 +236,228 @@ bool CNotificationHelper::CheckAndHandleNotification(const uint64_t DevRowIdx, c
 	int nsize;
 	int nexpected = 0;
 	
-	// Don't send notification for devices not in db
 	// Notifications for switches are handled by CheckAndHandleSwitchNotification in UpdateValue() of SQLHelper
-	if ((DevRowIdx == -1) || IsLightOrSwitch(cType, cSubType)) {
+	if (IsLightOrSwitch(cType, cSubType)) {
 		return false;
 	}
 	
-	int meterType = 0;
-	std::vector<std::string> strarray;
-	StringSplit(sValue, ";", strarray);
-	nsize = strarray.size();
-	switch(cType) {
-		case pTypeP1Power:
-			nexpected = 5;
-			if (nsize >= nexpected) {
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)atof(strarray[4].c_str()));
-			}
-			break;
-		case pTypeRFXSensor:
-			switch(cSubType) {
-				case sTypeRFXSensorTemp:
-					return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
-				case sTypeRFXSensorAD:
-				case sTypeRFXSensorVolt:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-				default:
-					break;
-			}
-			break;
-		case pTypeThermostat:
-			switch(cSubType) {
-				case sTypeThermSetpoint:
-					return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
-				default:
-					break;
-			}
-			break;
-		case pTypeTEMP:
-			return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
-		case pTypeHUM:
-			return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, 0.0, nValue, false, true);
-		case pTypeTEMP_HUM:
-			nexpected = 2;
-			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
-				int Hum = atoi(strarray[1].c_str());
-				float dewpoint = (float)CalculateDewPoint(Temp, Hum);
-				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
-				r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
-				return r1 && r2;
-			}
-			break;
-		case pTypeTEMP_HUM_BARO:
-			nexpected = 4;
-			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
-				int Hum = atoi(strarray[1].c_str());
-				float dewpoint = (float)CalculateDewPoint(Temp, Hum);
-				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
-				r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
-				r3 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
-				return r1 && r2 && r3;
-			}
-			break;
-		case pTypeRAIN:
-			nexpected = 2;
-			if (nsize >= nexpected) {
-				fValue2 = (float)atof(strarray[1].c_str());
-				return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
-			}
-			break;
-		case pTypeTEMP_BARO:
-			nexpected = 2;
-			if (nsize >= nexpected) {
-				float Temp = (float)atof(strarray[0].c_str());
-				float Baro = (float)atof(strarray[1].c_str());
-				r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
-				r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
-				return r1 && r2;
-			}
-			break;
-		case pTypeUV:
-			nexpected = 2;
-			if (nsize >= nexpected) {
-				float Level = (float)atof(strarray[0].c_str());
-				float Temp = (float)atof(strarray[1].c_str());
-				if (cSubType == sTypeUV3)
-				{
-					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+	if (DevRowIdx != -1) {
+		int meterType = 0;
+		std::vector<std::string> strarray;
+		StringSplit(sValue, ";", strarray);
+		nsize = strarray.size();
+		switch(cType) {
+			case pTypeP1Power:
+				nexpected = 5;
+				if (nsize >= nexpected) {
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)atof(strarray[4].c_str()));
 				}
-				else
-					r1 = true;
-				r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_UV, Level);
-				return r1 && r2;
-			}
-			break;
-		case pTypeCURRENT:
-			nexpected = 3;
-			if (nsize >= nexpected) {
-				float CurrentChannel1 = (float)atof(strarray[0].c_str());
-				float CurrentChannel2 = (float)atof(strarray[1].c_str());
-				float CurrentChannel3 = (float)atof(strarray[2].c_str());
-				return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
-			}
-			break;
-		case pTypeCURRENTENERGY:
-			nexpected = 3;
-			if (nsize >= nexpected) {
-				float CurrentChannel1 = (float)atof(strarray[0].c_str());
-				float CurrentChannel2 = (float)atof(strarray[1].c_str());
-				float CurrentChannel3 = (float)atof(strarray[2].c_str());
-				return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
-			}
-			break;
-		case pTypeWIND:
-			nexpected = 5;
-			if (nsize >= nexpected) {
-				float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
-				float temp = (float)atof(strarray[4].c_str());
-				r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
-				r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
-				return r1 && r2;
-			}
-			break;
-		case pTypeYouLess:
-			nexpected = 2;
-			if (nsize >= nexpected) {
-				float usagecurrent = (float)atof(strarray[1].c_str());
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, usagecurrent);
-			}
-			break;
-		case pTypeAirQuality:
-			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
-		case pTypeWEIGHT:
-		case pTypeLux:
-			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-		case pTypeRego6XXTemp:
-			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
-		case pTypePOWER:
-			nexpected = 1;
-			if (nsize >= nexpected) {
-				fValue2 = (float)atof(strarray[0].c_str());
-				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
-			}
-			break;
-		case pTypeRFXMeter:
-			switch(cSubType) {
-				case sTypeRFXMeterCount:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TODAYCOUNTER, fValue);
-				default:
-					break;
-			}
-			break;
-		case pTypeUsage:
-			return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-			break;
-		case pTypeP1Gas:
-			// ignore, notification is done day by day in SQLHelper
-			return false;
-		case pTypeENERGY:
-			switch(cSubType) {
-				case sTypeKwh:
-					nexpected = 1;
-					if (nsize >= nexpected) {
-						fValue2 = (float)atof(strarray[0].c_str());
-						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+				break;
+			case pTypeRFXSensor:
+				switch(cSubType) {
+					case sTypeRFXSensorTemp:
+						return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
+					case sTypeRFXSensorAD:
+					case sTypeRFXSensorVolt:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+					default:
+						break;
+				}
+				break;
+			case pTypeThermostat:
+				switch(cSubType) {
+					case sTypeThermSetpoint:
+						return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
+					default:
+						break;
+				}
+				break;
+			case pTypeTEMP:
+				return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, fValue, 0, true, false);
+			case pTypeHUM:
+				return CheckAndHandleTempHumidityNotification(DevRowIdx, sName, 0.0, nValue, false, true);
+			case pTypeTEMP_HUM:
+				nexpected = 2;
+				if (nsize >= nexpected) {
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					return r1 && r2;
+				}
+				break;
+			case pTypeTEMP_HUM_BARO:
+				nexpected = 4;
+				if (nsize >= nexpected) {
+					float Temp = (float)atof(strarray[0].c_str());
+					int Hum = atoi(strarray[1].c_str());
+					float dewpoint = (float)CalculateDewPoint(Temp, Hum);
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, Hum, true, true);
+					r2 = CheckAndHandleDewPointNotification(DevRowIdx, sName, Temp, dewpoint);
+					r3 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, (float)atof(strarray[3].c_str()));
+					return r1 && r2 && r3;
+				}
+				break;
+			case pTypeRAIN:
+				nexpected = 2;
+				if (nsize >= nexpected) {
+					fValue2 = (float)atof(strarray[1].c_str());
+					return CheckAndHandleRainNotification(DevRowIdx, sName, cType, cSubType, NTYPE_RAIN, fValue2);
+				}
+				break;
+			case pTypeTEMP_BARO:
+				nexpected = 2;
+				if (nsize >= nexpected) {
+					float Temp = (float)atof(strarray[0].c_str());
+					float Baro = (float)atof(strarray[1].c_str());
+					r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
+					r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_BARO, Baro);
+					return r1 && r2;
+				}
+				break;
+			case pTypeUV:
+				nexpected = 2;
+				if (nsize >= nexpected) {
+					float Level = (float)atof(strarray[0].c_str());
+					float Temp = (float)atof(strarray[1].c_str());
+					if (cSubType == sTypeUV3)
+					{
+						r1 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, Temp, 0, true, false);
 					}
-					break;
-				default:
-					break;
-			}
-			break;
-		case pTypeGeneral:
-			switch(cSubType) {
-				case sTypeVisibility:
-					m_sql.GetMeterType(HardwareID, ID.c_str(), unit, cType, cSubType, meterType);
-					fValue2 = fValue;
-					if (meterType == 1) {
-						//miles
-						fValue2 *= 0.6214f;
-					}								
+					else
+						r1 = true;
+					r2 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_UV, Level);
+					return r1 && r2;
+				}
+				break;
+			case pTypeCURRENT:
+				nexpected = 3;
+				if (nsize >= nexpected) {
+					float CurrentChannel1 = (float)atof(strarray[0].c_str());
+					float CurrentChannel2 = (float)atof(strarray[1].c_str());
+					float CurrentChannel3 = (float)atof(strarray[2].c_str());
+					return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+				}
+				break;
+			case pTypeCURRENTENERGY:
+				nexpected = 3;
+				if (nsize >= nexpected) {
+					float CurrentChannel1 = (float)atof(strarray[0].c_str());
+					float CurrentChannel2 = (float)atof(strarray[1].c_str());
+					float CurrentChannel3 = (float)atof(strarray[2].c_str());
+					return CheckAndHandleAmpere123Notification(DevRowIdx, sName, CurrentChannel1, CurrentChannel2, CurrentChannel3);
+				}
+				break;
+			case pTypeWIND:
+				nexpected = 5;
+				if (nsize >= nexpected) {
+					float wspeedms = (float)(atof(strarray[2].c_str()) / 10.0f);
+					float temp = (float)atof(strarray[4].c_str());
+					r1 = CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_WIND, wspeedms);
+					r2 = CheckAndHandleTempHumidityNotification(DevRowIdx, sName, temp, 0, true, false);
+					return r1 && r2;
+				}
+				break;
+			case pTypeYouLess:
+				nexpected = 2;
+				if (nsize >= nexpected) {
+					float usagecurrent = (float)atof(strarray[1].c_str());
+					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, usagecurrent);
+				}
+				break;
+			case pTypeAirQuality:
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+			case pTypeWEIGHT:
+			case pTypeLux:
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+			case pTypeRego6XXTemp:
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TEMPERATURE, fValue);
+			case pTypePOWER:
+				nexpected = 1;
+				if (nsize >= nexpected) {
+					fValue2 = (float)atof(strarray[0].c_str());
 					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
-				case sTypeDistance:
-					m_sql.GetMeterType(HardwareID, ID.c_str(), unit, cType, cSubType, meterType);
-					fValue2 = fValue;
-					if (meterType == 1) {
-						//inches
-						fValue2 *= 0.393701f;
-					}								
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
-				case sTypeBaro:
-				case sTypeKwh:
-					nexpected = 1;
-					if (nsize >= nexpected) {
-						fValue2 = (float)atof(strarray[0].c_str());
+				}
+				break;
+			case pTypeRFXMeter:
+				switch(cSubType) {
+					case sTypeRFXMeterCount:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_TODAYCOUNTER, fValue);
+					default:
+						break;
+				}
+				break;
+			case pTypeUsage:
+				return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+				break;
+			case pTypeP1Gas:
+				// ignore, notification is done day by day in SQLHelper
+				return false;
+			case pTypeENERGY:
+				switch(cSubType) {
+					case sTypeKwh:
+						nexpected = 1;
+						if (nsize >= nexpected) {
+							fValue2 = (float)atof(strarray[0].c_str());
+							return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+						}
+						break;
+					default:
+						break;
+				}
+				break;
+			case pTypeGeneral:
+				switch(cSubType) {
+					case sTypeVisibility:
+						m_sql.GetMeterType(HardwareID, ID.c_str(), unit, cType, cSubType, meterType);
+						fValue2 = fValue;
+						if (meterType == 1) {
+							//miles
+							fValue2 *= 0.6214f;
+						}								
 						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
-					}
-					break;
-				case sTypeZWaveAlarm:
-					return CheckAndHandleValueNotification(DevRowIdx, sName, nValue);
-				case sTypePercentage:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
-				case sTypeSoilMoisture:
-				case sTypeLeafWetness:
-				case sTypeAlert:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
-				case sTypeFan:
-				case sTypeSoundLevel:
-				case sTypeSolarRadiation:
-				case sTypeVoltage:
-				case sTypeCurrent:
-				case sTypePressure:
-				case sTypeWaterflow:
-				case sTypeCustom:
-					return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
-				default:
-					// silently ignore other general devices
-					return false;
-			}
-			break;
-		default:
-			break;
+					case sTypeDistance:
+						m_sql.GetMeterType(HardwareID, ID.c_str(), unit, cType, cSubType, meterType);
+						fValue2 = fValue;
+						if (meterType == 1) {
+							//inches
+							fValue2 *= 0.393701f;
+						}								
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+					case sTypeBaro:
+					case sTypeKwh:
+						nexpected = 1;
+						if (nsize >= nexpected) {
+							fValue2 = (float)atof(strarray[0].c_str());
+							return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue2);
+						}
+						break;
+					case sTypeZWaveAlarm:
+						return CheckAndHandleValueNotification(DevRowIdx, sName, nValue);
+					case sTypePercentage:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_PERCENTAGE, fValue);
+					case sTypeSoilMoisture:
+					case sTypeLeafWetness:
+					case sTypeAlert:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, (float)nValue);
+					case sTypeFan:
+					case sTypeSoundLevel:
+					case sTypeSolarRadiation:
+					case sTypeVoltage:
+					case sTypeCurrent:
+					case sTypePressure:
+					case sTypeWaterflow:
+					case sTypeCustom:
+						return CheckAndHandleNotification(DevRowIdx, sName, cType, cSubType, NTYPE_USAGE, fValue);
+					default:
+						// silently ignore other general devices
+						return false;
+				}
+				break;
+			default:
+				break;
+		}
 	}
 	
 	std::string hName;
