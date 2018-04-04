@@ -15,8 +15,10 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	{
 		HLTYPE_NORMAL,
 		HLTYPE_DIM,
-		HLTYPE_RGBW,
-		HLTYPE_SCENE
+		HLTYPE_RGB_W,
+		HLTYPE_SCENE,
+		HLTYPE_CW_WW,
+		HLTYPE_RGB_CW_WW
 	};
 	struct _tHueLight
 	{
@@ -24,6 +26,7 @@ class CPhilipsHue : public CDomoticzHardwareBase
 		int level;
 		int sat;
 		int hue;
+		int ct;
 	};
 	struct _tHueGroup
 	{
@@ -65,6 +68,6 @@ private:
 	bool GetSensors(const Json::Value &root);
 	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name, const std::string &Options);
 	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
-	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue);
+	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
 };
 

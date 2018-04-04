@@ -1362,6 +1362,9 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 		_log.Log(LOG_ERROR, "OpenZWave: Node has failed (or is not alive), Switch command not sent! (NodeID: %d, 0x%02x)", nodeID, nodeID);
 		return false;
 	}
+	// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "OpenZWave::SwitchColor Manufacturer_id: '%s', Product_type: '%s', Product_id: '%s', Application_version: %u",
+	         pNode->Manufacturer_id.c_str(), pNode->Product_type.c_str(), pNode->Product_id.c_str(), pNode->Application_version);
 
 	OpenZWave::ValueID vID(0, 0, OpenZWave::ValueID::ValueGenre_Basic, 0, 0, 0, OpenZWave::ValueID::ValueType_Bool);
 	if (GetValueByCommandClassLabel(nodeID, instanceID, COMMAND_CLASS_COLOR_CONTROL, "Color", vID) == true)
@@ -1377,6 +1380,38 @@ bool COpenZWave::SwitchColor(const int nodeID, const int instanceID, const int c
 					{
 						//Old Zipato RGB bulp firmware does not support cold white
 						OutColorStr = OutColorStr.substr(0, 9);
+					}
+				}
+			}
+			if ((pNode->Product_type == "0002") && (pNode->Product_id == "0003"))
+			{
+				if (pNode->Application_version < 106)
+				{
+					if (OutColorStr.size() == 11)
+					{
+						//Zipato Bulb2 does not support cold white and warm white at the same time
+						std::stringstream sstr;
+						std::string RGB = OutColorStr.substr(0, 7);
+						unsigned wWhite = strtoul(OutColorStr.substr(7, 2).c_str(), NULL, 16);
+						unsigned cWhite = strtoul(OutColorStr.substr(9, 2).c_str(), NULL, 16);
+						if (wWhite > cWhite)
+						{
+							wWhite = wWhite + cWhite;
+							cWhite = 0;
+						}
+						else
+						{
+							cWhite = wWhite + cWhite;
+							wWhite = 0;
+						}
+						sstr << RGB
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << cWhite;
+
+						OutColorStr = sstr.str();
+						// TODO: remove this print once Ziapto Bulb 2 workaround has been verified
+						if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "OpenZWave::SwitchColor Workaround for Zipato Bulb 2 ColorStr: '%s', OutColorStr: '%s'",
+						         ColorStr.c_str(), OutColorStr.c_str());
 					}
 				}
 			}

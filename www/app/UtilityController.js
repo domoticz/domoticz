@@ -487,7 +487,7 @@ define(['app'], function (app) {
 					'\t<table border="0" cellpadding="0" cellspacing="0" width="100%">\n' +
 					'\t<tr>\n' +
 					'\t  <td align="left" valign="top" id="timesun"></td>\n' +
-					'<td align="right">' +
+					'<td align="right" valign="top">' +
 					'<span data-i18n="Room">Room</span>:&nbsp;<select id="comboroom" style="width:160px" class="combobox ui-corner-all">' +
 					'<option value="0" data-i18n="All">All</option>' +
 					'</select>' +
@@ -817,8 +817,9 @@ define(['app'], function (app) {
 							else if ((item.Type == "Thermostat") && (item.SubType == "SetPoint")) {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
+									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
 
-									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');" data-i18n="Log">Log</a> ';
+									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';
@@ -831,8 +832,9 @@ define(['app'], function (app) {
 							else if (item.Type == "Radiator 1") {
 								if (permissions.hasPermission("Admin")) {
 									var timerLink = '#/Devices/'+item.idx+'/Timers';
+									var logLink = '#/Devices/'+item.idx+'/TemperatureLog';
 
-									xhtm += '<a class="btnsmall" onclick="ShowTempLog(\'#utilitycontent\',\'ShowUtilities\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');" data-i18n="Log">Log</a> ';
+									xhtm += '<a class="btnsmall" href="' + logLink +'" data-i18n="Log">Log</a> ';
 									xhtm += '<a class="btnsmall" onclick="EditSetPoint(' + item.idx + ',\'' + escape(item.Name) + '\',\'' + escape(item.Description) + '\', ' + item.SetPoint + ',' + item.Protected + ');" data-i18n="Edit">Edit</a> ';
 									if (item.Timers == "true") {
 										xhtm += '<a class="btnsmall-sel" href="' + timerLink + '" data-i18n="Timers">Timers</a> ';

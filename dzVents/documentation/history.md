@@ -1,3 +1,13 @@
+[2.4.3]
+- Fixed trigger wildcards. Now you can do `*aa*bb*cc` or `a*` which will require the target to start with an `a`
+- Added more EvoHome device types to the EvoHome device adapter.
+
+[2.4.2]
+- Fixed RGBW device adapter
+- Fixed EvoHome device adapter
+- Changed param ordering opentherm gateway command (https://www.domoticz.com/forum/viewtopic.php?f=59&t=21620&p=170469#p170469)
+
+
 [2.4.1]
 - Fixed week number problems on Windows
 - Fixed 'on date' rules to support dd/mm format (e.g. 01/02)

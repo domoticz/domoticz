@@ -730,7 +730,7 @@ local function EventHelpers(domoticz, mainMethod)
 		for scriptTrigger, scripts in pairs(allEventScripts) do
 			if (string.find(scriptTrigger, '*')) then -- a wild-card was use
 				-- turn it into a valid regexp
-				scriptTrigger = string.gsub(scriptTrigger, "*", ".*")
+				scriptTrigger = "^" .. string.gsub(scriptTrigger, "*", ".*")
 
 				if (string.match(target, scriptTrigger)) then
 					-- there is trigger for this target

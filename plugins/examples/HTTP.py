@@ -7,7 +7,7 @@
 #   It then does a subsequent GET on the Location specified in the 302 response and receives a 200 response.
 #
 """
-<plugin key="Google" name="Google Home page example" author="Dnpwwo" version="2.2.5" externallink="https://www.google.com">
+<plugin key="Google" name="Google Home page example" author="Dnpwwo" version="2.2.6" externallink="https://www.google.com">
     <description>
         <h2>Google Home page example</h2><br/>
         Will hit the supplied URL every 5 heartbeats in the request protocol.  Redirects are handled.
@@ -27,6 +27,7 @@
                 <option label="Basic Debugging" value="62"/>
                 <option label="Basic+Messages" value="126"/>
                 <option label="Connections Only" value="16"/>
+                <option label="Connections+Python" value="18"/>
                 <option label="Connections+Queue" value="144"/>
                 <option label="All" value="-1"/>
             </options>
@@ -50,7 +51,7 @@ class BasePlugin:
             Domoticz.Debugging(int(Parameters["Mode6"]))
             DumpConfigToLog()
         if (Parameters["Mode1"] == "443"): self.sProtocol = "HTTPS"
-        self.httpConn = Domoticz.Connection(Name="HTTP Test", Transport="TLS/IP", Protocol="HTTP", Address=Parameters["Address"], Port=Parameters["Mode1"])
+        self.httpConn = Domoticz.Connection(Name=self.sProtocol+" Test", Transport="TCP/IP", Protocol=self.sProtocol, Address=Parameters["Address"], Port=Parameters["Mode1"])
         self.httpConn.Connect()
 
     def onStop(self):
@@ -117,7 +118,7 @@ class BasePlugin:
             self.runAgain = self.runAgain - 1
             if self.runAgain <= 0:
                 if (self.httpConn == None):
-                    self.httpConn = Domoticz.Connection(Name="HTTP Test", Transport="TCP/IP", Protocol=self.sProtocol, Address=Parameters["Address"], Port=Parameters["Mode1"])
+                    self.httpConn = Domoticz.Connection(Name=self.sProtocol+" Test", Transport="TCP/IP", Protocol=self.sProtocol, Address=Parameters["Address"], Port=Parameters["Mode1"])
                 self.httpConn.Connect()
                 self.runAgain = 6
             else:

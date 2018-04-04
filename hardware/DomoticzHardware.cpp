@@ -651,17 +651,17 @@ void CDomoticzHardwareBase::SendBlindSensor(const int NodeID, const int ChildID,
 void CDomoticzHardwareBase::SendRGBWSwitch(const int NodeID, const int ChildID, const int BatteryLevel, const int Level, const bool bIsRGBW, const std::string &defaultname)
 {
 	int level = int(Level);
-	int subType = (bIsRGBW == true) ? sTypeLimitlessRGBW : sTypeLimitlessRGB;
+	int subType = (bIsRGBW == true) ? sTypeColor_RGB_W : sTypeColor_RGB;
 	if (defaultname == "LIVCOL")
-		subType = sTypeLimitlessLivCol;
-	//Send as LimitlessLight
-	_tLimitlessLights lcmd;
+		subType = sTypeColor_LivCol;
+	//Send as ColorSwitch
+	_tColorSwitch lcmd;
 	lcmd.id = NodeID;
 	lcmd.subtype = subType;
 	if (level == 0)
-		lcmd.command = Limitless_LedOff;
+		lcmd.command = Color_LedOff;
 	else
-		lcmd.command = Limitless_LedOn;
+		lcmd.command = Color_LedOn;
 	lcmd.dunit = ChildID;
 	lcmd.value = (uint32_t)level;
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd, defaultname.c_str(), BatteryLevel);

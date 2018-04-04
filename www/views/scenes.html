@@ -145,34 +145,39 @@
 				<td align="right" style="width:80px"><label for="offdelaytime"><span data-i18n="Off Delay"></span>:</label></td>
 				<td><input type="text" id="offdelaytime" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" />&nbsp;(<span data-i18n="Seconds"></span>)</td>
 			</tr>
-			<tr id="LedColor">
-				<td align="right"><label><span data-i18n="Color">Color</span>:</label></td>
+			<tr id="ScenesLedColor">
+				<td align="right">
+					<label>
+						<span data-i18n="Color">Color</span>:
+					</label>
+				</td>
 				<td>
-					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td align="left" style="width:200px">
-							<div id="picker" width="100px" height="100px"></div>
-							<div id="optionsWhiteSlider" style="display:none;">
-								<span data-i18n="White">White</span>:<br>
-								<div style="width:336px;" class="dimslider" id="white_slider" data-idx="popupslider" data-type="norm" data-maxlevel="255" data-isprotected="0" data-svalue="0"></div>
-								<br>
-							</div>
-						</td>
-						<td align="left" style="vertical-align: top;">
-							<input type="text" id="Hue" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Hue"></span><br>
-							<input type="text" id="Brightness" style="width: 60px; padding: .2em;" class="text ui-widget-content ui-corner-all" /> <span data-i18n="Brightness"></span><br>
-							<div class="radio">
-								<label>
-									<input type="radio" name="optionsType" id="optionsRGB" value="false" checked>
-										RGB
-								</label>
-								<label>
-									<input type="radio" name="optionsType" id="optionsWhite" value="true">
-										White
-								</label>
-							</div>
-						</td>
-					</tr>
+					<table class="display colorpicker" border="0" cellpadding="0" cellspacing="0">
+						<tr id="ColorMode">
+							<td style="padding-left:0px">
+								<a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
+								<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
+								<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
+								<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
+								<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
+								<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
+								<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
+								<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+								<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
+								<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a>
+							</td>
+						</tr>
+						<!--<tr id="LedColor2">
+							<td>-->
+								<!--<table class="display" id="ledtable2" border="0" cellpadding="0" cellspacing="0">-->
+								<tr>
+									<td align="left" style="width:200px;padding-left:0px">
+										<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl"/>
+									</td>
+								</tr>
+								<!--</table>-->
+							<!--</td>
+						</tr>-->
 					</table>
 				</td>
 			</tr>

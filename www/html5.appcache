@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1490
+# ref 1500
 
 CACHE:
 # CSS
@@ -14,6 +14,7 @@ css/jquery-ui-timepicker-addon.css
 css/legacy.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
+css/wheelcolorpicker.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
@@ -120,6 +121,8 @@ images/clock48.png
 images/clock48_On.png
 images/collection.png
 images/collection_hover.png
+images/Coltemp48.png
+images/Coltemp48_Sel.png
 images/Computer.png
 images/Computer48_Off.png
 images/Computer48_On.png
@@ -139,6 +142,10 @@ images/Custom.png
 images/Custom48_Off.png
 images/Custom48_On.png
 images/customicons.png
+images/Customw48.png
+images/Customw48_Sel.png
+images/Customww48.png
+images/Customww48_Sel.png
 images/delete.png
 images/demand.png
 images/demand_mini.png
@@ -267,8 +274,10 @@ images/remove.png
 images/rename.png
 images/restart.png
 images/RGB.png
+images/RGB48.png
 images/RGB48_Off.png
 images/RGB48_On.png
+images/RGB48_Sel.png
 images/scale.png
 images/scale48.png
 images/scenes.png
@@ -329,6 +338,8 @@ images/Water.png
 images/Water48_Off.png
 images/Water48_On.png
 images/webcam.png
+images/White48.png
+images/White48_Sel.png
 images/wind.png
 images/Wind0.png
 images/wind48.png
@@ -456,6 +467,9 @@ i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
+app/device-log/LightLog.js
+app/device-log/TemperatureLog.js
+app/device-log/TemperatureReport.js
 app/AboutController.js
 app/app.js
 app/CamController.js
@@ -536,6 +550,7 @@ js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
+js/jquery.wheelcolorpicker.js
 js/md5.js
 js/modules/exporting.js
 js/ng-grid-flexible-height.js
@@ -572,6 +587,9 @@ views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html
+views/device_light_log.html
+views/device_temperature_log.html
+views/device_temperature_report.html
 views/devices.html
 views/dpfibaro.html
 views/dphttp.html
