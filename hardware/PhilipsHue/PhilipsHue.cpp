@@ -440,15 +440,22 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 
 		//Get current nValue if exist
 		vector<vector<string> > result;
-		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeColorSwitch, sType, szID);
+		result = m_sql.safe_query("SELECT nValue, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
 
 		if (!result.empty())
 		{
 			//Already in the system
 			//Update state
 			nvalue = atoi(result[0][0].c_str());
-			tIsOn = (nvalue != 0);					
+			tIsOn = (nvalue != 0);
+			unsigned sTypeOld = atoi(result[0][1].c_str());
+			std::string sID = result[0][2];
+			if (sTypeOld != sType)
+			{
+				_log.Log(LOG_STATUS, "Philips Hue: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, sType);
+				m_sql.UpdateDeviceValue("SubType", (int)sType, sID);
+			}
 		}
 		
 		// TODO: Update color stored in database
