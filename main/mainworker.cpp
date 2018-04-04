@@ -3033,6 +3033,15 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 		case sTypeRAIN6:
 			WriteMessage("subtype       = RAIN6 - LaCrosse TX5");
 			break;
+		case sTypeRAIN7:
+			WriteMessage("subtype       = RAIN7 - Alecto");
+			break;
+		case sTypeRAIN8:
+			WriteMessage("subtype       = RAIN8 - Davis");
+			break;
+		case sTypeRAIN9:
+			WriteMessage("subtype       = RAIN9 - Alecto WCH2010");
+			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
 			break;
@@ -3243,6 +3252,9 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeWIND7:
 			WriteMessage("subtype       = WIND7 - Alecto WS4500");
+			break;
+		case sTypeWIND8:
+			WriteMessage("subtype       = WIND8 - Alecto ACH2010");
 			break;
 		case sTypeWINDNoTemp:
 			WriteMessage("subtype       = Weather Station");
