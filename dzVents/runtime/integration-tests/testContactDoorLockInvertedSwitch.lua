@@ -11,7 +11,7 @@ local fsScripts = {'scriptContactDoorLockInvertedSwitch.lua'}
 
 describe('Test if contact and door lock inverted are triggered by event system', function ()
 
-	local contactIdx, doorLockIdx, vdScriptOK, vdTriggerIdx
+	local contactIdx, doorContactIdx, doorLockInvertedIdx, doorLockIdx, vdScriptOK, vdTriggerIdx
 
 	setup(function()
 		local ok = TestTools.reset()
@@ -21,12 +21,17 @@ describe('Test if contact and door lock inverted are triggered by event system',
 		ok, contactIdx = TestTools.createVirtualDevice(dummyIdx, 'vdContact', 6)
 		ok = TestTools.updateSwitch(contactIdx, 'vdContact', '', 2)
 
-		ok, doorLockIdx = TestTools.createVirtualDevice(dummyIdx, 'vdDoorLockInverted', 6)
-		ok = TestTools.updateSwitch(doorLockIdx, 'vdDoorLockInverted', '', 20)
+		ok, doorContactIdx = TestTools.createVirtualDevice(dummyIdx, 'vdDoorContact', 6)
+		ok = TestTools.updateSwitch(doorContactIdx, 'vdDoorContact', '', 11)
+
+		ok, doorLockInvertedIdx = TestTools.createVirtualDevice(dummyIdx, 'vdDoorLockInverted', 6)
+		ok = TestTools.updateSwitch(doorLockInvertedIdx, 'vdDoorLockInverted', '', 20)
+
+		ok, doorLockIdx = TestTools.createVirtualDevice(dummyIdx, 'vdDoorLock', 6)
+		ok = TestTools.updateSwitch(doorLockIdx, 'vdDoorLock', '', 19)
 
 		ok, vdTriggerIdx = TestTools.createVirtualDevice(dummyIdx, 'vdTrigger', 6)
 		TestTools.installFSScripts(fsScripts)
-
 
 	end)
 
