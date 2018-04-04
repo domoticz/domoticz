@@ -5,6 +5,47 @@ define(['app'], function (app) {
         chartPointClickNew: chartPointClickNew
     });
 
+    // TODO: move to common factories once it will be reused
+    app.factory('domoticzDataPointApi', function ($q, domoticzApi, permissions) {
+        return {
+            deletePoint: deletePoint
+        };
+
+        function deletePoint(deviceIdx, point, isShort) {
+            return $q(function (resolve, reject) {
+                if (!permissions.hasPermission('Admin')) {
+                    HideNotify();
+                    ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+                    reject();
+                }
+
+                var dateString = isShort
+                    ? Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', point.x)
+                    : Highcharts.dateFormat('%Y-%m-%d', point.x);
+
+                var message = $.t("Are you sure to remove this value at") + " ?:\n\n" + $.t("Date") + ": " + dateString + " \n" + $.t("Value") + ": " + point.y;
+
+                bootbox.confirm(message, function (result) {
+                    if (result !== true) {
+                        reject();
+                    }
+
+                    domoticzApi
+                        .sendCommand('deletedatapoint', {
+                            idx: deviceIdx,
+                            date: dateString
+                        })
+                        .then(resolve)
+                        .catch(function () {
+                            HideNotify();
+                            ShowNotify($.t('Problem deleting data point!'), 2500, true);
+                            reject();
+                        });
+                });
+            });
+        }
+    });
+
     app.directive('temperatureLogChart', function () {
         return {
             scope: {
@@ -17,7 +58,7 @@ define(['app'], function (app) {
             template: '<div style="height: 300px;"></div>',
             bindToController: true,
             controllerAs: 'vm',
-            controller: function ($scope, $element, $route, domoticzApi, domoticzGlobals) {
+            controller: function ($scope, $element, $route, domoticzApi, domoticzDataPointApi, domoticzGlobals) {
                 var vm = this;
                 var chart;
 
@@ -52,7 +93,7 @@ define(['app'], function (app) {
                                     }
                                 },
                                 title: {
-                                    text: $.t('Degrees')+ ' \u00B0' + vm.degreeType
+                                    text: $.t('Degrees') + ' \u00B0' + vm.degreeType
                                 }
                             }, { //humidity label
                                 showEmpty: false,
@@ -79,9 +120,15 @@ define(['app'], function (app) {
                                     point: {
                                         events: {
                                             click: function (event) {
-                                                domoticzGlobals.chartPointClickNew(event, vm.range === 'day', function() {
-                                                    $route.reload();
-                                                });
+                                                if (event.shiftKey != true) {
+                                                    return;
+                                                }
+
+                                                domoticzDataPointApi
+                                                    .deletePoint(vm.deviceIdx, event.point, vm.range === 'day')
+                                                    .then(function () {
+                                                        $route.reload();
+                                                    });
                                             }
                                         }
                                     }
@@ -128,7 +175,7 @@ define(['app'], function (app) {
                     }
 
                     if (changesObj.deviceType) {
-                        chart.setTitle({ text: getChartTitle() });
+                        chart.setTitle({text: getChartTitle()});
                     }
                 }
 
