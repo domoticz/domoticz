@@ -2103,9 +2103,6 @@
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\dzVents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\DenkoviSmartdenIPInOut.h">
       <Filter>Devices\Denkovi</Filter>
     </ClInclude>
@@ -2156,6 +2153,9 @@
     </ClInclude>
     <ClInclude Include="..\hardware\Honeywell.h">
       <Filter>Devices\Honeywell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\dzVents.h">
+      <Filter>EventSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2852,9 +2852,6 @@
     <ClCompile Include="..\main\IFTTT.cpp">
       <Filter>IFTTT</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\dzVents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\DenkoviSmartdenIPInOut.cpp">
       <Filter>Devices\Denkovi</Filter>
     </ClCompile>
@@ -2902,6 +2899,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Honeywell.cpp">
       <Filter>Devices\Honeywell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\dzVents.cpp">
+      <Filter>EventSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
