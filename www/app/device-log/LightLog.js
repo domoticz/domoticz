@@ -97,7 +97,8 @@ define(['app'], function (app) {
         }
 
         function refreshLog() {
-            logsTable.clear();
+            logsTable.clear().draw();
+            logsChart.highcharts().series[0].setData([]);
 
             domoticzApi
                 .sendRequest({
@@ -122,18 +123,18 @@ define(['app'], function (app) {
                             level = 0;
                         } else if (data.HaveSelector === true) {
                             level = parseInt(item.Level);
-                        } else if (item.Status.indexOf('Set Level:') == 0) {
+                        } else if (item.Status.indexOf('Set Level:') === 0) {
                             var lstr = item.Status.substr(11);
                             var idx = lstr.indexOf('%');
 
-                            if (idx != -1) {
+                            if (idx !== -1) {
                                 lstr = lstr.substr(0, idx - 1);
                                 level = parseInt(lstr);
                             }
                         } else {
                             var idx = item.Status.indexOf('Level: ');
 
-                            if (idx != -1) {
+                            if (idx !== -1) {
                                 var lstr = item.Status.substr(idx + 7);
                                 var idx = lstr.indexOf('%');
                                 if (idx !== -1) {
@@ -176,7 +177,7 @@ define(['app'], function (app) {
                     .sendCommand('clearlightlog', {
                         idx: vm.deviceIdx
                     })
-                    .then(refreshLogs)
+                    .then(refreshLog)
                     .catch(function () {
                         HideNotify();
                         ShowNotify($.t('Problem clearing the Log!'), 2500, true);

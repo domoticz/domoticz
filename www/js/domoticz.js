@@ -1878,6 +1878,7 @@ function chartPointClick(event, retChart) {
 	});
 }
 
+// TODO: use domoticzDataPointApi.deletePoint in your angular controllers instead
 function chartPointClickNew(event, isShort, retChart) {
 	if (event.shiftKey != true) {
 		return;
