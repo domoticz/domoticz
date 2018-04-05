@@ -34,11 +34,13 @@ enum _eSwitchType
 enum _eMeterType
 {
 	MTYPE_ENERGY = 0,			//0
-	MTYPE_GAS,				//1
-	MTYPE_WATER,			//2
-	MTYPE_COUNTER,			//3
-	MTYPE_ENERGY_GENERATED,	//4
-	MTYPE_TIME,				//5
+	MTYPE_GAS,					//1
+	MTYPE_WATER,				//2
+	MTYPE_COUNTER,				//3
+	MTYPE_ENERGY_GENERATED,		//4
+	MTYPE_TIME,					//5
+	MTYPE_ENERGY_T2,			//6
+	MTYPE_ENERGY_GENERATED_R2,	//7
 	MTYPE_END
 };
 

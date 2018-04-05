@@ -3722,7 +3722,7 @@ define(['app'], function (app) {
 										}
 									}
 									else if ((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
-										if (((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
+										if (((item.Type == "Energy") || (item.Type == "Power") || (item.SubType == "kWh")) && ((item.SwitchTypeVal == 4) || (item.SwitchTypeVal == 7))) {
 											imagehtml += 'PV48.png" class="lcursor" onclick="ShowCounterLogSpline(\'#dashcontent\',\'ShowFavorites\',' + item.idx + ',\'' + escape(item.Name) + '\', ' + item.SwitchTypeVal + ');" height="40" width="40"></td>\n';
 										}
 										else {
