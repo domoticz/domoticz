@@ -176,6 +176,10 @@
 		<Product type="0203" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
 		<Product type="1d03" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
 	</Manufacturer>
+	<Manufacturer id="0371" name="Aeotec">
+		<Product type="0003" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
+		<Product type="0103" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
+	</Manufacturer>
 	<Manufacturer id="0111" name="Airline Mechanical">
 		<Product type="8200" id="0200" name="ZDS-100"/>
 	</Manufacturer>
@@ -208,6 +212,9 @@
 		<Product type="0202" id="0511" name="Plugin Lamp Module"/>
 	</Manufacturer>
 	<Manufacturer id="002b" name="Atech">
+	</Manufacturer>
+	<Manufacturer id="033f" name="August">
+		<Product type="0001" id="0001" name="ASL-03 Smart Lock" config="august/asl-03.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0018" name="Balboa Inst.">
 	</Manufacturer>
@@ -484,6 +491,7 @@
 		<Product type="0402" id="3002" name="FGS212 Switch 3kW" config="fibaro/fgs212.xml" />
 		<Product type="0403" id="1000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
 		<Product type="0403" id="2000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
+		<Product type="0403" id="4000" name="FGS213 Switch" config="fibaro/fgs213.xml"/>
 		<Product type="0200" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
 		<Product type="0200" id="0106" name="FGS221 Double Relay Switch 2x1.5kW" config="fibaro/fgs221.xml" />
@@ -660,6 +668,7 @@
 	<Manufacturer id="000c" name="HomeSeer">
 		<Product type="4447" id="3033" name="HS-WS100+ Wall Switch" config="homeseer/hs-ws100plus.xml"/>
 		<Product type="4447" id="3034" name="HS-WD100+ Wall Dimmer" config="homeseer/hs-wd100plus.xml"/>
+		<Product type="4447" id="3035" name="HS-WS200+ Wall Switch" config="homeseer/hs-ws200plus.xml"/>
 		<Product type="4447" id="3036" name="HS-WD200+ Wall Dimmer" config="homeseer/hs-wd200plus.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0030" name="HomeSeer Tech">
@@ -673,6 +682,7 @@
 		<Product type="0001" id="0002" name="AS2-RF Thermostat Transmitter"/>
 		<Product type="0001" id="0003" name="HRT4-ZW Thermostat Transmitter" config="horstmann/hrt4zw.xml"/>
 		<Product type="0001" id="0004" name="SRT 323 Electronic Room Thermostat and Temperature" config="horstmann/srt323.xml"/>
+        <Product type="0001" id="0005" name="SRT-321 Thermostat-HVAC" config="horstmann/srt321.xml"/>
 		<Product type="0003" id="0001" name="ASR-ZW Thermostat Receiver" config="horstmann/asrzw.xml"/>
 		<Product type="0003" id="0002" name="SSR 302 2-zone Thermostat Receiver" config="horstmann/ssr302.xml"/>
 		<Product type="0004" id="0001" name="SCSC17 Thermostat" config="horstmann/scsc17.xml"/>
@@ -702,6 +712,8 @@
 		<Product type="0001" id="0001" name="RAone SmartDimmer Wall Dimmer Module"/>
 	</Manufacturer>
 	<Manufacturer id="0312" name="Inovelli">
+		<Product type="1e01" id="1e01" name="NZW30 Smart Switch" config="inovelli/nzw30.xml"/>
+		<Product type="1f01" id="1f01" name="NZW31 Smart Dimmer(non-scene)" config="inovelli/nzw31.xml"/>
 		<Product type="b211" id="241c" name="NZW36 Smart Plug-In Module (1 Channel)" config="inovelli/simple_module.xml"/>
 		<Product type="b221" id="251c" name="NZW37 Smart Plug-In Module (2 Channel)" config="inovelli/simple_module.xml"/>
 		<Product type="b212" id="271c" name="NZW39 Smart Plug (Dimmer)" config="inovelli/simple_module.xml"/>
@@ -828,6 +840,7 @@
 		<Product type="3102" id="0204" name="MH-S314 Four-load" config="mcohome/mhs314.xml"/>
 		<Product type="4102" id="0201" name="MH-S411 One-load" config="mcohome/mhs411.xml"/>
 		<Product type="4102" id="0202" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
+		<Product type="4121" id="1302" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
 		<Product type="0801" id="3102" name="MH8-FC-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0802" id="3102" name="MH8-FC4-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0905" id="0201 " name="MH9-CO2-WD CO2 Monitor" config="mcohome/mh9co2.xml"/>
@@ -1069,7 +1082,7 @@
 	</Manufacturer>
 	<Manufacturer id="019a" name="Sensative">
 		<Product type="0003" id="0003" name="Strips" config="sensative/strips.xml" />
-		<Product type="0003" id="000a" name="Strips Comfort" config="sensative/stripsconfort.xml" />
+		<Product type="0003" id="000a" name="Strips Comfort" config="sensative/stripscomfort.xml" />
 	</Manufacturer>
 	<Manufacturer id="0044" name="Sequoia Tech">
 	</Manufacturer>
@@ -1089,7 +1102,8 @@
 		<Product type="0001" id="0001" name="STZW402+ Electronic Thermostat" config="stelpro/stzw402.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0271" name="Steinel">
-		<Product type="0002" id="1a72" name="IS140-2" config="steinel/is140-2.xml"/>
+		<Product type="0002" id="1a72" name="IS140-2" config="steinel/is140-2.xml"/>	
+		<Product type="0001" id="1a74" name="RS LED D2" config="steinel/rs-led-d2.xml"/> 
 	</Manufacturer>
 	<Manufacturer id="0166" name="Swiid">
 		<Product type="0100" id="0100" name="SwiidInter" config="swiid/swiidinter.xml"/>
@@ -1299,6 +1313,7 @@
 		<Product type="0112" id="241c" name="ZEN22 Dimmer" config="zooz/zen22.xml"/>
 		<Product type="1111" id="1e1c" name="ZEN23 Toggle Switch" config="zooz/zen23.xml" />
 		<Product type="0111" id="1f1c" name="ZEN24 Dimmer Switch" config="zooz/zen24.xml" />
+		<Product type="6100" id="6100" name="NZW97 Inovelli Dual Outdoor Z-Wave Plug" config="inovelli/nzw97.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0315" name="Z Wave Products Inc.">
     		<Product type="4447" id="3034" name="WD-100" config="zwp/WD-100.xml"/>
