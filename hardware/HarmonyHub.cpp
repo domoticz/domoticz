@@ -213,7 +213,7 @@ void CHarmonyHub::Do_Work()
 				if (!szNewData.empty())
 				{
 					strData.append(m_databuffer);
-					m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+					m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
 				}
 				else
 					bIsDataReadable = false;
@@ -494,13 +494,13 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	}
 
 	bool bIsDataReadable = false;
-	authorizationcsocket->canRead(&bIsDataReadable, 5.0f);
+	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	while(bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
 		authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
 		strData.append(m_databuffer);
-		authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
+		authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
 	};
 
 	std::string strIdentityTokenTag = "identity=";
@@ -635,7 +635,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	m_commandcsocket->write(sendData.c_str(), sendData.size());
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable,5.0f);
+	m_commandcsocket->canRead(&bIsDataReadable,1.0f);
 	while(bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
@@ -644,7 +644,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 		if (!szNewData.empty())
 		{
 			strData.append(m_databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+			m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
 		}
 		else
 			bIsDataReadable = false;
@@ -679,7 +679,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	}
 	else if (strCommand == GET_CONFIG_COMMAND || strCommand == GET_CONFIG_COMMAND_RAW)
 	{
-		m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
+		m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
 		while(bIsDataReadable)
 		{
 			memset(m_databuffer, 0, BUFFER_SIZE);
@@ -688,7 +688,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 			if (!szNewData.empty())
 			{
 				strData.append(m_databuffer);
-				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
 			}
 			else
 				bIsDataReadable = false;
