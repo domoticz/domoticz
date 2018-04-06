@@ -67,6 +67,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRAIN, sTypeRAIN4, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN5, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN6, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN7, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN8, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN9, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
 
 		{ pTypeWIND, sTypeWIND1, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
@@ -76,6 +79,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND8, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 
 		{ pTypeUV, sTypeUV1, "UV,Temperature" },

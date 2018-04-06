@@ -574,6 +574,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRAIN, sTypeRAIN4, "UPM RG700" },
 		{ pTypeRAIN, sTypeRAIN5, "LaCrosse WS2300" },
 		{ pTypeRAIN, sTypeRAIN6, "LaCrosse TX5" },
+		{ pTypeRAIN, sTypeRAIN7, "Alecto" },
+		{ pTypeRAIN, sTypeRAIN8, "Davis" },
+		{ pTypeRAIN, sTypeRAIN9, "Alecto WCH2010" },
 		{ pTypeRAIN, sTypeRAINWU, "WWW" },
 
 		{ pTypeWIND, sTypeWIND1, "WTGR800" },
@@ -583,6 +586,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeWIND, sTypeWIND5, "UPM WDS500" },
 		{ pTypeWIND, sTypeWIND6, "LaCrosse WS2300" },
 		{ pTypeWIND, sTypeWIND7, "Alecto WS4500" },
+		{ pTypeWIND, sTypeWIND8, "Alecto ACH2010" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
 
 		{ pTypeUV, sTypeUV1, "UVN128,UV138" },

@@ -140,7 +140,7 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 	int nvalue = 0;
 	bool tIsOn = !(bIsOn);
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT nValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d) AND (SubType==%d)", m_HwdID, szDeviceID, pTypeColorSwitch, YeeType);
+	result = m_sql.safe_query("SELECT nValue, LastLevel, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Type==%d)", m_HwdID, szDeviceID, pTypeColorSwitch);
 	int yeelightColorMode = atoi(syeelightColorMode.c_str());
 	if (yeelightColorMode > 0) {
 		if (_log.isTraceEnabled()) _log.Log(LOG_TRACE, "Yeelight::InsertUpdateSwitch colorMode: %u, Bri: %s, Hue: %s, Sat: %s, RGB: %s, CT: %s", yeelightColorMode, yeelightBright.c_str(), syeelightHue.c_str(), syeelightSat.c_str(), syeelightRGB.c_str(), syeelightCT.c_str());
@@ -166,6 +166,14 @@ void Yeelight::InsertUpdateSwitch(const std::string &nodeID, const std::string &
 		m_sql.safe_query("UPDATE DeviceStatus SET Name='%q', SwitchType=%d, LastLevel=%d WHERE(HardwareID == %d) AND (DeviceID == '%q')", lightName.c_str(), (STYPE_Dimmer), value, m_HwdID, szDeviceID);
 	}
 	else {
+		// Make sure subtype is correct
+		unsigned sTypeOld = atoi(result[0][2].c_str());
+		std::string sIdx = result[0][3];
+		if (sTypeOld != YeeType)
+		{
+			_log.Log(LOG_STATUS, "YeeLight: Updating SubType of light (%s/%s) from %u to %u", Location.c_str(), lightName.c_str(), sTypeOld, YeeType);
+			m_sql.UpdateDeviceValue("SubType", (int)YeeType, sIdx);
+		}
 
 		nvalue = atoi(result[0][0].c_str());
 		tIsOn = (nvalue != 0);
