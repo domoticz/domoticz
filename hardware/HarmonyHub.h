@@ -4,7 +4,12 @@
 #include <iosfwd>
 #include "hardwaretypes.h"
 
-#define BUFFER_SIZE								2*1024*1024
+// Note:
+// HarmonyHub is on Wifi and can thus send frames with a maximum payload length of 2324 bytes
+// Normal implementations will however obey the 1500 bytes MTU from the wired networks that
+// they are attached to and this may be limited even further if the router uses mechanisms like
+// PPTP for connecting the (Wireless) LAN to the internet.
+#define BUFFER_SIZE	 1500
 
 class csocket;
 
