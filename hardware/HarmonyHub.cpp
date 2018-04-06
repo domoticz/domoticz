@@ -831,6 +831,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	return true;
 }
 
+/*
 bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID)
 {
 	Action a;
@@ -866,7 +867,7 @@ bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>&
 	vecDeviceActions.push_back(a);
 	return true;
 }
-
+*/
 /*
 bool CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID)
 {
