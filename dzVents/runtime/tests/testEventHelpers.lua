@@ -395,8 +395,8 @@ describe('event helpers', function()
 			helpers.dumpCommandArray(array)
 			assert.is_same({
 				"Commands sent to Domoticz: ",
-                "• a = 1",
-				"• b = 2",
+                "- a = 1",
+				"- b = 2",
 				"====================================================="
 			}, messages)
 		end)

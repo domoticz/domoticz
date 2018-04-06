@@ -684,7 +684,7 @@ local function EventHelpers(domoticz, mainMethod)
 				end
 				if (type(v) == 'table') then
 					for kk, vv in pairs(v) do
-						utils.log('• ' .. kk .. ' = ' .. _.str(vv), level)
+						utils.log('- ' .. kk .. ' = ' .. _.str(vv), level)
 					end
 				else
 					utils.log(k .. ' = ' .. v, level)
@@ -942,30 +942,30 @@ local function EventHelpers(domoticz, mainMethod)
 		local length = 0
 
 		domoticz.changedDevices().forEach( function(device)
-			table.insert(items, '• Device: ' .. device.name)
+			table.insert(items, '- Device: ' .. device.name)
 			length = length + 1
 		end)
 
 		domoticz.changedVariables().forEach(function(variable)
-			table.insert(items, '• Variable: ' .. variable.name)
+			table.insert(items, '- Variable: ' .. variable.name)
 			length = length + 1
 		end)
 
 		local securityUpdates =_G.securityupdates
 		if (securityUpdates ~= nil) then
 			for i, securityState in pairs(securityUpdates) do
-				table.insert(items, '• Security: ' .. securityState)
+				table.insert(items, '- Security: ' .. securityState)
 				length = length + 1
 			end
 		end
 
 		domoticz.changedScenes().forEach(function(scene)
-			table.insert(items, '• Scene: ' .. scene.name)
+			table.insert(items, '- Scene: ' .. scene.name)
 			length = length + 1
 		end)
 
 		domoticz.changedGroups().forEach(function(group)
-			table.insert(items, '• Group: ' .. group.name)
+			table.insert(items, '- Group: ' .. group.name)
 			length = length + 1
 		end)
 
@@ -973,7 +973,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 		if (responses ~= nil) then
 			for i, response in pairs(responses) do
-				table.insert(items, '• HTTPResponse: ' .. response.callback)
+				table.insert(items, '- HTTPResponse: ' .. response.callback)
 				length = length + 1
 			end
 		end

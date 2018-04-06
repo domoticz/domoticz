@@ -1,5 +1,5 @@
-local TESTMODE = true
-globalvariables['testmode'] = true
+local TESTMODE = false
+globalvariables['testmode'] = false
 --globalvariables['dzVents_log_level'] = 4 --debug
 
 if (_G.TESTMODE) then
@@ -47,7 +47,7 @@ if (tonumber(globalvariables['dzVents_log_level']) == utils.LOG_DEBUG or TESTMOD
 
 	if (globalvariables['isTimeEvent']) then
 		print('Debug: Event triggers:')
-		print('Debug: • Timer')
+		print('Debug: - Timer')
 	end
 
 end
