@@ -495,11 +495,6 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 
 	bool bIsDataReadable = false;
 	authorizationcsocket->canRead(&bIsDataReadable, 5.0f);
-	if(!bIsDataReadable && strData == "<iq/>")
-	{
-		bIsDataReadable = true;
-	}
-
 	while(bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
@@ -533,7 +528,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 
 bool CHarmonyHub::SendPing()
 {
-	int res;
+	int res = 0;
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
 	{
@@ -553,8 +548,12 @@ bool CHarmonyHub::SendPing()
 
 
 	bool bIsDataReadable = true;
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	if (bIsDataReadable)
+	{
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	}
 	if (res <= 0)
 	{
 		/* there should be some bytes received so <= 0 is not good */
@@ -564,8 +563,12 @@ bool CHarmonyHub::SendPing()
 	if(strData.compare("<iq/>") == 0)
 	{
 		/* must be new SW version 4.10.30+ so read ping confirmation */
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+		if (bIsDataReadable)
+		{
+			memset(m_databuffer, 0, BUFFER_SIZE);
+			res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		}
 		if (res <= 0)
 		{
 			/* there should be some bytes received so <= 0 is not good */
