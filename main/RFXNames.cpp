@@ -2063,7 +2063,7 @@ bool GetLightCommand(
 	const std::map<std::string, std::string> & options
 	)
 {
-	if (switchtype==STYPE_Contact)
+	if (switchtype == STYPE_Contact && dType != pTypeGeneralSwitch)
 		return false;	//we can not (or will not) switch this type
 
 	switch (dType)
