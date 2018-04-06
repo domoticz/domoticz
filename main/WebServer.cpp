@@ -8977,7 +8977,11 @@ namespace http {
 							root["result"][ii]["Level"] = LastLevel;
 							int iLevel = round((float(maxDimLevel) / 100.0f)*LastLevel);
 							root["result"][ii]["LevelInt"] = iLevel;
-							if (dType == pTypeColorSwitch)
+							if ((dType == pTypeColorSwitch) ||
+							    (dType == pTypeLighting5 && dSubType == sTypeTRC02) ||
+							    (dType == pTypeLighting5 && dSubType == sTypeTRC02_2) ||
+							    (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02) ||
+							    (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
 							{
 								_tColor color(sColor);
 								std::string jsonColor = color.toJSON();
