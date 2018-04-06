@@ -174,7 +174,6 @@ int csocket::canRead( bool* readyToRead, float waitTime )
     fd_set  fds;
     FD_ZERO(&fds);
     FD_SET(m_socket, &fds);
-    int     nfds = 0;
 
     timeval timeout;
 
@@ -190,29 +189,21 @@ int csocket::canRead( bool* readyToRead, float waitTime )
     }
 
     
-//#ifdef WIN32
-    nfds = m_socket+1;
-//#endif
+	int n = select(sizeof(fds)*8, &fds, NULL, NULL, &timeout);
+	if (n < 0)
+	{
+		m_socketState = ERRORED;
+		return FAILURE;
+	}
 
-    int n = select(nfds, &fds, NULL, NULL, &timeout);
-    if ( n < 0 ) 
-    {
-        m_socketState = ERRORED;
-        return FAILURE;
-    }
+	if ((n > 0) && (FD_ISSET(m_socket, &fds)))
+	{
+		*readyToRead = true;
+		return SUCCESS;
+	}
 
-    if (n == 1) 
-    {
-        *readyToRead = true;
-        return SUCCESS;
-    }
-
-    if (n == 0)
-    {
-        *readyToRead = false;
-    }
-
-    return SUCCESS;
+	*readyToRead = false;
+	return SUCCESS;
 }
 
 
