@@ -1805,6 +1805,7 @@ On the other hand, you have to make sure that dzVents can access the json withou
 ##[2.4.4]
 - Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 - Fixed one wildcard issue. Should now work as expected.
+- Fixed a problem in Domoticz where you couldn't change the state of some door contact-like switches using the API or dzVents. That seems to work now.
 
 ##[2.4.3]
 - Fixed trigger wildcards. Now you can do `*aa*bb*cc` or `a*` which will require the target to start with an `a`

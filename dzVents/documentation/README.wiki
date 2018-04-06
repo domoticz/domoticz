@@ -1909,6 +1909,7 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 * Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 * Fixed one wildcard issue. Should now work as expected.
+* Fixed a problem in Domoticz where you couldn't change the state of some door contact-like switches using the API or dzVents. That seems to work now.
 
 == [2.4.3] ==
 
