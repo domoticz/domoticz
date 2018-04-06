@@ -1,3 +1,6 @@
+[2.4.5]
+
+
 [2.4.4]
 - Fixed rawTime and rawData so it shows leading zeros when values are below 10.
 - Fixed one wildcard issue. Should now work as expected.
