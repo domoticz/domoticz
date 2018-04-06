@@ -232,7 +232,7 @@ bool CNestOAuthAPI::Login()
 				sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
 
 				if (sTmpToken.size() > 0) {
-					_log.Log(LOG_NORM, ("NestOAuthAPI: Received an access token to use for future requests: " + sTmpToken).c_str());
+					_log.Log(LOG_NORM, "NestOAuthAPI: Received an access token to use for future requests: " + sTmpToken);
 					
 					// Store the access token in the database and set the application to use it.
 					SetOAuthAccessToken(m_HwdID, sTmpToken);
@@ -245,7 +245,7 @@ bool CNestOAuthAPI::Login()
 			{
 				// Apparently something went wrong fetching the access token.
 				std::string what = e.what();
-				_log.Log(LOG_ERROR, ("NestOAuthAPI: Error retrieving access token: " + what).c_str());
+				_log.Log(LOG_ERROR, "NestOAuthAPI: Error retrieving access token: " + what);
 				return false;
 			}
 		}
@@ -879,9 +879,9 @@ bool CNestOAuthAPI::SetOAuthAccessToken(const unsigned int ID, std::string &newT
 	// Set the application to use the new token.
 	m_OAuthApiAccessToken = newToken;
 
-	_log.Log(LOG_NORM, ("NestOAuthAPI: Storing received access token " + newToken + " and clearing token request information.").c_str());
+	_log.Log(LOG_NORM, "NestOAuthAPI: Storing received access token " + newToken + " and clearing token request information.");
 
-	// This can be done some much better. For now let's assume things will succeed.
+	// This can probably be done in a better way. For now let's just assume things will succeed.
 	m_sql.safe_query("UPDATE Hardware SET Username='%q', Extra='' WHERE (ID==%d)", newToken.c_str(), ID);
 
 	return true;
