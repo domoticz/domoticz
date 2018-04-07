@@ -427,10 +427,17 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	// Start communication
 	std::string data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	std::string strData;
+	bool bIsDataReadable = true;
+	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	if (bIsDataReadable)
+	{
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		std::string strData = m_databuffer;
+		/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
+	}
 
-	std::string strData = m_databuffer;/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 
 	data = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
 	std::string tmp = "\0";
@@ -441,10 +448,15 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	data.append("</auth>");
 	communicationcsocket->write(data.c_str(), data.size());
 
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	if (bIsDataReadable)
+	{
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		strData = m_databuffer;
+		/* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
+	}
 
-	strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
 	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
 	{
 		//errorString = "StartCommunication : connection error";
@@ -454,10 +466,14 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
 
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-	strData = m_databuffer; /* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='057a30bd' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
+	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	if (bIsDataReadable)
+	{
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		strData = m_databuffer;
+		/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='057a30bd' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
+	}
 
 	return true;
 }
@@ -480,10 +496,15 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 
 	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-	strData = m_databuffer; /* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
+	bool bIsDataReadable = true;
+	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	if (bIsDataReadable)
+	{
+		memset(m_databuffer, 0, BUFFER_SIZE);
+		authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+		strData = m_databuffer;
+		/* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
+	}
 
 	if(strData.find("<iq/>") != 0)
 	{
@@ -491,15 +512,18 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 		return false;
 	}
 
-	bool bIsDataReadable = false;
 	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	while(bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
-		authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		strData.append(m_databuffer);
-		authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
-	};
+		if (authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false) > 0)
+		{
+			strData.append(m_databuffer);
+			authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
+		}
+		else
+			bIsDataReadable = false;
+	}
 
 	std::string strIdentityTokenTag = "identity=";
 
