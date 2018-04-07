@@ -87,15 +87,15 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			return false;
-		}			
+		}
 	}
 	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
-		if(!SubmitCommand(START_ACTIVITY_COMMAND, "PowerOff",""))
+		if(!SubmitCommand(START_ACTIVITY_COMMAND, "-1",""))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
-		}			
+		}
 	}
 	return true;
 }
@@ -449,7 +449,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	{
 		//errorString = "StartCommunication : connection error";
 		return false;
-	} 
+	}
 
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
@@ -488,7 +488,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	if(strData.find("<iq/>") != 0)
 	{
 		//errorString = "SwapAuthorizationToken : Invalid Harmony response";
-		return false;  
+		return false;
 	}
 
 	bool bIsDataReadable = false;
@@ -508,7 +508,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
-		return false;  
+		return false;
 	}
 
 	m_szAuthorizationToken = strData.substr(pos + strIdentityTokenTag.size());
@@ -517,7 +517,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	if(pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a valid session authorization token";
-		return false;  
+		return false;
 	}
 	m_szAuthorizationToken = m_szAuthorizationToken.substr(0, pos);
 
@@ -557,7 +557,7 @@ bool CHarmonyHub::SendPing()
 		/* there should be some bytes received so <= 0 is not good */
 		return false;
 	}
-	strData = m_databuffer; 
+	strData = m_databuffer;
 	if(strData.compare("<iq/>") == 0)
 	{
 		/* must be new SW version 4.10.30+ so read ping confirmation */
@@ -613,7 +613,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	}
 	else if (lstrCommand == GET_CONFIG_COMMAND_RAW)
 	{
-		sendData.append("config\"></oa></iq>");        
+		sendData.append("config\"></oa></iq>");
 	}
 	else if (lstrCommand == "start_activity")
 	{
@@ -809,7 +809,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Check Activity change, JSon activity)");
 		}
 	}
-	
+
 	if (bIsChanging != m_bIsChangingActivity)
 	{
 		m_bIsChangingActivity = bIsChanging;
