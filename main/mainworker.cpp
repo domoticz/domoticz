@@ -11049,7 +11049,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	break;
 	case pTypeLighting5:
 	{
-		int oldlevel = level;
 		tRBUF lcmd;
 		lcmd.LIGHTING5.packetlength = sizeof(lcmd.LIGHTING5) - 1;
 		lcmd.LIGHTING5.packettype = dType;
@@ -11114,20 +11113,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
+			int oldlevel = level;
 			if (switchcmd != "Off")
 			{
-				//if ((hue != -1) && (hue != 1000)) // TODO: Fix TRC02
+				if (color.mode == ColorModeRGB)
 				{
-					double dval;
-					dval = 0;
-					//dval = (255.0 / 360.0)*float(hue); TODO: Fix TRC02
-					oldlevel = round(dval);
 					switchcmd = "Set Color";
 				}
 			}
-			if (((switchcmd == "Off") || (switchcmd == "On")) && (switchcmd != "Set Color"))
+			if ((switchcmd == "Off") ||
+				(switchcmd == "On") ||      //Special Case, turn off first to ensure light is in normal mode
+				(switchcmd == "Set Color"))
 			{
-				//Special Case, turn off first
 				unsigned char oldCmd = lcmd.LIGHTING5.cmnd;
 				lcmd.LIGHTING5.cmnd = light5_sRGBoff;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
@@ -11145,11 +11142,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 				if (switchcmd == "Set Color")
 				{
-					//TODO: Fix TRC02
-					if ((oldlevel != -1) && (oldlevel != 1000))
+					if (color.mode == ColorModeRGB)
 					{
-						double dval;
-						dval = (78.0 / 255.0)*float(oldlevel);
+						float hsb[3];
+						rgb2hsb(color.r, color.g, color.b, hsb);
+						switchcmd = "Set Color";
+
+						float dval = 126.0f*hsb[0]; // Color Range is 0x06..0x84
 						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return false;
