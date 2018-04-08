@@ -620,7 +620,7 @@ define(['app'], function (app) {
 								status = "";
 							}
 							else if ((item.Type == "Energy") || (item.Type == "Current/Energy") || (item.Type == "Power") || (item.SubType == "kWh")) {
-								if (((item.Type == "Energy") || (item.SubType == "kWh")) && (item.SwitchTypeVal == 4)) {
+								if (((item.Type == "Energy") || (item.SubType == "kWh")) && ((item.SwitchTypeVal == 4) || (item.SwitchTypeVal == 7))) {
 									xhtm += 'PV48.png" height="48" width="48"></td>\n';
 								}
 								else {

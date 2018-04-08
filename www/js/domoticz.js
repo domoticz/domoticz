@@ -7605,7 +7605,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 	});
 
 	var series;
-	if ((switchtype == 0) || (switchtype == 4)) {
+	if ((switchtype == 0) || (switchtype == 4) || (switchtype == 6) || (switchtype == 7)) {
 
 		//Electra Usage/Return
 		if ((chart == $.DayChart) || (chart == $.WeekChart)) {
@@ -7627,7 +7627,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						pointRange: 3600 * 1000, // 1 hour in ms
 						zIndex: 5,
 						animation: false,
-						name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+						name: (switchtype == 0 || switchtype == 6) ? $.t('Energy Usage') : $.t('Energy Generated'),
 						tooltip: {
 							valueSuffix: (chart == $.WeekChart) ? ' kWh' : ' Wh',
 							valueDecimals: totDecimals
@@ -7679,7 +7679,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// counter type (no power)
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Energy Usage') : $.t('Energy Generated'),
+							name: (switchtype == 0 || switchtype == 6) ? $.t('Energy Usage') : $.t('Energy Generated'),
 							tooltip: {
 								valueSuffix: (chart == $.DayChart) ? ' Wh' : ' kWh',
 								valueDecimals: totDecimals
@@ -7692,7 +7692,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 						// instant + counter type
 						chart.highcharts().addSeries({
 							id: 'usage1',
-							name: (switchtype == 0) ? $.t('Power Usage') : $.t('Power Generated'),
+							name: (switchtype == 0 || switchtype == 6) ? $.t('Power Usage') : $.t('Power Generated'),
 							zIndex: 10,
 							type: (chart == $.DayChart) ? 'spline' : 'column', // power vs energy
 							tooltip: {
@@ -7775,7 +7775,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 			if (datatableTotalUsage.length > 0) {
 				chart.highcharts().addSeries({
 					id: 'usage',
-					name: (switchtype == 0) ? $.t('Total Usage') : ((switchtype == 4) ? $.t('Total Generated') : $.t('Total Return')),
+					name: (switchtype == 0 || switchtype == 6) ? $.t('Total Usage') : ((switchtype == 4 || switchtype == 7) ? $.t('Total Generated') : $.t('Total Return')),
 					zIndex: 2,
 					tooltip: {
 						valueSuffix: ' kWh',
@@ -7795,7 +7795,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 
 					chart.highcharts().addSeries({
 						id: 'usage_trendline',
-						name: $.t('Trendline') + ' ' + ((switchtype == 0) ? $.t('Usage') : ((switchtype == 4) ? $.t('Generated') : $.t('Return'))),
+						name: $.t('Trendline') + ' ' + ((switchtype == 0 || switchtype == 6) ? $.t('Usage') : ((switchtype == 4 || switchtype == 7) ? $.t('Generated') : $.t('Return'))),
 						zIndex: 1,
 						tooltip: {
 							valueSuffix: ' kWh',
@@ -7853,7 +7853,7 @@ function AddDataToUtilityChart(data, chart, switchtype) {
 			if (datatableTotalUsagePrev.length > 0) {
 				chart.highcharts().addSeries({
 					id: 'usageprev',
-					name: $.t('Past') + ' ' + ((switchtype == 0) ? $.t('Usage') : ((switchtype == 4) ? $.t('Generated') : $.t('Return'))),
+					name: $.t('Past') + ' ' + ((switchtype == 0 || switchtype == 6) ? $.t('Usage') : ((switchtype == 4 || switchtype == 7) ? $.t('Generated') : $.t('Return'))),
 					tooltip: {
 						valueSuffix: ' kWh',
 						valueDecimals: 3
@@ -8377,13 +8377,26 @@ function ShowP1MonthReportGas(actMonth, actYear) {
 	$($.content).i18n();
 
 	$($.content + ' #theader').html(unescape($.devName) + " " + $.t($.monthNames[actMonth - 1]) + " " + actYear);
-	$($.content + ' #spanmonthgastotalusage').html(($.devSwitchType == 4) ? $.t('Total Generated') : $.t('Total Usage'));
+	$($.content + ' #spanmonthgastotalusage').html(($.devSwitchType == 4 || $.devSwitchType == 7) ? $.t('Total Generated') : $.t('Total Usage'));
 
 	var yAxisTitle = $.t('Energy') + ' (kWh)';
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+	if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 		//Electra
 		$($.content + ' #munit').html("kWh");
-		$($.content + ' #thmonthgasusage').html(($.devSwitchType == 4) ? $.t('Generated') : $.t('Usage'));
+		$($.content + ' #thmonthgasusage').html(($.devSwitchType == 4 || $.devSwitchType == 7) ? $.t('Generated') : $.t('Usage'));
+		
+		if ($.devSwitchType == 0) {
+			$($.content + ' #costsperunit').html($.costsT1 + "/kWh (T1)");
+		}
+		else if ($.devSwitchType == 4) {
+			$($.content + ' #costsperunit').html($.costsR1 + "/kWh (R1)");
+		}
+		else if ($.devSwitchType == 6) {
+			$($.content + ' #costsperunit').html($.costsT2 + "/kWh (T2)");
+		}
+		else if ($.devSwitchType == 7) {
+			$($.content + ' #costsperunit').html($.costsR2 + "/kWh (R2)");
+		}
 	}
 	else if ($.devSwitchType == 1) {
 		//Gas
@@ -8481,9 +8494,22 @@ function ShowP1MonthReportGas(actMonth, actYear) {
 					datachart.push([cdate, parseFloat(item.v)]);
 
 					var rcost;
-					if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+					if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 						//Electra
 						rcost = Usage * $.costsT1;
+						
+						if ($.devSwitchType == 0) {
+							rcost = Usage * $.costsT1;
+						}
+						else if ($.devSwitchType == 4) {
+							rcost = Usage * $.costsR1;
+						}
+						else if ($.devSwitchType == 6) {
+							rcost = Usage * $.costsT2;
+						}
+						else if ($.devSwitchType == 7) {
+							rcost = Usage * $.costsR2;
+						}
 					}
 					else if ($.devSwitchType == 1) {
 						//Gas
@@ -8499,14 +8525,14 @@ function ShowP1MonthReportGas(actMonth, actYear) {
 						img = '<img src="images/equal.png"></img>';
 					}
 					else if (Usage < lastTotal) {
-						if ($.devSwitchType == 4) {
+						if ($.devSwitchType == 4 || $.devSwitchType == 7) {
 							img = '<img src="images/up.png" class="vflip"></img>';
 						} else {
 							img = '<img src="images/down.png"></img>';
 						}
 					}
 					else {
-						if ($.devSwitchType == 4) {
+						if ($.devSwitchType == 4 || $.devSwitchType == 7) {
 							img = '<img src="images/down.png" class="vflip"></img>';
 						} else {
 							img = '<img src="images/up.png"></img>';
@@ -8528,12 +8554,12 @@ function ShowP1MonthReportGas(actMonth, actYear) {
 			$($.content + ' #tu').html(total.toFixed(3));
 
 			var montlycosts;
-			if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+			if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 				//Electra
 				montlycosts = (total * $.costsT1)
 				$.UsageChart.highcharts().addSeries({
 					id: 'energy',
-					name: ($.devSwitchType == 0) ? $.t('Usage') : $.t('Generated'),
+					name: ($.devSwitchType == 0 || $.devSwitchType == 6) ? $.t('Usage') : $.t('Generated'),
 					showInLegend: false,
 					color: 'rgba(3,190,252,0.8)',
 					yAxis: 0
@@ -8596,9 +8622,20 @@ function addLeadingZeros(n, length) {
 
 function Add2YearTableP1ReportGas(oTable, total, lastTotal, lastMonth, actYear) {
 	var rcost;
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+	if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 		//Electra
-		rcost = total * $.costsT1;
+		if ($.devSwitchType == 0) {
+			rcost = total * $.costsT1;
+		}
+		else if ($.devSwitchType == 4) {
+			rcost = total * $.costsR1;
+		}
+		else if ($.devSwitchType == 6) {
+			rcost = total * $.costsT2;
+		}
+		else if ($.devSwitchType == 7) {
+			rcost = total * $.costsR2;
+		}
 	}
 	else if ($.devSwitchType == 1) {
 		//Gas
@@ -8614,14 +8651,14 @@ function Add2YearTableP1ReportGas(oTable, total, lastTotal, lastMonth, actYear) 
 		img = '<img src="images/equal.png"></img>';
 	}
 	else if (total < lastTotal) {
-		if ($.devSwitchType == 4) {
+		if ($.devSwitchType == 4 || $.devSwitchType == 7) {
 			img = '<img src="images/up.png" class="vflip"></img>';
 		} else {
 			img = '<img src="images/down.png"></img>';
 		}
 	}
 	else {
-		if ($.devSwitchType == 4) {
+		if ($.devSwitchType == 4 || $.devSwitchType == 7) {
 			img = '<img src="images/down.png" class="vflip"></img>';
 		} else {
 			img = '<img src="images/up.png"></img>';
@@ -8658,23 +8695,38 @@ function ShowP1YearReportGas(actYear) {
 	$($.content).i18n();
 
 	$($.content + ' #theader').html(unescape($.devName) + " " + actYear);
-	$($.content + ' #spanyeargastotalusage').html(($.devSwitchType == 4) ? $.t('Total Generated') : $.t('Total Usage'));
+	$($.content + ' #spanyeargastotalusage').html(($.devSwitchType == 4 || $.devSwitchType == 7) ? $.t('Total Generated') : $.t('Total Usage'));
 
 	var yAxisTitle = $.t('Energy') + ' (kWh)';
-	if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+	if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 		//Electra
 		$($.content + ' #munit').html("kWh");
-		$($.content + ' #thyeargasusage').html(($.devSwitchType == 4) ? $.t('Generated') : $.t('Usage'));
+		$($.content + ' #thyeargasusage').html(($.devSwitchType == 4 || $.devSwitchType == 7) ? $.t('Generated') : $.t('Usage'));
+		
+		if ($.devSwitchType == 0) {
+			$($.content + ' #costsperunit').html($.costsT1 + "/kWh (T1)");
+		}
+		else if ($.devSwitchType == 4) {
+			$($.content + ' #costsperunit').html($.costsR1 + "/kWh (R1)");
+		}
+		else if ($.devSwitchType == 6) {
+			$($.content + ' #costsperunit').html($.costsT2 + "/kWh (T2)");
+		}
+		else if ($.devSwitchType == 7) {
+			$($.content + ' #costsperunit').html($.costsR2 + "/kWh (R2)");
+		}
 	}
 	else if ($.devSwitchType == 1) {
 		//Gas
 		$($.content + ' #munit').html("m3");
 		yAxisTitle = $.t('Usage') + ' (m3)';
+		$($.content + ' #costsperunit').html($.costsGas + "/m3");
 	}
 	else {
 		//Water
 		$($.content + ' #munit').html("m3");
 		yAxisTitle = $.t('Usage') + ' (m3)';
+		$($.content + ' #costsperunit').html($.costsWater + "/m3");
 	}
 
 	$($.content + ' #comboyear').val(actYear);
@@ -8805,12 +8857,25 @@ function ShowP1YearReportGas(actYear) {
 
 			$($.content + ' #tu').html(global.toFixed(3));
 			var montlycosts = 0;
-			if (($.devSwitchType == 0) || ($.devSwitchType == 4)) {
+			if (($.devSwitchType == 0) || ($.devSwitchType == 4) || ($.devSwitchType == 6) || ($.devSwitchType == 7)) {
 				//Electra
-				montlycosts = (global * $.costsT1);
+				
+				if ($.devSwitchType == 0) {
+					montlycosts = (global * $.costsT1);
+				}
+				else if ($.devSwitchType == 4) {
+					montlycosts = (global * $.costsR1);
+				}
+				else if ($.devSwitchType == 6) {
+					montlycosts = (global * $.costsT2);
+				}
+				else if ($.devSwitchType == 7) {
+					montlycosts = (global * $.costsR2);
+				}
+				
 				$.UsageChart.highcharts().addSeries({
 					id: 'energy',
-					name: ($.devSwitchType == 0) ? $.t('Usage') : $.t('Generated'),
+					name: ($.devSwitchType == 0 || $.devSwitchType == 6) ? $.t('Usage') : $.t('Generated'),
 					showInLegend: false,
 					color: 'rgba(3,190,252,0.8)',
 					yAxis: 0
@@ -9849,7 +9914,7 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 	htmlcontent = '<p><center><h2>' + unescape(name) + '</h2></center></p>\n';
 	htmlcontent += $('#dayweekmonthyearlog').html();
 
-	if ((switchtype == 0) || (switchtype == 1) || (switchtype == 2) || (switchtype == 4)) {
+	if ((switchtype == 0) || (switchtype == 1) || (switchtype == 2) || (switchtype == 4) || (switchtype == 6) || (switchtype == 7)) {
 		$.costsT1 = 0.2389;
 		$.costsT2 = 0.2389;
 		$.costsR1 = 0.08;
@@ -9884,7 +9949,7 @@ function ShowCounterLogSpline(contentdiv, backfunction, id, name, switchtype) {
 	}
 	$($.content).i18n();
 
-	var graph_title = (switchtype == 4) ? $.t('Generated') : $.t('Usage');
+	var graph_title = (switchtype == 4 || switchtype == 7) ? $.t('Generated') : $.t('Usage');
 	graph_title += ' ' + Get5MinuteHistoryDaysGraphTitle();
 
 	$.DayChart = $($.content + ' #daygraph');
