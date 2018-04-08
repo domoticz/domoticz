@@ -48,10 +48,18 @@ class CTado : public CDomoticzHardwareBase
 			
 		};
 
+		enum eTadoApiMethod {
+			Put,
+			Post,
+			Get,
+			Delete
+		};
+
 		bool GetTadoApiEnvironment(std::string url);
 		bool Login();
 		bool GetHomes();
 		bool GetZones(const _tTadoHome & TadoHome);
+		bool SendToTadoApi(const eTadoApiMethod Method, const std::string sUrl, const std::string sPostData, std::string & sResult, Json::Value & DecodedResponse, const bool DecodeJsonResponse, const bool IgnoreEmptyResponse);
 		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
 		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone);
 		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
