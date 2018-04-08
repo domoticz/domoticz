@@ -245,9 +245,19 @@ namespace Plugins {
 				if (uHeaderText == "CHUNKED")
 					m_Chunked = true;
 			}
-			PyObject*	pObj = Py_BuildValue("s", sHeaderText.c_str());
-			if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1)
-			{
+			PyObject* pObj = Py_BuildValue("s", sHeaderText.c_str());
+			PyObject* pPrevObj = PyDict_GetItemString((PyObject*)m_Headers, sHeaderName.c_str());
+			// If the header is not unique, we concatenate with '\n'. RFC2616 recommends comma, but it doesn't work for cookies for instance
+			if (pPrevObj != NULL) {
+				std::string sCombin = PyUnicode_AsUTF8(pPrevObj);
+				sCombin += '\n' + sHeaderText;
+				PyObject*   pObjCombin = Py_BuildValue("s", sCombin.c_str());
+				if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObjCombin) == -1) {
+					_log.Log(LOG_ERROR, "(%s) failed to append key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
+				}
+				Py_DECREF(pObjCombin);
+			}
+			else if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1) {
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
 			}
 			Py_DECREF(pObj);
