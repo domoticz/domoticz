@@ -223,7 +223,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		},
 		language: $.DataTableLanguage
 	});
-		
 
 	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
 		return {
@@ -250,10 +249,10 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	}]);
 
-	app.factory('deviceApi', function($q, domoticzApi, permissions) {
+	app.factory('deviceApi', function($q, domoticzApi) {
 		return {
 			getDeviceInfo: getDeviceInfo,
-			setColor: setColor
+            updateDeviceInfo: updateDeviceInfo
 		};
 
 		function getDeviceInfo(deviceIdx) {
@@ -265,22 +264,74 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				});
 		}
 
-		function setColor(deviceIdx, color, brightness) {
-			if (permissions.hasPermission('Viewer')) {
-				var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-			}
-
-			return domoticzApi.sendCommand('setcolbrightnessvalue', {
-				idx: deviceIdx,
-				color: color,
-				brightness: brightness
-			});
+		function updateDeviceInfo(deviceIdx, data) {
+			return domoticzApi.sendRequest(Object.assign({}, data, {
+				idx: deviceIdx
+			}));
 		}
 	});
-	
+
+    app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
+        return {
+            switchOff: switchOff,
+            setColor: setColor,
+            brightnessUp: createCommand('brightnessup'),
+            brightnessDown: createCommand('brightnessdown'),
+            nighLight: createCommand('nightlight'),
+            fullLight: createCommand('fulllight'),
+            whiteLight: createCommand('whitelight'),
+            colorWarmer: createCommand('warmer'),
+            colorColder: createCommand('cooler'),
+            discoUp: createCommand('discoup'),
+            discoDown: createCommand('discodown'),
+            discoMode: createCommand('discomode'),
+            speedUp: createCommand('speedup'),
+            speedDown: createCommand('speeddown'),
+            speedMin: createCommand('speedmin'),
+            speedMax: createCommand('speedmax')
+        };
+
+        function createCommand(command) {
+            return function(deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand(command, {
+                        idx: deviceIdx
+                    });
+                });
+            }
+        }
+
+        function switchOff(deviceIdx) {
+            return checkPersmissions().then(function () {
+                return domoticzApi.sendCommand('switchlight', {
+                    idx: deviceIdx,
+                    switchcmd: 'Off'
+                });
+            });
+        }
+
+        function setColor(deviceIdx, color, brightness) {
+            return checkPersmissions().then(function () {
+                return domoticzApi.sendCommand('setcolbrightnessvalue', {
+                    idx: deviceIdx,
+                    color: color,
+                    brightness: brightness
+                });
+            });
+        }
+
+        function checkPersmissions() {
+            if (permissions.hasPermission('Viewer')) {
+                var message = $.t('You do not have permission to do that!');
+                HideNotify();
+                ShowNotify(message, 2500, true);
+                return $q.reject(message);
+            } else {
+                return $q.resolve();
+            }
+        }
+    });
+
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 		return {
 			initialised: false,
@@ -306,7 +357,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						url: url,
 					}).then(function successCallback(response) {
 						callback_fn();
-					});               
+					});
 				}
 				else {
 					var settings = {
@@ -434,6 +485,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/timers.html',
 				controller: 'DeviceTimersController',
 				controllerUrl: 'app/DeviceTimers.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/LightEdit', angularAMD.route({
+				templateUrl: 'views/device_light_edit.html',
+				controller: 'DeviceLightEditController',
+				controllerUrl: 'app/DeviceLightEdit.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightLog', angularAMD.route({

@@ -230,7 +230,7 @@ define(['app'], function (app) {
         }
     });
 
-    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, deviceApi, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
+    app.controller('DeviceTimersController', function ($scope, $rootScope, $routeParams, $location, deviceApi, deviceLightApi, deviceRegularTimers, deviceSetpointTimers, deviceTimerOptions, deviceTimerConfigUtils) {
         var vm = this;
         var $element = $('.js-device-timers:last');
         var setColorTimerId;
@@ -439,7 +439,7 @@ define(['app'], function (app) {
             clearTimeout(setColorTimerId);
 
             setColorTimerId = setTimeout(function () {
-                deviceApi.setColor(
+                deviceLightApi.setColor(
                     vm.deviceIdx,
                     vm.lightSettings.color,
                     vm.lightSettings.brightness

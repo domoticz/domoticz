@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1501
+# ref 1502
 
 CACHE:
 # CSS
@@ -475,6 +475,7 @@ app/app.js
 app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
+app/DeviceLightEdit.js
 app/DevicesController.js
 app/DeviceTimers.js
 app/DPFibaroController.js
@@ -587,6 +588,7 @@ views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html
+views/device_light_edit.html
 views/device_light_log.html
 views/device_temperature_log.html
 views/device_temperature_report.html

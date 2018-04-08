@@ -10970,7 +10970,7 @@ function getLEDType(SubType) {
 	return LEDType;
 }
 
-function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType) {
+function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, callback) {
 	
 	let color = {};
 	let devIdx = idx;
@@ -11175,13 +11175,16 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
 	
 	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
-		clearInterval($.setColValue);
+		clearTimeout($.setColValue);
 
 		let color = $(this).wheelColorPicker('getColor');
 		let dimlevel = Math.round((color.m*99)+1); // 1..100
 		let JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
-		$.setColValue = setInterval(function () { SetColValue(devIdx, JSONColor, dimlevel); }, 400);
+		$.setColValue = setTimeout(function () {
+			var fn = callback || SetColValue;
+			fn(devIdx, JSONColor, dimlevel);
+		}, 400);
 	});
 }
 
