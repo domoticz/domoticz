@@ -51,6 +51,7 @@
 		}
 
 extern std::string szUserDataFolder;
+extern std::string szPyVersion;
 
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
 
@@ -105,7 +106,7 @@ namespace Plugins {
 
 		m_thread = new boost::thread(boost::bind(&CPluginSystem::Do_Work, this));
 
-		std::string sVersion(Py_GetVersion());
+		szPyVersion = Py_GetVersion();
 
 		try
 		{
@@ -114,7 +115,7 @@ namespace Plugins {
 				Py_Finalize();
 			}
 
-			sVersion = sVersion.substr(0, sVersion.find_first_of(' '));
+			std::string sVersion = szPyVersion.substr(0, szPyVersion.find_first_of(' '));
 			if (sVersion < MINIMUM_PYTHON_VERSION)
 			{
 				_log.Log(LOG_STATUS, "PluginSystem: Invalid Python version '%s' found, '%s' or above required.", sVersion.c_str(), MINIMUM_PYTHON_VERSION);
@@ -143,7 +144,7 @@ namespace Plugins {
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s'.", sVersion.c_str());
 		}
 		catch (...) {
-			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", sVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
+			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", szPyVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
 			return false;
 		}
 
@@ -304,6 +305,11 @@ namespace Plugins {
 					bProcessed = true;
 					try
 					{
+						const CPlugin* pPlugin = Message->Plugin();
+						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
+						{
+							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") Processing '" + std::string(Message->Name()) + "' message");
+						}
 						Message->Process();
 					}
 					catch(...)
@@ -331,10 +337,16 @@ namespace Plugins {
 			m_thread = NULL;
 		}
 
-		// Hardware should already be stopped to just flush the queue (should already be empty)
+		// Hardware should already be stopped so just flush the queue (should already be empty)
 		boost::lock_guard<boost::mutex> l(PluginMutex);
 		while (!PluginMessageQueue.empty())
 		{
+			CPluginMessageBase* Message = PluginMessageQueue.front();
+			const CPlugin* pPlugin = Message->Plugin();
+			if (pPlugin)
+			{
+				_log.Log(LOG_NORM, "(" + pPlugin->Name + ") ' flushing " + std::string(Message->Name()) + "' queue entry");
+			}
 			PluginMessageQueue.pop();
 		}
 
@@ -355,17 +367,41 @@ namespace Plugins {
 	void CPluginSystem::LoadSettings()
 	{
 		//	Add command to message queue for every plugin
-		boost::lock_guard<boost::mutex> l(PluginMutex);
 		for (std::map<int, CDomoticzHardwareBase*>::iterator itt = m_pPlugins.begin(); itt != m_pPlugins.end(); itt++)
 		{
 			if (itt->second)
 			{
-				SettingsDirective*	Message = new SettingsDirective((CPlugin*)itt->second);
-				PluginMessageQueue.push(Message);
+				CPlugin*	pPlugin = (CPlugin*)itt->second;
+				pPlugin->MessagePlugin(new SettingsDirective(pPlugin));
 			}
 			else
 			{
 				_log.Log(LOG_ERROR, "%s: NULL entry found in Plugins map for Hardware %d.", __func__, itt->first);
+			}
+		}
+	}
+
+	void CPluginSystem::DeviceModified(uint64_t ID)
+	{
+		std::vector<std::vector<std::string> > result;
+		result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID == '%d')", ID);
+		if (result.size() > 0)
+		{
+			std::vector<std::string> sd = result[0];
+			std::string sHwdID = sd[0];
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
+			if (pHardware != NULL)
+			{
+				std::vector<std::vector<std::string> > result;
+				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (ID == '%d')", ID);
+				if (result.size() > 0)
+				{
+					std::vector<std::string> sd = result[0];
+					std::string Unit = sd[0];
+					_log.Log(LOG_TRACE, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+					Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+					pPlugin->DeviceModified(atoi(Unit.c_str()));
+				}
 			}
 		}
 	}
@@ -531,7 +567,7 @@ namespace http {
 				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
 				if (pPlugin)
 				{
-					pPlugin->SendCommand(Unit, sAction, 0, 0);
+					pPlugin->SendCommand(Unit, sAction, 0, NoColor);
 				}
 			}
 		}

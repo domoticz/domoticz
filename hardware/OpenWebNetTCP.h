@@ -58,7 +58,7 @@ protected:
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
-    std::string m_ownPassword;
+    	std::string m_ownPassword;
 	unsigned short m_ownScanTime;
 
 	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot;
@@ -68,9 +68,9 @@ protected:
 	boost::shared_ptr<boost::thread> m_monitorThread;
 	boost::shared_ptr<boost::thread> m_heartbeatThread;
 	volatile bool m_stoprequested;
-    volatile uint32_t mask_request_status;
-    uint32_t ownCalcPass(string password, string nonce);
-    bool nonceHashAuthentication(csocket *connectionSocket);
+    	volatile uint32_t mask_request_status;
+    	uint32_t ownCalcPass(string password, string nonce);
+    	bool nonceHashAuthentication(csocket *connectionSocket);
 	csocket* connectGwOwn(const char *connectionMode);
 	void disconnect();
 	int m_heartbeatcntr;
@@ -80,24 +80,23 @@ protected:
 	bool sendCommand(bt_openwebnet& command, vector<bt_openwebnet>& response, int waitForResponse = 0, bool silent=false);
 	bool ParseData(char* data, int length, vector<bt_openwebnet>& messages);
 	bool FindDevice(int who, int where, int iInterface, int *used);
-    void UpdateSwitch(const int who, const int where, const int Level, int iInterface, const int BatteryLevel,const char *devname, const int subtype);
-    void UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int BatteryLevel, const char *devname);
-    void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname);
+	void UpdateSwitch(const int who, const int where, const int Level, int iInterface, const int BatteryLevel,const char *devname, const int subtype);
+	void UpdateBlinds(const int who, const int where, const int Command, int iInterface,const int iLevel, const int BatteryLevel, const char *devname);
+	void UpdateAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname);
 	void UpdateSensorAlarm(const int who, const int where, const int Command, const char *sCommand, int iInterface, const int BatteryLevel, const char *devname);
-    void UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, int iInterface, const int BatteryLevel, const char *devname);
-    void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
+	void UpdateCenPlus(const int who, const int where, const int Command, const int iAppValue, int iInterface, const int BatteryLevel, const char *devname);
+	void UpdateTemp(const int who, const int where, float fval, const int BatteryLevel, const char *devname);
 	void UpdateSetPoint(const int who, const int where, float fval, const char *devname);
 	void UpdatePower(const int who, const int where, double fval, const int BatteryLevel, const char *devname);
 	void UpdateEnergy(const int who, const int where, double fval, const int BatteryLevel, const char *devname);
 	bool GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy);
-	
-    void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
-    void scan_automation_lighting(const int cen_area);
-    void scan_temperature_control();
-    void scan_device();
-    void requestTime();
-    void setTime();
-    void requestBurglarAlarmStatus();
+	void UpdateDeviceValue(vector<bt_openwebnet>::iterator iter);
+  	void scan_automation_lighting(const int cen_area);
+  	void scan_temperature_control();
+  	void scan_device();
+  	void requestTime();
+  	void setTime();
+  	void requestBurglarAlarmStatus();
 	void requestDryContactIRDetectionStatus();
 	void requestEnergyTotalizer();
 	void requestAutomaticUpdatePower(int time);

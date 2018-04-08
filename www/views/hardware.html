@@ -735,8 +735,14 @@
                 <th width="70" align="center" data-i18n="ID">ID</th>
                 <th align="left" data-i18n="Name">Name</th>
                 <th width="120" align="left" data-i18n="Mac Address">Mac Address</th>
+                <th width="60" align="left" data-i18n="Status">Status</th>
             </tr>
         </thead>
+    </table>
+    <table class="display" id="lmsnodesettingstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td><a class="btn-danger sub-tabs-apply" onclick="DeleteUnusedLMSDevices();" data-i18n="Delete Unused Devices">Delete Unused Devices</a></td>
+        </tr>
     </table>
     <input type="hidden" id="idx" name="idx" value="-1">
 </div>
@@ -1028,7 +1034,7 @@
 			<label><span data-i18n="Type"></span>: </label><select id="combom1type" name="LimitlessType" style="width:100px" class="combobox ui-corner-all">
 				<option value="1">RGBW</option>
 				<option value="2">RGB</option>
-				<option value="3">White</option>
+				<option value="8">White with adjustable color temperature</option>
 				<option value="4">RGBWW</option>
 			</select>
 			<br><br>
@@ -1584,7 +1590,24 @@
 				</tr>
 			</table>
 		</div>
-		<div id="divwinddelen">
+		<div id="divhoneywell">
+			<br>
+			<table class="display" id="hardwareparamshoneywell" border="0" cellpadding="0" cellspacing="20">
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Access token">Access token</span>:</label></td>
+					<td><input type="text" id="hwAccessToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"><label><span data-i18n="Refresh token">Refresh token</span>:</label></td>
+					<td><input type="text" id="hwRefreshToken" style="width: 150px; padding: .2em;" class="text ui-widget-content ui-corner-all" /></td>
+				</tr>
+				<tr>
+					<td align="right" style="width:110px"></td>
+					<td>You need to provide both the access and refresh token. We <a href="http://www.netwalk.be/lyric" target="_blank">provide</a> an easy to use interface to get them.</td>
+				</tr>
+			</table>
+		</div>
+    <div id="divwinddelen">
 			<br>
 			<table class="display" id="hardwareparamswinddelen" border="0" cellpadding="0" cellspacing="20">
 				<tr>
@@ -1782,6 +1805,9 @@
 					<option value="0x5503" data-i18n="Rain">Rain</option>
 					<option value="0xF102" data-i18n="RGB Switch">RGB Switch</option>
 					<option value="0xF101" data-i18n="RGBW Switch">RGBW Switch</option>
+					<option value="0xF104" data-i18n="RGBWW Switch">RGBWW Switch</option>
+					<option value="0xF106" data-i18n="RGBWZ Switch">RGBWZ Switch</option>
+					<option value="0xF107" data-i18n="RGBWWZ Switch">RGBWWZ Switch</option>
 					<option value="0x5D01" data-i18n="Scale">Scale (Weight)</option>
 					<option value="0xF43E" data-i18n="Selector Switch">Selector Switch</option>
 					<option value="0xF303" data-i18n="Soil Moisture">Soil Moisture</option>

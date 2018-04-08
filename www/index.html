@@ -83,7 +83,9 @@
 		<link type="text/css" rel="stylesheet" href="css/jquery-ui-timepicker-addon.css" />
 		<link type="text/css" rel="stylesheet" href="acttheme/custom.css" />
 		<link type="text/css" rel="stylesheet" href="css/remote.css" />
+		<link type="text/css" rel="stylesheet" href="css/wheelcolorpicker.css" />
 
+		<script src="js/babel-polyfill-6.26.0.js"></script>
 		<script src="js/jquery-3.3.1.min.js"></script>
 		<script src="js/i18next-1.8.0.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
@@ -93,6 +95,7 @@
 		<script src="js/jquery.uix.multiselect.min.js"></script>
 		<script src="js/jquery.ddslick.min.js"></script>
 		<script src="js/colpick.js"></script>
+		<script src="js/jquery.wheelcolorpicker.js"></script>
 		<script type="text/javascript" src="js/noty/jquery.noty.js"></script>
 		<script type="text/javascript" src="js/noty/layouts/top.js"></script>
 		<script type="text/javascript" src="js/noty/layouts/topLeft.js"></script>
@@ -101,6 +104,7 @@
 		<script type="text/javascript" charset="utf-8" src="js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/ZeroClipboard.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/dataTables.tableTools.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/dataTables.select.min.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/date.format.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/highcharts.js"></script>
 		<script type="text/javascript" charset="utf-8" src="js/highcharts-more.js"></script>
@@ -480,30 +484,41 @@ $(document).ready(function() {
 	</div>
 	<div id="rgbw_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseRGBWPopup()"></div>
-		<table class="display" border="0" cellpadding="0" cellspacing="0">
-			<tr id="LedColor">
-				<td>
-					<table class="display" id="ledtable" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td align="left" style="width:200px">
-							<div id="popup_picker" width="100px" height="100px"></div>
-						</td>
-						<td align="left" style="vertical-align: center;">
-							<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
-							<a id="popup_switch_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
-						</td>
-					</tr>
-					</table>
-				</td>
-			</tr>
-		</table>
-		<span data-i18n="White">White</span>:<br>
-		<div style="width:90%; left: 14px; bottom: 52px;" class="dimslider" id="white_slider" data-idx="popupslider" data-type="norm" data-maxlevel="255" data-isprotected="0" data-svalue="0"></div>
-		<br><br>
-		<span data-i18n="Brightness">Brightness</span>:<br>
-		<div style="width:90%; left: 14px; bottom: 11px;" class="dimslider" id="slider" data-idx="popupslider" data-type="norm" data-maxlevel="100" data-isprotected="0" data-svalue="33"></div>
-		<br>
-		<br>
+		<div id="rgbw_popup_colour">
+			<span data-i18n="Color">Color</span>:<br>
+			<table class="display" border="0" cellpadding="0" cellspacing="0">
+				<tr id="PopupLedColor">
+					<td>
+						<table id="ledtable" class="display" border="0" cellpadding="0" cellspacing="0">
+						<tr id="ColorMode">
+							<td><a><img src="images/RGB48.png" class="lcursor pickermodergb unselected" height="48" width="48"></a>
+							<a><img src="images/RGB48_Sel.png" class="lcursor pickermodergb selected" height="48" width="48"></a>
+							<a><img src="images/Coltemp48.png" class="lcursor pickermodetemp unselected" height="48" width="48"></a>
+							<a><img src="images/Coltemp48_Sel.png" class="lcursor pickermodetemp selected" height="48" width="48"></a>
+							<a><img src="images/White48.png" class="lcursor pickermodewhite unselected" height="48" width="48"></a>
+							<a><img src="images/White48_Sel.png" class="lcursor pickermodewhite selected" height="48" width="48"></a>
+							<a><img src="images/Customw48.png" class="lcursor pickermodecustomw unselected" height="48" width="48"></a>
+							<a><img src="images/Customw48_Sel.png" class="lcursor pickermodecustomw selected" height="48" width="48"></a>
+							<a><img src="images/Customww48.png" class="lcursor pickermodecustomww unselected" height="48" width="48"></a>
+							<a><img src="images/Customww48_Sel.png" class="lcursor pickermodecustomww selected" height="48" width="48"></a></td>
+						</tr>
+						<tr>
+							<td align="left" style="width:200px">
+								<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl"/>
+							</td>
+							<td align="left" style="vertical-align: center;">
+								<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
+								<a id="popup_switch_off"><img src="images/pushoff48.png" class="lcursor" height="48" width="48"></a>
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+			<!--<span data-i18n="Brightness">Brightness</span>:<br>
+			<div style="width:90%; left: 14px; bottom: 11px;" class="dimslider" id="slider" data-idx="popupslider" data-type="norm" data-maxlevel="100" data-isprotected="0" data-svalue="33"></div>
+			<br><br>-->
+		</div>
 	</div>
 	<div id="setpoint_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseSetpointPopup()"></div>
@@ -582,27 +597,7 @@ $(document).ready(function() {
 	  <h2 data-i18n="Year">Year</h2>
 	  <div id="globalyeargraph" style="height: 300px;"></div>
 	</div>
-	<div id="lightlog" style="display:none;">
-		<table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<thead>
-						<tr>
-								<th width="140" align="left" data-i18n="Date">Date</th>
-								<th data-i18n="Data">Data</th>
-						</tr>
-				</thead>
-		</table>
-		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" id="clearlog" onclick="ClearLightLog();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-		<br>
-		<div id="lightgraph" style="height: 200px;"></div>
-	</div>
+
 	<div id="textlog" style="display:none;">
 		<table class="display" id="texttable" border="0" cellpadding="0" cellspacing="0" width="100%">
 				<thead>
@@ -1299,103 +1294,6 @@ $(document).ready(function() {
 				<tr valign="middle">
 					<th width="30" align="right" id="ftext"></th>
 					<th width="60" align="right" data-i18n="Rainfall">Rainfall</th>
-					<th width="40" align="right">&lt;&gt;</th>
-				</tr>
-			</thead>
-		</table>
-		<br>
-		<div id="usagegraph" style="height: 240px;"></div>
-	</div>
-	<div id="toptextmonthtemp" style="display:none;">
-		<a class="btnstylerev" onclick="ShowYearReportTemp(0)" data-i18n="Back">Back</a>&nbsp;
-		<h1 id="theader"></h1>
-		<br>
-		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
-		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
-		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
-		<br>
-	</div>
-	<div id="toptextyearreporttemp" style="display:none;">
-		<table class="display" border="0" cellpadding="0" cellspacing="0">
-		<tr>
-			<a id="backbutton" class="btnstylerev" onclick="ShowTemps()" data-i18n="Back">Back</a>&nbsp;
-			<h1 id="theader"></h1>
-		  <td align="right">
-				<span data-i18n="Year">Year</span>:
-				<select id="comboyear" style="width:74px" class="combobox ui-corner-all">
-					<option value="2012">2012</option>
-					<option value="2013">2013</option>
-					<option value="2014">2014</option>
-					<option value="2015">2015</option>
-					<option value="2016">2016</option>
-					<option value="2017">2017</option>
-					<option value="2018">2018</option>
-				</select>
-		  </td>
-		</tr>
-		</table>
-		<br>
-		<span data-i18n="Hottest Day">Hottest Day</span>: <span id="mhigh">-</span><br>
-		<span data-i18n="Coldest Day">Coldest Day</span>: <span id="mlow">-</span><br>
-		<div id="ddays"><span data-i18n="Degree Days">Degree Days</span>: <span id="mddays">-</span><br></div>
-		<br>
-	</div>
-	<div id="reportviewtemp" style="display:none;">
-		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<thead>
-				<tr valign="middle">
-					<th width="30" align="right" id="ftext"></th>
-					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
-					<th width="60" align="right" data-i18n="Avg. Temp">Avg. Temp</th>
-					<th width="60" align="right" data-i18n="Min. Temp">Min. Temp</th>
-					<th width="60" align="right" data-i18n="Max. Temp">Max. Temp</th>
-					<th width="40" align="right">&lt;&gt;</th>
-				</tr>
-			</thead>
-		</table>
-		<br>
-		<div id="usagegraph" style="height: 240px;"></div>
-	</div>
-	<div id="reportviewtempmonth" style="display:none;">
-		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<thead>
-				<tr valign="middle">
-					<th width="30" align="right" id="ftext"></th>
-					<th width="70" align="left"></th>
-					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
-					<th width="60" align="right" data-i18n="Avg. Temp">Avg. Temp</th>
-					<th width="60" align="right" data-i18n="Min. Temp">Min. Temp</th>
-					<th width="60" align="right" data-i18n="Max. Temp">Max. Temp</th>
-					<th width="40" align="right">&lt;&gt;</th>
-				</tr>
-			</thead>
-		</table>
-		<br>
-		<div id="usagegraph" style="height: 240px;"></div>
-	</div>
-	<div id="reportviewhumidity" style="display:none;">
-		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<thead>
-				<tr valign="middle">
-					<th width="30" align="right" id="ftext"></th>
-					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
-					<th width="60" align="right" data-i18n="Avg. Hum">Avg. Hum</th>
-					<th width="60" align="right" data-i18n="Min. Hum">Min. Hum</th>
-					<th width="60" align="right" data-i18n="Max. Hum">Max. Hum</th>
-					<th width="40" align="right">&lt;&gt;</th>
-				</tr>
-			</thead>
-		</table>
-		<br>
-		<div id="usagegraph" style="height: 240px;"></div>
-	</div>
-	<div id="reportviewhumiditymonth" style="display:none;">
-		<table class="display myrighttable" id="reporttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<thead>
-				<tr valign="middle">
-					<th width="30" align="right" id="ftext"></th>
-					<th width="70" align="left"></th>
-					<th width="60" align="right" data-i18n="Humidity">Humidity</th>
 					<th width="40" align="right">&lt;&gt;</th>
 				</tr>
 			</thead>

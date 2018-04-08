@@ -96,6 +96,12 @@ describe('Time', function()
 			assert.is_same(utcRaw, utcT.raw)
 		end)
 
+		it('#tag should have leading zeros in raw time', function()
+			local t = Time('2017-01-01 01:02:03')
+			assert.is_same('01:02:03', t.rawTime)
+			assert.is_same('2017-01-01', t.rawDate)
+		end)
+
 		it('should have isToday', function()
 			assert.is_true(utcT.isToday)
 		end)

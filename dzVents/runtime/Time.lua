@@ -236,8 +236,8 @@ local function Time(sDate, isUTC, _testMS)
 		self = time
 	end
 
-	self.rawDate = self.year .. '-' .. self.month .. '-' .. self.day
-	self.rawTime = self.hour .. ':' .. self.min .. ':' .. self.sec
+	self.rawDate = self.year .. '-' .. string.format("%02d", self.month) .. '-' .. string.format("%02d", self.day)
+	self.rawTime = string.format("%02d", self.hour) .. ':' .. string.format("%02d", self.min) .. ':' .. string.format("%02d", self.sec)
 	self.milliSeconds = ms
 	self.milliseconds = ms
 	self.dayAbbrOfWeek = LOOKUP[self.wday]

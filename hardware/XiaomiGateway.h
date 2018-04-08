@@ -38,8 +38,10 @@ private:
 	bool m_ListenPort9898;
 	std::string GetGatewayKey();
 	unsigned int GetShortID(const std::string & nodeid);
-	std::string m_GatewayRgbHex;
-	int m_GatewayBrightnessInt;
+	uint8_t m_GatewayRgbR;          //TODO: Remove, otherwise colors will be mixed up if controlling more than one bulb
+	uint8_t m_GatewayRgbG;          //TODO: Remove, otherwise colors will be mixed up if controlling more than one bulb
+	uint8_t m_GatewayRgbB;          //TODO: Remove, otherwise colors will be mixed up if controlling more than one bulb
+	uint8_t m_GatewayBrightnessInt; //TODO: Remove, otherwise colors will be mixed up if controlling more than one bulb
 	std::string m_GatewaySID;
 	std::string m_GatewayIp;
 	std::string m_LocalIp;
