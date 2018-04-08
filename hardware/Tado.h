@@ -31,11 +31,22 @@ class CTado : public CDomoticzHardwareBase
 			std::string Name;
 			std::string HomeId;
 			std::string Type;
+
+			bool operator < (const _tTadoZone& str) const
+			{
+				return (Id < str.Id);
+			}
 		};
 
 		struct _tTadoHome {
 			std::string Id;
 			std::string Name;
+			std::vector<_tTadoZone> Zones;
+
+			bool operator < (const _tTadoHome& str) const
+			{
+				return (Id < str.Id);
+			}
 		};
 
 		std::map <std::string, std::string> m_TadoEnvironment;
@@ -50,7 +61,7 @@ class CTado : public CDomoticzHardwareBase
 		bool GetTadoApiEnvironment(std::string url);
 		bool Login();
 		bool GetHomes();
-		bool GetZones(const _tTadoHome & TadoHome);
+		bool GetZones(_tTadoHome & TadoHome);
 		bool SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, std::string & sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
 		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
 		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone);
@@ -69,8 +80,6 @@ class CTado : public CDomoticzHardwareBase
 		bool m_bDoGetHomes;
 		bool m_bDoGetZones;
 		bool m_bDoGetEnvironment;
-		int m_timesUntilTokenRefresh;
 
-		std::map<int, _tTadoZone> m_TadoZones;
-		std::map<int, _tTadoHome> m_TadoHomes;
+		std::vector<_tTadoHome> m_TadoHomes;
 };

@@ -1,10 +1,15 @@
-// Nest OAuth API
+// Tado plugin for Domoticz
 //
-// This plugin uses the proper public Nest Developer API as 
-// opposed to the old plugin which used the mobile interface API.
+// This plugin uses the same API as the my.tado.com web interface. Unfortunately this 
+// API is unofficial and undocumented, but until Tado releases an official and 
+// documented API, it's the best we've got.
+//
+// Main documentation for parts of the API can be found at 
+// http://blog.scphillips.com/posts/2017/01/the-tado-api-v2/ but unfortunately 
+// this information is slightly outdated, the authentication part in particular.
+
 
 #include "stdafx.h"
-#include "NestOAuthAPI.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "hardwaretypes.h"
@@ -21,8 +26,10 @@
 
 
 #define round(a) ( int ) ( a + .5 )
-#define TADO_POLL_INTERVAL 30
-#define TADO_API_ENVIRONMENT_URL "https://my.tado.com/webapp/env.js"
+const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
+const std::string TADO_API_ENVIRONMENT_URL = "https://my.tado.com/webapp/env.js";
+const int TADO_TOKEN_MAXLOOPS = 12;	// Default token validity is 600 seconds before it needs to be refreshed.
+									// Each cycle takes 30-35 seconds, so let's stay a bit on the safe side.
 
 CTado::~CTado(void)
 {
@@ -58,8 +65,6 @@ void CTado::Init()
 	m_bDoGetHomes = true;
 	m_bDoGetZones = false;
 	m_bDoGetEnvironment = true;
-
-	m_timesUntilTokenRefresh = 0;
 
 	boost::trim(m_TadoUsername);
 	boost::trim(m_TadoPassword);
@@ -100,7 +105,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	int ZoneIdx = (node_id % 1000) / 100;
 	int ServiceIdx = (node_id % 1000) % 100;
 
-	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(node_id) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoZones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(node_id) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
 
 	// ServiceIdx 1 = Away (Read only)
 	// ServiceIdx 2 = Setpoint => should be handled in SetSetPoint
@@ -123,6 +128,8 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	return false;
 }
 
+// Changing the setpoint or heating mode is an overlay on the schedule. 
+// An overlay can end automatically (TADO_MODE, TIMER) or manually (MANUAL).
 bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string terminationType = "TADO_MODE")
 {
 	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp)+", termination type="+terminationType);
@@ -131,9 +138,16 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	int ZoneIdx = (idx % 1000) / 100;
 	int ServiceIdx = (idx % 1000) % 100;
 
-	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoZones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	// Check if the home and zone actually exist.
+	if (!& m_TadoHomes[HomeIdx] || !& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	{
+		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
+		return false;
+	}
 
-	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoZones[ZoneIdx].HomeId + "/zones/" + m_TadoZones[ZoneIdx].Id + "/overlay";
+	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
 	std::string _sResponse;
 	Json::Value _jsPostData;
 	Json::Value _jsPostDataSetting;
@@ -163,12 +177,15 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 
 	_log.Log(LOG_TRACE, "Tado: Response: " + _sResponse);
 
-	if (temp > -1)
+	/* if (temp > -1)
 	{
 		if (_jsRoot["setting"]["temperature"]["celsius"].asFloat() == temp) {
-			SendSetPointSensor(idx, temp, m_TadoHomes[HomeIdx].Name + " " + m_TadoZones[ZoneIdx].Name + " Setpoint");
+			SendSetPointSensor(idx, temp, m_TadoHomes[HomeIdx].Name + " " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " Setpoint");
 		}
-	}
+	} */
+
+	// Trigger a zone refresh
+	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
 
 	return true;
 }
@@ -199,7 +216,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		return false;
 	}
 
-	std::string _sURL = m_TadoEnvironment["apiEndpoint"] + "/token";
+	std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
 	std::ostringstream s;
 	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
 
@@ -225,7 +242,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 
 	Json::Value _jsRoot;
 
-	if (!SendToTadoApi(eTadoApiMethod::Post, _sURL, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false))
+	if (!SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false))
 	{
 		_log.Log(LOG_ERROR, "Tado: failed to get token.");
 		return false;
@@ -247,9 +264,6 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 	
 	_log.Log(LOG_STATUS, "Tado: Received access token from API.");
 	_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
-	
-	// Reset the counter
-	m_timesUntilTokenRefresh = 7;
 
 	return true;
 }
@@ -395,7 +409,14 @@ bool CTado::CancelOverlay(const int Idx)
 	int ZoneIdx = (Idx % 1000) / 100;
 	int ServiceIdx = (Idx % 1000) % 100;
 
-	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoZones[ZoneIdx].Id + "/overlay";
+	// Check if the home and zone actually exist.
+	if (!& m_TadoHomes[HomeIdx] || !& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	{
+		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
+		return false;
+	}
+
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
 	std::string _sResponse;
 
 	if (!SendToTadoApi(eTadoApiMethod::Delete, _sUrl, "", _sResponse, std::vector<std::string>{}, *(new Json::Value), false, true, true))
@@ -404,6 +425,10 @@ bool CTado::CancelOverlay(const int Idx)
 		return false;
 	}
 	_log.Log(LOG_STATUS, "Tado: Setpoint overlay cancelled.");
+
+	// Trigger a zone refresh
+	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
+
 	return true;
 }
 
@@ -412,6 +437,7 @@ void CTado::Do_Work()
 	_log.Log(LOG_TRACE, "Tado: Do_Work() called.");
 	_log.Log(LOG_STATUS, "Tado: Worker started. Will poll every " + boost::to_string(TADO_POLL_INTERVAL) + " seconds.");
 	int iSecCounter = TADO_POLL_INTERVAL - 5;
+	int iTokenCycleCount = 0;
 
 	while (!m_stoprequested)
 	{
@@ -454,23 +480,25 @@ void CTado::Do_Work()
 			}
 
 			// Check if the authentication token is still useable.
-			if (m_timesUntilTokenRefresh == 0)
+			if (iTokenCycleCount++ > TADO_TOKEN_MAXLOOPS)
 			{
 				_log.Log(LOG_NORM, "Tado: refreshing token.");
 				if (!GetAuthToken(m_TadoAuthToken, m_TadoRefreshToken, true)) {
 					_log.Log(LOG_ERROR, "Tado: failed to refresh authentication token. Skipping this cycle.");
 				}
+				// Reset the counter back to the maximum
+				else iTokenCycleCount = TADO_TOKEN_MAXLOOPS;
 			}
-			// Else decrease the number of iterations that we can use the token by 1.
-			else m_timesUntilTokenRefresh--;
+			// Increase the number of cycles that the token has been used by 1.
+			else iTokenCycleCount++;
 
 			// Iterate through the discovered homes and zones. Get some state information.
 			for (int HomeIndex = 0; HomeIndex < (int)m_TadoHomes.size(); HomeIndex++) {
-				for (int ZoneIndex = 0; ZoneIndex < (int)m_TadoZones.size(); ZoneIndex++)
+				for (int ZoneIndex = 0; ZoneIndex < (int)m_TadoHomes[HomeIndex].Zones.size(); ZoneIndex++)
 				{
-					if (!GetZoneState(HomeIndex, ZoneIndex, m_TadoHomes[HomeIndex], m_TadoZones[ZoneIndex])) 
+					if (!GetZoneState(HomeIndex, ZoneIndex, m_TadoHomes[HomeIndex], m_TadoHomes[HomeIndex].Zones[ZoneIndex])) 
 					{
-						_log.Log(LOG_ERROR, "Tado: Failed to get state for home '" + m_TadoHomes[HomeIndex].Name + "'");
+						_log.Log(LOG_ERROR, "Tado: Failed to get state for home '" + m_TadoHomes[HomeIndex].Name + "', zone '" + m_TadoHomes[HomeIndex].Zones[ZoneIndex].Name + "'");
 					}
 				}
 			}
@@ -479,6 +507,7 @@ void CTado::Do_Work()
 	_log.Log(LOG_STATUS, "Tado: Worker stopped.");
 }
 
+// Goes through the Tado web interface environment file and attempts to regex match the specified key.
 bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string &sValue)
 {
 	boost::match_results<std::string::const_iterator> _Matches;
@@ -499,14 +528,14 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 }
 
 
-// Grabs the web app environment
+// Grabs the web app environment file
 bool CTado::GetTadoApiEnvironment(std::string sUrl)
 {
 	_log.Log(LOG_TRACE, "Tado: GetTadoApiEnvironment called with sUrl="+sUrl);
 	// This is a bit of a special case. Since we pretend to be the web
 	// application (my.tado.com) we have to play by its rules. It works
 	// with some information like a client id and a client secret. We 
-	// have to pick that environment information from the web page and 
+	// have to pluck that environment information from the web page and 
 	// then parse it so we can use it in our future calls.
 
 	std::string _sResponse;
@@ -598,20 +627,24 @@ bool CTado::GetHomes() {
 		_tTadoHome _structTadoHome;
 		_structTadoHome.Name = _jsAllHomes[i]["name"].asString();
 		_structTadoHome.Id = _jsAllHomes[i]["id"].asString();
-		m_TadoHomes[i] = _structTadoHome;
+		m_TadoHomes.push_back(_structTadoHome);
 
-		_log.Log(LOG_STATUS, "Tado: Registered home " + _structTadoHome.Name + " with id " + _structTadoHome.Id);
+		_log.Log(LOG_STATUS, "Tado: Registered home '" + _structTadoHome.Name + "' with id " + _structTadoHome.Id);
 	}
+	// Sort the homes so they end up in the same order every time.
+	std::sort(m_TadoHomes.begin(), m_TadoHomes.end());
 
 	return true;
 }
 
 // Gets all the zones for a particular home
-bool CTado::GetZones(const _tTadoHome &tTadoHome) {
+bool CTado::GetZones(_tTadoHome &tTadoHome) {
 
 	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + tTadoHome.Id + "/zones";
 	std::string _sResponse;
 	Json::Value _jsRoot;
+
+	tTadoHome.Zones.clear();
 
 	if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot))
 	{
@@ -628,9 +661,16 @@ bool CTado::GetZones(const _tTadoHome &tTadoHome) {
 		_TadoZone.Name = _jsRoot[zoneIdx]["name"].asString();
 		_TadoZone.Type = _jsRoot[zoneIdx]["type"].asString();
 
-		_log.Log(LOG_NORM, "Tado: Registered zone " + _TadoZone.Id + " '" + _TadoZone.Name + "' of type " + _TadoZone.Type);
+		_log.Log(LOG_NORM, "Tado: Registered Zone " + _TadoZone.Id + " '" + _TadoZone.Name + "' of type " + _TadoZone.Type);
 
-		m_TadoZones[zoneIdx] = _TadoZone;
+		tTadoHome.Zones.push_back(_TadoZone);
+	}
+	
+	// Sort the zones based on Id (defined in structure) so we always get them in the same order.
+	std::sort(tTadoHome.Zones.begin(), tTadoHome.Zones.end());
+
+	for (int i = 0; (unsigned int)i < tTadoHome.Zones.size(); i++) {
+		_log.Log(LOG_NORM, "Zone: " + tTadoHome.Zones[i].Name);
 	}
 
 	return true;
@@ -642,14 +682,9 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 				const bool bDecodeJsonResponse, const bool bIgnoreEmptyResponse, const bool bSendAuthHeaders)
 {
 	try {
-
+		// If there is no token stored then there is no point in doing a request. Unless we specifically
+		// decide not to do authentication.
 		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) throw std::runtime_error("No access token available.");
-
-		/* if (m_bDoLogin == true)
-		{
-			if (!Login())
-				return false;
-		} */
 
 		// Prepare the headers. Copy supplied vector.
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
