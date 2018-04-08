@@ -298,6 +298,7 @@ a.btn {
 	cursor: pointer;
 }
 
+.btnstyle3:disabled,
 .btnstyle3-dis {
 	display: inline-block;
 	height: 2.00em;
@@ -1273,6 +1274,18 @@ table.dataTable img.vflip {
 	-webkit-transform: rotate(180deg);
 	-ms-transform: rotate(180deg);
 	transform: rotate(180deg);
+}
+
+table.table-details {
+	border: 0;
+	border-spacing: 20px;
+	padding: 0;
+}
+
+table.table-details > tr > td:first-child,
+table.table-details > tbody > tr > td:first-child {
+	width: 120px;
+	text-align: right;
 }
 
 .messagepop {
