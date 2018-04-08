@@ -81,8 +81,6 @@ bool CTado::StopHardware()
 
 bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 {
-	_log.Log(LOG_NORM, "Tado: WriteToHardware() called.");
-
 	if (m_TadoAuthToken.size() == 0)
 		return false;
 
@@ -101,41 +99,37 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 
 	_log.Log(LOG_NORM, "Tado: Node " + boost::to_string(node_id) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoZones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
 
-	// ServiceIdx 1 = Away
-	// ServiceIdx 2 = Setpoint, should be handled in SetSetPoint
-	// ServiceIdx 3 = TempHum
-	// ServiceIdx 4 = Setpoint Override
+	// ServiceIdx 1 = Away (Read only)
+	// ServiceIdx 2 = Setpoint => should be handled in SetSetPoint
+	// ServiceIdx 3 = TempHum (Read only)
+	// ServiceIdx 4 = Setpoint Override 
+	// ServiceIdx 5 = Heating Enabled
+	// ServiceIdx 6 = Heating On (Read only)
+	// ServiceIdx 7 = Heating Power (Read only)
 
-	if (ServiceIdx == 4 && !bIsOn)
-	{
-		return CancelSetpointOverlay(node_id);
-	}
+	// Cancel setpoint override.
+	if (ServiceIdx == 4 && !bIsOn) return CancelOverlay(node_id);
 
+	// Enable heating (= cancel overlay that turns off heating)
+	if (ServiceIdx == 5 && bIsOn) return CancelOverlay(node_id);
 
-	if ((node_id - 3) % 3 == 0)
-	{
-		//Away
-		// return SetAway(node_id, bIsOn);
-	}
+	// Disable heating (= create overlay that turns off heating for an indeterminate amount of time)
+	if (ServiceIdx == 5 && !bIsOn) return CreateOverlay(node_id, -1, false, "MANUAL");
 
-	if ((node_id - 4) % 3 == 0)
-	{
-		// Manual Eco Mode
-		// return SetManualEcoMode(node_id, bIsOn);
-	}
-
+	
+	// If the writetohardware command is not handled by now, fail.
 	return false;
 }
 
-void CTado::SetSetpoint(const int idx, const float temp)
+bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string terminationType = "TADO_MODE")
 {
-	_log.Log(LOG_NORM, "Tado: SetSetpoint() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp));
+	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp)+", termination type="+terminationType);
 
 	int HomeIdx = idx / 1000;
 	int ZoneIdx = (idx % 1000) / 100;
 	int ServiceIdx = (idx % 1000) % 100;
 
-	_log.Log(LOG_NORM, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoZones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	// _log.Log(LOG_NORM, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoZones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
 
 
 	std::string _sUrl = m_TadoRestApiV2Endpoint + "/homes/" + m_TadoZones[ZoneIdx].HomeId + "/zones/" + m_TadoZones[ZoneIdx].Id + "/overlay";
@@ -145,35 +139,51 @@ void CTado::SetSetpoint(const int idx, const float temp)
 	std::string _sResponse;
 	Json::Value _jsPostData;
 	Json::Value _jsPostDataSetting;
-	Json::Value _jsPostDataSettingTemperature;
+
 	Json::Value _jsPostDataTermination;
 	_jsPostDataSetting["type"] = "HEATING";
-	_jsPostDataSetting["power"] = "ON";
-	_jsPostDataSettingTemperature["celsius"] = temp;
-	_jsPostDataSetting["temperature"] = _jsPostDataSettingTemperature;
+	_jsPostDataSetting["power"] = (heatingEnabled ? "ON" : "OFF");
+
+	if (temp > -1)
+	{
+		Json::Value _jsPostDataSettingTemperature;
+		_jsPostDataSettingTemperature["celsius"] = temp;
+		_jsPostDataSetting["temperature"] = _jsPostDataSettingTemperature;
+	}
+
 	_jsPostData["setting"] = _jsPostDataSetting;
-	_jsPostDataTermination["type"] = "TADO_MODE";
+	_jsPostDataTermination["type"] = terminationType;
 	_jsPostData["termination"] = _jsPostDataTermination;
 
 	if (!HTTPClient::PUT(_sUrl, _jsPostData.toStyledString(), _vExtraHeaders, _sResponse, false)) {
 		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api.");
-		return;
+		return false;
 	}
 
-	_log.Log(LOG_NORM, "Tado: Response: "+_sResponse);
+	_log.Log(LOG_NORM, "Tado: Response: " + _sResponse);
 
 	Json::Reader _jsReader;
 	Json::Value _jsRoot;
 	if (!_jsReader.parse(_sResponse, _jsRoot)) {
 		_log.Log(LOG_ERROR, "Tado: Failed to parse Json Api response after setting setpoint.");
-		return;
+		return false;
 	}
 
-    if (_jsRoot["setting"]["temperature"]["celsius"].asFloat() == temp) {
-		SendSetPointSensor(idx, temp, m_TadoHomes[HomeIdx].Name + " " + m_TadoZones[ZoneIdx].Name + " Setpoint");
+	if (temp > -1)
+	{
+		if (_jsRoot["setting"]["temperature"]["celsius"].asFloat() == temp) {
+			SendSetPointSensor(idx, temp, m_TadoHomes[HomeIdx].Name + " " + m_TadoZones[ZoneIdx].Name + " Setpoint");
+		}
 	}
 
+	return true;
+}
 
+
+void CTado::SetSetpoint(const int idx, const float temp)
+{
+	_log.Log(LOG_NORM, "Tado: SetSetpoint() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp));
+	CreateOverlay(idx, temp, true, "TADO_MODE");
 }
 
 bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, const bool refreshUsingToken = false)
@@ -278,11 +288,11 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		return false;
 	}
 
-	// Home/away
+	// Zone Home/away
 	bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
 	UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
 
-	// Setpoint
+	// Zone setpoint
 	float _fSetpointC = 0;
 	if (_jsRoot["setting"]["temperature"]["celsius"].isNumeric())
 		_fSetpointC = _jsRoot["setting"]["temperature"]["celsius"].asFloat();
@@ -290,12 +300,12 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		SendSetPointSensor((unsigned char)ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
 	}
 
-	// Current inside temperature
+	// Current zone inside temperature
 	float _fCurrentTempC = 0;
 	if (_jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].isNumeric())
 		_fCurrentTempC = _jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].asFloat();
 
-	// Current humidity
+	// Current zone humidity
 	float fCurrentHumPct = 0;
 	if (_jsRoot["sensorDataPoints"]["humidity"]["percentage"].isNumeric())
 		fCurrentHumPct = _jsRoot["sensorDataPoints"]["humidity"]["percentage"].asFloat();
@@ -303,11 +313,39 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
 	}
 
-	// Manual override of setpoint
+	// Manual override of zone setpoint
 	bool _bManualControl = false;
 	if (!_jsRoot["overlay"].isNull() && _jsRoot["overlay"]["type"].asString() == "MANUAL")
+	{
 		_bManualControl = true;
+	}
 	UpdateSwitch((unsigned char)ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
+
+
+	// Heating Enabled
+	std::string _sType = _jsRoot["setting"]["type"].asString();
+	std::string _sPower = _jsRoot["setting"]["power"].asString();
+	bool _bHeatingEnabled = false;
+	if (_sType == "HEATING" && _sPower == "ON")
+		_bHeatingEnabled = true;
+	UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
+
+	// Heating Power percentage
+	std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
+	int _sHeatingPowerPercentage = _jsRoot["activityDataPoints"]["heatingPower"]["percentage"].asInt();
+	bool _bHeatingOn = false;
+	if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
+	{
+		_bHeatingOn = _sHeatingPowerPercentage > 0;
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
+		
+		SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
+	}
+
+
+
+
+
 
 	return true;
 }
@@ -375,7 +413,7 @@ void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
-bool CTado::CancelSetpointOverlay(const int Idx)
+bool CTado::CancelOverlay(const int Idx)
 {
 	_log.Log(LOG_NORM, "Tado: CancelSetpointOverlay() called with idx=" + boost::to_string(Idx));
 
@@ -393,7 +431,7 @@ bool CTado::CancelSetpointOverlay(const int Idx)
 		_log.Log(LOG_ERROR, "Tado: error cancelling the setpoint overlay.");
 		return false;
 	}
-	_log.Log(LOG_STATUS, "Tado: Setpoint overlay cancelled. Api response: "+_sResponse);
+	_log.Log(LOG_STATUS, "Tado: Setpoint overlay cancelled.");
 	return true;
 }
 

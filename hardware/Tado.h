@@ -11,9 +11,12 @@ class CTado : public CDomoticzHardwareBase
 
 	public:
 		~CTado(void);
-		CTado::CTado(const int ID, const std::string &username, const std::string &password);
+		CTado(const int ID, const std::string &username, const std::string &password);
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
+
+
+
 		void SetSetpoint(const int idx, const float temp);
 		void Init();
 		bool StartHardware();
@@ -53,8 +56,8 @@ class CTado : public CDomoticzHardwareBase
 		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone);
 		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 		void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string & defaultname);
-
-		bool CancelSetpointOverlay(const int Idx);
+		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string termination);
+		bool CancelOverlay(const int Idx);
 
 		std::string m_TadoUsername;
 		std::string m_TadoPassword;
