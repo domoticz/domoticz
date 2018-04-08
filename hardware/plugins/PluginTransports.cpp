@@ -661,11 +661,15 @@ namespace Plugins {
 		{
 			if (m_Socket)
 			{
+				// Returns an 'endpoint not connected' error on Linux
 				boost::system::error_code e;
 				m_Socket->shutdown(boost::asio::ip::udp::socket::shutdown_both, e);
 				if (e)
 				{
-					_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
+#ifndef WIN32
+					if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
+#endif
+						_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
 				}
 				else
 				{
@@ -764,17 +768,22 @@ namespace Plugins {
 
 		if (!ec)  // Timeout, no response
 		{
+			if (pPlugin->m_bDebug & PDM_CONNECTION)
+			{
+				_log.Log(LOG_NORM, "(%s) ICMP timeout for address '%s'", pPlugin->Name.c_str(), m_IP.c_str());
+			}
+
 			CPlugin*	pPlugin = ((CConnection*)m_pConnection)->pPlugin;
 			pPlugin->MessagePlugin(new ReadEvent(pPlugin, m_pConnection, 0, NULL));
 			pPlugin->MessagePlugin(new DisconnectDirective(pPlugin, m_pConnection));
 		}
 		else if (ec != boost::asio::error::operation_aborted)  // Timer canceled by message arriving
 		{
-			_log.Log(LOG_ERROR, "(%s) ICMP timeout: %d, %s", pPlugin->Name.c_str(), ec.value(), ec.message().c_str());
+			_log.Log(LOG_ERROR, "(%s) ICMP timer error for address '%s': %d, %s", pPlugin->Name.c_str(), m_IP.c_str(), ec.value(), ec.message().c_str());
 		}
 		else if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION) && (ec == boost::asio::error::operation_aborted))
 		{
-			_log.Log(LOG_NORM, "(%s) ICMP timeout aborted (%s).", pPlugin->Name.c_str(), m_IP.c_str());
+			_log.Log(LOG_NORM, "(%s) ICMP timer aborted (%s).", pPlugin->Name.c_str(), m_IP.c_str());
 		}
 	}
 
@@ -784,8 +793,8 @@ namespace Plugins {
 
 		if (!ec)
 		{
-			double	dElapsedTime = clock() - m_Clock;
-			int		iMsElapsed = round(dElapsedTime);
+			clock_t	ElapsedTime = clock() - m_Clock;
+			int		iMsElapsed = (ElapsedTime*1000)/CLOCKS_PER_SEC;
 			ipv4_header*	pIPv4 = (ipv4_header*)&m_Buffer;
 			icmp_header*	pICMP = (icmp_header*)(&m_Buffer[0] + 20);
 			std::string		sAddress;
@@ -901,7 +910,10 @@ namespace Plugins {
 			m_Socket->shutdown(boost::asio::ip::icmp::socket::shutdown_both, e);
 			if (e)
 			{
-				_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
+#ifndef WIN32
+				if (e.value() != boost::asio::error::not_connected)		// Linux always reports error 107, Windows does not
+#endif
+					_log.Log(LOG_ERROR, "(%s) Socket Shutdown Error: %d, %s", pPlugin->Name.c_str(), e.value(), e.message().c_str());
 			}
 			else
 			{
