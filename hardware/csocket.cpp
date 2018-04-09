@@ -4,6 +4,8 @@
 
 
 #ifdef WIN32
+#include <winsock2.h>
+#include <Ws2tcpip.h>
 #include <io.h>
 #else
 #include <sys/socket.h>
@@ -16,8 +18,11 @@
 #include <unistd.h>
 #endif
 
+#ifndef WIN32
 #undef INVALID_SOCKET
-#define INVALID_SOCKET  (unsigned int)(~0)
+#define INVALID_SOCKET (int)(~0)
+#endif
+
 #define BLOCK_RETRY_INTERVAL_MSECS 1
 #define ERROR_INAPPROPRIATE_STATE -1
 
@@ -49,118 +54,80 @@ csocket::~csocket()
 }
 
 
-int csocket::resolveHost(const std::string& szRemoteHostName, struct hostent** pHostEnt)
+int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in& sa)
 {
-    if (szRemoteHostName.length() == 0) 
-    {
-        return FAILURE;
-    }
+	if (szRemoteHostName.length() == 0)
+		return FAILURE;
 
-    *pHostEnt = gethostbyname( szRemoteHostName.c_str() );
+	struct addrinfo *addr;
+	if (getaddrinfo(szRemoteHostName.c_str() , "0", 0, &addr) == 0)
+	{
+		struct sockaddr_in *saddr = (((struct sockaddr_in *)addr->ai_addr));
+		sa.sin_family = saddr->sin_family;
+		memcpy(&sa, saddr, sizeof(sockaddr_in));
+		return SUCCESS;
+	}
+	else
+	{
+		sa.sin_family = AF_INET;
+		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
+			return SUCCESS;
+		sa.sin_family = AF_INET6;
+		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
+			return SUCCESS;
+	}	
 
-    if (*pHostEnt == NULL) 
-    {
-        unsigned long uhostname = inet_addr ( szRemoteHostName.c_str() );
-        *pHostEnt = gethostbyaddr( reinterpret_cast<char *>(&uhostname), 
-            sizeof(unsigned long),
-            AF_INET);
-
-        if (*pHostEnt == NULL)
-        {
-            return FAILURE;
-        }
-    }
-
-    return SUCCESS;
+	return FAILURE;
 }
 
 
 int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 {
-    if ( m_socketState != CLOSED ) 
-    {
-        return ERROR_INAPPROPRIATE_STATE;
-    }
+	m_strRemoteHost = remoteHost;
+	m_remotePort = remotePort;
 
-    struct hostent *pHostEnt = NULL;
-    int status = resolveHost(remoteHost, &pHostEnt);
-    if (status == FAILURE || !pHostEnt) 
-    {
-        return FAILURE;
-    }
+	if ( m_socketState != CLOSED ) 
+		return ERROR_INAPPROPRIATE_STATE;
 
-    m_strRemoteHost = remoteHost;
-    m_remotePort = remotePort;
-
-    m_remoteSocketAddr.sin_family = pHostEnt->h_addrtype;
-    memcpy((char *) &m_remoteSocketAddr.sin_addr.s_addr,
-        pHostEnt->h_addr_list[0], 
-        pHostEnt->h_length);
-
-    m_remoteSocketAddr.sin_port = htons(m_remotePort);
-
+	int status = resolveHost(remoteHost, m_remoteSocketAddr);
+	if (status == FAILURE )
+		return FAILURE;
 
 #ifdef WIN32
-    m_socket = WSASocket(AF_INET, SOCK_STREAM, 
-        IPPROTO_TCP, 0 , 0 , 0);
-
-    if (m_socket == INVALID_SOCKET)
-    {
-        return FAILURE;
-    }
+	m_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0 , 0 , 0);
 #else
-    m_socket = socket(AF_INET, SOCK_STREAM, 0);
+	m_socket = socket(AF_INET, SOCK_STREAM, 0);
 #endif
 
 	if (m_socket == INVALID_SOCKET)
-    {
-        return FAILURE;
-    }
+	        return FAILURE;
 
-    m_localSocketAddr.sin_family = AF_INET;
+	// create local socket
+	int iRecvTimeout = 1;
+	m_localSocketAddr.sin_family = m_remoteSocketAddr.sin_family;
+	m_localSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	m_localSocketAddr.sin_port = htons(0);
+	setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*) &iRecvTimeout, sizeof(iRecvTimeout));
 
-    m_localSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    
-    int         iRecvTimeout = 1;
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, 
-        (char*) &iRecvTimeout, sizeof(iRecvTimeout) );
+	status = bind(m_socket, (const sockaddr*)&(m_localSocketAddr), sizeof(struct sockaddr));
 
-    m_localSocketAddr.sin_port = htons(0);
-
-    status = bind( m_socket, 
-        (const sockaddr*)&(m_localSocketAddr),  
-        sizeof(struct sockaddr) );
-
-    if (status < 0) 
-    {
-        return FAILURE;
-    }
+	if (status < 0) 
+		return FAILURE;
 
 #ifdef WIN32 
-    int set = 1;
-    setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY,  (char*) &set, sizeof(set) );
+	int set = 1;
+	setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY,  (char*) &set, sizeof(set) );
 #endif
 
-    m_remoteSocketAddr.sin_family = pHostEnt->h_addrtype;
+	// connect to remote socket
+	m_remoteSocketAddr.sin_port = htons(m_remotePort);
+	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
 
-    memcpy(&(m_remoteSocketAddr.sin_addr), 
-                pHostEnt->h_addr, 
-                pHostEnt->h_length);
+	if (status < 0) 
+		return FAILURE;
 
-    m_remoteSocketAddr.sin_port = htons( m_remotePort );
-
-    status = ::connect(m_socket, 
-                    (const sockaddr*)&(m_remoteSocketAddr), 
-                    sizeof(m_remoteSocketAddr)  );
-
-    if (status < 0) 
-    {
-        return FAILURE;
-    }
-
-    m_socketState = CONNECTED;
-
-    return SUCCESS;
+	m_socketState = CONNECTED;
+	return SUCCESS;
 }
 
 
