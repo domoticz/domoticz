@@ -276,8 +276,8 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		}
 
 		// Zone Home/away
-		bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
-		UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
+		//bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
+		//UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
 
 		// Zone setpoint
 		float _fSetpointC = 0;
