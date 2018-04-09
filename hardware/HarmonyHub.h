@@ -106,6 +106,8 @@ private:
 	bool SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	bool SendPing();
+	bool bFirstTime;
+
 	//bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 

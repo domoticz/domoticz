@@ -142,7 +142,7 @@ void CHarmonyHub::Do_Work()
 
 	int scounter = 0;
 	int mcounter = 0;
-	bool bFirstTime = true;
+	bFirstTime = true;
 
 	while (!m_stoprequested)
 	{
@@ -167,7 +167,6 @@ void CHarmonyHub::Do_Work()
 		{
 			if ((scounter%HARMONY_RETRY_LOGIN_SECONDS == 0) || (bFirstTime))
 			{
-				bFirstTime = false;
 				if(Login() && SetupCommandSocket())
 				{
 					m_bDoLogin=false;
@@ -228,7 +227,11 @@ bool CHarmonyHub::Login()
 	csocket authorizationcsocket;
 	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+		if (bFirstTime)
+		{
+			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+			bFirstTime = false;
+		}
 		return false;
 	}
 	if(GetAuthorizationToken(&authorizationcsocket)==true)
