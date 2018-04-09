@@ -452,8 +452,16 @@ void CTado::Do_Work()
 			// Only login if we should.
 			if (m_bDoLogin)
 			{
-				// Lets try to get authentication set up. If not, stop the worker.
-				if (!Login()) m_stoprequested = true;
+				// Lets try to get authentication set up. 
+				// If not, try again next time.
+				m_bDoLogin = false;
+				if (!Login())
+				{
+					// Mark that we still need to log in.
+					m_bDoLogin = true;
+					// Not much of a point doing other actions.
+					continue;
+				}
 			}
 
 			// Check if we should get homes from tado account
@@ -463,18 +471,28 @@ void CTado::Do_Work()
 				if (!GetHomes())
 				{
 					_log.Log(LOG_ERROR, "Tado: Failed to get homes from Tado account.");
-					m_stoprequested = true;
+					// Try to get homes next iteration. Other than that we can't do much now.
+					continue;
 				}
 				// Else move on to getting zones for each of the homes.
-				else m_bDoGetZones = true;
+				else {
+					m_bDoGetZones = true;
+					m_bDoGetHomes = false;
+				}
 			}
 
 			// Check if we should be collecting zones for each of the homes.
 			if (m_bDoGetZones)
 			{
+				// Mark that we don't need to collect zones any more.
+				m_bDoGetZones = false;
 				for (int i = 0; i < (int)m_TadoHomes.size(); i++)
 				{
-					GetZones(m_TadoHomes[i]);
+					if (!GetZones(m_TadoHomes[i])){
+						// Something went wrong, indicate that we do need to collect zones next time.
+						m_bDoGetZones = true;
+						_log.Log(LOG_ERROR, "Tado: Failed to get zones for home '" + m_TadoHomes[i].Name + "'");
+					}
 				}
 			}
 
@@ -485,8 +503,8 @@ void CTado::Do_Work()
 				if (!GetAuthToken(m_TadoAuthToken, m_TadoRefreshToken, true)) {
 					_log.Log(LOG_ERROR, "Tado: failed to refresh authentication token. Skipping this cycle.");
 				}
-				// Reset the counter back to the maximum
-				else iTokenCycleCount = TADO_TOKEN_MAXLOOPS;
+				// Reset the counter to its initial value.
+				else iTokenCycleCount = 0; 
 			}
 			// Increase the number of cycles that the token has been used by 1.
 			else iTokenCycleCount++;
@@ -592,9 +610,6 @@ bool CTado::Login()
 
 	_log.Log(LOG_NORM, "Tado: Login succesful.");
 
-	// We have logged in, no need to do it again.
-	m_bDoLogin = false;
-
 	return true;
 }
 
@@ -616,7 +631,7 @@ bool CTado::GetHomes() {
 	m_TadoHomes.clear();
 
 	Json::Value _jsAllHomes = _jsRoot["homes"];
-	_log.Log(LOG_NORM, "Tado: Found homes: " + boost::to_string(_jsAllHomes.size()));
+	_log.Log(LOG_TRACE, "Tado: Found " + boost::to_string(_jsAllHomes.size()) + " homes.");
 
 	for (int i = 0; i < (int)_jsAllHomes.size(); i++) {
 		// Store the tado home information in a map.
@@ -628,7 +643,7 @@ bool CTado::GetHomes() {
 		_structTadoHome.Id = _jsAllHomes[i]["id"].asString();
 		m_TadoHomes.push_back(_structTadoHome);
 
-		_log.Log(LOG_STATUS, "Tado: Registered home '" + _structTadoHome.Name + "' with id " + _structTadoHome.Id);
+		_log.Log(LOG_STATUS, "Tado: Registered Home '" + _structTadoHome.Name + "' with id " + _structTadoHome.Id);
 	}
 	// Sort the homes so they end up in the same order every time.
 	std::sort(m_TadoHomes.begin(), m_TadoHomes.end());
@@ -647,7 +662,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 
 	if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot))
 	{
-		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for home " + tTadoHome.Id);
+		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home " + tTadoHome.Id);
 		return false;
 	}
 
@@ -660,17 +675,13 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 		_TadoZone.Name = _jsRoot[zoneIdx]["name"].asString();
 		_TadoZone.Type = _jsRoot[zoneIdx]["type"].asString();
 
-		_log.Log(LOG_NORM, "Tado: Registered Zone " + _TadoZone.Id + " '" + _TadoZone.Name + "' of type " + _TadoZone.Type);
+		_log.Log(LOG_STATUS, "Tado: Registered Zone " + _TadoZone.Id + " '" + _TadoZone.Name + "' of type " + _TadoZone.Type);
 
 		tTadoHome.Zones.push_back(_TadoZone);
 	}
 	
 	// Sort the zones based on Id (defined in structure) so we always get them in the same order.
 	std::sort(tTadoHome.Zones.begin(), tTadoHome.Zones.end());
-
-	for (int i = 0; (unsigned int)i < tTadoHome.Zones.size(); i++) {
-		_log.Log(LOG_NORM, "Zone: " + tTadoHome.Zones[i].Name);
-	}
 
 	return true;
 }
