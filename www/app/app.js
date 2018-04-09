@@ -273,11 +273,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 
     app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
         return {
-            switchOff: switchOff,
+            switchOff: createSwitchCommand('Off'),
+            switchOn: createSwitchCommand('On'),
             setColor: setColor,
             brightnessUp: createCommand('brightnessup'),
             brightnessDown: createCommand('brightnessdown'),
-            nighLight: createCommand('nightlight'),
+            nightLight: createCommand('nightlight'),
             fullLight: createCommand('fulllight'),
             whiteLight: createCommand('whitelight'),
             colorWarmer: createCommand('warmer'),
@@ -301,13 +302,15 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
             }
         }
 
-        function switchOff(deviceIdx) {
-            return checkPersmissions().then(function () {
-                return domoticzApi.sendCommand('switchlight', {
-                    idx: deviceIdx,
-                    switchcmd: 'Off'
+        function createSwitchCommand(command) {
+            return function (deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand('switchlight', {
+                        idx: deviceIdx,
+                        switchcmd: command
+                    });
                 });
-            });
+            }
         }
 
         function setColor(deviceIdx, color, brightness) {

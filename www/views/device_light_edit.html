@@ -432,22 +432,25 @@
             </td>
             <td align="left" style="vertical-align: top;">
                 <div class="btn-group" ng-show="$ctrl.isBrightnessAvailable()">
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.brightnessUp()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessUp()">
                         {{:: 'Brightness Up' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.brightnessDown()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessDown()">
                         {{:: 'Brightness Down' | translate }}
                     </button>
                 </div>
                 <br><br>
                 <div class="btn-group" ng-show="$ctrl.isLightControlAvailable()">
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.fullLight()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">
+                        {{:: 'On' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.fullLight()">
                         {{:: 'Full Light' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.nighLight()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.nightLight()">
                         {{:: 'Night Light' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.switchOff()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOff()">
                         {{:: 'Off' | translate }}
                     </button>
                 </div>
