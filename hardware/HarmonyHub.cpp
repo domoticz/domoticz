@@ -432,12 +432,12 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	communicationcsocket->write(data.c_str(), data.size());
 	std::string strData;
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
 	if (bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
 		communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		std::string strData = m_databuffer;
+		strData = m_databuffer;
 		/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 	}
 
@@ -451,7 +451,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	data.append("</auth>");
 	communicationcsocket->write(data.c_str(), data.size());
 
-	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
 	if (bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
@@ -469,7 +469,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(data.c_str(), data.size());
 
-	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
 	if (bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
@@ -500,7 +500,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	authorizationcsocket->write(sendData.c_str(), sendData.size());
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
 	if (bIsDataReadable)
 	{
 		memset(m_databuffer, 0, BUFFER_SIZE);
