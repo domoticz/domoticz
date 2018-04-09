@@ -242,7 +242,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0) throw std::exception("Received refresh token is zero length.");
+		if (refreshtoken.size() == 0) throw std::runtime_error("Received refresh token is zero length.");
 
 		_log.Log(LOG_STATUS, "Tado: Received access token from API.");
 		_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
