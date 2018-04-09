@@ -168,20 +168,18 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 
 	Json::Value _jsRoot;
 
-	if (!SendToTadoApi(eTadoApiMethod::Put, _sUrl, _jsPostData.toStyledString(), _sResponse, std::vector<std::string> {}, _jsRoot))
+	try 
 	{
-		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api.");
+		SendToTadoApi(eTadoApiMethod::Put, _sUrl, _jsPostData.toStyledString(), _sResponse, std::vector<std::string> {}, _jsRoot);
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api: "+what);
 		return false;
 	}
 
 	_log.Log(LOG_TRACE, "Tado: Response: " + _sResponse);
-
-	/* if (temp > -1)
-	{
-		if (_jsRoot["setting"]["temperature"]["celsius"].asFloat() == temp) {
-			SendSetPointSensor(idx, temp, m_TadoHomes[HomeIdx].Name + " " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " Setpoint");
-		}
-	} */
 
 	// Trigger a zone refresh
 	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
@@ -230,8 +228,15 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 
 		Json::Value _jsRoot;
 
-		if (!SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false))
-			throw std::runtime_error("Failed to get token from Api.");
+		try
+		{
+			SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false);
+		}
+		catch (std::exception e)
+		{
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get token from Api: " + what);
+		}
 
 		authtoken = _jsRoot["access_token"].asString();
 		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
@@ -260,8 +265,15 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		Json::Value _jsRoot;
 		std::string _sResponse;
 
-		if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot)) 
-			throw std::runtime_error("Failed to get information on zone " + zone.Name);
+		try 
+		{
+			SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot);
+		}
+		catch (std::exception e)
+		{
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get information on zone '" + zone.Name + "': " + what);
+		}
 
 		// Zone Home/away
 		bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
@@ -316,6 +328,36 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
 		}
+
+		return true;
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: GetZoneState: " + what);
+		return false;
+	}
+}
+
+bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
+{
+	try {
+		std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + home.Id + "/state";
+		Json::Value _jsRoot;
+		std::string _sResponse;
+		try
+		{
+			SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot);
+		}
+		catch (std::exception e)
+		{
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get state information on home '" + home.Name + "': " + what);
+		}
+
+		// Home/away
+		bool _bTadoAway = !(_jsRoot["presence"].asString() == "HOME");
+		UpdateSwitch((unsigned char)HomeIndex * 1000 + 0, _bTadoAway, home.Name + " Away");
 
 		return true;
 	}
@@ -408,14 +450,20 @@ bool CTado::CancelOverlay(const int Idx)
 	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
 	std::string _sResponse;
 
-	if (!SendToTadoApi(eTadoApiMethod::Delete, _sUrl, "", _sResponse, std::vector<std::string>{}, *(new Json::Value), false, true, true))
+	try
 	{
-		_log.Log(LOG_ERROR, "Tado: error cancelling the setpoint overlay.");
+		SendToTadoApi(eTadoApiMethod::Delete, _sUrl, "", _sResponse, std::vector<std::string>{}, *(new Json::Value), false, true, true);
+
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: error cancelling the setpoint overlay: " + what);
 		return false;
 	}
-	_log.Log(LOG_STATUS, "Tado: Setpoint overlay cancelled.");
 
 	// Trigger a zone refresh
+	_log.Log(LOG_STATUS, "Tado: Setpoint overlay cancelled.");
 	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
 
 	return true;
@@ -501,6 +549,14 @@ void CTado::Do_Work()
 
 			// Iterate through the discovered homes and zones. Get some state information.
 			for (int HomeIndex = 0; HomeIndex < (int)m_TadoHomes.size(); HomeIndex++) {
+
+				if (!GetHomeState(HomeIndex, m_TadoHomes[HomeIndex]))
+				{
+					_log.Log(LOG_ERROR, "Tado: Failed to get state for home '" + m_TadoHomes[HomeIndex].Name + "'");
+					// Skip to the next home
+					continue;
+				}
+
 				for (int ZoneIndex = 0; ZoneIndex < (int)m_TadoHomes[HomeIndex].Zones.size(); ZoneIndex++)
 				{
 					if (!GetZoneState(HomeIndex, ZoneIndex, m_TadoHomes[HomeIndex], m_TadoHomes[HomeIndex].Zones[ZoneIndex])) 
@@ -611,9 +667,14 @@ bool CTado::GetHomes() {
 	Json::Value _jsRoot;
 	std::string _sResponse;
 	
-	if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot))
+	try
 	{
-		_log.Log(LOG_ERROR, "Tado: failed to get homes.");
+		SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: failed to get homes: " + what);
 		return false;
 	}
 
@@ -650,9 +711,14 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 
 	tTadoHome.Zones.clear();
 
-	if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot))
+	try 
 	{
-		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home " + tTadoHome.Id);
+		SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home " + tTadoHome.Id + ": "+what);
 		return false;
 	}
 
@@ -758,7 +824,6 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 	catch (std::exception e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "Tado: SendToTadoApi: Error sending information to Tado API: " + what);
-		return false;
+		throw std::runtime_error("Error sending information to Tado API: " + what);
 	}
 }

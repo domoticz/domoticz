@@ -64,7 +64,8 @@ class CTado : public CDomoticzHardwareBase
 		bool GetZones(_tTadoHome & TadoHome);
 		bool SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, std::string & sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
 		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
-		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone);
+		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone & zone);
+		bool GetHomeState(const int HomeIndex, _tTadoHome & home);
 		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
 		void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string & defaultname);
 		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string termination);
