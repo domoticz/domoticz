@@ -198,143 +198,133 @@ void CTado::SetSetpoint(const int idx, const float temp)
 // Requests an authentication token from the Tado OAuth Api.
 bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, const bool refreshUsingToken = false)
 {
-	if (m_TadoUsername.size() == 0 && !refreshUsingToken) 
+	try
 	{
-		_log.Log(LOG_ERROR, "Tado: No username specified.");
+		if (m_TadoUsername.size() == 0 && !refreshUsingToken) throw std::runtime_error("No username specified.");
+		if (m_TadoPassword.size() == 0 && !refreshUsingToken) throw std::runtime_error("No password specified.");
+		if (m_bDoGetEnvironment) throw std::runtime_error("Environment not (yet) set up.");
+
+		std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
+		std::ostringstream s;
+		std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
+
+		s << "client_id=" << m_TadoEnvironment["clientId"] << "&grant_type=";
+		s << _sGrantType << "&scope=home.user&client_secret=";
+		s << m_TadoEnvironment["clientSecret"];
+
+		if (refreshUsingToken)
+		{
+			s << "&refresh_token=" << refreshtoken;
+		}
+		else
+		{
+			s << "&password=" << CURLEncode::URLEncode(m_TadoPassword);
+			s << "&username=" << CURLEncode::URLEncode(m_TadoUsername);
+		}
+
+		std::string sPostData = s.str();
+
+		std::string _sResponse;
+		std::vector<std::string> _vExtraHeaders = { "Content-Type: application/x-www-form-urlencoded" };
+		std::vector<std::string> _vResponseHeaders;
+
+		Json::Value _jsRoot;
+
+		if (!SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false))
+			throw std::runtime_error("Failed to get token from Api.");
+
+		authtoken = _jsRoot["access_token"].asString();
+		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
+
+		refreshtoken = _jsRoot["refresh_token"].asString();
+		if (refreshtoken.size() == 0) throw std::exception("Received refresh token is zero length.");
+
+		_log.Log(LOG_STATUS, "Tado: Received access token from API.");
+		_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
+
+		return true;
+	}
+	catch (std::exception e) {
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: GetAuthToken: " + what);
 		return false;
 	}
-
-	if (m_TadoPassword.size() == 0 && !refreshUsingToken)
-	{
-		_log.Log(LOG_ERROR, "Tado: No password specified.");
-		return false;
-	}
-
-	if (m_bDoGetEnvironment){
-		_log.Log(LOG_ERROR, "Tado: Environment not (yet) set up.");
-		return false;
-	}
-
-	std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
-	std::ostringstream s;
-	std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
-
-	s << "client_id=" << m_TadoEnvironment["clientId"] << "&grant_type=";
-	s << _sGrantType << "&scope=home.user&client_secret=";
-	s << m_TadoEnvironment["clientSecret"];
-
-	if (refreshUsingToken)
-	{
-		s << "&refresh_token=" << refreshtoken;
-	}
-	else
-	{
-		s << "&password=" << CURLEncode::URLEncode(m_TadoPassword);
-		s << "&username=" << CURLEncode::URLEncode(m_TadoUsername);
-	}
-
-	std::string sPostData = s.str();
-
-	std::string _sResponse;
-	std::vector<std::string> _vExtraHeaders = { "Content-Type: application/x-www-form-urlencoded" };
-	std::vector<std::string> _vResponseHeaders;
-
-	Json::Value _jsRoot;
-
-	if (!SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false))
-	{
-		_log.Log(LOG_ERROR, "Tado: failed to get token.");
-		return false;
-	}
-
-	authtoken = _jsRoot["access_token"].asString();
-	if (authtoken.size() == 0)
-	{
-		_log.Log(LOG_ERROR, "Tado: received token is zero length.");
-		return false;
-	}
-
-	refreshtoken = _jsRoot["refresh_token"].asString();
-	if (refreshtoken.size() == 0)
-	{
-		_log.Log(LOG_ERROR, "Tado: received refresh token is zero length.");
-		return false;
-	}
-	
-	_log.Log(LOG_STATUS, "Tado: Received access token from API.");
-	_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
-
-	return true;
 }
 
 // Gets the status information of a zone. 
 bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone &zone)
 {
-	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + zone.HomeId + "/zones/" + zone.Id + "/state";
-	Json::Value _jsRoot;
-	std::string _sResponse;
-
-	if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot))
+	try
 	{
-		_log.Log(LOG_ERROR, "Tado: failed to get information on zone " + zone.Name);
+		std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + zone.HomeId + "/zones/" + zone.Id + "/state";
+		Json::Value _jsRoot;
+		std::string _sResponse;
+
+		if (!SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot)) 
+			throw std::runtime_error("Failed to get information on zone " + zone.Name);
+
+		// Zone Home/away
+		bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
+
+		// Zone setpoint
+		float _fSetpointC = 0;
+		if (_jsRoot["setting"]["temperature"]["celsius"].isNumeric())
+			_fSetpointC = _jsRoot["setting"]["temperature"]["celsius"].asFloat();
+		if (_fSetpointC > 0) {
+			SendSetPointSensor((unsigned char)ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
+		}
+
+		// Current zone inside temperature
+		float _fCurrentTempC = 0;
+		if (_jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].isNumeric())
+			_fCurrentTempC = _jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].asFloat();
+
+		// Current zone humidity
+		float fCurrentHumPct = 0;
+		if (_jsRoot["sensorDataPoints"]["humidity"]["percentage"].isNumeric())
+			fCurrentHumPct = _jsRoot["sensorDataPoints"]["humidity"]["percentage"].asFloat();
+		if (_fCurrentTempC > 0) {
+			SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
+		}
+
+		// Manual override of zone setpoint
+		bool _bManualControl = false;
+		if (!_jsRoot["overlay"].isNull() && _jsRoot["overlay"]["type"].asString() == "MANUAL")
+		{
+			_bManualControl = true;
+		}
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
+
+
+		// Heating Enabled
+		std::string _sType = _jsRoot["setting"]["type"].asString();
+		std::string _sPower = _jsRoot["setting"]["power"].asString();
+		bool _bHeatingEnabled = false;
+		if (_sType == "HEATING" && _sPower == "ON")
+			_bHeatingEnabled = true;
+		UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
+
+		// Heating Power percentage
+		std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
+		int _sHeatingPowerPercentage = _jsRoot["activityDataPoints"]["heatingPower"]["percentage"].asInt();
+		bool _bHeatingOn = false;
+		if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
+		{
+			_bHeatingOn = _sHeatingPowerPercentage > 0;
+			UpdateSwitch((unsigned char)ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
+
+			SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
+		}
+
+		return true;
+	}
+	catch (std::exception e)
+	{
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: GetZoneState: " + what);
 		return false;
 	}
-
-	// Zone Home/away
-	bool _bTadoAway = !(_jsRoot["tadoMode"].asString() == "HOME");
-	UpdateSwitch((unsigned char)ZoneIndex * 100 + 1, _bTadoAway, home.Name + " " + zone.Name + " Away");
-
-	// Zone setpoint
-	float _fSetpointC = 0;
-	if (_jsRoot["setting"]["temperature"]["celsius"].isNumeric())
-		_fSetpointC = _jsRoot["setting"]["temperature"]["celsius"].asFloat();
-	if (_fSetpointC > 0) {
-		SendSetPointSensor((unsigned char)ZoneIndex * 100 + 2, _fSetpointC, home.Name + " " + zone.Name + " Setpoint");
-	}
-
-	// Current zone inside temperature
-	float _fCurrentTempC = 0;
-	if (_jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].isNumeric())
-		_fCurrentTempC = _jsRoot["sensorDataPoints"]["insideTemperature"]["celsius"].asFloat();
-
-	// Current zone humidity
-	float fCurrentHumPct = 0;
-	if (_jsRoot["sensorDataPoints"]["humidity"]["percentage"].isNumeric())
-		fCurrentHumPct = _jsRoot["sensorDataPoints"]["humidity"]["percentage"].asFloat();
-	if (_fCurrentTempC > 0) {
-		SendTempHumSensor(ZoneIndex * 100 + 3, 255, _fCurrentTempC, (int)fCurrentHumPct, home.Name + " " + zone.Name + " TempHum");
-	}
-
-	// Manual override of zone setpoint
-	bool _bManualControl = false;
-	if (!_jsRoot["overlay"].isNull() && _jsRoot["overlay"]["type"].asString() == "MANUAL")
-	{
-		_bManualControl = true;
-	}
-	UpdateSwitch((unsigned char)ZoneIndex * 100 + 4, _bManualControl, home.Name + " " + zone.Name + " Manual Setpoint Override");
-
-
-	// Heating Enabled
-	std::string _sType = _jsRoot["setting"]["type"].asString();
-	std::string _sPower = _jsRoot["setting"]["power"].asString();
-	bool _bHeatingEnabled = false;
-	if (_sType == "HEATING" && _sPower == "ON")
-		_bHeatingEnabled = true;
-	UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
-
-	// Heating Power percentage
-	std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
-	int _sHeatingPowerPercentage = _jsRoot["activityDataPoints"]["heatingPower"]["percentage"].asInt();
-	bool _bHeatingOn = false;
-	if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
-	{
-		_bHeatingOn = _sHeatingPowerPercentage > 0;
-		UpdateSwitch((unsigned char)ZoneIndex * 100 + 6, _bHeatingOn, home.Name + " " + zone.Name + " Heating On");
-		
-		SendPercentageSensor(ZoneIndex * 100 + 7, 0, 255, (float)_sHeatingPowerPercentage, home.Name + " " + zone.Name + " Heating Power");
-	}
-
-	return true;
 }
 
 void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string & defaultname)
@@ -699,6 +689,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 		// Prepare the headers. Copy supplied vector.
 		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 		
+		// If the supplied postdata validates as json, add an appropriate content type header
 		if (sPostData.size() > 0)
 		{
 			Json::Reader _jsReader;
@@ -710,6 +701,9 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 		// Prepare the authentication headers if requested.
 		if (bSendAuthHeaders) _vExtraHeaders.push_back("Authorization: Bearer " + m_TadoAuthToken);
 
+		std::vector<std::string> _vResponseHeaders;
+		std::stringstream _ssResponseHeaderString;
+
 		switch (eMethod)
 		{
 			case Put:
@@ -720,16 +714,18 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 				break;
 
 			case Post:
-				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, true, bIgnoreEmptyResponse))
+				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders, true, bIgnoreEmptyResponse))
 				{
-					throw std::runtime_error("Failed to perform POST request to Tado Api: " + sResponse);
+					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
+					throw std::runtime_error("Failed to perform POST request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
 				}
 				break;
 
 			case Get:
-				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, bIgnoreEmptyResponse))
+				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, bIgnoreEmptyResponse))
 				{
-					throw std::runtime_error("Failed to perform GET request to Tado Api: " + sResponse);
+					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
+					throw std::runtime_error("Failed to perform GET request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
 				}
 				break;
 
@@ -761,8 +757,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 	}
 	catch (std::exception e)
 	{
-		std::string _sWhat = e.what();
-		_log.Log(LOG_ERROR, "Tado: error sending information to Tado API: "+_sWhat);
+		std::string what = e.what();
+		_log.Log(LOG_ERROR, "Tado: SendToTadoApi: Error sending information to Tado API: " + what);
 		return false;
 	}
 }
