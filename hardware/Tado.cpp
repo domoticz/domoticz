@@ -22,8 +22,7 @@
 #include "../json/json.h"
 #include "../webserver/Base64.h"
 #include "Tado.h"
-#include <boost/regex.hpp>
-
+#include <regex>
 
 #define round(a) ( int ) ( a + .5 )
 const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
@@ -510,11 +509,11 @@ void CTado::Do_Work()
 // Goes through the Tado web interface environment file and attempts to regex match the specified key.
 bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string &sValue)
 {
-	boost::match_results<std::string::const_iterator> _Matches;
+	std::match_results<std::string::const_iterator> _Matches;
 
 	// Grab the "clientId" from the response. 
-	boost::regex _reSearch(sKeyName + ": '(.*?)'");
-	if (!boost::regex_search(sJavascriptData, _Matches, _reSearch)) {
+	std::regex _reSearch(sKeyName + ": '(.*?)'");
+	if (!std::regex_search(sJavascriptData, _Matches, _reSearch)) {
 		_log.Log(LOG_ERROR, "Tado: Failed to grab "+sKeyName+" from the javascript data.");
 		return false;
 	}
@@ -539,7 +538,7 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	// then parse it so we can use it in our future calls.
 
 	std::string _sResponse;
-	boost::match_results<std::string::const_iterator> _Matches;
+	std::match_results<std::string::const_iterator> _Matches;
 
 	// Download the API environment file
 	if (!HTTPClient::GET(sUrl, _sResponse, false)) {
