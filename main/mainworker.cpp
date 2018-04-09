@@ -2518,15 +2518,11 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 		{
 		case cmdSTATUS:
 		case cmdSETMODE:
-		case cmd310:
-		case cmd315:
-		case cmd800:
-		case cmd800F:
-		case cmd830:
-		case cmd830F:
-		case cmd835:
-		case cmd835F:
-		case cmd895:
+		case trxType310:
+		case trxType315:
+		case recType43392:
+		case trxType43392:
+		case trxType868:
 		{
 			WriteMessage("response on cmnd  = ", false);
 			switch (pResponse->IRESPONSE.cmnd)
@@ -2537,32 +2533,20 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			case cmdSETMODE:
 				WriteMessage("Set Mode");
 				break;
-			case cmd310:
+			case trxType310:
 				WriteMessage("Select 310MHz");
 				break;
-			case cmd315:
+			case trxType315:
 				WriteMessage("Select 315MHz");
 				break;
-			case cmd800:
+			case recType43392:
+				WriteMessage("Select 433.92MHz");
+				break;
+			case trxType43392:
+				WriteMessage("Select 433.92MHz (E)");
+				break;
+			case trxType868:
 				WriteMessage("Select 868.00MHz");
-				break;
-			case cmd800F:
-				WriteMessage("Select 868.00MHz FSK");
-				break;
-			case cmd830:
-				WriteMessage("Select 868.30MHz");
-				break;
-			case cmd830F:
-				WriteMessage("Select 868.30MHz FSK");
-				break;
-			case cmd835:
-				WriteMessage("Select 868.35MHz");
-				break;
-			case cmd835F:
-				WriteMessage("Select 868.35MHz FSK");
-				break;
-			case cmd895:
-				WriteMessage("Select 868.95MHz");
 				break;
 			default:
 				WriteMessage("Error: unknown response");
@@ -2573,10 +2557,10 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 
 			switch (pResponse->IRESPONSE.msg1)
 			{
-			case recType310:
+			case trxType310:
 				WriteMessage("Transceiver type  = 310MHz");
 				break;
-			case recType315:
+			case trxType315:
 				WriteMessage("Receiver type     = 315MHz");
 				break;
 			case recType43392:
@@ -2585,26 +2569,8 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			case trxType43392:
 				WriteMessage("Transceiver type  = 433.92MHz");
 				break;
-			case recType86800:
+			case trxType868:
 				WriteMessage("Receiver type     = 868.00MHz");
-				break;
-			case recType86800FSK:
-				WriteMessage("Receiver type     = 868.00MHz FSK");
-				break;
-			case recType86830:
-				WriteMessage("Receiver type     = 868.30MHz");
-				break;
-			case recType86830FSK:
-				WriteMessage("Receiver type     = 868.30MHz FSK");
-				break;
-			case recType86835:
-				WriteMessage("Receiver type     = 868.35MHz");
-				break;
-			case recType86835FSK:
-				WriteMessage("Receiver type     = 868.35MHz FSK");
-				break;
-			case recType86895:
-				WriteMessage("Receiver type     = 868.95MHz");
 				break;
 			default:
 				WriteMessage("Receiver type     = unknown");
@@ -2894,32 +2860,18 @@ void MainWorker::decode_InterfaceControl(const int HwdID, const _eHardwareTypes 
 		case cmdStartRec:
 			WriteMessage("start RFXtrx receiver");
 			break;
-		case cmd310:
+		case trxType310:
 			WriteMessage("select 310MHz in the 310/315 transceiver");
 			break;
-		case cmd315:
+		case trxType315:
 			WriteMessage("select 315MHz in the 310/315 transceiver");
 			break;
-		case cmd800:
-			WriteMessage("select 868.00MHz ASK in the 868 transceiver");
+		case recType43392:
+		case trxType43392:
+			WriteMessage("select 433.92MHz in the 433 transceiver");
 			break;
-		case cmd800F:
-			WriteMessage("select 868.00MHz FSK in the 868 transceiver");
-			break;
-		case cmd830:
-			WriteMessage("select 868.30MHz ASK in the 868 transceiver");
-			break;
-		case cmd830F:
-			WriteMessage("select 868.30MHz FSK in the 868 transceiver");
-			break;
-		case cmd835:
-			WriteMessage("select 868.35MHz ASK in the 868 transceiver");
-			break;
-		case cmd835F:
-			WriteMessage("select 868.35MHz FSK in the 868 transceiver");
-			break;
-		case cmd895:
-			WriteMessage("select 868.95MHz in the 868 transceiver");
+		case trxType868:
+			WriteMessage("select 868MHz in the 868 transceiver");
 			break;
 		}
 		break;
@@ -3084,6 +3036,15 @@ void MainWorker::decode_Rain(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeRAIN6:
 			WriteMessage("subtype       = RAIN6 - LaCrosse TX5");
+			break;
+		case sTypeRAIN7:
+			WriteMessage("subtype       = RAIN7 - Alecto");
+			break;
+		case sTypeRAIN8:
+			WriteMessage("subtype       = RAIN8 - Davis");
+			break;
+		case sTypeRAIN9:
+			WriteMessage("subtype       = RAIN9 - Alecto WCH2010");
 			break;
 		case sTypeRAINWU:
 			WriteMessage("subtype       = Weather Underground (Total Rain)");
@@ -3295,6 +3256,9 @@ void MainWorker::decode_Wind(const int HwdID, const _eHardwareTypes HwdType, con
 			break;
 		case sTypeWIND7:
 			WriteMessage("subtype       = WIND7 - Alecto WS4500");
+			break;
+		case sTypeWIND8:
+			WriteMessage("subtype       = WIND8 - Alecto ACH2010");
 			break;
 		case sTypeWINDNoTemp:
 			WriteMessage("subtype       = Weather Station");
@@ -11089,7 +11053,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	break;
 	case pTypeLighting5:
 	{
-		int oldlevel = level;
 		tRBUF lcmd;
 		lcmd.LIGHTING5.packetlength = sizeof(lcmd.LIGHTING5) - 1;
 		lcmd.LIGHTING5.packettype = dType;
@@ -11154,20 +11117,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
+			int oldlevel = level;
 			if (switchcmd != "Off")
 			{
-				//if ((hue != -1) && (hue != 1000)) // TODO: Fix TRC02
+				if (color.mode == ColorModeRGB)
 				{
-					double dval;
-					dval = 0;
-					//dval = (255.0 / 360.0)*float(hue); TODO: Fix TRC02
-					oldlevel = round(dval);
 					switchcmd = "Set Color";
 				}
 			}
-			if (((switchcmd == "Off") || (switchcmd == "On")) && (switchcmd != "Set Color"))
+			if ((switchcmd == "Off") ||
+				(switchcmd == "On") ||      //Special Case, turn off first to ensure light is in normal mode
+				(switchcmd == "Set Color"))
 			{
-				//Special Case, turn off first
 				unsigned char oldCmd = lcmd.LIGHTING5.cmnd;
 				lcmd.LIGHTING5.cmnd = light5_sRGBoff;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
@@ -11185,11 +11146,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 				if (switchcmd == "Set Color")
 				{
-					//TODO: Fix TRC02
-					if ((oldlevel != -1) && (oldlevel != 1000))
+					if (color.mode == ColorModeRGB)
 					{
-						double dval;
-						dval = (78.0 / 255.0)*float(oldlevel);
+						float hsb[3];
+						rgb2hsb(color.r, color.g, color.b, hsb);
+						switchcmd = "Set Color";
+
+						float dval = 126.0f*hsb[0]; // Color Range is 0x06..0x84
 						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return false;

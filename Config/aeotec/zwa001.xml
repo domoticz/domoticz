@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ZWA001 LED Bulb 6 Multi-White
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="80" genre="config" label="Notification" min="0" max="1" value="1" size="1">
+			<Help>Enable to send notifications to associated devices (Group 1) when the state of LED Bulb is changed.</Help>
+			<Item label="Nothing" value="0" />
+			<Item label="Basic CC report" value="1" />
+		</Value>
+		<Value type="short" index="81" genre="config" label="Warm White temperature" min="2700" max="4999" units="k" value="2700" size="2">
+			<Help>
+				Adjusting the color temperature in warm white color component.
+				available value: 2700k to 4999k</Help>
+		</Value>
+		<Value type="short" index="82" genre="config" label="cold white temperature" min="5000" max="6500" units="k" value="6500" size="2">
+			<Help>
+				Adjusting the color temperature in cold white color component.
+				available value:5000k to 6500k
+			</Help>
+		</Value>
+    </CommandClass>    
+    <!-- Association Groups -->
+	<CommandClass id="133">
+	    <Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Lifeline" />
+	    </Associations>
+  </CommandClass>
+</Product>

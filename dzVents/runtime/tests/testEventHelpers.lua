@@ -163,12 +163,49 @@ describe('event helpers', function()
 				['bbb'] = { 'b1', 'b2', 'b3' },
 				['aa*'] = { 'c1', 'c2', 'c3' },
 				['a*'] =  { 'd1', 'd2', 'd3' },
-				['aaa*'] = { 'e1', 'e2', 'e3' }
+				['aaa*'] = { 'e1', 'e2', 'e3' },
+                ['*xx*yy*'] = { 'f1', 'f2'},
+                ['h*'] = { 'h1','h2'},
+                ['*g'] = { 'g1', 'g2'},
+                ['*i*'] = {'i1', 'i2'}
 			}
+            local scripts
 
 			local scripts = helpers.findScriptForTarget('aaa', modules)
-
 			assert.are.same({ 'a1', 'a2', 'a3', 'c1', 'c2', 'c3', 'd1', 'd2', 'd3', 'e1', 'e2', 'e3' }, values(scripts))
+
+            scripts = helpers.findScriptForTarget('tttxxrrrryyuuuu', modules)
+            assert.are.same({ 'f1', 'f2' }, values(scripts))
+
+            scripts = helpers.findScriptForTarget('tttxxrrrryy', modules)
+            assert.are.same({ 'f1', 'f2' }, values(scripts))
+
+            scripts = helpers.findScriptForTarget('hzzz', modules)
+            assert.are.same({ 'h1', 'h2' }, values(scripts))
+
+            scripts = helpers.findScriptForTarget('h', modules)
+            assert.are.same({ 'h1', 'h2' }, values(scripts))
+
+            scripts = helpers.findScriptForTarget('xxhzzz', modules)
+            assert.are.same({}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('xxxg', modules)
+            assert.are.same({'g1', 'g2'}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('xxxgwww', modules)
+            assert.are.same({}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('qqqiwww', modules)
+            assert.are.same({'i1', 'i2'}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('qqqi', modules)
+            assert.are.same({'i1', 'i2'}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('iwww', modules)
+            assert.are.same({'i1', 'i2'}, values(scripts))
+
+            scripts = helpers.findScriptForTarget('bbb', modules)
+            assert.are.same({'b1', 'b2', 'b3'}, values(scripts))
 
 		end)
 
@@ -358,8 +395,8 @@ describe('event helpers', function()
 			helpers.dumpCommandArray(array)
 			assert.is_same({
 				"Commands sent to Domoticz: ",
-                "• a = 1",
-				"• b = 2",
+                "- a = 1",
+				"- b = 2",
 				"====================================================="
 			}, messages)
 		end)

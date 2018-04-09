@@ -204,7 +204,7 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 		unsigned char ID4 = 0;
 		// TODO: For devices of type ZDTYPE_SWITCH_COLOR the supported color channels is reported in response to command SWITCH_COLOR_SUPPORTED_GET
 		// This is already done by OpenZWave::Color class and used internally by the class, the information is needed here.
-		unsigned SwitchType = (pDevice->devType == ZDTYPE_SWITCH_RGBW)?sTypeColor_RGB_W_Z:sTypeColor_RGB_CW_WW_Z;
+		unsigned SubType = (pDevice->devType == ZDTYPE_SWITCH_RGBW)?sTypeColor_RGB_W_Z:sTypeColor_RGB_CW_WW_Z;
 
 		//make device ID
 		ID1 = 0;
@@ -227,16 +227,25 @@ void ZWaveBase::SendSwitchIfNotExists(const _tZWaveDevice *pDevice)
 
 		//Check if we already exist
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
-			m_HwdID, int(unitcode), pTypeColorSwitch, SwitchType, szID);
-		if (result.size() > 0)
-			return; //Already in the system
+		result = m_sql.safe_query("SELECT ID, SubType FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
+			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
+		if (result.size() > 0) //Already in the system, but make sure SubType is correct
+		{
+			unsigned sTypeOld = atoi(result[0][1].c_str());
+			std::string sID = result[0][0];
+			if (sTypeOld != SubType)
+			{
+				_log.Log(LOG_STATUS, "ZWave: Updating SubType of light '%s' from %u to %u", szID, sTypeOld, SubType);
+				m_sql.UpdateDeviceValue("SubType", (int)SubType, sID);
+			}
+			return;
+		}
 
 		//Send as ColorSwitch
 		_tColorSwitch lcmd;
 		lcmd.id = lID;
 		lcmd.command = Color_LedOff;
-		lcmd.subtype=SwitchType;
+		lcmd.subtype=SubType;
 		lcmd.value = 0;
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd, pDevice->label.c_str(), BatLevel);
 

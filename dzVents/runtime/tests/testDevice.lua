@@ -1015,7 +1015,7 @@ describe('device', function()
 			})
 
 			device.onkyoEISCPCommand('mycommand')
-			assert.is_same({'http://127.0.0.1:8080/json.htm?type=command&param=onkyoeiscpcommand&idx=1&action=mycommand'}, commandArray)
+			assert.is_same({'http://127.0.0.1:8080/json.htm?param=onkyoeiscpcommand&type=command&idx=1&action=mycommand'}, commandArray)
 		end)
 
 		describe('Switch', function()
@@ -1221,31 +1221,31 @@ describe('device', function()
 			assert.is_true(device.active)
 
 			device.setKelvin(5500)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setkelvinlevel&idx=1&kelvin=5500' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setkelvinlevel&type=command&idx=1&kelvin=5500' }, commandArray)
 
 			commandArray = {}
 			device.setWhiteMode()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=whitelight&idx=1' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=whitelight&type=command&idx=1' }, commandArray)
 
 			commandArray = {}
 			device.increaseBrightness()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=brightnessup&idx=1' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessup&type=command&idx=1' }, commandArray)
 
 			commandArray = {}
 			device.decreaseBrightness()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=brightnessdown&idx=1' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=brightnessdown&type=command&idx=1' }, commandArray)
 
 			commandArray = {}
 			device.setNightMode()
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=nightlight&idx=1' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=nightlight&type=command&idx=1' }, commandArray)
 
 			commandArray = {}
 			device.setRGB(255, 0, 0)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=setcolbrightnessvalue&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=setcolbrightnessvalue&type=command&idx=1&hue=0&brightness=100&iswhite=false' }, commandArray)
 
 			commandArray = {}
 			device.setDiscoMode(8)
-			assert.is_same({ 'http://127.0.0.1:8080/json.htm?type=command&param=discomodenum8&idx=1' }, commandArray)
+			assert.is_same({ 'http://127.0.0.1:8080/json.htm?param=discomodenum8&type=command&idx=1' }, commandArray)
 
 
 			device = getDevice(domoticz, {

@@ -10,3 +10,5 @@ setpoint stuff EvoHome
 sethue, setcolbrightness
 
 lastseen prop for (zwave) devices?
+
+room as group?

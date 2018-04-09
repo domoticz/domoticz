@@ -1,3 +1,11 @@
+[2.4.4]
+- Fixed rawTime and rawData so it shows leading zeros when values are below 10.
+- Fixed one wildcard issue. Should now work as expected.
+
+[2.4.3]
+- Fixed trigger wildcards. Now you can do `*aa*bb*cc` or `a*` which will require the target to start with an `a`
+- Added more EvoHome device types to the EvoHome device adapter.
+
 [2.4.2]
 - Fixed RGBW device adapter
 - Fixed EvoHome device adapter
