@@ -23,6 +23,7 @@
 #include "../webserver/Base64.h"
 #include "Tado.h"
 #include <regex>
+#include <initializer_list>
 
 #define round(a) ( int ) ( a + .5 )
 const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
@@ -137,8 +138,8 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	int ZoneIdx = (idx % 1000) / 100;
 	int ServiceIdx = (idx % 1000) % 100;
 
-	// Check if the home and zone actually exist.
-	if (!& m_TadoHomes[HomeIdx] || !& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	// Check if the zone actually exists.
+	if (!& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
 	{
 		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
 		return false;
@@ -170,7 +171,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 
 	try 
 	{
-		SendToTadoApi(eTadoApiMethod::Put, _sUrl, _jsPostData.toStyledString(), _sResponse, std::vector<std::string> {}, _jsRoot);
+		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
 	catch (std::exception e)
 	{
@@ -230,7 +231,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 
 		try
 		{
-			SendToTadoApi(eTadoApiMethod::Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false);
+			SendToTadoApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false);
 		}
 		catch (std::exception e)
 		{
@@ -267,7 +268,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 		try 
 		{
-			SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
 		catch (std::exception e)
 		{
@@ -347,7 +348,7 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 		std::string _sResponse;
 		try
 		{
-			SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string> {}, _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
 		catch (std::exception e)
 		{
@@ -387,7 +388,7 @@ void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 // Creates or updates on/off switches.
 void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
+	//bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
 	std::vector<std::vector<std::string> > result;
@@ -438,10 +439,10 @@ bool CTado::CancelOverlay(const int Idx)
 
 	int HomeIdx = Idx / 1000;
 	int ZoneIdx = (Idx % 1000) / 100;
-	int ServiceIdx = (Idx % 1000) % 100;
+	//int ServiceIdx = (Idx % 1000) % 100;
 
 	// Check if the home and zone actually exist.
-	if (!& m_TadoHomes[HomeIdx] || !& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	if (!& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
 	{
 		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
 		return false;
@@ -452,7 +453,7 @@ bool CTado::CancelOverlay(const int Idx)
 
 	try
 	{
-		SendToTadoApi(eTadoApiMethod::Delete, _sUrl, "", _sResponse, std::vector<std::string>{}, *(new Json::Value), false, true, true);
+		SendToTadoApi(Delete, _sUrl, "", _sResponse, *(new std::vector<std::string>()), *(new Json::Value), false, true, true);
 
 	}
 	catch (std::exception e)
@@ -613,7 +614,7 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	// Determine which keys we want to grab from the environment
 	std::vector<std::string> vKeysToFetch = { "clientId", "clientSecret", "apiEndpoint", "tgaRestApiV2Endpoint" };
 
-	// The keys will be stored in a map, lets clean it out first.
+	// The key values will be stored in a map, lets clean it out first.
 	m_TadoEnvironment.clear();
 
 	for (int i = 0; i < (int)vKeysToFetch.size(); i++)
@@ -669,7 +670,7 @@ bool CTado::GetHomes() {
 	
 	try
 	{
-		SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
 	}
 	catch (std::exception e)
 	{
@@ -713,7 +714,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 
 	try 
 	{
-		SendToTadoApi(eTadoApiMethod::Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
 	catch (std::exception e)
 	{
