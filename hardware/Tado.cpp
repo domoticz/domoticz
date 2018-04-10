@@ -139,7 +139,7 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	int ServiceIdx = (idx % 1000) % 100;
 
 	// Check if the zone actually exists.
-	if (!& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
 		return false;
@@ -224,7 +224,8 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		std::string sPostData = s.str();
 
 		std::string _sResponse;
-		std::vector<std::string> _vExtraHeaders = { "Content-Type: application/x-www-form-urlencoded" };
+		std::vector<std::string> _vExtraHeaders;
+		_vExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
 		std::vector<std::string> _vResponseHeaders;
 
 		Json::Value _jsRoot;
@@ -442,7 +443,7 @@ bool CTado::CancelOverlay(const int Idx)
 	//int ServiceIdx = (Idx % 1000) % 100;
 
 	// Check if the home and zone actually exist.
-	if (!& m_TadoHomes[HomeIdx].Zones[ZoneIdx])
+	if (m_TadoHomes.size() == 0 || m_TadoHomes[HomeIdx].Zones.size() == 0)
 	{
 		_log.Log(LOG_ERROR, "Tado: no such home/zone combo found: " + boost::to_string(HomeIdx) + "/" + boost::to_string(ZoneIdx));
 		return false;
@@ -612,16 +613,20 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	}
 
 	// Determine which keys we want to grab from the environment
-	std::vector<std::string> vKeysToFetch = { "clientId", "clientSecret", "apiEndpoint", "tgaRestApiV2Endpoint" };
+	std::vector<std::string> _vKeysToFetch;
+	_vKeysToFetch.push_back("clientId");
+	_vKeysToFetch.push_back("clientSecret");
+	_vKeysToFetch.push_back("apiEndpoint");
+	_vKeysToFetch.push_back("tgaRestApiV2Endpoint");
 
 	// The key values will be stored in a map, lets clean it out first.
 	m_TadoEnvironment.clear();
 
-	for (int i = 0; i < (int)vKeysToFetch.size(); i++)
+	for (int i = 0; i < (int)_vKeysToFetch.size(); i++)
 	{
 		// Feed the function the javascript response, and have it attempt to grab the provided key's value from it.
 		// Value is stored in m_TadoEnvironment[keyName]
-		std::string _sKeyName = vKeysToFetch[i];
+		std::string _sKeyName = _vKeysToFetch[i];
 		if (!MatchValueFromJSKey(_sKeyName, _sResponse, m_TadoEnvironment[_sKeyName])) {
 			_log.Log(LOG_ERROR, "Tado: Failed to retrieve/match key '" + _sKeyName + "' from the API environment.");
 			return false;
@@ -670,7 +675,7 @@ bool CTado::GetHomes() {
 	
 	try
 	{
-		SendToTadoApi(Get, _sUrl, "", _sResponse, std::vector<std::string>{}, _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
 	catch (std::exception e)
 	{
