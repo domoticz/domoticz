@@ -158,7 +158,7 @@ void CTeleinfoSerial::MatchLine()
 	#endif
 
 	// Is the line we got worth analysing any further?
-	if ((strlen((const char*)&line)<4) || (line[0] == 0x0a))
+	if ((strlen((const char*)line)<4) || (line[0] == 0x0a))
 		return;
 
 	// Extract the elements, return if not enough and line is invalid
