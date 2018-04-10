@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app', 'log/components'], function (app) {
     app.constant('deviceLightLogsHighchartSettings', {
         chart: {
             type: 'line',
@@ -72,7 +72,7 @@ define(['app'], function (app) {
     app.controller('DeviceLightLogController', function ($routeParams, deviceLightLogsHighchartSettings, dataTableDefaultSettings, domoticzApi, deviceApi, permissions) {
         var vm = this;
         var $element = $('.js-device-logs:last');
-        var logsTable, logsChart;
+        var logsChart;
 
         vm.clearLog = clearLog;
 
@@ -86,18 +86,10 @@ define(['app'], function (app) {
             });
 
             logsChart = $element.find('#lightgraph').highcharts(deviceLightLogsHighchartSettings);
-            logsTable = $element.find('#lighttable').dataTable(Object.assign({}, dataTableDefaultSettings, {
-                columns: [
-                    { title: $.t('Date'), data: 'Date', type: 'date' },
-                    { title: $.t('Data'), data: 'Data' }
-                ]
-            })).api();
-
             refreshLog();
         }
 
         function refreshLog() {
-            logsTable.clear().draw();
             logsChart.highcharts().series[0].setData([]);
 
             domoticzApi
@@ -110,10 +102,7 @@ define(['app'], function (app) {
                         return;
                     }
 
-                    logsTable.rows
-                        .add(data.result)
-                        .draw();
-
+                    vm.log = data.result || [];
                     var chartData = [];
 
                     data.result.forEach(function (item) {

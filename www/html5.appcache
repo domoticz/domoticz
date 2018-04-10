@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1503
+# ref 1504
 
 CACHE:
 # CSS
@@ -467,9 +467,16 @@ i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
-app/device-log/LightLog.js
-app/device-log/TemperatureLog.js
-app/device-log/TemperatureReport.js
+app/log/components.js
+app/log/LightLog.js
+app/log/SceneLog.js
+app/log/TemperatureLog.js
+app/log/TemperatureReport.js
+app/scenes/factories.js
+app/timers/components.js
+app/timers/DeviceTimersController.js
+app/timers/factories.js
+app/timers/SceneTimersController.js
 app/AboutController.js
 app/app.js
 app/CamController.js
@@ -584,14 +591,15 @@ ozwcp/cp.js
 #SwitchIcons
 
 # HTML pages
+views/log/device_light_log.html
+views/log/device_temperature_log.html
+views/log/device_temperature_report.html
+views/log/scene_log.html
 views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html
 views/device_light_edit.html
-views/device_light_log.html
-views/device_temperature_log.html
-views/device_temperature_report.html
 views/devices.html
 views/dpfibaro.html
 views/dphttp.html

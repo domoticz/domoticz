@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html manifest="html5.appcache">
 <head>
 		<meta charset="utf-8">
@@ -452,11 +452,12 @@ $(document).ready(function() {
 </head>
 <body>
 	<script type="text/ng-template" id="timesuntemplate">
-		<table><tbody>
-			<tr>
-				<td align="left" valign="top" id="timesun"><div><span ng-bind="data.ServerTime"></span> <font color="yellow">☀</font>▲<span ng-bind="data.Sunrise"></span> ▼<span ng-bind="data.Sunset"></span></div></td>
-			</tr>
-		</tbody></table>
+		<div id="timesun" ng-show="::$ctrl.data.serverTime">
+			<span ng-hide="::$ctrl.isMobile">{{ $ctrl.data.serverTime }}</span>
+			<span style="color: yellow">☀</span>
+			▲{{ $ctrl.data.sunrise }}
+			▼{{ $ctrl.data.sunset }}
+		</div>
 	</script>
 	<div id="thermostat3_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop" style="width: 176px;">
 		<div class="ui-close" onclick="CloseTherm3Popup()"></div>
@@ -613,25 +614,6 @@ $(document).ready(function() {
 				</td>
 				<td align="right">
 					<a class="btnstyle3" id="clearlog" onclick="ClearTextLog();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-	</div>
-	<div id="scenelog" style="display:none;">
-		<table class="display" id="scenetable" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<thead>
-						<tr>
-								<th width="140" align="left" data-i18n="Date">Date</th>
-								<th data-i18n="Data">Data</th>
-						</tr>
-				</thead>
-		</table>
-		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" id="clearlog" onclick="ClearSceneLog();" data-i18n="Clear">Clear</a>
 				</td>
 			</tr>
 		</table>
