@@ -61,14 +61,16 @@ define(['app'], function (app) {
             var $ctrl = this;
 
             $ctrl.$onInit = init;
-            $ctrl.isBrightnessAvailable = isBrightnessAvailable;
-            $ctrl.isLightControlAvailable = isLightControlAvailable;
+            $ctrl.isRelativeDimmer = isRelativeDimmer;
+            $ctrl.isRelativeColorTemperature = isRelativeColorTemperature;
             $ctrl.brightnessUp = withDevice(deviceLightApi.brightnessUp);
             $ctrl.brightnessDown = withDevice(deviceLightApi.brightnessDown);
             $ctrl.nightLight = withDevice(deviceLightApi.nightLight);
             $ctrl.fullLight = withDevice(deviceLightApi.fullLight);
             $ctrl.switchOn = withDevice(deviceLightApi.switchOn);
             $ctrl.switchOff = withDevice(deviceLightApi.switchOff);
+            $ctrl.colorWarmer = withDevice(deviceLightApi.colorWarmer);
+            $ctrl.colorColder = withDevice(deviceLightApi.colorColder);
 
             function init() {
                 var maxDimLevel = 100;
@@ -83,6 +85,7 @@ define(['app'], function (app) {
                     $ctrl.device.LevelInt || 0,
                     $ctrl.device.Color,
                     $ctrl.device.SubType,
+                    $ctrl.device.DimmerType,
                     updateColor
                 )
             }
@@ -93,20 +96,16 @@ define(['app'], function (app) {
                 }
             }
 
-            function isBrightnessAvailable() {
-                var ledType = getLEDType($ctrl.device.SubType);
-                var isColorSwitch = $ctrl.device.Type === 'Color Switch';
-
-                return ledType.bHasRGB && $ctrl.device.Unit === 0 && isColorSwitch
+            // returns true if the light does not support absolute dimming, used to control display of Brightness Up / Brightness Down buttons
+            function isRelativeDimmer() {
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel";
             }
 
-            function isLightControlAvailable() {
+            // returns true if the light does not support absolute color temperature, used to control display of Warmer White / Colder White buttons
+            function isRelativeColorTemperature() {
                 var ledType = getLEDType($ctrl.device.SubType);
-                var isColorSwitch = $ctrl.device.Type === 'Color Switch';
 
-                return (ledType.bHasRGB === true && $ctrl.device.Unit === 0 && isColorSwitch)
-                    || (ledType.bHasTemperature && isColorSwitch)
-                    || (ledType.bHasWhite && !ledType.bHasTemperature && isColorSwitch)
+                return $ctrl.device.DimmerType && $ctrl.device.DimmerType === "rel" && ledType.bHasTemperature;
             }
 
             function updateColor(deviceIdx, JSONColor, dimlevel) {
@@ -116,29 +115,6 @@ define(['app'], function (app) {
                         $ctrl.device.Color = JSONColor;
                         $ctrl.device.LevelInt = dimlevel;
                     });
-            }
-        }
-    });
-
-    app.component('whitePicker', {
-        templateUrl: 'views/whitePicker.html',
-        bindings: {
-            deviceIdx: '<'
-        },
-        controller: function (deviceLightApi) {
-            var $ctrl = this;
-
-            $ctrl.brightnessUp = withDevice(deviceLightApi.brightnessUp);
-            $ctrl.brightnessDown = withDevice(deviceLightApi.brightnessDown);
-            $ctrl.nighLight = withDevice(deviceLightApi.nighLight);
-            $ctrl.fullLight = withDevice(deviceLightApi.fullLight);
-            $ctrl.colorWarmer = withDevice(deviceLightApi.colorWarmer);
-            $ctrl.colorColder = withDevice(deviceLightApi.colorColder);
-
-            function withDevice(fn) {
-                return function () {
-                    fn($ctrl.deviceIdx);
-                }
             }
         }
     });

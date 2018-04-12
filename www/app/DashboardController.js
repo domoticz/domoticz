@@ -759,7 +759,7 @@ define(['app'], function (app) {
 												(item.Status.indexOf('Set ') == 0)
 											) {
 												if (isLED(item.SubType)) {
-													img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="40" width="40">';
+													img = '<img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
 												}
 												else {
 													img = '<img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -767,7 +767,7 @@ define(['app'], function (app) {
 											}
 											else {
 												if (isLED(item.SubType)) {
-													img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="40" width="40">';
+													img = '<img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40">';
 												}
 												else {
 													img = '<img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40">';
@@ -2562,7 +2562,7 @@ define(['app'], function (app) {
 											(item.Status.indexOf('Disco ') == 0)
 										) {
 											if (isLED(item.SubType)) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_On.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
 											}
 											else {
 												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_On.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + item.idx + ',\'Off\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -2570,7 +2570,7 @@ define(['app'], function (app) {
 										}
 										else {
 											if (isLED(item.SubType)) {
-												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\');" class="lcursor" height="40" width="40"></td>\n';
+												xhtm += '\t      <td id="img" class="img img1"><img src="images/RGB48_Off.png" onclick="ShowRGBWPopup(event, ' + item.idx + ', \'RefreshFavorites\',' + item.Protected + ',' + item.MaxDimLevel + ',' + item.LevelInt + ',\'' + item.Color.replace(/\"/g , '\&quot;') + '\',\'' + item.SubType + '\',\'' + item.DimmerType + '\');" class="lcursor" height="40" width="40"></td>\n';
 											}
 											else {
 												xhtm += '\t      <td id="img" class="img img1"><img src="images/' + item.Image + '48_Off.png" title="' + $.t("Turn On") + '" onclick="SwitchLight(' + item.idx + ',\'On\',RefreshFavorites,' + item.Protected + ');" class="lcursor" height="40" width="40"></td>\n';
@@ -2662,11 +2662,11 @@ define(['app'], function (app) {
 										'\t      <td id="status" class="status">' + status + '</td>\n' +
 										'\t      <td id="lastupdate" class="lastupdate"><span>' + item.LastUpdate + '</span></td>\n';
 									if (item.SwitchType == "Dimmer") {
-										if (isLED(item.SubType)) {
-											//TODO: Why not show dimmer slider for LED type?
+										if (item.DimmerType && item.DimmerType!="abs") {
+											// Don't show dimmer slider if the device does not support absolute dimming
 										}
 										else {
-											xhtm += '<td class="input"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '"></div></td>';
+											xhtm += '<td class="input"><div style="margin-left:50px; margin-top: 0.2em;" class="dimslider dimslidernorm" id="slider" data-idx="' + item.idx + '" data-type="norm" data-maxlevel="' + item.MaxDimLevel + '" data-isprotected="' + item.Protected + '" data-svalue="' + item.LevelInt + '" data-isled="' + isLED(item.SubType) + '"></div></td>';
 										}
 									}
 									else if (item.SwitchType == "TPI") {
@@ -3982,6 +3982,7 @@ define(['app'], function (app) {
 					clearInterval($.setDimValue);
 					var maxValue = $(this).slider("option", "max");
 					var dtype = $(this).slider("option", "type");
+					var isled = $(this).data('isled');
 					var isProtected = $(this).slider("option", "isprotected");
 					var fPercentage = parseInt((100.0 / maxValue) * ui.value);
 					var idx = $(this).data('idx');
@@ -3995,6 +3996,10 @@ define(['app'], function (app) {
 						if (dtype == "blinds") {
 							TxtOn = "Open";
 							TxtOff = "Close";
+						}
+						else if (dtype == "blinds_inv") {
+							TxtOn = "Close";
+							TxtOff = "Open";
 						}
 						if (($scope.config.DashboardType == 2) || (window.myglobals.ismobile == true)) {
 							if (fPercentage == 0) {
@@ -4022,7 +4027,7 @@ define(['app'], function (app) {
 								img = '<img src="images/' + imgname + 'n.png" title="' + $.t("Turn Off") + '" onclick="SwitchLight(' + idx + ',\'Off\',RefreshFavorites,' + isProtected + ');" class="lcursor" height="40" width="40">';
 								status = fPercentage + " %";
 							}
-							if (dtype != "blinds") {
+							if ((dtype != "blinds") && (dtype != "blinds_inv") && !isled) {
 								if ($(id + " #img").html() != img) {
 									$(id + " #img").html(img);
 								}

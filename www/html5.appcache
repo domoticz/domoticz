@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1504
+# ref 1506
 
 CACHE:
 # CSS
@@ -484,7 +484,6 @@ app/CustomIconsController.js
 app/DashboardController.js
 app/DeviceLightEdit.js
 app/DevicesController.js
-app/DeviceTimers.js
 app/DPFibaroController.js
 app/DPHttpController.js
 app/DPInfluxController.js

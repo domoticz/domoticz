@@ -5,13 +5,13 @@
 
 class CLimitLess : public CDomoticzHardwareBase
 {
+public:
 	enum _eLimitlessBridgeType
 	{
 		LBTYPE_V4 = 0,
 		LBTYPE_V5,
 		LBTYPE_V6
 	};
-public:
 	CLimitLess(const int ID, const int LedType, const int BridgeType, const std::string &IPAddress, const unsigned short usIPPort);
 	~CLimitLess(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
