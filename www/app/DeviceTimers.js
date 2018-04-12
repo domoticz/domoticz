@@ -392,7 +392,7 @@ define(['app'], function (app) {
                 brightness: 100
             };
 
-            let MaxDimLevel = 100; // Always 100 for LED type
+            var MaxDimLevel = 100; // Always 100 for LED type
             ShowRGBWPicker('#TimersLedColor', vm.deviceIdx, 0, MaxDimLevel, vm.lightSettings.brightness, vm.lightSettings.color, vm.subType);
 
             // TODO: Rewrite..
@@ -404,7 +404,7 @@ define(['app'], function (app) {
             }
 
             $scope.$watch('vm.lightSettings', function(newValue, oldValue) {
-                let MaxDimLevel = 100; // Always 100 for LED type
+                var MaxDimLevel = 100; // Always 100 for LED type
                 ShowRGBWPicker('#TimersLedColor', vm.deviceIdx, 0, MaxDimLevel, vm.lightSettings.brightness, vm.lightSettings.color, vm.subType);
 
                 setColorDebounce();
@@ -550,7 +550,7 @@ define(['app'], function (app) {
                         tCommand = $.t(Command) + " (" + timer.Level + "%)";
 
                         if (isLED) {
-                            let color = {};
+                            var color = {};
                             try {
                                 color = JSON.parse(timer.Color);
                             }
@@ -559,24 +559,24 @@ define(['app'], function (app) {
                             }
                             //TODO: Refactor to some nice helper function
                             //TODO: Calculate color if color mode is white/temperature.
-                            let rgbhex = "808080";
+                            var rgbhex = "808080";
                             if (color.m == 1 || color.m == 2) { // White or color temperature
-                                let whex = Math.round(255*timer.Level/100).toString(16);
+                                var whex = Math.round(255*timer.Level/100).toString(16);
                                 if( whex.length == 1) {
                                     whex = "0" + whex;
                                 }
                                 rgbhex = whex + whex + whex;
                             }
                             if (color.m == 3 || color.m == 4) { // RGB or custom
-                                let rhex = Math.round(color.r).toString(16);
+                                var rhex = Math.round(color.r).toString(16);
                                 if( rhex.length == 1) {
                                     rhex = "0" + rhex;
                                 }
-                                let ghex = Math.round(color.g).toString(16);
+                                var ghex = Math.round(color.g).toString(16);
                                 if( ghex.length == 1) {
                                     ghex = "0" + ghex;
                                 }
-                                let bhex = Math.round(color.b).toString(16);
+                                var bhex = Math.round(color.b).toString(16);
                                 if( bhex.length == 1) {
                                     bhex = "0" + bhex;
                                 }
@@ -722,7 +722,7 @@ define(['app'], function (app) {
         }
 
         function addTimer() {
-            const config = getTimerConfig();
+            var config = getTimerConfig();
 
             if (!config) {
                 return false;
@@ -738,7 +738,7 @@ define(['app'], function (app) {
         }
 
         function updateTimer(timerIdx) {
-            const config = getTimerConfig();
+            var config = getTimerConfig();
 
             if (!config) {
                 return false;
