@@ -10972,10 +10972,10 @@ function getLEDType(SubType) {
 
 function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, callback) {
 	
-	let color = {};
-	let devIdx = idx;
-	let SubType = iSubType;
-	let LEDType = getLEDType(SubType);
+	var color = {};
+	var devIdx = idx;
+	var SubType = iSubType;
+	var LEDType = getLEDType(SubType);
 
 	try {
 		color = JSON.parse(colorJSON);
@@ -10983,33 +10983,33 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	catch(e) {
 		// forget about it :)
 	}
-	let colorPickerMode = "color"; // Default
+	var colorPickerMode = "color"; // Default
 	
 	// TODO: A little bit hackish, maybe extend the wheelColorPicker instead..
 	$(selector + ' #popup_picker')[0].getJSONColor = function() {
-		let colorJSON = ""; // Empty string, intentionally illegal JSON
-		let fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
+		var colorJSON = ""; // Empty string, intentionally illegal JSON
+		var fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
 		if (colorPickerMode == "white") {
-			let color = {m:1, t:0, r:0, g:0, b:0, cw:255, ww:255};
+			var color = {m:1, t:0, r:0, g:0, b:0, cw:255, ww:255};
 			colorJSON = JSON.stringify(color);
 		}
 		if (colorPickerMode == "temperature") {
-			let color = {m:2, t:Math.round(fcolor.t*255), r:0, g:0, b:0, cw:Math.round((1-fcolor.t)*255), ww:Math.round(fcolor.t*255)};
+			var color = {m:2, t:Math.round(fcolor.t*255), r:0, g:0, b:0, cw:Math.round((1-fcolor.t)*255), ww:Math.round(fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "color") {
 			// Set value to 1 in color mode
 			$(this).wheelColorPicker('setHsv', fcolor.h, fcolor.s, 1);
 			fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
-			let color = {m:3, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:0, ww:0};
+			var color = {m:3, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:0, ww:0};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customw") {
-			let color = {m:4, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*255), ww:Math.round(fcolor.w*255)};
+			var color = {m:4, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*255), ww:Math.round(fcolor.w*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customww") {
-			let color = {m:4, t:Math.round(fcolor.t*255), r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*(1-fcolor.t)*255), ww:Math.round(fcolor.w*fcolor.t*255)};
+			var color = {m:4, t:Math.round(fcolor.t*255), r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*(1-fcolor.t)*255), ww:Math.round(fcolor.w*fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		return colorJSON;
@@ -11094,19 +11094,19 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		ColorModeCustom,   // Custom (color + white). Valid fields: r, g, b, cw, ww, depending on device capabilities
 	};*/
 
-	let color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
+	var color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
 
 	if (color_m != 1 && color_m != 2 && color_m != 3 && color_m != 4) color_m = 3; // Default to RGB if not valid
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
 	if (color_m == 2 && !LEDType.bHasTemperature) color_m = 3; // Default to RGB if light does not support temperature
 
-	let color_t = 128;
-	let color_cw = 128;
-	let color_ww = 255 - color_cw;
-	let color_r = 255;
-	let color_g = 255;
-	let color_b = 255;
+	var color_t = 128;
+	var color_cw = 128;
+	var color_ww = 255 - color_cw;
+	var color_r = 255;
+	var color_g = 255;
+	var color_b = 255;
 
 	if (color_m == 1) // White
 	{
@@ -11177,9 +11177,9 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
 		clearTimeout($.setColValue);
 
-		let color = $(this).wheelColorPicker('getColor');
-		let dimlevel = Math.round((color.m*99)+1); // 1..100
-		let JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
+		var color = $(this).wheelColorPicker('getColor');
+		var dimlevel = Math.round((color.m*99)+1); // 1..100
+		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
 		$.setColValue = setTimeout(function () {
 			var fn = callback || SetColValue;

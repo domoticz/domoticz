@@ -1,7 +1,7 @@
 define(['app'], function (app) {
 	app.controller('ScenesController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'permissions', function ($scope, $rootScope, $location, $http, $interval, permissions) {
 
-		let SceneIdx = 0;
+		var SceneIdx = 0;
 
 		RemoveCode = function (idx, code) {
 			if ($("#scenecontent #removecode").hasClass('disabled')) {
@@ -160,11 +160,11 @@ define(['app'], function (app) {
 			var Command = $("#scenecontent #combocommand option:selected").val();
 
 			var level = 100;
-			let colorJSON = ""; // Empty string, intentionally illegal JSON
+			var colorJSON = ""; // Empty string, intentionally illegal JSON
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					if (isLED(item.SubType)) {
-						let color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						var color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
 						level = Math.round((color.m*99)+1); // 1..100
 						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
 					}
@@ -362,7 +362,7 @@ define(['app'], function (app) {
 							var levelstr = item.Level + " %";
 
 							if (isLED(item.SubType)) {
-								let color = {};
+								var color = {};
 								try {
 									color = JSON.parse(item.Color);
 								}
@@ -371,24 +371,24 @@ define(['app'], function (app) {
 								}
 								//TODO: Refactor to some nice helper function, ensuring range of 0..ff etc
 								//TODO: Calculate color if color mode is white/temperature.
-								let rgbhex = "808080";
+								var rgbhex = "808080";
 								if (color.m == 1 || color.m == 2) { // White or color temperature
-									let whex = Math.round(255*item.Level/100).toString(16);
+									var whex = Math.round(255*item.Level/100).toString(16);
 									if( whex.length == 1) {
 										whex = "0" + whex;
 									}
 									rgbhex = whex + whex + whex;
 								}
 								if (color.m == 3 || color.m == 4) { // RGB or custom
-									let rhex = Math.round(color.r).toString(16);
+									var rhex = Math.round(color.r).toString(16);
 									if( rhex.length == 1) {
 										rhex = "0" + rhex;
 									}
-									let ghex = Math.round(color.g).toString(16);
+									var ghex = Math.round(color.g).toString(16);
 									if( ghex.length == 1) {
 										ghex = "0" + ghex;
 									}
-									let bhex = Math.round(color.b).toString(16);
+									var bhex = Math.round(color.b).toString(16);
 									if( bhex.length == 1) {
 										bhex = "0" + bhex;
 									}
@@ -457,13 +457,13 @@ define(['app'], function (app) {
 						var level = data["Level"];
 						$("#scenecontent #combolevel").val(level);
 						
-						let SubType = "";
+						var SubType = "";
 						$.each($.LightsAndSwitches, function (i, item) {
 							if (item.idx == devidx) {
 								SubType = item.SubType;
 							}
 						});
-						let MaxDimLevel = 100; // Always 100 for LED type
+						var MaxDimLevel = 100; // Always 100 for LED type
 						if (isLED(SubType))
 							ShowRGBWPicker('#scenecontent #ScenesLedColor', devidx, 0, MaxDimLevel, level, data["Color"], SubType);
 
@@ -490,14 +490,14 @@ define(['app'], function (app) {
 			var Command = $("#scenecontent #combocommand option:selected").val();
 
 			var level = 100;
-			let colorJSON = ""; // Empty string, intentionally illegal JSON
+			var colorJSON = ""; // Empty string, intentionally illegal JSON
 			var ondelay = $("#scenecontent #ondelaytime").val();
 			var offdelay = $("#scenecontent #offdelaytime").val();
 
 			$.each($.LightsAndSwitches, function (i, item) {
 				if (item.idx == DeviceIdx) {
 					if (isLED(item.SubType)) {
-						let color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
+						var color = $('#scenecontent .colorpicker #popup_picker').wheelColorPicker('getColor');
 						level = Math.round((color.m*99)+1); // 1..100
 						colorJSON = $('#scenecontent .colorpicker #popup_picker')[0].getJSONColor();
 					}
@@ -675,13 +675,13 @@ define(['app'], function (app) {
 
 				var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
 				if (typeof DeviceIdx != 'undefined') {
-					let SubType = "";
+					var SubType = "";
 					$.each($.LightsAndSwitches, function (i, item) {
 						if (item.idx == DeviceIdx) {
 							SubType = item.SubType;
 						}
 					});
-					let MaxDimLevel = 100; // Always 100 for LED type
+					var MaxDimLevel = 100; // Always 100 for LED type
 					if (isLED(SubType))
 						ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType);
 				}
