@@ -863,7 +863,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 						type = STYPE_OnOff;
 						name = "Xiaomi Smart Plug";
 					}
-					else if (model == "86plug") {
+					else if (model == "86plug" || model == "ctrl_86plug.aq1") {
 						type = STYPE_OnOff;
 						name = "Xiaomi Smart Wall Plug";
 					}
@@ -1008,7 +1008,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 							m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, "", "", battery);
 						}
 						else {
-							if (model == "plug" || model == "86plug") {
+							if (model == "plug" || model == "86plug" || model == "ctrl_86plug.aq1") {
 								sleep_milliseconds(100); //need to sleep here as the gateway will send 2 update messages, and need time for the database to update the state so that the event is not triggered twice
 								m_XiaomiGateway->InsertUpdateSwitch(sid.c_str(), name, on, type, unitcode, level, cmd, load_power, power_consumed, battery);
 							}
