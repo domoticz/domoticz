@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "csocket.h"
+#include <fcntl.h>
 #include "../main/Logger.h"
 
 
@@ -121,13 +122,40 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 
 	// connect to remote socket
 	m_remoteSocketAddr.sin_port = htons(m_remotePort);
+	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
 
-	if (status < 0) 
+	fd_set fdset;
+	struct timeval tv;
+
+	FD_ZERO(&fdset);
+	FD_SET(m_socket, &fdset);
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
+
+	if (select(m_socket + 1, NULL, &fdset, NULL, &tv) == 1)
+	{
+#ifdef WIN32
+		m_socketState = CONNECTED;
+		return SUCCESS;
+#else
+		int so_error;
+		socklen_t len = sizeof so_error;
+		getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
+		if (so_error == 0)
+		{
+			m_socketState = CONNECTED;
+			return SUCCESS;
+		}
+#endif
+	}
+
+
+//	if (status < 0) 
 		return FAILURE;
 
-	m_socketState = CONNECTED;
-	return SUCCESS;
+//	m_socketState = CONNECTED;
+//	return SUCCESS;
 }
 
 
