@@ -1282,6 +1282,27 @@ table.table-details {
 	padding: 0;
 }
 
+.entity-log-table {
+	border: 0;
+	border-spacing: 0;
+	padding: 0;
+}
+
+.entity-log-table th:first-child {
+	width: 140px;
+}
+
+.settings-form {
+	border: 0;
+	border-spacing: 20px;
+	padding: 0;
+}
+
+.settings-form > tbody > tr > td:first-child {
+	width: 80px;
+	text-align: right;
+}
+
 table.table-details > tr > td:first-child,
 table.table-details > tbody > tr > td:first-child {
 	width: 120px;

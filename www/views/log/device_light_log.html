@@ -11,14 +11,7 @@
         <h2>{{ ::'Name'|translate }}: {{ ::vm.deviceName }}</h2>
     </p>
 
-    <table class="display" id="lighttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th width="140" align="left">Date</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-    </table>
+    <entity-log-table log="vm.log"></entity-log-table>
 
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>

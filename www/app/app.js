@@ -249,7 +249,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	}]);
 
-	app.factory('deviceApi', function($q, domoticzApi) {
+	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun) {
 		return {
 			getDeviceInfo: getDeviceInfo,
             updateDeviceInfo: updateDeviceInfo
@@ -258,6 +258,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		function getDeviceInfo(deviceIdx) {
 			return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
 				.then(function (data) {
+                    dzTimeAndSun.updateData(data);
+
 					return data && data.result && data.result.length === 1
 						? data.result[0]
 						: $q.reject(data);
@@ -487,7 +489,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Devices/:id/Timers', angularAMD.route({
 				templateUrl: 'views/timers.html',
 				controller: 'DeviceTimersController',
-				controllerUrl: 'app/DeviceTimers.js',
+				controllerUrl: 'app/timers/DeviceTimersController.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightEdit', angularAMD.route({
@@ -497,21 +499,21 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightLog', angularAMD.route({
-				templateUrl: 'views/device_light_log.html',
+				templateUrl: 'views/log/device_light_log.html',
 				controller: 'DeviceLightLogController',
-				controllerUrl: 'app/device-log/LightLog.js',
+				controllerUrl: 'app/log/LightLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({
-				templateUrl: 'views/device_temperature_log.html',
+				templateUrl: 'views/log/device_temperature_log.html',
 				controller: 'DeviceTemperatureLogController',
-				controllerUrl: 'app/device-log/TemperatureLog.js',
+				controllerUrl: 'app/log/TemperatureLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
-				templateUrl: 'views/device_temperature_report.html',
+				templateUrl: 'views/log/device_temperature_report.html',
 				controller: 'DeviceTemperatureReportController',
-				controllerUrl: 'app/device-log/TemperatureReport.js',
+				controllerUrl: 'app/log/TemperatureReport.js',
 				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
@@ -628,6 +630,18 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
 				controller: 'ScenesController'
+			})).
+			when('/Scenes/:id/Log', angularAMD.route({
+				templateUrl: 'views/log/scene_log.html',
+				controller: 'SceneLogController',
+				controllerUrl: 'app/log/SceneLog.js',
+				controllerAs: 'vm'
+			})).
+			when('/Scenes/:id/Timers', angularAMD.route({
+				templateUrl: 'views/timers.html',
+				controller: 'SceneTimersController',
+				controllerUrl: 'app/timers/SceneTimersController.js',
+				controllerAs: 'vm'
 			})).
 			when('/Setup', angularAMD.route({
 				templateUrl: 'views/setup.html',
@@ -750,8 +764,51 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		});
 	}]);
 
+	app.factory('dzTimeAndSun', function($rootScope) {
+		var currentData = {};
+		init();
 
-	app.run(function ($rootScope, $location, $window, $route, $http, permissions) {
+		return {
+            getCurrentData: getCurrentData,
+			updateData: updateData
+		};
+
+        function init() {
+            $rootScope.$on('jsonupdate', function (event, data) {
+                if (typeof data.ServerTime !== 'undefined') {
+                    currentData.serverTime = data.ServerTime;
+                }
+                if (typeof data.Sunrise !== 'undefined') {
+                    currentData.sunrise = data.Sunrise;
+                }
+                if (typeof data.Sunset !== 'undefined') {
+                    currentData.sunset = data.Sunset;
+                }
+            });
+        }
+
+		function getCurrentData() {
+			return currentData;
+		}
+
+		function updateData(data) {
+			Object.assign(currentData, {
+				sunrise: data.Sunrise,
+				sunset: data.Sunset,
+				serverTime: data.ServerTime
+			});
+		}
+	});
+
+    app.component('timesun', {
+        templateUrl: 'timesuntemplate',
+        controller: function (dzTimeAndSun) {
+        	this.isMobile = $.myglobals.ismobile;
+            this.data = dzTimeAndSun.getCurrentData();
+        }
+    });
+
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1
@@ -1031,27 +1088,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			*/
 			/* end ajax override */
 
-		app.directive('timesun', function () {
-			return {
-				templateUrl: 'timesuntemplate',
-				controller: ['$scope', function ($scope) {
-					var self = $scope;
-					$scope.data = {};
-					$scope.$on('jsonupdate', function (event, data) {
-						if (typeof data.ServerTime !== 'undefined') {
-							self.data.ServerTime = data.ServerTime;
-						}
-						if (typeof data.Sunrise !== 'undefined') {
-							self.data.Sunrise = data.Sunrise;
-						}
-						if (typeof data.Sunset !== 'undefined') {
-							self.data.Sunset = data.Sunset;
-						}
-					});
-				}
-				]
-			};
-		});
+		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
 			var month = ServerTime.split(' ')[0];
 			ServerTime = ServerTime.replace(month, $.t(month));
@@ -1077,6 +1114,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				}).then(function successCallback(response) {
 					var data = response.data;
 					if (typeof data.Sunrise != 'undefined') {
+                        dzTimeAndSun.updateData(response.data);
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
 				});
