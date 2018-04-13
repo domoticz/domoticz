@@ -389,6 +389,7 @@ hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
 hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
