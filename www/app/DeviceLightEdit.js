@@ -55,7 +55,7 @@ define(['app'], function (app) {
     app.component('rgbwPicker', {
         templateUrl: 'views/rgbwPicker.html',
         bindings: {
-            device: '<'
+            device: '='
         },
         controller: function ($element, domoticzApi, deviceLightApi) {
             var $ctrl = this;
@@ -65,8 +65,9 @@ define(['app'], function (app) {
             $ctrl.isLightControlAvailable = isLightControlAvailable;
             $ctrl.brightnessUp = withDevice(deviceLightApi.brightnessUp);
             $ctrl.brightnessDown = withDevice(deviceLightApi.brightnessDown);
-            $ctrl.nighLight = withDevice(deviceLightApi.nighLight);
+            $ctrl.nightLight = withDevice(deviceLightApi.nightLight);
             $ctrl.fullLight = withDevice(deviceLightApi.fullLight);
+            $ctrl.switchOn = withDevice(deviceLightApi.switchOn);
             $ctrl.switchOff = withDevice(deviceLightApi.switchOff);
 
             function init() {
@@ -80,7 +81,7 @@ define(['app'], function (app) {
                     $ctrl.device.Protected,
                     $ctrl.device.MaxDimLevel || maxDimLevel,
                     $ctrl.device.LevelInt || 0,
-                    '',
+                    $ctrl.device.Color,
                     $ctrl.device.SubType,
                     updateColor
                 )
@@ -109,7 +110,12 @@ define(['app'], function (app) {
             }
 
             function updateColor(deviceIdx, JSONColor, dimlevel) {
-                deviceLightApi.setColor(deviceIdx, JSONColor, dimlevel);
+                deviceLightApi
+                    .setColor(deviceIdx, JSONColor, dimlevel)
+                    .then(function() {
+                        $ctrl.device.Color = JSONColor;
+                        $ctrl.device.LevelInt = dimlevel;
+                    });
             }
         }
     });

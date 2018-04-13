@@ -9,27 +9,6 @@
 
     <div style="display: none">
         <select id="switch-types-template">
-            <option value="3">Blinds</option>
-            <option value="6">Blinds Inverted</option>
-            <option value="13">Blinds Percentage</option>
-            <option value="16">Blinds Percentage Inverted</option>
-            <option value="2">Contact</option>
-            <option value="7">Dimmer</option>
-            <option value="11">Door Contact</option>
-            <option value="19">Door Lock</option>
-            <option value="20">Door Lock Inverted</option>
-            <option value="1">Doorbell</option>
-            <option value="12">Dusk Sensor</option>
-            <option value="17">Media Player</option>
-            <option value="8">Motion Sensor</option>
-            <option value="0">On/Off</option>
-            <option value="10">Push Off Button</option>
-            <option value="9">Push On Button</option>
-            <option value="18">Selector</option>
-            <option value="5">Smoke Detector</option>
-            <option value="15">Venetian Blinds EU</option>
-            <option value="14">Venetian Blinds US</option>
-            <option value="4">X10 Siren</option>
             <!--#embed switchtypes -->
         </select>
     </div>
@@ -432,22 +411,25 @@
             </td>
             <td align="left" style="vertical-align: top;">
                 <div class="btn-group" ng-show="$ctrl.isBrightnessAvailable()">
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.brightnessUp()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessUp()">
                         {{:: 'Brightness Up' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.brightnessDown()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessDown()">
                         {{:: 'Brightness Down' | translate }}
                     </button>
                 </div>
                 <br><br>
                 <div class="btn-group" ng-show="$ctrl.isLightControlAvailable()">
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.fullLight()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">
+                        {{:: 'On' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.fullLight()">
                         {{:: 'Full Light' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.nighLight()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.nightLight()">
                         {{:: 'Night Light' | translate }}
                     </button>
-                    <button class="btn btn-mini" type="button" ng-click="$ctrl.switchOff()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOff()">
                         {{:: 'Off' | translate }}
                     </button>
                 </div>
