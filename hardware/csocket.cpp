@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "csocket.h"
-#include <fcntl.h>
 #include "../main/Logger.h"
 
 
@@ -17,6 +16,7 @@
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #ifndef WIN32
@@ -122,40 +122,52 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 
 	// connect to remote socket
 	m_remoteSocketAddr.sin_port = htons(m_remotePort);
+#ifdef WIN32
+	// FIXME: need someone who understands Windows sockets
+	//	  This should be a non-blocking call so we can define ourselves when to return
+	//	  from this function. With the current code socket connect may wait for 20
+	//	  seconds (that is the Linux default - don't know about Windows) or more if the
+	//	  remote machine is down/busy/unreachable
+	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
+	if (status < 0) 
+	{
+		return FAILURE;
+	}
+ 
+	m_socketState = CONNECTED;
+	return SUCCESS;
+#else
+	// do a non-blocking call and return success or fail after no more than 5 seconds
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
 
-	fd_set fdset;
-	struct timeval tv;
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(m_socket, &fds);
+	timeval timeout;
+	timeout.tv_sec = 5;
+	timeout.tv_usec = 0;
 
-	FD_ZERO(&fdset);
-	FD_SET(m_socket, &fdset);
-	tv.tv_sec = 5;
-	tv.tv_usec = 0;
-
-	if (select(m_socket + 1, NULL, &fdset, NULL, &tv) == 1)
+	if (select(m_socket + 1, &fds, NULL, NULL, &timeout) > 0)
 	{
-#ifdef WIN32
-		m_socketState = CONNECTED;
-		return SUCCESS;
-#else
 		int so_error;
 		socklen_t len = sizeof so_error;
 		getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
-		if (so_error == 0)
+		if (so_error != 0)
 		{
-			m_socketState = CONNECTED;
-			return SUCCESS;
+			return FAILURE;
 		}
-#endif
 	}
 
+	// restore blocking mode
+	long socketMode = fcntl(m_socket, F_GETFL, NULL); 
+	socketMode &= (~O_NONBLOCK); 
+	fcntl(m_socket, F_SETFL, socketMode); 
 
-//	if (status < 0) 
-		return FAILURE;
+	m_socketState = CONNECTED;
+	return SUCCESS;
+#endif
 
-//	m_socketState = CONNECTED;
-//	return SUCCESS;
 }
 
 
@@ -184,7 +196,8 @@ int csocket::canRead( bool* readyToRead, float waitTime )
     }
 
     
-	int n = select(sizeof(fds)*8, &fds, NULL, NULL, &timeout);
+//	int n = select(sizeof(fds)*8, &fds, NULL, NULL, &timeout);
+	int n = select(m_socket + 1, &fds, NULL, NULL, &timeout);
 	if (n < 0)
 	{
 		m_socketState = ERRORED;
