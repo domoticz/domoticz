@@ -515,31 +515,31 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 /**
     Insert/Update blinds device
 **/
-void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Command, int iInterface,const int iLevel,const int BatteryLevel, const char *devname)
+void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Command, int iInterface, const int iLevel, const int BatteryLevel, const char *devname)
 {
-    //make device ID
-  unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
+	//make device ID
+	unsigned char ID1 = (unsigned char)((who & 0xFF00) >> 8);
 	unsigned char ID2 = (unsigned char)(who & 0xFF);
 	unsigned char ID3 = (unsigned char)((where & 0xFF00) >> 8);
 	unsigned char ID4 = (unsigned char)where & 0xFF;
 
 	//interface id (bus identifier)
 	int unit = iInterface;
-    char szIdx[10];
+	char szIdx[10];
 	sprintf(szIdx, "%02X%02X%02X%02X", ID1, ID2, ID3, ID4);
 
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)",
-                           m_HwdID, szIdx, unit);
- 
+		m_HwdID, szIdx, unit);
+
 
 	if (!result.empty())
 	{   //check if we have a change, if not do not update it
-        int nvalue = atoi(result[0][0].c_str());
-        int svalue = atoi(result[0][1].c_str());
-     		
-        if (Command == nvalue && iLevel < 0) return; //check for Automation Normal
-        if (iLevel == svalue && iLevel >= 0) return;//check for Automation Advanced
+		int nvalue = atoi(result[0][0].c_str());
+		int svalue = atoi(result[0][1].c_str());
+
+		if (Command == nvalue && iLevel < 0) return; //check for Automation Normal
+		if (iLevel == svalue && iLevel >= 0) return;//check for Automation Advanced
 	}
 	else
 	{
@@ -555,37 +555,36 @@ void COpenWebNetTCP::UpdateBlinds(const int who, const int where, const int Comm
 			m_sql.InsertDevice(m_HwdID, szIdx, unit, pTypeGeneralSwitch, sSwitchBlindsT1, STYPE_BlindsPercentageInverted, 0, "", devname);
 		}
 	}
-    	
-  	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (SwitchType==%d)",
-                           m_HwdID, szIdx, unit,STYPE_BlindsPercentageInverted);
-                          
-		_tGeneralSwitch gswitch;
-		if (iLevel < 0 && result.empty()) //is a Normal Frame and device is standard 
-		{
-			gswitch.cmnd = Command;
-			gswitch.level = iLevel;
-			gswitch.subtype = sSwitchBlindsT1;
-  		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
-  		gswitch.unitcode = 0;
-  		gswitch.battery_level = BatteryLevel;
-  		gswitch.rssi = 12;
-  		gswitch.seqnbr = 0;
-  		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
-		}
-		if (iLevel >= 0 && !result.empty()) //is a Meseaure Frame (percentual) and device is Advanced 
-		{
-			gswitch.cmnd = gswitch_sSetLevel;
-    	gswitch.level = iLevel;
-    	gswitch.subtype = sSwitchBlindsT1;
-  		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
-  		gswitch.unitcode = 0;
-  		gswitch.battery_level = BatteryLevel;
-  		gswitch.rssi = 12;
-  		gswitch.seqnbr = 0;
-  		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
-		}
-		
->>>>>>> 3b13efb234c473345d1905bf5bcd964b85f18d79
+
+	result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) AND (SwitchType==%d)",
+		m_HwdID, szIdx, unit, STYPE_BlindsPercentageInverted);
+
+	_tGeneralSwitch gswitch;
+	if (iLevel < 0 && result.empty()) //is a Normal Frame and device is standard 
+	{
+		gswitch.cmnd = Command;
+		gswitch.level = iLevel;
+		gswitch.subtype = sSwitchBlindsT1;
+		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
+		gswitch.unitcode = 0;
+		gswitch.battery_level = BatteryLevel;
+		gswitch.rssi = 12;
+		gswitch.seqnbr = 0;
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
+	}
+	if (iLevel >= 0 && !result.empty()) //is a Meseaure Frame (percentual) and device is Advanced 
+	{
+		gswitch.cmnd = gswitch_sSetLevel;
+		gswitch.level = iLevel;
+		gswitch.subtype = sSwitchBlindsT1;
+		gswitch.id = (((int32_t)who << 16) & 0xFF0000) | (where & 0xFFFF);
+		gswitch.unitcode = 0;
+		gswitch.battery_level = BatteryLevel;
+		gswitch.rssi = 12;
+		gswitch.seqnbr = 0;
+		sDecodeRXMessage(this, (const unsigned char *)&gswitch, devname, BatteryLevel);
+	}
+
 }
 
 /**
