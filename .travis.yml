@@ -73,8 +73,8 @@ matrix:
     env: TARGET_ARCHITECTURE=x86_64
     install:
       - brew install boost|| true
-      - brew install libusb
-      - brew install libusb-compat
+      # - brew install libusb
+      # - brew install libusb-compat
       - brew install zlib || true
       - brew install openssl
       - brew link openssl --force

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 #include <iosfwd>
 
 class Arilux : public CDomoticzHardwareBase
@@ -15,9 +16,8 @@ private:
 	bool SendTCPCommand(char ip[50],std::vector<unsigned char> &command);
 	bool StartHardware();
 	bool StopHardware();
-	float cHue;
-	bool isWhite;
-	int brightness;
+	_tColor m_color;
+	bool m_isWhite;
 protected:
 	bool m_bDoRestart;
 	void Do_Work();

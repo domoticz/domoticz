@@ -1099,7 +1099,7 @@ namespace Plugins {
 
 		std::string	sTransport = PyUnicode_AsUTF8(pConnection->Transport);
 		std::string	sAddress = PyUnicode_AsUTF8(pConnection->Address);
-		if (sTransport == "TCP/IP")
+		if ((sTransport == "TCP/IP") || (sTransport == "TLS/IP"))
 		{
 			std::string	sPort = PyUnicode_AsUTF8(pConnection->Port);
 			if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Transport set to: '%s', %s:%s.", Name.c_str(), sTransport.c_str(), sAddress.c_str(), sPort.c_str());
@@ -1108,10 +1108,10 @@ namespace Plugins {
 				_log.Log(LOG_ERROR, "(%s) No port number specified for %s connection to: '%s'.", Name.c_str(), sTransport.c_str(), sAddress.c_str());
 				return;
 			}
-			if (!pConnection->pProtocol->Secure())
-				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
-			else
+			if ((sTransport == "TLS/IP") || pConnection->pProtocol->Secure())
 				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+			else
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
@@ -1207,7 +1207,7 @@ namespace Plugins {
 
 	void CPlugin::ConnectionRead(CPluginMessageBase * pMess)
 	{
-		ReadMessage*	pMessage = (ReadMessage*)pMess;
+		ReadEvent*	pMessage = (ReadEvent*)pMess;
 		CConnection*	pConnection = (CConnection*)pMessage->m_pConnection;
 
 		pConnection->pProtocol->ProcessInbound(pMessage);
@@ -1296,13 +1296,19 @@ namespace Plugins {
 			}
 
 			// If transport is not connected there won't be a Disconnect Event so tidy it up here
-			if (!pConnection->pTransport->IsConnected())
+			if (!pConnection->pTransport->IsConnected() && !pConnection->pTransport->IsConnecting())
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
 				CPluginTransport *pTransport = pConnection->pTransport;
 				delete pConnection->pTransport;
 				pConnection->pTransport = NULL;
+
+				// Plugin exiting and all connections have disconnect messages queued
+				if (m_stoprequested && !m_Transports.size())
+				{
+					MessagePlugin(new onStopCallback(this));
+				}
 			}
 			else
 			{
@@ -1358,7 +1364,7 @@ namespace Plugins {
 	{
 		if (m_bDebug & PDM_QUEUE)
 		{
-			_log.Log(LOG_NORM, "(" + Name + ") pushing '" + std::string(pMessage->Name()) + "' on to queue");
+			_log.Log(LOG_NORM, "(" + Name + ") Pushing '" + std::string(pMessage->Name()) + "' on to queue");
 		}
 
 		// Add message to queue
@@ -1400,15 +1406,17 @@ namespace Plugins {
 				else
 					_log.Log(LOG_NORM, "(%s) Disconnect event received for '%s:%s'.", Name.c_str(), sAddress.c_str(), sPort.c_str());
 			}
-			{
-				RemoveConnection(pConnection->pTransport);
-				CPluginTransport *pTransport = pConnection->pTransport;
-				delete pConnection->pTransport;
-				pConnection->pTransport = NULL;
-			}
 
-			// inform the plugin
-			MessagePlugin(new onDisconnectCallback(this, (PyObject*)pConnection));
+			RemoveConnection(pConnection->pTransport);
+			CPluginTransport *pTransport = pConnection->pTransport;
+			delete pConnection->pTransport;
+			pConnection->pTransport = NULL;
+
+			// inform the plugin if transport is connection based
+			if (pMessage->bNotifyPlugin)
+			{
+				MessagePlugin(new onDisconnectCallback(this, (PyObject*)pConnection));
+			}
 
 			// Plugin exiting and all connections have disconnect messages queued
 			if (m_stoprequested && !m_Transports.size())
@@ -1530,7 +1538,7 @@ namespace Plugins {
 #define DZ_BYTES_PER_LINE 20
 	void CPlugin::WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming)
 	{
-		if (m_bDebug & PDM_CONNECTION)
+		if (m_bDebug & (PDM_CONNECTION | PDM_MESSAGE))
 		{
 			if (Incoming)
 				_log.Log(LOG_NORM, "(%s) Received %d bytes of data", Name.c_str(), (int)Buffer.size());
@@ -1567,10 +1575,11 @@ namespace Plugins {
 		return true;
 	}
 
-	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const int hue)
+	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const _tColor color)
 	{
 		//	Add command to message queue
-		MessagePlugin(new onCommandCallback(this, Unit, command, level, hue));
+		std::string JSONColor = color.toJSON();
+		MessagePlugin(new onCommandCallback(this, Unit, command, level, JSONColor));
 	}
 
 	void CPlugin::SendCommand(const int Unit, const std::string & command, const float level)

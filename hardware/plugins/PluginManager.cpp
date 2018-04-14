@@ -308,7 +308,7 @@ namespace Plugins {
 						const CPlugin* pPlugin = Message->Plugin();
 						if (pPlugin && (pPlugin->m_bDebug & PDM_QUEUE))
 						{
-							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") processing '" + std::string(Message->Name()) + "' message");
+							_log.Log(LOG_NORM, "(" + pPlugin->Name + ") Processing '" + std::string(Message->Name()) + "' message");
 						}
 						Message->Process();
 					}
@@ -567,7 +567,7 @@ namespace http {
 				Plugins::CPlugin*	pPlugin = (Plugins::CPlugin*)(*PluginHwd)[HwID];
 				if (pPlugin)
 				{
-					pPlugin->SendCommand(Unit, sAction, 0, 0);
+					pPlugin->SendCommand(Unit, sAction, 0, NoColor);
 				}
 			}
 		}

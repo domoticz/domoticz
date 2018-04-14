@@ -304,10 +304,10 @@ define(['app'], function (app) {
 								(item.Type.indexOf("ASA") == 0) ||
 								(item.Type.indexOf("Blinds") == 0)
 							) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#devicescontent\', \'ShowDevices\');">';
+								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/LightLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ((item.Type.indexOf("Temp") == 0) || (item.Type.indexOf("Thermostat") == 0) || (item.Type.indexOf("Humidity") == 0)) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\', \'' + item.Type + '\');">';
+								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/TemperatureLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (item.SubType == "Voltage") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');">';
