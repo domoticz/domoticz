@@ -39,7 +39,12 @@ public:
 	void SetOutputFile(const char *OutputFile);
 	void SetVerboseLevel(_eLogFileVerboseLevel vLevel);
 
-	void Log(const _eLogLevel level, const char* logline, ...);
+	void Log(const _eLogLevel level, const std::string& sLogline);
+	void Log(const _eLogLevel level, const char* logline, ...)
+#ifdef __GNUC__
+		__attribute__ ((format (printf, 3, 4)))
+#endif
+		;
 
 	void LogSequenceStart();
 	void LogSequenceAdd(const char* logline);
@@ -48,6 +53,9 @@ public:
 
 	void EnableLogTimestamps(const bool bEnableTimestamps);
 	bool IsLogTimestampsEnabled();
+
+	void EnableLogThreadIDs(const bool bEnableThreadIDs);
+	bool IsLogThreadIDsEnabled();
 
 	void SetFilterString(std::string &Filter);
 	bool isTraceEnabled();
@@ -73,6 +81,7 @@ private:
 	std::deque<_tLogLineStruct> m_notification_log;
 	bool m_bInSequenceMode;
 	bool m_bEnableLogTimestamps;
+	bool m_bEnableLogThreadIDs;
 	bool m_bEnableErrorsToNotificationSystem;
 	time_t m_LastLogNotificationsSend;
 	std::stringstream m_sequencestring;

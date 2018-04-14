@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1405
+# ref 1504
 
 CACHE:
 # CSS
@@ -11,8 +11,10 @@ css/jquery.dataTables.min.css
 css/demo_table_jui.css
 css/jquery.uix.multiselect.css
 css/jquery-ui-timepicker-addon.css
+css/legacy.css
 css/style.css
 css/ui-darkness/jquery-ui.min.css
+css/wheelcolorpicker.css
 secpanel/css/font.less
 secpanel/css/reset.less
 secpanel/css/style.less
@@ -111,14 +113,16 @@ images/button.png
 images/camera_default.png
 images/camera-web.png
 images/capture.png
+images/ChristmasTree.png
+images/ChristmasTree48_Off.png
+images/ChristmasTree48_On.png
 images/clock.png
 images/clock48.png
 images/clock48_On.png
 images/collection.png
 images/collection_hover.png
-images/ChristmasTree.png
-images/ChristmasTree48_Off.png
-images/ChristmasTree48_On.png
+images/Coltemp48.png
+images/Coltemp48_Sel.png
 images/Computer.png
 images/Computer48_Off.png
 images/Computer48_On.png
@@ -138,6 +142,10 @@ images/Custom.png
 images/Custom48_Off.png
 images/Custom48_On.png
 images/customicons.png
+images/Customw48.png
+images/Customw48_Sel.png
+images/Customww48.png
+images/Customww48_Sel.png
 images/delete.png
 images/demand.png
 images/demand_mini.png
@@ -173,6 +181,7 @@ images/forward_enabled_hover.png
 images/Gas48.png
 images/gauge.png
 images/gauge48.png
+images/general.png
 images/Generic.png
 images/Generic48_Off.png
 images/Generic48_On.png
@@ -265,8 +274,10 @@ images/remove.png
 images/rename.png
 images/restart.png
 images/RGB.png
+images/RGB48.png
 images/RGB48_Off.png
 images/RGB48_On.png
+images/RGB48_Sel.png
 images/scale.png
 images/scale48.png
 images/scenes.png
@@ -310,6 +321,7 @@ images/unknown.png
 images/up.png
 images/Up48.png
 images/Up48_2.png
+images/update.png
 images/users.png
 images/utility.png
 images/uv.png
@@ -326,6 +338,8 @@ images/Water.png
 images/Water48_Off.png
 images/Water48_On.png
 images/webcam.png
+images/White48.png
+images/White48_Sel.png
 images/wind.png
 images/Wind0.png
 images/wind48.png
@@ -453,12 +467,24 @@ i18n/domoticz-uk.json
 i18n/domoticz-zh.json
 
 # Scripts
+app/log/components.js
+app/log/LightLog.js
+app/log/SceneLog.js
+app/log/TemperatureLog.js
+app/log/TemperatureReport.js
+app/scenes/factories.js
+app/timers/components.js
+app/timers/DeviceTimersController.js
+app/timers/factories.js
+app/timers/SceneTimersController.js
 app/AboutController.js
 app/app.js
 app/CamController.js
 app/CustomIconsController.js
 app/DashboardController.js
+app/DeviceLightEdit.js
 app/DevicesController.js
+app/DeviceTimers.js
 app/DPFibaroController.js
 app/DPHttpController.js
 app/DPInfluxController.js
@@ -484,8 +510,6 @@ app/ScenesController.js
 app/SetupController.js
 app/TemperatureController.js
 app/TemperatureCustomLogController.js
-app/TemperatureLogController.js
-app/TemperatureNotificationsController.js
 app/TimerplanController.js
 app/UpdateController.js
 app/UsersController.js
@@ -500,14 +524,17 @@ js/angular-route.min.js
 js/angular-sanitize.min.js
 js/angular-scrollglue.js
 js/angular-tree-control.js
+js/angular-websocket.js
 js/angular.min.js
 js/angularAMD.min.js
+js/babel-polyfill-6.26.0.js
 js/blockly_compressed.js
 js/blocks_compressed.js
 js/bootbox.min.js
 js/bootstrap.min.js
 js/colpick.js
 js/d3.min.js
+js/dataTables.select.min.js
 js/dataTables.tableTools.min.js
 js/date.format.js
 js/domoticz.js
@@ -522,7 +549,7 @@ js/highcharts-ng.min.js
 js/highcharts.js
 js/html5shiv.js
 js/i18next-1.8.0.min.js
-js/jquery-1.12.0.min.js
+js/jquery-3.3.1.min.js
 js/jquery-ui.min.js
 js/jquery.dataTables.min.js
 js/jquery.ddslick.min.js
@@ -531,6 +558,7 @@ js/jquery.jeditable.mini.js
 js/jquery.ui.touch-punch.min.js
 js/jquery.uix.multiselect.min.js
 js/jquery-ui-timepicker-addon.js
+js/jquery.wheelcolorpicker.js
 js/md5.js
 js/modules/exporting.js
 js/ng-grid-flexible-height.js
@@ -563,10 +591,15 @@ ozwcp/cp.js
 #SwitchIcons
 
 # HTML pages
+views/log/device_light_log.html
+views/log/device_temperature_log.html
+views/log/device_temperature_report.html
+views/log/scene_log.html
 views/about.html
 views/cam.html
 views/customicons.html
 views/dashboard.html
+views/device_light_edit.html
 views/devices.html
 views/dpfibaro.html
 views/dphttp.html
@@ -587,11 +620,10 @@ views/roomplan.html
 views/scenes.html
 views/setup.html
 views/temperature.html
+views/temperature_widget.html
 views/temperature_custom_temp_log.html
-views/temperature_log.html
-views/temperature_notifications.html
-views/temperatures/temperatureWidget.html
 views/timerplan.html
+views/timers.html
 views/update.html
 views/users.html
 views/utility.html

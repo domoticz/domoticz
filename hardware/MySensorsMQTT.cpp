@@ -12,10 +12,10 @@
 #define TOPIC_OUT		"domoticz/out/"
 
 MySensorsMQTT::MySensorsMQTT(const int ID, const std::string &Name, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename, const int Topics) :
-	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out)
+	MQTT(ID, IPAddress, usIPPort, Username, Password, CAfilename, (int)MQTT::PT_out),
+	MyTopicIn(TOPIC_IN),
+	MyTopicOut(TOPIC_OUT)
 {
-	MyTopicIn = TOPIC_IN;
-	MyTopicOut = TOPIC_OUT;
 	switch (Topics) {
 		case 1:
 			MyTopicIn += Name;
@@ -94,7 +94,7 @@ void MySensorsMQTT::on_connect(int rc)
 
 	if (m_IsConnected)
 	{
-		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%ld", m_szIPAddress.c_str(), m_usIPPort);
+		_log.Log(LOG_STATUS, "MySensorsMQTT: connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 
 		//Request gateway version
 		std::string sRequest = "0;0;3;0;2;";

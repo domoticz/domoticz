@@ -1,3 +1,5 @@
+@import url("../css/legacy.css"); /* Don't remove this line! */
+
 @font-face {
 	font-family: "OpenSans";
 	font-style: normal;
@@ -231,10 +233,4 @@ width: 99.5% !important;
    width: calc(98% - 98px) !important;
    margin-top: 10px !important;
    margin-left: 95px !important;
-}
-
-#rgbw_popup .dimslider {
-   width: calc(100% - 108px) !important;
-   margin-left: 6px !important;
-   margin-top: 10px !important;       
 }

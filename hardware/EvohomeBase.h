@@ -31,8 +31,10 @@
 class CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -64,8 +66,10 @@ public:
 class CEvohomeTemp : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -97,8 +101,10 @@ public:
 class CEvohomeID : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -176,8 +182,10 @@ public:
 class CEvohomeDateTime : public CEvohomeDataType
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -264,8 +272,10 @@ public:
 class CEvohomeDate : public CEvohomeDateTime
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -287,8 +297,10 @@ public:
 class CEvohomeZoneFlags
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -312,8 +324,10 @@ public:
 class CEvohomeMsg
 {
 	friend class CEvohomeBase;
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -444,8 +458,10 @@ public:
 
 class CEvohomeBase : public CDomoticzHardwareBase
 {
+	friend class CEvohomeRadio;
 	friend class CEvohomeSerial;
 	friend class CEvohomeScript;
+	friend class CEvohomeTCP;
 	friend class CEvohomeWeb;
 
 public:
@@ -512,10 +528,10 @@ private:
 	bool SetControllerMode(uint8_t nControllerMode);
 
 	void InitControllerName();
-	void SetControllerName(std::string szName);
+	void SetControllerName(const std::string &szName);
 
 	void InitZoneNames();
-	void SetZoneName(uint8_t nZone, std::string szName);
+	void SetZoneName(const uint8_t nZone, const std::string &szName);
 
 	static const char m_szControllerMode[7][20];
 	static const char m_szWebAPIMode[7][20];

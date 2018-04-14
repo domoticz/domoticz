@@ -127,6 +127,20 @@ const char *Timer_Type_Desc(const int tType)
 		{ TTYPE_MONTHLY_WD, "Monthly (Weekday)" },
 		{ TTYPE_YEARLY, "Yearly" },
 		{ TTYPE_YEARLY_WD, "Yearly (Weekday)" },
+		{ TTYPE_BEFORESUNATSOUTH, "Before Sun at South" },
+		{ TTYPE_AFTERSUNATSOUTH, "After Sun at South" },
+		{ TTYPE_BEFORECIVTWSTART, "Before Civil Twilight Start" },
+		{ TTYPE_AFTERCIVTWSTART, "After Civil Twilight Start" },
+		{ TTYPE_BEFORECIVTWEND, "Before Civil Twilight End" },
+		{ TTYPE_AFTERCIVTWEND, "After Civil Twilight End" },
+		{ TTYPE_BEFORENAUTTWSTART, "Before Nautical Twilight Start" },
+		{ TTYPE_AFTERNAUTTWSTART, "After Nautical Twilight Start" },
+		{ TTYPE_BEFORENAUTTWEND, "Before Nautical Twilight End" },
+		{ TTYPE_AFTERNAUTTWEND, "After Nautical Twilight End" },
+		{ TTYPE_BEFOREASTTWSTART, "Before Astronomical Twilight Start" },
+		{ TTYPE_AFTERASTTWSTART, "After Astronomical Twilight Start" },
+		{ TTYPE_BEFOREASTTWEND, "Before Astronomical Twilight End" },
+		{ TTYPE_AFTERASTTWEND, "After Astronomical Twilight End" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, tType);
@@ -191,6 +205,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_EVOHOME_SERIAL, "Evohome USB (for HGI/S80)" },
 		{ HTYPE_EVOHOME_SCRIPT, "Evohome via script" },
 		{ HTYPE_EVOHOME_WEB, "Evohome via Web API" },
+		{ HTYPE_EVOHOME_TCP, "Evohome via LAN (remote HGI/S80)" },
 		{ HTYPE_MySensorsUSB, "MySensors Gateway USB" },
 		{ HTYPE_MySensorsTCP, "MySensors Gateway with LAN interface" },
 		{ HTYPE_MySensorsMQTT, "MySensors Gateway with MQTT interface" },
@@ -204,6 +219,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_KMTronic433, "KMTronic 433MHz Gateway USB" },
 		{ HTYPE_Pinger, "System Alive Checker (Ping)" },
 		{ HTYPE_NEST, "Nest Thermostat/Protect" },
+		{ HTYPE_Nest_OAuthAPI, "Nest Thermostat/Protect OAuth" },
 		{ HTYPE_THERMOSMART, "Thermosmart Thermostat" },
 		{ HTYPE_Netatmo, "Netatmo" },
 		{ HTYPE_Kodi, "Kodi Media Server" },
@@ -214,6 +230,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_RFXtrx868, "RFXCOM - RFXtrx868 USB 868MHz Transceiver" },
 		{ HTYPE_RFLINKTCP, "RFLink Gateway with LAN interface" },
 		{ HTYPE_Comm5TCP, "Comm5 MA-5XXX with LAN interface" },
+		{ HTYPE_Comm5SMTCP, "Comm5 SM-XXXX with LAN interface" },
 		{ HTYPE_Comm5Serial, "Comm5 MA-4XXX/MI-XXXX Serial/USB interface" },
 		{ HTYPE_SolarEdgeAPI , "SolarEdge via Web API" },
 		{ HTYPE_CurrentCostMeter, "CurrentCost Meter USB" },
@@ -252,6 +269,13 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_SysfsGpio, "Generic sysfs GPIO" },
 		{ HTYPE_Rtl433, "Rtl433 RTL-SDR receiver" },
 		{ HTYPE_OnkyoAVTCP, "Onkyo AV Receiver (LAN)" },
+		{ HTYPE_DenkoviSmartdenIPInOut, "Denkovi Smartden IP In with LAN interface" },
+		{ HTYPE_USBtinGateway, "USBtin Can Gateway"},
+		{ HTYPE_EnphaseAPI, "Enphase Envoy with LAN (HTTP) interface" },
+		{ HTYPE_RaspberryMCP23017, "I2C sensor GPIO 16bit expander MCP23017" },
+		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
+		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
+		{ HTYPE_Honeywell, "Honeywell Thermostat" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -281,6 +305,7 @@ const char *Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Media, "Media Player" },
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
+		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -295,6 +320,7 @@ const char *Meter_Type_Desc(const _eMeterType sType)
 		{ MTYPE_WATER, "Water" },
 		{ MTYPE_COUNTER, "Counter" },
 		{ MTYPE_ENERGY_GENERATED, "Energy Generated" },
+		{ MTYPE_TIME , "Time" },
 		{  0,NULL,NULL }
 	};
 	return findTableIDSingle1 (Table, sType);
@@ -345,7 +371,7 @@ const char *Notification_Type_Label(const int nType)
 	static const STR_TABLE_SINGLE	Table[] =
 	{
 		{ NTYPE_TEMPERATURE, "degrees" },
-		{ NTYPE_HUMIDITY, "%%" },
+		{ NTYPE_HUMIDITY, "%" },
 		{ NTYPE_RAIN, "mm" },
 		{ NTYPE_UV, "UVI" },
 		{ NTYPE_WIND, "m/s" },
@@ -360,7 +386,7 @@ const char *Notification_Type_Label(const int nType)
 		{ NTYPE_TODAYGAS, "m3" },
 		{ NTYPE_TODAYCOUNTER, "cnt" },
 		{ NTYPE_SWITCH_OFF, "On" },
-		{ NTYPE_PERCENTAGE, "%%" },
+		{ NTYPE_PERCENTAGE, "%" },
 		{ NTYPE_RPM, "RPM" },
 		{ NTYPE_DEWPOINT, "degrees" },
 		{ NTYPE_SETPOINT, "degrees" },
@@ -441,7 +467,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeLighting5, "Lighting 5" , "lightbulb", },
 		{ pTypeLighting6, "Lighting 6" , "lightbulb", },
 		{ pTypeHomeConfort, "Home Confort" , "lightbulb" },
-		{ pTypeLimitlessLights, "Lighting Limitless/Applamp" , "lightbulb" },
+		{ pTypeColorSwitch, "Color Switch" , "lightbulb" },
 		{ pTypeCurtain, "Curtain" , "blinds" },
 		{ pTypeBlinds, "Blinds" , "blinds" },
 		{ pTypeSecurity1, "Security", "security" },
@@ -548,6 +574,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRAIN, sTypeRAIN4, "UPM RG700" },
 		{ pTypeRAIN, sTypeRAIN5, "LaCrosse WS2300" },
 		{ pTypeRAIN, sTypeRAIN6, "LaCrosse TX5" },
+		{ pTypeRAIN, sTypeRAIN7, "Alecto" },
+		{ pTypeRAIN, sTypeRAIN8, "Davis" },
+		{ pTypeRAIN, sTypeRAIN9, "Alecto WCH2010" },
 		{ pTypeRAIN, sTypeRAINWU, "WWW" },
 
 		{ pTypeWIND, sTypeWIND1, "WTGR800" },
@@ -557,6 +586,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeWIND, sTypeWIND5, "UPM WDS500" },
 		{ pTypeWIND, sTypeWIND6, "LaCrosse WS2300" },
 		{ pTypeWIND, sTypeWIND7, "Alecto WS4500" },
+		{ pTypeWIND, sTypeWIND8, "Alecto ACH2010" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
 
 		{ pTypeUV, sTypeUV1, "UVN128,UV138" },
@@ -745,10 +775,14 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 
 		{ pTypePOWER, sTypeELEC5, "Revolt" },
 
-		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "RGBW" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGB, "RGB" },
-		{ pTypeLimitlessLights, sTypeLimitlessWhite, "White" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "RGBWW" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W, "RGBW" },
+		{ pTypeColorSwitch, sTypeColor_RGB, "RGB" },
+		{ pTypeColorSwitch, sTypeColor_White, "White" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW, "RGBWW" },
+		{ pTypeColorSwitch, sTypeColor_LivCol, "RGB" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W_Z, "RGBWZ" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW_Z, "RGBWWZ" },
+		{ pTypeColorSwitch, sTypeColor_CW_WW, "WW" },
 
 		{ pTypeRFY, sTypeRFY, "RFY" },
 		{ pTypeRFY, sTypeRFY2, "RFY2" },
@@ -835,7 +869,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchBlindsT1, "Legrand MyHome Blind Bus" },
 		{ pTypeGeneralSwitch, sSwitchLightT1, "Legrand MyHome Light Bus" },
 		{ pTypeGeneralSwitch, sSwitchAuxiliaryT1, "Legrand MyHome Auxiliary Bus" },
-		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome DryContact/IRdetec" },
+		{ pTypeGeneralSwitch, sSwitchContactT1, "Legrand MyHome Contact" },
 		{ pTypeGeneralSwitch, sSwitchMC145026, "MC145026" },
 		{ pTypeGeneralSwitch, sSwitchLobeco, "Lobeco" },
 		{ pTypeGeneralSwitch, sSwitchFriedland, "Friedland" },
@@ -871,6 +905,10 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeGeneralSwitch, sSwitchTypeYW_Sensor, "YW_Sensor" },
 		{ pTypeGeneralSwitch, sSwitchTypeLegrandcad, "LEGRANDCAD" },
 		{ pTypeGeneralSwitch, sSwitchTypeSysfsGpio, "SysfsGpio" },
+		{ pTypeGeneralSwitch, sSwitchTypeHager, "Hager" },
+		{ pTypeGeneralSwitch, sSwitchTypeFaber, "Faber" },
+		{ pTypeGeneralSwitch, sSwitchTypeDrayton, "Drayton" },
+		{ pTypeGeneralSwitch, sSwitchTypeV2Phoenix, "V2Phoenix" },
 		{  0,0,NULL }
 	};
 	return findTableID1ID2(Table, dType, sType);
@@ -889,6 +927,7 @@ const char *Media_Player_States(const _eMediaStatus Status)
 		{ MSTAT_PHOTO, "Photo" },
 		{ MSTAT_PLAYING, "Playing" },
 		{ MSTAT_DISCONNECTED, "Disconnected" },
+		{ MSTAT_SLEEPING, "Sleeping" },
 		{ MSTAT_UNKNOWN, "Unknown" },
 		{ 0, NULL, NULL }
 	};
@@ -1480,54 +1519,58 @@ void GetLightStatus(
 			break;
 		}
 		break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 		bHaveDimmer=true;
 		maxDimLevel=100;
+
+		// Calculate % that the light is currently on, taking the maxdimlevel into account.
+		llevel = (int)float((100.0f / float(maxDimLevel))*atof(sValue.c_str()));
+
 		switch (nValue)
 		{
-		case Limitless_LedOff:
+		case Color_LedOff:
 			lstatus="Off";
 			break;
-		case Limitless_LedOn:
+		case Color_LedOn:
 			lstatus="On";
 			break;
-		case Limitless_SetBrightnessLevel:
+		case Color_SetBrightnessLevel:
 			lstatus="Set Level";
 			break;
-		case Limitless_SetKelvinLevel:
-			lstatus="Set Kelvin Level";
-			break;
-		case Limitless_SetColorToWhite:
+		case Color_SetColorToWhite:
 			lstatus="Set to White";
 			break;
-		case Limitless_NightMode:
+		case Color_SetColor:
+			lstatus="Set Color";
+			break;
+		case Color_NightMode:
 			lstatus="NightMode";
 			break;
-		case Limitless_DiscoMode_1:
+		case Color_DiscoMode_1:
 			lstatus="Disco Mode 1";
 			break;
-		case Limitless_DiscoMode_2:
+		case Color_DiscoMode_2:
 			lstatus="Disco Mode 2";
 			break;
-		case Limitless_DiscoMode_3:
+		case Color_DiscoMode_3:
 			lstatus="Disco Mode 3";
 			break;
-		case Limitless_DiscoMode_4:
+		case Color_DiscoMode_4:
 			lstatus="Disco Mode 4";
 			break;
-		case Limitless_DiscoMode_5:
+		case Color_DiscoMode_5:
 			lstatus="Disco Mode 5";
 			break;
-		case Limitless_DiscoMode_6:
+		case Color_DiscoMode_6:
 			lstatus="Disco Mode 6";
 			break;
-		case Limitless_DiscoMode_7:
+		case Color_DiscoMode_7:
 			lstatus="Disco Mode 7";
 			break;
-		case Limitless_DiscoMode_8:
+		case Color_DiscoMode_8:
 			lstatus="Disco Mode 8";
 			break;
-		case Limitless_DiscoMode_9:
+		case Color_DiscoMode_9:
 			lstatus="Disco Mode 9";
 			break;
 		}
@@ -1935,7 +1978,7 @@ void GetLightStatus(
 		}
 		break;
 	}
-	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s", 
+	if (_log.isTraceEnabled()) _log.Log(LOG_TRACE,"RFXN : GetLightStatus Typ:%2d STyp:%2d nVal:%d sVal:%-4s llvl:%2d isDim:%d maxDim:%2d GrpCmd:%d lstat:%s",
 		dType,dSubType,nValue,sValue.c_str(),llevel,bHaveDimmer,maxDimLevel,bHaveGroupCmd,lstatus.c_str());
 }
 
@@ -1952,7 +1995,7 @@ void GetSelectorSwitchStatuses(const std::map<std::string, std::string> & option
 		std::vector<std::string>::iterator itt;
 		int i = 0;
 		std::stringstream ss;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			ss.clear(); ss.str(""); ss << i;
 			std::string level(ss.str());
 			std::string levelName = *itt;
@@ -1976,7 +2019,7 @@ int GetSelectorSwitchLevel(const std::map<std::string, std::string> & options, c
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (*itt == levelName) {
 				level = i;
 				break;
@@ -2000,7 +2043,7 @@ std::string GetSelectorSwitchLevelAction(const std::map<std::string, std::string
 		boost::split(strarray, sOptions, boost::is_any_of("|"), boost::token_compress_off);
 		std::vector<std::string>::iterator itt;
 		int i = 0;
-		for (itt = strarray.begin(); (itt != strarray.end()) && (i <= 100); ++itt) {
+		for (itt = strarray.begin(); (itt != strarray.end()); ++itt) {
 			if (i == level) {
 				action = *itt;
 				break;
@@ -2020,7 +2063,7 @@ bool GetLightCommand(
 	const std::map<std::string, std::string> & options
 	)
 {
-	if (switchtype==STYPE_Contact)
+	if (switchtype == STYPE_Contact && dType != pTypeGeneralSwitch)
 		return false;	//we can not (or will not) switch this type
 
 	switch (dType)
@@ -2506,20 +2549,20 @@ bool GetLightCommand(
 			return true;
 		}
 		break;
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 		if (switchcmd=="Off")
 		{
-			cmd=Limitless_LedOff;
+			cmd=Color_LedOff;
 			return true;
 		}
 		else if (switchcmd=="On")
 		{
-			cmd=Limitless_LedOn;
+			cmd=Color_LedOn;
 			return true;
 		}
 		else if (switchcmd=="Set Color")
 		{
-			cmd=Limitless_SetRGBColour;
+			cmd=Color_SetColor;
 			return true;
 		}
 		else if (
@@ -2527,132 +2570,127 @@ bool GetLightCommand(
 			(switchcmd=="Set Level")
 			)
 		{
-			cmd=Limitless_SetBrightnessLevel;
-			return true;
-		}
-		else if (switchcmd=="Set Kelvin Level")
-		{
-			cmd=Limitless_SetKelvinLevel;
+			cmd=Color_SetBrightnessLevel;
 			return true;
 		}
 		else if (switchcmd == "Set White")
 		{
-			cmd = Limitless_SetColorToWhite;
+			cmd = Color_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Full")
 		{
-			cmd=Limitless_SetColorToWhite;
+			cmd=Color_SetColorToWhite;
 			return true;
 		}
 		else if (switchcmd == "Set Night")
 		{
-			cmd = Limitless_NightMode;
+			cmd = Color_NightMode;
 			return true;
 		}
 		else if (switchcmd == "Bright Up")
 		{
-			cmd = Limitless_SetBrightUp;
+			cmd = Color_SetBrightUp;
 			return true;
 		}
 		else if (switchcmd == "Bright Down")
 		{
-			cmd = Limitless_SetBrightDown;
+			cmd = Color_SetBrightDown;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode")
 		{
-			cmd = Limitless_DiscoMode;
+			cmd = Color_DiscoMode;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 1")
 		{
-			cmd = Limitless_DiscoMode_1;
+			cmd = Color_DiscoMode_1;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 2")
 		{
-			cmd = Limitless_DiscoMode_2;
+			cmd = Color_DiscoMode_2;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 3")
 		{
-			cmd = Limitless_DiscoMode_3;
+			cmd = Color_DiscoMode_3;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 4")
 		{
-			cmd = Limitless_DiscoMode_4;
+			cmd = Color_DiscoMode_4;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 5")
 		{
-			cmd = Limitless_DiscoMode_5;
+			cmd = Color_DiscoMode_5;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 6")
 		{
-			cmd = Limitless_DiscoMode_6;
+			cmd = Color_DiscoMode_6;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 7")
 		{
-			cmd = Limitless_DiscoMode_7;
+			cmd = Color_DiscoMode_7;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 8")
 		{
-			cmd = Limitless_DiscoMode_8;
+			cmd = Color_DiscoMode_8;
 			return true;
 		}
 		else if (switchcmd == "Disco Mode 9")
 		{
-			cmd = Limitless_DiscoMode_9;
+			cmd = Color_DiscoMode_9;
 			return true;
 		}
 		else if (switchcmd == "Disco Up")
 		{
-			cmd = Limitless_RGBDiscoNext;
+			cmd = Color_RGBDiscoNext;
 			return true;
 		}
 		else if (switchcmd == "Disco Down")
 		{
-			cmd = Limitless_RGBDiscoPrevious;
+			cmd = Color_RGBDiscoPrevious;
 			return true;
 		}
 		else if (switchcmd == "Speed Up")
 		{
-			cmd = Limitless_DiscoSpeedFaster;
+			cmd = Color_DiscoSpeedFaster;
 			return true;
 		}
 		else if (switchcmd == "Speed Up Long")
 		{
-			cmd = Limitless_DiscoSpeedFasterLong;
+			cmd = Color_DiscoSpeedFasterLong;
 			return true;
 		}
 		else if (switchcmd == "Speed Down")
 		{
-			cmd = Limitless_DiscoSpeedSlower;
+			cmd = Color_DiscoSpeedSlower;
 			return true;
 		}
 		else if (switchcmd == "Speed Minimal")
 		{
-			cmd = Limitless_DiscoSpeedMinimal;
+			cmd = Color_DiscoSpeedMinimal;
 			return true;
 		}
 		else if (switchcmd == "Speed Maximal")
 		{
-			cmd = Limitless_DiscoSpeedMaximal;
+			cmd = Color_DiscoSpeedMaximal;
 			return true;
 		}
 		else if (switchcmd == "Warmer")
 		{
-			cmd = Limitless_WarmWhiteIncrease;
+			cmd = Color_WarmWhiteIncrease;
 			return true;
 		}
 		else if (switchcmd == "Cooler")
 		{
-			cmd = Limitless_CoolWhiteIncrease;
+			cmd = Color_CoolWhiteIncrease;
 			return true;
 		}
 		else
@@ -3264,6 +3302,49 @@ bool IsSerialDevice(const _eHardwareTypes htype)
 	case HTYPE_CurrentCostMeter:
 	case HTYPE_RAVEn:
 	case HTYPE_Comm5Serial:
+	case HTYPE_USBtinGateway:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool IsNetworkDevice(const _eHardwareTypes htype)
+{
+	switch (htype) {
+	case HTYPE_RFXLAN:
+	case HTYPE_P1SmartMeterLAN:
+	case HTYPE_YouLess:
+	case HTYPE_RazberryZWave:
+	case HTYPE_OpenThermGatewayTCP:
+	case HTYPE_LimitlessLights:
+	case HTYPE_SolarEdgeTCP:
+	case HTYPE_WOL:
+	case HTYPE_ECODEVICES:
+	case HTYPE_Mochad:
+	case HTYPE_MySensorsTCP:
+	case HTYPE_MySensorsMQTT:
+	case HTYPE_MQTT:
+	case HTYPE_FRITZBOX:
+	case HTYPE_ETH8020:
+	case HTYPE_RelayNet:
+	case HTYPE_Sterbox:
+	case HTYPE_KMTronicTCP:
+	case HTYPE_KMTronicUDP:
+	case HTYPE_SOLARMAXTCP:
+	case HTYPE_SatelIntegra:
+	case HTYPE_RFLINKTCP:
+	case HTYPE_Comm5TCP:
+	case HTYPE_Comm5SMTCP:
+	case HTYPE_CurrentCostMeterLAN:
+	case HTYPE_NefitEastLAN:
+	case HTYPE_DenkoviSmartdenLan:
+	case HTYPE_DenkoviSmartdenIPInOut:
+	case HTYPE_Ec3kMeterTCP:
+	case HTYPE_MultiFun:
+	case HTYPE_ZIBLUETCP:
+	case HTYPE_OnkyoAVTCP:
+	case HTYPE_eHouseTCP:
 		return true;
 	default:
 		return false;
@@ -3340,7 +3421,7 @@ void ConvertToGeneralSwitchType(std::string &devid, int &dtype, int &subtype)
 		s_strid >> deviceid;
 		deviceid = (unsigned long)((deviceid & 0xffffff00) >> 8);
 		char szTmp[20];
-		sprintf(szTmp, "%lx", deviceid);
+		sprintf(szTmp, "%08lX", deviceid);
 		//_log.Log(LOG_ERROR, "RFLink: deviceid: %x", deviceid);
 		devid = szTmp;
 	}

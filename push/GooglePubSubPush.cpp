@@ -51,7 +51,7 @@ void CGooglePubSubPush::Stop()
 
 void CGooglePubSubPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("GooglePubSubActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -106,7 +106,7 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 {
 	std::string googlePubSubData = "";
 
-	int googlePubSubDebugActiveInt;
+	int googlePubSubDebugActiveInt = 0;
 	bool googlePubSubDebugActive = false;
 	m_sql.GetPreferencesVar("GooglePubSubDebug", googlePubSubDebugActiveInt);
 	if (googlePubSubDebugActiveInt == 1) {
@@ -158,13 +158,13 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 			unsigned long long int localTimeUtc = lastUpdate - tzoffset;
 #endif
 
-			char szLocalTime[16];
+			char szLocalTime[21];
 			sprintf(szLocalTime, "%llu", localTime);
-			char szLocalTimeUtc[16];
+			char szLocalTimeUtc[21];
 			sprintf(szLocalTimeUtc, "%llu", localTimeUtc);
-			char szLocalTimeMs[16];
+			char szLocalTimeMs[21];
 			sprintf(szLocalTimeMs, "%llu", localTime*1000);
-			char szLocalTimeUtcMs[16];
+			char szLocalTimeUtcMs[21];
 			sprintf(szLocalTimeUtcMs, "%llu", localTimeUtc * 1000);
 
 			std::string llastUpdate = get_lastUpdate(localTimeUtc);
@@ -201,12 +201,12 @@ void CGooglePubSubPush::DoGooglePubSubPush()
 				if (int(strarray.size())>=delpos)
 				{
 					std::string rawsendValue = strarray[delpos-1].c_str();
-					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false,metertype);
+					sendValue = ProcessSendValue(rawsendValue,delpos,nValue,false, dType, dSubType, metertype);
 				}
 			}
 			else
 			{
-				sendValue = ProcessSendValue(sendValue,delpos,nValue,false,metertype);
+				sendValue = ProcessSendValue(sendValue,delpos,nValue,false, dType, dSubType, metertype);
 			}
 			ltargetDeviceId+="_";
 			ltargetDeviceId+=ldelpos;

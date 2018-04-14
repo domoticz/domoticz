@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GE/Jasco Smart LED Light Bulb ZE26I -->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+  <!-- Configuration -->
+  <CommandClass id="112">
+    <Value type="list" index="1" genre="config" label="Dim level when light is turned ON" units="" min="0" max="1" size="1" value="0">
+      <Help>You may select the dim level whenever the light is turned back ON to be either full brightness (100% dim level) or be the same as the last dim setting when the light is ON by flicking the wall switch</Help>
+      <Item label="Full brightness" value="0"/>
+      <Item label="Last brightness setting" value="1"/>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="9" label="Dimming/Brightening Step Level" min="1" max="99" value="1" size="1">
+      <Help>
+	  You may change the dimming step level when you adjust the brightness by your controller/gateway.
+	  When the value is low, dimming/brightening is gradual.
+	  When the value is high, dimming/brightening is rapid.
+	  </Help>
+    </Value>
+    <Value type="byte" genre="config" instance="1" index="10" label="Dimming/Brightening Step Timing" min="1" max="10" value="3" size="1">
+      <Help>
+	  You may change the dimming speed quicker or slower.
+	  When the value is low, the step timing is quick.
+	  When the value is high, the step timing is slow.
+	  </Help>
+    </Value>
+  </CommandClass>
+  <!-- Association Groups -->
+  <CommandClass id="133">
+    <Associations num_groups="1">
+      <Group index="1" max_associations="5" label="Lifeline"/>
+    </Associations>
+  </CommandClass>
+</Product>

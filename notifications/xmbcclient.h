@@ -32,7 +32,7 @@
 #include <arpa/inet.h>
 #endif
 #include <vector>
-#include <iostream>
+#include <iosfwd>
 #include <fstream>
 #include <time.h>
 

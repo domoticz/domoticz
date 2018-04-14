@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-Aeotec ZW111 Nano Dimmer, base on Engineering Spec 12/07/2016
+Aeotec ZW111 Nano Dimmer, base on Engineering Spec 3/6/2018
 Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
+https://aeotec.freshdesk.com/helpdesk/attachments/6048080397
 -->
 <Product xmlns='http://code.google.com/p/open-zwave/'>
     <!-- Configuration Parameters -->
     <CommandClass id="112">
         <Value type="list" index="3" genre="config" label="Over current protection" units="" min="0" max="1" size="1" value="1">
-            <Help>Output load will be closed after 30 seconds if the current exceeds (US: 15.5A, AU or EU: 10.5A).</Help>
+            <Help>Output Load will be turned off automatically after 30 seconds and if the current overrun 1.5A.</Help>
             <Item label="Disable" value="0"/>
             <Item label="Enable" value="1"/>
         </Value>
@@ -34,13 +35,30 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
             <Help>To set which notification would be sent to the associated nodes in association group 3 when using the external switch 1 to switch the loads</Help>
             <Item label="None" value="0"/>
             <Item label="Basic" value="1"/>
+            <Item label="Switch Multilevel Set" value="2"/>
         </Value>
         <Value type="list" index="82" genre="config" label="Notification report using the external switch 2" units="" size="1" value="1">
             <Help>To set which notification would be sent to the associated nodes in association group 4 when using the external switch 2 to switch the loads</Help>
             <Item label="None" value="0"/>
             <Item label="Basic" value="1"/>
+            <Item label="Switch Multilevel Set" value="2"/>
         </Value>
-        <Value type="int" index="85" genre="config" label="State appointment 1" value="2566920192">
+        <Value type="list" index="83" genre="config" label="LED status" units="" size="1" value="0">
+			<Help>Configure the state of LED when it is in 3 modes below</Help>
+			<Item label="The LED will follow the status" value="0"/>
+			<Item label="LED will follow the status (on/off) of its load but the LED will turn off after 5 seconds" value="1"/>
+			<Item label="Night light mode" value="2"/>
+		</Value>
+        <Value type="int" index="84" genre="config" label="Time set for Night light mode" value="301991936">
+			<Help>
+				Value1: Hour of ON.
+				Value2: Minute of ON.
+				Value3: Hour of OFF.
+				Value4: Minute of OFF.
+				E.g. The default setting is the Night light mode is enabled at 12: 00 and disabled at 8:00 0x12000800.
+			</Help>
+		</Value>
+        <Value type="int" index="85" genre="config" label="State appointment 1" value="1179747">
             <Help>State appointment
                 Set the ON time of output load.
                 Value1 = 0, disable or = non zero, enable (day, bit0 - bit6 represent Mon to Sun).
@@ -49,7 +67,7 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
                 Value4 = ON (brightness level)
             </Help>
         </Value>
-        <Value type="int" index="86" genre="config" label="State appointment 2" value="8960">
+        <Value type="int" index="86" genre="config" label="State appointment 2" value="1507328">
             <Help>State appointment
                 Set the ON time of output load.
                 Value1 = 0, disable or = non zero, enable (day, bit0 - bit6 represent Mon to Sun).
@@ -83,10 +101,10 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
                 Value 2 Reserved
                 Value 3 Reserved
                 Value 4 (lsb) bits 7-4 reserved
-                bit 3 current
-                bit 2 voltage
-                bit 1 watt
-                bit 0 kWh
+                bit 3 kWh
+                bit 2 watt
+                bit 1 current
+                bit 0 voltage
             </Help>
         </Value>
         <Value type="int" index="102" genre="config" label="Report type sent in Reporting Group 2" units="" value="0">
@@ -100,10 +118,10 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
                 Value 2 Reserved
                 Value 3 Reserved
                 Value 4 (lsb) bits 7-4 reserved
-                bit 3 current
-                bit 2 voltage
-                bit 1 watt
-                bit 0 kWh
+                bit 3 kWh
+                bit 2 watt
+                bit 1 current
+                bit 0 voltage
             </Help>
         </Value>
         <Value type="int" index="103" genre="config" label="Report type sent in Reporting Group 3" units="" value="0">
@@ -117,10 +135,10 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
                 Value 2 Reserved
                 Value 3 Reserved
                 Value 4 (lsb) bits 7-4 reserved
-                bit 3 current
-                bit 2 voltage
-                bit 1 watt
-                bit 0 kWh
+                bit 3 kWh
+                bit 2 watt
+                bit 1 current
+                bit 0 voltage
             </Help>
         </Value>
         <Value type="button" index="110" genre="config" label="Set 111-113 to default" units="" write_only="true" value="0" affects="111,112,113">
@@ -135,21 +153,23 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
         <Value type="int" index="113" genre="config" label="Send Interval for Reporting Group 3" units="seconds" min="0" max="2147483647" value="600">
             <Help>Defines the time interval when the defined report for group 3 is sent.</Help>
         </Value>
-        <Value type="list" index="120" genre="config" label="Set the external switch mode for S1" units="" min="0" max="3" size="1" value="0">
+        <Value type="list" index="120" genre="config" label="Set the external switch mode for S1" units="" min="0" max="4" size="1" value="0">
             <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
-            <Item label="Enter automatic identification mode" value="0"/>
-            <Item label="Momentary button mode" value="1"/>
-            <Item label="3-way switch mode" value="2"/>
-            <Item label="2-state switch mode" value="3"/>
+            <Item label="Unidentified" value="0"/>
+			<Item label="2-state switch" value="1"/>
+			<Item label="3-way switch" value="2"/>
+			<Item label="Push button" value="3"/>
+			<Item label="Automatic identification mode" value="4"/>
         </Value>
-        <Value type="list" index="121" genre="config" label="Set the external switch mode for S2" units="" min="0" max="3" size="1" value="0">
+        <Value type="list" index="121" genre="config" label="Set the external switch mode for S2" units="" min="0" max="4" size="1" value="0">
             <Help>When the mode is determined, this mode value will not be reset after exclusion</Help>
-            <Item label="Enter automatic identification mode" value="0"/>
-            <Item label="Momentary button mode" value="1"/>
-            <Item label="3-way switch mode" value="2"/>
-            <Item label="2-state switch mode" value="3"/>
+            <Item label="Unidentified" value="0"/>
+			<Item label="2-state switch" value="1"/>
+			<Item label="3-way switch" value="2"/>
+			<Item label="Push button" value="3"/>
+			<Item label="Automatic identification mode" value="4"/>
         </Value>
-        <Value type="list" index="122" genre="config" label="Touch panel port state" units="" min="0" max="5" size="1" value="0" read_only="true">
+        <Value type="list" index="122" genre="config" label="Touch panel" units="" min="0" max="5" size="1" value="0" read_only="true">
             <Help>Get the state of touch panel port</Help>
             <Item label="Not connected" value="0"/>
             <Item label="Connected" value="5"/>
@@ -187,11 +207,35 @@ Product Type ID: EU=0x00, US=0x01, AU=0x02 CN=0x1D
             <Item label="Capacitive load" value="2"/>
             <Item label="Inductive load" value="3"/>
         </Value>
-        <Value type="byte" index="131" genre="config" label="Min brightness level" units="%" min="0" max="99" value="20">
+        <Value type="byte" index="131" genre="config" label="Min brightness level" units="%" min="0" max="99" value="0">
             <Help>Set the min brightness level that the load can reach to</Help>
         </Value>
-        <Value type="byte" index="132" genre="config" label="Max brightness level" units="%" min="0" max="99" value="95">
+        <Value type="byte" index="132" genre="config" label="Max brightness level" units="%" min="0" max="99" value="99">
             <Help>Set the max brightness level that the load can reach to</Help>
+        </Value>
+        <Value type="byte" index="247" genre="config" label="Working way for S1/S2" value="0">
+            <Help>
+                Set the working way for S1/S2 when the Switch mode is 2 state switch mode.
+                Bit 0 =0, S1 is a toggle switch.
+                Bit 0 =1, S1 is an On/Off switch, the out load state and S1 switch state would be in sync when using S1 to control the output load.
+                Bit 1 =0, S2 is a toggle switch.
+                Bit 1 =1, S2 is an On/Off switch, the out load state and S2 switch state would be in sync when using S2 to control the output load.
+                Bit 2- Bit 7, reserved.
+            </Help>
+        </Value>
+        <Value type="byte" index="248" genre="config" label="Function of S1/S2" value="131">
+            <Help>
+                Set the function of S1/S2.
+                Bit 0 = 0, the function of sending NIF is disabled.
+                Bit 0 = 1, the function of sending NIF is enabled.
+                Bit 1 = 0, the function of entering RF power level test mode is disabled.
+                Bit 1 = 1, the function of entering RF power level test mode is enabled.
+                Bit 2 = 0, the function of factory reset is disabled.
+                Bit 2 = 1, the function of factory reset is enabled.
+                Bit 3- Bit 6 = reserved.
+                Bit 7 = 0, the setting for Bit 0 -Bit 2 are ineffective.
+                Bit 7 = 1, the setting for Bit 0 -Bit 2 are effective.
+            </Help>
         </Value>
         <Value type="list" index="249" genre="config" label="Recognition way of load" units="" min="0" max="2" size="1" value="2">
             <Help>Set the recognition way of load</Help>

@@ -155,8 +155,7 @@ void bt_openwebnet::Set_who_where_dimension()
 {
   //DIMENSION REQUEST : *#WHO*WHERE*DIMENSION##
 	std::string sup;
-  size_t len = 0;
-
+   
   // WHO
   sup = frame_open.substr(2);
   if (sup.at(0) != '*') {
@@ -181,7 +180,7 @@ void bt_openwebnet::Set_who_where_dimension()
 		}
       // VALUES **##
       sup = frame_open.substr(2+ who.length() + 1 + where.length() + 1 +dimension.length()+1);
-      len = 2 + who.length() + 1 + where.length() + 1 + dimension.length() + 1;
+      size_t len = 2 + who.length() + 1 + where.length() + 1 + dimension.length() + 1;
       while ((sup.find("*") != std::string::npos) && (sup.at(0) != '*'))
       {
 		std::string strValue = FirstToken(sup, "*");
@@ -278,9 +277,6 @@ void bt_openwebnet::Set_who_where_dimension_values()
 {
   //DIMENSION WRITING : *#WHO*WHERE*#DIMENSION*VAL1*VAL2*...*VALn##
 	std::string sup;
-  int len = 0;
-  int i = -1;
-
   // WHO
   sup = frame_open.substr(2);
   if(sup[0] != '*')
@@ -302,7 +298,7 @@ void bt_openwebnet::Set_who_where_dimension_values()
       if(sup.at(0) != '*')
         dimension = FirstToken(sup, "*");
       // VALUES
-	  len = 2 + who.length() + 1 + where.length() + 2 + dimension.length() + 1;
+	  size_t len = 2 + who.length() + 1 + where.length() + 2 + dimension.length() + 1;
 	  sup = frame_open.substr(len);
       while (sup.find('*') != std::string::npos && (sup.at(0) != '*'))
       {
@@ -634,8 +630,6 @@ void bt_openwebnet::CreateMsgOpen(const std::string& who, const std::string& wha
 void bt_openwebnet::CreateNullMsgOpen()
 {
   //Counter to reset the values
-  int i = 0;
-
   // clears everything
   frame_open = "";
   frame_type = NULL_FRAME;
@@ -819,7 +813,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
   frame << who;  frame << "*";
   frame << where; frame << "*#";
   frame << dimension;
-  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); it++)
+  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
   {
 	  frame << "*";
 	  frame << *it;
@@ -831,6 +825,36 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
 
   // checks for correct syntax ...
   IsCorrect();
+}
+
+//creates the OPEN message *#who*where*#dimension#val_1*val_2*...val_n##
+void bt_openwebnet::CreateWrDimensionMsgOpen2(const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
+{
+	//call CreateNullMsgOpen function
+	CreateNullMsgOpen();
+
+	std::stringstream frame;
+
+	// creates the OPEN message
+	frame << "*#";
+	frame << who;  frame << "*";
+	frame << where; frame << "*#";
+	frame << dimension;
+	for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
+	{
+		if (it == value.begin())
+			frame << "#";
+		else
+			frame << "*";
+		frame << *it;
+	}
+	frame << "##";
+
+	frame_open = DeleteControlCharacters(frame.str());
+	length_frame_open = frame_open.length();
+
+	// checks for correct syntax ...
+	IsCorrect();
 }
 
 //creates the OPEN message *#who*where#level#interface*#dimension*val_1*val_2*...val_n##
@@ -857,7 +881,7 @@ void bt_openwebnet::CreateWrDimensionMsgOpen(const std::string& who, const std::
 	  frame << "*";
 	  frame << dimension;
   }
-  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); it++)
+  for (std::vector<std::string>::const_iterator it = value.begin(); it != value.end(); ++it)
   {
 	  frame << "*";
 	  frame << *it;
@@ -2489,7 +2513,7 @@ std::string bt_openwebnet::vectorToString(const std::vector<std::string>& string
 {
 	std::stringstream frameStr;
 	bool begin = true;
-	for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++) {
+	for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); ++it) {
 		if (!begin) {
 			frameStr << ", ";
 		}

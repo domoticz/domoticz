@@ -16,7 +16,8 @@ extern "C" {
 #endif
 }
 
-#include "../tinyxpath/xpath_processor.h"
+#include <xpath_processor.h>
+
 #include "../json/json.h"
 #include "SQLHelper.h"
 #include "mainworker.h"
@@ -186,7 +187,9 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 	lua_rawset(lua_state, -3);
 	lua_setglobal(lua_state, "request");
 
-	m_mainworker.m_eventsystem.ExportDeviceStatesToLua(lua_state);
+	CEventSystem::_tEventQueue item;
+	item.DeviceID = 0;
+	m_mainworker.m_eventsystem.ExportDeviceStatesToLua(lua_state, item);
 
 	// Push all url parameters as a map indexed by the parameter name
 	// Each entry will be uri[<param name>] = <param value>

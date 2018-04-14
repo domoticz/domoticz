@@ -8,9 +8,9 @@ return {
 			'at 23:30'
 		}
 	},
-	execute = function(domoticz, _, triggerInfo)
+	execute = function(domoticz, timer)
 
-		if (triggerInfo.trigger == 'at sunset') then
+		if (timer.trigger == 'at sunset') then
 			domoticz.devices('mySwitch').switchOn()
 			domoticz.devices('anotherSwitch').dimTo(40)
 			-- add whatever you want

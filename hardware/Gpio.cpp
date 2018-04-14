@@ -183,7 +183,7 @@ void CGpio::InterruptHandler()
 			if (fd != -1)
 				close(fd);
 	}
-	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d stopped", pin, (pid_t)syscall(SYS_gettid));
+	_log.Log(LOG_STATUS, "GPIO: Interrupt handler for GPIO %d stopped. TID: %d", pin, (pid_t)syscall(SYS_gettid));
 	return;
 }
 
@@ -357,7 +357,7 @@ void CGpio::Poller()
 		if ((sec_counter % m_pollinterval == 0) && (!m_stoprequested))
 			UpdateDeviceStates(false);
 	}
-	_log.Log(LOG_STATUS, "GPIO: Poller stopped", (pid_t)syscall(SYS_gettid));
+	_log.Log(LOG_STATUS, "GPIO: Poller stopped. TID: %d", (pid_t)syscall(SYS_gettid));
 }
 
 /* Disabled for now, devices should be added manually (this was the old behaviour, which we'll follow for now). Keep code for possible future usage.

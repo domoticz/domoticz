@@ -4,6 +4,7 @@
 // by Fantom (szczukot@poczta.onet.pl)
 
 #include "DomoticzHardware.h"
+#include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "../json/json.h"
 
@@ -36,15 +37,18 @@ public:
 	std::string GetUptime(const std::string &IPAddress);
 	int GetDeviceType(const std::string &IPAddress);
 	Json::Value GetApiDeviceState(const std::string &IPAddress);
-	bool IsNodeExists(const Json::Value root, const std::string node);
-	bool IsNodesExist(const Json::Value root, const std::string node, const std::string value);
-
+	bool IsNodeExists(const Json::Value &root, const std::string &node);
+	bool IsNodesExist(const Json::Value &root, const std::string &node, const std::string &value);
 private:
 	volatile bool m_stoprequested;
 	int m_PollInterval;
 	boost::shared_ptr<boost::thread> m_thread;
 	std::map<const std::string, const int> m_devices;
 	boost::mutex m_mutex;
+	
+	_tColor m_RGBWColorState;
+	bool m_RGBWisWhiteState;
+	int m_RGBWbrightnessState;
 
 	bool StartHardware();
 	bool StopHardware();

@@ -82,7 +82,12 @@ namespace http {
 			const unsigned int connections = GetNrMyDomoticzThreads();
 			proxymanagerCollection.clear();
 			for (unsigned int i = 0; i < connections; i++) {
-				proxymanagerCollection.push_back(boost::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, plainServer_->m_pWebEm, m_pDomServ)));
+				cWebem *my_pWebEm = (plainServer_ != NULL ? plainServer_->m_pWebEm : (secureServer_ != NULL ? secureServer_->m_pWebEm : NULL));
+				if (my_pWebEm == NULL) {
+					_log.Log(LOG_ERROR, "No servers are configured. Hence mydomoticz will not be started either.");
+					break;
+				}
+				proxymanagerCollection.push_back(boost::shared_ptr<CProxyManager>(new CProxyManager(our_serverpath, my_pWebEm, m_pDomServ)));
 				proxymanagerCollection[i]->Start(i == 0);
 			}
 			_log.Log(LOG_STATUS, "Proxymanager started.");

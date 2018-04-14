@@ -67,6 +67,9 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeRAIN, sTypeRAIN4, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN5, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAIN6, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN7, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN8, "Rain rate,Total rain" },
+		{ pTypeRAIN, sTypeRAIN9, "Rain rate,Total rain" },
 		{ pTypeRAIN, sTypeRAINWU, "Rain rate,Total rain" },
 
 		{ pTypeWIND, sTypeWIND1, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
@@ -76,6 +79,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeWIND, sTypeWIND5, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND6, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWIND7, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
+		{ pTypeWIND, sTypeWIND8, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Direction,Direction string,Speed,Gust,Temperature,Chill" },
 
 		{ pTypeUV, sTypeUV1, "UV,Temperature" },
@@ -99,7 +103,7 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 		{ pTypeLighting2, sTypeHEU, "Status" },
 		{ pTypeLighting2, sTypeANSLUT, "Status" },
 		{ pTypeLighting2, sTypeKambrook, "Status" },
-
+		
 		{ pTypeLighting3, sTypeKoppla, "Status" },
 
 		{ pTypeLighting4, sTypePT2262, "Status" },
@@ -260,10 +264,13 @@ const char *RFX_Type_SubType_Values(const unsigned char dType, const unsigned ch
 
 		{ pTypePOWER, sTypeELEC5, "Instant,Usage" },
 
-		{ pTypeLimitlessLights, sTypeLimitlessRGBW, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGB, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessWhite, "Status" },
-		{ pTypeLimitlessLights, sTypeLimitlessRGBWW, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB, "Status" },
+		{ pTypeColorSwitch, sTypeColor_White, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_W_Z, "Status" },
+		{ pTypeColorSwitch, sTypeColor_RGB_CW_WW_Z, "Status" },
+		{ pTypeColorSwitch, sTypeColor_CW_WW, "Status" },
 
 		{ pTypeRFY, sTypeRFY, "Status" },
 		{ pTypeRFY, sTypeRFY2, "Status" },
@@ -471,7 +478,7 @@ std::string CBasePush::DropdownOptionsValue(const uint64_t DeviceRowIdxIn, const
 	return wording;
 }
 
-std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int metertypein)
+std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const int delpos, const int nValue, const int includeUnit, const int devType, const int devSubType, const int metertypein)
 {
 	std::string vType = DropdownOptionsValue(m_DeviceRowIdx,delpos);
 	unsigned char tempsign=m_sql.m_tempsign[0];
@@ -491,7 +498,10 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	}
 	else if (vType == "Humidity")
 	{
-		sprintf(szData,"%d", atoi(rawsendValue.c_str()));
+		if (devType == pTypeHUM)
+			sprintf(szData, "%d", nValue);
+		else
+			sprintf(szData,"%d", atoi(rawsendValue.c_str()));
 	}
 	else if (vType == "Humidity Status")
 	{
@@ -581,7 +591,10 @@ std::string CBasePush::ProcessSendValue(const std::string &rawsendValue, const i
 	{
 		strcpy(szData, rawsendValue.c_str());
 	}
-	
+	else if (vType == "Distance")
+	{
+		strcpy(szData, rawsendValue.c_str());
+	}
 	else if (vType == "Status")
 	{
 		sprintf(szData, "%d", nValue);
@@ -862,12 +875,12 @@ namespace http {
 		{
 			root["status"] = "OK";
 			root["title"] = "GetDevicesListOnOff";
-			int ii = 0;
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT ID, Name, Type, SubType FROM DeviceStatus WHERE (Used == 1) ORDER BY Name");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
+				int ii = 0;
 				for (itt = result.begin(); itt != result.end(); ++itt)
 				{
 					std::vector<std::string> sd = *itt;

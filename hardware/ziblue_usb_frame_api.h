@@ -104,7 +104,8 @@ upon context	LSB first. Define provided data by the device
 #define   SEND_OREGON_PROTOCOLV1_433     18 /* not reachable by API */
 #define   SEND_OREGON_PROTOCOLV2_433     19 /* not reachable by API */
 #define   SEND_OREGON_PROTOCOLV3_433     20 /* not reachable by API */
-
+#define   SEND_TIC_433                   21 /* not reachable by API */
+#define   SEND_FS20_868                  22
 
 /* ***************************************** */
 #define  RECEIVED_PROTOCOL_UNDEFINED 0
@@ -120,6 +121,8 @@ upon context	LSB first. Define provided data by the device
 #define  RECEIVED_PROTOCOL_KD101     10
 #define  RECEIVED_PROTOCOL_PARROT    11
 #define  RECEIVED_PROTOCOL_DIGIMAX   12 /* deprecated */
+#define  RECEIVED_PROTOCOL_TIC       13
+#define  RECEIVED_PROTOCOL_FS20      14
 
 
 #define  REGULAR_INCOMING_RF_BINARY_USB_FRAME_INFOS_WORDS_NUMBER       10
@@ -137,6 +140,8 @@ upon context	LSB first. Define provided data by the device
 #define INFOS_TYPE10    10
 #define INFOS_TYPE11    11
 #define INFOS_TYPE12    12 /* deprecated */
+#define INFOS_TYPE13    13
+#define INFOS_TYPE14    14
 
 
 
@@ -248,6 +253,25 @@ struct  INCOMING_RF_INFOS_TYPE12 { // Used by  DIGIMAX TS10 protocol // deprecat
     signed short   setPoint ; // UNIT:  1/10 of degree
 };
 
+struct  INCOMING_RF_INFOS_TYPE13 { // Used by  Cartelectronic TIC/Pulses devices (Teleinfo/TeleCounters)
+	unsigned short subtype;// subtype/version
+	unsigned short idLsb;
+	unsigned short idMsb;
+	unsigned short qualifier; // D8-15: idMsb2 ; D0:7 : flags 
+	unsigned short infos; //state/contract type
+	unsigned short counter1Lsb;
+	unsigned short counter1Msb;
+	unsigned short counter2Lsb;
+	unsigned short counter2Msb;
+	unsigned short apparentPower;
+};
+
+struct  INCOMING_RF_INFOS_TYPE14 { // Used by FS20. Same file as INCOMING_RF_INFOS_TYPE2
+	unsigned short subtype;
+	unsigned short idLsb;
+	unsigned short idMsb;
+	unsigned short qualifier;
+};
  /* *************************************************************************** */
 
 struct REGULAR_INCOMING_RF_TO_BINARY_USB_FRAME_HEADER { // public binary API   RF to USB

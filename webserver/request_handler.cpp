@@ -1,4 +1,4 @@
-//
+﻿//
 // request_handler.cpp
 // ~~~~~~~~~~~~~~~~~~~
 //
@@ -160,7 +160,7 @@ static time_t last_write_time(const std::string &path)
 	return 0;
 }
 
-bool request_handler::not_modified(std::string full_path, const request &req, reply &rep, modify_info &mInfo)
+bool request_handler::not_modified(const std::string &full_path, const request &req, reply &rep, modify_info &mInfo)
 {
 	mInfo.last_written = last_write_time(full_path);
 	if (mInfo.last_written == 0) {
@@ -412,6 +412,11 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
   reply::add_header(&rep, "Content-Length", boost::lexical_cast<std::string>(rep.content.size()));
   reply::add_header(&rep, "Content-Type", mime_types::extension_to_type(extension));
   reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+  //browser support to prevent XSS
+  reply::add_header(&rep, "X-Content-Type-Options", "nosniff");
+  reply::add_header(&rep, "X-XSS-Protection", "1; mode=block");
+  //reply::add_header(&rep, "X-Frame-Options", "SAMEORIGIN"); //this might brake custom pages that embed third party images (like used by weather channels)
+
   if (bHaveGZipSupport && bHaveLoadedgzip)
   {
 	reply::add_header(&rep, "Content-Encoding", "gzip");
@@ -455,6 +460,11 @@ bool request_handler::url_decode(const std::string& in, std::string& out)
     }
   }
   return true;
+}
+
+cWebem* request_handler::Get_myWebem()
+{
+	return myWebem;
 }
 
 } // namespace server

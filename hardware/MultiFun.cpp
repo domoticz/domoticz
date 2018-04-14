@@ -205,11 +205,11 @@ bool MultiFun::WriteToHardware(const char *pdata, const unsigned char length)
 			int change;
 			if (general->cmnd == gswitch_sOn)
 			{ 
-				change = m_LastQuickAccess | (1 << (general->unitcode - 1));
+				change = m_LastQuickAccess | (general->unitcode);
 			}
 			else
 			{ 
-				change = m_LastQuickAccess & ~(1 << (general->unitcode - 1));
+				change = m_LastQuickAccess & ~(general->unitcode);
 			}
 
 			unsigned char buffer[100];
@@ -292,7 +292,7 @@ bool MultiFun::ConnectToDevice()
 		return false;
 	}
 
-	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%ld", m_IPAddress.c_str(), m_IPPort);
+	_log.Log(LOG_STATUS, "MultiFun: connected to %s:%d", m_IPAddress.c_str(), m_IPPort);
 
 	return true;
 }

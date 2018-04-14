@@ -39,14 +39,14 @@ void CInfluxPush::Stop()
 
 void CInfluxPush::UpdateSettings()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("InfluxActive", fActive);
 	m_bLinkActive = (fActive == 1);
 	m_InfluxPort = 8086;
 	m_sql.GetPreferencesVar("InfluxIP", m_InfluxIP);
 	m_sql.GetPreferencesVar("InfluxPort", m_InfluxPort);
 	m_sql.GetPreferencesVar("InfluxDatabase", m_InfluxDatabase);
-	int InfluxDebugActiveInt;
+	int InfluxDebugActiveInt = 0;
 	m_bInfluxDebugActive = false;
 	m_sql.GetPreferencesVar("InfluxDebug", InfluxDebugActiveInt);
 	if (InfluxDebugActiveInt == 1) {
@@ -110,11 +110,11 @@ void CInfluxPush::DoInfluxPush()
 				if (int(strarray.size()) >= delpos)
 				{
 					std::string rawsendValue = strarray[delpos - 1].c_str();
-					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, metertype);
+					sendValue = ProcessSendValue(rawsendValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
 			}
 			else
-				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
+				sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 
 			if (sendValue !="") {
 				std::string szKey;

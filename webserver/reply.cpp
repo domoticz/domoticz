@@ -21,8 +21,10 @@ namespace server {
 
 namespace status_strings {
 
+const std::string switching_protocols =
+	"HTTP/1.1 101 Switching Protocols\r\n";
 const std::string ok =
-  "HTTP/1.1 200 OK\r\n";
+	"HTTP/1.1 200 OK\r\n";
 const std::string created =
   "HTTP/1.1 201 Created\r\n";
 const std::string accepted =
@@ -54,77 +56,75 @@ const std::string bad_gateway =
 const std::string service_unavailable =
   "HTTP/1.1 503 Service Unavailable\r\n";
 
-boost::asio::const_buffer to_buffer(reply::status_type status)
+std::string to_string(reply::status_type status)
 {
-  switch (status)
-  {
-  case reply::ok:
-    return boost::asio::buffer(ok);
-  case reply::created:
-    return boost::asio::buffer(created);
-  case reply::accepted:
-    return boost::asio::buffer(accepted);
-  case reply::no_content:
-    return boost::asio::buffer(no_content);
-  case reply::multiple_choices:
-    return boost::asio::buffer(multiple_choices);
-  case reply::moved_permanently:
-    return boost::asio::buffer(moved_permanently);
-  case reply::moved_temporarily:
-    return boost::asio::buffer(moved_temporarily);
-  case reply::not_modified:
-    return boost::asio::buffer(not_modified);
-  case reply::bad_request:
-    return boost::asio::buffer(bad_request);
-  case reply::unauthorized:
-    return boost::asio::buffer(unauthorized);
-  case reply::forbidden:
-    return boost::asio::buffer(forbidden);
-  case reply::not_found:
-    return boost::asio::buffer(not_found);
-  case reply::internal_server_error:
-    return boost::asio::buffer(internal_server_error);
-  case reply::not_implemented:
-    return boost::asio::buffer(not_implemented);
-  case reply::bad_gateway:
-    return boost::asio::buffer(bad_gateway);
-  case reply::service_unavailable:
-    return boost::asio::buffer(service_unavailable);
-  default:
-    return boost::asio::buffer(internal_server_error);
-  }
+	switch (status)
+	{
+	case reply::switching_protocols:
+		return switching_protocols;
+	case reply::ok:
+		return ok;
+	case reply::created:
+		return created;
+	case reply::accepted:
+		return accepted;
+	case reply::no_content:
+		return no_content;
+	case reply::multiple_choices:
+		return multiple_choices;
+	case reply::moved_permanently:
+		return moved_permanently;
+	case reply::moved_temporarily:
+		return moved_temporarily;
+	case reply::not_modified:
+		return not_modified;
+	case reply::bad_request:
+		return bad_request;
+	case reply::unauthorized:
+		return unauthorized;
+	case reply::forbidden:
+		return forbidden;
+	case reply::not_found:
+		return not_found;
+	case reply::internal_server_error:
+		return internal_server_error;
+	case reply::not_implemented:
+		return not_implemented;
+	case reply::bad_gateway:
+		return bad_gateway;
+	case reply::service_unavailable:
+		return service_unavailable;
+	default:
+		return internal_server_error;
+	}
 }
 
 } // namespace status_strings
 
 namespace misc_strings {
 
-const char name_value_separator[] = { ':', ' ' };
-const char crlf[] = { '\r', '\n' };
+const char name_value_separator[] = { ':', ' ', 0 };
+const char crlf[] = { '\r', '\n', 0 };
 
 } // namespace misc_strings
 
-std::vector<boost::asio::const_buffer> reply::header_to_buffers()
+std::string reply::header_to_string()
 {
-	std::vector<boost::asio::const_buffer> buffers;
-	buffers.push_back(status_strings::to_buffer(status));
+	std::string buffers = status_strings::to_string(status);
 	for (std::size_t i = 0; i < headers.size(); ++i)
 	{
 		header& h = headers[i];
-		buffers.push_back(boost::asio::buffer(h.name));
-		buffers.push_back(boost::asio::buffer(misc_strings::name_value_separator));
-		buffers.push_back(boost::asio::buffer(h.value));
-		buffers.push_back(boost::asio::buffer(misc_strings::crlf));
+		buffers += h.name + misc_strings::name_value_separator + h.value + misc_strings::crlf;
 	}
-	buffers.push_back(boost::asio::buffer(misc_strings::crlf));
+	buffers += misc_strings::crlf;
 	return buffers;
 }
 
-std::vector<boost::asio::const_buffer> reply::to_buffers(const std::string &method)
+std::string reply::to_string(const std::string &method)
 {
-	std::vector<boost::asio::const_buffer> buffers = header_to_buffers();
+	std::string buffers = header_to_string();
 	if (method != "HEAD") {
-		buffers.push_back(boost::asio::buffer(content));
+		buffers += content;
 	}
 	return buffers;
 }
@@ -138,6 +138,7 @@ void reply::reset()
 
 namespace stock_replies {
 
+const char switching_protocols[] = "";
 const char ok[] = "";
 const char created[] =
   "<html>"
@@ -213,6 +214,8 @@ std::string to_string(reply::status_type status)
 {
   switch (status)
   {
+  case reply::switching_protocols:
+    return switching_protocols;
   case reply::ok:
     return ok;
   case reply::created:

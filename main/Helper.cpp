@@ -22,6 +22,17 @@
 #include "RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 
+// Includes for SystemUptime()
+#if defined(__linux__) || defined(__linux) || defined(linux)
+#include <sys/sysinfo.h>
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+#include <time.h>
+#include <errno.h>
+#include <sys/sysctl.h>
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+#include <time.h>
+#endif
+
 void StringSplit(std::string str, const std::string &delim, std::vector<std::string> &results)
 {
 	results.clear();
@@ -35,6 +46,24 @@ void StringSplit(std::string str, const std::string &delim, std::vector<std::str
 	{
 		results.push_back(str);
 	}
+}
+
+uint64_t strtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << str;
+	ss >> ul;
+	return ul;
+}
+
+uint64_t hexstrtoui64(std::string str)
+{
+	uint64_t ul;
+	std::stringstream ss;
+	ss << std::hex << str;
+	ss >> ul;
+	return ul;
 }
 
 void stdreplace(
@@ -202,7 +231,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#ifdef __FreeBSD__
+#if defined (__FreeBSD__) || defined (__OpenBSD__)
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -285,7 +314,7 @@ double CalculateAltitudeFromPressure(double pressure)
 /**************************************************************************/
 /*!
 Calculates the altitude (in meters) from the specified atmospheric
-pressure (in hPa), sea-level pressure (in hPa), and temperature (in 캜)
+pressure (in hPa), sea-level pressure (in hPa), and temperature (in 째C)
 @param seaLevel Sea-level pressure in hPa
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -302,7 +331,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 	/* where: h = height (in meters) */
 	/* P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
-	/* T = temperature (in 캜) */
+	/* T = temperature (in 째C) */
 	return (((float)pow((seaLevel / atmospheric), 0.190223F) - 1.0F)
 		* (temp + 273.15F)) / 0.0065F;
 }
@@ -311,7 +340,7 @@ float pressureToAltitude(float seaLevel, float atmospheric, float temp)
 /*!
 Calculates the sea-level pressure (in hPa) based on the current
 altitude (in meters), atmospheric pressure (in hPa), and temperature
-(in 캜)
+(in 째C)
 @param altitude altitude in meters
 @param atmospheric Atmospheric pressure in hPa
 @param temp Temperature in degrees Celsius
@@ -328,7 +357,7 @@ float pressureSeaLevelFromAltitude(float altitude, float atmospheric, float temp
 	/* where: P0 = sea-level pressure (in hPa) */
 	/* P = atmospheric pressure (in hPa) */
 	/* h = altitude (in meters) */
-	/* T = Temperature (in 캜) */
+	/* T = Temperature (in 째C) */
 	return atmospheric * (float)pow((1.0F - (0.0065F * altitude) /
 		(temp + 0.0065F * altitude + 273.15F)), -5.257F);
 }
@@ -454,6 +483,50 @@ int mkdir_deep(const char *szDirName, int secattr)
 	return ret;
 }
 
+int RemoveDir(const std::string &dirnames, std::string &errorPath)
+{
+	std::vector<std::string> splitresults;
+	StringSplit(dirnames, "|", splitresults);
+	int returncode = 0;
+	if (!splitresults.empty())
+	{
+#ifdef WIN32
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			size_t s_szLen = strlen(splitresults[i].c_str());
+			if (s_szLen < MAX_PATH)
+			{
+				char deletePath[MAX_PATH + 1];
+				strcpy_s(deletePath, splitresults[i].c_str());
+				deletePath[s_szLen + 1] = '\0'; // SHFILEOPSTRUCT needs an additional null char
+
+				SHFILEOPSTRUCT shfo = { NULL, FO_DELETE, deletePath, NULL, FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION, FALSE, NULL, NULL };
+				if (returncode = SHFileOperation(&shfo))
+				{
+					errorPath = splitresults[i];
+					break;
+				}
+			}
+		}
+#else
+		for (size_t i = 0; i < splitresults.size(); i++)
+		{
+			if (!file_exist(splitresults[i].c_str()))
+				continue;
+			ExecuteCommandAndReturn("rm -rf \"" + splitresults[i] + "\"", returncode);
+			if (returncode)
+			{
+				errorPath = splitresults[i];
+				break;
+			}
+		}
+#endif
+	}
+	return returncode;
+}
+
 double ConvertToCelsius(const double Fahrenheit)
 {
 	return (Fahrenheit-32.0) * 0.5556;
@@ -515,50 +588,54 @@ std::vector<std::string> ExecuteCommandAndReturn(const std::string &szCommand, i
 	return ret;
 }
 
-//convert date string 10/12/2014 10:45:58 en  struct tm
-void DateAsciiTotmTime (std::string &sTime , struct tm &tmTime  )
+std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 {
-		tmTime.tm_isdst=0; //dayly saving time
-		tmTime.tm_year=atoi(sTime.substr(0,4).c_str())-1900;
-		tmTime.tm_mon=atoi(sTime.substr(5,2).c_str())-1;
-		tmTime.tm_mday=atoi(sTime.substr(8,2).c_str());
-		tmTime.tm_hour=atoi(sTime.substr(11,2).c_str());
-		tmTime.tm_min=atoi(sTime.substr(14,2).c_str());
-		tmTime.tm_sec=atoi(sTime.substr(17,2).c_str());
+	struct tm timeinfo;
+	struct timeval tv;
+	std::stringstream sstr;
+	if (ltime == NULL) // current time
+	{
+#ifdef CLOCK_REALTIME
+		struct timespec ts;
+		if (!clock_gettime(CLOCK_REALTIME, &ts))
+		{
+			tv.tv_sec = ts.tv_sec;
+			tv.tv_usec = ts.tv_nsec / 1000;
+		}
+		else
+#endif
+			gettimeofday(&tv, NULL);
+#ifdef WIN32
+		time_t tv_sec = tv.tv_sec;
+		localtime_r(&tv_sec, &timeinfo);
+#else
+		localtime_r(&tv.tv_sec, &timeinfo);
+#endif
+	}
+	else
+		localtime_r(&(*ltime), &timeinfo);
 
+	if (format > TF_Time)
+	{
+		sstr << (timeinfo.tm_year + 1900) << "-"
+		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+	}
 
+	if (format != TF_Date)
+	{
+		sstr
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_sec;
+	}
+
+	if (format > TF_DateTime && ltime == NULL)
+		sstr << "." << std::setw(3) << std::setfill('0') << ((int)tv.tv_usec / 1000);
+
+	return sstr.str();
 }
-//convert struct tm time to char
-void AsciiTime (struct tm &ltime , char * pTime )
-{
-		sprintf(pTime, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-}
 
-std::string  GetCurrentAsciiTime ()
-{
-	    time_t now = time(0)+1;
-		struct tm ltime;
-		localtime_r(&now, &ltime);
-		char pTime[40];
-		AsciiTime (ltime ,  pTime );
-		return pTime ;
-}
-
-void AsciiTime ( time_t DateStart, char * DateStr )
-{
-	struct tm ltime;
-	localtime_r(&DateStart, &ltime);
-	AsciiTime (ltime ,  DateStr );
-
-}
-
-time_t DateAsciiToTime_t ( std::string & DateStr )
-{
-	struct tm tmTime ;
-	DateAsciiTotmTime (DateStr , tmTime  );
-	return mktime(&tmTime);
-
-}
 std::string GenerateMD5Hash(const std::string &InputString, const std::string &Salt)
 {
 	std::string cstring = InputString + Salt;
@@ -572,17 +649,21 @@ std::string GenerateMD5Hash(const std::string &InputString, const std::string &S
 	return mdString;
 }
 
-void hue2rgb(const float hue, int &outR, int &outG, int &outB, const double maxValue)
+void hsb2rgb(const float hue, const float saturation, const float vlue, int &outR, int &outG, int &outB, const double maxValue/* = 100.0 */)
 {
 	double      hh, p, q, t, ff;
 	long        i;
+
+	if(saturation <= 0.0) {
+		outR = int(vlue*maxValue);
+		outG = int(vlue*maxValue);
+		outB = int(vlue*maxValue);
+	}
 	hh = hue;
 	if (hh >= 360.0) hh = 0.0;
 	hh /= 60.0;
 	i = (long)hh;
 	ff = hh - i;
-	double saturation = 1.0;
-	double vlue = 1.0;
 	p = vlue * (1.0 - saturation);
 	q = vlue * (1.0 - (saturation * ff));
 	t = vlue * (1.0 - (saturation * (1.0 - ff)));
@@ -684,7 +765,7 @@ bool IsLightOrSwitch(const int devType, const int subType)
 	case pTypeLighting5:
 	case pTypeLighting6:
 	case pTypeFan:
-	case pTypeLimitlessLights:
+	case pTypeColorSwitch:
 	case pTypeSecurity1:
 	case pTypeSecurity2:
 	case pTypeCurtain:
@@ -819,6 +900,19 @@ std::string MakeHtml(const std::string &txt)
         return sRet;
 }
 
+//Prevent against XSS (Cross Site Scripting)
+std::string SafeHtml(const std::string &txt)
+{
+    std::string sRet = txt;
+
+    stdreplace(sRet, "\"", "&quot;");
+    stdreplace(sRet, "'", "&apos;");
+    stdreplace(sRet, "<", "&lt;");
+    stdreplace(sRet, ">", "&gt;");
+    return sRet;
+}
+
+
 #if defined WIN32
 //FILETIME of Jan 1 1970 00:00:00
 static const uint64_t epoch = (const uint64_t)(116444736000000000);
@@ -899,3 +993,68 @@ bool IsArgumentSecure(const std::string &arg)
 	}
 	return true;
 }
+
+uint32_t SystemUptime()
+{
+#if defined(WIN32)
+	return static_cast<uint32_t>(GetTickCount64() / 1000u);
+#elif defined(__linux__) || defined(__linux) || defined(linux)
+	struct sysinfo info;
+	if (sysinfo(&info) != 0)
+		return -1;
+	return info.uptime;
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+	struct timeval boottime;
+	std::size_t len = sizeof(boottime);
+	int mib[2] = { CTL_KERN, KERN_BOOTTIME };
+	if (sysctl(mib, 2, &boottime, &len, NULL, 0) < 0)
+		return -1;
+	return time(NULL) - boottime.tv_sec;
+#elif (defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)) && defined(CLOCK_UPTIME)
+	struct timespec ts;
+	if (clock_gettime(CLOCK_UPTIME, &ts) != 0)
+		return -1;
+	return ts.tv_sec;
+#else
+	return 0;
+#endif
+}
+
+// True random number generator (source: http://www.azillionmonkeys.com/qed/random.html)
+static struct
+{
+	int which;
+	time_t t;
+	clock_t c;
+	int counter;
+} entropy = { 0, (time_t) 0, (clock_t) 0, 0 };
+
+static unsigned char * p = (unsigned char *) (&entropy + 1);
+static int accSeed = 0;
+
+int GenerateRandomNumber(const int range)
+{
+	if (p == ((unsigned char *) (&entropy + 1)))
+	{
+		switch (entropy.which)
+		{
+			case 0:
+				entropy.t += time (NULL);
+				accSeed ^= entropy.t;
+				break;
+			case 1:
+				entropy.c += clock();
+				break;
+			case 2:
+				entropy.counter++;
+				break;
+		}
+		entropy.which = (entropy.which + 1) % 3;
+		p = (unsigned char *) &entropy.t;
+	}
+	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int) *p;
+	p++;
+	srand (accSeed);
+	return (rand() / (RAND_MAX / range));
+}
+

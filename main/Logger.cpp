@@ -33,6 +33,7 @@ CLogger::CLogger(void)
 	FilterString = "";
 	m_bInSequenceMode = false;
 	m_bEnableLogTimestamps = true;
+	m_bEnableLogThreadIDs = false;
 	m_verbose_level = VBL_ALL;
 	m_bEnableErrorsToNotificationSystem = false;
 	m_LastLogNotificationsSend = 0;
@@ -81,6 +82,11 @@ void CLogger::ForwardErrorsToNotificationSystem(const bool bDoForward)
 		m_notification_log.clear();
 }
 
+void CLogger::Log(const _eLogLevel level, const std::string& sLogline)
+{
+	Log(level, "%s", sLogline.c_str());
+}
+
 void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
 	boost::unique_lock< boost::mutex > lock(m_mutex);
@@ -117,25 +123,16 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	std::stringstream sstr;
 
 	if (m_bEnableLogTimestamps)
-	{
-		char szDate[100];
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		struct tm timeinfo;
-#ifdef WIN32
-		//Thanks to the winsock header file
-		time_t tv_sec = tv.tv_sec;
-		localtime_r(&tv_sec, &timeinfo);
-#else
-		localtime_r(&tv.tv_sec, &timeinfo);
-#endif
-		// create a time stamp string for the log message
-		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d %02d:%02d:%02d.%03d ",
-			timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday,
-			timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec, (int)tv.tv_usec / 1000);
-		sstr << szDate << " ";
-	}
+		sstr << TimeToString(NULL, TF_DateTimeMs) << "  ";
 
+	if (m_bEnableLogThreadIDs)
+	{
+#ifdef WIN32
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << ::GetCurrentThreadId() << "] ";
+#else
+		sstr << "[" << std::setfill('0') << std::setw(4) << std::hex << pthread_self() << "] ";
+#endif
+	}
 
 	if ((level != LOG_ERROR))
 	{
@@ -162,7 +159,14 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 	if (!g_bRunAsDaemon)
 	{
 		//output to console
-		std::cout << szIntLog << std::endl;
+#ifndef WIN32
+		if (level != LOG_ERROR)
+#endif
+			std::cout << szIntLog << std::endl;
+#ifndef WIN32
+		else  // print text in red color
+			std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
+#endif
 	}
 
 	if (m_outputfile.is_open())
@@ -213,7 +217,7 @@ void CLogger::LogSequenceEnd(const _eLogLevel level)
 		message = message.substr(0, message.size() - 1);
 	}
 
-	Log(level, message.c_str());
+	Log(level, message);
 	m_sequencestring.clear();
 	m_sequencestring.str("");
 
@@ -244,6 +248,16 @@ void CLogger::EnableLogTimestamps(const bool bEnableTimestamps)
 bool CLogger::IsLogTimestampsEnabled()
 {
 	return (m_bEnableLogTimestamps && !g_bUseSyslog);
+}
+
+void CLogger::EnableLogThreadIDs(const bool bEnableThreadIDs)
+{
+	m_bEnableLogThreadIDs = bEnableThreadIDs;
+}
+
+bool CLogger::IsLogThreadIDsEnabled()
+{
+	return m_bEnableLogThreadIDs && !g_bUseSyslog;
 }
 
 std::list<CLogger::_tLogLineStruct> CLogger::GetLog(const _eLogLevel lType)
@@ -337,7 +351,7 @@ void CLogger::setLogVerboseLevel(int LogLevel)
 		m_mainworker.SetVerboseLevel(EVBL_None);
 }
 
-//set the DEBUG option in order to allow LOG_TRACE log level 
+//set the DEBUG option in order to allow LOG_TRACE log level
 void CLogger::SetLogDebug(bool debug)
 {
 	m_debug = debug;

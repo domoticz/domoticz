@@ -202,7 +202,7 @@ define(['app'], function (app) {
 								item.BatteryLevel = 255;
 							}
 							var itemSubIcons = "";
-							var itemChecker = '<input type="checkbox" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="' + item.idx + '" />';
+							var itemChecker = '<input type="checkbox" class="noscheck" name="Check-' + item.ID + ' id="Check-' + item.ID + '" value="' + item.idx + '" />';
 							var TypeImg = item.TypeImg;
 							var itemImage = '<img src="images/' + TypeImg + '.png" width="16" height="16">';
 							if (TypeImg.indexOf("Alert") == 0) {
@@ -304,10 +304,10 @@ define(['app'], function (app) {
 								(item.Type.indexOf("ASA") == 0) ||
 								(item.Type.indexOf("Blinds") == 0)
 							) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowLightLog(' + item.idx + ',\'' + escape(item.Name) + '\', \'#devicescontent\', \'ShowDevices\');">';
+								itemSubIcons += '&nbsp;<a href="#/Devices/'+ item.idx +'/LightLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if ((item.Type.indexOf("Temp") == 0) || (item.Type.indexOf("Thermostat") == 0) || (item.Type.indexOf("Humidity") == 0)) {
-								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowTempLog(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\');">';
+								itemSubIcons += '&nbsp;<a href="#Devices/'+item.idx+'/TemperatureLog"><img src="images/log.png" title="' + $.t('Log') + '"></a>';
 							}
 							else if (item.SubType == "Voltage") {
 								itemSubIcons += '&nbsp;<img src="images/log.png" title="' + $.t('Log') + '" onclick="ShowGeneralGraph(\'#devicescontent\',\'ShowDevices\',' + item.idx + ',\'' + escape(item.Name) + '\',' + item.SwitchTypeVal + ', \'VoltageGeneral\');">';
@@ -384,6 +384,15 @@ define(['app'], function (app) {
 								itemSubIcons += '&nbsp;<img src="images/empty16.png">';
 							}
 							var ID = item.ID;
+              if (typeof(item.HardwareTypeVal) != 'undefined' && item.HardwareTypeVal == 21) {
+                var ZWID = item.ID.substr(-4, 2);
+                if (ZWID == '00') {
+                  ZWID = item.ID.substr(-2, 2);
+                }
+                ZWID = '0x' + ZWID;
+                var ZWIDdec =  ("00" + parseInt(ZWID)).slice(-3);
+                item.HardwareName = item.HardwareName + " " + ZWIDdec + ' (' + ZWID + ')';
+              }
 							if (item.Type == "Lighting 1") {
 								ID = String.fromCharCode(item.ID);
 							}

@@ -2,12 +2,14 @@
 #ifndef ASYNCSERIAL_H
 #define	ASYNCSERIAL_H
 
-#include <vector>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/utility.hpp>
-#include <boost/function.hpp>
-#include <boost/shared_array.hpp>
+#include <stddef.h>                              // for size_t
+#include <boost/asio/serial_port_base.hpp>       // for serial_port_base
+#include <boost/noncopyable.hpp>                 // for noncopyable
+#include <boost/smart_ptr/shared_ptr.hpp>        // for shared_ptr
+#include <iosfwd>                                // for string
+#include <boost/function/function_fwd.hpp>       // for function
+
+namespace boost { namespace system { class error_code; } }
 
 /**
  * Used internally (pimpl)

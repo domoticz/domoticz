@@ -46,11 +46,11 @@ private:
 	_eNotificationTypes	NotificationType(_eMediaStatus nStatus);
 	void Do_Work();
 	void GetPlayerInfo();
-	void InsertUpdatePlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);
+	void UpsertPlayer(const std::string &Name, const std::string &IPAddress, const std::string &MacAddress);
 
 	bool StartHardware();
 	bool StopHardware();
-	Json::Value Query(std::string sIP, int iPort, std::string sPostdata);
+	Json::Value Query(const std::string &sIP, const int iPort, const std::string &sPostdata);
 	void Do_Node_Work(const LogitechMediaServerNode &Node);
 	void UpdateNodeStatus(const LogitechMediaServerNode &Node, const _eMediaStatus nStatus, const std::string &sStatus, const bool bPingOK);
 	void ReloadNodes();

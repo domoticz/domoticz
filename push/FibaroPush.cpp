@@ -33,7 +33,7 @@ void CFibaroPush::Stop()
 
 void CFibaroPush::UpdateActive()
 {
-	int fActive;
+	int fActive = 0;
 	m_sql.GetPreferencesVar("FibaroActive", fActive);
 	m_bLinkActive = (fActive == 1);
 }
@@ -59,7 +59,7 @@ void CFibaroPush::DoFibaroPush()
 	m_sql.GetPreferencesVar("FibaroVersion4", iIsVersion4);
 
 	
-	int fibaroDebugActiveInt;
+	int fibaroDebugActiveInt = 0;
 	bool fibaroDebugActive = false;
 	m_sql.GetPreferencesVar("FibaroDebug", fibaroDebugActiveInt);
 	if (fibaroDebugActiveInt == 1) {
@@ -114,11 +114,11 @@ void CFibaroPush::DoFibaroPush()
 						if (int(strarray.size())>=delpos)
 						{
 							std::string rawsendValue = strarray[delpos-1].c_str();
-							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,metertype);
+							sendValue = ProcessSendValue(rawsendValue,delpos,nValue,includeUnit,dType, dSubType, metertype);
 						}
 					}
 					else
-						sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, metertype);
+						sendValue = ProcessSendValue(sValue, delpos, nValue, includeUnit, dType, dSubType, metertype);
 				}
 			}
 			else { // scenes/reboot, only on/off

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include "ASyncTCP.h"
 #include "DomoticzHardware.h"
 #include "../main/RFXtrx.h"

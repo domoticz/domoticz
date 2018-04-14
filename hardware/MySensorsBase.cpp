@@ -866,7 +866,9 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode *pNode, _tMySensorChild *
 	case V_LIGHT_LEVEL:
 		if (pChild->GetValue(vType, floatValue))
 		{
-			SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName.c_str() : "Light Level");
+			//Light level in percentage
+			SendPercentageSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Light Level");
+			//SendLuxSensor(pChild->nodeID, pChild->childID, pChild->batValue, floatValue, (!pChild->childName.empty()) ? pChild->childName : "Light Level");
 		}
 		break;
 	case V_LEVEL: //stored as Int AND Float
@@ -1245,13 +1247,13 @@ bool MySensorsBase::GetSwitchValue(const int Idx, const int SubUnit, const int s
 	}
 	else if ((sub_type == V_RGB) || (sub_type == V_RGBW))
 	{
-		sSwitchValue = (nvalue == Limitless_LedOn) ? "1" : "0";
+		sSwitchValue = (nvalue == Color_LedOn) ? "1" : "0";
 		return true;
 	}
 
 	int slevel = atoi(result[0][2].c_str());
 	std::stringstream sstr;
-	sstr << int(slevel * 100 / 15);
+	sstr << int(slevel);
 	sSwitchValue = sstr.str();
 	return true;
 }
@@ -1358,7 +1360,7 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 			else if (light_command == light2_sSetLevel)
 			{
-				float fvalue = (100.0f / 14.0f)*float(pCmd->LIGHTING2.level);
+				float fvalue = (100.0f / 15.0f)*float(pCmd->LIGHTING2.level);
 				if (fvalue > 100.0f)
 					fvalue = 100.0f; //99 is fully on
 				int svalue = round(fvalue);
@@ -1438,10 +1440,10 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			return false;
 		}
 	}
-	else if (packettype == pTypeLimitlessLights)
+	else if (packettype == pTypeColorSwitch)
 	{
 		//RGW/RGBW command
-		_tLimitlessLights *pLed = (_tLimitlessLights *)pdata;
+		_tColorSwitch *pLed = (_tColorSwitch *)pdata;
 		//unsigned char ID1 = (unsigned char)((pLed->id & 0xFF000000) >> 24);
 		//unsigned char ID2 = (unsigned char)((pLed->id & 0x00FF0000) >> 16);
 		unsigned char ID3 = (unsigned char)((pLed->id & 0x0000FF00) >> 8);
@@ -1460,21 +1462,40 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 			}
 
 			bool bIsRGBW = (pNode->FindChildWithPresentationType(child_sensor_id, S_RGBW_LIGHT) != NULL);
-			if (pLed->command == Limitless_SetRGBColour)
+			if (pLed->command == Color_SetColor)
 			{
-				int red, green, blue;
-
-				float cHue = (360.0f / 255.0f)*float(pLed->value);//hue given was in range of 0-255
-				int Brightness = 100;
-				int dMax = round((255.0f / 100.0f)*float(Brightness));
-				hue2rgb(cHue, red, green, blue, dMax);
 				std::stringstream sstr;
-				sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << red
-					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << green
-					<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << blue;
+				//TODO: OK to scale color instead of sending separate V_PERCENTAGE?
+				if (pLed->color.mode == ColorModeWhite)
+				{
+					int wWhite = 255 * pLed->value / 100;
+					if (!bIsRGBW)
+					{
+						sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+					}
+					else
+					{
+						sstr << "#000000"
+							<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << wWhite;
+					}
+				}
+				else if (pLed->color.mode == ColorModeRGB) {
+					int r = pLed->color.r * pLed->value / 100;
+					int g = pLed->color.g * pLed->value / 100;
+					int b = pLed->color.b * pLed->value / 100;
+					sstr << std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << r
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << g
+						<< std::setw(2) << std::uppercase << std::hex << std::setfill('0') << std::hex << b;
+				}
+				else{
+					_log.Log(LOG_STATUS, "MySensors: SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+					return false;
+				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Limitless_SetColorToWhite)
+			else if (pLed->command == Color_SetColorToWhite)
 			{
 				std::stringstream sstr;
 				int Brightness = 100;
@@ -1492,19 +1513,18 @@ bool MySensorsBase::WriteToHardware(const char *pdata, const unsigned char lengt
 				}
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, (bIsRGBW == true) ? V_RGBW : V_RGB, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if (pLed->command == Limitless_SetBrightnessLevel)
+			else if (pLed->command == Color_SetBrightnessLevel)
 			{
-				float fvalue = pLed->value;
-				int svalue = round(fvalue);
+				int svalue = pLed->value;
 				if (svalue > 100)
 					svalue = 100;
 				std::stringstream sstr;
 				sstr << svalue;
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_PERCENTAGE, sstr.str(), pChild->useAck, pChild->ackTimeout);
 			}
-			else if ((pLed->command == Limitless_LedOff) || (pLed->command == Limitless_LedOn))
+			else if ((pLed->command == Color_LedOff) || (pLed->command == Color_LedOn))
 			{
-				std::string lState = (pLed->command == Limitless_LedOn) ? "1" : "0";
+				std::string lState = (pLed->command == Color_LedOn) ? "1" : "0";
 				return SendNodeSetCommand(node_id, child_sensor_id, MT_Set, V_STATUS, lState, pChild->useAck, pChild->ackTimeout);
 			}
 		}
@@ -1619,7 +1639,6 @@ void MySensorsBase::UpdateVar(const int NodeID, const int ChildID, const int Var
 		//Update
 		m_sql.safe_query("UPDATE MySensorsVars SET [Value]='%q' WHERE (ROWID = '%q')", svalue.c_str(), result[0][0].c_str());
 	}
-
 }
 
 bool MySensorsBase::GetVar(const int NodeID, const int ChildID, const int VarID, std::string &sValue)
@@ -1804,6 +1823,10 @@ void MySensorsBase::ParseLine()
 			//Register response from GW
 			while (1 == 0);
 			break;
+		case I_INCLUSION_MODE:
+			_log.Log(LOG_NORM, "MySensors: Inclusion mode=%s", payload.c_str());
+		  	m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) ? true : false;
+		  	break;
 		case I_DEBUG:
 			//Debug message
 			while (1 == 0);
@@ -1978,12 +2001,6 @@ void MySensorsBase::ParseLine()
 			break;
 		case V_LIGHT_LEVEL:
 			pChild->SetValue(vType, (float)atof(payload.c_str()));
-			/*
-			//convert percentage to 1000 scale
-			pSensor->floatValue = (1000.0f / 100.0f)*pSensor->floatValue;
-			if (pSensor->floatValue > 1000.0f)
-				pSensor->floatValue = 1000.0f;
-			*/
 			bHaveValue = true;
 			break;
 		case V_FORECAST:
