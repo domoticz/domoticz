@@ -88,7 +88,7 @@ local function DomoticzTestTools(port, debug, webroot)
     end
 
     function self.createHardware(name, type)
-    	local url = "type=command&param=addhardware&htype=" .. tostring(type) .. "&name=" .. name .. "&enabled=true&datatimeout=0"
+    	local url = "param=addhardware&type=command&htype=" .. tostring(type) .. "&name=" .. name .. "&enabled=true&datatimeout=0"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	local idx = json.idx
     	return ok, idx, json, result, respcode, respheaders, respstatus
@@ -136,7 +136,7 @@ local function DomoticzTestTools(port, debug, webroot)
     function self.createVariable(name, type, value)
 		-- todo, encode value
     	--type=command&param=saveuservariable&vname=myint&vtype=0&vvalue=1
-    	local url = "type=command&param=saveuservariable&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
+    	local url = "param=saveuservariable&type=command&vname=" .. name .."&vtype=" .. tostring(type) .. "&vvalue=" .. tostring(value)
 
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
@@ -203,14 +203,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteVariable(idx)
     	--type=command&param=deleteuservariable&idx=1
-    	local url = "type=command&param=deleteuservariable&idx=" .. tostring(idx)
+    	local url = "param=deleteuservariable&type=command&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
 
     function self.deleteAllVariables()
-    	-- type=command&param=getuservariables
-    	local url = "type=command&param=getuservariables"
+    	-- type=commandparam=onkyoeiscm=getuservariables
+    	local url = "param=getuservariables&type=command"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
         local res = true
     	if (ok) then
@@ -232,7 +232,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteHardware(idx)
     	-- http://localhost:8080/json.htm?type=command&param=deletehardware&idx=2
-    	local url = "type=command&param=deletehardware&idx=" .. tostring(idx)
+    	local url = "param=deletehardware&type=command&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
@@ -260,14 +260,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.deleteScript(idx)
     	--type=events&param=delete&event=1
-    	local url = "type=events&param=delete&event=" .. tostring(idx)
+    	local url = "param=delete&type=events&event=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok, json
     end
 
     function self.deleteAllScripts()
     	-- type=events&param=list
-    	local url = "type=events&param=list"
+    	local url = "param=list&type=events"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
         local res = true
     	if (ok) then
@@ -304,14 +304,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.switch(idx, cmd)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=0&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=" .. cmd .. "&level=0&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
 
     function self.dimTo(idx, cmd, level)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=" .. cmd .. "&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
@@ -319,7 +319,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
 	function self.switchSelector(idx, level)
     	--type=command&param=switchlight&idx=39&switchcmd=On&level=0&passcode=
-    	local url = "type=command&param=switchlight&switchcmd=Set%20Level&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
+    	local url = "param=switchlight&type=command&switchcmd=Set%20Level&level=" .. tostring(level) .. "&idx=" .. tostring(idx)
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
@@ -327,14 +327,14 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.switchGroup(idx, cmd)
     	--http://localhost:8080/json.htm?type=command&param=switchscene&idx=2&switchcmd=On&passcode=
-    	local url = "type=command&param=switchscene&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
+    	local url = "param=switchscene&type=command&idx=" .. tostring(idx) .. "&switchcmd=" .. cmd .. "&passcode="
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end
 
     function self.addSceneDevice(sceneIdx, devIdx)
     	-- http://localhost:8080/json.htm?type=command&param=addscenedevice&idx=2&isscene=false&devidx=1&command=On&level=100&hue=0&ondelay=&offdelay=
-    	local url = "type=command&param=addscenedevice&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
+    	local url = "param=addscenedevice&type=command&idx=" .. tostring(sceneIdx) .. "&isscene=false&devidx=" .. tostring(devIdx) .. "&command=On&level=100&hue=0&ondelay=&offdelay="
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
 
     	return ok
@@ -342,7 +342,8 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.initSettings()
     	local response = {}
-    	local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.298665&Longitude=5.629619&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=1&SecOnDelay=0&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&WindUnit=0&TempUnit=0&DegreeDaysBaseTemperature=18.0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&LogEventScriptTrigger=on&DzVentsLogLevel=3&EnableEventScriptSystem=on&DisableDzVentsSystem=on"
+    	--local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.298665&Longitude=5.629619&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=1&SecOnDelay=0&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&                            checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&WindUnit=0&TempUnit=0&DegreeDaysBaseTemperature=18.0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&LogEventScriptTrigger=on&DzVentsLogLevel=3&EnableEventScriptSystem=on&DisableDzVentsSystem=on"
+        local reqbody = "Language=en&Themes=default&Title=Domoticz&Latitude=52.278870&Longitude=5.665849&DashboardType=0&AllowWidgetOrdering=on&MobileType=0&WebUserName=&WebPassword=d41d8cd98f00b204e9800998ecf8427e&AuthenticationMethod=0&GuestUser=0&SecPassword=1&SecOnDelay=0&ProtectionPassword=d41d8cd98f00b204e9800998ecf8427e&WebLocalNetworks=127.0.0.1&RemoteSharedPort=6144&WebRemoteProxyIPs=127.0.0.1&checkforupdates=on&ReleaseChannel=0&AcceptNewHardware=on&HideDisabledHardwareSensors=on&MyDomoticzUserId=&MyDomoticzPassword=&EnableTabLights=on&EnableTabScenes=on&EnableTabTemp=on&EnableTabWeather=on&EnableTabUtility=on&EnableTabCustom=on&LightHistoryDays=30&ShortLogDays=1&ProwlAPI=&NMAAPI=&PushbulletAPI=&PushsaferAPI=&PushsaferImage=&PushoverUser=&PushoverAPI=&PushALotAPI=&ClickatellAPI=&ClickatellUser=&ClickatellPassword=&ClickatellFrom=&ClickatellTo=&IFTTTAPI=&HTTPField1=&HTTPField2=&HTTPField3=&HTTPField4=&HTTPTo=&HTTPURL=https%3A%2F%2Fwww.somegateway.com%2Fpushurl.php%3Fusername%3D%23FIELD1%26password%3D%23FIELD2%26apikey%3D%23FIELD3%26from%3D%23FIELD4%26to%3D%23TO%26message%3D%23MESSAGE&HTTPPostData=&HTTPPostContentType=application%2Fjson&HTTPPostHeaders=&KodiIPAddress=224.0.0.1&KodiPort=9777&KodiTimeToLive=5&LmsPlayerMac=&LmsDuration=5&TelegramAPI=&TelegramChat=&NotificationSensorInterval=43200&NotificationSwitchInterval=0&EmailEnabled=on&EmailFrom=&EmailTo=&EmailServer=&EmailPort=25&EmailUsername=&EmailPassword=&UseEmailInNotifications=on&TempUnit=0&DegreeDaysBaseTemperature=18.0&WindUnit=0&WeightUnit=0&EnergyDivider=1000&CostEnergy=0.2149&CostEnergyT2=0.2149&CostEnergyR1=0.0800&CostEnergyR2=0.0800&GasDivider=100&CostGas=0.6218&WaterDivider=100&CostWater=1.6473&ElectricVoltage=230&CM113DisplayType=0&SmartMeterType=0&FloorplanPopupDelay=750&FloorplanAnimateZoom=on&FloorplanShowSensorValues=on&FloorplanShowSceneNames=on&FloorplanRoomColour=Blue&FloorplanActiveOpacity=25&FloorplanInactiveOpacity=5&RandomSpread=15&SensorTimeout=60&BatterLowLevel=0&LogFilter=&LogFileName=&LogLevel=0&DoorbellCommand=0&RaspCamParams=-w+800+-h+600+-t+1&UVCParams=-S80+-B128+-C128+-G80+-x800+-y600+-q100&EnableEventScriptSystem=on&LogEventScriptTrigger=on&DisableDzVentsSystem=on&DzVentsLogLevel=3"
 
     	local url = BASE_URL .. '/storesettings.webem'
     	local result, respcode, respheaders, respstatus = http.request {
@@ -397,7 +398,7 @@ local function DomoticzTestTools(port, debug, webroot)
 
     function self.setDisarmed()
     	-- http://localhost:8080/json.htm?type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b
-    	local url = "type=command&param=setsecstatus&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b"
+    	local url = "param=setsecstatus&type=command&secstatus=0&seccode=c4ca4238a0b923820dcc509a6f75849b"
     	local ok, json, result, respcode, respheaders, respstatus = self.doAPICall(url)
     	return ok
     end

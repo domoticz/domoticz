@@ -605,12 +605,12 @@ define(['app'], function (app) {
 					if (typeof data.EnableEventScriptSystem != 'undefined') {
 						$("#eventsystemtable #EnableEventScriptSystem").prop('checked', data.EnableEventScriptSystem == 1);
 					}
-                    if (typeof data.DisableDzVentsSystem != 'undefined') {
-                        $("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 0);
-                    }
-                    if (typeof data.DzVentsLogLevel != 'undefined') {
-                        $("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);
-                    }
+					if (typeof data.DisableDzVentsSystem != 'undefined') {
+						$("#DisableDzVentsSystem").prop('checked', data.DisableDzVentsSystem == 0);
+					}
+					if (typeof data.DzVentsLogLevel != 'undefined') {
+						$("#comboDzVentsLogLevel").val(data.DzVentsLogLevel);
+					}
 					if (typeof data.LogEventScriptTrigger != 'undefined') {
 						$("#eventsystemtable #LogEventScriptTrigger").prop('checked', data.LogEventScriptTrigger == 1);
 					}
@@ -686,6 +686,9 @@ define(['app'], function (app) {
 					}
 					if (typeof data.IFTTTAPI != 'undefined') {
 						$("#ifttttable #IFTTTAPI").val(atob(data.IFTTTAPI));
+					}
+					if (typeof data.WebRemoteProxyIPs != 'undefined') {
+						$("#webproxytable #WebRemoteProxyIPs").val(data.WebRemoteProxyIPs);
 					}
 				}
 			});

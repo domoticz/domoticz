@@ -59,25 +59,6 @@ namespace Plugins {
 		};
 	};
 
-	class ReadMessage : public CPluginMessageBase, public CHasConnection
-	{
-	public:
-		ReadMessage(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CPluginMessageBase(pPlugin), CHasConnection(Connection)
-		{
-			m_Name = __func__;
-			m_ElapsedMs = ElapsedMs;
-			m_Buffer.reserve(ByteCount);
-			m_Buffer.assign(Data, Data + ByteCount);
-		};
-		std::vector<byte>		m_Buffer;
-		int						m_ElapsedMs;
-		virtual void Process()
-		{
-			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
-			m_pPlugin->ConnectionRead(this);
-		};
-	};
-
 	// Base callback message class
 	class CCallbackBase : public CPluginMessageBase
 	{
@@ -220,14 +201,14 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	class onCommandCallback : public CCallbackBase
 	{
 	public:
-		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, const int hue) : CCallbackBase(pPlugin, "onCommand")
+		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const int level, std::string color) : CCallbackBase(pPlugin, "onCommand")
 		{
 			m_Name = __func__;
 			m_Unit = Unit;
 			m_fLevel = -273.15f;
 			m_Command = Command;
 			m_iLevel = level;
-			m_iHue = hue;
+			m_iColor = color;
 		};
 		onCommandCallback(CPlugin* pPlugin, int Unit, const std::string& Command, const float level) : CCallbackBase(pPlugin, "onCommand")
 		{
@@ -236,10 +217,10 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			m_fLevel = level;
 			m_Command = Command;
 			m_iLevel = -1;
-			m_iHue = -1;
+			m_iColor = "";
 		};
 		std::string				m_Command;
-		int						m_iHue;
+		std::string				m_iColor;
 		int						m_iLevel;
 		float					m_fLevel;
 
@@ -249,11 +230,11 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 			PyObject*	pParams;
 			if (m_fLevel != -273.15f)
 			{
-				pParams = Py_BuildValue("isfi", m_Unit, m_Command.c_str(), m_fLevel, 0);
+				pParams = Py_BuildValue("isfs", m_Unit, m_Command.c_str(), m_fLevel, "");
 			}
 			else
 			{
-				pParams = Py_BuildValue("isii", m_Unit, m_Command.c_str(), m_iLevel, m_iHue);
+				pParams = Py_BuildValue("isis", m_Unit, m_Command.c_str(), m_iLevel, m_iColor.c_str());
 			}
 			Callback(pParams);
 		};
@@ -441,10 +422,31 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		virtual void Process() { throw "Base event class Handle called"; };
 	};
 
+	class ReadEvent : public CEventBase, public CHasConnection
+	{
+	public:
+		ReadEvent(CPlugin* pPlugin, PyObject* Connection, const int ByteCount, const unsigned char* Data, const int ElapsedMs = -1) : CEventBase(pPlugin), CHasConnection(Connection)
+		{
+			m_Name = __func__;
+			m_ElapsedMs = ElapsedMs;
+			m_Buffer.reserve(ByteCount);
+			m_Buffer.assign(Data, Data + ByteCount);
+		};
+		std::vector<byte>		m_Buffer;
+		int						m_ElapsedMs;
+		virtual void Process()
+		{
+			m_pPlugin->WriteDebugBuffer(m_Buffer, true);
+			m_pPlugin->ConnectionRead(this);
+		};
+	};
+
 	class DisconnectedEvent : public CEventBase, public CHasConnection
 	{
 	public:
-		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(true) { m_Name = __func__; };
+		DisconnectedEvent(CPlugin* pPlugin, PyObject* Connection, bool NotifyPlugin) : CEventBase(pPlugin), CHasConnection(Connection), bNotifyPlugin(NotifyPlugin) { m_Name = __func__; };
 		virtual void Process() { m_pPlugin->DisconnectEvent(this); };
+		bool	bNotifyPlugin;
 	};
 }

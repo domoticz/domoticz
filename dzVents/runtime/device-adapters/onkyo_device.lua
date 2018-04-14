@@ -18,7 +18,7 @@ return {
 
         function device.onkyoEISCPCommand(cmd)
             local url = domoticz.settings['Domoticz url'] ..
-                    '/json.htm?type=command&param=onkyoeiscpcommand&idx=' .. device.id .. '&action=' .. tostring (cmd)
+                    '/json.htm?param=onkyoeiscpcommand&type=command&idx=' .. device.id .. '&action=' .. tostring (cmd)
             return domoticz.openURL(url)
         end
     end

@@ -1570,7 +1570,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 		strncpy((char *)&eHn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_RS485, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_RS485, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_RS485, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);	//rollers names
 
 	for (i = 0; i < sizeof(eHn[nr]->Outs) / sizeof(eHn[nr]->Outs[0]); i += 2)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1711,7 +1711,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 		strncpy((char *)&eHEn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHEn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);		//rollers names
 
 	for (i = 0; i < sizeof(eHEn[nr]->Rollers) / sizeof(eHEn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1849,7 +1849,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 		strncpy((char *)&ECMn->Dimmers[i], (char *)&GetLine, sizeof(ECMn->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_LAN, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rolers names
 
 	for (i = 0; i < sizeof(ECMn->Rollers) / sizeof(ECMn->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -1998,7 +1998,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		strncpy((char *)&eHouseProN->Dimmers[i], (char *)&GetLine, sizeof(eHouseProN->Dimmers[i]));
 		//    UpdateSQLState(data[1], data[2], EH_PRO, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i, 1, 0, "", Name, (char *) &GetLine, true, 100);
 	}
-	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	//UpdateSQLState(data[1], data[2], EH_LAN, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 0, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHouseProN->Rollers) / sizeof(eHouseProN->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -2186,7 +2186,7 @@ void eHouseTCP::GetUDPNamesWiFi(unsigned char *data, int nbytes)
 		strncpy((char *)&eHWIFIn[nr]->Dimmers[i], (char *)&GetLine, sizeof(eHWIFIn[nr]->Dimmers[i]));
 		UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLighting2, sTypeAC, STYPE_Dimmer, VISUAL_DIMMER_OUT, i + 1, 1, 0, "", Name, (char *)&GetLine, true, 100);
 	}
-	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeLimitlessLights, sTypeLimitlessRGBW, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
+	UpdateSQLState(data[1], data[2], EH_WIFI, pTypeColorSwitch, sTypeColor_RGB_W, STYPE_Dimmer, VISUAL_DIMMER_RGB, 1, 1, 0, "", Name, "RGB", true, 100);  //RGB dimmer
 	GetStr(data);//rollers names
 
 	for (i = 0; i < sizeof(eHWIFIn[nr]->Rollers) / sizeof(eHWIFIn[nr]->Rollers[0]); i++)    //Blinds Names (use twin - single outputs) out #1,#2=> blind #1
@@ -2769,7 +2769,9 @@ void eHouseTCP::Do_Work()
 						eHEStatusReceived++;
 					}
 					else    //Not CM
+					{
 						if (devaddrl != 0)
+						{
 							if (devaddrl >= INITIAL_ADDRESS_LAN)
 							{
 								if (devaddrl - INITIAL_ADDRESS_LAN <= ETHERNET_EHOUSE_RM_MAX)   //Ethernet eHouse LAN Controllers
@@ -2895,7 +2897,7 @@ void eHouseTCP::Do_Work()
 												AuraDev[aindex]->Temp = AuraN[aindex]->ParamValue[m];
 												AuraDev[aindex]->Temp /= 10;
 												//                                                 AuraDev[aindex]->TempSet = AuraN[aindex]->ParamPreset[m];
-												  //                                               AuraDev[aindex]->TempSet/= 10;
+												//                                               AuraDev[aindex]->TempSet/= 10;
 												AuraDev[aindex]->LocalTempSet = AuraN[aindex]->ParamPreset[m];
 												AuraDev[aindex]->LocalTempSet /= 10;
 												if (AuraDev[aindex]->LocalTempSet != AuraDev[aindex]->PrevLocalTempSet)
@@ -2922,14 +2924,14 @@ void eHouseTCP::Do_Work()
 													//eHPROaloc(0, SrvAddrH, SrvAddrL);
 
 													eHouseProStatus->status.AdcVal[aindex] = AuraN[aindex]->ParamValue[0];// temp * 10;//.MSB<<8) + eHouseProStatus.status.AdcVal[nr_of_ch].LSB;
-													//adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
+																														  //adcs[aindex]->ADCValue= (int) AuraDev[aindex]->temp * 10;
 													adcs[aindex]->ADCHigh = AuraN[aindex]->ParamPreset[0] + 3;
 													adcs[aindex]->ADCLow = AuraN[aindex]->ParamPreset[0] - 3;
 													AuraN[aindex]->BinaryStatus[bkpi++] = AuraN[aindex]->ParamPreset[0] >> 8;
 													AuraN[aindex]->BinaryStatus[bkpi] = AuraN[aindex]->ParamPreset[0] & 0xff;
 													nr_of_ch = aindex;
 													//        PerformADC();       //Perform Adc measurement process
-//                                                                    AuraN[aindex]->TextStatus[0] = 0;
+													//                                                                    AuraN[aindex]->TextStatus[0] = 0;
 												}
 
 
@@ -3046,6 +3048,8 @@ void eHouseTCP::Do_Work()
 									UpdateAuraToSQL(AuraN[aindex]->AddrH, AuraN[aindex]->AddrL, aindex);
 								}
 							}
+						}
+					}
 				}
 			}
 			else

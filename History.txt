@@ -14,7 +14,7 @@ Version 3.xxx (October xxth 2017)
 - Changed: OZW, added FGS 213/223 with id 2000/3000 as binary switch
 - Fixed: Blyss (manual adding to system)
 - Fixed: Floorplan door contact type
-- Implemented: dzVents 2.4.0: See dzVents/documentation/history.md
+- Implemented: dzVents 2.4.3: See dzVents/documentation/history.md
 
 Version 3.8153 (July 30th 2017)
 - Fixed: Camera Editor, will now always refresh thumbnail in table
