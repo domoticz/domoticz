@@ -458,14 +458,16 @@ define(['app'], function (app) {
 						$("#scenecontent #combolevel").val(level);
 						
 						var SubType = "";
+						var DimmerType = "";
 						$.each($.LightsAndSwitches, function (i, item) {
 							if (item.idx == devidx) {
 								SubType = item.SubType;
+								DimmerType = item.DimmerType;
 							}
 						});
 						var MaxDimLevel = 100; // Always 100 for LED type
 						if (isLED(SubType))
-							ShowRGBWPicker('#scenecontent #ScenesLedColor', devidx, 0, MaxDimLevel, level, data["Color"], SubType);
+							ShowRGBWPicker('#scenecontent #ScenesLedColor', devidx, 0, MaxDimLevel, level, data["Color"], SubType, DimmerType);
 
 						$("#scenecontent #ondelaytime").val(data["OnDelay"]);
 						$("#scenecontent #offdelaytime").val(data["OffDelay"]);
@@ -676,14 +678,16 @@ define(['app'], function (app) {
 				var DeviceIdx = $("#scenecontent #combodevice option:selected").val();
 				if (typeof DeviceIdx != 'undefined') {
 					var SubType = "";
+					var DimmerType = "";
 					$.each($.LightsAndSwitches, function (i, item) {
 						if (item.idx == DeviceIdx) {
 							SubType = item.SubType;
+							DimmerType = item.DimmerType;
 						}
 					});
 					var MaxDimLevel = 100; // Always 100 for LED type
 					if (isLED(SubType))
-						ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType);
+						ShowRGBWPicker('#scenecontent #ScenesLedColor', DeviceIdx, 0, MaxDimLevel, 50, "", SubType, DimmerType);
 				}
 			});
 			$('#scenecontent #combodevice').keypress(function () {

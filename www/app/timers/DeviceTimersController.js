@@ -19,6 +19,7 @@ define(['app', 'timers/factories', 'timers/components'], function (app) {
                 vm.isLoaded = true;
                 vm.itemName = device.Name;
                 vm.colorSettingsType = device.SubType;
+                vm.dimmerType = device.DimmerType;
 
                 vm.isDimmer = ['Dimmer', 'Blinds Percentage', 'Blinds Percentage Inverted', 'TPI'].includes(device.SwitchType);
                 vm.isSelector = device.SubType === "Selector Switch";

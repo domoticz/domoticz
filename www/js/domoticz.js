@@ -10886,11 +10886,12 @@ function getLEDType(SubType) {
 	return LEDType;
 }
 
-function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, callback) {
+function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, iDimmerType, callback) {
 	
 	var color = {};
 	var devIdx = idx;
 	var SubType = iSubType;
+	var DimmerType = iDimmerType;
 	var LEDType = getLEDType(SubType);
 
 	try {
@@ -10937,11 +10938,22 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		if (mode == "color") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true});
 		}
+		else if (mode == "color_no_master") {
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true});
+		}
 		else if (mode == "white") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true});
 		}
+		else if (mode == "white_no_master") {
+			// TODO: Silly, nothing to show!
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true});
+		}
 		else if (mode == "temperature") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm'});
+		}
+		else if (mode == "temperature_no_master") {
+			// TODO: Silly, nothing to show!
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:''});
 		}
 		else if (mode == "customw") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false});
@@ -10956,44 +10968,53 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		$(selector + ' .pickermodecustomw').hide();
 		$(selector + ' .pickermodecustomww').hide();
 		// Show buttons for choosing input mode
-		if (LEDType.bHasRGB) {
-			if (mode == "color") {
-				$(selector + ' .pickermodergb.selected').show();
+		var supportedModes = 0;
+		if (LEDType.bHasRGB) supportedModes++;
+		if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") supportedModes++;
+		if (LEDType.bHasTemperature) supportedModes++;
+		if (LEDType.bHasCustom && !LEDType.bHasTemperature) supportedModes++;
+		if (LEDType.bHasCustom && LEDType.bHasTemperature) supportedModes++;
+		if (supportedModes > 1)
+		{
+			if (LEDType.bHasRGB) {
+				if (mode == "color" || mode == "color_no_master") {
+					$(selector + ' .pickermodergb.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodergb.unselected').show();
+				}
 			}
-			else {
-				$(selector + ' .pickermodergb.unselected').show();
+			if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") {
+				if (mode == "white" || mode == "white_no_master") {
+					$(selector + ' .pickermodewhite.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodewhite.unselected').show();
+				}
 			}
-		}
-		if (LEDType.bHasWhite && !LEDType.bHasTemperature) {
-			if (mode == "white") {
-				$(selector + ' .pickermodewhite.selected').show();
+			if (LEDType.bHasTemperature && DimmerType!="rel") {
+				if (mode == "temperature" || mode == "temperature_no_master") {
+					$(selector + ' .pickermodetemp.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodetemp.unselected').show();
+				}
 			}
-			else {
-				$(selector + ' .pickermodewhite.unselected').show();
+			if (LEDType.bHasCustom && !LEDType.bHasTemperature) {
+				if (mode == "customw") {
+					$(selector + ' .pickermodecustomw.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodecustomw.unselected').show();
+				}
 			}
-		}
-		if (LEDType.bHasTemperature) {
-			if (mode == "temperature") {
-				$(selector + ' .pickermodetemp.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodetemp.unselected').show();
-			}
-		}
-		if (LEDType.bHasCustom && !LEDType.bHasTemperature) {
-			if (mode == "customw") {
-				$(selector + ' .pickermodecustomw.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodecustomw.unselected').show();
-			}
-		}
-		if (LEDType.bHasCustom && LEDType.bHasTemperature) {
-			if (mode == "customww") {
-				$(selector + ' .pickermodecustomww.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodecustomww.unselected').show();
+			if (LEDType.bHasCustom && LEDType.bHasTemperature) {
+				if (mode == "customww") {
+					$(selector + ' .pickermodecustomww.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodecustomww.unselected').show();
+				}
 			}
 		}
 
@@ -11016,6 +11037,11 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
 	if (color_m == 2 && !LEDType.bHasTemperature) color_m = 3; // Default to RGB if light does not support temperature
+	if (color_m == 3 && !LEDType.bHasRGB)
+	{
+		if (LEDType.bHasTemperature) color_m = 2; // Default to temperature if light does not support RGB but does support temperature
+		else color_m = 1;                         // Default to white if light does not support either RGB or temperature (in this case just a dimmer slider should be shown though)
+	}
 
 	var color_t = 128;
 	var color_cw = 128;
@@ -11050,14 +11076,15 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		color_b = (color.b==null)?255:color.b;
 	}
 
+	// TODO: white_no_master and temperature_no_master are meaningless, remove
 	if (color_m == 1) { // White mode
-		colorPickerMode = "white";
+		colorPickerMode = DimmerType!="rel"?"white":"white_no_master";
 	}
 	if (color_m == 2) { // Color temperature mode
-		colorPickerMode = "temperature";
+		colorPickerMode = DimmerType!="rel"?"temperature":"temperature_no_master";
 	}
 	else if (color_m == 3){ // Color  mode
-		colorPickerMode = "color";
+		colorPickerMode = DimmerType!="rel"?"color":"color_no_master";
 	}
 	else if (color_m == 4){ // Custom  mode
 		colorPickerMode = "customw";
@@ -11070,13 +11097,13 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	UpdateColorPicker(colorPickerMode);
 	
 	$(selector + ' .pickermodergb').off().click(function(){
-		UpdateColorPicker("color");
+		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
 	$(selector + ' .pickermodewhite').off().click(function(){
-		UpdateColorPicker("white");
+		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
 	$(selector + ' .pickermodetemp').off().click(function(){
-		UpdateColorPicker("temperature");
+		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
 	$(selector + ' .pickermodecustomw').off().click(function(){
 		UpdateColorPicker("customw");
@@ -11089,7 +11116,7 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setWhite', color_cw/255+color_ww/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
-	
+
 	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
 		clearTimeout($.setColValue);
 
@@ -11104,13 +11131,61 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	});
 }
 
-function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType) {
+function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
+	var ledType = getLEDType(SubType);
+	var devIdx = idx;
 
-	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType);
+	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType);
 
 	// Setup on and Off buttons
 	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + refreshfunction + ',' + Protected + ');');
 	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + refreshfunction + ',' + Protected + ');');
+
+	// Show brightness and temperature buttons
+	$('#rgbw_popup #popup_bright_up').hide();
+	$('#rgbw_popup #popup_bright_down').hide();
+	$('#rgbw_popup #popup_warmer').hide();
+	$('#rgbw_popup #popup_colder').hide();
+
+	if (DimmerType && DimmerType === "rel")
+	{
+		$('#rgbw_popup #popup_bright_up').show();
+		$('#rgbw_popup #popup_bright_down').show();
+		$('#rgbw_popup #popup_bright_up').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=brightnessup&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+		$('#rgbw_popup #popup_bright_down').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=brightnessdown&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+	}
+
+	if (DimmerType && DimmerType === "rel" && ledType.bHasTemperature)
+	{
+		$('#rgbw_popup #popup_warmer').show();
+		$('#rgbw_popup #popup_colder').show();
+		$('#rgbw_popup #popup_warmer').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=warmer&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+		$('#rgbw_popup #popup_colder').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=cooler&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+	}
 
 	$("#rgbw_popup").css({
 		"top": mouseY,
@@ -11124,7 +11199,7 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDi
 function CloseRGBWPopup() {
 	$("#rgbw_popup").hide();
 }
-function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType) {
+function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -11146,7 +11221,7 @@ function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, Leve
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType);
+		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
 	});
 }
 

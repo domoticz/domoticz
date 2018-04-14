@@ -136,14 +136,6 @@
                     <label for="protected"></label>
                 </td>
             </tr>
-            <tr ng-if="vm.isWhiteSettingsAvailable()">
-                <td>
-                    <label>{{ :: 'Color' | translate}}:</label>
-                </td>
-                <td>
-                    <white-picker device-idx="vm.device.idx"></white-picker>
-                </td>
-            </tr>
             <tr ng-if="vm.isColorSettingsAvailable()">
                 <td>
                     <label>{{ :: 'Color' | translate}}:</label>
@@ -410,7 +402,24 @@
                 </table>
             </td>
             <td align="left" style="vertical-align: top;">
-                <div class="btn-group" ng-show="$ctrl.isBrightnessAvailable()">
+                <div class="btn-group">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">
+                        {{:: 'On' | translate }}
+                    </button>
+                    <!-- TODO: Domoticz back-end should report if the light implements fulllight -->
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.fullLight()">
+                        {{:: 'Full Light' | translate }}
+                    </button>
+                    <!-- TODO: Domoticz back-end should report if the light implements nightlight -->
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.nightLight()">
+                        {{:: 'Night Light' | translate }}
+                    </button>
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOff()">
+                        {{:: 'Off' | translate }}
+                    </button>
+                </div>
+                <br><br>
+                <div class="btn-group" ng-show="$ctrl.isRelativeDimmer()">
                     <button class="btn btn-small" type="button" ng-click="$ctrl.brightnessUp()">
                         {{:: 'Brightness Up' | translate }}
                     </button>
@@ -419,32 +428,15 @@
                     </button>
                 </div>
                 <br><br>
-                <div class="btn-group" ng-show="$ctrl.isLightControlAvailable()">
-                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOn()">
-                        {{:: 'On' | translate }}
+                <div class="btn-group" ng-show="$ctrl.isRelativeColorTemperature()">
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.colorWarmer()">
+                        {{:: 'Warmer White' | translate }}
                     </button>
-                    <button class="btn btn-small" type="button" ng-click="$ctrl.fullLight()">
-                        {{:: 'Full Light' | translate }}
-                    </button>
-                    <button class="btn btn-small" type="button" ng-click="$ctrl.nightLight()">
-                        {{:: 'Night Light' | translate }}
-                    </button>
-                    <button class="btn btn-small" type="button" ng-click="$ctrl.switchOff()">
-                        {{:: 'Off' | translate }}
+                    <button class="btn btn-small" type="button" ng-click="$ctrl.colorColder()">
+                        {{:: 'Colder White' | translate }}
                     </button>
                 </div>
             </td>
         </tr>
     </table>
-</script>
-
-<script type="text/ng-template" id="views/whitePicker.html">
-    <button type="button" ng-click="$ctrl.brightnessUp()">{{:: 'Brightness Up' | translate }}</button>
-    <button type="button" ng-click="$ctrl.brightnessUp()">{{:: 'Brightness Down' | translate }}</button>
-    <br/>
-    <button type="button" ng-click="$ctrl.colorWarmer()">{{:: 'Warm White' | translate }}</button>
-    <button type="button" ng-click="$ctrl.colorColder()">{{:: 'Cold White' | translate }}</button>
-    <br/>
-    <button type="button" ng-click="$ctrl.fullLight()">{{:: 'Full Light' | translate }}</button>
-    <button type="button" ng-click="$ctrl.nighLight()">{{:: 'Night Light' | translate }}</button>
 </script>

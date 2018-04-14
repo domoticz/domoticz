@@ -267,6 +267,7 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 			std::string hex = root["hex"].asString();
 			std::string hue = root["hue"].asString();
+			std::string sat = root["sat"].asString();
 			std::string brightness = root["level"].asString();
 			std::string iswhite;
 			if (!root["isWhite"].empty())
@@ -352,7 +353,9 @@ void MQTT::on_message(const struct mosquitto_message *message)
 
 				//convert hue to RGB
 				float iHue = float(atof(hue.c_str()));
-				hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+				float iSat = 100.0f;
+				if (!sat.empty()) iSat = float(atof(sat.c_str()));
+				hsb2rgb(iHue, iSat/100.0f, 1.0f, r, g, b, 255);
 
 				color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 				if (iswhite == "true") color.mode = ColorModeWhite;
