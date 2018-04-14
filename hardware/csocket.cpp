@@ -17,6 +17,7 @@
 #include <sys/errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/poll.h>
 #endif
 
 #ifndef WIN32
@@ -150,26 +151,26 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 		if (errno != EINPROGRESS)
 			return FAILURE;
 
-		fd_set fds;
-		FD_ZERO(&fds);
-		FD_SET(m_socket, &fds);
-		timeval timeout;
-		timeout.tv_sec = 5;
-		timeout.tv_usec = 0;
+		struct pollfd fds;
+		fds.fd = m_socket;
+		fds.events = POLLERR | POLLOUT;
+		fds.revents = 0;
+		int rc = poll(&fds, 1, 5000);
 
-		if (select(m_socket + 1, &fds, NULL, NULL, &timeout) > 0)
-		{
-			int so_error;
-			socklen_t len = sizeof so_error;
-			getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
-			if (so_error != 0)
-			{
-				return FAILURE;
-			}
-		}
+		if (rc <= 0) // 0 = timeout; less than zero is error (should I do something with state 'errno == EINTR' here?)
+			return FAILURE;
+
+		// try to get socket options
+		int so_error;
+		socklen_t len = sizeof so_error;
+		if (getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len) < 0)
+			return FAILURE;
+
+		if (so_error != 0)
+			return FAILURE;
 	}
 
-	// restore blocking mode
+	// restore blocking mode on socket
 	long socketMode = fcntl(m_socket, F_GETFL, NULL);
 	socketMode &= (~O_NONBLOCK);
 	fcntl(m_socket, F_SETFL, socketMode);
