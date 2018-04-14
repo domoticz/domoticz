@@ -27,31 +27,35 @@
 #define BLOCK_RETRY_INTERVAL_MSECS 1
 #define ERROR_INAPPROPRIATE_STATE -1
 
-#define SUCCESS     0
-#define FAILURE     1
+#define SUCCESS	 0
+#define FAILURE	 1
 
-csocket::csocket() : m_socketState(CLOSED), 
-                     m_remotePort(0)
+
+csocket::csocket() : m_socketState(CLOSED),
+					 m_remotePort(0)
 {
-    m_socket = 0;
+	m_socket = 0;
 }
+
+
+csocket::~csocket()
+{
+   close();
+}
+
 
 void csocket::close()
 {
 	 if ( m_socketState != csocket::CLOSED && m_socketState != csocket::ERRORED)
-    {
+	{
 #ifdef WIN32
-        closesocket(m_socket);
+		closesocket(m_socket);
 #else
-        ::close(m_socket);
+		::close(m_socket);
 #endif
 		m_socketState = CLOSED;
 		m_socket = 0;
-    }
-}
-csocket::~csocket()
-{
-   close();
+	}
 }
 
 
@@ -76,7 +80,7 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 		sa.sin_family = AF_INET6;
 		if (inet_pton(sa.sin_family, szRemoteHostName.c_str(), &sa.sin_addr) == 1)
 			return SUCCESS;
-	}	
+	}
 
 	return FAILURE;
 }
@@ -87,7 +91,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 	m_strRemoteHost = remoteHost;
 	m_remotePort = remotePort;
 
-	if ( m_socketState != CLOSED ) 
+	if ( m_socketState != CLOSED )
 		return ERROR_INAPPROPRIATE_STATE;
 
 	int status = resolveHost(remoteHost, m_remoteSocketAddr);
@@ -101,7 +105,7 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 #endif
 
 	if (m_socket == INVALID_SOCKET)
-	        return FAILURE;
+			return FAILURE;
 
 	// create local socket
 	int iRecvTimeout = 1;
@@ -112,10 +116,10 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 
 	status = bind(m_socket, (const sockaddr*)&(m_localSocketAddr), sizeof(struct sockaddr));
 
-	if (status < 0) 
+	if (status < 0)
 		return FAILURE;
 
-#ifdef WIN32 
+#ifdef WIN32
 	int set = 1;
 	setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY,  (char*) &set, sizeof(set) );
 #endif
@@ -129,74 +133,77 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 	//	  seconds (that is the Linux default - don't know about Windows) or more if the
 	//	  remote machine is down/busy/unreachable
 	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
-	if (status < 0) 
+	if (status < 0)
 	{
 		return FAILURE;
 	}
- 
+
 	m_socketState = CONNECTED;
 	return SUCCESS;
 #else
-	// do a non-blocking call and return success or fail after no more than 5 seconds
+	// do a non-blocking connect and return success or fail after no more than 5 seconds
 	fcntl(m_socket, F_SETFL, O_NONBLOCK);
 	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
 
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(m_socket, &fds);
-	timeval timeout;
-	timeout.tv_sec = 5;
-	timeout.tv_usec = 0;
-
-	if (select(m_socket + 1, &fds, NULL, NULL, &timeout) > 0)
+	if (status < 0)
 	{
-		int so_error;
-		socklen_t len = sizeof so_error;
-		getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
-		if (so_error != 0)
-		{
+		if (errno != EINPROGRESS)
 			return FAILURE;
+
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(m_socket, &fds);
+		timeval timeout;
+		timeout.tv_sec = 5;
+		timeout.tv_usec = 0;
+
+		if (select(m_socket + 1, &fds, NULL, NULL, &timeout) > 0)
+		{
+			int so_error;
+			socklen_t len = sizeof so_error;
+			getsockopt(m_socket, SOL_SOCKET, SO_ERROR, &so_error, &len);
+			if (so_error != 0)
+			{
+				return FAILURE;
+			}
 		}
 	}
 
 	// restore blocking mode
-	long socketMode = fcntl(m_socket, F_GETFL, NULL); 
-	socketMode &= (~O_NONBLOCK); 
-	fcntl(m_socket, F_SETFL, socketMode); 
+	long socketMode = fcntl(m_socket, F_GETFL, NULL);
+	socketMode &= (~O_NONBLOCK);
+	fcntl(m_socket, F_SETFL, socketMode);
 
 	m_socketState = CONNECTED;
 	return SUCCESS;
 #endif
-
 }
 
 
 int csocket::canRead( bool* readyToRead, float waitTime )
 {
-    if (m_socketState != CONNECTED )
-    {
-        return ERROR_INAPPROPRIATE_STATE;
-    }
+	if (m_socketState != CONNECTED )
+	{
+		return ERROR_INAPPROPRIATE_STATE;
+	}
 
-    fd_set  fds;
-    FD_ZERO(&fds);
-    FD_SET(m_socket, &fds);
+	fd_set  fds;
+	FD_ZERO(&fds);
+	FD_SET(m_socket, &fds);
 
-    timeval timeout;
+	timeval timeout;
 
-    if ( waitTime <= 0.0f ) 
-    {
-        timeout.tv_sec = 0;
-        timeout.tv_usec = 0;
-    } 
-    else 
-    {
+	if ( waitTime <= 0.0f )
+	{
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 0;
+	}
+	else
+	{
 		timeout.tv_sec = static_cast<int>((waitTime));
 		timeout.tv_usec = static_cast<int>((1000000.0f * (waitTime - (float)timeout.tv_sec)));
-    }
+	}
 
-    
-//	int n = select(sizeof(fds)*8, &fds, NULL, NULL, &timeout);
 	int n = select(m_socket + 1, &fds, NULL, NULL, &timeout);
 	if (n < 0)
 	{
@@ -217,85 +224,86 @@ int csocket::canRead( bool* readyToRead, float waitTime )
 
 int csocket::read( char* pDataBuffer, unsigned int numBytesToRead, bool bReadAll )
 {
-    if (m_socketState != CONNECTED ) 
-    {
-        return ERROR_INAPPROPRIATE_STATE;
-    }
+	if (m_socketState != CONNECTED )
+	{
+		return ERROR_INAPPROPRIATE_STATE;
+	}
 
-    int numBytesRemaining = numBytesToRead;
+	int numBytesRemaining = numBytesToRead;
 
-	do 
-    {
+	do
+	{
 #ifdef WIN32
-        int numBytesRead = recv( m_socket, pDataBuffer, numBytesRemaining, 0 );
+		int numBytesRead = recv( m_socket, pDataBuffer, numBytesRemaining, 0 );
 #else
-        int numBytesRead = ::read( m_socket, pDataBuffer, numBytesRemaining);
+		int numBytesRead = ::read( m_socket, pDataBuffer, numBytesRemaining);
 #endif
 
-        if (numBytesRead < 0)
-        {
-            if ( bReadAll ) 
-            {
+		if (numBytesRead < 0)
+		{
+			if ( bReadAll )
+			{
 #ifdef WIN32
-                Sleep(BLOCK_RETRY_INTERVAL_MSECS);
+				Sleep(BLOCK_RETRY_INTERVAL_MSECS);
 #else
-                usleep(BLOCK_RETRY_INTERVAL_MSECS * 1000);
+				usleep(BLOCK_RETRY_INTERVAL_MSECS * 1000);
 #endif
-            } 
-            else 
-            {
-                return numBytesRead;
-            }
-        } 
-        
-        if ( numBytesRead > 0 ) 
-        {
-            numBytesRemaining -= numBytesRead;
-            pDataBuffer += numBytesRead;
-        }
+			}
+			else
+			{
+				return numBytesRead;
+			}
+		}
 
-        if (numBytesRead == 0)
-        {
-            break;              
-        }
-        
-    } while ((numBytesRemaining > 0) && (bReadAll) );
+		if ( numBytesRead > 0 )
+		{
+			numBytesRemaining -= numBytesRead;
+			pDataBuffer += numBytesRead;
+		}
 
-    return(numBytesToRead - numBytesRemaining);
+		if (numBytesRead == 0)
+		{
+			break;
+		}
+
+	} while ((numBytesRemaining > 0) && (bReadAll) );
+
+	return(numBytesToRead - numBytesRemaining);
 }
 
 
 int csocket::write( const char* pDataBuffer, unsigned int numBytesToWrite )
 {
-    if (m_socketState != CONNECTED ) 
-    {
-        return ERROR_INAPPROPRIATE_STATE;
-    }
+	if (m_socketState != CONNECTED )
+	{
+		return ERROR_INAPPROPRIATE_STATE;
+	}
 
-    int numBytesRemaining = numBytesToWrite;
+	int numBytesRemaining = numBytesToWrite;
 
-    while (numBytesRemaining  > 0) 
-    {
+	while (numBytesRemaining  > 0)
+	{
 #ifdef WIN32
-        int numBytesWritten = send ( m_socket, pDataBuffer, numBytesRemaining , 0 );
+		int numBytesWritten = send ( m_socket, pDataBuffer, numBytesRemaining , 0 );
 #else
-        int numBytesWritten= ::write( m_socket, pDataBuffer, numBytesRemaining );
+		int numBytesWritten= ::write( m_socket, pDataBuffer, numBytesRemaining );
 #endif
 
-        if (numBytesWritten < 0) 
-        {
-            m_socketState = ERRORED;
-            return numBytesWritten;      
-        }
+		if (numBytesWritten < 0)
+		{
+			m_socketState = ERRORED;
+			return numBytesWritten;
+		}
 
-        numBytesRemaining  -= numBytesWritten;
-        pDataBuffer += numBytesWritten;
-    }
+		numBytesRemaining  -= numBytesWritten;
+		pDataBuffer += numBytesWritten;
+	}
 
-    return(numBytesToWrite - numBytesRemaining);
+	return(numBytesToWrite - numBytesRemaining);
 }
 
-csocket::SocketState csocket::getState( void ) const 
-{ 
-    return m_socketState; 
+
+csocket::SocketState csocket::getState( void ) const
+{
+	return m_socketState;
 }
