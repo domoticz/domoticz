@@ -182,17 +182,23 @@ void CHarmonyHub::Do_Work()
 
 				scounter = 0;
 				lcounter = 0;
+				if (fcounter > 0)
+					_log.Log(LOG_NORM, "Harmony Hub: Reattempt login.");
+
 				if (Login() && SetupCommandSocket())
 				{
 					m_bDoLogin=false;
 					if (!UpdateCurrentActivity() || !UpdateActivities())
 					{
-						_log.Log(LOG_STATUS, "Harmony Hub: Error updating activities.. Resetting connection.");
+						_log.Log(LOG_ERROR, "Harmony Hub: Error updating activities.. Resetting connection.");
 						ResetCommandSocket();
+						continue;
 					}
+
+					_log.Log(LOG_STATUS, "Harmony Hub: Connected to Hub.");
 					fcounter = 0;
 				}
-				else if (fcounter < 5)
+				else if (fcounter < 5) // will cause login attempts to gradually decrease to once per 6 minutes
 					fcounter ++;
 			}
 			continue;
@@ -203,7 +209,7 @@ void CHarmonyHub::Do_Work()
 			// Ping hub to see if it is still alive
 			if (!SendPing())
 			{
-				_log.Log(LOG_STATUS, "Harmony Hub: Error pinging server.. Resetting connection.");
+				_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
 				ResetCommandSocket();
 				scounter = 0; // wait at least HARMONY_RETRY_LOGIN_SECONDS seconds before attempting login again
 			}
