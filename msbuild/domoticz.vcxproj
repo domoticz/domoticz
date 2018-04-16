@@ -543,6 +543,7 @@
     <ClInclude Include="..\hardware\SolarEdgeAPI.h" />
     <ClInclude Include="..\hardware\SolarMaxTCP.h" />
     <ClInclude Include="..\hardware\Sterbox.h" />
+    <ClInclude Include="..\hardware\Tado.h" />
     <ClInclude Include="..\hardware\TCPProxy\tcpproxy_server.h" />
     <ClInclude Include="..\hardware\TE923.h" />
     <ClInclude Include="..\hardware\TE923Tool.h" />
@@ -831,6 +832,7 @@
     <ClCompile Include="..\hardware\SolarEdgeAPI.cpp" />
     <ClCompile Include="..\hardware\SolarMaxTCP.cpp" />
     <ClCompile Include="..\hardware\Sterbox.cpp" />
+    <ClCompile Include="..\hardware\Tado.cpp" />
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp" />
     <ClCompile Include="..\hardware\TE923.cpp" />
     <ClCompile Include="..\hardware\TE923Tool.cpp" />

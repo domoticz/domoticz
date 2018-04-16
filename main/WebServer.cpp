@@ -1242,6 +1242,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_Tado) || 
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1610,6 +1611,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
