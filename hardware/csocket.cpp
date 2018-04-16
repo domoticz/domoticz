@@ -128,16 +128,43 @@ int csocket::connect( const char* remoteHost, const unsigned int remotePort )
 	// connect to remote socket
 	m_remoteSocketAddr.sin_port = htons(m_remotePort);
 #ifdef WIN32
-	// FIXME: need someone who understands Windows sockets
-	//	  This should be a non-blocking call so we can define ourselves when to return
-	//	  from this function. With the current code socket connect may wait for 20
-	//	  seconds (that is the Linux default - don't know about Windows) or more if the
-	//	  remote machine is down/busy/unreachable
+	unsigned long nonblock = 1;
+	ioctlsocket(m_socket, FIONBIO, &nonblock);
 	status = ::connect(m_socket, (const sockaddr*)&(m_remoteSocketAddr), sizeof(sockaddr_in));
 	if (status < 0)
 	{
-		return FAILURE;
+		if (WSAGetLastError() != WSAEWOULDBLOCK)
+			return FAILURE;
+
+		fd_set fdw, fdr, fde;
+		FD_ZERO(&fdw);
+		FD_ZERO(&fdr);
+		FD_ZERO(&fde);
+		FD_SET(m_socket, &fdw);
+		FD_SET(m_socket, &fdr);
+		FD_SET(m_socket, &fde);
+
+		timeval tv;
+		tv.tv_sec = 5;
+		tv.tv_usec = 0;
+		int rc = select(m_socket + 1, &fdw, &fdr, &fde, &tv);
+
+		if (rc <= 0) // 0 = timeout; less than zero is error
+			return FAILURE;
+
+		// try to get socket options
+		int so_error;
+		socklen_t len = sizeof so_error;
+		if (getsockopt(m_socket, SOL_SOCKET, SO_ERROR, (char *)&so_error, &len) < 0)
+			return FAILURE;
+
+		if (so_error != 0)
+			return FAILURE;
 	}
+
+	// restore blocking mode on socket
+	nonblock = 0;
+	ioctlsocket(m_socket, FIONBIO, &nonblock);
 
 	m_socketState = CONNECTED;
 	return SUCCESS;
