@@ -803,6 +803,7 @@
     <ClCompile Include="..\hardware\OTGWTCP.cpp" />
     <ClCompile Include="..\hardware\PanasonicTV.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueHelper.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
