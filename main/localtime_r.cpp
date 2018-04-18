@@ -50,6 +50,7 @@ time_t mytime(time_t * _Time)
 bool ParseSQLdatetime(time_t &time, struct tm &result, const std::string &szSQLdate) {
 	time_t now = mytime(NULL);
 	struct tm ltime;
+	ltime.tm_isdst = -1;
 	if (localtime_r(&now, &ltime) == NULL)
 		return false;
 	return ParseSQLdatetime(time, result, szSQLdate, ltime.tm_isdst);
