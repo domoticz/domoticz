@@ -570,6 +570,7 @@
     <ClInclude Include="..\hardware\ASyncSerial.h" />
     <ClInclude Include="..\main\Camera.h" />
     <ClInclude Include="..\main\CmdLine.h" />
+    <ClInclude Include="..\hardware\ColorSwitch.h" />
     <ClInclude Include="..\hardware\DomoticzHardware.h" />
     <ClInclude Include="..\hardware\DomoticzInternal.h" />
     <ClInclude Include="..\hardware\DomoticzTCP.h" />
@@ -710,6 +711,7 @@
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
+    <ClCompile Include="..\hardware\ColorSwitch.cpp" />
     <ClCompile Include="..\hardware\Comm5Serial.cpp" />
     <ClCompile Include="..\hardware\Comm5SMTCP.cpp" />
     <ClCompile Include="..\hardware\Comm5TCP.cpp" />
