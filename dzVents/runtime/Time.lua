@@ -443,28 +443,34 @@ local function Time(sDate, isUTC, _testMS)
 	end
 
 	function self.ruleIsOnDate(rule)
+
 		local dates = string.match(rule, 'on% ([0-9%*%/%,% %-]*)')
 		if (isEmpty(dates)) then
 			return nil
 		end
+
 		-- remove spaces and add a comma
 		dates = string.gsub(dates, ' ', '') .. ',' --remove spaces and add a , so each number is terminated with a , so we can do simple search for the number
-
 		-- do a quick scan first to see if we already have a match without needing to search for ranges and wildcards
+
 		local dday = ''
 		local mmonth = ''
+
+		local _ = require('lodash')
 
 		if (self.day < 10) then dday = '0' .. tostring(self.day) end
 		if (self.month < 10) then mmonth = '0' .. tostring(self.month) end
 
 		if (
 			string.find(dates, tostring(self.day) .. '/' .. tostring(self.month) .. ',') or
-			string.find(dates, dday .. '/' .. tostring(self.month) .. ',') or
-			string.find(dates, tostring(self.day) .. '/' .. mmonth .. ',') or
-			string.find(dates, dday .. '/' .. mmonth .. ',')
+			(dday~='' and string.find(dates, dday .. '/' .. tostring(self.month) .. ',')) or
+			(mmonth ~= '' and string.find(dates, tostring(self.day) .. '/' .. mmonth .. ',')) or
+			(dday ~= '' and mmonth ~= '' and string.find(dates, dday .. '/' .. mmonth .. ','))
 		) then
 			return true
 		end
+
+
 
 		-- wildcards
 		for set, day, month in string.gmatch(dates, '(([0-9%*]*)/([0-9%*]*))') do
@@ -488,30 +494,30 @@ local function Time(sDate, isUTC, _testMS)
 		--now get the ranges
 		for fromSet, toSet in string.gmatch(dates, '([0-9%/]*)-([0-9%/]*)') do
 			local fromDay, toDay, fromMonth, toMonth
-
+			
 			if (isEmpty(fromSet) and not isEmpty(toSet)) then
 				toDay, toMonth = getParts(toSet)
 				if ((self.month < toMonth) or (self.month == toMonth and self.day <= toDay)) then
 					return true
 				end
-			end
-
-			if (not isEmpty(fromSet) and isEmpty(toSet)) then
+			elseif (not isEmpty(fromSet) and isEmpty(toSet)) then
 				fromDay, fromMonth = getParts(fromSet)
 				if ((self.month > fromMonth) or (self.month == fromMonth and self.day >= fromDay)) then
 					return true
 				end
-			end
+			else
 
-			toDay, toMonth = getParts(toSet)
-			fromDay, fromMonth = getParts(fromSet)
-			if (
-				( self.month > fromMonth and self.month < toMonth ) or
-				( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
-				( self.month == fromMonth and self.day >= fromDay ) or
-				( self.month == toMonth and self.day <= toDay )
-			) then
-				return true
+				toDay, toMonth = getParts(toSet)
+				fromDay, fromMonth = getParts(fromSet)
+
+				if (
+					( self.month > fromMonth and self.month < toMonth ) or
+					( fromMonth == toMonth and self.month == fromMonth and self.day >= fromDay and self.day <= toDay ) or
+					( self.month == fromMonth and self.day >= fromDay ) or
+					( self.month == toMonth and self.day <= toDay )
+				) then
+					return true
+				end
 			end
 		end
 
