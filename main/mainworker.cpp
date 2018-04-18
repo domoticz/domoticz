@@ -88,6 +88,7 @@
 #include "../hardware/Nest.h"
 #include "../hardware/NestOAuthAPI.h"
 #include "../hardware/Thermosmart.h"
+#include "../hardware/Tado.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
 #include "../hardware/HttpPoller.h"
@@ -1005,9 +1006,12 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_THERMOSMART:
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
+	case HTYPE_Tado:
+		pHardware = new CTado(ID, Username, Password);
+		break;
 	case HTYPE_Honeywell:
-			pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
-			break;
+		pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		break;
 	case HTYPE_Philips_Hue:
 		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
 		break;
@@ -11049,7 +11053,6 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 	break;
 	case pTypeLighting5:
 	{
-		int oldlevel = level;
 		tRBUF lcmd;
 		lcmd.LIGHTING5.packetlength = sizeof(lcmd.LIGHTING5) - 1;
 		lcmd.LIGHTING5.packettype = dType;
@@ -11114,20 +11117,18 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 		}
 		else if ((dSubType == sTypeTRC02) || (dSubType == sTypeTRC02_2))
 		{
+			int oldlevel = level;
 			if (switchcmd != "Off")
 			{
-				//if ((hue != -1) && (hue != 1000)) // TODO: Fix TRC02
+				if (color.mode == ColorModeRGB)
 				{
-					double dval;
-					dval = 0;
-					//dval = (255.0 / 360.0)*float(hue); TODO: Fix TRC02
-					oldlevel = round(dval);
 					switchcmd = "Set Color";
 				}
 			}
-			if (((switchcmd == "Off") || (switchcmd == "On")) && (switchcmd != "Set Color"))
+			if ((switchcmd == "Off") ||
+				(switchcmd == "On") ||      //Special Case, turn off first to ensure light is in normal mode
+				(switchcmd == "Set Color"))
 			{
-				//Special Case, turn off first
 				unsigned char oldCmd = lcmd.LIGHTING5.cmnd;
 				lcmd.LIGHTING5.cmnd = light5_sRGBoff;
 				if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
@@ -11145,11 +11146,13 @@ bool MainWorker::SwitchLightInt(const std::vector<std::string> &sd, std::string 
 
 				if (switchcmd == "Set Color")
 				{
-					//TODO: Fix TRC02
-					if ((oldlevel != -1) && (oldlevel != 1000))
+					if (color.mode == ColorModeRGB)
 					{
-						double dval;
-						dval = (78.0 / 255.0)*float(oldlevel);
+						float hsb[3];
+						rgb2hsb(color.r, color.g, color.b, hsb);
+						switchcmd = "Set Color";
+
+						float dval = 126.0f*hsb[0]; // Color Range is 0x06..0x84
 						lcmd.LIGHTING5.cmnd = light5_sRGBcolormin + 1 + round(dval);
 						if (!WriteToHardware(HardwareID, (const char*)&lcmd, sizeof(lcmd.LIGHTING5)))
 							return false;
@@ -11961,6 +11964,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_Nest_OAuthAPI) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
+		(pHardware->HwdType == HTYPE_Tado) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_TCP) ||
@@ -12014,6 +12018,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
 		{
 			CThermosmart *pGateway = reinterpret_cast<CThermosmart*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_Tado)
+		{
+			CTado *pGateway = reinterpret_cast<CTado*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Netatmo)

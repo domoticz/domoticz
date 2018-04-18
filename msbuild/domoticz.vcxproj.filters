@@ -501,6 +501,9 @@
     <Filter Include="www\views\temperatures">
       <UniqueIdentifier>{2e3e6e5c-40c2-4f24-a987-8077910d7945}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Tado">
+      <UniqueIdentifier>{5905109f-f97e-4e18-a1dd-8baf541d6f13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2161,6 +2164,9 @@
     <ClInclude Include="..\tinyxpath\tinyxml.h">
       <Filter>XML</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Tado.h">
+      <Filter>Devices\Tado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\webserver\Base64.cpp">
@@ -2401,6 +2407,9 @@
       <Filter>Devices\SBFSpot</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHue.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueHelper.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
@@ -2894,6 +2903,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Honeywell.cpp">
       <Filter>Devices\Honeywell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Tado.cpp">
+      <Filter>Devices\Tado</Filter>
     </ClCompile>
     <ClCompile Include="..\main\dzVents.cpp">
       <Filter>EventSystem</Filter>

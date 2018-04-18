@@ -761,90 +761,6 @@ function ShowTextLog(content, backfunction, id, name) {
 	return false;
 }
 
-function RefreshSceneLogTable(idx) {
-	var mTable = $($.content + ' #scenetable');
-	var oTable = mTable.dataTable();
-	oTable.fnClearTable();
-
-	$.ajax({
-		url: "json.htm?type=scenelog&idx=" + idx,
-		async: false,
-		dataType: 'json',
-		success: function (data) {
-			if (typeof data.result != 'undefined') {
-				var datatable = [];
-				var ii = 0;
-				$.each(data.result, function (i, item) {
-					var addId = oTable.fnAddData([
-						item.Date,
-						item.Data
-					], false);
-				});
-				mTable.fnDraw();
-			}
-		}
-	});
-}
-
-function ClearSceneLog() {
-	if (window.my_config.userrights != 2) {
-		HideNotify();
-		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-		return;
-	}
-	bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
-		if (result == true) {
-			$.ajax({
-				url: "json.htm?type=command&param=clearscenelog&idx=" + $.devIdx,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					RefreshSceneLogTable($.devIdx);
-				},
-				error: function () {
-					HideNotify();
-					ShowNotify($.t('Problem clearing the Log!'), 2500, true);
-				}
-			});
-		}
-	});
-}
-
-function ShowSceneLog(content, backfunction, id, name) {
-	clearInterval($.myglobals.refreshTimer);
-	$(window).scrollTop(0);
-	$.content = content;
-
-	$.devIdx = id;
-
-	$('#modal').show();
-	var htmlcontent = '';
-	htmlcontent = '<p><h2>' + $.t('Name') + ': ' + unescape(name) + '</h2></p>\n';
-	htmlcontent += $('#scenelog').html();
-	$($.content).html(GetBackbuttonHTMLTable(backfunction) + htmlcontent);
-	$($.content).i18n();
-
-	var oTable = $($.content + ' #scenetable').dataTable({
-		"sDom": '<"H"lfrC>t<"F"ip>',
-		"oTableTools": {
-			"sRowSelect": "single",
-		},
-		"aaSorting": [[0, "desc"]],
-		"bSortClasses": false,
-		"bProcessing": true,
-		"bStateSave": true,
-		"bJQueryUI": true,
-		"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-		"iDisplayLength": 25,
-		"sPaginationType": "full_numbers",
-		language: $.DataTableLanguage
-	});
-
-	RefreshSceneLogTable($.devIdx);
-	$('#modal').hide();
-	return false;
-}
-
 function GetNotificationSettings() {
 	var nsettings = {};
 	var typetext = $($.content + " #notificationparamstable #combotype option:selected").text();
@@ -10970,12 +10886,13 @@ function getLEDType(SubType) {
 	return LEDType;
 }
 
-function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType) {
+function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJSON, iSubType, iDimmerType, callback) {
 	
-	let color = {};
-	let devIdx = idx;
-	let SubType = iSubType;
-	let LEDType = getLEDType(SubType);
+	var color = {};
+	var devIdx = idx;
+	var SubType = iSubType;
+	var DimmerType = iDimmerType;
+	var LEDType = getLEDType(SubType);
 
 	try {
 		color = JSON.parse(colorJSON);
@@ -10983,33 +10900,33 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	catch(e) {
 		// forget about it :)
 	}
-	let colorPickerMode = "color"; // Default
+	var colorPickerMode = "color"; // Default
 	
 	// TODO: A little bit hackish, maybe extend the wheelColorPicker instead..
 	$(selector + ' #popup_picker')[0].getJSONColor = function() {
-		let colorJSON = ""; // Empty string, intentionally illegal JSON
-		let fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
+		var colorJSON = ""; // Empty string, intentionally illegal JSON
+		var fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
 		if (colorPickerMode == "white") {
-			let color = {m:1, t:0, r:0, g:0, b:0, cw:255, ww:255};
+			var color = {m:1, t:0, r:0, g:0, b:0, cw:255, ww:255};
 			colorJSON = JSON.stringify(color);
 		}
 		if (colorPickerMode == "temperature") {
-			let color = {m:2, t:Math.round(fcolor.t*255), r:0, g:0, b:0, cw:Math.round((1-fcolor.t)*255), ww:Math.round(fcolor.t*255)};
+			var color = {m:2, t:Math.round(fcolor.t*255), r:0, g:0, b:0, cw:Math.round((1-fcolor.t)*255), ww:Math.round(fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "color") {
 			// Set value to 1 in color mode
 			$(this).wheelColorPicker('setHsv', fcolor.h, fcolor.s, 1);
 			fcolor = $(this).wheelColorPicker('getColor'); // Colors as floats 0..1
-			let color = {m:3, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:0, ww:0};
+			var color = {m:3, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:0, ww:0};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customw") {
-			let color = {m:4, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*255), ww:Math.round(fcolor.w*255)};
+			var color = {m:4, t:0, r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*255), ww:Math.round(fcolor.w*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		else if (colorPickerMode == "customww") {
-			let color = {m:4, t:Math.round(fcolor.t*255), r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*(1-fcolor.t)*255), ww:Math.round(fcolor.w*fcolor.t*255)};
+			var color = {m:4, t:Math.round(fcolor.t*255), r:Math.round(fcolor.r*255), g:Math.round(fcolor.g*255), b:Math.round(fcolor.b*255), cw:Math.round(fcolor.w*(1-fcolor.t)*255), ww:Math.round(fcolor.w*fcolor.t*255)};
 			colorJSON = JSON.stringify(color);
 		}
 		return colorJSON;
@@ -11021,11 +10938,22 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		if (mode == "color") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true});
 		}
+		else if (mode == "color_no_master") {
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true});
+		}
 		else if (mode == "white") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true});
 		}
+		else if (mode == "white_no_master") {
+			// TODO: Silly, nothing to show!
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true});
+		}
 		else if (mode == "temperature") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm'});
+		}
+		else if (mode == "temperature_no_master") {
+			// TODO: Silly, nothing to show!
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:''});
 		}
 		else if (mode == "customw") {
 			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false});
@@ -11040,44 +10968,53 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		$(selector + ' .pickermodecustomw').hide();
 		$(selector + ' .pickermodecustomww').hide();
 		// Show buttons for choosing input mode
-		if (LEDType.bHasRGB) {
-			if (mode == "color") {
-				$(selector + ' .pickermodergb.selected').show();
+		var supportedModes = 0;
+		if (LEDType.bHasRGB) supportedModes++;
+		if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") supportedModes++;
+		if (LEDType.bHasTemperature) supportedModes++;
+		if (LEDType.bHasCustom && !LEDType.bHasTemperature) supportedModes++;
+		if (LEDType.bHasCustom && LEDType.bHasTemperature) supportedModes++;
+		if (supportedModes > 1)
+		{
+			if (LEDType.bHasRGB) {
+				if (mode == "color" || mode == "color_no_master") {
+					$(selector + ' .pickermodergb.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodergb.unselected').show();
+				}
 			}
-			else {
-				$(selector + ' .pickermodergb.unselected').show();
+			if (LEDType.bHasWhite && !LEDType.bHasTemperature && DimmerType!="rel") {
+				if (mode == "white" || mode == "white_no_master") {
+					$(selector + ' .pickermodewhite.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodewhite.unselected').show();
+				}
 			}
-		}
-		if (LEDType.bHasWhite && !LEDType.bHasTemperature) {
-			if (mode == "white") {
-				$(selector + ' .pickermodewhite.selected').show();
+			if (LEDType.bHasTemperature && DimmerType!="rel") {
+				if (mode == "temperature" || mode == "temperature_no_master") {
+					$(selector + ' .pickermodetemp.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodetemp.unselected').show();
+				}
 			}
-			else {
-				$(selector + ' .pickermodewhite.unselected').show();
+			if (LEDType.bHasCustom && !LEDType.bHasTemperature) {
+				if (mode == "customw") {
+					$(selector + ' .pickermodecustomw.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodecustomw.unselected').show();
+				}
 			}
-		}
-		if (LEDType.bHasTemperature) {
-			if (mode == "temperature") {
-				$(selector + ' .pickermodetemp.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodetemp.unselected').show();
-			}
-		}
-		if (LEDType.bHasCustom && !LEDType.bHasTemperature) {
-			if (mode == "customw") {
-				$(selector + ' .pickermodecustomw.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodecustomw.unselected').show();
-			}
-		}
-		if (LEDType.bHasCustom && LEDType.bHasTemperature) {
-			if (mode == "customww") {
-				$(selector + ' .pickermodecustomww.selected').show();
-			}
-			else {
-				$(selector + ' .pickermodecustomww.unselected').show();
+			if (LEDType.bHasCustom && LEDType.bHasTemperature) {
+				if (mode == "customww") {
+					$(selector + ' .pickermodecustomww.selected').show();
+				}
+				else {
+					$(selector + ' .pickermodecustomww.unselected').show();
+				}
 			}
 		}
 
@@ -11094,19 +11031,24 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		ColorModeCustom,   // Custom (color + white). Valid fields: r, g, b, cw, ww, depending on device capabilities
 	};*/
 
-	let color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
+	var color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
 
 	if (color_m != 1 && color_m != 2 && color_m != 3 && color_m != 4) color_m = 3; // Default to RGB if not valid
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
 	if (color_m == 2 && !LEDType.bHasTemperature) color_m = 3; // Default to RGB if light does not support temperature
+	if (color_m == 3 && !LEDType.bHasRGB)
+	{
+		if (LEDType.bHasTemperature) color_m = 2; // Default to temperature if light does not support RGB but does support temperature
+		else color_m = 1;                         // Default to white if light does not support either RGB or temperature (in this case just a dimmer slider should be shown though)
+	}
 
-	let color_t = 128;
-	let color_cw = 128;
-	let color_ww = 255 - color_cw;
-	let color_r = 255;
-	let color_g = 255;
-	let color_b = 255;
+	var color_t = 128;
+	var color_cw = 128;
+	var color_ww = 255 - color_cw;
+	var color_r = 255;
+	var color_g = 255;
+	var color_b = 255;
 
 	if (color_m == 1) // White
 	{
@@ -11134,14 +11076,15 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		color_b = (color.b==null)?255:color.b;
 	}
 
+	// TODO: white_no_master and temperature_no_master are meaningless, remove
 	if (color_m == 1) { // White mode
-		colorPickerMode = "white";
+		colorPickerMode = DimmerType!="rel"?"white":"white_no_master";
 	}
 	if (color_m == 2) { // Color temperature mode
-		colorPickerMode = "temperature";
+		colorPickerMode = DimmerType!="rel"?"temperature":"temperature_no_master";
 	}
 	else if (color_m == 3){ // Color  mode
-		colorPickerMode = "color";
+		colorPickerMode = DimmerType!="rel"?"color":"color_no_master";
 	}
 	else if (color_m == 4){ // Custom  mode
 		colorPickerMode = "customw";
@@ -11154,13 +11097,13 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	UpdateColorPicker(colorPickerMode);
 	
 	$(selector + ' .pickermodergb').off().click(function(){
-		UpdateColorPicker("color");
+		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
 	$(selector + ' .pickermodewhite').off().click(function(){
-		UpdateColorPicker("white");
+		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
 	$(selector + ' .pickermodetemp').off().click(function(){
-		UpdateColorPicker("temperature");
+		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
 	$(selector + ' .pickermodecustomw').off().click(function(){
 		UpdateColorPicker("customw");
@@ -11173,25 +11116,76 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	$(selector + ' #popup_picker').wheelColorPicker('setWhite', color_cw/255+color_ww/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setRgb', color_r/255, color_g/255, color_b/255);
 	$(selector + ' #popup_picker').wheelColorPicker('setMaster', LevelInt/MaxDimLevel);
-	
-	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
-		clearInterval($.setColValue);
 
-		let color = $(this).wheelColorPicker('getColor');
-		let dimlevel = Math.round((color.m*99)+1); // 1..100
-		let JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
+	$(selector + ' #popup_picker').off('slidermove sliderup').on('slidermove sliderup', function() {
+		clearTimeout($.setColValue);
+
+		var color = $(this).wheelColorPicker('getColor');
+		var dimlevel = Math.round((color.m*99)+1); // 1..100
+		var JSONColor = $(selector + ' #popup_picker')[0].getJSONColor();
 		//TODO: Rate limit instead of debounce
-		$.setColValue = setInterval(function () { SetColValue(devIdx, JSONColor, dimlevel); }, 400);
+		$.setColValue = setTimeout(function () {
+			var fn = callback || SetColValue;
+			fn(devIdx, JSONColor, dimlevel);
+		}, 400);
 	});
 }
 
-function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType) {
+function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType) {
+	var ledType = getLEDType(SubType);
+	var devIdx = idx;
 
-	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType);
+	ShowRGBWPicker("#rgbw_popup", idx, Protected, MaxDimLevel, LevelInt, colorJSON, SubType, DimmerType);
 
 	// Setup on and Off buttons
 	$('#rgbw_popup #popup_switch_on').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'On\',' + refreshfunction + ',' + Protected + ');');
 	$('#rgbw_popup #popup_switch_off').attr("href", 'javascript:SwitchLightPopup(' + idx + ',\'Off\',' + refreshfunction + ',' + Protected + ');');
+
+	// Show brightness and temperature buttons
+	$('#rgbw_popup #popup_bright_up').hide();
+	$('#rgbw_popup #popup_bright_down').hide();
+	$('#rgbw_popup #popup_warmer').hide();
+	$('#rgbw_popup #popup_colder').hide();
+
+	if (DimmerType && DimmerType === "rel")
+	{
+		$('#rgbw_popup #popup_bright_up').show();
+		$('#rgbw_popup #popup_bright_down').show();
+		$('#rgbw_popup #popup_bright_up').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=brightnessup&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+		$('#rgbw_popup #popup_bright_down').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=brightnessdown&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+	}
+
+	if (DimmerType && DimmerType === "rel" && ledType.bHasTemperature)
+	{
+		$('#rgbw_popup #popup_warmer').show();
+		$('#rgbw_popup #popup_colder').show();
+		$('#rgbw_popup #popup_warmer').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=warmer&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+		$('#rgbw_popup #popup_colder').off().click(function(){
+			$.ajax({
+				url: "json.htm?type=command&param=cooler&idx=" + devIdx,
+				async: false,
+				dataType: 'json'
+			});
+		});
+	}
 
 	$("#rgbw_popup").css({
 		"top": mouseY,
@@ -11205,7 +11199,7 @@ function ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDi
 function CloseRGBWPopup() {
 	$("#rgbw_popup").hide();
 }
-function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType) {
+function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType) {
 	clearInterval($.setColValue);
 	var event = event || window.event;
 	// If pageX/Y aren't available and clientX/Y are,
@@ -11227,7 +11221,7 @@ function ShowRGBWPopup(event, idx, refreshfunction, Protected, MaxDimLevel, Leve
 	var mouseY = event.pageY;
 
 	HandleProtection(Protected, function () {
-		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType);
+		ShowRGBWPopupInt(mouseX, mouseY, idx, refreshfunction, Protected, MaxDimLevel, LevelInt, color, SubType, DimmerType);
 	});
 }
 
