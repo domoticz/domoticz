@@ -248,7 +248,11 @@ void CHarmonyHub::Do_Work()
 			if (!strData.empty())
 				CheckIfChanging(strData);
 			else
+			{
 				ResetCommandSocket(); // we exceeded our ACK time frame and Harmony Hub will no longer accept our commands or send valid data
+				scounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
+
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
