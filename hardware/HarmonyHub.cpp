@@ -648,16 +648,33 @@ bool CHarmonyHub::SendPing()
 	if (strData.empty())
 		return false;
 
-	if (strData.find("</message>") == std::string::npos) // no messages included
-		return (strData.find("errorcode='200'") != std::string::npos);
+	if (strData.find("</message>") == std::string::npos) // messages included
+		CheckIfChanging(strData);
 
-	CheckIfChanging(strData);
+	return CheckIqGood(strData);
+}
 
-	size_t echoStart = strData.find("<iq/>");
-	size_t echoEnd = strData.find("</iq>");
-	std::string strEcho = strData.substr(echoStart, echoEnd - echoStart);
 
-	return (strEcho.find("errorcode='200'") != std::string::npos);
+bool CHarmonyHub::CheckIqGood(const std::string& strData)
+{
+	size_t iqstart = 0;
+	while (1)
+	{
+		iqstart = strData.find("<iq ", iqstart);
+		if (iqstart == std::string::npos)
+			return true;
+		size_t iqend = strData.find("</iq>", iqstart);
+		if (iqend == std::string::npos)
+			return false;
+		std::string iqmsg = strData.substr(iqstart, iqend);
+		iqstart = iqend;
+		if (iqmsg.find("errorcode='200'") != std::string::npos) // status OK
+			continue;
+		if (iqmsg.find("errorcode='100'") != std::string::npos) // status continue - Hub has more data
+			continue;
+		return false;
+	}
+	return true;
 }
 
 
@@ -876,7 +893,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 				LastActivity = szResponse.substr(0, pos);
 			}
 		}
-		else if (cActivityStatus == '3')
+		else if ((cActivityStatus == '3') || (cActivityStatus == '0'))
 		{
 			//Power Off
 			LastActivity = "-1";
