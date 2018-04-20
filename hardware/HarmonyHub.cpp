@@ -880,7 +880,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			}
 		}
 
-		bIsChanging = (cActivityStatus == '1');
+		bIsChanging = ((cActivityStatus == '1') || (cActivityStatus == '3'));
 		if (cActivityStatus == '2')
 		{
 			pos = szResponse.find("activityId");
@@ -893,7 +893,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 				LastActivity = szResponse.substr(0, pos);
 			}
 		}
-		else if ((cActivityStatus == '3') || (cActivityStatus == '0'))
+		else if (cActivityStatus == '0')
 		{
 			//Power Off
 			LastActivity = "-1";
