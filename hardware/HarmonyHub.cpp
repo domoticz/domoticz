@@ -146,7 +146,7 @@ void CHarmonyHub::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
 
-	bFirstTime = true;
+	bool bFirstTime = true;
 	char mcounter = 0;		// heartbeat
 	unsigned int scounter = 0;	// seconds
 	char fcounter = 0;		// failed login attempts
@@ -211,13 +211,13 @@ void CHarmonyHub::Do_Work()
 			{
 				_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
 				ResetCommandSocket();
-				scounter = 0; // wait at least HARMONY_RETRY_LOGIN_SECONDS seconds before attempting login again
+				scounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 			}
 			continue;
 		}
 
 		bool bIsDataReadable = true;
-		m_commandcsocket->canRead(&bIsDataReadable, 0.5f);
+		m_commandcsocket->canRead(&bIsDataReadable, 0); // we're not expecting data at this point, so don't wait
 		if (bIsDataReadable)
 		{
 			// Harmony Hub requires us to send a 'ping' within 20 seconds after receiving volunteered status reports
@@ -262,7 +262,7 @@ bool CHarmonyHub::Login()
 	if (GetAuthorizationToken(&authorizationcsocket)==true)
 	{
 		_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
-		bShowConnectError = true;
+		m_bShowConnectError = true;
 		return true;
 	}
 	return false;
@@ -284,6 +284,7 @@ void CHarmonyHub::Logout()
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 	ResetCommandSocket();
 	m_szAuthorizationToken = "";
+	m_mapActivities.clear();
 }
 
 
@@ -297,9 +298,9 @@ bool CHarmonyHub::SetupCommandSocket()
 
 	if (!ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket))
 	{
-		if (bShowConnectError)
+		if (m_bShowConnectError)
 			_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony Hub");
-		bShowConnectError = false;
+		m_bShowConnectError = false;
 		return false;
 	}
 
@@ -309,25 +310,26 @@ bool CHarmonyHub::SetupCommandSocket()
 
 	if (!StartCommunication(m_commandcsocket, strUserName, strPassword))
 	{
-		if (bShowConnectError)
+		if (m_bShowConnectError)
 			_log.Log(LOG_ERROR,"Harmony Hub: Start communication failed");
-		bShowConnectError = false;
+		m_bShowConnectError = false;
 		return false;
 	}
-	bShowConnectError = true;
+	m_bShowConnectError = true;
 	return true;
 }
 
 
 bool CHarmonyHub::UpdateActivities()
 {
+	if (m_mapActivities.size() > 0) // we already have the list of activities.
+		return true;
+	
 	if (!SubmitCommand(GET_CONFIG_COMMAND, "", ""))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Get activities failed");
 		return false;
 	}
-
-	std::map< std::string, std::string> mapActivities;
 
 	Json::Reader jReader;
 	Json::Value root;
@@ -351,12 +353,12 @@ bool CHarmonyHub::UpdateActivities()
 		{
 			std::string aID = root["activity"][ii]["id"].asString();
 			std::string aLabel = root["activity"][ii]["label"].asString();
-			mapActivities[aID] = aLabel;
+			m_mapActivities[aID] = aLabel;
 		}
 
 		std::map< std::string, std::string>::const_iterator itt;
 		int cnt = 0;
-		for (itt = mapActivities.begin(); itt != mapActivities.end(); ++itt)
+		for (itt = m_mapActivities.begin(); itt != m_mapActivities.end(); ++itt)
 		{
 			UpdateSwitch(cnt++, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
 		}
