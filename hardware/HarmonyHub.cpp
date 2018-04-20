@@ -173,6 +173,14 @@ void CHarmonyHub::Do_Work()
 
 		if (m_bDoLogin)
 		{
+			if (m_mapActivities.size() == 0)
+			{
+				// compensate heartbeat for possible large timeout on accessing Hub
+				if ((HEARTBEAT_SECONDS * 2 - mcounter) < 10)
+					continue;
+				mcounter += 10;
+			}
+
 			if ((scounter % HARMONY_RETRY_LOGIN_SECONDS == 0) || (bFirstTime))
 			{
 				bFirstTime = false;
