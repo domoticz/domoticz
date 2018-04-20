@@ -656,7 +656,7 @@ bool CHarmonyHub::SendPing()
 	if (strData.empty())
 		return false;
 
-	if (strData.find("</message>") == std::string::npos) // messages included
+	if (strData.find("</message>") != std::string::npos) // messages included
 		CheckIfChanging(strData);
 
 	return CheckIqGood(strData);
