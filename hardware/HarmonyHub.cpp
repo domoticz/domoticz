@@ -232,7 +232,7 @@ void CHarmonyHub::Do_Work()
 				if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 				{
 					strData.append(databuffer);
-					m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+					m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 				}
 				else
 					bIsDataReadable = false;
@@ -479,7 +479,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	communicationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 	std::string strData;
 	bool bIsDataReadable = true;
-	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
@@ -503,7 +503,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	strAuth.append("</auth>");
 	communicationcsocket->write(strAuth.c_str(), static_cast<unsigned int>(strAuth.length()));
 
-	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
@@ -521,7 +521,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	//strReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
-	communicationcsocket->canRead(&bIsDataReadable, 1.0f);
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
@@ -559,7 +559,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	authorizationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
 	bool bIsDataReadable = true;
-	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
+	authorizationcsocket->canRead(&bIsDataReadable, 2.0f);
 	if (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
@@ -574,14 +574,14 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 		return false;
 	}
 
-	authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
+	authorizationcsocket->canRead(&bIsDataReadable, 2.0f);
 	while(bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
 		if (authorizationcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 		{
 			strData.append(databuffer);
-			authorizationcsocket->canRead(&bIsDataReadable, 0.3f);
+			authorizationcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
 		else
 			bIsDataReadable = false;
@@ -628,14 +628,14 @@ bool CHarmonyHub::SendPing()
 	m_commandcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+	m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 	while (bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
 		if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 		{
 			strData.append(databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
 		else
 			bIsDataReadable = false;
@@ -722,14 +722,14 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	char databuffer[BUFFER_SIZE];
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable,1.0f);
+	m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 	while(bIsDataReadable)
 	{
 		memset(databuffer, 0, BUFFER_SIZE);
 		if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 		{
 			strData.append(databuffer);
-			m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
 		else
 			bIsDataReadable = false;
@@ -763,14 +763,14 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	}
 	else if (strCommand == GET_CONFIG_COMMAND)
 	{
-		m_commandcsocket->canRead(&bIsDataReadable, 1.0f);
+		m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 		while(bIsDataReadable)
 		{
 			memset(databuffer, 0, BUFFER_SIZE);
 			if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 			{
 				strData.append(databuffer);
-				m_commandcsocket->canRead(&bIsDataReadable, 0.3f);
+				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 			}
 			else
 				bIsDataReadable = false;
@@ -779,10 +779,11 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 		size_t cstart = strData.find("<![CDATA[");
 		if (cstart != std::string::npos)
 		{
-			size_t cend = strData.find("]]>",cstart + 9);
+			cstart += 9;
+			size_t cend = strData.find("]]>",cstart);
 			if (cend != std::string::npos)
 			{
-				m_szResultString = strData.substr(cstart + 9, cend - cstart - 9);
+				m_szResultString = strData.substr(cstart, cend - cstart);
 				return true;
 			}
 		}
