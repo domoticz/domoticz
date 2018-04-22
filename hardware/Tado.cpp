@@ -41,7 +41,10 @@ CTado::CTado(const int ID, const std::string &username, const std::string &passw
 	m_TadoUsername = username;
 	m_TadoPassword = password;
 
-	_log.Log(LOG_TRACE, "Tado: Started Tado plugin with ID=" + boost::to_string(m_HwdID) + ", username=" + m_TadoUsername);
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Started Tado plugin with ID=" + boost::to_string(m_HwdID) + ", username=" + m_TadoUsername);
+	}
 
 	Init();
 }
@@ -104,8 +107,11 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 	int HomeIdx = node_id / 1000;
 	int ZoneIdx = (node_id % 1000) / 100;
 	int ServiceIdx = (node_id % 1000) % 100;
-
-	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(node_id) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(node_id) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	}
 
 	// ServiceIdx 1 = Away (Read only)
 	// ServiceIdx 2 = Setpoint => should be handled in SetSetPoint
@@ -132,7 +138,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 // An overlay can end automatically (TADO_MODE, TIMER) or manually (MANUAL).
 bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string terminationType = "TADO_MODE")
 {
-	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp)+", termination type="+terminationType);
+	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp) + ", termination type=" + terminationType);
 
 	int HomeIdx = idx / 1000;
 	int ZoneIdx = (idx % 1000) / 100;
@@ -145,7 +151,10 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 		return false;
 	}
 
-	_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
+	}
 
 	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
 	std::string _sResponse;
@@ -169,18 +178,21 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 
 	Json::Value _jsRoot;
 
-	try 
+	try
 	{
 		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
 	catch (std::exception e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api: "+what);
+		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api: " + what);
 		return false;
 	}
 
-	_log.Log(LOG_TRACE, "Tado: Response: " + _sResponse);
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Response: " + _sResponse);
+	}
 
 	// Trigger a zone refresh
 	GetZoneState(HomeIdx, ZoneIdx, m_TadoHomes[HomeIdx], m_TadoHomes[HomeIdx].Zones[ZoneIdx]);
@@ -436,7 +448,10 @@ void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::str
 // Removes any active overlay from a specific zone.
 bool CTado::CancelOverlay(const int Idx)
 {
-	_log.Log(LOG_TRACE, "Tado: CancelSetpointOverlay() called with idx=" + boost::to_string(Idx));
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: CancelSetpointOverlay() called with idx=" + boost::to_string(Idx));
+	}
 
 	int HomeIdx = Idx / 1000;
 	int ZoneIdx = (Idx % 1000) / 100;
@@ -473,7 +488,10 @@ bool CTado::CancelOverlay(const int Idx)
 
 void CTado::Do_Work()
 {
-	_log.Log(LOG_TRACE, "Tado: Do_Work() called.");
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Do_Work() called.");
+	}
 	_log.Log(LOG_STATUS, "Tado: Worker started. Will poll every " + boost::to_string(TADO_POLL_INTERVAL) + " seconds.");
 	int iSecCounter = TADO_POLL_INTERVAL - 5;
 	int iTokenCycleCount = 0;
@@ -596,7 +614,11 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 // Grabs the web app environment file
 bool CTado::GetTadoApiEnvironment(std::string sUrl)
 {
-	_log.Log(LOG_TRACE, "Tado: GetTadoApiEnvironment called with sUrl="+sUrl);
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: GetTadoApiEnvironment called with sUrl=" + sUrl);
+	}
+
 	// This is a bit of a special case. Since we pretend to be the web
 	// application (my.tado.com) we have to play by its rules. It works
 	// with some information like a client id and a client secret. We 
@@ -643,7 +665,10 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 // Sets up the environment and grabs an auth token.
 bool CTado::Login()
 {
-	_log.Log(LOG_TRACE, "Tado: Login() called.");
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Login() called.");
+	}
 	_log.Log(LOG_NORM, "Tado: Attempting login.");
 
 	if (m_bDoGetEnvironment) {
@@ -667,7 +692,11 @@ bool CTado::Login()
 
 // Gets all the homes in the account.
 bool CTado::GetHomes() {
-	_log.Log(LOG_TRACE, "Tado: GetHomes() called.");
+
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: GetHomes() called.");
+	}
 
 	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/me";
 	Json::Value _jsRoot;
@@ -688,7 +717,10 @@ bool CTado::GetHomes() {
 	m_TadoHomes.clear();
 
 	Json::Value _jsAllHomes = _jsRoot["homes"];
-	_log.Log(LOG_TRACE, "Tado: Found " + boost::to_string(_jsAllHomes.size()) + " homes.");
+	if (_log.isTraceEnabled())
+	{
+		_log.Log(LOG_TRACE, "Tado: Found " + boost::to_string(_jsAllHomes.size()) + " homes.");
+	}
 
 	for (int i = 0; i < (int)_jsAllHomes.size(); i++) {
 		// Store the tado home information in a map.
