@@ -294,13 +294,12 @@ define(['app'], function (app) {
             }
 
             function isAddLevelAvailable() {
-                var isLessThanLimit = vm.ngModelCtrl.$modelValue.length < 11;
                 var isNotEmpty = !!vm.newLevelName;
                 var isUnique = !vm.ngModelCtrl.$modelValue.find(function (item) {
                     return item.name === vm.newLevelName
                 });
 
-                return isLessThanLimit && isNotEmpty && isUnique;
+                return isNotEmpty && isUnique;
             }
 
             function addLevel() {
@@ -455,6 +454,7 @@ define(['app'], function (app) {
         var $element = $('.js-view:last');
 
         vm.updateDevice = updateDevice;
+        vm.disableDevice = disableDevice;
         vm.removeDevice = removeDevice;
         vm.isSecurityDevice = isSecurityDevice;
         vm.isMotionAvailable = isMotionAvailable;
@@ -542,44 +542,26 @@ define(['app'], function (app) {
         }
 
         function removeDevice() {
-            bootbox.confirm($.t('Are you sure to remove this Light/Switch?'), function (result) {
+            bootbox.confirm($.t('Are you sure to completely remove this device form domoticz? All its data will be removed as well.'), function (result) {
                 if (!result) {
                     return;
                 }
 
-                if (vm.device.IsSubDevice) {
-                    bootbox.confirm({
-                        message: [
-                            $.t('This device is used as a Sub/Slave device for other Devices.'),
-                            $.t('Do you want to remove this device from those devices too?')
-                        ].join('<br>'),
-                        buttons: {
-                            confirm: {
-                                label: $.t('Yes'),
-                                className: 'btn-default'
-                            },
-                            cancel: {
-                                label: $.t('No'),
-                                className: 'btn-default'
-                            }
-                        },
-                        callback: function (removeSubDevices) {
-                            deviceApi.updateDeviceInfo(vm.deviceIdx, {
-                                used: false,
-                                RemoveSubDevices: removeSubDevices
-                            }).then(function () {
-                                $window.history.back();
-                            });
-                        }
-                    })
-                } else {
-                    deviceApi.updateDeviceInfo(vm.deviceIdx, {
-                        used: false,
-                        RemoveSubDevices: false
-                    }).then(function () {
-                        $window.history.back();
-                    });
+                deviceApi.removeDevice(vm.deviceIdx).then(function() {
+                    $window.history.back();
+                });
+            });
+        }
+
+        function disableDevice() {
+            bootbox.confirm($.t('Are you sure to disable this device and mark it as "Not Used"? Domoticz will stop controlling it and trigger any events. You always can enable it again in the "Devices" page'), function (result) {
+                if (!result) {
+                    return;
                 }
+
+                deviceApi.disableDevice(vm.deviceIdx).then(function() {
+                    $window.history.back();
+                });
             });
         }
 
