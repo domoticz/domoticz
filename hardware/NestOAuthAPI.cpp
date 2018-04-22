@@ -172,9 +172,9 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
 		std::vector<std::string> vHeaderData;
 
 		HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false);
-		if (!&sResult || sResult.size() == 0) {
+		if (sResult.size() == 0) {
 			std::string sErrorMsg = "Got empty response body while getting structures. ";
-			if (&vHeaderData && vHeaderData.size() > 0) {
+			if (vHeaderData.size() > 0) {
 				sErrorMsg += "Response code: " + vHeaderData[0];
 			}
 			throw std::runtime_error(sErrorMsg.c_str());
@@ -687,9 +687,17 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 	// Grab a reference to that thermostat.
 	_tNestThemostat thermostat = m_thermostats[iThermostat];
 
-	if (!&thermostat || thermostat.Serial.empty())
+	try 
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+		if (thermostat.Serial.empty())
+		{
+			_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+			return false;
+		}
+	}
+	catch (std::exception e)
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to get thermostat serial (for now). Try again later.");
 		return false;
 	}
 
@@ -827,14 +835,14 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 		if (!HTTPClient::POST(NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL, sPostData, ExtraHeaders, sResult, vResponseHeaders, true, false))
 		{
 			std::string sErrorMsg = "Failed to fetch token from API. ";
-			if (&vResponseHeaders && vResponseHeaders.size() > 0) {
+			if (vResponseHeaders.size() > 0) {
 				sErrorMsg += "Response code: " + vResponseHeaders[0];
 			}
 			throw std::runtime_error(sErrorMsg.c_str());
 		}
 		_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
 
-		if (!&sResult || sResult.size() == 0) 
+		if (sResult.size() == 0) 
 		{
 			throw std::runtime_error("Received empty response from API.");
 		}
