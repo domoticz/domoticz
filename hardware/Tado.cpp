@@ -631,7 +631,9 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
 	if (_log.isTraceEnabled())
 	{
-		_log.Log(LOG_TRACE, ("Tado: MatchValueFromJSKey: Got " + _sJavascriptDataLines.size() + string(" lines from javascript data.")));
+		stringstream _ss;
+		_ss << _sJavascriptDataLines.size();
+		_log.Log(LOG_TRACE, ("Tado: MatchValueFromJSKey: Got " + _ss.str() + string(" lines from javascript data.")));
 	}
 	
 	if (_sJavascriptDataLines.size() <= 0)
