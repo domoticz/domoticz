@@ -8871,7 +8871,9 @@ namespace http {
 							(dType == pTypeENERGY) ||
 							(dType == pTypeRFXMeter) ||
 							(dType == pTypeAirQuality) ||
-							(dType == pTypeRFXSensor)
+							(dType == pTypeRFXSensor) ||
+							(dType == pTypeP1Power) ||
+							(dType == pTypeP1Gas)
 							)
 						{
 							root["result"][ii]["ID"] = szData;
