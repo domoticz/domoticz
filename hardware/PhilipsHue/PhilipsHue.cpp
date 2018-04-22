@@ -224,7 +224,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 			// hue: The hue value is a wrapping value between 0 and 65535. Both 0 and 65535 are red, 25500 is green and 46920 is blue.
 			// sat: Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
 			// ct: The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
-			if (pLed->color.mode == ColorModeWhite)
+			if (pLed->value == 0)
+			{
+				//Off
+				LCmd = "Off";
+				svalue = 0;
+				SwitchLight(nodeID, LCmd, svalue);
+			}
+			else if (pLed->color.mode == ColorModeWhite)
 			{
 				LCmd = "Set Hue";
 				//TODO: Is this correct way to turn off RGB LED and turn on white LED?
