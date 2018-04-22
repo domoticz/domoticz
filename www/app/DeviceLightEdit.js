@@ -454,7 +454,6 @@ define(['app'], function (app) {
         var $element = $('.js-view:last');
 
         vm.updateDevice = updateDevice;
-        vm.disableDevice = disableDevice;
         vm.removeDevice = removeDevice;
         vm.isSecurityDevice = isSecurityDevice;
         vm.isMotionAvailable = isMotionAvailable;
@@ -542,24 +541,12 @@ define(['app'], function (app) {
         }
 
         function removeDevice() {
-            bootbox.confirm($.t('Are you sure to completely remove this device form domoticz? All its data will be removed as well.'), function (result) {
+            bootbox.confirm($.t('Are you sure to remove this Light/Switch?'), function (result) {
                 if (!result) {
                     return;
                 }
 
                 deviceApi.removeDevice(vm.deviceIdx).then(function() {
-                    $window.history.back();
-                });
-            });
-        }
-
-        function disableDevice() {
-            bootbox.confirm($.t('Are you sure to disable this device and mark it as "Not Used"? Domoticz will stop controlling it and trigger any events. You always can enable it again in the "Devices" page'), function (result) {
-                if (!result) {
-                    return;
-                }
-
-                deviceApi.disableDevice(vm.deviceIdx).then(function() {
                     $window.history.back();
                 });
             });
