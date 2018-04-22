@@ -68,8 +68,8 @@ void CTado::Init()
 	m_bDoGetZones = false;
 	m_bDoGetEnvironment = true;
 
-	boost::trim(m_TadoUsername);
-	boost::trim(m_TadoPassword);
+	stdstring_trim(m_TadoUsername);
+	stdstring_trim(m_TadoPassword);
 }
 
 bool CTado::StopHardware()
@@ -590,16 +590,13 @@ void CTado::Do_Work()
 }
 
 // Splits a string inputString by delimiter. If specified returns up to maxelements elements.
-vector<string> CTado::StringSplit(const string &inputString, const string delimiter, const int maxelements)
+// This is an extension of the ::StringSplit function in the helper class.
+vector<string> CTado::StringSplitEx(const string &inputString, const string delimiter, const int maxelements)
 {
+	// Split using the Helper class' StringSplitEx function.
 	vector<string> array;
-	size_t pos = 0, found;
-	while ((found = inputString.find_first_of(delimiter, pos)) != string::npos) {
-		array.push_back(inputString.substr(pos, found - pos));
-		pos = found + 1;
-	}
-	array.push_back(inputString.substr(pos));
-	
+	StringSplit(inputString, delimiter, array);
+
 	// If we don't have a max number of elements specified we're done.
 	if (maxelements == 0) return array;
 		
@@ -620,7 +617,6 @@ vector<string> CTado::StringSplit(const string &inputString, const string delimi
 }
 
 
-
 // Runs through the Tado web interface environment file and attempts to regex match the specified key.
 bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptData, string &sValue)
 {
@@ -632,7 +628,7 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 	map<string, string> _mEnvironmentKeys;
 
 	// Get the javascript response and split its lines
-	_sJavascriptDataLines = StringSplit(sJavascriptData, "\n");
+	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
 	if (_log.isTraceEnabled())
 	{
 		_log.Log(LOG_TRACE, ("Tado: MatchValueFromJSKey: Got " + _sJavascriptDataLines.size() + string(" lines from javascript data.")));
@@ -657,7 +653,7 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 		string _sLineValue = "";
 
 		// Let's split each line on a colon.
-		vector<string> _sLineParts = StringSplit(_sLine, ": ", 2);
+		vector<string> _sLineParts = StringSplitEx(_sLine, ": ", 2);
 		if (_sLineParts.size() != 2) 
 		{
 			continue;
@@ -667,10 +663,10 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 		{
 			// Do some cleanup on the parts, so we only keep the text that we want.
 			string _sLinePart = _sLineParts[j];
-			_sLinePart = StringReplaceAll(_sLinePart, "\t", "");
-			_sLinePart = StringReplaceAll(_sLinePart, "',", "");
-			_sLinePart = StringReplaceAll(_sLinePart, "'","");
-			_sLinePart = StringTrim(_sLinePart);
+			stdreplace(_sLinePart, "\t", "");
+			stdreplace(_sLinePart, "',", "");
+			stdreplace(_sLinePart, "'","");
+			_sLinePart = stdstring_trim(_sLinePart);
 
 			// Check if a Key is already set for the key-value pair. If we don't have a key yet
 			// assume that this first entry in the line is the key.
@@ -963,26 +959,4 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const
 		string what = e.what();
 		throw runtime_error("Error sending information to Tado API: " + what);
 	}
-}
-
-// Replace all occurrences of 'from' into 'to' in str.
-string CTado::StringReplaceAll(string str, const string& from, const string& to) {
-	size_t start_pos = 0;
-	while ((start_pos = str.find(from, start_pos)) != string::npos) {
-		str.replace(start_pos, from.length(), to);
-		start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-	}
-	return str;
-}
-
-// Trims both leading and trailing white spaces of string str.
-string CTado::StringTrim(string str)
-{
-	// remove trailing white space
-	while (!str.empty() && isspace(str.back())) str.pop_back();
-
-	// return residue after leading white space
-	size_t pos = 0;
-	while (pos < str.size() && isspace(str[pos])) ++pos;
-	return str.substr(pos);
 }
