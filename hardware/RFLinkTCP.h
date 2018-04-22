@@ -15,7 +15,6 @@ public:
 	// signals
 	boost::signals2::signal<void()>	sDisconnected;
 private:
-	int m_retrycntr;
 	bool StartHardware();
 	bool StopHardware();
 	bool WriteInt(const std::string &sendString);
