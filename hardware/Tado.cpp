@@ -22,8 +22,8 @@
 #include "../json/json.h"
 #include "../webserver/Base64.h"
 #include "Tado.h"
-#include <regex>
-#include <initializer_list>
+//#include <regex> //Requires c++11
+#include <boost/regex.hpp>
 
 #define round(a) ( int ) ( a + .5 )
 const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
@@ -80,7 +80,7 @@ bool CTado::StopHardware()
 		m_thread->join();
 	}
 	m_bIsStarted = false;
-	
+
 	//if (!m_bDoLogin)
 	//	Logout();
 
@@ -267,7 +267,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		Json::Value _jsRoot;
 		std::string _sResponse;
 
-		try 
+		try
 		{
 			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
@@ -575,11 +575,11 @@ void CTado::Do_Work()
 // Goes through the Tado web interface environment file and attempts to regex match the specified key.
 bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string &sValue)
 {
-	std::match_results<std::string::const_iterator> _Matches;
+	boost::match_results<std::string::const_iterator> _Matches;
 
-	// Grab the "clientId" from the response. 
-	std::regex _reSearch(sKeyName + ": '(.*?)'");
-	if (!std::regex_search(sJavascriptData, _Matches, _reSearch)) {
+	// Grab the "clientId" from the response.
+	boost::regex _reSearch(sKeyName + ": '(.*?)'");
+	if (!boost::regex_search(sJavascriptData, _Matches, _reSearch)) {
 		_log.Log(LOG_ERROR, "Tado: Failed to grab "+sKeyName+" from the javascript data.");
 		return false;
 	}
@@ -599,12 +599,11 @@ bool CTado::GetTadoApiEnvironment(std::string sUrl)
 	_log.Log(LOG_TRACE, "Tado: GetTadoApiEnvironment called with sUrl="+sUrl);
 	// This is a bit of a special case. Since we pretend to be the web
 	// application (my.tado.com) we have to play by its rules. It works
-	// with some information like a client id and a client secret. We 
-	// have to pluck that environment information from the web page and 
+	// with some information like a client id and a client secret. We
+	// have to pluck that environment information from the web page and
 	// then parse it so we can use it in our future calls.
 
 	std::string _sResponse;
-	std::match_results<std::string::const_iterator> _Matches;
 
 	// Download the API environment file
 	if (!HTTPClient::GET(sUrl, _sResponse, false)) {
