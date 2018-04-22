@@ -4,14 +4,18 @@
 time_t m_lasttime=time(NULL);
 boost::mutex TimeMutex_;
 
-#if defined(__APPLE__) || defined(__USE_POSIX)
-	#define localtime_r
+#if defined(localtime_r) || defined(__APPLE__) || defined(__USE_POSIX)
+	#define HAVE_LOCALTIME_R
 #endif
 
-#ifndef localtime_r
+#if defined(localtime_s)
+	#define HAVE_LOCALTIME_S
+#endif
+
+#ifndef HAVE_LOCALTIME_R
 struct tm *localtime_r(const time_t *timep, struct tm *result)
 {
-#ifdef localtime_s
+#ifdef HAVE_LOCALTIME_S
 	localtime_s(timep, result);
 #else
 	boost::mutex::scoped_lock lock(TimeMutex_);
