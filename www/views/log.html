@@ -18,21 +18,21 @@
 		<div class="tab-pane active" id="taball">
 			<div id="logdata" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+                    <span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>
 		<div class="tab-pane" id="tabstatus">
 			<div id="logdata_status" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems_status | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+                    <span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>
 		<div class="tab-pane" id="taberror">
 			<div id="logdata_error" class="log" scroll-glue>
 				<div ng-repeat='item in filtered = (logitems_error | filter:filterExpr) track by $index'>
-					<span class="{{item.mclass}}" ng-bind-html="to_trusted(item.text)" />
+                    <span class="{{item.mclass}}">{{item.text}}</span>
 				</div>
 			</div>
 		</div>

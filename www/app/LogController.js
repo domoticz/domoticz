@@ -10,10 +10,6 @@ define(['app'], function (app) {
 		var LOG_NORM = 2;
 		var LOG_TRACE = 3;
 
-		$scope.to_trusted = function (html_code) {
-			return $sce.trustAsHtml(html_code);
-		}
-
 		$scope.RefreshLog = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
