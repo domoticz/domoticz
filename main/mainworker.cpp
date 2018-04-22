@@ -1013,7 +1013,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
 	case HTYPE_Philips_Hue:
-		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
+		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
 		break;
 	case HTYPE_HARMONY_HUB:
 		pHardware = new CHarmonyHub(ID, Address, Port);
