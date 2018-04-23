@@ -1885,7 +1885,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
-	session.username="";
 
 	rep.bIsGZIP = false;
 
