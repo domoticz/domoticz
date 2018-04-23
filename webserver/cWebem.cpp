@@ -1874,6 +1874,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.isnew = false;
 	session.forcelogin = false;
 	session.rememberme = false;
+	session.username="";
 
 	rep.bIsGZIP = false;
 
@@ -2113,7 +2114,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
-	if ((session.isnew == true) && (session.rights == 2) && (req.uri.find("json.htm") != std::string::npos))
+	if ((session.isnew == true) && (session.rights == 2) && session.username.empty() && (req.uri.find("json.htm") != std::string::npos))
 	{
 		// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
 		WebEmSession* memSession = myWebem->GetSession(session.remote_host);
