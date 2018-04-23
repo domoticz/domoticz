@@ -581,6 +581,10 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		vector<vector<string> > result;
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, sTypeColor_RGB_W, szID);
+
+		if (result.empty() && !AddMissingDevice)
+			return;
+
 		if (!result.empty())
 		{
 			//Already in the system
@@ -634,6 +638,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
+
+		if (result.empty() && !AddMissingDevice)
+			return;
 
 		if (!result.empty())
 		{
