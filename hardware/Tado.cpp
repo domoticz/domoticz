@@ -946,7 +946,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 				break;
 
 			default:
-				throw std::runtime_error("Unknown method %d: " + (int)eMethod);
+				throw std::runtime_error("Unknown method specified.");
 		}
 
 		if (sResponse.size() == 0)
