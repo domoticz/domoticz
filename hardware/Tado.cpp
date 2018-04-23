@@ -23,10 +23,8 @@
 #include "../webserver/Base64.h"
 #include "Tado.h"
 
-using namespace std;
-
 const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
-const string TADO_API_ENVIRONMENT_URL = "https://my.tado.com/webapp/env.js";
+const std::string TADO_API_ENVIRONMENT_URL = "https://my.tado.com/webapp/env.js";
 const int TADO_TOKEN_MAXLOOPS = 12;	// Default token validity is 600 seconds before it needs to be refreshed.
 									// Each cycle takes 30-35 seconds, so let's stay a bit on the safe side.
 
@@ -34,7 +32,7 @@ CTado::~CTado(void)
 {
 }
 
-CTado::CTado(const int ID, const string &username, const string &password)
+CTado::CTado(const int ID, const std::string &username, const std::string &password)
 {
 	m_HwdID = ID;
 	m_TadoUsername = username;
@@ -135,7 +133,7 @@ bool CTado::WriteToHardware(const char * pdata, const unsigned char length)
 
 // Changing the setpoint or heating mode is an overlay on the schedule. 
 // An overlay can end automatically (TADO_MODE, TIMER) or manually (MANUAL).
-bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const string terminationType = "TADO_MODE")
+bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEnabled, const std::string terminationType = "TADO_MODE")
 {
 	_log.Log(LOG_NORM, "Tado: CreateOverlay() called with idx=" + boost::to_string(idx) + ", temp=" + boost::to_string(temp) + ", termination type=" + terminationType);
 
@@ -155,8 +153,8 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 		_log.Log(LOG_TRACE, "Tado: Node " + boost::to_string(idx) + " = home " + m_TadoHomes[HomeIdx].Name + " zone " + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Name + " device " + boost::to_string(ServiceIdx));
 	}
 
-	string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
-	string _sResponse;
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
+	std::string _sResponse;
 	Json::Value _jsPostData;
 	Json::Value _jsPostDataSetting;
 
@@ -179,11 +177,11 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 
 	try
 	{
-		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new vector<string>()), _jsRoot);
+		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: Failed to set setpoint via Api: " + what);
 		return false;
 	}
@@ -206,17 +204,17 @@ void CTado::SetSetpoint(const int idx, const float temp)
 }
 
 // Requests an authentication token from the Tado OAuth Api.
-bool CTado::GetAuthToken(string &authtoken, string &refreshtoken, const bool refreshUsingToken = false)
+bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, const bool refreshUsingToken = false)
 {
 	try
 	{
-		if (m_TadoUsername.size() == 0 && !refreshUsingToken) throw runtime_error("No username specified.");
-		if (m_TadoPassword.size() == 0 && !refreshUsingToken) throw runtime_error("No password specified.");
-		if (m_bDoGetEnvironment) throw runtime_error("Environment not (yet) set up.");
+		if (m_TadoUsername.size() == 0 && !refreshUsingToken) throw std::runtime_error("No username specified.");
+		if (m_TadoPassword.size() == 0 && !refreshUsingToken) throw std::runtime_error("No password specified.");
+		if (m_bDoGetEnvironment) throw std::runtime_error("Environment not (yet) set up.");
 
-		string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
-		ostringstream s;
-		string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
+		std::string _sUrl = m_TadoEnvironment["apiEndpoint"] + "/token";
+		std::ostringstream s;
+		std::string _sGrantType = (refreshUsingToken ? "refresh_token" : "password");
 
 		s << "client_id=" << m_TadoEnvironment["clientId"] << "&grant_type=";
 		s << _sGrantType << "&scope=home.user&client_secret=";
@@ -232,12 +230,12 @@ bool CTado::GetAuthToken(string &authtoken, string &refreshtoken, const bool ref
 			s << "&username=" << CURLEncode::URLEncode(m_TadoUsername);
 		}
 
-		string sPostData = s.str();
+		std::string sPostData = s.str();
 
-		string _sResponse;
-		vector<string> _vExtraHeaders;
+		std::string _sResponse;
+		std::vector<std::string> _vExtraHeaders;
 		_vExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
-		vector<string> _vResponseHeaders;
+		std::vector<std::string> _vResponseHeaders;
 
 		Json::Value _jsRoot;
 
@@ -245,25 +243,25 @@ bool CTado::GetAuthToken(string &authtoken, string &refreshtoken, const bool ref
 		{
 			SendToTadoApi(Post, _sUrl, sPostData, _sResponse, _vExtraHeaders, _jsRoot, true, false, false);
 		}
-		catch (exception e)
+		catch (std::exception e)
 		{
-			string what = e.what();
-			throw runtime_error("Failed to get token from Api: " + what);
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get token from Api: " + what);
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
-		if (authtoken.size() == 0) throw runtime_error("Received token is zero length.");
+		if (authtoken.size() == 0) throw std::runtime_error("Received token is zero length.");
 
 		refreshtoken = _jsRoot["refresh_token"].asString();
-		if (refreshtoken.size() == 0) throw runtime_error("Received refresh token is zero length.");
+		if (refreshtoken.size() == 0) throw std::runtime_error("Received refresh token is zero length.");
 
 		_log.Log(LOG_STATUS, "Tado: Received access token from API.");
 		_log.Log(LOG_STATUS, "Tado: Received refresh token from API.");
 
 		return true;
 	}
-	catch (exception e) {
-		string what = e.what();
+	catch (std::exception e) {
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetAuthToken: " + what);
 		return false;
 	}
@@ -274,18 +272,18 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 {
 	try
 	{
-		string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + zone.HomeId + "/zones/" + zone.Id + "/state";
+		std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + zone.HomeId + "/zones/" + zone.Id + "/state";
 		Json::Value _jsRoot;
-		string _sResponse;
+		std::string _sResponse;
 
 		try 
 		{
-			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new vector<string>()), _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
-		catch (exception e)
+		catch (std::exception e)
 		{
-			string what = e.what();
-			throw runtime_error("Failed to get information on zone '" + zone.Name + "': " + what);
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get information on zone '" + zone.Name + "': " + what);
 		}
 
 		// Zone Home/away
@@ -323,15 +321,15 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 
 		// Heating Enabled
-		string _sType = _jsRoot["setting"]["type"].asString();
-		string _sPower = _jsRoot["setting"]["power"].asString();
+		std::string _sType = _jsRoot["setting"]["type"].asString();
+		std::string _sPower = _jsRoot["setting"]["power"].asString();
 		bool _bHeatingEnabled = false;
 		if (_sType == "HEATING" && _sPower == "ON")
 			_bHeatingEnabled = true;
 		UpdateSwitch((unsigned char)ZoneIndex * 100 + 5, _bHeatingEnabled, home.Name + " " + zone.Name + " Heating Enabled");
 
 		// Heating Power percentage
-		string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
+		std::string _sHeatingPowerType = _jsRoot["activityDataPoints"]["heatingPower"]["type"].asString();
 		int _sHeatingPowerPercentage = _jsRoot["activityDataPoints"]["heatingPower"]["percentage"].asInt();
 		bool _bHeatingOn = false;
 		if (_sHeatingPowerType == "PERCENTAGE" && _sHeatingPowerPercentage >= 0 && _sHeatingPowerPercentage <= 100)
@@ -344,9 +342,9 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 
 		return true;
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetZoneState: " + what);
 		return false;
 	}
@@ -355,17 +353,17 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 {
 	try {
-		string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + home.Id + "/state";
+		std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + home.Id + "/state";
 		Json::Value _jsRoot;
-		string _sResponse;
+		std::string _sResponse;
 		try
 		{
-			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new vector<string>()), _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 		}
-		catch (exception e)
+		catch (std::exception e)
 		{
-			string what = e.what();
-			throw runtime_error("Failed to get state information on home '" + home.Name + "': " + what);
+			std::string what = e.what();
+			throw std::runtime_error("Failed to get state information on home '" + home.Name + "': " + what);
 		}
 
 		// Home/away
@@ -374,15 +372,15 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome & home)
 
 		return true;
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: GetZoneState: " + what);
 		return false;
 	}
 }
 
-void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const string & defaultname)
+void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string & defaultname)
 {
 	_tThermostat thermos;
 	thermos.subtype = sTypeThermSetpoint;
@@ -398,12 +396,12 @@ void CTado::SendSetPointSensor(const unsigned char Idx, const float Temp, const 
 }
 
 // Creates or updates on/off switches.
-void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const string &defaultname)
+void CTado::UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
 	//bool bDeviceExits = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, 0, Idx);
-	vector<vector<string> > result;
+	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 		m_HwdID, pTypeLighting2, sTypeAC, szIdx);
 	if (!result.empty())
@@ -463,17 +461,17 @@ bool CTado::CancelOverlay(const int Idx)
 		return false;
 	}
 
-	string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
-	string _sResponse;
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + m_TadoHomes[HomeIdx].Id + "/zones/" + m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id + "/overlay";
+	std::string _sResponse;
 
 	try
 	{
-		SendToTadoApi(Delete, _sUrl, "", _sResponse, *(new vector<string>()), *(new Json::Value), false, true, true);
+		SendToTadoApi(Delete, _sUrl, "", _sResponse, *(new std::vector<std::string>()), *(new Json::Value), false, true, true);
 
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: error cancelling the setpoint overlay: " + what);
 		return false;
 	}
@@ -591,17 +589,17 @@ void CTado::Do_Work()
 
 // Splits a string inputString by delimiter. If specified returns up to maxelements elements.
 // This is an extension of the ::StringSplit function in the helper class.
-vector<string> CTado::StringSplitEx(const string &inputString, const string delimiter, const int maxelements)
+std::vector<std::string> CTado::StringSplitEx(const std::string &inputString, const std::string delimiter, const int maxelements)
 {
 	// Split using the Helper class' StringSplitEx function.
-	vector<string> array;
+	std::vector<std::string> array;
 	StringSplit(inputString, delimiter, array);
 
 	// If we don't have a max number of elements specified we're done.
 	if (maxelements == 0) return array;
 		
 	// Else we're building a new vector with all the overflowing elements merged into the last element.
-	vector<string> cappedArray;
+	std::vector<std::string> cappedArray;
 	for (int i = 0; (unsigned int)i < array.size(); i++) 
 	{
 		if (i <= maxelements-1)
@@ -618,22 +616,22 @@ vector<string> CTado::StringSplitEx(const string &inputString, const string deli
 
 
 // Runs through the Tado web interface environment file and attempts to regex match the specified key.
-bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptData, string &sValue)
+bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string &sValue)
 {
 	// Rewritten to no longer use regex matching. Regex matching is the prefferred, more robust way
 	// but for various reasons we're not supposed to leverage it. Not using boost library either for
-	// the same reasons, so various string features are unavailable and have to be implemented manually.
+	// the same reasons, so various std::string features are unavailable and have to be implemented manually.
 	
-	vector<string> _sJavascriptDataLines;
-	map<string, string> _mEnvironmentKeys;
+	std::vector<std::string> _sJavascriptDataLines;
+	std::map<std::string, std::string> _mEnvironmentKeys;
 
 	// Get the javascript response and split its lines
 	StringSplit(sJavascriptData, "\n", _sJavascriptDataLines);
 	if (_log.isTraceEnabled())
 	{
-		stringstream _ss;
+		std::stringstream _ss;
 		_ss << _sJavascriptDataLines.size();
-		_log.Log(LOG_TRACE, ("Tado: MatchValueFromJSKey: Got " + _ss.str() + string(" lines from javascript data.")));
+		_log.Log(LOG_TRACE, ("Tado: MatchValueFromJSKey: Got " + _ss.str() + std::string(" lines from javascript data.")));
 	}
 	
 	if (_sJavascriptDataLines.size() <= 0)
@@ -645,17 +643,17 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 	// Process each line.
 	for (int i = 0; i < (int)_sJavascriptDataLines.size(); i++)
 	{
-		string _sLine = _sJavascriptDataLines[i];
+		std::string _sLine = _sJavascriptDataLines[i];
 		if (_log.isTraceEnabled())
 		{ 
 			_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Processing line: '" + _sLine + "'");
 		}
 
-		string _sLineKey = "";
-		string _sLineValue = "";
+		std::string _sLineKey = "";
+		std::string _sLineValue = "";
 
 		// Let's split each line on a colon.
-		vector<string> _sLineParts = StringSplitEx(_sLine, ": ", 2);
+		std::vector<std::string> _sLineParts = StringSplitEx(_sLine, ": ", 2);
 		if (_sLineParts.size() != 2) 
 		{
 			continue;
@@ -664,7 +662,7 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 		for (int j = 0; j < (int)_sLineParts.size(); j++)
 		{
 			// Do some cleanup on the parts, so we only keep the text that we want.
-			string _sLinePart = _sLineParts[j];
+			std::string _sLinePart = _sLineParts[j];
 			stdreplace(_sLinePart, "\t", "");
 			stdreplace(_sLinePart, "',", "");
 			stdreplace(_sLinePart, "'","");
@@ -710,7 +708,7 @@ bool CTado::MatchValueFromJSKey(const string sKeyName, const string sJavascriptD
 }
 
 // Grabs the web app environment file
-bool CTado::GetTadoApiEnvironment(string sUrl)
+bool CTado::GetTadoApiEnvironment(std::string sUrl)
 {
 	if (_log.isTraceEnabled())
 	{
@@ -723,7 +721,7 @@ bool CTado::GetTadoApiEnvironment(string sUrl)
 	// have to pluck that environment information from the web page and 
 	// then parse it so we can use it in our future calls.
 
-	string _sResponse;
+	std::string _sResponse;
 
 	// Download the API environment file
 	if (!HTTPClient::GET(sUrl, _sResponse, false)) {
@@ -732,7 +730,7 @@ bool CTado::GetTadoApiEnvironment(string sUrl)
 	}
 
 	// Determine which keys we want to grab from the environment
-	vector<string> _vKeysToFetch;
+	std::vector<std::string> _vKeysToFetch;
 	_vKeysToFetch.push_back("clientId");
 	_vKeysToFetch.push_back("clientSecret");
 	_vKeysToFetch.push_back("apiEndpoint");
@@ -745,7 +743,7 @@ bool CTado::GetTadoApiEnvironment(string sUrl)
 	{
 		// Feed the function the javascript response, and have it attempt to grab the provided key's value from it.
 		// Value is stored in m_TadoEnvironment[keyName]
-		string _sKeyName = _vKeysToFetch[i];
+		std::string _sKeyName = _vKeysToFetch[i];
 		if (!MatchValueFromJSKey(_sKeyName, _sResponse, m_TadoEnvironment[_sKeyName])) {
 			_log.Log(LOG_ERROR, "Tado: Failed to retrieve/match key '" + _sKeyName + "' from the API environment.");
 			return false;
@@ -795,17 +793,17 @@ bool CTado::GetHomes() {
 		_log.Log(LOG_TRACE, "Tado: GetHomes() called.");
 	}
 
-	string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/me";
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/me";
 	Json::Value _jsRoot;
-	string _sResponse;
+	std::string _sResponse;
 	
 	try
 	{
-		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new vector<string>()), _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: failed to get homes: " + what);
 		return false;
 	}
@@ -840,19 +838,19 @@ bool CTado::GetHomes() {
 // Gets all the zones for a particular home
 bool CTado::GetZones(_tTadoHome &tTadoHome) {
 
-	string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + tTadoHome.Id + "/zones";
-	string _sResponse;
+	std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + tTadoHome.Id + "/zones";
+	std::string _sResponse;
 	Json::Value _jsRoot;
 
 	tTadoHome.Zones.clear();
 
 	try 
 	{
-		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new vector<string>()), _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
+		std::string what = e.what();
 		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home " + tTadoHome.Id + ": "+what);
 		return false;
 	}
@@ -878,17 +876,17 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 }
 
 // Sends a request to the Tado API. 
-bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const string sPostData, 
-				string &sResponse, const vector<string> & vExtraHeaders, Json::Value &jsDecodedResponse, 
+bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, 
+				std::string &sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value &jsDecodedResponse, 
 				const bool bDecodeJsonResponse, const bool bIgnoreEmptyResponse, const bool bSendAuthHeaders)
 {
 	try {
 		// If there is no token stored then there is no point in doing a request. Unless we specifically
 		// decide not to do authentication.
-		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) throw runtime_error("No access token available.");
+		if (m_TadoAuthToken.size() == 0 && bSendAuthHeaders) throw std::runtime_error("No access token available.");
 
 		// Prepare the headers. Copy supplied vector.
-		vector<string> _vExtraHeaders = vExtraHeaders;
+		std::vector<std::string> _vExtraHeaders = vExtraHeaders;
 		
 		// If the supplied postdata validates as json, add an appropriate content type header
 		if (sPostData.size() > 0)
@@ -902,15 +900,15 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const
 		// Prepare the authentication headers if requested.
 		if (bSendAuthHeaders) _vExtraHeaders.push_back("Authorization: Bearer " + m_TadoAuthToken);
 
-		vector<string> _vResponseHeaders;
-		stringstream _ssResponseHeaderString;
+		std::vector<std::string> _vResponseHeaders;
+		std::stringstream _ssResponseHeaderString;
 
 		switch (eMethod)
 		{
 			case Put:
 				if (!HTTPClient::PUT(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse))
 				{
-					throw runtime_error("Failed to perform PUT request to Tado Api: " + sResponse);
+					throw std::runtime_error("Failed to perform PUT request to Tado Api: " + sResponse);
 				}
 				break;
 
@@ -918,7 +916,7 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const
 				if (!HTTPClient::POST(sUrl, sPostData, _vExtraHeaders, sResponse, _vResponseHeaders, true, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw runtime_error("Failed to perform POST request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
+					throw std::runtime_error("Failed to perform POST request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
 				}
 				break;
 
@@ -926,39 +924,39 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const
 				if (!HTTPClient::GET(sUrl, _vExtraHeaders, sResponse, _vResponseHeaders, bIgnoreEmptyResponse))
 				{
 					for (unsigned int i = 0; i < _vResponseHeaders.size(); i++) _ssResponseHeaderString << _vResponseHeaders[i];
-					throw runtime_error("Failed to perform GET request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
+					throw std::runtime_error("Failed to perform GET request to Tado Api: " + sResponse + "; Response headers: " + _ssResponseHeaderString.str());
 				}
 				break;
 
 			case Delete:
 				if (!HTTPClient::Delete(sUrl, sPostData, _vExtraHeaders, sResponse, bIgnoreEmptyResponse)) {
 					{
-						throw runtime_error("Failed to perform DELETE request to Tado Api: "+sResponse);
+						throw std::runtime_error("Failed to perform DELETE request to Tado Api: "+sResponse);
 					}
 				}
 				break;
 
 			default:
-				throw runtime_error("Unknown method " + boost::to_string(eMethod));
+				throw std::runtime_error("Unknown method " + boost::to_string(eMethod));
 		}
 
 		if (sResponse.size() == 0)
 		{
-			if (!bIgnoreEmptyResponse) throw runtime_error("Received an empty response from Api.");
+			if (!bIgnoreEmptyResponse) throw std::runtime_error("Received an empty response from Api.");
 		}
 
 		if (bDecodeJsonResponse) {
 			Json::Reader _jsReader;
 			if (!_jsReader.parse(sResponse, jsDecodedResponse)) {
-				throw runtime_error("Failed to decode Json response from Api.");
+				throw std::runtime_error("Failed to decode Json response from Api.");
 			}
 		}
 
 		return true;
 	}
-	catch (exception e)
+	catch (std::exception e)
 	{
-		string what = e.what();
-		throw runtime_error("Error sending information to Tado API: " + what);
+		std::string what = e.what();
+		throw std::runtime_error("Error sending information to Tado API: " + what);
 	}
 }

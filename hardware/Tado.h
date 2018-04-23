@@ -6,14 +6,12 @@
 #include <map>
 #include "../json/json.h"
 
-using namespace std;
-
 class CTado : public CDomoticzHardwareBase
 {
 
 	public:
 		~CTado(void);
-		CTado(const int ID, const string &username, const string &password);
+		CTado(const int ID, const std::string &username, const std::string &password);
 
 		bool WriteToHardware(const char *pdata, const unsigned char length);
 		void SetSetpoint(const int idx, const float temp);
@@ -27,10 +25,10 @@ class CTado : public CDomoticzHardwareBase
 
 	private:
 		struct _tTadoZone {
-			string Id;
-			string Name;
-			string HomeId;
-			string Type;
+			std::string Id;
+			std::string Name;
+			std::string HomeId;
+			std::string Type;
 
 			bool operator < (const _tTadoZone& str) const
 			{
@@ -39,9 +37,9 @@ class CTado : public CDomoticzHardwareBase
 		};
 
 		struct _tTadoHome {
-			string Id;
-			string Name;
-			vector<_tTadoZone> Zones;
+			std::string Id;
+			std::string Name;
+			std::vector<_tTadoZone> Zones;
 
 			bool operator < (const _tTadoHome& str) const
 			{
@@ -49,7 +47,7 @@ class CTado : public CDomoticzHardwareBase
 			}
 		};
 
-		map <string, string> m_TadoEnvironment;
+		std::map <std::string, std::string> m_TadoEnvironment;
 
 		enum eTadoApiMethod {
 			Put,
@@ -58,30 +56,30 @@ class CTado : public CDomoticzHardwareBase
 			Delete
 		};
 
-		bool GetTadoApiEnvironment(string url);
+		bool GetTadoApiEnvironment(std::string url);
 		bool Login();
 		bool GetHomes();
 		bool GetZones(_tTadoHome & TadoHome);
-		bool SendToTadoApi(const eTadoApiMethod eMethod, const string sUrl, const string sPostData, string & sResponse, const vector<string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
-		bool GetAuthToken(string & authtoken, string & refreshtoken, const bool refreshUsingToken);
+		bool SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, const std::string sPostData, std::string & sResponse, const std::vector<std::string> & vExtraHeaders, Json::Value & jsDecodedResponse, const bool bDecodeJsonResponse = true, const bool bIgnoreEmptyResponse = false, const bool bSendAuthHeaders = true);
+		bool GetAuthToken(std::string & authtoken, std::string & refreshtoken, const bool refreshUsingToken);
 		bool GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoHome home, _tTadoZone & zone);
 		bool GetHomeState(const int HomeIndex, _tTadoHome & home);
-		void SendSetPointSensor(const unsigned char Idx, const float Temp, const string &defaultname);
-		void UpdateSwitch(const unsigned char Idx, const bool bOn, const string & defaultname);
-		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const string termination);
+		void SendSetPointSensor(const unsigned char Idx, const float Temp, const std::string &defaultname);
+		void UpdateSwitch(const unsigned char Idx, const bool bOn, const std::string & defaultname);
+		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string termination);
 		bool CancelOverlay(const int Idx);
-		bool MatchValueFromJSKey(const string sKeyName, const string sJavascriptData, string & sValue);
-		vector<string> StringSplitEx(const string & inputString, const string delimiter, const int maxelements = 0);
+		bool MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string & sValue);
+		std::vector<std::string> StringSplitEx(const std::string & inputString, const std::string delimiter, const int maxelements = 0);
 
-		string m_TadoUsername;
-		string m_TadoPassword;
-		string m_TadoAuthToken;
-		string m_TadoRefreshToken;
+		std::string m_TadoUsername;
+		std::string m_TadoPassword;
+		std::string m_TadoAuthToken;
+		std::string m_TadoRefreshToken;
 
 		bool m_bDoLogin; // Should we try to login?
 		bool m_bDoGetHomes;
 		bool m_bDoGetZones;
 		bool m_bDoGetEnvironment;
 
-		vector<_tTadoHome> m_TadoHomes;
+		std::vector<_tTadoHome> m_TadoHomes;
 };
