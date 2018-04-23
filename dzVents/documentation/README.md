@@ -1802,6 +1802,10 @@ On the other hand, you have to make sure that dzVents can access the json withou
 
 # Change log
 
+##[2.4.6]
+- Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
+
+
 ##[2.4.5]
 - Fixed a bug in date ranges for timer triggers (http://domoticz.com/forum/viewtopic.php?f=59&t=23109).
 
