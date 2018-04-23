@@ -246,7 +246,7 @@ bool CTado::GetAuthToken(std::string &authtoken, std::string &refreshtoken, cons
 		catch (std::exception e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error("Failed to get token from Api: " + what);
+			throw std::runtime_error(("Failed to get token from Api: %s", what.c_str()));
 		}
 
 		authtoken = _jsRoot["access_token"].asString();
@@ -283,7 +283,7 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		catch (std::exception e)
 		{
 			std::string what = e.what();
-			throw std::runtime_error("Failed to get information on zone '" + zone.Name + "': " + what);
+			throw std::runtime_error(("Failed to get information on zone '%s': %s", zone.Name.c_str(), what.c_str()));
 		}
 
 		// Zone Home/away
@@ -635,9 +635,9 @@ bool CTado::MatchValueFromJSKey(const std::string sKeyName, const std::string sJ
 	{
 		//std::stringstream _ss;
 		//_ss << _sJavascriptDataLines.size();
-		_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Got %d lines from javascript data.", _sJavascriptDataLines.size());
+		_log.Log(LOG_TRACE, "Tado: MatchValueFromJSKey: Got %lu lines from javascript data.", _sJavascriptDataLines.size());
 	}
-	
+
 	if (_sJavascriptDataLines.size() <= 0)
 	{
 		_log.Log(LOG_ERROR, "Tado: Failed to get any lines from javascript environment file.");
@@ -860,7 +860,7 @@ bool CTado::GetZones(_tTadoHome &tTadoHome) {
 	catch (std::exception e)
 	{
 		std::string what = e.what();
-		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home %s: %s", tTadoHome.Id, what);
+		_log.Log(LOG_ERROR, "Tado: Failed to get zones from API for Home %s: %s", tTadoHome.Id.c_str(), what.c_str());
 		return false;
 	}
 
@@ -966,6 +966,6 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string sUrl, 
 	catch (std::exception e)
 	{
 		std::string what = e.what();
-		throw std::runtime_error(("Error sending information to Tado API: %s", what));
+		throw std::runtime_error(("Error sending information to Tado API: %s", what.c_str()));
 	}
 }
