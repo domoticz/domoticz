@@ -1031,7 +1031,7 @@ namespace http {
 			if ((rfilter == "all") || (rfilter == "") || (rfilter == "scene")) {
 				tmp_result = m_sql.safe_query(
 					"SELECT t.ID, t.Active, s.[Name], t.SceneRowID AS ID, 1 AS IsScene, 0 AS IsThermostat"
-					", t.[Date], t.Time, t.Type, t.Cmd, t.Level, t.Color, 0 AS Temperature, t.Days,"
+					", t.[Date], t.Time, t.Type, t.Cmd, t.Level, '' AS Color, 0 AS Temperature, t.Days,"
 					" t.UseRandomness, t.MDay, t.Month, t.Occurence"
 					" FROM SceneTimers AS t, Scenes AS s"
 					" WHERE (s.ID == t.SceneRowID) AND (t.TimerPlan==%d)"
@@ -1849,7 +1849,7 @@ namespace http {
 			char szTmp[40];
 
 			std::vector<std::vector<std::string> > result;
-			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Color, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
+			result = m_sql.safe_query("SELECT ID, Active, [Date], Time, Type, Cmd, Level, Days, UseRandomness, MDay, Month, Occurence FROM SceneTimers WHERE (SceneRowID==%" PRIu64 ") AND (TimerPlan==%d) ORDER BY ID",
 				idx, m_sql.m_ActiveTimerPlan);
 			if (result.size() > 0)
 			{
@@ -1883,12 +1883,11 @@ namespace http {
 					root["result"][ii]["Type"] = iTimerType;
 					root["result"][ii]["Cmd"] = atoi(sd[5].c_str());
 					root["result"][ii]["Level"] = iLevel;
-					root["result"][ii]["Color"] = sd[7];
-					root["result"][ii]["Days"] = atoi(sd[8].c_str());
-					root["result"][ii]["Randomness"] = (atoi(sd[9].c_str()) == 0) ? "false" : "true";
-					root["result"][ii]["MDay"] = atoi(sd[10].c_str());
-					root["result"][ii]["Month"] = atoi(sd[11].c_str());
-					root["result"][ii]["Occurence"] = atoi(sd[12].c_str());
+					root["result"][ii]["Days"] = atoi(sd[7].c_str());
+					root["result"][ii]["Randomness"] = (atoi(sd[8].c_str()) == 0) ? "false" : "true";
+					root["result"][ii]["MDay"] = atoi(sd[9].c_str());
+					root["result"][ii]["Month"] = atoi(sd[10].c_str());
+					root["result"][ii]["Occurence"] = atoi(sd[11].c_str());
 					ii++;
 				}
 			}

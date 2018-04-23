@@ -308,6 +308,7 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
+hardware/ColorSwitch.cpp
 hardware/Comm5Serial.cpp
 hardware/Comm5SMTCP.cpp
 hardware/Comm5TCP.cpp
@@ -389,6 +390,7 @@ hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
 hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
@@ -415,6 +417,7 @@ hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
+hardware/Tado.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -748,4 +751,5 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/server_cert.pem DESTINATION ${CMAKE_IN
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Config DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dzVents DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/updatedomo DESTINATION ${CMAKE_INSTALL_PREFIX} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ)

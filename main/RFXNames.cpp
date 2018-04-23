@@ -276,6 +276,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
 		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 		{ HTYPE_Honeywell, "Honeywell Thermostat" },
+		{ HTYPE_Tado, "Tado Thermostat"},
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -574,6 +575,9 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRAIN, sTypeRAIN4, "UPM RG700" },
 		{ pTypeRAIN, sTypeRAIN5, "LaCrosse WS2300" },
 		{ pTypeRAIN, sTypeRAIN6, "LaCrosse TX5" },
+		{ pTypeRAIN, sTypeRAIN7, "Alecto" },
+		{ pTypeRAIN, sTypeRAIN8, "Davis" },
+		{ pTypeRAIN, sTypeRAIN9, "Alecto WCH2010" },
 		{ pTypeRAIN, sTypeRAINWU, "WWW" },
 
 		{ pTypeWIND, sTypeWIND1, "WTGR800" },
@@ -583,6 +587,7 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeWIND, sTypeWIND5, "UPM WDS500" },
 		{ pTypeWIND, sTypeWIND6, "LaCrosse WS2300" },
 		{ pTypeWIND, sTypeWIND7, "Alecto WS4500" },
+		{ pTypeWIND, sTypeWIND8, "Alecto ACH2010" },
 		{ pTypeWIND, sTypeWINDNoTemp, "Weather Station" },
 
 		{ pTypeUV, sTypeUV1, "UVN128,UV138" },
@@ -2059,7 +2064,7 @@ bool GetLightCommand(
 	const std::map<std::string, std::string> & options
 	)
 {
-	if (switchtype==STYPE_Contact)
+	if (switchtype == STYPE_Contact && dType != pTypeGeneralSwitch)
 		return false;	//we can not (or will not) switch this type
 
 	switch (dType)

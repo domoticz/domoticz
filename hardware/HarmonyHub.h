@@ -4,7 +4,12 @@
 #include <iosfwd>
 #include "hardwaretypes.h"
 
-#define BUFFER_SIZE								2*1024*1024
+// Note:
+// HarmonyHub is on Wifi and can thus send frames with a maximum payload length of 2324 bytes
+// Normal implementations will however obey the 1500 bytes MTU from the wired networks that
+// they are attached to and this may be limited even further if the router uses mechanisms like
+// PPTP for connecting the (Wireless) LAN to the internet.
+#define BUFFER_SIZE	 1500
 
 class csocket;
 
@@ -85,6 +90,7 @@ private:
 	bool Login();
 	void Logout();
 	bool SetupCommandSocket();
+	void ResetCommandSocket();
 	bool UpdateActivities();
 	bool UpdateCurrentActivity();
 	void CheckSetActivity(const std::string &activityID, const bool on);
@@ -101,7 +107,10 @@ private:
 	bool SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	bool SendPing();
-	bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
+	bool CheckIqGood(const std::string& strData);
+
+
+	//bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
 
 	std::string m_harmonyAddress;
@@ -116,6 +125,8 @@ private:
 	bool m_bIsChangingActivity;
 	std::string m_hubSwVersion;
 	boost::shared_ptr<boost::thread> m_thread;
-	char m_databuffer[BUFFER_SIZE];
+//	char m_databuffer[BUFFER_SIZE];
 	std::string m_szResultString;
+	bool m_bShowConnectError;
+	std::map< std::string, std::string> m_mapActivities;
 };

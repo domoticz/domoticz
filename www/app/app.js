@@ -223,7 +223,6 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		},
 		language: $.DataTableLanguage
 	});
-		
 
 	app.factory('domoticzApi', ['$q', '$http', function ($q, $http) {
 		return {
@@ -250,37 +249,111 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 	}]);
 
-	app.factory('deviceApi', function($q, domoticzApi, permissions) {
+	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun) {
 		return {
 			getDeviceInfo: getDeviceInfo,
-			setColor: setColor
+            updateDeviceInfo: updateDeviceInfo,
+            removeDevice: removeDevice,
+            disableDevice: disableDevice
 		};
 
 		function getDeviceInfo(deviceIdx) {
 			return domoticzApi.sendRequest({ type: 'devices', rid: deviceIdx })
 				.then(function (data) {
+                    dzTimeAndSun.updateData(data);
+
 					return data && data.result && data.result.length === 1
 						? data.result[0]
 						: $q.reject(data);
 				});
 		}
 
-		function setColor(deviceIdx, color, brightness) {
-			if (permissions.hasPermission('Viewer')) {
-				var message = $.t('You do not have permission to do that!');
-				HideNotify();
-				ShowNotify(message, 2500, true);
-				return $q.reject(message);
-			}
-
-			return domoticzApi.sendCommand('setcolbrightnessvalue', {
-				idx: deviceIdx,
-				color: color,
-				brightness: brightness
-			});
+		function updateDeviceInfo(deviceIdx, data) {
+			return domoticzApi.sendRequest(Object.assign({}, data, {
+				idx: deviceIdx
+			}));
 		}
+
+		function removeDevice(deviceIdx) {
+            return domoticzApi.sendRequest({
+                idx: deviceIdx,
+                type: 'setused',
+                used: false,
+                RemoveSubDevices: true
+            });
+        }
+
+        function disableDevice(deviceIdx) {
+            return domoticzApi.sendCommand('setunused', {
+                idx: deviceIdx,
+            });
+        }
 	});
-	
+
+    app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
+        return {
+            switchOff: createSwitchCommand('Off'),
+            switchOn: createSwitchCommand('On'),
+            setColor: setColor,
+            brightnessUp: createCommand('brightnessup'),
+            brightnessDown: createCommand('brightnessdown'),
+            nightLight: createCommand('nightlight'),
+            fullLight: createCommand('fulllight'),
+            whiteLight: createCommand('whitelight'),
+            colorWarmer: createCommand('warmer'),
+            colorColder: createCommand('cooler'),
+            discoUp: createCommand('discoup'),
+            discoDown: createCommand('discodown'),
+            discoMode: createCommand('discomode'),
+            speedUp: createCommand('speedup'),
+            speedDown: createCommand('speeddown'),
+            speedMin: createCommand('speedmin'),
+            speedMax: createCommand('speedmax')
+        };
+
+        function createCommand(command) {
+            return function(deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand(command, {
+                        idx: deviceIdx
+                    });
+                });
+            }
+        }
+
+        function createSwitchCommand(command) {
+            return function (deviceIdx) {
+                return checkPersmissions().then(function () {
+                    return domoticzApi.sendCommand('switchlight', {
+                        idx: deviceIdx,
+                        switchcmd: command
+                    });
+                });
+            }
+        }
+
+        function setColor(deviceIdx, color, brightness) {
+            return checkPersmissions().then(function () {
+                return domoticzApi.sendCommand('setcolbrightnessvalue', {
+                    idx: deviceIdx,
+                    color: color,
+                    brightness: brightness
+                });
+            });
+        }
+
+        function checkPersmissions() {
+            if (permissions.hasPermission('Viewer')) {
+                var message = $.t('You do not have permission to do that!');
+                HideNotify();
+                ShowNotify(message, 2500, true);
+                return $q.reject(message);
+            } else {
+                return $q.resolve();
+            }
+        }
+    });
+
 	app.service('livesocket', ['$websocket', '$http', '$rootScope', function ($websocket, $http, $rootScope) {
 		return {
 			initialised: false,
@@ -306,7 +379,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 						url: url,
 					}).then(function successCallback(response) {
 						callback_fn();
-					});               
+					});
 				}
 				else {
 					var settings = {
@@ -433,25 +506,31 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Devices/:id/Timers', angularAMD.route({
 				templateUrl: 'views/timers.html',
 				controller: 'DeviceTimersController',
-				controllerUrl: 'app/DeviceTimers.js',
+				controllerUrl: 'app/timers/DeviceTimersController.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/LightEdit', angularAMD.route({
+				templateUrl: 'views/device_light_edit.html',
+				controller: 'DeviceLightEditController',
+				controllerUrl: 'app/DeviceLightEdit.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/LightLog', angularAMD.route({
-				templateUrl: 'views/device_light_log.html',
+				templateUrl: 'views/log/device_light_log.html',
 				controller: 'DeviceLightLogController',
-				controllerUrl: 'app/device-log/LightLog.js',
+				controllerUrl: 'app/log/LightLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({
-				templateUrl: 'views/device_temperature_log.html',
+				templateUrl: 'views/log/device_temperature_log.html',
 				controller: 'DeviceTemperatureLogController',
-				controllerUrl: 'app/device-log/TemperatureLog.js',
+				controllerUrl: 'app/log/TemperatureLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureReport/:year?/:month?', angularAMD.route({
-				templateUrl: 'views/device_temperature_report.html',
+				templateUrl: 'views/log/device_temperature_report.html',
 				controller: 'DeviceTemperatureReportController',
-				controllerUrl: 'app/device-log/TemperatureReport.js',
+				controllerUrl: 'app/log/TemperatureReport.js',
 				controllerAs: 'vm'
 			})).
 			when('/DPFibaro', angularAMD.route({
@@ -568,6 +647,18 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			when('/Scenes', angularAMD.route({
 				templateUrl: 'views/scenes.html',
 				controller: 'ScenesController'
+			})).
+			when('/Scenes/:id/Log', angularAMD.route({
+				templateUrl: 'views/log/scene_log.html',
+				controller: 'SceneLogController',
+				controllerUrl: 'app/log/SceneLog.js',
+				controllerAs: 'vm'
+			})).
+			when('/Scenes/:id/Timers', angularAMD.route({
+				templateUrl: 'views/timers.html',
+				controller: 'SceneTimersController',
+				controllerUrl: 'app/timers/SceneTimersController.js',
+				controllerAs: 'vm'
 			})).
 			when('/Setup', angularAMD.route({
 				templateUrl: 'views/setup.html',
@@ -690,8 +781,51 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		});
 	}]);
 
+	app.factory('dzTimeAndSun', function($rootScope) {
+		var currentData = {};
+		init();
 
-	app.run(function ($rootScope, $location, $window, $route, $http, permissions) {
+		return {
+            getCurrentData: getCurrentData,
+			updateData: updateData
+		};
+
+        function init() {
+            $rootScope.$on('jsonupdate', function (event, data) {
+                if (typeof data.ServerTime !== 'undefined') {
+                    currentData.serverTime = data.ServerTime;
+                }
+                if (typeof data.Sunrise !== 'undefined') {
+                    currentData.sunrise = data.Sunrise;
+                }
+                if (typeof data.Sunset !== 'undefined') {
+                    currentData.sunset = data.Sunset;
+                }
+            });
+        }
+
+		function getCurrentData() {
+			return currentData;
+		}
+
+		function updateData(data) {
+			Object.assign(currentData, {
+				sunrise: data.Sunrise,
+				sunset: data.Sunset,
+				serverTime: data.ServerTime
+			});
+		}
+	});
+
+    app.component('timesun', {
+        templateUrl: 'timesuntemplate',
+        controller: function (dzTimeAndSun) {
+        	this.isMobile = $.myglobals.ismobile;
+            this.data = dzTimeAndSun.getCurrentData();
+        }
+    });
+
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1
@@ -971,27 +1105,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			*/
 			/* end ajax override */
 
-		app.directive('timesun', function () {
-			return {
-				templateUrl: 'timesuntemplate',
-				controller: ['$scope', function ($scope) {
-					var self = $scope;
-					$scope.data = {};
-					$scope.$on('jsonupdate', function (event, data) {
-						if (typeof data.ServerTime !== 'undefined') {
-							self.data.ServerTime = data.ServerTime;
-						}
-						if (typeof data.Sunrise !== 'undefined') {
-							self.data.Sunrise = data.Sunrise;
-						}
-						if (typeof data.Sunset !== 'undefined') {
-							self.data.Sunset = data.Sunset;
-						}
-					});
-				}
-				]
-			};
-		});
+		// TODO: use <timesun /> component instead
 		$rootScope.SetTimeAndSun = function (sunRise, sunSet, ServerTime) {
 			var month = ServerTime.split(' ')[0];
 			ServerTime = ServerTime.replace(month, $.t(month));
@@ -1017,6 +1131,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				}).then(function successCallback(response) {
 					var data = response.data;
 					if (typeof data.Sunrise != 'undefined') {
+                        dzTimeAndSun.updateData(response.data);
 						$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 					}
 				});

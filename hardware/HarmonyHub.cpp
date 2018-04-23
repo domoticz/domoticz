@@ -26,6 +26,8 @@ History:
  - Fixed: Logitech Harmony, Ping request now working as well for firmware 4.10.30 (Herman)
  19 November 2016:
  - Removed: Need to login remotely with username/password
+ 11 April 2018:
+ - Refactored: address several issues with working with firmware 4.14.123
 */
 
 #include "stdafx.h"
@@ -41,16 +43,15 @@ History:
 #include "csocket.h"
 #include "../json/json.h"
 
-#define CONNECTION_ID								"21345678-1234-5678-1234-123456789012-1"
-#define GET_CONFIG_COMMAND							"get_config"
-#define GET_CONFIG_COMMAND_RAW						"get_config_raw"
-#define START_ACTIVITY_COMMAND						"start_activity"
-#define GET_CURRENT_ACTIVITY_COMMAND				"get_current_activity_id"
-#define GET_CURRENT_ACTIVITY_COMMAND_RAW			"get_current_activity_id_raw"
-#define HARMONY_PING_INTERVAL_SECONDS				30	//the get activity poll time
-#define HARMONY_RETRY_LOGIN_SECONDS					60  //fetch the list of activities every x seconds...
+#define CONNECTION_ID				"21345678-1234-5678-1234-123456789012-1"
+#define GET_CONFIG_COMMAND			"get_config"
+#define START_ACTIVITY_COMMAND			"start_activity"
+#define GET_CURRENT_ACTIVITY_COMMAND		"get_current_activity_id"
+#define HARMONY_PING_INTERVAL_SECONDS		30	// must be smaller than 40 seconds or Hub will start feeding us empty messages
+#define HARMONY_SEND_ACK_SECONDS		10	// must be smaller than 20 seconds...
+#define HARMONY_RETRY_LOGIN_SECONDS		60
+#define HEARTBEAT_SECONDS			12
 
-#define MAX_MISS_COMMANDS							5	//max commands to miss (when executing a command, the harmony commands may fail)
 
 CHarmonyHub::CHarmonyHub(const int ID, const std::string &IPAddress, const unsigned int port):
 m_harmonyAddress(IPAddress)
@@ -61,16 +62,18 @@ m_harmonyAddress(IPAddress)
 	Init();
 }
 
+
 CHarmonyHub::~CHarmonyHub(void)
 {
 	Logout();
 }
 
+
 bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 {
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
-	if(this->m_bIsChangingActivity)
+	if (this->m_bIsChangingActivity)
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Command cannot be sent. Hub is changing activity");
 		return false;
@@ -87,18 +90,19 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
 			return false;
-		}			
+		}
 	}
-	else if((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
+	else if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
-		if(!SubmitCommand(START_ACTIVITY_COMMAND, "PowerOff",""))
+		if (!SubmitCommand(START_ACTIVITY_COMMAND, "-1",""))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
-		}			
+		}
 	}
 	return true;
 }
+
 
 void CHarmonyHub::Init()
 {
@@ -109,6 +113,7 @@ void CHarmonyHub::Init()
 	m_hubSwVersion = "";
 }
 
+
 bool CHarmonyHub::StartHardware()
 {
 	Init();
@@ -118,6 +123,7 @@ bool CHarmonyHub::StartHardware()
 	sOnConnected(this);
 	return (m_thread!=NULL);
 }
+
 
 bool CHarmonyHub::StopHardware()
 {
@@ -140,9 +146,11 @@ void CHarmonyHub::Do_Work()
 {
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker thread started..."); 
 
-	int scounter = 0;
-	int mcounter = 0;
 	bool bFirstTime = true;
+	char mcounter = 0;		// heartbeat
+	unsigned int scounter = 0;	// seconds
+	char fcounter = 0;		// failed login attempts
+	char lcounter = 0;		// login counter
 
 	while (!m_stoprequested)
 	{
@@ -152,67 +160,86 @@ void CHarmonyHub::Do_Work()
 			break;
 
 		mcounter++;
-		if (mcounter<2)
+		if (mcounter % 2)
 			continue;
-		mcounter = 0;
 
 		scounter++;
 
-		if (scounter % 12 == 0)
+		if (mcounter % (HEARTBEAT_SECONDS * 2) == 0)
 		{
+			mcounter = 0;
 			m_LastHeartbeat=mytime(NULL);
 		}
 
 		if (m_bDoLogin)
 		{
-			if ((scounter%HARMONY_RETRY_LOGIN_SECONDS == 0) || (bFirstTime))
+			if (m_mapActivities.size() == 0)
+			{
+				// compensate heartbeat for possible large timeout on accessing Hub
+				if ((HEARTBEAT_SECONDS * 2 - mcounter) < 10)
+					continue;
+				mcounter += 10;
+			}
+
+			if ((scounter % HARMONY_RETRY_LOGIN_SECONDS == 0) || (bFirstTime))
 			{
 				bFirstTime = false;
-				if(Login() && SetupCommandSocket())
+				lcounter++;
+				if (lcounter <= fcounter)
+					continue;
+
+				scounter = 0;
+				lcounter = 0;
+				if (fcounter > 0)
+					_log.Log(LOG_NORM, "Harmony Hub: Reattempt login.");
+
+				if (Login() && SetupCommandSocket())
 				{
 					m_bDoLogin=false;
-					if (!UpdateCurrentActivity())
+					if (!UpdateCurrentActivity() || !UpdateActivities())
 					{
-						Logout();
-						m_bDoLogin = true;
+						_log.Log(LOG_ERROR, "Harmony Hub: Error updating activities.. Resetting connection.");
+						ResetCommandSocket();
+						continue;
 					}
-					else
-					{
-						if (!UpdateActivities())
-						{
-							Logout();
-							m_bDoLogin = true;
-						}
-					}
+
+					_log.Log(LOG_STATUS, "Harmony Hub: Connected to Hub.");
+					fcounter = 0;
 				}
+				else if (fcounter < 5) // will cause login attempts to gradually decrease to once per 6 minutes
+					fcounter ++;
 			}
 			continue;
 		}
 
 		if (scounter % HARMONY_PING_INTERVAL_SECONDS == 0)
 		{
-			//Ping the server
+			// Ping hub to see if it is still alive
 			if (!SendPing())
 			{
-				_log.Log(LOG_STATUS, "Harmony Hub: Error pinging server.. Resetting connection.");
-				Logout();
+				_log.Log(LOG_ERROR, "Harmony Hub: Error pinging server.. Resetting connection.");
+				ResetCommandSocket();
+				scounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
 			}
 			continue;
 		}
+
 		bool bIsDataReadable = true;
-		m_commandcsocket->canRead(&bIsDataReadable, 0.5f);
+		m_commandcsocket->canRead(&bIsDataReadable, 0); // we're not expecting data at this point, so don't wait
 		if (bIsDataReadable)
 		{
+			// Harmony Hub requires us to send a 'ping' within 20 seconds after receiving volunteered status reports
+			scounter = HARMONY_PING_INTERVAL_SECONDS - HARMONY_SEND_ACK_SECONDS;
+
 			boost::lock_guard<boost::mutex> lock(m_mutex);
 			std::string strData;
+			char databuffer[BUFFER_SIZE];
 			while (bIsDataReadable)
 			{
-				memset(m_databuffer, 0, BUFFER_SIZE);
-				m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-				std::string szNewData = std::string(m_databuffer);
-				if (!szNewData.empty())
+				memset(databuffer, 0, BUFFER_SIZE);
+				if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 				{
-					strData.append(m_databuffer);
+					strData.append(databuffer);
 					m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 				}
 				else
@@ -220,6 +247,12 @@ void CHarmonyHub::Do_Work()
 			}
 			if (!strData.empty())
 				CheckIfChanging(strData);
+			else
+			{
+				ResetCommandSocket(); // we exceeded our ACK time frame and Harmony Hub will no longer accept our commands or send valid data
+				scounter = HARMONY_RETRY_LOGIN_SECONDS - 5; // wait 5 seconds before attempting login again
+
+			}
 		}
 	}
 	_log.Log(LOG_STATUS,"Harmony Hub: Worker stopped...");
@@ -227,65 +260,88 @@ void CHarmonyHub::Do_Work()
 
 bool CHarmonyHub::Login()
 {
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+
+	if (m_szAuthorizationToken.length() > 0) // we already have an authentication token
+		return true;
+
 	csocket authorizationcsocket;
-	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
+	if (!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
 		return false;
 	}
-	if(GetAuthorizationToken(&authorizationcsocket)==true)
+	if (GetAuthorizationToken(&authorizationcsocket)==true)
 	{
 		_log.Log(LOG_STATUS,"Harmony Hub: Authentication successful");
+		m_bShowConnectError = true;
 		return true;
 	}
 	return false;
 }
 
-void CHarmonyHub::Logout()
+
+void CHarmonyHub::ResetCommandSocket()
 {
-	if(m_commandcsocket)
+	if (m_commandcsocket)
 		delete m_commandcsocket;
 	m_commandcsocket = NULL;
 	m_bIsChangingActivity=false;
 	m_bDoLogin=true;
-
 }
+
+
+void CHarmonyHub::Logout()
+{
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+	ResetCommandSocket();
+	m_szAuthorizationToken = "";
+	m_mapActivities.clear();
+}
+
 
 bool CHarmonyHub::SetupCommandSocket()
 {
-	if(m_commandcsocket)
-		Logout();
+	boost::lock_guard<boost::mutex> lock(m_mutex);
+	if (m_commandcsocket)
+		ResetCommandSocket();
 
 	m_commandcsocket = new csocket();
 
-
-	if(!ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket))
+	if (!ConnectToHarmony(m_harmonyAddress, m_usIPPort,m_commandcsocket))
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony Hub");
+		if (m_bShowConnectError)
+			_log.Log(LOG_ERROR,"Harmony Hub: Cannot setup command socket to Harmony Hub");
+		m_bShowConnectError = false;
 		return false;
 	}
 
 	std::string strUserName = m_szAuthorizationToken;
 	//strUserName.append("@connect.logitech.com/gatorade.");
-	std::string  strPassword = m_szAuthorizationToken;
+	std::string strPassword = m_szAuthorizationToken;
 
-	if(!StartCommunication(m_commandcsocket, strUserName, strPassword))
+	if (!StartCommunication(m_commandcsocket, strUserName, strPassword))
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Start communication failed");
+		if (m_bShowConnectError)
+			_log.Log(LOG_ERROR,"Harmony Hub: Start communication failed");
+		m_bShowConnectError = false;
 		return false;
 	}
+	m_bShowConnectError = true;
 	return true;
 }
 
+
 bool CHarmonyHub::UpdateActivities()
 {
-	if(!SubmitCommand(GET_CONFIG_COMMAND_RAW, "", ""))
+	if (m_mapActivities.size() > 0) // we already have the list of activities.
+		return true;
+	
+	if (!SubmitCommand(GET_CONFIG_COMMAND, "", ""))
 	{
 		_log.Log(LOG_ERROR,"Harmony Hub: Get activities failed");
 		return false;
 	}
-
-	std::map< std::string, std::string> mapActivities;
 
 	Json::Reader jReader;
 	Json::Value root;
@@ -309,12 +365,12 @@ bool CHarmonyHub::UpdateActivities()
 		{
 			std::string aID = root["activity"][ii]["id"].asString();
 			std::string aLabel = root["activity"][ii]["label"].asString();
-			mapActivities[aID] = aLabel;
+			m_mapActivities[aID] = aLabel;
 		}
 
 		std::map< std::string, std::string>::const_iterator itt;
 		int cnt = 0;
-		for (itt = mapActivities.begin(); itt != mapActivities.end(); ++itt)
+		for (itt = m_mapActivities.begin(); itt != m_mapActivities.end(); ++itt)
 		{
 			UpdateSwitch(cnt++, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
 		}
@@ -326,18 +382,19 @@ bool CHarmonyHub::UpdateActivities()
 	return true;
 }
 
+
 bool CHarmonyHub::UpdateCurrentActivity()
 {
-	if(!SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND_RAW, "", ""))
+	if (!SubmitCommand(GET_CURRENT_ACTIVITY_COMMAND, "", ""))
 	{
 		//_log.Log(LOG_ERROR,"Harmony Hub: Get current activity failed");
 		return false;
 	}
 
 	//check if changed
-	if(m_szCurActivityID!=m_szResultString)
+	if (m_szCurActivityID!=m_szResultString)
 	{
-		if(!m_szCurActivityID.empty())
+		if (!m_szCurActivityID.empty())
 		{
 			//need to set the old activity to off
 			CheckSetActivity(m_szCurActivityID,false );
@@ -348,6 +405,7 @@ bool CHarmonyHub::UpdateCurrentActivity()
 
 	return true;
 }
+
 
 void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 {
@@ -363,6 +421,7 @@ void CHarmonyHub::CheckSetActivity(const std::string &activityID, const bool on)
 		UpdateSwitch(atoi(result[0][1].c_str()), activityID.c_str(),on,result[0][0]);
 	}
 }
+
 
 void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool bOn, const std::string &defaultname)
 {
@@ -409,9 +468,10 @@ void CHarmonyHub::UpdateSwitch(unsigned char idx,const char * realID, const bool
 	sDecodeRXMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 }
 
+
 bool CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const int harmonyPortNumber, csocket* harmonyCommunicationcsocket)
 {
-	if(strHarmonyIPAddress.size() == 0 || harmonyPortNumber == 0 || harmonyPortNumber > 65535)
+	if (strHarmonyIPAddress.length() == 0 || harmonyPortNumber == 0 || harmonyPortNumber > 65535)
 		return false;
 
 	harmonyCommunicationcsocket->connect(strHarmonyIPAddress.c_str(), harmonyPortNumber);
@@ -419,171 +479,221 @@ bool CHarmonyHub::ConnectToHarmony(const std::string &strHarmonyIPAddress, const
 	return (harmonyCommunicationcsocket->getState() == csocket::CONNECTED);
 }
 
+
 bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::string &strUserName, const std::string &strPassword)
 {
-	if(communicationcsocket == NULL || strUserName.size() == 0 || strPassword.size() == 0)
-	{
+	if (communicationcsocket == NULL || strUserName.length() == 0 || strPassword.length() == 0)
 		return false;
-	} 
 
+	char databuffer[BUFFER_SIZE];
 	// Start communication
-	std::string data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
-	communicationcsocket->write(data.c_str(), data.size());
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-	std::string strData = m_databuffer;/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
-
-	data = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
-	std::string tmp = "\0";
-	tmp.append(strUserName);
-	tmp.append("\0");
-	tmp.append(strPassword);
-	data.append(base64_encode((const unsigned char*)tmp.c_str(), tmp.size()));
-	data.append("</auth>");
-	communicationcsocket->write(data.c_str(), data.size());
-
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-
-	strData = m_databuffer; /* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
-	if(strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
+	std::string strReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
+	communicationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
+	std::string strData;
+	bool bIsDataReadable = true;
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
+	if (bIsDataReadable)
 	{
-		//errorString = "StartCommunication : connection error";
+		memset(databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(databuffer, BUFFER_SIZE, false);
+		strData = databuffer;
+		/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
+	}
+	if (strData.find("<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>") == std::string::npos)
+	{
+		//errorString = "StartCommunication : unexpected response";
 		return false;
-	} 
+	}
 
-	data = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
-	communicationcsocket->write(data.c_str(), data.size());
 
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	communicationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	std::string strAuth = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\" mechanism=\"PLAIN\">";
+	std::string strCred = "\0";
+	strCred.append(strUserName);
+	strCred.append("\0");
+	strCred.append(strPassword);
+	strAuth.append(base64_encode((const unsigned char*)strCred.c_str(), static_cast<unsigned int>(strCred.length())));
+	strAuth.append("</auth>");
+	communicationcsocket->write(strAuth.c_str(), static_cast<unsigned int>(strAuth.length()));
 
-	strData = m_databuffer; /* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='057a30bd' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
+	if (bIsDataReadable)
+	{
+		memset(databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(databuffer, BUFFER_SIZE, false);
+		strData = databuffer;
+		/* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
+	}
+
+	if (strData != "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>")
+	{
+		//errorString = "StartCommunication : authentication error";
+		return false;
+	}
+
+	//strReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
+	communicationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
+
+	communicationcsocket->canRead(&bIsDataReadable, 2.0f);
+	if (bIsDataReadable)
+	{
+		memset(databuffer, 0, BUFFER_SIZE);
+		communicationcsocket->read(databuffer, BUFFER_SIZE, false);
+		strData = databuffer;
+		/* <- Expect: <stream:stream from='connect.logitech.com' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:nx:xmpp-session'/></stream:features> */
+	}
+	if (strData.find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") == std::string::npos)
+	{
+		//errorString = "startCommunication : bind failed";
+		return false;
+	}
 
 	return true;
 }
 
+
 bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 {
-	if(!StartCommunication(authorizationcsocket, "guest", "gatorade."))
+	if (!StartCommunication(authorizationcsocket, "guest", "gatorade."))
 	{
 		//errorString = "SwapAuthorizationToken : Communication failure";
 		return false;
 	}
 
 	std::string strData;
-	std::string sendData;
+	std::string strReq;
+	char databuffer[BUFFER_SIZE];
 
-	sendData = "<iq type=\"get\" id=\"";
-	sendData.append(CONNECTION_ID);
-	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
-	sendData.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
+	strReq = "<iq type=\"get\" id=\"";
+	strReq.append(CONNECTION_ID);
+	strReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.pair\">method=pair");
+	strReq.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
 
-	authorizationcsocket->write(sendData.c_str(), sendData.size());
+	authorizationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
+	bool bIsDataReadable = true;
+	authorizationcsocket->canRead(&bIsDataReadable, 2.0f);
+	if (bIsDataReadable)
+	{
+		memset(databuffer, 0, BUFFER_SIZE);
+		authorizationcsocket->read(databuffer, BUFFER_SIZE, false);
+		strData = databuffer;
+		/* <- Expect: <iq/> */
+	}
 
-	strData = m_databuffer; /* <- Expect: <iq/> ... <success xmlns= ... identity=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX:status=succeeded ... */
-
-	if(strData.find("<iq/>") != 0)
+	if (strData.find("<iq/>") != 0)
 	{
 		//errorString = "SwapAuthorizationToken : Invalid Harmony response";
-		return false;  
+		return false;
 	}
 
-	bool bIsDataReadable = false;
-	authorizationcsocket->canRead(&bIsDataReadable, 5.0f);
-	if(!bIsDataReadable && strData == "<iq/>")
-	{
-		bIsDataReadable = true;
-	}
-
+	authorizationcsocket->canRead(&bIsDataReadable, 2.0f);
 	while(bIsDataReadable)
 	{
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		authorizationcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		strData.append(m_databuffer);
-		authorizationcsocket->canRead(&bIsDataReadable, 1.0f);
-	};
-
-	std::string strIdentityTokenTag = "identity=";
-
-	// Parse the session authorization token from the response
-	int pos = (int)strData.find(strIdentityTokenTag);
-	if(pos == std::string::npos)
-	{
-		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
-		return false;  
+		memset(databuffer, 0, BUFFER_SIZE);
+		if (authorizationcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
+		{
+			strData.append(databuffer);
+			authorizationcsocket->canRead(&bIsDataReadable, 0.4f);
+		}
+		else
+			bIsDataReadable = false;
 	}
 
-	m_szAuthorizationToken = strData.substr(pos + strIdentityTokenTag.size());
+	// Parse the session authorization token from the response
+	size_t pos = (int)strData.find("identity=");
+	if (pos == std::string::npos)
+	{
+		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a session authorization token";
+		return false;
+	}
+	m_szAuthorizationToken = strData.substr(pos + 9);
 
-	pos = (int)m_szAuthorizationToken.find(":status=succeeded");
-	if(pos == std::string::npos)
+	pos = (int)m_szAuthorizationToken.find(":");
+	if (pos == std::string::npos)
 	{
 		//errorString = "SwapAuthorizationToken : Logitech Harmony response does not contain a valid session authorization token";
-		return false;  
+		return false;
 	}
 	m_szAuthorizationToken = m_szAuthorizationToken.substr(0, pos);
 
 	return true;
 }
 
+
 bool CHarmonyHub::SendPing()
 {
-	int res;
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	if (m_commandcsocket == NULL || m_szAuthorizationToken.size() == 0)
-	{
+	if (m_commandcsocket == NULL || m_szAuthorizationToken.length() == 0)
 		return false;
-	}
-	std::string strData;
-	std::string sendData;
 
-	// GENERATE A LOGIN ID REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
-	sendData = "<iq type=\"get\" id=\"";
-	sendData.append(CONNECTION_ID);
-	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
-	sendData.append(m_szAuthorizationToken.c_str());
-	sendData.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
+	std::string strData = "";
+	std::string strReq;
+	char databuffer[BUFFER_SIZE];
 
-	m_commandcsocket->write(sendData.c_str(), sendData.size());
+	// GENERATE A PING REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
+	strReq = "<iq type=\"get\" id=\"";
+	strReq.append(CONNECTION_ID);
+	strReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.connect/vnd.logitech.ping\">token=");
+	strReq.append(m_szAuthorizationToken.c_str());
+	strReq.append(":name=domoticz#iOS10.1.0#iPhone</oa></iq>");
 
+	m_commandcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
 	bool bIsDataReadable = true;
-	memset(m_databuffer, 0, BUFFER_SIZE);
-	res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-	if (res <= 0)
+	m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
+	while (bIsDataReadable)
 	{
-		/* there should be some bytes received so <= 0 is not good */
-		return false;
-	}
-	strData = m_databuffer; 
-	if(strData.compare("<iq/>") == 0)
-	{
-		/* must be new SW version 4.10.30+ so read ping confirmation */
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		res= m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		if (res <= 0)
+		memset(databuffer, 0, BUFFER_SIZE);
+		if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 		{
-			/* there should be some bytes received so <= 0 is not good */
-			return false;
+			strData.append(databuffer);
+			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
+		else
+			bIsDataReadable = false;
 	}
-	strData = m_databuffer; /* <- Expect: strData  == 200 */
+
+/* <- Expect:
+ <- optional messages: <message content-length="123"/><message from ... </message>
+ <- ping return: <iq/><iq id="12345678-1234-5678-1234-123456789012-1" type="get"><oa xmlns='connect.logitech.com' mime='vnd.logitech.connect/vnd.logitech.ping' errorcode='200' errorstring='OK'><![CDATA[status=alive:uuid=12345678-1234-5678-1234-123456789012:susTrigger=xmpp:name=domoticz#iOS10.1.0#iPhone:id=12345678-1234-5678-1234-123456789012-1:token=12345678-1234-5678-1234-123456789012]]></oa></iq> */
+
 	if (strData.empty())
 		return false;
-	CheckIfChanging(strData);
-	return (strData.find("errorcode='200'") != std::string::npos);
+
+	if (strData.find("</message>") != std::string::npos) // messages included
+		CheckIfChanging(strData);
+
+	return CheckIqGood(strData);
 }
+
+
+bool CHarmonyHub::CheckIqGood(const std::string& strData)
+{
+	size_t iqstart = 0;
+	while (1)
+	{
+		iqstart = strData.find("<iq ", iqstart);
+		if (iqstart == std::string::npos)
+			return true;
+		size_t iqend = strData.find("</iq>", iqstart);
+		if (iqend == std::string::npos)
+			return false;
+		std::string iqmsg = strData.substr(iqstart, iqend);
+		iqstart = iqend;
+		if (iqmsg.find("errorcode='200'") != std::string::npos) // status OK
+			continue;
+		if (iqmsg.find("errorcode='100'") != std::string::npos) // status continue - Hub has more data
+			continue;
+		return false;
+	}
+	return true;
+}
+
 
 bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	int pos;
-	if(m_commandcsocket== NULL || m_szAuthorizationToken.size() == 0)
+	if (m_commandcsocket== NULL || m_szAuthorizationToken.length() == 0)
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return false;
@@ -591,56 +701,46 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 	}
 
 	std::string lstrCommand = strCommand;
-	if(lstrCommand.size() == 0)
+	if (lstrCommand.length() == 0)
 	{
 		// No command provided, return query for the current activity
 		lstrCommand = GET_CURRENT_ACTIVITY_COMMAND;
 	}
 
 	std::string strData;
+	std::string strReq;
 
-	std::string sendData;
-
-	sendData = "<iq type=\"get\" id=\"";
-	sendData.append(CONNECTION_ID);
-	sendData.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.harmony/vnd.logitech.harmony.engine?");
+	strReq = "<iq type=\"get\" id=\"";
+	strReq.append(CONNECTION_ID);
+	strReq.append("\"><oa xmlns=\"connect.logitech.com\" mime=\"vnd.logitech.harmony/vnd.logitech.harmony.engine?");
 
 	// Issue the provided command
-	if (lstrCommand == GET_CURRENT_ACTIVITY_COMMAND || lstrCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
+	if (lstrCommand == GET_CURRENT_ACTIVITY_COMMAND)
 	{
-		sendData.append("getCurrentActivity\" /></iq>");
+		strReq.append("getCurrentActivity\" /></iq>");
 	}
-	else if (lstrCommand == GET_CONFIG_COMMAND_RAW)
+	else if (lstrCommand == GET_CONFIG_COMMAND)
 	{
-		sendData.append("config\"></oa></iq>");        
+		strReq.append("config\"></oa></iq>");
 	}
-	else if (lstrCommand == "start_activity")
+	else if (lstrCommand == START_ACTIVITY_COMMAND)
 	{
-		sendData.append("startactivity\">activityId=");
-		sendData.append(strCommandParameterPrimary.c_str());
-		sendData.append(":timestamp=0</oa></iq>");
-	}
-	else if (lstrCommand == "issue_device_command")
-	{
-		sendData.append("holdAction\">action={\"type\"::\"IRCommand\",\"deviceId\"::\"");
-		sendData.append(strCommandParameterPrimary.c_str());
-		sendData.append("\",\"command\"::\"");
-		sendData.append(strCommandParameterSecondary.c_str());
-		sendData.append("\"}:status=press</oa></iq>");
+		strReq.append("startactivity\">activityId=");
+		strReq.append(strCommandParameterPrimary.c_str());
+		strReq.append(":timestamp=0</oa></iq>");
 	}
 
-	m_commandcsocket->write(sendData.c_str(), sendData.size());
+	m_commandcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
+	char databuffer[BUFFER_SIZE];
 	bool bIsDataReadable = true;
-	m_commandcsocket->canRead(&bIsDataReadable,5.0f);
+	m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 	while(bIsDataReadable)
 	{
-		memset(m_databuffer, 0, BUFFER_SIZE);
-		m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-		std::string szNewData = std::string(m_databuffer);
-		if (!szNewData.empty())
+		memset(databuffer, 0, BUFFER_SIZE);
+		if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 		{
-			strData.append(m_databuffer);
+			strData.append(databuffer);
 			m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 		}
 		else
@@ -651,76 +751,78 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	CheckIfChanging(strData);
 
-	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND || strCommand == GET_CURRENT_ACTIVITY_COMMAND_RAW)
+	if (strCommand == GET_CURRENT_ACTIVITY_COMMAND)
 	{
-		pos = strData.find("result=");
-		if (pos != std::string::npos)
+		size_t astart = strData.find("result=");
+		if (astart != std::string::npos)
 		{
-			strData = strData.substr(pos + 7);
-			pos = strData.find("]]>");
-			if (pos != std::string::npos)
+			size_t aend = strData.find("]]>",astart + 7);
+			if (aend != std::string::npos)
 			{
-				strData = strData.substr(0, pos);
-				m_szResultString = strData;
+				m_szResultString = strData.substr(astart + 7, aend - astart - 7);
 				return true;
 			}
 		}
-		else
+
+		//No valid response received
+		if (m_bIsChangingActivity)
 		{
-			//No valid response received
-			if (m_bIsChangingActivity)
-				m_szResultString = m_szCurActivityID; //changing, so no response from HH
-			else
-				return false;
+			m_szResultString = m_szCurActivityID; //changing, so no response from HH
+			return true;
 		}
+
+		return false;
 	}
-	else if (strCommand == GET_CONFIG_COMMAND || strCommand == GET_CONFIG_COMMAND_RAW)
+	else if (strCommand == GET_CONFIG_COMMAND)
 	{
 		m_commandcsocket->canRead(&bIsDataReadable, 2.0f);
 		while(bIsDataReadable)
 		{
-			memset(m_databuffer, 0, BUFFER_SIZE);
-			m_commandcsocket->read(m_databuffer, BUFFER_SIZE, false);
-			std::string szNewData = std::string(m_databuffer);
-			if (!szNewData.empty())
+			memset(databuffer, 0, BUFFER_SIZE);
+			if (m_commandcsocket->read(databuffer, BUFFER_SIZE, false) > 0)
 			{
-				strData.append(m_databuffer);
+				strData.append(databuffer);
 				m_commandcsocket->canRead(&bIsDataReadable, 0.4f);
 			}
 			else
 				bIsDataReadable = false;
 		}
 
-		pos = strData.find("<![CDATA[");
-		if (pos == std::string::npos)
-			return false;
-		strData=strData.substr(pos + 9);
-		pos = strData.find("]]>");
-		if (pos != std::string::npos)
+		size_t cstart = strData.find("<![CDATA[");
+		if (cstart != std::string::npos)
 		{
-			m_szResultString = strData.substr(0, pos);
+			cstart += 9;
+			size_t cend = strData.find("]]>",cstart);
+			if (cend != std::string::npos)
+			{
+				m_szResultString = strData.substr(cstart, cend - cstart);
+				return true;
+			}
 		}
+
+		return false;
 	}
-	else if (strCommand == "start_activity" || strCommand == "issue_device_command")
+	else if (strCommand == START_ACTIVITY_COMMAND)
 	{
 		m_szResultString = "";
 	}
 	return true;
 }
 
+
 bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 {
 	//activityStatus
-	// 0 = Hub is off
+	// 0 = All activities are off
 	// 1 = Activity is starting
 	// 2 = Activity is started
-	// 3 = Hub is turning off
+	// 3 = Activity is stopping
 
 	bool bIsChanging = m_bIsChangingActivity;
 	std::string LastActivity = m_szCurActivityID;
 
 	std::string szData = strData;
-	int pos;
+	size_t pos;
 
 	while (!szData.empty())
 	{
@@ -730,7 +832,6 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 
 		std::string szResponse = szData.substr(0, apos);
 		szData = szData.substr(apos + 10);
-
 		if (szResponse.find("getCurrentActivity") != std::string::npos)
 			continue; //dont want you
 
@@ -745,7 +846,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 			pos = szResponse.find("]]>");
 			if (pos == std::string::npos)
 				continue;
-			szResponse = szResponse.substr(0, pos);
+			szResponse[pos-1] = ':';
 
 			pos = szResponse.find("activityId=");
 			if (pos == std::string::npos)
@@ -764,55 +865,54 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 		pos = szResponse.find("<![CDATA[");
 		if (pos == std::string::npos)
 			continue;
-
 		szResponse = szResponse.substr(pos + 9);
+
 		pos = szResponse.find("]]>");
 		if (pos == std::string::npos)
 			continue;
-
 		szResponse = szResponse.substr(0, pos);
 
-		Json::Reader jReader;
-		Json::Value root;
-		bool ret = jReader.parse(szResponse, root);
-		if ((!ret) || (!root.isObject()))
+		pos = szResponse.find("activityStatus");
+		if (pos == std::string::npos)
 			continue;
 
-		if (root["activityStatus"].empty())
-			continue;
+		char cActivityStatus = szResponse[pos+16];
 
-		try
+		pos = szResponse.find("hubSwVersion");
+		if (pos != std::string::npos)
 		{
-			int activityStatus = root["activityStatus"].asInt();
-			if (!root["hubSwVersion"].empty())
+			std::string hubSwVersion = szResponse.substr(pos+15, 16); // limit string length for end delimiter search
+			pos = hubSwVersion.find("\"");
+			if (pos == std::string::npos)
+				continue;
+			hubSwVersion = hubSwVersion.substr(0, pos);
+			if (hubSwVersion != m_hubSwVersion)
 			{
-				std::string hubSwVersion = root["hubSwVersion"].asString();
-				if (hubSwVersion != m_hubSwVersion)
-				{
-					m_hubSwVersion = hubSwVersion;
-					_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
-				}
-			}
-			bIsChanging = (activityStatus == 1);
-			if (activityStatus == 2)
-			{
-				if (!root["activityId"].empty())
-				{
-					LastActivity = root["activityId"].asString();
-				}
-			}
-			else if (activityStatus == 3)
-			{
-				//Power Off
-				LastActivity = "-1";
+				m_hubSwVersion = hubSwVersion;
+				_log.Log(LOG_STATUS, "Harmony Hub: Software version: %s", m_hubSwVersion.c_str());
 			}
 		}
-		catch (...)
+
+		bIsChanging = ((cActivityStatus == '1') || (cActivityStatus == '3'));
+		if (cActivityStatus == '2')
 		{
-			_log.Log(LOG_ERROR, "Harmony Hub: Invalid data received! (Check Activity change, JSon activity)");
+			pos = szResponse.find("activityId");
+			if (pos == std::string::npos)
+				continue;
+			szResponse = szResponse.substr(pos + 13, 10); // limit string length for end delimiter search
+			pos = szResponse.find("\"");
+			if (pos != std::string::npos)
+			{
+				LastActivity = szResponse.substr(0, pos);
+			}
+		}
+		else if (cActivityStatus == '0')
+		{
+			//Power Off
+			LastActivity = "-1";
 		}
 	}
-	
+
 	if (bIsChanging != m_bIsChangingActivity)
 	{
 		m_bIsChangingActivity = bIsChanging;
@@ -834,6 +934,7 @@ bool CHarmonyHub::CheckIfChanging(const std::string& strData)
 	return true;
 }
 
+/*
 bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID)
 {
 	Action a;
@@ -869,7 +970,7 @@ bool CHarmonyHub::ParseAction(const std::string& strAction, std::vector<Action>&
 	vecDeviceActions.push_back(a);
 	return true;
 }
-
+*/
 /*
 bool CHarmonyHub::ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID)
 {

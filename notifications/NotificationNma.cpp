@@ -27,10 +27,14 @@ bool CNotificationNma::SendMessageImplementation(
 	bool bRet;
 	std::stringstream sPostData;
 	std::string sResult;
-	sPostData << "apikey=" << _apikey << "&application=Domoticz&priority=" << Priority << "&event=" << Subject;
-	sPostData << "&description=" << Text;
-	std::vector<std::string> ExtraHeaders;
-	bRet = HTTPClient::POST("https://www.notifymyandroid.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
+	sPostData
+		<< "apikey=" << _apikey
+		<< "&application=Domoticz"
+		<< "&event=" << Subject
+		<< "&description=" << Text
+		<< "&priority=" << Priority;
+		std::vector<std::string> ExtraHeaders;
+	bRet = HTTPClient::POST("https://notifymyandroid.appspot.com/publicapi/notify",sPostData.str(),ExtraHeaders,sResult);
 	bool bSuccess = (sResult.find("success code=\"200\"") != std::string::npos);
 	if (!bSuccess)
 		_log.Log(LOG_ERROR, "NMA: %s", sResult.c_str());

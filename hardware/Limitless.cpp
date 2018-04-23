@@ -529,7 +529,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 	if (m_BridgeType == LBTYPE_V6)
 	{
-		if (m_LEDType == sTypeColor_RGB_CW_WW)
+		if (pLed->subtype == sTypeColor_RGB_CW_WW)
 		{
 			switch (pLed->command)
 			{
@@ -1079,7 +1079,25 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char length)
 			sleep_milliseconds(100);
 
 			//Send the command
-			if (pLed->color.mode == ColorModeRGB)
+			if (pLed->color.mode == ColorModeWhite)
+			{
+				if (pLed->dunit == 0) {
+					pCMD = (unsigned char*)&RGBWSetColorToWhiteAll;
+				}
+				else if (pLed->dunit == 1) {
+					pCMD = (unsigned char*)&RGBWSetColorToWhiteGroup1;
+				}
+				else if (pLed->dunit == 2) {
+					pCMD = (unsigned char*)&RGBWSetColorToWhiteGroup2;
+				}
+				else if (pLed->dunit == 3) {
+					pCMD = (unsigned char*)&RGBWSetColorToWhiteGroup3;
+				}
+				else if (pLed->dunit == 4) {
+					pCMD = (unsigned char*)&RGBWSetColorToWhiteGroup4;
+				}
+			}
+			else if (pLed->color.mode == ColorModeRGB)
 			{
 				// Convert RGB to HSV
 				float hsb[3];

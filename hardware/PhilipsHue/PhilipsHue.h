@@ -20,17 +20,27 @@ class CPhilipsHue : public CDomoticzHardwareBase
 		HLTYPE_CW_WW,
 		HLTYPE_RGB_CW_WW
 	};
-	struct _tHueLight
+	enum _eHueColorMode
+	{
+		HLMODE_NONE,
+		HLMODE_HS,
+		HLMODE_CT,
+		HLMODE_XY
+	};
+	struct _tHueLightState
 	{
 		bool on;
+		_eHueColorMode mode;
 		int level;
-		int sat;
 		int hue;
+		int sat;
 		int ct;
+		double x;
+		double y;
 	};
 	struct _tHueGroup
 	{
-		_tHueLight gstate;
+		_tHueLightState gstate;
 		std::vector<int> lights;
 	};
 	struct _tHueScene
@@ -52,7 +62,7 @@ private:
 	std::string m_UserName;
 	volatile bool m_stoprequested;
 	boost::shared_ptr<boost::thread> m_thread;
-	std::map<int, _tHueLight> m_lights;
+	std::map<int, _tHueLightState> m_lights;
 	std::map<int, _tHueGroup> m_groups;
 	std::map<std::string, _tHueScene> m_scenes;
 	std::map<int, CPHSensor> m_sensors;
@@ -66,8 +76,11 @@ private:
 	bool GetGroups(const Json::Value &root);
 	bool GetScenes(const Json::Value &root);
 	bool GetSensors(const Json::Value &root);
-	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, const bool bIsOn, const int BrightnessLevel, const int Sat, const int Hue, const std::string &Name, const std::string &Options);
+	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid);
 	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
+	static void LightStateFromJSON(Json::Value lightstate, _tHueLightState &tlight, _eHueLightType &LType);
+	static void RgbFromXY(double x, double y, double bri, std::string modelid, uint8_t &r8, uint8_t &g8, uint8_t &b8);
+	static bool StatesSimilar(_tHueLightState &s1, _tHueLightState &s2);
 };
 

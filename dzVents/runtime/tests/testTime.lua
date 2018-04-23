@@ -96,6 +96,12 @@ describe('Time', function()
 			assert.is_same(utcRaw, utcT.raw)
 		end)
 
+		it('should have leading zeros in raw time', function()
+			local t = Time('2017-01-01 01:02:03')
+			assert.is_same('01:02:03', t.rawTime)
+			assert.is_same('2017-01-01', t.rawDate)
+		end)
+
 		it('should have isToday', function()
 			assert.is_true(utcT.isToday)
 		end)
@@ -1213,6 +1219,32 @@ describe('Time', function()
 
 				assert.is_true(t.matchesRule('on 20/* on mon'))
 
+			end)
+
+			it('at 08:00-15:00 on 21/4-30/4', function()
+				local t = Time('2017-04-21 08:04:00')
+				assert.is_true(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
+
+				t = Time('2017-04-21 07:04:00')
+				assert.is_false(t.matchesRule('at 08:00-15:00 on 21/4-30/4'))
+
+			end)
+
+			it('every 3 minutes on -15/4,15/10-', function()
+				local t = Time('2017-04-18 11:24:00')
+				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))
+
+				t = Time('2017-04-15 11:24:00')
+				assert.is_true(t.matchesRule('every 3 minutes on -15/4,15/10-'))
+
+				t = Time('2017-10-15 11:24:00')
+				assert.is_true(t.matchesRule('every 3 minutes on -15/4,15/10-'))
+
+				t = Time('2017-10-14 11:24:00')
+				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))
+
+				t = Time('2017-10-15 11:25:00')
+				assert.is_false(t.matchesRule('every 3 minutes on -15/4,15/10-'))
 			end)
 
 			it('every 10 minutes between 2 minutes after sunset and 22:33 on mon,fri', function()

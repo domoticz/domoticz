@@ -66,6 +66,7 @@ li {
   border: none;
 }
 .bannercontent {
+  padding-top: 60px;
   padding-bottom: 12px;
 }
 /*OLD
@@ -193,7 +194,7 @@ body table#itemtabletrippleicon tbody tr:hover {
 }
 #copyright p {
   color: #bebebe;
-  /* margin-top: 20px;*/
+  margin-top: 10px;
 }
 #copyright a {
   /* color: #ddddff; */
@@ -292,26 +293,11 @@ div#utilitycontent {
   margin: 0 0 2px 0;
   text-shadow: none !important;
 }
-/*selector switch pulldown*/
-td#status {
-}
-td#lastupdate{ /* last update row*/
-  /*position: absolute;
-  right: 10px;*/
-  /*top: 35px;*/
-  /*bottom: 43px;*/
-}
-/*dashboard last update row*/
-body table#itemtablesmall td#lastupdate,
-body table#itemtablesmalldoubleicon td#lastupdate,
-body table#itemtablesmalltrippleicon td#lastupdate {
-  /*top: 60px !important;*/
-}
+
 /*dashboard status row*/
 body table#itemtablesmall td,
 body table#itemtablesmalldoubleicon td,
 body table#itemtablesmalltrippleicon td {
-  /*margin: 15px 0px 0px -5px;*/
   margin: 0px 0px 0px -6px;
 }
 td#type{ /* type of switch row*/
@@ -721,12 +707,16 @@ input[type="search"] {
 }
 .btnstyle3:hover,
 .btnstyle3-sel:hover,
-.btnstyle3-dis:hover,
 .btn.btn-info:hover
  {
   margin-bottom: 3px;
   color: yellow !important;
   background: #353535;
+}
+.btnstyle3:disabled {
+  opacity: 0.35;
+  background: #3c3e40;
+  text-transform: uppercase;
 }
 #type br {
   display: none;
@@ -767,10 +757,6 @@ body table#itemtablenotype tr td:first-child+td+td+td+td+td img {
 #notificationtable_paginate,
 #devices_paginate {
   margin: 0px 0px 0px 0px;
-}
-/*copyright*/
-.ng-binding {
-  margin-top: 10px;
 }
 
 /*bar color behind buttons*/
@@ -877,17 +863,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .btn.btn-success:hover {
   color: yellow;
 }
-/*About page background
-#holder,
-.ng-binding,
-#canvas2,
-#syno-nsc-ext-gen3 {
-  background: #444 url(images/domoticz_bg.jpg) center fixed;
-}
-.ng-binding {
-  margin: 19px 0px 0px 0px;
-}
-*/
+
 /*border on button and text before button*/
 .btnstyle3:before,
 .btnstyle3-dis:before,
@@ -900,10 +876,9 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 .nav-tabs  > li > a:before,
 .btn-small:before,
 .btn-success:before {
-  /*content: "> " !important;
-  font-size: 0.8em;*/
 }
 .btnstyle3,
+.btnstyle3:disabled,
 .btnstyle3-dis,
 .btnstyle3-sel,
 .btn.btn-info,
@@ -964,4 +939,7 @@ body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
 }
 .dropdown-submenu > a:after {
     margin-right: 0px;
+}
+.modal-body form {
+  color: #000;
 }
