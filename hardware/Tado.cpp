@@ -23,9 +23,9 @@
 #include "../webserver/Base64.h"
 #include "Tado.h"
 
-const int TADO_POLL_INTERVAL = 30;  // The plugin should collect information from the API every n seconds.
-const std::string TADO_API_ENVIRONMENT_URL = "https://my.tado.com/webapp/env.js";
-const int TADO_TOKEN_MAXLOOPS = 12;	// Default token validity is 600 seconds before it needs to be refreshed.
+#define TADO_POLL_INTERVAL 30		// The plugin should collect information from the API every n seconds.
+#define TADO_API_ENVIRONMENT_URL "https://my.tado.com/webapp/env.js"
+#define TADO_TOKEN_MAXLOOPS 12		// Default token validity is 600 seconds before it needs to be refreshed.
 									// Each cycle takes 30-35 seconds, so let's stay a bit on the safe side.
 
 CTado::~CTado(void)
