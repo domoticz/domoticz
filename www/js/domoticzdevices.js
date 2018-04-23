@@ -1155,7 +1155,15 @@ function Sensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/" + item.TypeImg + "48.png";
-        this.LogLink = this.onClick = "Show" + this.type.replace(/\s/g, '') + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+
+        var sensorType = this.type.replace(/\s/g, '');
+
+        if (sensorType === 'General') {
+            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        } else {
+            this.LogLink = this.onClick = "Show" + sensorType + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+        }
+
         this.imagetext = "Show graph";
         this.NotifyLink = 'ShowNotifications(' + this.index + ",'" + this.name + "','#" + Device.contentTag + "','" + Device.backFunction + "');";
         if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "','" + this.cameraIdx + "')";
@@ -1477,7 +1485,13 @@ Group.inheritsFrom(Switch);
 function Hardware(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+
+        if (this.subtype === 'General') {
+            this.LogLink = "window.location.href = '#/Devices/" + this.index + "/LightLog'";
+        } else {
+            this.LogLink = this.onClick = "Show" + this.subtype + "Log('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "', '" + this.switchTypeVal + "');";
+        }
+
         if (item.CustomImage == 0)
             switch (item.SubType.toLowerCase()) {
                 case "percentage":
