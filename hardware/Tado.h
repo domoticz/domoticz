@@ -20,8 +20,6 @@ class CTado : public CDomoticzHardwareBase
 		bool StopHardware();
 		void Do_Work();
 
-		
-
 		boost::shared_ptr<boost::thread> m_thread;
 		volatile bool m_stoprequested;
 
@@ -71,6 +69,7 @@ class CTado : public CDomoticzHardwareBase
 		bool CreateOverlay(const int idx, const float temp, const bool heatingenabled, const std::string termination);
 		bool CancelOverlay(const int Idx);
 		bool MatchValueFromJSKey(const std::string sKeyName, const std::string sJavascriptData, std::string & sValue);
+		std::vector<std::string> StringSplitEx(const std::string & inputString, const std::string delimiter, const int maxelements = 0);
 
 		std::string m_TadoUsername;
 		std::string m_TadoPassword;

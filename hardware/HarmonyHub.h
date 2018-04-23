@@ -107,6 +107,8 @@ private:
 	bool SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary);
 	bool CheckIfChanging(const std::string& strData);
 	bool SendPing();
+	bool CheckIqGood(const std::string& strData);
+
 
 	//bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
@@ -125,6 +127,6 @@ private:
 	boost::shared_ptr<boost::thread> m_thread;
 //	char m_databuffer[BUFFER_SIZE];
 	std::string m_szResultString;
-	bool bFirstTime;
-	bool bShowConnectError;
+	bool m_bShowConnectError;
+	std::map< std::string, std::string> m_mapActivities;
 };

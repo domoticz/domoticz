@@ -509,8 +509,8 @@ define(['app'], function (app) {
             if (isLevelsAvailable()) {
                 var levelParams = vm.levels.reduce(function (acc, level) {
                     return {
-                        names: acc.names.concat(encodeURIComponent(level.name)),
-                        actions: acc.actions.concat(encodeURIComponent(level.action))
+                        names: acc.names.concat(level.name),
+                        actions: acc.actions.concat(level.action)
                     };
                 }, {names: [], actions: []});
 
