@@ -1149,9 +1149,20 @@ int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, 
 		{
 			return 0;
 		}
-		size_t ulen=strlen("username=");
-		std::string tmpuname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
-		std::string tmpupass=req.uri.substr(pPos+strlen("username="));
+		uPos += 9; //strlen("username=")
+		pPos += 9; //strlen("password=")
+		size_t uEnd = req.uri.find("&", uPos);
+		size_t pEnd = req.uri.find("&", pPos);
+		std::string tmpuname;
+		std::string tmpupass;
+		if (uEnd == std::string::npos)
+			tmpuname = req.uri.substr(uPos);
+		else
+			tmpuname = req.uri.substr(uPos, uEnd-uPos);
+		if (pEnd == std::string::npos)
+			tmpupass = req.uri.substr(pPos);
+		else
+			tmpupass = req.uri.substr(pPos, pEnd-pPos);
 		if (request_handler::url_decode(tmpuname,uname))
 		{
 			if (request_handler::url_decode(tmpupass,upass))
