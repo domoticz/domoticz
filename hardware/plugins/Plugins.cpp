@@ -1578,7 +1578,7 @@ namespace Plugins {
 	void CPlugin::SendCommand(const int Unit, const std::string &command, const int level, const _tColor color)
 	{
 		//	Add command to message queue
-		std::string JSONColor = color.toJSON();
+		std::string JSONColor = color.toJSONString();
 		MessagePlugin(new onCommandCallback(this, Unit, command, level, JSONColor));
 	}
 
