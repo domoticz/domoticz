@@ -240,7 +240,7 @@ namespace Plugins {
 				if (type == 1) type = PDM_ALL;
 
 				pModState->pPlugin->m_bDebug = (PluginDebugMask)type;
-				_log.Log(LOG_NORM, "(%s) Debug logging mask set to: %s%s%s%s%s%s%s%s%s", pModState->pPlugin->Name.c_str(), 
+				_log.Log(LOG_NORM, "(%s) Debug logging mask set to: %s%s%s%s%s%s%s%s%s", pModState->pPlugin->Name.c_str(),
 																					(type == PDM_NONE ? "NONE" : ""),
 																					(type & PDM_PYTHON ? "PYTHON " : ""),
 																					(type & PDM_PLUGIN ? "PLUGIN " : ""),
@@ -407,11 +407,14 @@ namespace Plugins {
 		m_HwdID = HwdID;
 		Name = sName;
 		m_bIsStarted = false;
+		m_bIsStarting = false;
+		_log.Log(LOG_STATUS, "(%s) CPlugin::CPlugin()", Name.c_str());
 	}
 
 	CPlugin::~CPlugin(void)
 	{
 		m_bIsStarted = false;
+		_log.Log(LOG_STATUS, "(%s) CPlugin::~CPlugin()", Name.c_str());
 	}
 
 	void CPlugin::LogPythonException()
@@ -654,21 +657,69 @@ namespace Plugins {
 
 	bool CPlugin::StartHardware()
 	{
+		_log.Log(LOG_STATUS, "(%s) enter CPlugin::StartHardware", Name.c_str());
 		if (m_bIsStarted) StopHardware();
 
 		//	Add start command to message queue
+		m_bIsStarting = true;
 		MessagePlugin(new InitializeMessage(this));
 
 		_log.Log(LOG_STATUS, "(%s) Started.", Name.c_str());
 
+		_log.Log(LOG_STATUS, "(%s) leave CPlugin::StartHardware", Name.c_str());
 		return true;
+	}
+
+	void CPlugin::ClearMessageQueue()
+	{
+		// Copy the event queue to a temporary one, then copy back the events for other plugins
+		boost::lock_guard<boost::mutex> l(PluginMutex);
+		std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
+		while (!PluginMessageQueue.empty())
+			PluginMessageQueue.pop();
+
+		while (!TempMessageQueue.empty())
+		{
+			CPluginMessageBase* FrontMessage = TempMessageQueue.front();
+			TempMessageQueue.pop();
+			if (FrontMessage->m_pPlugin == this)
+			{
+				// log events that will not be processed
+				CCallbackBase* pCallback = dynamic_cast<CCallbackBase*>(FrontMessage);
+				if (pCallback)
+					_log.Log(LOG_ERROR, "(%s) Callback event '%s' (Python call '%s') discarded.", Name.c_str(), FrontMessage->Name(), pCallback->PythonName());
+				else
+					_log.Log(LOG_ERROR, "(%s) Non-callback event '%s' discarded.", Name.c_str(), FrontMessage->Name());
+			}
+			else
+			{
+				// Message is for a different plugin so requeue it
+				_log.Log(LOG_NORM, "(%s) requeuing '%s' message for '%s'", Name.c_str(), FrontMessage->Name(), FrontMessage->Plugin()->Name.c_str());
+				PluginMessageQueue.push(FrontMessage);
+			}
+		}
 	}
 
 	bool CPlugin::StopHardware()
 	{
+		_log.Log(LOG_STATUS, "(%s) enter CPlugin::StopHardware", Name.c_str());
 		try
 		{
 			_log.Log(LOG_STATUS, "(%s) Stop directive received.", Name.c_str());
+
+			// loop on plugin to finish startup
+			while (m_bIsStarting)
+			{
+				int scounter = 0;
+				while (m_bIsStarting && (scounter++ < 600))
+				{
+					sleep_milliseconds(100);
+				}
+				if (m_bIsStarting)
+				{
+					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after 60 seconds", Name.c_str());
+				}
+			}
 
 			m_stoprequested = true;
 			if (m_bIsStarted)
@@ -706,32 +757,7 @@ namespace Plugins {
 				{
 					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, flushing event queue...", Name.c_str());
 
-					// Copy the event queue to a temporary one, then copy back the events for other plugins
-					boost::lock_guard<boost::mutex> l(PluginMutex);
-					std::queue<CPluginMessageBase*>	TempMessageQueue(PluginMessageQueue);
-					while (!PluginMessageQueue.empty())
-						PluginMessageQueue.pop();
-
-					while (!TempMessageQueue.empty())
-					{
-						CPluginMessageBase* FrontMessage = TempMessageQueue.front();
-						TempMessageQueue.pop();
-						if (FrontMessage->m_pPlugin == this)
-						{
-							// log events that will not be processed
-							CCallbackBase* pCallback = dynamic_cast<CCallbackBase*>(FrontMessage);
-							if (pCallback)
-								_log.Log(LOG_ERROR, "(%s) Callback event '%s' (Python call '%s') discarded.", Name.c_str(), FrontMessage->Name(), pCallback->PythonName());
-							else
-								_log.Log(LOG_ERROR, "(%s) Non-callback event '%s' discarded.", Name.c_str(), FrontMessage->Name());
-						}
-						else
-						{
-							// Message is for a different plugin so requeue it
-							_log.Log(LOG_NORM, "(%s) requeuing '%s' message for '%s'", Name.c_str(), FrontMessage->Name(), FrontMessage->Plugin()->Name.c_str());
-							PluginMessageQueue.push(FrontMessage);
-						}
-					}
+					ClearMessageQueue();
 					m_bIsStarted = false;
 				}
 			}
@@ -752,6 +778,7 @@ namespace Plugins {
 		}
 
 		_log.Log(LOG_STATUS, "(%s) Stopped.", Name.c_str());
+		_log.Log(LOG_STATUS, "(%s) leave CPlugin::StopHardware", Name.c_str());
 
 		return true;
 	}
@@ -813,6 +840,7 @@ namespace Plugins {
 			if (!m_PyInterpreter)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 
@@ -848,6 +876,7 @@ namespace Plugins {
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
 					LogPythonException();
+					m_bIsStarting = false;
 					return false;
 				}
 			}
@@ -861,6 +890,7 @@ namespace Plugins {
 			if (!pMod)
 			{
 				_log.Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pMod));
@@ -873,6 +903,7 @@ namespace Plugins {
 			if (!m_thread)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed start worker thread.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 
@@ -922,6 +953,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
 		}
 
+		m_bIsStarting = false;
 		return false;
 	}
 
@@ -934,6 +966,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 			Py_DECREF(pParamsDict);
@@ -942,6 +975,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
+				m_bIsStarting = false;
 				return false;
 			}
 			Py_DECREF(pObj);
@@ -986,6 +1020,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Device dictionary.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 
@@ -1004,6 +1039,7 @@ namespace Plugins {
 					if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+						m_bIsStarting = false;
 						return false;
 					}
 					pDevice->pPlugin = this;
@@ -1020,6 +1056,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Images", (PyObject*)m_ImageDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
+				m_bIsStarting = false;
 				return false;
 			}
 
@@ -1038,6 +1075,7 @@ namespace Plugins {
 					if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
+						m_bIsStarting = false;
 						return false;
 					}
 					pImage->ImageID = atoi(sd[0].c_str()) + 100;
@@ -1052,6 +1090,7 @@ namespace Plugins {
 			LoadSettings();
 
 			m_bIsStarted = true;
+			m_bIsStarting = false;
 			return true;
 		}
 		catch (...)
@@ -1059,6 +1098,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
 		}
 
+		m_bIsStarting = false;
 		return false;
 	}
 
@@ -1482,6 +1522,7 @@ namespace Plugins {
 		{
 			_log.Log(LOG_ERROR, "%s: Unknown execption thrown releasing Interpreter", __func__);
 		}
+		ClearMessageQueue();
 		m_PyModule = NULL;
 		m_DeviceDict = NULL;
 		m_ImageDict = NULL;

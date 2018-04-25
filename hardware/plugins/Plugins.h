@@ -51,6 +51,7 @@ namespace Plugins {
 		bool StartHardware();
 		void Do_Work();
 		bool StopHardware();
+		void ClearMessageQueue();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
@@ -104,6 +105,7 @@ namespace Plugins {
 		std::string			m_HomeFolder;
 		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
+		bool				m_bIsStarting;
 	};
 
 	class CPluginNotifier : public CNotificationBase
