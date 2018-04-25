@@ -19,6 +19,8 @@
 using namespace std;
 
 #define HUE_DEFAULT_POLL_INTERVAL 10
+#define HUE_NOT_ADD_GROUPS 0x01
+#define HUE_NOT_ADD_SCENES 0x02
 
 //#define DEBUG_PhilipsHue
 
@@ -50,15 +52,15 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval, const int AddGroupsScenes) :
+CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval, const int Options) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
 	m_HwdID=ID;
 	m_Port = Port;
 	m_poll_interval = PollInterval;
-	m_add_groups = !(AddGroupsScenes&1);
-	m_add_scenes = !(AddGroupsScenes&2);
+	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) == 0;
+	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) == 0;
 	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
