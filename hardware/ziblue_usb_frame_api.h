@@ -254,16 +254,36 @@ struct  INCOMING_RF_INFOS_TYPE12 { // Used by  DIGIMAX TS10 protocol // deprecat
 };
 
 struct  INCOMING_RF_INFOS_TYPE13 { // Used by  Cartelectronic TIC/Pulses devices (Teleinfo/TeleCounters)
-	unsigned short subtype;// subtype/version
+	unsigned short subtype;// subtype/version (0: Teleinfo mode, 1: Encoder Mode, 2: Linky Mode)
 	unsigned short idLsb;
 	unsigned short idMsb;
-	unsigned short qualifier; // D8-15: idMsb2 ; D0:7 : flags 
-	unsigned short infos; //state/contract type
-	unsigned short counter1Lsb;
+	unsigned short qualifier;// Teleinfo mode:
+							// DO: battery flag (1: low)
+							// D1: Apparent power valid
+							// D2: teleinfo error (1: error)
+							// D3-D4: (0: no change price time warning, 1: white, 2: blue, 3 red/PEJP)
+							// D5: reserved for future usage
+							// D6: Teleinfo desactivated
+							// D7: Production
+							// Encoder mode
+							// DO: battery flag (1: low)
+							// Linky mode
+							// DO: battery flag (1: low)
+							// D1: Apparent power valid
+							// D2: teleinfo present
+							// D3-D4: PEJP or color price forcast for tomorrow(0: no change price time warning, 1: white, 2: blue, 3 red/PEJP)
+							// D5-D6: color price for today (0: no change price time warning, 1: white, 2: blue, 3 red/PEJP)
+	unsigned short infos;	//Teleinfo mode:
+							// D0-D7: contract type/current price time (1: HC, 0: HP)
+							// Linky mode:
+							// D0-D3: spare
+							// D4-D7: current index
+							// D8-D15: average voltage
+	unsigned short counter1Lsb; // unit Wh (HC)
 	unsigned short counter1Msb;
-	unsigned short counter2Lsb;
+	unsigned short counter2Lsb; // unit Wh (HP)
 	unsigned short counter2Msb;
-	unsigned short apparentPower;
+	unsigned short apparentPower; //unit: Watt (in fact, it is VA)
 };
 
 struct  INCOMING_RF_INFOS_TYPE14 { // Used by FS20. Same file as INCOMING_RF_INFOS_TYPE2
