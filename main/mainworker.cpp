@@ -408,12 +408,8 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 
 	if (pOrgDevice == pHardware)
 	{
-		_log.Log(LOG_STATUS, "MainWorker: Calling pOrgDevice->Stop");
 		pOrgDevice->Stop();
-		_log.Log(LOG_STATUS, "MainWorker: Return from pOrgDevice->Stop");
-		_log.Log(LOG_STATUS, "MainWorker: Calling delete pOrgDevice");
 		delete pOrgDevice;
-		_log.Log(LOG_STATUS, "MainWorker: Return from delete pOrgDevice");
 	}
 }
 
@@ -423,10 +419,8 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	if (dpos == -1)
 		return;
 #ifdef ENABLE_PYTHON
-	_log.Log(LOG_STATUS, "MainWorker: Calling m_pluginsystem.DeregisterPlugin");
 	m_pluginsystem.DeregisterPlugin(HwdId);
 #endif
-	_log.Log(LOG_STATUS, "MainWorker: Return from m_pluginsystem.DeregisterPlugin");
 	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
@@ -712,15 +706,10 @@ bool MainWorker::AddHardwareFromParams(
 	const bool bDoStart
 )
 {
-	_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams Calling RemoveDomoticzHardware");
 	RemoveDomoticzHardware(ID);
-	_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams return from RemoveDomoticzHardware");
 
 	if (!Enabled)
-	{
-		_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams !Enabled, return");
 		return true;
-	}
 
 	CDomoticzHardwareBase *pHardware = NULL;
 
@@ -1091,9 +1080,7 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_PythonPlugin:
 #ifdef ENABLE_PYTHON
-		_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams call m_pluginsystem.RegisterPlugin");
 		pHardware = m_pluginsystem.RegisterPlugin(ID, Name, Filename);
-		_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams return from m_pluginsystem.RegisterPlugin");
 #endif
 		break;
 	case HTYPE_XiaomiGateway:
@@ -1139,19 +1126,9 @@ bool MainWorker::AddHardwareFromParams(
 		AddDomoticzHardware(pHardware);
 
 		if (bDoStart)
-		{
-			_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams call pHardware->Start");
 			pHardware->Start();
-			_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams return from pHardware->Start");
-		}
-		else
-		{
-			_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams !bDoStart");
-		}
-		_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams return true");
 		return true;
 	}
-	_log.Log(LOG_STATUS, "MainWorker::AddHardwareFromParams return false");
 	return false;
 }
 

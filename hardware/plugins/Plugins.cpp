@@ -408,13 +408,11 @@ namespace Plugins {
 		Name = sName;
 		m_bIsStarted = false;
 		m_bIsStarting = false;
-		_log.Log(LOG_STATUS, "(%s) CPlugin::CPlugin()", Name.c_str());
 	}
 
 	CPlugin::~CPlugin(void)
 	{
 		m_bIsStarted = false;
-		_log.Log(LOG_STATUS, "(%s) CPlugin::~CPlugin()", Name.c_str());
 	}
 
 	void CPlugin::LogPythonException()
@@ -657,7 +655,6 @@ namespace Plugins {
 
 	bool CPlugin::StartHardware()
 	{
-		_log.Log(LOG_STATUS, "(%s) enter CPlugin::StartHardware", Name.c_str());
 		if (m_bIsStarted) StopHardware();
 
 		//	Add start command to message queue
@@ -666,7 +663,6 @@ namespace Plugins {
 
 		_log.Log(LOG_STATUS, "(%s) Started.", Name.c_str());
 
-		_log.Log(LOG_STATUS, "(%s) leave CPlugin::StartHardware", Name.c_str());
 		return true;
 	}
 
@@ -702,7 +698,6 @@ namespace Plugins {
 
 	bool CPlugin::StopHardware()
 	{
-		_log.Log(LOG_STATUS, "(%s) enter CPlugin::StopHardware", Name.c_str());
 		try
 		{
 			_log.Log(LOG_STATUS, "(%s) Stop directive received.", Name.c_str());
@@ -711,13 +706,13 @@ namespace Plugins {
 			while (m_bIsStarting)
 			{
 				int scounter = 0;
-				while (m_bIsStarting && (scounter++ < 600))
+				while (m_bIsStarting && (scounter++ < 300))
 				{
 					sleep_milliseconds(100);
 				}
 				if (m_bIsStarting)
 				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after 60 seconds", Name.c_str());
+					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after 30 seconds", Name.c_str());
 				}
 			}
 
@@ -778,7 +773,6 @@ namespace Plugins {
 		}
 
 		_log.Log(LOG_STATUS, "(%s) Stopped.", Name.c_str());
-		_log.Log(LOG_STATUS, "(%s) leave CPlugin::StopHardware", Name.c_str());
 
 		return true;
 	}
