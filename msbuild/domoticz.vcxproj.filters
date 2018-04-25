@@ -2359,7 +2359,7 @@
       <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ColorSwitch.cpp">
-      <Filter>Devices\hardwaretypes</Filter>
+      <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>

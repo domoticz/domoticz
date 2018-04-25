@@ -1,6 +1,9 @@
 #pragma once
 
-#include "../json/json.h"
+namespace Json
+{
+	class Value;
+};
 
 #define pTypeColorSwitch		0xF1
 #define sTypeColor_RGB_W		0x01 // RGB + white, either RGB or white can be lit
