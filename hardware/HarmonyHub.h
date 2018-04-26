@@ -102,6 +102,8 @@ private:
 	bool SendPing();
 	bool CheckIqGood(const std::string& strData);
 
+	bool ReceiveMessage(csocket* communicationcsocket, std::string &strMessage, float waitTimePrimary, float waitTimeSecondary, bool append);
+
 
 	//bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
