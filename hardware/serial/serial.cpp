@@ -2,11 +2,11 @@
 #include "stdafx.h"
 #include <algorithm>
 
-#if !defined(_WIN32) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if !defined(_WIN32) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__NetBSD__)
 # include <alloca.h>
 #endif
 
-#if defined (__MINGW32__)
+#if defined (__MINGW32__) || defined(__NetBSD__)
 # define alloca __builtin_alloca
 #endif
 

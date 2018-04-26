@@ -38,6 +38,10 @@ Contributors:
 #  include <netinet/in.h>
 #endif
 
+#ifdef __NetBSD__
+#  include <netinet/in.h>
+#endif
+
 #ifdef __SYMBIAN32__
 #include <netinet/in.h>
 #endif

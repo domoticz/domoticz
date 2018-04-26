@@ -353,7 +353,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	{
 		return GetModuleFileNameA(NULL, pathName, (DWORD)pathNameCapacity);
 	}
-#elif defined(__linux__) || defined(__CYGWIN32__) /* elif of: #if defined(_WIN32) */
+#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__NetBSD__) /* elif of: #if defined(_WIN32) */
 	#include <unistd.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 	{
