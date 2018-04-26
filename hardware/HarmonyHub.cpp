@@ -58,10 +58,7 @@ History:
 // Normal implementations will however obey the 1500 bytes MTU from the wired networks that
 // they are attached to and this may be limited even further if the router uses mechanisms like
 // PPTP for connecting the (Wireless) LAN to the internet.
-#define READBUFFER_SIZE  1500
-
-// Our data buffer needs to have one additional byte to always allow us to use it as a string
-#define DATABUFFER_SIZE  READBUFFER_SIZE + 1
+#define SOCKET_BUFFER_SIZE  1500
 
 
 // socket timeout values
@@ -250,13 +247,13 @@ void CHarmonyHub::Do_Work()
 
 			boost::lock_guard<boost::mutex> lock(m_mutex);
 			std::string strData;
-			char databuffer[DATABUFFER_SIZE];
+			char databuffer[SOCKET_BUFFER_SIZE];
 			while (bIsDataReadable)
 			{
-				memset(databuffer, 0, DATABUFFER_SIZE);
-				if (m_commandcsocket->read(databuffer, READBUFFER_SIZE, false) > 0)
+				int bytesReceived = m_commandcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+				if (bytesReceived > 0)
 				{
-					strData.append(databuffer);
+					strData.append(databuffer, 0, bytesReceived);
 					m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_NEXT_FRAME);
 				}
 				else
@@ -502,7 +499,7 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	if (communicationcsocket == NULL || strUserName.length() == 0 || strPassword.length() == 0)
 		return false;
 
-	char databuffer[DATABUFFER_SIZE];
+	char databuffer[SOCKET_BUFFER_SIZE];
 	// Start communication
 	std::string strReq = "<stream:stream to='connect.logitech.com' xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' xml:lang='en' version='1.0'>";
 	communicationcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
@@ -511,9 +508,8 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	communicationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	if (bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		communicationcsocket->read(databuffer, READBUFFER_SIZE, false);
-		strData = databuffer;
+		int bytesReceived = communicationcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		strData = std::string(databuffer, bytesReceived);
 		/* <- Expect: <?xml version='1.0' encoding='iso-8859-1'?><stream:stream from='' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features> */
 	}
 	if (strData.find("<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>") == std::string::npos)
@@ -535,9 +531,8 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	communicationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	if (bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		communicationcsocket->read(databuffer, READBUFFER_SIZE, false);
-		strData = databuffer;
+		int bytesReceived = communicationcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		strData = std::string(databuffer, bytesReceived);
 		/* <- Expect: <success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/> */
 	}
 
@@ -553,9 +548,8 @@ bool CHarmonyHub::StartCommunication(csocket* communicationcsocket, const std::s
 	communicationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	if (bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		communicationcsocket->read(databuffer, READBUFFER_SIZE, false);
-		strData = databuffer;
+		int bytesReceived = communicationcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		strData = std::string(databuffer, bytesReceived);
 		/* <- Expect: <stream:stream from='connect.logitech.com' id='XXXXXXXX' version='1.0' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/><session xmlns='urn:ietf:params:xml:nx:xmpp-session'/></stream:features> */
 	}
 	if (strData.find("<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>") == std::string::npos)
@@ -578,7 +572,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 
 	std::string strData;
 	std::string strReq;
-	char databuffer[DATABUFFER_SIZE];
+	char databuffer[SOCKET_BUFFER_SIZE];
 
 	strReq = "<iq type=\"get\" id=\"";
 	strReq.append(CONNECTION_ID);
@@ -591,9 +585,8 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	authorizationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	if (bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		authorizationcsocket->read(databuffer, READBUFFER_SIZE, false);
-		strData = databuffer;
+		int bytesReceived = authorizationcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		strData = std::string(databuffer, bytesReceived);
 		/* <- Expect: <iq/> */
 	}
 
@@ -606,10 +599,10 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 	authorizationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	while(bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		if (authorizationcsocket->read(databuffer, READBUFFER_SIZE, false) > 0)
+		int bytesReceived = authorizationcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		if (bytesReceived > 0)
 		{
-			strData.append(databuffer);
+			strData.append(databuffer, 0, bytesReceived);
 			authorizationcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_NEXT_FRAME);
 		}
 		else
@@ -643,9 +636,9 @@ bool CHarmonyHub::SendPing()
 	if (m_commandcsocket == NULL || m_szAuthorizationToken.length() == 0)
 		return false;
 
-	std::string strData = "";
+	std::string strData = ""; // make sure to initialize this as we will be appending to it
 	std::string strReq;
-	char databuffer[DATABUFFER_SIZE];
+	char databuffer[SOCKET_BUFFER_SIZE];
 
 	// GENERATE A PING REQUEST USING THE HARMONY ID AND LOGIN AUTHORIZATION TOKEN 
 	strReq = "<iq type=\"get\" id=\"";
@@ -660,10 +653,10 @@ bool CHarmonyHub::SendPing()
 	m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	while (bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		if (m_commandcsocket->read(databuffer, READBUFFER_SIZE, false) > 0)
+		int bytesReceived = m_commandcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		if (bytesReceived > 0)
 		{
-			strData.append(databuffer);
+			strData.append(databuffer, 0, bytesReceived);
 			m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_NEXT_FRAME);
 		}
 		else
@@ -724,7 +717,7 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 		lstrCommand = GET_CURRENT_ACTIVITY_COMMAND;
 	}
 
-	std::string strData;
+	std::string strData = ""; // make sure to initialize this as we will be appending to it
 	std::string strReq;
 
 	strReq = "<iq type=\"get\" id=\"";
@@ -749,15 +742,15 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 
 	m_commandcsocket->write(strReq.c_str(), static_cast<unsigned int>(strReq.length()));
 
-	char databuffer[DATABUFFER_SIZE];
+	char databuffer[SOCKET_BUFFER_SIZE];
 	bool bIsDataReadable = true;
 	m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 	while(bIsDataReadable)
 	{
-		memset(databuffer, 0, DATABUFFER_SIZE);
-		if (m_commandcsocket->read(databuffer, READBUFFER_SIZE, false) > 0)
+		int bytesReceived = m_commandcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+		if (bytesReceived > 0)
 		{
-			strData.append(databuffer);
+			strData.append(databuffer, 0, bytesReceived);
 			m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_NEXT_FRAME);
 		}
 		else
@@ -795,10 +788,10 @@ bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string
 		m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_ANSWER);
 		while(bIsDataReadable)
 		{
-			memset(databuffer, 0, DATABUFFER_SIZE);
-			if (m_commandcsocket->read(databuffer, READBUFFER_SIZE, false) > 0)
+			int bytesReceived = m_commandcsocket->read(databuffer, SOCKET_BUFFER_SIZE, false);
+			if (bytesReceived > 0)
 			{
-				strData.append(databuffer);
+				strData.append(databuffer, 0, bytesReceived);
 				m_commandcsocket->canRead(&bIsDataReadable, TIMEOUT_WAIT_FOR_NEXT_FRAME);
 			}
 			else
