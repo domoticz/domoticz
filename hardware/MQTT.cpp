@@ -655,8 +655,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 			if (dType == pTypeColorSwitch)
 			{
 				_tColor color(sColor);
-				std::string jsonColor = color.toJSON();
-				root["Color"] = jsonColor;
+				root["Color"] = color.toJSONValue();
 			}
 		}
 

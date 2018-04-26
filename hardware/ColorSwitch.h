@@ -1,6 +1,9 @@
 #pragma once
 
-#include "../json/json.h"
+namespace Json
+{
+	class Value;
+};
 
 #define pTypeColorSwitch		0xF1
 #define sTypeColor_RGB_W		0x01 // RGB + white, either RGB or white can be lit
@@ -36,13 +39,14 @@ struct _tColor {
 
 	_tColor();
 	explicit _tColor(Json::Value json);
-	explicit _tColor(const std::string sRaw); //explicit to avoid unintentional conversion of string to _tColor
+	explicit _tColor(const std::string &sRaw); //explicit to avoid unintentional conversion of string to _tColor
 	explicit _tColor(const uint8_t ir, const uint8_t ig, const uint8_t ib, const uint8_t icw, const uint8_t iww, ColorMode imode);
 	explicit _tColor(uint8_t x, ColorMode imode);
 	std::string getrgbwwhex() const;
 	void fromJSON(Json::Value root);
-	void fromString(std::string s);
-	std::string toJSON() const;
+	void fromString(const std::string &s);
+	std::string toJSONString() const;
+	Json::Value toJSONValue() const;
 	std::string toString() const;
 };
 

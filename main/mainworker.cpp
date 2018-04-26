@@ -5576,7 +5576,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 			//store color in database
 			m_sql.safe_query(
 				"UPDATE DeviceStatus SET Color='%q' WHERE (ID = %" PRIu64 ")",
-				color.toJSON().c_str(),
+				color.toJSONString().c_str(),
 				ulID);
 		}
 

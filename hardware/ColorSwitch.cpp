@@ -2,6 +2,7 @@
 #include "../main/Helper.h"
 #include "hardwaretypes.h"
 #include "ColorSwitch.h"
+#include "../json/json.h"
 
 _tColor::_tColor()
 {
@@ -15,7 +16,7 @@ _tColor::_tColor(Json::Value json)
 	fromJSON(json);
 }
 
-_tColor::_tColor(const std::string sRaw) //explicit to avoid unintentional conversion of string to _tColor
+_tColor::_tColor(const std::string &sRaw) //explicit to avoid unintentional conversion of string to _tColor
 {
 	fromString(sRaw);
 }
@@ -72,7 +73,7 @@ void _tColor::fromJSON(Json::Value root)
 	}
 }
 
-void _tColor::fromString(std::string s)
+void _tColor::fromString(const std::string &s)
 {
 	Json::Value root;
 	Json::Reader reader(Json::Features::strictMode());
@@ -90,12 +91,13 @@ void _tColor::fromString(std::string s)
 	}
 }
 
-std::string _tColor::toJSON() const
+Json::Value _tColor::toJSONValue() const
 {
-	// Return the empty string if the color is not valid
-	if (mode == ColorModeNone || mode > ColorModeLast) return "";
-
 	Json::Value root;
+
+	// Return empty value if the color is not valid
+	if (mode == ColorModeNone || mode > ColorModeLast) return root;
+
 	root["m"] = mode;
 	//root["l"] = level;
 	root["t"] = t;
@@ -104,6 +106,16 @@ std::string _tColor::toJSON() const
 	root["b"] = b;
 	root["cw"] = cw;
 	root["ww"] = ww;
+
+	return root;
+}
+
+std::string _tColor::toJSONString() const
+{
+	// Return the empty string if the color is not valid
+	if (mode == ColorModeNone || mode > ColorModeLast) return "";
+
+	Json::Value root = toJSONValue();
 
 	Json::FastWriter fastwriter;
 	fastwriter.omitEndingLineFeed();

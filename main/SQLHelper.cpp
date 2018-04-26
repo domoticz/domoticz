@@ -2447,7 +2447,7 @@ bool CSQLHelper::OpenDatabase()
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE Timers SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					szQuery2 << "UPDATE Timers SET Color='" << color.toJSONString() << "' WHERE (ID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -2470,7 +2470,7 @@ bool CSQLHelper::OpenDatabase()
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE SceneDevices SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					szQuery2 << "UPDATE SceneDevices SET Color='" << color.toJSONString() << "' WHERE (ID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
 			}
