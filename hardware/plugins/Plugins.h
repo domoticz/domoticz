@@ -77,6 +77,7 @@ namespace Plugins {
 		void	ConnectionDisconnect(CDirectiveBase*);
 		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
+		void	RestoreThread();
 		void	Stop();
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);

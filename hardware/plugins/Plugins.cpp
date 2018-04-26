@@ -830,7 +830,7 @@ namespace Plugins {
 
 		try
 		{
-			m_PyInterpreter = Py_NewInterpreter(); //TODO: Possible memory leak here according to valgrind
+			m_PyInterpreter = Py_NewInterpreter();
 			if (!m_PyInterpreter)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
@@ -864,7 +864,7 @@ namespace Plugins {
 
 			try
 			{
-				m_PyModule = PyImport_ImportModule("plugin"); //TODO: Possible memory leak here according to valgrind
+				m_PyModule = PyImport_ImportModule("plugin");
 				if (!m_PyModule)
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
@@ -1134,7 +1134,7 @@ Error:
 			if ((sTransport == "TLS/IP") || pConnection->pProtocol->Secure())
 				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			else
-				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort); //TODO: Possible memory leak here according to valgrind
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 		}
 		else if (sTransport == "Serial")
 		{
@@ -1446,6 +1446,11 @@ Error:
 		}
 	}
 
+	void CPlugin::RestoreThread()
+	{
+		if (m_PyInterpreter) PyEval_RestoreThread((PyThreadState*)m_PyInterpreter);
+	}
+
 	void CPlugin::Callback(std::string sHandler, void * pParams)
 	{
 		try
@@ -1460,7 +1465,7 @@ Error:
 					if (m_bDebug & PDM_QUEUE) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyObject*	pReturnValue = PyObject_CallObject(pFunc, (PyObject*)pParams); //TODO: Possible memory leak here according to valgrind
+					PyObject*	pReturnValue = PyObject_CallObject(pFunc, (PyObject*)pParams);
 					if (!pReturnValue)
 					{
 						LogPythonException(sHandler);
