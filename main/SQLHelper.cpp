@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 125
+#define DB_VERSION 126
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2508,6 +2508,11 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 125)
 		{
 			std::string sFile = szWWWFolder + "/js/domoticz.js.gz";
+			std::remove(sFile.c_str());
+		}
+		if (dbversion < 126)
+		{
+			std::string sFile = szWWWFolder + "/js/domoticzdevices.js.gz";
 			std::remove(sFile.c_str());
 		}
 	}
