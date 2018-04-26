@@ -626,8 +626,7 @@ namespace Plugins {
 
 	void CPlugin::Notifier(std::string Notifier)
 	{
-		if (m_Notifier)
-			delete m_Notifier;
+		delete m_Notifier;
 		if (m_bDebug & PDM_PLUGIN) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", Name.c_str(), Notifier.c_str());
 		m_Notifier = new CPluginNotifier(this, Notifier);
 	}
@@ -765,7 +764,8 @@ namespace Plugins {
 				m_thread.reset();
 			}
 
-			if (m_Notifier) delete m_Notifier;
+			delete m_Notifier;
+			m_Notifier = NULL;
 		}
 		catch (...)
 		{
@@ -830,12 +830,11 @@ namespace Plugins {
 
 		try
 		{
-			m_PyInterpreter = Py_NewInterpreter();
+			m_PyInterpreter = Py_NewInterpreter(); //TODO: Possible memory leak here according to valgrind
 			if (!m_PyInterpreter)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to create interpreter.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 
 			// Prepend plugin directory to path so that python will search it early when importing
@@ -865,13 +864,12 @@ namespace Plugins {
 
 			try
 			{
-				m_PyModule = PyImport_ImportModule("plugin");
+				m_PyModule = PyImport_ImportModule("plugin"); //TODO: Possible memory leak here according to valgrind
 				if (!m_PyModule)
 				{
 					_log.Log(LOG_ERROR, "(%s) failed to load 'plugin.py', Python Path used was '%S'.", m_PluginKey.c_str(), sPath.c_str());
 					LogPythonException();
-					m_bIsStarting = false;
-					return false;
+					goto Error;
 				}
 			}
 			catch (...)
@@ -884,8 +882,7 @@ namespace Plugins {
 			if (!pMod)
 			{
 				_log.Log(LOG_ERROR, "(%s) start up failed, Domoticz module not found in interpreter.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 			module_state*	pModState = ((struct module_state*)PyModule_GetState(pMod));
 			pModState->pPlugin = this;
@@ -897,8 +894,7 @@ namespace Plugins {
 			if (!m_thread)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed start worker thread.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 
 			//	Add start command to message queue
@@ -947,6 +943,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
 		}
 
+Error:
 		m_bIsStarting = false;
 		return false;
 	}
@@ -960,8 +957,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Parameters", pParamsDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Parameters dictionary.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 			Py_DECREF(pParamsDict);
 
@@ -969,8 +965,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pParamsDict, "HardwareID", pObj) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add key 'HardwareID', value '%d' to dictionary.", m_PluginKey.c_str(), m_HwdID);
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 			Py_DECREF(pObj);
 
@@ -1014,8 +1009,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Devices", (PyObject*)m_DeviceDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Device dictionary.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 
 			// load associated devices to make them available to python
@@ -1033,8 +1027,7 @@ namespace Plugins {
 					if (PyDict_SetItem((PyObject*)m_DeviceDict, pKey, (PyObject*)pDevice) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to add unit '%s' to device dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-						m_bIsStarting = false;
-						return false;
+						goto Error;
 					}
 					pDevice->pPlugin = this;
 					pDevice->PluginKey = PyUnicode_FromString(m_PluginKey.c_str());
@@ -1050,8 +1043,7 @@ namespace Plugins {
 			if (PyDict_SetItemString(pModuleDict, "Images", (PyObject*)m_ImageDict) == -1)
 			{
 				_log.Log(LOG_ERROR, "(%s) failed to add Image dictionary.", m_PluginKey.c_str());
-				m_bIsStarting = false;
-				return false;
+				goto Error;
 			}
 
 			// load associated custom images to make them available to python
@@ -1069,8 +1061,7 @@ namespace Plugins {
 					if (PyDict_SetItem((PyObject*)m_ImageDict, pKey, (PyObject*)pImage) == -1)
 					{
 						_log.Log(LOG_ERROR, "(%s) failed to add ID '%s' to image dictionary.", m_PluginKey.c_str(), sd[0].c_str());
-						m_bIsStarting = false;
-						return false;
+						goto Error;
 					}
 					pImage->ImageID = atoi(sd[0].c_str()) + 100;
 					pImage->Base = PyUnicode_FromString(sd[1].c_str());
@@ -1092,6 +1083,7 @@ namespace Plugins {
 			_log.Log(LOG_ERROR, "(%s) exception caught in '%s'.", m_PluginKey.c_str(), __func__);
 		}
 
+Error:
 		m_bIsStarting = false;
 		return false;
 	}
@@ -1100,11 +1092,8 @@ namespace Plugins {
 	{
 		ProtocolDirective*	pMessage = (ProtocolDirective*)pMess;
 		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
-		if (pConnection->pProtocol)
-		{
-			delete pConnection->pProtocol;
-			pConnection->pProtocol = NULL;
-		}
+		delete pConnection->pProtocol;
+		pConnection->pProtocol = NULL;
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
 		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
 		if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", Name.c_str(), sProtocol.c_str());
@@ -1145,7 +1134,7 @@ namespace Plugins {
 			if ((sTransport == "TLS/IP") || pConnection->pProtocol->Secure())
 				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCPSecure(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
 			else
-				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort);
+				pConnection->pTransport = (CPluginTransport*) new CPluginTransportTCP(m_HwdID, (PyObject*)pConnection, sAddress, sPort); //TODO: Possible memory leak here according to valgrind
 		}
 		else if (sTransport == "Serial")
 		{
@@ -1286,7 +1275,7 @@ namespace Plugins {
 			}
 			else
 			{
-				_log.Log(LOG_ERROR, "(%s) Transport is not connected, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
+				_log.Log(LOG_ERROR, "(%s) No transport, write directive to '%s' ignored.", Name.c_str(), sConnection.c_str());
 				return;
 			}
 		}
@@ -1302,7 +1291,6 @@ namespace Plugins {
 			delete pConnection->pTransport;
 			pConnection->pTransport = NULL;
 		}
-
 	}
 
 	void CPlugin::ConnectionDisconnect(CDirectiveBase * pMess)
@@ -1334,7 +1322,6 @@ namespace Plugins {
 			{
 				pConnection->pTransport->handleDisconnect();
 				RemoveConnection(pConnection->pTransport);
-				CPluginTransport *pTransport = pConnection->pTransport;
 				delete pConnection->pTransport;
 				pConnection->pTransport = NULL;
 
@@ -1442,7 +1429,6 @@ namespace Plugins {
 			}
 
 			RemoveConnection(pConnection->pTransport);
-			CPluginTransport *pTransport = pConnection->pTransport;
 			delete pConnection->pTransport;
 			pConnection->pTransport = NULL;
 
@@ -1474,7 +1460,7 @@ namespace Plugins {
 					if (m_bDebug & PDM_QUEUE) _log.Log(LOG_NORM, "(%s) Calling message handler '%s'.", Name.c_str(), sHandler.c_str());
 
 					PyErr_Clear();
-					PyObject*	pReturnValue = PyObject_CallObject(pFunc, (PyObject*)pParams);
+					PyObject*	pReturnValue = PyObject_CallObject(pFunc, (PyObject*)pParams); //TODO: Possible memory leak here according to valgrind
 					if (!pReturnValue)
 					{
 						LogPythonException(sHandler);
