@@ -590,10 +590,10 @@ define(['app'], function (app) {
 				}
 				Mode1 = pollinterval;
 				Mode2 = 0;
-				if(!$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked')) {
+				if($("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked')) {
 					Mode2 |= 1;
 				}
-				if(!$("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked')) {
+				if($("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked')) {
 					Mode2 |= 2;
 				}
 				$.ajax({
@@ -5456,8 +5456,8 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
-							$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', !(data["Mode2"]&1));;
-							$("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked', !(data["Mode2"]&2));;
+							$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"]&1));
+							$("#hardwarecontent #hardwareparamsphilipshue #addscenes").prop('checked', (data["Mode2"]&2));
 						}
 						else if (data["Type"].indexOf("Winddelen") >= 0) {
 							$("#hardwarecontent #hardwareparamswinddelen #combomillselect").val(data["Mode1"]);

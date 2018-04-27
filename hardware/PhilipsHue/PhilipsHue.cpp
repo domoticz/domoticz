@@ -59,8 +59,8 @@ m_UserName(Username)
 	m_HwdID=ID;
 	m_Port = Port;
 	m_poll_interval = PollInterval;
-	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) == 0;
-	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) == 0;
+	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
+	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
 	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
