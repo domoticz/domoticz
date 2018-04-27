@@ -8242,14 +8242,16 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 		StringSplit(options, ";", optionsArray);
 		std::vector<std::string>::iterator itt;
 		for (itt=optionsArray.begin(); itt!=optionsArray.end(); ++itt) {
-			if (*itt == "") {
+			std::string oValue = *itt;
+			if (oValue.empty()) {
 				continue;
 			}
-			std::vector<std::string> optionArray;
-			StringSplit(*itt, ":", optionArray);
-			if (optionArray.size() == 2) {
-				std::string optionName = optionArray[0].c_str();
-				std::string optionValue = decode ? base64_decode(optionArray[1].c_str()) : optionArray[1].c_str();
+			int tpos = oValue.find_first_of(':');
+			if ((tpos != std::string::npos)&&(oValue.size()>tpos+1))
+			{
+				std::string optionName = oValue.substr(0, tpos);
+				oValue = oValue.substr(tpos + 1);
+				std::string optionValue = decode ? base64_decode(oValue.c_str()) : oValue;
 				//_log.Log(LOG_STATUS, "DEBUG : Build device option ['%s': '%s'] => ['%s': '%s']", optionArray[0].c_str(), optionArray[1].c_str(), optionName.c_str(), optionValue.c_str());
 				optionsMap.insert(std::pair<std::string, std::string>(optionName, optionValue));
 			}
