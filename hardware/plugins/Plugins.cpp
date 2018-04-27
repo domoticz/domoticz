@@ -626,7 +626,8 @@ namespace Plugins {
 
 	void CPlugin::Notifier(std::string Notifier)
 	{
-		delete m_Notifier;
+		if (m_Notifier)
+			delete m_Notifier;
 		if (m_bDebug & PDM_PLUGIN) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", Name.c_str(), Notifier.c_str());
 		m_Notifier = new CPluginNotifier(this, Notifier);
 	}
@@ -764,8 +765,11 @@ namespace Plugins {
 				m_thread.reset();
 			}
 
-			delete m_Notifier;
-			m_Notifier = NULL;
+			if (m_Notifier)
+			{
+				delete m_Notifier;
+				m_Notifier = NULL;
+			}
 		}
 		catch (...)
 		{
@@ -1092,8 +1096,11 @@ Error:
 	{
 		ProtocolDirective*	pMessage = (ProtocolDirective*)pMess;
 		CConnection*		pConnection = (CConnection*)pMessage->m_pConnection;
-		delete pConnection->pProtocol;
-		pConnection->pProtocol = NULL;
+		if (m_Notifier)
+		{
+			delete pConnection->pProtocol;
+			pConnection->pProtocol = NULL;
+		}
 		std::string	sProtocol = PyUnicode_AsUTF8(pConnection->Protocol);
 		pConnection->pProtocol = CPluginProtocol::Create(sProtocol, m_Username, m_Password);
 		if (m_bDebug & PDM_CONNECTION) _log.Log(LOG_NORM, "(%s) Protocol set to: '%s'.", Name.c_str(), sProtocol.c_str());
