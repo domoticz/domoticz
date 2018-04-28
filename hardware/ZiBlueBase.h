@@ -39,6 +39,8 @@ private:
 	int m_rfbufferpos;
 	int m_retrycntr;
 	time_t m_LastReceivedTime;
+	std::map<int, time_t> m_LastReceivedKWhMeterTime;
+	std::map<int, int> m_LastReceivedKWhMeterValue;
 
 	//
 	_eZiBlueState m_State;

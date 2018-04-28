@@ -354,10 +354,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Relay%i", m_szIPAddress.c_str(), relayNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d, '%q', %d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, int(STYPE_OnOff), "Relay");
+				m_sql.InsertDevice(m_HwdID, szIdx, relayNumber, pTypeLighting2, sTypeAC, STYPE_OnOff, 0, " ", "Relay");
 			}
 		}
 	}
@@ -372,10 +369,7 @@ void RelayNet::SetupDevices()
 			{
 				_log.Log(LOG_STATUS, "RelayNet: Create %s/Input%i", m_szIPAddress.c_str(), inputNumber);
 
-				m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%q',%d, %d, %d, %d, 0, 12, 255, '%q', 0, ' ')",
-					m_HwdID, szIdx, 100+inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), "Input");
+				m_sql.InsertDevice(m_HwdID, szIdx, 100 + inputNumber, pTypeLighting2, sTypeAC, int(STYPE_Contact), 0, " ", "Input");
 			}
 		}
 	}

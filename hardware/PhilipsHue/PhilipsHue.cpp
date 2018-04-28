@@ -19,6 +19,8 @@
 using namespace std;
 
 #define HUE_DEFAULT_POLL_INTERVAL 10
+#define HUE_NOT_ADD_GROUPS 0x01
+#define HUE_NOT_ADD_SCENES 0x02
 
 //#define DEBUG_PhilipsHue
 
@@ -50,13 +52,15 @@ string ReadFile(string filename)
 }
 #endif
 
-CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval) :
+CPhilipsHue::CPhilipsHue(const int ID, const string &IPAddress, const unsigned short Port, const string &Username, const int PollInterval, const int Options) :
 m_IPAddress(IPAddress),
 m_UserName(Username)
 {
 	m_HwdID=ID;
 	m_Port = Port;
 	m_poll_interval = PollInterval;
+	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
+	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
 	m_stoprequested=false;
 
 	// Catch uninitialised Mode1 entry.
@@ -222,7 +226,14 @@ bool CPhilipsHue::WriteToHardware(const char *pdata, const unsigned char length)
 			// hue: The hue value is a wrapping value between 0 and 65535. Both 0 and 65535 are red, 25500 is green and 46920 is blue.
 			// sat: Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
 			// ct: The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
-			if (pLed->color.mode == ColorModeWhite)
+			if (pLed->value == 0)
+			{
+				//Off
+				LCmd = "Off";
+				svalue = 0;
+				SwitchLight(nodeID, LCmd, svalue);
+			}
+			else if (pLed->color.mode == ColorModeWhite)
 			{
 				LCmd = "Set Hue";
 				//TODO: Is this correct way to turn off RGB LED and turn on white LED?
@@ -454,7 +465,7 @@ string CPhilipsHue::RegisterUser(const string &IPAddress, const unsigned short P
 	return retStr;
 }
 
-void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid)
+void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid, const bool AddMissingDevice)
 {
 	if (LType == HLTYPE_RGB_W || LType == HLTYPE_CW_WW || LType == HLTYPE_RGB_CW_WW)
 	{
@@ -490,6 +501,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		vector<vector<string> > result;
 		result = m_sql.safe_query("SELECT nValue, LastLevel, Color, SubType, ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, szID);
+
+		if (result.empty() && !AddMissingDevice)
+			return;
 
 		if (!result.empty())
 		{
@@ -569,6 +583,10 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		vector<vector<string> > result;
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeColorSwitch, sTypeColor_RGB_W, szID);
+
+		if (result.empty() && !AddMissingDevice)
+			return;
+
 		if (!result.empty())
 		{
 			//Already in the system
@@ -622,6 +640,9 @@ void CPhilipsHue::InsertUpdateSwitch(const int NodeID, const _eHueLightType LTyp
 		result = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d) AND (DeviceID=='%q')",
 			m_HwdID, int(unitcode), pTypeLighting2, sTypeAC, szID);
 		//_log.Log(LOG_STATUS, "HueBridge state change: Bri = %d, Level = %d", BrightnessLevel, level);
+
+		if (result.empty() && !AddMissingDevice)
+			return;
 
 		if (!result.empty())
 		{
@@ -728,7 +749,7 @@ void CPhilipsHue::LightStateFromJSON(Json::Value lightstate, _tHueLightState &tl
 		tlight.hue = 0;            // Hue of the light. This is a wrapping value between 0 and 65535.
 		tlight.ct = 0;             // The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
 		tlight.mode = HLMODE_NONE; // Indicates the color mode in which the light is working, this is the last command type it received. Values
-		                           // are “hs” for Hue and Saturation, “xy” for XY and “ct” for Color Temperature.
+		                           // are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
 		tlight.x = 0.0;            // The x and y coordinates of a color in CIE color space.
 		tlight.y = 0.0;            // The first entry is the x coordinate and the second entry is the y coordinate. Both x and y must be between 0 and 1.
 		                           // If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
@@ -821,7 +842,7 @@ bool CPhilipsHue::GetLights(const Json::Value &root)
 			{
 				//_log.Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 				m_lights[lID] = tlight;
-				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid);
+				InsertUpdateSwitch(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
 	}
@@ -859,7 +880,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 			{
 				m_groups[gID].gstate = tstate;
 				string Name = "Group " + group["name"].asString();
-				InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "");
+				InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
 	}
@@ -942,7 +963,7 @@ bool CPhilipsHue::GetGroups(const Json::Value &root)
 	{
 		m_groups[gID].gstate = tstate;
 		string Name = "Group All Lights";
-		InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "");
+		InsertUpdateSwitch(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 	}
 	return true;
 }
@@ -1014,7 +1035,7 @@ bool CPhilipsHue::GetScenes(const Json::Value &root)
 				tstate.x = 0.0;
 				tstate.y = 0.0;
 				tstate.mode = HLMODE_NONE;
-				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, tstate, Name, hscene.id, "");
+				InsertUpdateSwitch(2000 + sID, HLTYPE_SCENE, tstate, Name, hscene.id, "", m_add_scenes);
 			}
 		}
 	}

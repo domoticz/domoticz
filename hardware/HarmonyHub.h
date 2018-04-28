@@ -4,13 +4,6 @@
 #include <iosfwd>
 #include "hardwaretypes.h"
 
-// Note:
-// HarmonyHub is on Wifi and can thus send frames with a maximum payload length of 2324 bytes
-// Normal implementations will however obey the 1500 bytes MTU from the wired networks that
-// they are attached to and this may be limited even further if the router uses mechanisms like
-// PPTP for connecting the (Wireless) LAN to the internet.
-#define BUFFER_SIZE	 1500
-
 class csocket;
 
 class Action
@@ -109,6 +102,8 @@ private:
 	bool SendPing();
 	bool CheckIqGood(const std::string& strData);
 
+	bool ReceiveMessage(csocket* communicationcsocket, std::string &strMessage, float waitTimePrimary, float waitTimeSecondary, bool append);
+
 
 	//bool ParseAction(const std::string& strAction, std::vector<Action>& vecDeviceActions, const std::string& strDeviceID);
 	//bool ParseFunction(const std::string& strFunction, std::vector<Function>& vecDeviceFunctions, const std::string& strDeviceID);
@@ -125,7 +120,6 @@ private:
 	bool m_bIsChangingActivity;
 	std::string m_hubSwVersion;
 	boost::shared_ptr<boost::thread> m_thread;
-//	char m_databuffer[BUFFER_SIZE];
 	std::string m_szResultString;
 	bool m_bShowConnectError;
 	std::map< std::string, std::string> m_mapActivities;
