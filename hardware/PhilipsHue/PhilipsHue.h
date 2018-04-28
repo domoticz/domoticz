@@ -51,12 +51,14 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 
 public:
-	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll);
+	CPhilipsHue(const int ID, const std::string &IPAddress, const unsigned short Port, const std::string &Username, const int poll, const int Options);
 	~CPhilipsHue(void);
 	bool WriteToHardware(const char *pdata, const unsigned char length);
 	static std::string RegisterUser(const std::string &IPAddress, const unsigned short Port, const std::string &username);
 private:
 	int m_poll_interval;
+	bool m_add_groups;
+	bool m_add_scenes;
 	std::string m_IPAddress;
 	unsigned short m_Port;
 	std::string m_UserName;
@@ -76,7 +78,7 @@ private:
 	bool GetGroups(const Json::Value &root);
 	bool GetScenes(const Json::Value &root);
 	bool GetSensors(const Json::Value &root);
-	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid);
+	void InsertUpdateSwitch(const int NodeID, const _eHueLightType LType, _tHueLightState tstate, const std::string &Name, const std::string &Options, const std::string modelid, const bool AddMissingDevice);
 	void InsertUpdateSwitch(const int NodeID, const _eSwitchType SType, const bool bIsOn, const string &Name, uint8_t BatteryLevel);
 	bool SwitchLight(const int nodeID, const std::string &LCmd, const int svalue, const int svalue2 = 0, const int svalue3 = 0);
 	static void LightStateFromJSON(Json::Value lightstate, _tHueLightState &tlight, _eHueLightType &LType);
