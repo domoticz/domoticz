@@ -3995,6 +3995,46 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 	return devRowID;
 }
 
+uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string &devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
+{
+	std::vector<std::vector<std::string> > result;
+	uint64_t ulID = 0;
+	std::string name = devname;
+
+	if (!m_bAcceptNewHardware)
+	{
+		_log.Log(LOG_ERROR, "Device creation failed, Domoticz settings prevent accepting new devices.");
+		return -1; //We do not allow new devices
+	}
+
+	if (devname == "")
+	{
+		name = "Unknown";
+	}
+
+	safe_query(
+		"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
+		"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%d','%q','%q')",
+		HardwareID, ID, unit,
+		devType, subType, switchType,
+		signallevel, batterylevel,
+		nValue, sValue, name.c_str());
+
+	//Get new ID
+	result = safe_query(
+		"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
+		HardwareID, ID, unit, devType, subType);
+	if (result.size() == 0)
+	{
+		_log.Log(LOG_ERROR, "Serious database error, problem getting ID from DeviceStatus!");
+		return -1;
+	}
+	std::stringstream s_str(result[0][0]);
+	s_str >> ulID;
+
+	return ulID;
+}
+
 bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType) {
 	std::vector<std::vector<std::string> > result;
 	result = safe_query("SELECT ID,Name FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",HardwareID, ID, unit, devType, subType);
@@ -4020,35 +4060,11 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 	if (result.size()==0)
 	{
 		//Insert
+		ulID = InsertDevice(HardwareID, ID, unit, devType, subType,	0, nValue, sValue, devname, signallevel, batterylevel);
 
-		if (!m_bAcceptNewHardware)
-		{
-			devname = "Ignored";
-			return -1; //We do not allow new devices
-		}
-
-		if (devname == "")
-		{
-			devname = "Unknown";
-		}
-
-		safe_query(
-			"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
-			"VALUES ('%d','%q','%d','%d','%d','%d','%d','%d','%q','%q')",
-			HardwareID,
-			ID,unit,devType,subType,
-			signallevel,batterylevel,
-			nValue,sValue, devname.c_str());
-
-		//Get new ID
-		result = safe_query(
-			"SELECT ID FROM DeviceStatus WHERE (HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)",
-			HardwareID, ID, unit, devType, subType);
-		if (result.size()==0)
-		{
-			_log.Log(LOG_ERROR,"Serious database error, problem getting ID from DeviceStatus!");
+		if (ulID < 1)
 			return -1;
-		}
+		
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
