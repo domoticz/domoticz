@@ -4064,7 +4064,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 		if (ulID < 1)
 			return -1;
-		
+
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
@@ -4075,8 +4075,6 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			pPlugin->DeviceAdded(unit);
 		}
 #endif
-		std::stringstream s_str( result[0][0] );
-		s_str >> ulID;
 	}
 	else
 	{
