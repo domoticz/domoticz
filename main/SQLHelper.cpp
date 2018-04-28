@@ -8250,7 +8250,7 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 			if (oValue.empty()) {
 				continue;
 			}
-			int tpos = oValue.find_first_of(':');
+			size_t tpos = oValue.find_first_of(':');
 			if ((tpos != std::string::npos)&&(oValue.size()>tpos+1))
 			{
 				std::string optionName = oValue.substr(0, tpos);
