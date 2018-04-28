@@ -628,6 +628,7 @@ namespace Plugins {
 	{
 		if (m_Notifier)
 			delete m_Notifier;
+		m_Notifier = NULL;
 		if (m_bDebug & PDM_PLUGIN) _log.Log(LOG_NORM, "(%s) Notifier Name set to: %s.", Name.c_str(), Notifier.c_str());
 		m_Notifier = new CPluginNotifier(this, Notifier);
 	}
