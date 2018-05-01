@@ -108,7 +108,12 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 	}
 	else if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
 	{
-		if (!SubmitCommand(START_ACTIVITY_COMMAND, "-1",""))
+		if (m_szCurActivityID == "-1") // already powered off
+		{
+			SubmitCommand(START_ACTIVITY_COMMAND, "-1", ""); // send it anyway, user may be trying to correct a wrong state
+			return false; // should I do something else here to prevent making this look like an error?
+		}
+		if (!SubmitCommand(START_ACTIVITY_COMMAND, "-1", ""))
 		{
 			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
 			return false;
