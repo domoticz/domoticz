@@ -122,8 +122,8 @@ void CHarmonyHub::Init()
 {
 	m_stoprequested = false;
 	m_bDoLogin = true;
-	m_szCurActivityID="";
-	m_bIsChangingActivity=false;
+	m_szCurActivityID = "";
+	m_bIsChangingActivity = false;
 	m_hubSwVersion = "";
 }
 
@@ -210,7 +210,7 @@ void CHarmonyHub::Do_Work()
 				if (Login() && SetupCommandSocket())
 				{
 					m_bDoLogin=false;
-					if (!UpdateCurrentActivity() || !UpdateActivities())
+					if (!UpdateActivities() || !UpdateCurrentActivity())
 					{
 						_log.Log(LOG_ERROR, "Harmony Hub: Error updating activities.. Resetting connection.");
 						ResetCommandSocket();
@@ -318,8 +318,9 @@ void CHarmonyHub::ResetCommandSocket()
 	if (m_commandcsocket)
 		delete m_commandcsocket;
 	m_commandcsocket = NULL;
-	m_bIsChangingActivity=false;
-	m_bDoLogin=true;
+	m_bIsChangingActivity = false;
+	m_bDoLogin = true;
+	m_szCurActivityID = "";
 }
 
 
@@ -399,13 +400,6 @@ bool CHarmonyHub::UpdateActivities()
 			std::string aLabel = root["activity"][ii]["label"].asString();
 			m_mapActivities[aID] = aLabel;
 		}
-
-		std::map< std::string, std::string>::const_iterator itt;
-		int cnt = 0;
-		for (itt = m_mapActivities.begin(); itt != m_mapActivities.end(); ++itt)
-		{
-			UpdateSwitch(cnt++, itt->first.c_str(), (m_szCurActivityID == itt->first), itt->second);
-		}
 	}
 	catch (...)
 	{
@@ -424,14 +418,22 @@ bool CHarmonyHub::UpdateCurrentActivity()
 	}
 
 	//check if changed
-	if (m_szCurActivityID!=m_szResultString)
+	if (m_szCurActivityID != m_szResultString) 
 	{
-		if (!m_szCurActivityID.empty())
+		if (m_szCurActivityID.empty()) // initialize all switches
 		{
-			//need to set the old activity to off
-			CheckSetActivity(m_szCurActivityID,false );
+			std::map< std::string, std::string>::const_iterator itt;
+			int cnt = 0;
+			for (itt = m_mapActivities.begin(); itt != m_mapActivities.end(); ++itt)
+			{
+				UpdateSwitch(cnt++, itt->first.c_str(), (m_szResultString == itt->first), itt->second);
+			}
 		}
-		CheckSetActivity(m_szResultString,true);
+		else
+		{
+			CheckSetActivity(m_szCurActivityID, false);
+			CheckSetActivity(m_szResultString, true);
+		}
 		m_szCurActivityID = m_szResultString;
 	}
 
