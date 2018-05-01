@@ -92,8 +92,40 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		_log.Log(LOG_ERROR,"Harmony Hub: Command cannot be sent. Hub is changing activity");
 		return false;
 	}
+
+	if (this->m_bDoLogin)
+	{
+		if (this->m_szAuthorizationToken.empty() &&
+		     (pCmd->LIGHTING2.id1 == 0xFF) && (pCmd->LIGHTING2.id2 == 0xFF) &&
+		     (pCmd->LIGHTING2.id3 == 0xFF) && (pCmd->LIGHTING2.id4 == 0xFF) &&
+		     (pCmd->LIGHTING2.cmnd == 0)
+		) // "secret" undefined state request to silence error reporting
+		{
+			if (this->m_bShowConnectError)
+				_log.Log(LOG_STATUS, "Harmony Hub: disable connection error logging");
+			this->m_bShowConnectError = false;
+			return false;
+		}
+
+		_log.Log(LOG_STATUS, "Harmony Hub: Received a switch command but we are not connected - attempting connect now");
+		if (Login() && SetupCommandSocket())
+		{
+			this->m_bDoLogin = false;
+			if (!UpdateActivities() || !UpdateCurrentActivity())
+			{
+				ResetCommandSocket();
+			}
+		}
+		if (this->m_bDoLogin)
+		{
+			_log.Log(LOG_ERROR, "Harmony Hub: Connect failed: cannot send the switch command");
+			return false;
+		}
+		sleep_milliseconds(500); // Hub doesn't seem to like it if we instantly issue the switch command after connecting
+	}
+
 	//activities can be switched on
-	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==1))
+	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd == 1))
 	{
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
 		std::stringstream sstr;
@@ -106,7 +138,7 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 			return false;
 		}
 	}
-	else if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd==0))
+	else if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd == 0))
 	{
 		if (m_szCurActivityID == "-1") // already powered off
 		{
@@ -130,6 +162,7 @@ void CHarmonyHub::Init()
 	m_szCurActivityID = "";
 	m_bIsChangingActivity = false;
 	m_hubSwVersion = "";
+	m_bShowConnectError = true;
 }
 
 
@@ -271,13 +304,14 @@ bool CHarmonyHub::Login()
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
 
-	if (m_szAuthorizationToken.length() > 0) // we already have an authentication token
+	if (!m_szAuthorizationToken.empty()) // we already have an authentication token
 		return true;
 
 	csocket authorizationcsocket;
 	if (!ConnectToHarmony(m_harmonyAddress, m_usIPPort, &authorizationcsocket))
 	{
-		_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
+		if (m_bShowConnectError)
+			_log.Log(LOG_ERROR,"Harmony Hub: Cannot connect to Harmony Hub. Check IP/Port.");
 		return false;
 	}
 	if (GetAuthorizationToken(&authorizationcsocket)==true)
@@ -326,6 +360,7 @@ void CHarmonyHub::ResetCommandSocket()
 	m_bIsChangingActivity = false;
 	m_bDoLogin = true;
 	m_szCurActivityID = "";
+	m_bShowConnectError = true;
 }
 
 
@@ -626,7 +661,7 @@ bool CHarmonyHub::GetAuthorizationToken(csocket* authorizationcsocket)
 bool CHarmonyHub::SendPing()
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	if (m_commandcsocket == NULL || m_szAuthorizationToken.length() == 0)
+	if (m_commandcsocket == NULL || m_szAuthorizationToken.empty())
 		return false;
 
 	std::string strData;
@@ -682,7 +717,7 @@ bool CHarmonyHub::CheckIqGood(const std::string& strData)
 bool CHarmonyHub::SubmitCommand(const std::string &strCommand, const std::string &strCommandParameterPrimary, const std::string &strCommandParameterSecondary)
 {
 	boost::lock_guard<boost::mutex> lock(m_mutex);
-	if (m_commandcsocket== NULL || m_szAuthorizationToken.length() == 0)
+	if (m_commandcsocket == NULL || m_szAuthorizationToken.empty())
 	{
 		//errorString = "SubmitCommand : NULL csocket or empty authorization token provided";
 		return false;
