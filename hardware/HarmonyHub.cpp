@@ -124,30 +124,35 @@ bool CHarmonyHub::WriteToHardware(const char *pdata, const unsigned char length)
 		sleep_milliseconds(500); // Hub doesn't seem to like it if we instantly issue the switch command after connecting
 	}
 
-	//activities can be switched on
-	if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd == 1))
+	if (pCmd->LIGHTING2.packettype == pTypeLighting2)
 	{
 		int lookUpId = (int)(pCmd->LIGHTING2.id1 << 24) |  (int)(pCmd->LIGHTING2.id2 << 16) | (int)(pCmd->LIGHTING2.id3 << 8) | (int)(pCmd->LIGHTING2.id4) ;
 		std::stringstream sstr;
 		sstr << lookUpId;
+		std::string realID = sstr.str();
 
-		//get the activity id from the db and send to h/w
-		if (!SubmitCommand(START_ACTIVITY_COMMAND, sstr.str(), ""))
+		if (pCmd->LIGHTING2.cmnd == 0)
 		{
-			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the switch command");
-			return false;
+			if (m_szCurActivityID != realID)
+			{
+				return false;
+			}
+			if (realID == "-1") // powering off the PowerOff activity leads to an undefined state in the frontend
+			{
+				// send it anyway, user may be trying to correct a wrong state of the Hub
+				SubmitCommand(START_ACTIVITY_COMMAND, "-1", "");
+				// but don't allow the frontend to update the button state to the off position
+				return false;
+			}
+			if (!SubmitCommand(START_ACTIVITY_COMMAND, "-1", ""))
+			{
+				_log.Log(LOG_ERROR, "Harmony Hub: Error sending the power-off command");
+				return false;
+			}
 		}
-	}
-	else if ((pCmd->LIGHTING2.packettype == pTypeLighting2) && (pCmd->LIGHTING2.cmnd == 0))
-	{
-		if (m_szCurActivityID == "-1") // already powered off
+		else if (!SubmitCommand(START_ACTIVITY_COMMAND, realID, ""))
 		{
-			SubmitCommand(START_ACTIVITY_COMMAND, "-1", ""); // send it anyway, user may be trying to correct a wrong state
-			return false; // should I do something else here to prevent making this look like an error?
-		}
-		if (!SubmitCommand(START_ACTIVITY_COMMAND, "-1", ""))
-		{
-			_log.Log(LOG_ERROR,"Harmony Hub: Error sending the power-off command");
+			_log.Log(LOG_ERROR, "Harmony Hub: Error sending the switch command");
 			return false;
 		}
 	}
