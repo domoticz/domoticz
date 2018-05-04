@@ -9013,7 +9013,7 @@ namespace http {
 						}
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
 						std::string DimmerType = "none";
-						if (bHaveDimmer)
+						if (switchtype == STYPE_Dimmer)
 						{
 							DimmerType = "abs";
 							if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
