@@ -71,6 +71,7 @@ namespace Plugins {
 		void Process()
 		{
 			boost::lock_guard<boost::mutex> l(PythonMutex);
+			m_pPlugin->RestoreThread();
 			ProcessLocked();
 		};
 		virtual const char* PythonName() { return m_Callback.c_str(); };
