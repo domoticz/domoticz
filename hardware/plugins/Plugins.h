@@ -51,6 +51,7 @@ namespace Plugins {
 		bool StartHardware();
 		void Do_Work();
 		bool StopHardware();
+		void ClearMessageQueue();
 
 		void LogPythonException();
 		void LogPythonException(const std::string &);
@@ -76,6 +77,7 @@ namespace Plugins {
 		void	ConnectionDisconnect(CDirectiveBase*);
 		void	DisconnectEvent(CEventBase*);
 		void	Callback(std::string sHandler, void* pParams);
+		void	RestoreThread();
 		void	Stop();
 
 		void	WriteDebugBuffer(const std::vector<byte>& Buffer, bool Incoming);
@@ -104,6 +106,7 @@ namespace Plugins {
 		std::string			m_HomeFolder;
 		PluginDebugMask		m_bDebug;
 		bool				m_stoprequested;
+		bool				m_bIsStarting;
 	};
 
 	class CPluginNotifier : public CNotificationBase

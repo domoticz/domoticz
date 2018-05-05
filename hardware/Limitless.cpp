@@ -188,16 +188,7 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeColorSwitch, int(m_LEDType));
 		if (result.empty())
 		{
-			m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-					m_HwdID, int(1), int(Unit), pTypeColorSwitch, int(m_LEDType), devname.c_str());
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeColorSwitch, int(m_LEDType));
-			if (!result.empty())
-			{
-				//Set type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
-			}
+			m_sql.InsertDevice(m_HwdID, "1", Unit, pTypeColorSwitch, m_LEDType, STYPE_Dimmer, 0, " ", devname);
 			return false;
 		}
 	}
@@ -205,16 +196,7 @@ bool CLimitLess::AddSwitchIfNotExits(const unsigned char Unit, const std::string
 		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeColorSwitch, sTypeColor_RGB_CW_WW);
 		if (result.empty())
 		{
-			m_sql.safe_query(
-					"INSERT INTO DeviceStatus (HardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, nValue, sValue) "
-					"VALUES (%d,'%d',%d,%d,%d,12,255,'%q',0,' ')",
-					m_HwdID, int(1), int(Unit), pTypeColorSwitch, sTypeColor_RGB_CW_WW, devname.c_str());
-			result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d) AND (Type==%d) AND (SubType==%d)", m_HwdID, int(Unit), pTypeColorSwitch, sTypeColor_RGB_CW_WW);
-			if (!result.empty())
-			{
-				//Set type to dimmer
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=%d WHERE (ID==%q)", STYPE_Dimmer, result[0][0].c_str());
-			}
+			m_sql.InsertDevice(m_HwdID, "1", Unit, pTypeColorSwitch, sTypeColor_RGB_CW_WW, STYPE_Dimmer, 0, " ", devname);
 			return false;
 		}
 	}

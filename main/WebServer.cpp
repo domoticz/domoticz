@@ -23,6 +23,7 @@
 #include "../hardware/AccuWeather.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Kodi.h"
+#include "../hardware/Limitless.h"
 #include "../hardware/LogitechMediaServer.h"
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/RFXBase.h"
@@ -1241,6 +1242,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_Tado) || 
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -1609,6 +1611,7 @@ namespace http {
 				(htype == HTYPE_NEST) ||
 				(htype == HTYPE_ANNATHERMOSTAT) ||
 				(htype == HTYPE_THERMOSMART) ||
+				(htype == HTYPE_Tado) ||
 				(htype == HTYPE_Netatmo)
 				)
 			{
@@ -3386,7 +3389,7 @@ namespace http {
 				int level = -1;
 				if (request::hasValue(&req, "level"))
 					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSON(); //Parse the color to detect incorrectly formatted color data
+				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); //Parse the color to detect incorrectly formatted color data
 
 				unsigned char command = 0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')",
@@ -3507,7 +3510,7 @@ namespace http {
 				int level = -1;
 				if (request::hasValue(&req, "level"))
 					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSON(); //Parse the color to detect incorrectly formatted color data
+				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); //Parse the color to detect incorrectly formatted color data
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query(
@@ -3613,7 +3616,7 @@ namespace http {
 						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
-						root["result"][ii]["Color"] = _tColor(sd[11]).toJSON();
+						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
 						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
 						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
 						ii++;
@@ -6741,6 +6744,7 @@ namespace http {
 				std::string json = request::findValue(&req, "color");
 				std::string hex = request::findValue(&req, "hex");
 				std::string hue = request::findValue(&req, "hue");
+				std::string sat = request::findValue(&req, "sat");
 				std::string brightness = request::findValue(&req, "brightness");
 				std::string iswhite = request::findValue(&req, "iswhite");
 
@@ -6818,7 +6822,9 @@ namespace http {
 
 					//convert hue to RGB
 					float iHue = float(atof(hue.c_str()));
-					hsb2rgb(iHue, 1.0f, 1.0f, r, g, b, 255);
+					float iSat = 100.0f;
+					if (!sat.empty()) iSat = float(atof(sat.c_str()));
+					hsb2rgb(iHue, iSat/100.0f, 1.0f, r, g, b, 255);
 
 					color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					if (iswhite == "true") color.mode = ColorModeWhite;
@@ -8053,6 +8059,8 @@ namespace http {
 			int HardwareTypeVal;
 			std::string HardwareType;
 			bool Enabled;
+			std::string Mode1; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
+			std::string Mode2; // Used to flag DimmerType as relative for some old LimitLessLight type bulbs
 		} tHardwareList;
 
 		void CWebServer::GetJSonDevices(
@@ -8085,7 +8093,7 @@ namespace http {
 
 			//Get All Hardware ID's/Names, need them later
 			std::map<int, _tHardwareListInt> _hardwareNames;
-			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type FROM Hardware");
+			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Mode1, Mode2 FROM Hardware");
 			if (result.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -8110,6 +8118,8 @@ namespace http {
 						tlist.HardwareType = PluginHardwareDesc(ID);
 					}
 #endif
+					tlist.Mode1 = sd[4];
+					tlist.Mode2 = sd[5];
 					_hardwareNames[ID] = tlist;
 				}
 			}
@@ -8861,7 +8871,9 @@ namespace http {
 							(dType == pTypeENERGY) ||
 							(dType == pTypeRFXMeter) ||
 							(dType == pTypeAirQuality) ||
-							(dType == pTypeRFXSensor)
+							(dType == pTypeRFXSensor) ||
+							(dType == pTypeP1Power) ||
+							(dType == pTypeP1Gas)
 							)
 						{
 							root["result"][ii]["ID"] = szData;
@@ -8984,7 +8996,7 @@ namespace http {
 							    (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
 							{
 								_tColor color(sColor);
-								std::string jsonColor = color.toJSON();
+								std::string jsonColor = color.toJSONString();
 								root["result"][ii]["Color"] = jsonColor;
 								llevel = LastLevel;
 								if (lstatus == "Set Level" || lstatus == "Set Color")
@@ -9000,6 +9012,24 @@ namespace http {
 							root["result"][ii]["LevelInt"] = atoi(sValue.c_str());
 						}
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
+						std::string DimmerType = "none";
+						if (bHaveDimmer)
+						{
+							DimmerType = "abs";
+							if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
+							{
+								// Milight V4/V5 bridges do not support absolute dimming for RGB or CW_WW lights
+								if (_hardwareNames[hardwareID].HardwareTypeVal == HTYPE_LimitlessLights &&
+								    atoi(_hardwareNames[hardwareID].Mode2.c_str()) != CLimitLess::LBTYPE_V6 &&
+									(atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_RGB ||
+									 atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_White ||
+									 atoi(_hardwareNames[hardwareID].Mode1.c_str()) == sTypeColor_CW_WW))
+								{
+									DimmerType = "rel";
+								}
+							}
+						}
+						root["result"][ii]["DimmerType"] = DimmerType;
 						root["result"][ii]["MaxDimLevel"] = maxDimLevel;
 						root["result"][ii]["HaveGroupCmd"] = bHaveGroupCmd;
 						root["result"][ii]["SwitchType"] = Switch_Type_Desc(switchtype);

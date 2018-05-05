@@ -156,6 +156,7 @@ define(['app', 'timers/factories'], function (app) {
                         vm.timerSettings.level || 0,
                         vm.timerSettings.color,
                         vm.colorSettingsType,
+                        vm.dimmerType,
                         onColorChange
                     );
                 });
