@@ -707,13 +707,14 @@ namespace Plugins {
 			while (m_bIsStarting)
 			{
 				int scounter = 0;
-				while (m_bIsStarting && (scounter++ < 300))
+				int timeout = 30;
+				while (m_bIsStarting && (scounter++ < timeout*10))
 				{
 					sleep_milliseconds(100);
 				}
 				if (m_bIsStarting)
 				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after 30 seconds", Name.c_str());
+					_log.Log(LOG_ERROR, "(%s) Plugin did not finish start after %d seconds", Name.c_str(), timeout);
 				}
 			}
 
@@ -745,13 +746,14 @@ namespace Plugins {
 			while (m_bIsStarted)
 			{
 				int scounter = 0;
-				while (m_bIsStarted && (scounter++ < 50))
+				int timeout = 30;
+				while (m_bIsStarted && (scounter++ < timeout*10))
 				{
 					sleep_milliseconds(100);
 				}
 				if (m_bIsStarted)
 				{
-					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after 5 seconds, flushing event queue...", Name.c_str());
+					_log.Log(LOG_ERROR, "(%s) Plugin did not stop after %d seconds, flushing event queue...", Name.c_str(), timeout);
 
 					ClearMessageQueue();
 					m_bIsStarted = false;
