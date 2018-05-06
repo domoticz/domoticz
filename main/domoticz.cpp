@@ -353,7 +353,7 @@ void daemonize(const char *rundir, const char *pidfile)
 	{
 		return GetModuleFileNameA(NULL, pathName, (DWORD)pathNameCapacity);
 	}
-#elif defined(__linux__) || defined(__CYGWIN32__) || defined(__NetBSD__) /* elif of: #if defined(_WIN32) */
+#elif defined(__linux__) || defined(__CYGWIN32__) /* elif of: #if defined(_WIN32) */
 	#include <unistd.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 	{
@@ -370,6 +370,19 @@ void daemonize(const char *rundir, const char *pidfile)
 		mib[1] = KERN_PROC;
 		mib[2] = KERN_PROC_PATHNAME;
 		mib[3] = -1;
+		size_t cb = pathNameCapacity-1;
+		sysctl(mib, 4, pathName, &cb, NULL, 0);
+		return cb;
+	}
+#elif defined(__NetBSD__)
+	#include <sys/sysctl.h>
+	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
+	{
+		int mib[4];
+		mib[0] = CTL_KERN;
+		mib[1] = KERN_PROC_ARGS;
+		mib[2] = getpid();
+		mib[3] = KERN_PROC_PATHNAME;
 		size_t cb = pathNameCapacity-1;
 		sysctl(mib, 4, pathName, &cb, NULL, 0);
 		return cb;
