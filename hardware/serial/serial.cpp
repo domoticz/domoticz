@@ -2,8 +2,10 @@
 #include "stdafx.h"
 #include <algorithm>
 
-#if !defined(_WIN32) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__NetBSD__)
+#ifdef __sun
 # include <alloca.h>
+#else
+# include <stdlib.h>
 #endif
 
 #if defined (__MINGW32__)

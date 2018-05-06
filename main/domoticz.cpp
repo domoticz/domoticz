@@ -361,28 +361,22 @@ void daemonize(const char *rundir, const char *pidfile)
 		pathName[pathNameSize] = '\0';
 		return pathNameSize;
 	}
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
 	#include <sys/sysctl.h>
 	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
 	{
 		int mib[4];
+#ifdef __FreeBSD__
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_PROC;
 		mib[2] = KERN_PROC_PATHNAME;
 		mib[3] = -1;
-		size_t cb = pathNameCapacity-1;
-		sysctl(mib, 4, pathName, &cb, NULL, 0);
-		return cb;
-	}
-#elif defined(__NetBSD__)
-	#include <sys/sysctl.h>
-	static size_t getExecutablePathName(char* pathName, size_t pathNameCapacity)
-	{
-		int mib[4];
+#else // __NetBSD__
 		mib[0] = CTL_KERN;
 		mib[1] = KERN_PROC_ARGS;
 		mib[2] = getpid();
 		mib[3] = KERN_PROC_PATHNAME;
+#endif
 		size_t cb = pathNameCapacity-1;
 		sysctl(mib, 4, pathName, &cb, NULL, 0);
 		return cb;
