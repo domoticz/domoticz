@@ -12,9 +12,6 @@
 #include "hardwaretypes.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#ifdef __NetBSD__
-#include <machine/int_fmtio.h>
-#endif
 
 #define round(a) ( int ) ( a + .5 )
 

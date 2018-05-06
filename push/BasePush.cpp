@@ -10,9 +10,6 @@
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#ifdef __NetBSD__
-#include <machine/int_fmtio.h>
-#endif
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
 typedef struct _STR_TABLE_ID1_ID2 {

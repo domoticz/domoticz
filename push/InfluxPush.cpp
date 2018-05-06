@@ -14,9 +14,6 @@
 #include "../main/localtime_r.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#ifdef __NetBSD__
-#include <machine/int_fmtio.h>
-#endif
 
 CInfluxPush::CInfluxPush():
 	m_InfluxPort(8086),

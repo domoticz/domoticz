@@ -6,7 +6,7 @@
 # include <alloca.h>
 #endif
 
-#if defined (__MINGW32__) || defined(__NetBSD__)
+#if defined (__MINGW32__)
 # define alloca __builtin_alloca
 #endif
 
