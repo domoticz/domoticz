@@ -6168,7 +6168,12 @@ define(['app'], function (app) {
 											});
 											PluginParams += '</select></td>';
 										} else {
-											PluginParams += '<td><input type="text" id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
+											PluginParams += '<td>'
+											if ((typeof (param.password) != "undefined") && (param.password == "true"))
+												PluginParams += '<input type="password" ';
+											else
+												PluginParams += '<input type="text" ';
+											PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
 											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 											PluginParams += ' /></td>';
