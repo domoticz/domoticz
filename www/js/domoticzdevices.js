@@ -1249,7 +1249,7 @@ BinarySwitch.inheritsFrom(Switch);
 function Alert(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "ShowTextLog('#" + Device.contentTag + "','" + Device.backFunction + "','" + this.index + "','" + this.name + "');";
+        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/TextLog'";
         this.NotifyLink = "";
         this.status = this.data;
         this.data = "";
