@@ -4,9 +4,8 @@
 
 #ifdef __sun
 # include <alloca.h>
-#else
-# include <stdlib.h>
 #endif
+#include <stdlib.h>
 
 #if defined (__MINGW32__)
 # define alloca __builtin_alloca
