@@ -6,6 +6,7 @@
 #ifdef ENABLE_PYTHON
 
 #include <tinyxml.h>
+#include <inttypes.h>
 
 #include "PluginManager.h"
 #include "Plugins.h"
