@@ -1442,9 +1442,9 @@ void GetLightStatus(
 		// Fill in other parameters
 		switch (dSubType)
 		{
-		case sTypeAC:
-		case sTypeHEU:
-		case sTypeANSLUT:
+		case sSwitchTypeAC:
+		case sSwitchTypeHEU:
+		case sSwitchTypeANSLUT:
 		case sSwitchTypeSelector:
 		case sSwitchGeneralSwitch:
 			bHaveDimmer = true;
