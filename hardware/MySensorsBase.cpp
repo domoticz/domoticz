@@ -2282,6 +2282,11 @@ void MySensorsBase::ParseLine()
 	}
 }
 
+void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, const std::string &tvalue)
+{
+	SendNodeCommand(nodeID, childID, MT_Set, V_TEXT, tvalue);
+}
+
 bool MySensorsBase::StartSendQueue()
 {
 	//Start worker thread

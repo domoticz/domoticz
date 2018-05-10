@@ -162,7 +162,10 @@
 				var fieldA = $(value).find("field")[0];
 				return "barometerdevice["+$(fieldA).text()+"]";
 			}
-			else if (variableType.indexOf("utilityvariables") >= 0) {
+			else if (
+				(variableType.indexOf("utilityvariables") >= 0) ||
+				(variableType.indexOf("textvariables") >= 0)
+				) {
 				var fieldA = $(value).find("field")[0];
 				return "utilitydevice["+$(fieldA).text()+"]";
 			}
@@ -321,7 +324,16 @@
 					var dtext=GetValueText(valueB,variableTypeB);
 					setString += '='+dtext+'';
 					setArray.push(setString);
-
+				}
+				if (blockA.attr("type").indexOf("textvariables") >= 0) {
+					var setString = "commandArray[Text:"+$(fieldA).text()+"]";
+					var valueB = $(this).find("value[name='B']")[0];
+					var fieldB = $(valueB).find("field")[0];
+					var blockB = $(valueB).children("block:first");
+					var variableTypeB = $(valueB).children("block:first").attr("type");
+					var dtext=GetValueText(valueB,variableTypeB);
+					setString += '='+dtext+'';
+					setArray.push(setString);
 				}
 				else {
 					var setString = "commandArray["+$(fieldA).text()+"]";
@@ -381,6 +393,15 @@
 		        else if ((blockBType=="text") && (fieldBName == "TEXT")) {
 					if (blockA.attr("type").indexOf("uservariables") >= 0) {
 						var setString = "commandArray[Variable:"+$(fieldA).text()+"]";
+						var valueB = $(this).find("value[name='B']")[0];
+						var fieldB = $(valueB).find("field")[0];
+						var blockB = $(valueB).children("block:first");
+						setString += '="'+$(fieldB).text()+'"';
+						setString += ' AFTER '+ $(fieldC).text()+'"';
+						setArray.push(setString);
+					}
+					else if (blockA.attr("type").indexOf("textvariables") >= 0) {
+						var setString = "commandArray[Text:"+$(fieldA).text()+"]";
 						var valueB = $(this).find("value[name='B']")[0];
 						var fieldB = $(valueB).find("field")[0];
 						var blockB = $(valueB).children("block:first");
@@ -1045,6 +1066,7 @@
 	   		<block type="logic_setdelayed"></block>
 	   		<block type="logic_setrandom"></block>
 	   		<block type="math_number"></block>
+			<block type="text"></block>
    		</category>
    		<category name="Time">
 	   		<block type="logic_timeofday"></block>
@@ -1065,14 +1087,6 @@
    		<category name="Security">
    			<block type="security_status"></block>
    		</category>
-		<category name="User variables">
-			<block type="uservariablesAF"></block>
-			<block type="uservariablesGL"></block>
-			<block type="uservariablesMR"></block>
-			<block type="uservariablesSZ"></block>
-			<block type="math_number"></block>
-			<block type="text"></block>
-		</category>
 		<category name="Debug/log">
 		   	<block type="writetolog"></block>
 			<block type="text"></block>
@@ -1106,6 +1120,15 @@
 			   	<block type="utilityvariablesMR"></block>
 			   	<block type="utilityvariablesSZ"></block>
 		   	</category>
+			<category name="User variables">
+				<block type="uservariablesAF"></block>
+				<block type="uservariablesGL"></block>
+				<block type="uservariablesMR"></block>
+				<block type="uservariablesSZ"></block>
+			</category>
+			<category name="Text">
+				<block type="textvariables"></block>
+			</category>
 		   	<category name="Scenes/groups">
 			   	<block type="scenevariables"></block>
 			   	<block type="groupvariables"></block>

@@ -12942,9 +12942,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			dName = sd[1];
 		}
 
-		std::vector<std::string> strarray;
-		StringSplit(sValue, ";", strarray);
-
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12992,6 +12989,25 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	);
 	if (devidx == -1)
 		return false;
+
+	if (pHardware)
+	{
+		if (
+			(pHardware->HwdType == HTYPE_MySensorsUSB) ||
+			(pHardware->HwdType == HTYPE_MySensorsTCP)
+			)
+		{
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
+			unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
+
+			MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
+			pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
+		}
+	}
 
 #ifdef ENABLE_PYTHON
 	// notify plugin
