@@ -698,7 +698,7 @@ namespace Plugins {
 				if (!m_sql.m_bAcceptNewHardware)
 				{
 #ifdef _DEBUG
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
+					_log.Log(LOG_STATUS, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
 #endif
 				}
 				else
