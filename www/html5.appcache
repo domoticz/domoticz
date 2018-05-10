@@ -472,6 +472,7 @@ app/log/LightLog.js
 app/log/SceneLog.js
 app/log/TemperatureLog.js
 app/log/TemperatureReport.js
+app/log/TextLog.js
 app/scenes/factories.js
 app/timers/components.js
 app/timers/DeviceTimersController.js
