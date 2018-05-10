@@ -276,6 +276,7 @@ const char *Hardware_Type_Desc(int hType)
 		{ HTYPE_eHouseTCP, "eHouse UDP+TCP with LAN interface" },
 		{ HTYPE_EcoCompteur, "EcoCompteur Legrand with LAN interface" },
 		{ HTYPE_Honeywell, "Honeywell Thermostat" },
+		{ HTYPE_Tado, "Tado Thermostat"},
 		{ 0, NULL, NULL }
 	};
 	return findTableIDSingle1 (Table, hType);
@@ -1441,9 +1442,9 @@ void GetLightStatus(
 		// Fill in other parameters
 		switch (dSubType)
 		{
-		case sTypeAC:
-		case sTypeHEU:
-		case sTypeANSLUT:
+		case sSwitchTypeAC:
+		case sSwitchTypeHEU:
+		case sSwitchTypeANSLUT:
 		case sSwitchTypeSelector:
 		case sSwitchGeneralSwitch:
 			bHaveDimmer = true;

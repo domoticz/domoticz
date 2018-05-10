@@ -674,8 +674,22 @@ bool CZiBlueBase::ParseBinary(const uint8_t SDQ, const uint8_t *data, size_t len
 				int total2 = pSen->counter2Msb;
 				total2 = total2 << 16;
 				total2 += pSen->counter2Lsb;
-				SendKwhMeter(pSen->idLsb^pSen->idMsb, 1,(pSen->qualifier & 0x01) ? 0 : 100, (double)pSen->apparentPower, total1/1000.0, "HC");
-				SendKwhMeter(pSen->idLsb^pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, (double)pSen->apparentPower, total2/1000.0, "HP");
+				double power1 = 0;
+				double power2 = 0;
+				if (m_LastReceivedKWhMeterValue.find(pSen->idLsb^pSen->idMsb ^ 1) != m_LastReceivedKWhMeterValue.end())
+				{
+					power1 = (total1 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1]) / 3600.0);
+					power2 = (total2 - m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 2]) / ((m_LastReceivedTime - m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2]) / 3600.0);
+					power1 = round(power1);
+					power2 = round(power2);
+				}
+				SendKwhMeter(pSen->idLsb^pSen->idMsb, 1, (pSen->qualifier & 0x01) ? 0 : 100, power1, total1 / 1000.0, "HC");
+				SendKwhMeter(pSen->idLsb^pSen->idMsb, 2, (pSen->qualifier & 0x01) ? 0 : 100, power2, total2 / 1000.0, "HP");
+				SendWattMeter(pSen->idLsb^pSen->idMsb, 3, (pSen->qualifier & 0x01) ? 0 : 100, (float)pSen->apparentPower, "Apparent Power");
+				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 1] = m_LastReceivedTime;
+				m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 1] = total1;
+				m_LastReceivedKWhMeterTime[pSen->idLsb^pSen->idMsb ^ 2] = m_LastReceivedTime;
+				m_LastReceivedKWhMeterValue[pSen->idLsb^pSen->idMsb ^ 2] = total2;
 			}
 			break;
 		}

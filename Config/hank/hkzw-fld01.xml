@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+    <!--
+      Hank HKZW-FLD01 Flood Sensor
+      https://products.z-wavealliance.org/products/2641
+    -->
+
+    <!-- Configuration -->
+    <CommandClass id="112">
+        <Value type="list" genre="config" instance="1" index="14" label="Enable/Disable BASIC SET command" size="1" min="0" max="1" value="0">
+            <Help>The Flood sensor can send BASIC SET command to nodes associated with group 2.</Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="15" label="Value of the BASIC SET" size="1" min="0" max="1" value="0">
+            <Help>The Flood sensor can reverse its value of BASIC SET when flooding is triggered.</Help>
+            <Item value="0" label="Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is canceled."/>
+            <Item value="1" label="Send BASIC SET VALUE = 0 to nodes associated with group 2 when flooding alarm is triggered. Send BASIC SET VALUE = 255 to nodes associated with group 2 when flooding alarm is canceled."/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="17" label="Enable/Disable flooding alarm" size="1" min="0" max="1" value="1">
+            <Help></Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="18" label="Enable/Disable shock alarm" size="1" min="0" max="1" value="0">
+            <Help></Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="19" label="Enable/Disable high temperature alarm" size="1" min="0" max="1" value="0">
+            <Help></Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="20" label="Set the high temperature alarm trigger value" size="2" min="-670" max="2570">
+            <Help>US: -670 - 2570 (-67 - 257 F)
+            Other: -550 - 1250 (-55 - 125 C)</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="21" label="Enable/Disable low temperature alarm" size="1" min="0" max="1" value="0">
+            <Help></Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="short" genre="config" instance="1" index="22" label="Set the low temperature alarm trigger value" size="2" min="-670" max="2570" value="0">
+            <Help>US: -670 - 2570 (-67 - 257 F)
+            Other: -550 - 1250 (-55 - 125 C)</Help>
+        </Value>
+        <Value type="list" genre="config" instance="1" index="24" label="Enable/Disable blinking LED when alarm being triggered" size="1" min="0" max="1" value="1">
+            <Help></Help>
+            <Item value="0" label="Disable"/>
+            <Item value="1" label="Enable"/>
+        </Value>
+        <Value type="byte" genre="config" instance="1" index="32" label="Level of low battery" size="1" min="10" max="50" value="20">
+            <Help>This parameter defines a battery level as the "low battery".</Help>
+        </Value>
+    </CommandClass>
+
+    <!-- Association Groups -->
+    <CommandClass id="133">
+        <Associations num_groups="2">
+            <Group index="1" max_associations="5" label="Lifeline"/>
+            <Group index="2" max_associations="5" label="BASIC SET command"/>
+        </Associations>
+    </CommandClass>
+
+</Product>

@@ -9,6 +9,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
+#include "../hardware/MySensorsBase.h"
 #include <iostream>
 #include "../httpclient/UrlEncode.h"
 #include "localtime_r.h"
@@ -2245,6 +2246,32 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			actionsDone = true;
 			continue;
 		}
+		else if (deviceName.find("Text:") == 0)
+		{
+			std::string variableName = deviceName.substr(5);
+			float afterTimerSeconds = 0;
+			size_t aFind = doWhat.find(" AFTER ");
+			if ((aFind > 0) && (aFind != std::string::npos)) {
+				std::string delayString = doWhat.substr(aFind + 7);
+				std::string newAction = doWhat.substr(0, aFind);
+				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+				doWhat = newAction;
+				StripQuotes(doWhat);
+			}
+
+			std::vector<std::vector<std::string> > result;
+
+			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			{
+				UpdateDevice(atoi(variableName.c_str()), 0, doWhat, false, false);
+			}
+			else
+			{
+				float DelayTime = afterTimerSeconds;
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, (const uint64_t)atol(variableName.c_str()), 0,  doWhat, false, false));
+			}
+			actionsDone = true;
+		}
 		else if (deviceName.find("SendCamera:") == 0)
 		{
 			if (!atoi(deviceName.substr(11).c_str()))
@@ -3484,7 +3511,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 {
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
 		idx);
 	if (result.size() > 0)
 	{
@@ -3500,6 +3527,8 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		std::string db_sValue = sd[7];
 		int db_Protected = atoi(sd[8].c_str());
 		std::string db_LastUpdate = sd[9];
+		int HardwareID = atoi(sd[10].c_str());
+		std::string DeviceID = sd[11];
 
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
@@ -3518,6 +3547,11 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			db_Protected,
 			db_LastUpdate.c_str(),
 			idx);
+
+#ifdef ENABLE_PYTHON
+		// Notify plugin framework about the change
+		m_mainworker.m_pluginsystem.DeviceModified(idx);
+#endif
 
 		if ((nValue == -1) && (sValue.empty()))
 			return;
@@ -3592,6 +3626,29 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
 			m_mainworker.SetZWaveThermostatFanMode(sIdx.str(), nValue);
+		}
+		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
+		{
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+			if (pHardware)
+			{
+				if (
+					(pHardware->HwdType == HTYPE_MySensorsUSB) ||
+					(pHardware->HwdType == HTYPE_MySensorsTCP)
+					)
+				{
+					unsigned long ID;
+					std::stringstream s_strid;
+					s_strid << std::hex << DeviceID;
+					s_strid >> ID;
+					unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
+					unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
+
+					MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
+					pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
+				}
+			}
+
 		}
 		if (bEventTrigger)
 			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname, 0);

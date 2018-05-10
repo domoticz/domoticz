@@ -506,6 +506,22 @@ $(document).ready(function() {
 						<tr>
 							<td align="left" style="width:200px">
 								<input type="text" id="popup_picker"  data-wheelcolorpicker="" data-wcp-layout="block" data-wcp-sliders="wvkl"/>
+								<div class="btn-group">
+									<button id="popup_bright_up" class="btn btn-small" type="button">
+										Brightness Up
+									</button>
+									<button id="popup_bright_down" class="btn btn-small" type="button">
+										Brightness Down
+									</button>
+								</div>
+								<div class="btn-group">
+									<button id="popup_warmer" class="btn btn-small" type="button">
+										Warmer White
+									</button>
+									<button id="popup_colder" class="btn btn-small" type="button">
+										Colder White
+									</button>
+								</div>
 							</td>
 							<td align="left" style="vertical-align: center;">
 								<a id="popup_switch_on"><img src="images/pushon48.png" class="lcursor" height="48" width="48"></a><br>
@@ -599,25 +615,6 @@ $(document).ready(function() {
 	  <div id="globalyeargraph" style="height: 300px;"></div>
 	</div>
 
-	<div id="textlog" style="display:none;">
-		<table class="display" id="texttable" border="0" cellpadding="0" cellspacing="0" width="100%">
-				<thead>
-						<tr>
-								<th width="140" align="left" data-i18n="Date">Date</th>
-								<th data-i18n="Data">Data</th>
-						</tr>
-				</thead>
-		</table>
-		<table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-				</td>
-				<td align="right">
-					<a class="btnstyle3" id="clearlog" onclick="ClearTextLog();" data-i18n="Clear">Clear</a>
-				</td>
-			</tr>
-		</table>
-	</div>
 	<div id="dialog-camera-live" style="display:none;">
 		<img id="camfeed" name="camfeed" onload="load_cam_video()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
 	</div>

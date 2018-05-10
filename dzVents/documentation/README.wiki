@@ -1905,6 +1905,12 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 
 = Change log =
 
+== [2.4.4] ==
+
+* Fixed rawTime and rawData so it shows leading zeros when values are below 10.
+* Fixed one wildcard issue. Should now work as expected.
+* Fixed a problem in Domoticz where you couldn't change the state of some door contact-like switches using the API or dzVents. That seems to work now.
+
 == [2.4.3] ==
 
 * Fixed trigger wildcards. Now you can do <code>*aa*bb*cc</code> or <code>a*</code> which will require the target to start with an <code>a</code>
@@ -2154,3 +2160,4 @@ In 2.x it is no longer needed to make timed json calls to Domoticz to get extra 
 = [0.9.7] =
 
 * Added domoticz object resource structure. Updated readme accordingly. No more (or hardly any) need for juggling with all the Domoticz Lua tables and commandArrays.
+

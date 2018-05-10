@@ -88,6 +88,7 @@
 #include "../hardware/Nest.h"
 #include "../hardware/NestOAuthAPI.h"
 #include "../hardware/Thermosmart.h"
+#include "../hardware/Tado.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/Netatmo.h"
 #include "../hardware/HttpPoller.h"
@@ -304,9 +305,21 @@ void MainWorker::StartDomoticzHardware()
 
 void MainWorker::StopDomoticzHardware()
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	// Separate the Stop() from the device removal from the vector.
+	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
+	std::vector<CDomoticzHardwareBase*> OrgHardwaredevices;
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+
+	{
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		{
+			OrgHardwaredevices.push_back(*itt);
+		}
+		m_hardwaredevices.clear();
+	}
+
+	for (itt = OrgHardwaredevices.begin(); itt != OrgHardwaredevices.end(); ++itt)
 	{
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
@@ -314,7 +327,6 @@ void MainWorker::StopDomoticzHardware()
 		(*itt)->Stop();
 		delete (*itt);
 	}
-	m_hardwaredevices.clear();
 }
 
 void MainWorker::GetAvailableWebThemes()
@@ -391,24 +403,24 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
 	// Separate the Stop() from the device removal from the vector.
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
-	CDomoticzHardwareBase *pOrgDevice = NULL;
+	CDomoticzHardwareBase *pOrgHardware = NULL;
 	{
 		boost::lock_guard<boost::mutex> l(m_devicemutex);
 		std::vector<CDomoticzHardwareBase*>::iterator itt;
 		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
-			pOrgDevice = *itt;
-			if (pOrgDevice == pHardware) {
+			pOrgHardware = *itt;
+			if (pOrgHardware == pHardware) {
 				m_hardwaredevices.erase(itt);
 				break;
 			}
 		}
 	}
 
-	if (pOrgDevice == pHardware)
+	if (pOrgHardware == pHardware)
 	{
-		pOrgDevice->Stop();
-		delete pOrgDevice;
+		pOrgHardware->Stop();
+		delete pOrgHardware;
 	}
 }
 
@@ -1005,11 +1017,14 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_THERMOSMART:
 		pHardware = new CThermosmart(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
 		break;
+	case HTYPE_Tado:
+		pHardware = new CTado(ID, Username, Password);
+		break;
 	case HTYPE_Honeywell:
-			pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
-			break;
+		pHardware = new CHoneywell(ID, Username, Password, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6);
+		break;
 	case HTYPE_Philips_Hue:
-		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1);
+		pHardware = new CPhilipsHue(ID, Address, Port, Username, Mode1, Mode2);
 		break;
 	case HTYPE_HARMONY_HUB:
 		pHardware = new CHarmonyHub(ID, Address, Port);
@@ -5572,7 +5587,7 @@ void MainWorker::decode_ColorSwitch(const int HwdID, const _eHardwareTypes HwdTy
 			//store color in database
 			m_sql.safe_query(
 				"UPDATE DeviceStatus SET Color='%q' WHERE (ID = %" PRIu64 ")",
-				color.toJSON().c_str(),
+				color.toJSONString().c_str(),
 				ulID);
 		}
 
@@ -11960,6 +11975,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		(pHardware->HwdType == HTYPE_Nest_OAuthAPI) ||
 		(pHardware->HwdType == HTYPE_ANNATHERMOSTAT) ||
 		(pHardware->HwdType == HTYPE_THERMOSMART) ||
+		(pHardware->HwdType == HTYPE_Tado) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SCRIPT) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_SERIAL) ||
 		(pHardware->HwdType == HTYPE_EVOHOME_TCP) ||
@@ -12013,6 +12029,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_THERMOSMART)
 		{
 			CThermosmart *pGateway = reinterpret_cast<CThermosmart*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_Tado)
+		{
+			CTado *pGateway = reinterpret_cast<CTado*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_Netatmo)
@@ -12921,9 +12942,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			dName = sd[1];
 		}
 
-		std::vector<std::string> strarray;
-		StringSplit(sValue, ";", strarray);
-
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12971,6 +12989,25 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	);
 	if (devidx == -1)
 		return false;
+
+	if (pHardware)
+	{
+		if (
+			(pHardware->HwdType == HTYPE_MySensorsUSB) ||
+			(pHardware->HwdType == HTYPE_MySensorsTCP)
+			)
+		{
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
+			unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
+
+			MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
+			pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
+		}
+	}
 
 #ifdef ENABLE_PYTHON
 	// notify plugin

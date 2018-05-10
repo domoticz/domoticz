@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 125
+#define DB_VERSION 127
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2447,7 +2447,7 @@ bool CSQLHelper::OpenDatabase()
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE Timers SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					szQuery2 << "UPDATE Timers SET Color='" << color.toJSONString() << "' WHERE (ID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -2470,7 +2470,7 @@ bool CSQLHelper::OpenDatabase()
 					_tColor color = _tColor(r, g, b, 0, 0, ColorModeRGB);
 					szQuery2.clear();
 					szQuery2.str("");
-					szQuery2 << "UPDATE SceneDevices SET Color='" << color.toJSON() << "' WHERE (ID=" << sd[0] << ")";
+					szQuery2 << "UPDATE SceneDevices SET Color='" << color.toJSONString() << "' WHERE (ID=" << sd[0] << ")";
 					query(szQuery2.str());
 				}
 			}
@@ -2509,6 +2509,15 @@ bool CSQLHelper::OpenDatabase()
 		{
 			std::string sFile = szWWWFolder + "/js/domoticz.js.gz";
 			std::remove(sFile.c_str());
+		}
+		if (dbversion < 126)
+		{
+			std::string sFile = szWWWFolder + "/js/domoticzdevices.js.gz";
+			std::remove(sFile.c_str());
+		}
+		if (dbversion < 127)
+		{
+			safe_query("UPDATE Hardware SET Mode2 = 3 WHERE Type = %d", HTYPE_Philips_Hue);
 		}
 	}
 	else if (bNewInstall)
@@ -3988,13 +3997,17 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 
 uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string &devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
 {
+	//TODO: 'unsigned char unit' only allows 256 devices / plugin
+	//TODO: return -1 as error code does not make sense for a function returning an unsigned value
 	std::vector<std::vector<std::string> > result;
 	uint64_t ulID = 0;
 	std::string name = devname;
 
 	if (!m_bAcceptNewHardware)
 	{
-		_log.Log(LOG_ERROR, "Device creation failed, Domoticz settings prevent accepting new devices.");
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "Device creation failed, Domoticz settings prevent accepting new devices.");
+#endif
 		return -1; //We do not allow new devices
 	}
 
@@ -4039,6 +4052,7 @@ bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const uns
 
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 		//TODO: 'unsigned char unit' only allows 256 devices / plugin
+		//TODO: return -1 as error code does not make sense for a function returning an unsigned value
 {
 	if (!m_dbase)
 		return -1;
@@ -4055,7 +4069,7 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 
 		if (ulID < 1)
 			return -1;
-		
+
 #ifdef ENABLE_PYTHON
 		//TODO: Plugins should perhaps be blocked from implicitly adding a device by update? It's most likely a bug due to updating a removed device..
 		CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
@@ -4066,8 +4080,6 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 			pPlugin->DeviceAdded(unit);
 		}
 #endif
-		std::stringstream s_str( result[0][0] );
-		s_str >> ulID;
 	}
 	else
 	{
@@ -8253,14 +8265,16 @@ std::map<std::string, std::string> CSQLHelper::BuildDeviceOptions(const std::str
 		StringSplit(options, ";", optionsArray);
 		std::vector<std::string>::iterator itt;
 		for (itt=optionsArray.begin(); itt!=optionsArray.end(); ++itt) {
-			if (*itt == "") {
+			std::string oValue = *itt;
+			if (oValue.empty()) {
 				continue;
 			}
-			std::vector<std::string> optionArray;
-			StringSplit(*itt, ":", optionArray);
-			if (optionArray.size() == 2) {
-				std::string optionName = optionArray[0].c_str();
-				std::string optionValue = decode ? base64_decode(optionArray[1].c_str()) : optionArray[1].c_str();
+			size_t tpos = oValue.find_first_of(':');
+			if ((tpos != std::string::npos)&&(oValue.size()>tpos+1))
+			{
+				std::string optionName = oValue.substr(0, tpos);
+				oValue = oValue.substr(tpos + 1);
+				std::string optionValue = decode ? base64_decode(oValue.c_str()) : oValue;
 				//_log.Log(LOG_STATUS, "DEBUG : Build device option ['%s': '%s'] => ['%s': '%s']", optionArray[0].c_str(), optionArray[1].c_str(), optionName.c_str(), optionValue.c_str());
 				optionsMap.insert(std::pair<std::string, std::string>(optionName, optionValue));
 			}

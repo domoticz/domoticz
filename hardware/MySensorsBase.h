@@ -412,6 +412,7 @@ public:
 	static std::string GetMySensorsValueTypeStr(const enum _eSetType vType);
 	static std::string GetMySensorsPresentationTypeStr(const enum _ePresentationType pType);
 	std::string GetGatewayVersion();
+	void SendTextSensorValue(const int nodeID, const int childID, const std::string &tvalue);
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);

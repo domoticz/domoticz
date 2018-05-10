@@ -331,7 +331,7 @@ namespace Plugins {
 				self->SignalLevel = 100;
 				self->BatteryLevel = 255;
 				self->TimedOut = 0;
-				self->Color = PyUnicode_FromString(NoColor.toJSON().c_str());
+				self->Color = PyUnicode_FromString(NoColor.toJSONString().c_str());
 				if (self->Color == NULL) {
 					Py_DECREF(self);
 					return NULL;
@@ -669,7 +669,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSON().c_str()); //Parse the color to detect incorrectly formatted color data
+					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
 				}
 			}
 		}
@@ -695,14 +695,20 @@ namespace Plugins {
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
-				if (m_sql.m_bAcceptNewHardware)
+				if (!m_sql.m_bAcceptNewHardware)
+				{
+#ifdef _DEBUG
+					_log.Log(LOG_STATUS, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
+#endif
+				}
+				else
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 					if (result.size() == 0)
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
-						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSON(); //Parse the color to detect incorrectly formatted color data
+						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
 						std::string	sLongName = self->pPlugin->Name + " - " + sName;
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
@@ -767,10 +773,6 @@ namespace Plugins {
 					{
 						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
 					}
-				}
-				else
-				{
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
 				}
 			}
 			else
@@ -904,7 +906,7 @@ namespace Plugins {
 			// Color change
 			if (Color)
 			{
-				std::string	sColor = _tColor(std::string(Color)).toJSON(); //Parse the color to detect incorrectly formatted color data
+				std::string	sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
 				m_sql.UpdateDeviceValue("Color", sColor, sID);
 
 				// TODO: Notify MQTT and various push mechanisms?

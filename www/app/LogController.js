@@ -10,10 +10,6 @@ define(['app'], function (app) {
 		var LOG_NORM = 2;
 		var LOG_TRACE = 3;
 
-		$scope.to_trusted = function (html_code) {
-			return $sce.trustAsHtml(html_code);
-		}
-
 		$scope.RefreshLog = function () {
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
@@ -43,29 +39,46 @@ define(['app'], function (app) {
 						$scope.LastLogTime = parseInt(data.LastLogTime);
 					}
 					$.each(data.result, function (i, item) {
-						var message = item.message.replace(/\n/gi, "<br>");
-						var logclass = "";
-						logclass = getLogClass(item.level);
-						$scope.logitems = $scope.logitems.concat({
-							mclass: logclass,
-							text: message
-						});
-						if (llogtime != 0) {
-							if (item.level == LOG_ERROR) {
-								//Error
-								$scope.logitems_error = $scope.logitems_error.concat({
-									mclass: logclass,
-									text: message
-								});
-							}
-							else if (item.level == LOG_STATUS) {
-								//Status
-								$scope.logitems_status = $scope.logitems_status.concat({
-									mclass: logclass,
-									text: message
-								});
-							}
-						}
+					    var message = item.message.replace(/\n/gi, "<br>");
+					    var lines = message.split("<br>")
+					    if (lines.length < 1) return;
+					    var fline = lines[0].split(" ")
+					    if (fline.length < 3) return;
+
+					    var sdate = fline[0];
+					    var stime = fline[1];
+
+					    for (i = 0; i < lines.length; i++) {
+					        var lmessage = "";
+					        if (i == 0) {
+					            lmessage = lines[i];
+					        }
+					        else {
+					            lmessage = sdate + " " + stime + " " + lines[i];
+					        }
+					        var logclass = "";
+					        logclass = getLogClass(item.level);
+					        $scope.logitems = $scope.logitems.concat({
+					            mclass: logclass,
+					            text: lmessage
+					        });
+					        if (llogtime != 0) {
+					            if (item.level == LOG_ERROR) {
+					                //Error
+					                $scope.logitems_error = $scope.logitems_error.concat({
+					                    mclass: logclass,
+					                    text: lmessage
+					                });
+					            }
+					            else if (item.level == LOG_STATUS) {
+					                //Status
+					                $scope.logitems_status = $scope.logitems_status.concat({
+					                    mclass: logclass,
+					                    text: lmessage
+					                });
+					            }
+					        }
+                        }
 					});
 				}
 				$scope.mytimer = $interval(function () {

@@ -192,8 +192,11 @@ std::string GetGeneralRFLinkFromInt(const _tRFLinkStringIntHelper *pTable, const
 
 CRFLinkBase::CRFLinkBase()
 {
-	m_rfbufferpos=0;
+	m_bTXokay = false;
+	m_bRFDebug = false;
 	memset(&m_rfbuffer,0,sizeof(m_rfbuffer));
+	m_rfbufferpos = 0;
+	m_retrycntr = RFLINK_RETRY_DELAY;
 	/*
 	ParseLine("20;4F;LIVCOL;ID=1a2b3c4;SWITCH=00;RGBW=ec5a;CMD=ON;");
 	ParseLine("20;08;NewKaku;ID=31c42a;SWITCH=2;CMD=OFF;");

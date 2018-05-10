@@ -252,7 +252,9 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 	app.factory('deviceApi', function($q, domoticzApi, dzTimeAndSun) {
 		return {
 			getDeviceInfo: getDeviceInfo,
-            updateDeviceInfo: updateDeviceInfo
+            updateDeviceInfo: updateDeviceInfo,
+            removeDevice: removeDevice,
+            disableDevice: disableDevice
 		};
 
 		function getDeviceInfo(deviceIdx) {
@@ -271,6 +273,21 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				idx: deviceIdx
 			}));
 		}
+
+		function removeDevice(deviceIdx) {
+            return domoticzApi.sendRequest({
+                idx: deviceIdx,
+                type: 'setused',
+                used: false,
+                RemoveSubDevices: true
+            });
+        }
+
+        function disableDevice(deviceIdx) {
+            return domoticzApi.sendCommand('setunused', {
+                idx: deviceIdx,
+            });
+        }
 	});
 
     app.factory('deviceLightApi', function ($q, domoticzApi, permissions) {
@@ -502,6 +519,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				templateUrl: 'views/log/device_light_log.html',
 				controller: 'DeviceLightLogController',
 				controllerUrl: 'app/log/LightLog.js',
+				controllerAs: 'vm'
+			})).
+			when('/Devices/:id/TextLog', angularAMD.route({
+				templateUrl: 'views/log/scene_log.html',
+				controller: 'DeviceTextLogController',
+				controllerUrl: 'app/log/TextLog.js',
 				controllerAs: 'vm'
 			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({

@@ -212,6 +212,7 @@ enum _eHardwareTypes {
 	HTYPE_Nest_OAuthAPI,		//112
 	HTYPE_EcoCompteur,			//113
 	HTYPE_Honeywell,			//114
+	HTYPE_Tado,					//115
 	HTYPE_END
 };
 

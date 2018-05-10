@@ -122,8 +122,13 @@ INCLUDE(CheckIncludeFile)
 CHECK_INCLUDE_FILE (execinfo.h HAVE_EXECINFO_H)
 
 IF(HAVE_EXECINFO_H)
-  # FreeBSD have to include libexeinfo
+  # FreeBSD has to include libexecinfo
   IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    find_library(EXECINFO_LIBRARIES NAMES libexecinfo.so)
+    IF(EXECINFO_LIBRARIES)
+      ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
+    ENDIF()
+  ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
     find_library(EXECINFO_LIBRARIES NAMES libexecinfo.so)
     IF(EXECINFO_LIBRARIES)
       ADD_DEFINITIONS(-DHAVE_EXECINFO_H)
@@ -211,6 +216,9 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
   ENDIF()
   IF(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  ENDIF()
+  IF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -pthread")
   ENDIF()
   IF(CMAKE_COMPILER_IS_GNUCXX)
   #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-switch")
@@ -308,6 +316,7 @@ hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
+hardware/ColorSwitch.cpp
 hardware/Comm5Serial.cpp
 hardware/Comm5SMTCP.cpp
 hardware/Comm5TCP.cpp
@@ -389,6 +398,7 @@ hardware/P1MeterBase.cpp
 hardware/P1MeterSerial.cpp
 hardware/P1MeterTCP.cpp
 hardware/PhilipsHue/PhilipsHue.cpp
+hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
@@ -415,6 +425,7 @@ hardware/SolarEdgeAPI.cpp
 hardware/SolarMaxTCP.cpp
 hardware/Sterbox.cpp
 hardware/SysfsGpio.cpp
+hardware/Tado.cpp
 hardware/TCPProxy/tcpproxy_server.cpp
 hardware/TE923.cpp
 hardware/TE923Tool.cpp
@@ -631,36 +642,36 @@ IF(OpenZWave)
   IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(IOKIT_LIBRARY "-framework IOKit -framework CoreFoundation" CACHE FILEPATH "IOKit framework" FORCE)
     target_link_libraries(domoticz ${IOKIT_LIBRARY})
-  else()
-    IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-      MESSAGE(STATUS "Building on FreeBSD, libudev not needed!")
-      FIND_PATH(ICONV_INCLUDE_DIR iconv.h)
-      FIND_LIBRARY(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
-      IF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
-        SET(ICONV_FOUND TRUE)
-        #target_link_libraries(domoticz ${ICONV_INCLUDE_DIR})
-        target_link_libraries(domoticz ${ICONV_LIBRARIES} -lrt)
-        message(STATUS ${ICONV_LIBRARIES})
-      else()
-        MESSAGE(FATAL_ERROR "libiconv not found on your system")
-      ENDIF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
-    else()
-      find_library(UDEV NAMES libudev.a)
+  ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    MESSAGE(STATUS "Building on FreeBSD, libudev not needed!")
+    FIND_PATH(ICONV_INCLUDE_DIR iconv.h)
+    FIND_LIBRARY(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
+    IF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
+      SET(ICONV_FOUND TRUE)
+      #target_link_libraries(domoticz ${ICONV_INCLUDE_DIR})
+      target_link_libraries(domoticz ${ICONV_LIBRARIES} -lrt)
+      message(STATUS ${ICONV_LIBRARIES})
+    ELSE()
+      MESSAGE(FATAL_ERROR "libiconv not found on your system")
+    ENDIF(ICONV_INCLUDE_DIR AND ICONV_LIBRARIES)
+  ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    MESSAGE(STATUS "Building on NetBSD, libudev not needed!")
+  ELSE()
+    find_library(UDEV NAMES libudev.a)
+    IF(UDEV)
+      message(STATUS ${UDEV})
+      target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
+    ELSE()
+      find_library(UDEV NAMES libudev.so)
       IF(UDEV)
-        message(STATUS ${UDEV})
-        target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
-      else()
-        find_library(UDEV NAMES libudev.so)
-        IF(UDEV)
-           message(STATUS ${UDEV})
-           target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
-        else()
-           MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
-        ENDIF(UDEV)
+         message(STATUS ${UDEV})
+         target_link_libraries(domoticz ${UDEV} -lrt -lresolv)
+      ELSE()
+         MESSAGE(FATAL_ERROR "LIB UDEV not found on your system, see install.txt how to get them installed.\nsudo apt-get install libudev-dev")
       ENDIF(UDEV)
-    ENDIF()
+    ENDIF(UDEV)
   ENDIF()
-else()
+ELSE()
   MESSAGE(STATUS "==== OpenZWave not found, support disabled!")
 ENDIF(OpenZWave)
 
