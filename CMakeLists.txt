@@ -596,20 +596,23 @@ ENDIF(CURL_FOUND)
 #
 # USB
 #
-find_path(LIBUSB_INCLUDE_DIR usb.h
-   HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
-find_library(LIBUSB_LIBRARY NAMES usb
-   HINTS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS})
-set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
+option(WITH_LIBUSB "Enable libusb support" YES)
+if(WITH_LIBUSB)
+  find_path(LIBUSB_INCLUDE_DIR usb.h
+     HINTS ${PC_LIBUSB_INCLUDEDIR} ${PC_LIBUSB_INCLUDE_DIRS})
+  find_library(LIBUSB_LIBRARY NAMES usb
+     HINTS ${PC_LIBUSB_LIBDIR} ${PC_LIBUSB_LIBRARY_DIRS})
+  set(LIBUSB_LIBRARIES ${LIBUSB_LIBRARY})
 
-find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
-IF(LIBUSB_FOUND)
-  MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
-  add_definitions(-DWITH_LIBUSB)
-  target_link_libraries(domoticz ${LIBUSB_LIBRARIES})
-else()
-  MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
-ENDIF(LIBUSB_FOUND)
+  find_package_handle_standard_args(LIBUSB  DEFAULT_MSG  LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
+  IF(LIBUSB_FOUND)
+    MESSAGE(STATUS "LIBUSB found at: ${LIBUSB_LIBRARIES}")
+    add_definitions(-DWITH_LIBUSB)
+    target_link_libraries(domoticz ${LIBUSB_LIBRARIES})
+  else()
+    MESSAGE(STATUS "==== LibUSB not found, support for TE923/Voltcraft disabled!")
+  ENDIF(LIBUSB_FOUND)
+endif(WITH_LIBUSB)
 
 ## support lua popen on Linux platforms
 #IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
