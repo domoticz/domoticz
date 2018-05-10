@@ -6,6 +6,7 @@
 #ifdef ENABLE_PYTHON
 
 #include <tinyxml.h>
+#include <inttypes.h>
 
 #include "PluginManager.h"
 #include "Plugins.h"
@@ -384,24 +385,19 @@ namespace Plugins {
 	void CPluginSystem::DeviceModified(uint64_t ID)
 	{
 		std::vector<std::vector<std::string> > result;
-		result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID == '%d')", ID);
+		result = m_sql.safe_query("SELECT HardwareID,Unit FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ID);
 		if (result.size() > 0)
 		{
 			std::vector<std::string> sd = result[0];
 			std::string sHwdID = sd[0];
+			std::string Unit = sd[1];
 			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardwareByIDType(sHwdID, HTYPE_PythonPlugin);
 			if (pHardware != NULL)
 			{
-				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Unit FROM DeviceStatus WHERE (ID == '%d')", ID);
-				if (result.size() > 0)
-				{
-					std::vector<std::string> sd = result[0];
-					std::string Unit = sd[0];
-					_log.Log(LOG_TRACE, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
-					Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
-					pPlugin->DeviceModified(atoi(Unit.c_str()));
-				}
+				std::vector<std::string> sd = result[0];
+				_log.Log(LOG_TRACE, "CPluginSystem::DeviceModified: Notifying plugin %u about modification of device %u", atoi(sHwdID.c_str()), atoi(Unit.c_str()));
+				Plugins::CPlugin *pPlugin = (Plugins::CPlugin*)pHardware;
+				pPlugin->DeviceModified(atoi(Unit.c_str()));
 			}
 		}
 	}
@@ -464,6 +460,7 @@ namespace http {
 									ATTRIBUTE_VALUE(pXmlEle, "width", root[iPluginCnt]["parameters"][iParams]["width"]);
 									ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
 									ATTRIBUTE_VALUE(pXmlEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
+									ATTRIBUTE_VALUE(pXmlEle, "password", root[iPluginCnt]["parameters"][iParams]["password"]);
 
 									TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
 									int	iOptions = 0;

@@ -89,8 +89,6 @@ void CLogger::Log(const _eLogLevel level, const std::string& sLogline)
 
 void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 {
-	boost::unique_lock< boost::mutex > lock(m_mutex);
-
 	bool bDoLog = false;
 	if (level <= (_eLogLevel)m_verbose_level)
 		bDoLog = true;
@@ -145,52 +143,57 @@ void CLogger::Log(const _eLogLevel level, const char* logline, ...)
 
 	std::string szIntLog = sstr.str();
 
-	if ((level == LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 	{
-		if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_notification_log.erase(m_last_error_log.begin());
-		m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
-		if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
+		// Locked region to allow multiple threads to print at the same time
+		boost::unique_lock< boost::mutex > lock(m_mutex);
+
+		if ((level == LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
 		{
-			m_mainworker.ForceLogNotificationCheck();
+			if (m_notification_log.size() >= MAX_LOG_LINE_BUFFER)
+				m_notification_log.erase(m_last_error_log.begin());
+			m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
+			if ((m_notification_log.size() == 1) && (mytime(NULL) - m_LastLogNotificationsSend >= 5))
+			{
+				m_mainworker.ForceLogNotificationCheck();
+			}
 		}
-	}
 
-	if (!g_bRunAsDaemon)
-	{
-		//output to console
-#ifndef WIN32
-		if (level != LOG_ERROR)
-#endif
-			std::cout << szIntLog << std::endl;
-#ifndef WIN32
-		else  // print text in red color
-			std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
-#endif
-	}
+		if (!g_bRunAsDaemon)
+		{
+			//output to console
+	#ifndef WIN32
+			if (level != LOG_ERROR)
+	#endif
+				std::cout << szIntLog << std::endl;
+	#ifndef WIN32
+			else  // print text in red color
+				std::cout << szIntLog.substr(0, 25) << "\033[1;31m" << szIntLog.substr(25) << "\033[0;0m" << std::endl;
+	#endif
+		}
 
-	if (m_outputfile.is_open())
-	{
-		//output to file
-		m_outputfile << szIntLog << std::endl;
-		m_outputfile.flush();
-	}
+		if (m_outputfile.is_open())
+		{
+			//output to file
+			m_outputfile << szIntLog << std::endl;
+			m_outputfile.flush();
+		}
 
-	if (m_lastlog.size() >= MAX_LOG_LINE_BUFFER)
-		m_lastlog.erase(m_lastlog.begin());
-	m_lastlog.push_back(_tLogLineStruct(level, szIntLog));
+		if (m_lastlog.size() >= MAX_LOG_LINE_BUFFER)
+			m_lastlog.erase(m_lastlog.begin());
+		m_lastlog.push_back(_tLogLineStruct(level, szIntLog));
 
-	if (level == LOG_STATUS)
-	{
-		if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_status_log.erase(m_last_status_log.begin());
-		m_last_status_log.push_back(_tLogLineStruct(level, szIntLog));
-	}
-	else if (level == LOG_ERROR)
-	{
-		if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
-			m_last_error_log.erase(m_last_error_log.begin());
-		m_last_error_log.push_back(_tLogLineStruct(level, szIntLog));
+		if (level == LOG_STATUS)
+		{
+			if (m_last_status_log.size() >= MAX_LOG_LINE_BUFFER)
+				m_last_status_log.erase(m_last_status_log.begin());
+			m_last_status_log.push_back(_tLogLineStruct(level, szIntLog));
+		}
+		else if (level == LOG_ERROR)
+		{
+			if (m_last_error_log.size() >= MAX_LOG_LINE_BUFFER)
+				m_last_error_log.erase(m_last_error_log.begin());
+			m_last_error_log.push_back(_tLogLineStruct(level, szIntLog));
+		}
 	}
 }
 

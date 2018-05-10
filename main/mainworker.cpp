@@ -305,9 +305,21 @@ void MainWorker::StartDomoticzHardware()
 
 void MainWorker::StopDomoticzHardware()
 {
-	boost::lock_guard<boost::mutex> l(m_devicemutex);
+	// Separate the Stop() from the device removal from the vector.
+	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
+	std::vector<CDomoticzHardwareBase*> OrgHardwaredevices;
 	std::vector<CDomoticzHardwareBase*>::iterator itt;
-	for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+
+	{
+		boost::lock_guard<boost::mutex> l(m_devicemutex);
+		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
+		{
+			OrgHardwaredevices.push_back(*itt);
+		}
+		m_hardwaredevices.clear();
+	}
+
+	for (itt = OrgHardwaredevices.begin(); itt != OrgHardwaredevices.end(); ++itt)
 	{
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin((*itt)->m_HwdID);
@@ -315,7 +327,6 @@ void MainWorker::StopDomoticzHardware()
 		(*itt)->Stop();
 		delete (*itt);
 	}
-	m_hardwaredevices.clear();
 }
 
 void MainWorker::GetAvailableWebThemes()
@@ -392,24 +403,24 @@ void MainWorker::RemoveDomoticzHardware(CDomoticzHardwareBase *pHardware)
 {
 	// Separate the Stop() from the device removal from the vector.
 	// Some actions the hardware might take during stop (e.g updating a device) can cause deadlocks on the m_devicemutex
-	CDomoticzHardwareBase *pOrgDevice = NULL;
+	CDomoticzHardwareBase *pOrgHardware = NULL;
 	{
 		boost::lock_guard<boost::mutex> l(m_devicemutex);
 		std::vector<CDomoticzHardwareBase*>::iterator itt;
 		for (itt = m_hardwaredevices.begin(); itt != m_hardwaredevices.end(); ++itt)
 		{
-			pOrgDevice = *itt;
-			if (pOrgDevice == pHardware) {
+			pOrgHardware = *itt;
+			if (pOrgHardware == pHardware) {
 				m_hardwaredevices.erase(itt);
 				break;
 			}
 		}
 	}
 
-	if (pOrgDevice == pHardware)
+	if (pOrgHardware == pHardware)
 	{
-		pOrgDevice->Stop();
-		delete pOrgDevice;
+		pOrgHardware->Stop();
+		delete pOrgHardware;
 	}
 }
 
@@ -12931,9 +12942,6 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 			dName = sd[1];
 		}
 
-		std::vector<std::string> strarray;
-		StringSplit(sValue, ";", strarray);
-
 		if (devType == pTypeLighting2)
 		{
 			//Update as Lighting 2
@@ -12981,6 +12989,25 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	);
 	if (devidx == -1)
 		return false;
+
+	if (pHardware)
+	{
+		if (
+			(pHardware->HwdType == HTYPE_MySensorsUSB) ||
+			(pHardware->HwdType == HTYPE_MySensorsTCP)
+			)
+		{
+			unsigned long ID;
+			std::stringstream s_strid;
+			s_strid << std::hex << DeviceID;
+			s_strid >> ID;
+			unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
+			unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
+
+			MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
+			pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
+		}
+	}
 
 #ifdef ENABLE_PYTHON
 	// notify plugin

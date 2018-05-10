@@ -3997,13 +3997,17 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, const char* ID, const uns
 
 uint64_t CSQLHelper::InsertDevice(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const int switchType, const int nValue, const char* sValue, const std::string &devname, const unsigned char signallevel, const unsigned char batterylevel, const int used)
 {
+	//TODO: 'unsigned char unit' only allows 256 devices / plugin
+	//TODO: return -1 as error code does not make sense for a function returning an unsigned value
 	std::vector<std::vector<std::string> > result;
 	uint64_t ulID = 0;
 	std::string name = devname;
 
 	if (!m_bAcceptNewHardware)
 	{
-		_log.Log(LOG_ERROR, "Device creation failed, Domoticz settings prevent accepting new devices.");
+#ifdef _DEBUG
+		_log.Log(LOG_STATUS, "Device creation failed, Domoticz settings prevent accepting new devices.");
+#endif
 		return -1; //We do not allow new devices
 	}
 
@@ -4048,6 +4052,7 @@ bool CSQLHelper::DoesDeviceExist(const int HardwareID, const char* ID, const uns
 
 uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char* sValue, std::string &devname, const bool bUseOnOffAction)
 		//TODO: 'unsigned char unit' only allows 256 devices / plugin
+		//TODO: return -1 as error code does not make sense for a function returning an unsigned value
 {
 	if (!m_dbase)
 		return -1;

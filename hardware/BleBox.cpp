@@ -1073,19 +1073,19 @@ void BleBox::AddNode(const std::string &name, const std::string &IPAddress)
 
 	if (deviceType.unit == 4) // gatebox
 	{
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '1', deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '2', pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '3', pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 2, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 3, pTypeGeneralSwitch, sTypeAC, STYPE_PushOn, 0, "Unavailable", name);
 	}
 	else
 	if (deviceType.unit == 6) // switchboxd
 	{
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '0', deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '1', deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 1, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 	}
 	else
 	{
-		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), '0', deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
+		m_sql.InsertDevice(m_HwdID, szIdx.c_str(), 0, deviceType.deviceID, deviceType.subType, deviceType.switchType, 0, "Unavailable", name);
 	}
 	ReloadNodes();
 }

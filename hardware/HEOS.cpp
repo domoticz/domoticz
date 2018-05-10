@@ -761,7 +761,7 @@ void CHEOS::AddNode(const std::string &Name, const std::string &PlayerID)
 		return;
 	}
 
-	m_sql.InsertDevice(m_HwdID, PlayerID.c_str(), '1', pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
+	m_sql.InsertDevice(m_HwdID, PlayerID.c_str(), 1, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Unavailable", Name, 12, 255, 1);
 
 	ReloadNodes();
 }
