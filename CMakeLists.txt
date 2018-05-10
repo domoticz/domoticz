@@ -232,7 +232,8 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
     SET(_output "${_outdir}/.c++")
 
     STRING(TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _flags_var_name)
-    SET(_compiler_FLAGS "${CMAKE_CXX_FLAGS} ${${_flags_var_name}}")
+    # Strip out -Wl,… linker directives as they make GCC fail
+    STRING(REGEX REPLACE " -Wl,[^ ]*" " " _compiler_FLAGS " ${CMAKE_CXX_FLAGS} ${${_flags_var_name}}")
 
     GET_DIRECTORY_PROPERTY(_directory_flags INCLUDE_DIRECTORIES)
     FOREACH(item ${_directory_flags})
