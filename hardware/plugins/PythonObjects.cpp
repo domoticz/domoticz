@@ -695,7 +695,13 @@ namespace Plugins {
 					_log.Log(LOG_NORM, "(%s) Creating device '%s'.", self->pPlugin->Name.c_str(), sName.c_str());
 				}
 
-				if (m_sql.m_bAcceptNewHardware)
+				if (!m_sql.m_bAcceptNewHardware)
+				{
+#ifdef _DEBUG
+					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
+#endif
+				}
+				else
 				{
 					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
@@ -767,10 +773,6 @@ namespace Plugins {
 					{
 						_log.Log(LOG_ERROR, "(%s) Device creation failed, Hardware/Unit combination (%d:%d) already exists in Domoticz.", self->pPlugin->Name.c_str(), self->HwdID, self->Unit);
 					}
-				}
-				else
-				{
-					_log.Log(LOG_ERROR, "(%s) Device creation failed, Domoticz settings prevent accepting new devices.", self->pPlugin->Name.c_str());
 				}
 			}
 			else
