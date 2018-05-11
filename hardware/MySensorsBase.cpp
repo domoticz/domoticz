@@ -20,6 +20,7 @@
 #include <ctime>
 
 #define round(a) ( int ) ( a + .5 )
+#define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
 
 std::string MySensorsBase::GetMySensorsValueTypeStr(const enum _eSetType vType)
 {
@@ -2284,7 +2285,10 @@ void MySensorsBase::ParseLine()
 
 void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, const std::string &tvalue)
 {
-	SendNodeCommand(nodeID, childID, MT_Set, V_TEXT, tvalue);
+	std::string string2send = tvalue;
+	if (string2send.size() > MAX_PAYLOAD_LENGTH)
+		string2send.resize(MAX_PAYLOAD_LENGTH);
+	SendNodeCommand(nodeID, childID, MT_Set, V_TEXT, string2send);
 }
 
 bool MySensorsBase::StartSendQueue()
