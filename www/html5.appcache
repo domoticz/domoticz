@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1514
+# ref 1515
 
 CACHE:
 # CSS
@@ -472,6 +472,7 @@ app/log/LightLog.js
 app/log/SceneLog.js
 app/log/TemperatureLog.js
 app/log/TemperatureReport.js
+app/log/TextLog.js
 app/scenes/factories.js
 app/timers/components.js
 app/timers/DeviceTimersController.js

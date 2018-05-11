@@ -521,6 +521,12 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 				controllerUrl: 'app/log/LightLog.js',
 				controllerAs: 'vm'
 			})).
+			when('/Devices/:id/TextLog', angularAMD.route({
+				templateUrl: 'views/log/scene_log.html',
+				controller: 'DeviceTextLogController',
+				controllerUrl: 'app/log/TextLog.js',
+				controllerAs: 'vm'
+			})).
 			when('/Devices/:id/TemperatureLog', angularAMD.route({
 				templateUrl: 'views/log/device_temperature_log.html',
 				controller: 'DeviceTemperatureLogController',
@@ -850,6 +856,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
 				$.myglobals.windscale = parseFloat($rootScope.config.WindScale);
@@ -896,7 +903,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			appdate: 0,
 			pythonversion: "",
 			versiontooltip: "",
-			ShowUpdatedEffect: true
+			ShowUpdatedEffect: true,
+			DateFormat: "yy-mm-dd"
 		};
 
 		$rootScope.GetGlobalConfig = function () {
