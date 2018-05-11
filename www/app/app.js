@@ -856,6 +856,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
 				$.myglobals.windscale = parseFloat($rootScope.config.WindScale);
@@ -902,7 +903,8 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			appdate: 0,
 			pythonversion: "",
 			versiontooltip: "",
-			ShowUpdatedEffect: true
+			ShowUpdatedEffect: true,
+			DateFormat: "yy-mm-dd"
 		};
 
 		$rootScope.GetGlobalConfig = function () {

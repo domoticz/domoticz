@@ -74,7 +74,9 @@ define(['app'], function (app) {
 				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
-			$("#dialog-editsetpoint #until").datetimepicker();
+			$("#dialog-editsetpoint #until").datetimepicker({
+				dateFormat: window.myglobals.DateFormat,
+			});
 			if (until != "")
 				$("#dialog-editsetpoint #until").datetimepicker("setDate", (new Date(until)));
 			$("#dialog-editsetpoint").i18n();
@@ -94,7 +96,9 @@ define(['app'], function (app) {
 				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
 			else
 				$(":button:contains('Cancel Override')").removeAttr("disabled").removeClass('ui-state-disabled');
-			$("#dialog-editstate #until_state").datetimepicker();
+			$("#dialog-editstate #until_state").datetimepicker({
+				dateFormat: window.myglobals.DateFormat,
+			});
 			if (until != "")
 				$("#dialog-editstate #until_state").datetimepicker("setDate", (new Date(until)));
 			$("#dialog-editstate").i18n();
