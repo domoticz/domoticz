@@ -2484,6 +2484,21 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			actionsDone = true;
 			continue;
 		}
+		else if (deviceName.find("CustomCommand:") == 0)
+		{
+			int idx = atoi(deviceName.substr(14).c_str());
+			float afterTimerSeconds = 0;
+			size_t aFind = doWhat.find(" AFTER ");
+			if ((aFind > 0) && (aFind != std::string::npos)) {
+				std::string delayString = doWhat.substr(aFind + 7);
+				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+				doWhat = doWhat.substr(0, aFind);
+				StripQuotes(doWhat);
+			}
+			m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
+			actionsDone = true;
+			continue;
+		}
 		else
 		{
 			_log.Log(LOG_ERROR, "EventSystem: Unknown action sequence! (%s)", csubstr.c_str());
@@ -2626,6 +2641,19 @@ bool CEventSystem::PythonScheduleEvent(std::string ID, const std::string &Action
 				return false;
 		}
 
+		return true;
+	} else if(ID.find("CustomCommand:") == 0) {
+		int idx = atoi(ID.substr(14).c_str());
+		std::string doWhat = std::string(Action);
+		float afterTimerSeconds = 0;
+		size_t aFind = Action.find(" AFTER ");
+		if ((aFind > 0) && (aFind != std::string::npos)) {
+			std::string delayString = doWhat.substr(aFind + 7);
+			doWhat = doWhat.substr(0, aFind);
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+			StripQuotes(doWhat);
+		}
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, doWhat));
 		return true;
 	}
 	return ScheduleEvent(ID, Action,eventName);
@@ -3543,6 +3571,20 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 			return false;
 		}
 	}
+	else if (lCommand.find("CustomCommand:") == 0)
+	{
+		int idx = atoi(lCommand.substr(14).c_str());
+		std::string luaString = lua_tostring(lua_state, -1);
+		float afterTimerSeconds = 0;
+		size_t aFind = luaString.find(" AFTER ");
+		if ((aFind > 0) && (aFind != std::string::npos)) {
+			std::string delayString = luaString.substr(aFind + 7);
+			afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+			luaString = luaString.substr(0, aFind);
+			StripQuotes(luaString);
+		}
+		m_sql.AddTaskItem(_tTaskItem::CustomCommand(afterTimerSeconds, idx, luaString));
+	}
 	else
 	{
 		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
@@ -3558,6 +3600,21 @@ void CEventSystem::report_errors(lua_State *L, int status, std::string filename)
 		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
+}
+
+bool CEventSystem::CustomCommand(const uint64_t idx, const std::string &sCommand)
+{
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT H.ID FROM DeviceStatus DS, Hardware H WHERE (DS.ID=='%u') AND (DS.HardwareID == H.ID)", idx);
+	if (result.size() != 1)
+		return false;
+
+	int HardwareID = atoi(result[0][0].c_str());
+	CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+	if (!pHardware)
+		return false;
+
+	return pHardware->CustomCommand(idx, sCommand);
 }
 
 void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger)

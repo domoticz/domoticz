@@ -16,6 +16,7 @@ public:
 	bool Start();
 	bool Stop();
 	virtual bool WriteToHardware(const char *pdata, const unsigned char length)=0;
+	virtual bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void EnableOutputLog(const bool bEnableLog);
 

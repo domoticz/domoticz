@@ -49,7 +49,8 @@ enum _eTaskItemType
 	TITEM_SEND_NOTIFICATION,
 	TITEM_SET_SETPOINT,
 	TITEM_SEND_IFTTT_TRIGGER,
-	TITEM_UPDATEDEVICE
+	TITEM_UPDATEDEVICE,
+	TITEM_CUSTOM_COMMAND,
 };
 
 struct _tTaskItem
@@ -261,6 +262,18 @@ struct _tTaskItem
 		tItem._sValue = varvalue;
 		tItem._command = mode;
 		tItem._sUntil = until;
+
+		if (DelayTime)
+			getclock(&tItem._DelayTimeBegin);
+		return tItem;
+	}
+	static _tTaskItem CustomCommand(const float DelayTime, const uint64_t idx, const std::string &cmdstr)
+	{
+		_tTaskItem tItem;
+		tItem._ItemType = TITEM_CUSTOM_COMMAND;
+		tItem._DelayTime = DelayTime;
+		tItem._idx = idx;
+		tItem._command = cmdstr;
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;

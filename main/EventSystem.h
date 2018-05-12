@@ -131,6 +131,7 @@ public:
 	bool GetEventTrigger(const uint64_t ulDevID, const _eReason reason, const bool bEventTrigger);
 	void SetEventTrigger(const uint64_t ulDevID, const _eReason reason, const float fDelayTime);
 	void UpdateDevice(const uint64_t idx, const int nValue, const std::string &sValue, const int Protected, const bool bEventTrigger = false);
+	bool CustomCommand(const uint64_t idx, const std::string &sCommand);
 
 	void TriggerURL(const std::string &result, const std::vector<std::string> &headerData, const std::string &callback);
 
