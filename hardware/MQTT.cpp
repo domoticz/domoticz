@@ -632,7 +632,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
-		else if ((dType = pTypeRFXMeter) || (dType = pTypeRFXSensor)) {
+		else if ((dType == pTypeRFXMeter) || (dType == pTypeRFXSensor)) {
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
