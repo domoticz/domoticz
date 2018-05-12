@@ -13015,9 +13015,9 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 #endif
 
 	// signal connected devices (MQTT, fibaro, http push ... ) about the web update
-	if ((pHardware) && (parseTrigger))
+	if (parseTrigger)
 	{
-		sOnDeviceReceived(pHardware->m_HwdID, devidx, devname, NULL);
+		sOnDeviceReceived(HardwareID, devidx, devname, NULL);
 	}
 
 	std::stringstream sidx;
