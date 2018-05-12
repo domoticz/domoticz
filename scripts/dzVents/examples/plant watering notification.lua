@@ -1,17 +1,17 @@
 --[[
-	This script can be used to get notification message when plant sensor exceed specified tresholds.
-	It is specifically build to be used with the Xiaomi Mi Flora (https://www.domoticz.com/wiki/Mi_Flora_Bluetooth_LE), but can also be used with similar sensors
+    This script can be used to get notification message when plant sensor exceed specified tresholds.
+    It is specifically build to be used with the Xiaomi Mi Flora (https://www.domoticz.com/wiki/Mi_Flora_Bluetooth_LE), but can also be used with similar sensors
 
-	For the script to work correctly it is recommended your device names have the following convention:
+    For the script to work correctly it is recommended your device names have the following convention:
 
-	Mi Flora - #0 Moisture
-	Mi Flora - #0 Conductivity
-	Mi Flora - #1 Moisture
-	etc. etc.
-	
-	This is the default device naming when Mi Flora plugin creates devices.
+    Mi Flora - #0 Moisture
+    Mi Flora - #0 Conductivity
+    Mi Flora - #1 Moisture
+    etc. etc.
 
-	If you have another naming you need to adjust settings below.
+    This is the default device naming when Mi Flora plugin creates devices.
+
+    If you have another naming you need to adjust settings below.
 ]]--
 
 local configuration = {
@@ -52,24 +52,24 @@ local configuration = {
 }
 
 return {
-	active = true,
-	on = {
-		devices = {
-			'Mi Flora*'
-		}
-	},
+    active = true,
+    on = {
+        devices = {
+            'Mi Flora*'
+        }
+    },
     logging = {
         level = domoticz.LOG_DEBUG
     },
-	execute = function(domoticz, device)
+    execute = function(domoticz, device)
 
-	    local sensorNumber = string.match(device.name, "#(%d+)")
-	    local configKey = 'sensor' .. sensorNumber
+        local sensorNumber = string.match(device.name, "#(%d+)")
+        local configKey = 'sensor' .. sensorNumber
 
-	    if (configuration[configKey] == nil) then
-	        domoticz.log('No configuration defined for sensor #' .. sensorNumber, domoticz.LOG_INFO)
-	        return
-	    end
+        if (configuration[configKey] == nil) then
+            domoticz.log('No configuration defined for sensor #' .. sensorNumber, domoticz.LOG_INFO)
+            return
+        end
 
         local sensorConfig = configuration[configKey]
         local tresholds = sensorConfig.tresholds
@@ -89,12 +89,12 @@ return {
                 domoticz.notify('Plants', notification)
                 domoticz.log(string.format('#%d %s exceeded', sensorNumber, sensorType), domoticz.LOG_DEBUG)
             else
-	            domoticz.log(string.format('#%d %s ok', sensorNumber, sensorType), domoticz.LOG_DEBUG)
+                domoticz.log(string.format('#%d %s ok', sensorNumber, sensorType), domoticz.LOG_DEBUG)
             end
         end
 
-	    checkSensorTresholds('moisture', '%s needs watering')
+        checkSensorTresholds('moisture', '%s needs watering')
         checkSensorTresholds('fertility', '%s needs fertilization')
 
-	end
+    end
 }
