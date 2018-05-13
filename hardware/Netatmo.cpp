@@ -385,6 +385,17 @@ int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_p
 	// Others are plugged
 	if ((ModuleType == "NAModule1") || (ModuleType == "NAModule2") || (ModuleType == "NAModule3") || (ModuleType == "NAModule4") || (ModuleType == "NATherm1") || (ModuleType == "NRV"))
 		batValue = battery_percent;
+	else if (ModuleType == "NRV")
+	{
+		if (batValue > 3200)
+			batValue = 3200;
+		else if (batValue < 2200)
+			batValue = 2200;
+
+		//range = 1000
+		batValue = 3200 - batValue;
+		batValue = int((100.0f / 1000.0f)*float(batValue));
+	}
 
 	return batValue;
 }
@@ -1304,54 +1315,110 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 	if (root["body"]["home"].empty())
 		return false;
 
-	if (root["body"]["home"]["rooms"].empty())
-		return false;
-
-	if (!root["body"]["home"]["rooms"].isArray())
-		return false;
-
-	Json::Value mRoot = root["body"]["home"]["rooms"];
-
-	int iDevIndex = 0;
-	for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+	//Parse modules (for RSSI/Battery level) ?
+	if (!root["body"]["home"]["modules"].empty())
 	{
-		Json::Value room = *itRoom;
-		if (!room["id"].empty())
+		if (!root["body"]["home"]["modules"].isArray())
+			return false;
+		Json::Value mRoot = root["body"]["home"]["modules"];
+
+		int iModuleIndex = 0;
+		for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
 		{
-			std::string id = room["id"].asString();
-
-			m_thermostatDeviceID[iDevIndex] = id;
-			m_thermostatModuleID[iDevIndex] = id;
-
-			std::string roomName = id;
-
-			//Find the room name
-			for (std::map<std::string, std::string>::const_iterator itt = m_RoomNames.begin(); itt != m_RoomNames.end(); ++itt)
+			Json::Value module = *itModule;
+			if (!module["id"].empty())
 			{
-				if (itt->first == id)
+				std::string id = module["id"].asString();
+
+				std::string moduleName = id;
+
+				//Find the room name
+				for (std::map<std::string, std::string>::const_iterator itt = m_ModuleNames.begin(); itt != m_ModuleNames.end(); ++itt)
 				{
-					roomName = itt->second;
-					break;
+					if (itt->first == id)
+					{
+						moduleName = itt->second;
+						break;
+					}
+				}
+
+				int batteryLevel = 255;
+				float mrf_status = 255.0f;
+
+				if (!module["battery_level"].empty())
+				{
+					batteryLevel = module["battery_level"].asInt();
+				}
+				if (!module["rf_strength"].empty())
+				{
+					float rf_strength = module["rf_strength"].asFloat();
+					if (rf_strength > 90.0f)
+						rf_strength = 90.0f;
+					if (rf_strength < 60.0f)
+						rf_strength = 60.0f;
+					// 90=low, 60=highest
+					mrf_status = (90.0f - rf_strength) / 3;
+					if (mrf_status > 10.0f) {
+						mrf_status = 10.0f;
+					}
+				}
+				if (mrf_status != 255.0f)
+				{
+					SendPercentageSensor(iModuleIndex, 0, batteryLevel, mrf_status, moduleName);
 				}
 			}
-
-			if (!room["therm_measured_temperature"].empty())
-			{
-				SendTempSensor(iDevIndex, 255, room["therm_measured_temperature"].asFloat(), roomName);
-			}
-			if (!room["therm_setpoint_temperature"].empty())
-			{
-				SendSetPointSensor(iDevIndex, 0, iDevIndex & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
-			}
-			if (!room["therm_setpoint_mode"].empty())
-			{
-				std::string setpoint_mode = room["therm_setpoint_mode"].asString();
-				bool bIsAway = (setpoint_mode == "away");
-				std::string aName = "Away " + roomName;
-				SendSwitch(3, 1 + iDevIndex, 255, bIsAway, 0, aName);
-			}
+			iModuleIndex++;
 		}
-		iDevIndex++;
 	}
+	//Parse Rooms
+	int iDevIndex = 0;
+	if (!root["body"]["home"]["rooms"].empty())
+	{
+		if (!root["body"]["home"]["rooms"].isArray())
+			return false;
+		Json::Value mRoot = root["body"]["home"]["rooms"];
+
+		for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+		{
+			Json::Value room = *itRoom;
+			if (!room["id"].empty())
+			{
+				std::string id = room["id"].asString();
+
+				m_thermostatDeviceID[iDevIndex] = id;
+				m_thermostatModuleID[iDevIndex] = id;
+
+				std::string roomName = id;
+
+				//Find the room name
+				for (std::map<std::string, std::string>::const_iterator itt = m_RoomNames.begin(); itt != m_RoomNames.end(); ++itt)
+				{
+					if (itt->first == id)
+					{
+						roomName = itt->second;
+						break;
+					}
+				}
+
+				if (!room["therm_measured_temperature"].empty())
+				{
+					SendTempSensor(iDevIndex, 255, room["therm_measured_temperature"].asFloat(), roomName);
+				}
+				if (!room["therm_setpoint_temperature"].empty())
+				{
+					SendSetPointSensor(iDevIndex, 0, iDevIndex & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+				}
+				if (!room["therm_setpoint_mode"].empty())
+				{
+					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
+					bool bIsAway = (setpoint_mode == "away");
+					std::string aName = "Away " + roomName;
+					SendSwitch(3, 1 + iDevIndex, 255, bIsAway, 0, aName);
+				}
+			}
+			iDevIndex++;
+		}
+	}
+
 	return (iDevIndex > 0);
 }
