@@ -159,7 +159,12 @@ public:
 		I_PONG = 25,	//!< In return to ping, sent back to sender, payload incremental hop counter
 		I_REGISTRATION_REQUEST = 26,	//!< Register request to GW
 		I_REGISTRATION_RESPONSE = 27,	//!< Register response from GW
-		I_DEBUG = 28	//!< Debug message
+		I_DEBUG = 28,	//!< Debug message
+		I_SIGNAL_REPORT_REQUEST = 29,	//!< Device signal strength request
+		I_SIGNAL_REPORT_REVERSE = 30,	//!< Internal
+		I_SIGNAL_REPORT_RESPONSE = 31,	//!< Device signal strength response (RSSI)
+		I_PRE_SLEEP_NOTIFICATION = 32,	//!< Message sent before node is going to sleep
+		I_POST_SLEEP_NOTIFICATION = 33	//!< Message sent after node woke up (if enabled)
 	};
 
 	struct _tMySensorValue
@@ -416,7 +421,7 @@ public:
 private:
 	virtual void WriteInt(const std::string &sendStr) = 0;
 	void ParseData(const unsigned char *pData, int Len);
-	void ParseLine();
+	void ParseLine(const std::string &sLine);
 
 	void UpdateChildDBInfo(const int NodeID, const int ChildID, const _ePresentationType pType, const std::string &Name);
 	bool GetChildDBInfo(const int NodeID, const int ChildID, _ePresentationType &pType, std::string &Name, bool &UseAck);
@@ -427,7 +432,7 @@ private:
 
 
 	void UpdateSwitch(const _eSetType vType, const unsigned char Idx, const int SubUnit, const bool bOn, const double Level, const std::string &defaultname, const int BatLevel);
-	
+
 	void UpdateSwitchLastUpdate(const unsigned char Idx, const int SubUnit);
 	void UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID);
 	void UpdateRGBWSwitchLastUpdate(const int NodeID, const int ChildID);
@@ -471,7 +476,6 @@ private:
 	int m_AckChildID;
 	_eSetType m_AckSetType;
 
-	unsigned char m_buffer[1028];
-	int m_bufferpos;
+	std::string m_LineReceived;
 };
 

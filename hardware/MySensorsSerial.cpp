@@ -17,9 +17,9 @@
 
 #define RETRY_DELAY 30
 
-MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const int Mode1):
-m_retrycntr(RETRY_DELAY),
-m_stoprequested(false)
+MySensorsSerial::MySensorsSerial(const int ID, const std::string& devname, const int Mode1) :
+	m_retrycntr(RETRY_DELAY),
+	m_stoprequested(false)
 {
 	switch (Mode1)
 	{
@@ -31,7 +31,7 @@ m_stoprequested(false)
 		break;
 	}
 	m_szSerialPort = devname;
-	m_HwdID=ID;
+	m_HwdID = ID;
 }
 
 MySensorsSerial::~MySensorsSerial()
@@ -41,6 +41,7 @@ MySensorsSerial::~MySensorsSerial()
 
 bool MySensorsSerial::StartHardware()
 {
+	m_LineReceived.clear();
 	LoadDevicesFromDatabase();
 
 	//return OpenSerialDevice();
@@ -112,14 +113,14 @@ bool MySensorsSerial::OpenSerialDevice()
 			m_iBaudRate,
 			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
 			boost::asio::serial_port_base::character_size(8)
-			);
+		);
 #else
 		open(
 			m_szSerialPort,
 			m_iBaudRate,
 			boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none),
 			boost::asio::serial_port_base::character_size(8)
-			);
+		);
 #endif
 	}
 	catch (boost::exception & e)
@@ -183,11 +184,11 @@ bool MySensorsSerial::OpenSerialDevice()
 
 #endif
 	m_bIsStarted = true;
-	m_bufferpos = 0;
+	m_LineReceived.clear();
 	setReadCallback(boost::bind(&MySensorsSerial::readCallback, this, _1, _2));
 	sOnConnected(this);
 	return true;
-}
+	}
 
 void MySensorsSerial::readCallback(const char *data, size_t len)
 {

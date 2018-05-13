@@ -3634,7 +3634,8 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			{
 				if (
 					(pHardware->HwdType == HTYPE_MySensorsUSB) ||
-					(pHardware->HwdType == HTYPE_MySensorsTCP)
+					(pHardware->HwdType == HTYPE_MySensorsTCP) ||
+					(pHardware->HwdType == HTYPE_MySensorsMQTT)
 					)
 				{
 					unsigned long ID;

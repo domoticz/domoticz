@@ -43,10 +43,10 @@
 #define Daikin_POLL_INTERVAL 300
 
 #ifdef _DEBUG
-//	#define DEBUG_DaikinR
-//    #define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
-	#define DEBUG_DaikinW
-	#define DEBUG_DaikinW_File "C:\\TEMP\\Daikin_W_control_info.txt"
+	//#define DEBUG_DaikinR
+	//#define DEBUG_DaikinR_File "C:\\TEMP\\Daikin_R_control_info.txt"
+	//#define DEBUG_DaikinW
+	//#define DEBUG_DaikinW_File "C:\\TEMP\\Daikin_W_control_info.txt"
 #endif
 
 #ifdef DEBUG_DaikinW
