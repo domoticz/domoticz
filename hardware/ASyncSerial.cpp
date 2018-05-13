@@ -98,11 +98,19 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 
     setErrorStatus(true);//If an exception is thrown, error_ remains true
     pimpl->port.open(devname);
-    pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-    pimpl->port.set_option(opt_parity);
-    pimpl->port.set_option(opt_csize);
-    pimpl->port.set_option(opt_flow);
-    pimpl->port.set_option(opt_stop);
+	try {
+		pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
+		pimpl->port.set_option(opt_parity);
+		pimpl->port.set_option(opt_csize);
+		pimpl->port.set_option(opt_flow);
+		pimpl->port.set_option(opt_stop);
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "ASyncSerial: Error setting options!");
+		pimpl->port.close();
+		throw;
+	}
 
 	pimpl->io.reset();
 
@@ -125,13 +133,17 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 
 	setErrorStatus(true);//If an exception is thrown, error_ remains true
 	pimpl->port.open(devname);
-	pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-/*
-	pimpl->port.set_option(opt_parity);
-	pimpl->port.set_option(opt_csize);
-	pimpl->port.set_option(opt_flow);
-	pimpl->port.set_option(opt_stop);
-*/
+
+	try {
+		pimpl->port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
+	}
+	catch (...)
+	{
+		_log.Log(LOG_ERROR, "ASyncSerial: Error setting options!");
+		pimpl->port.close();
+		throw;
+	}
+
 	pimpl->io.reset();
 
 	//This gives some work to the io_service before it is started
