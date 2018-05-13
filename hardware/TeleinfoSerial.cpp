@@ -84,7 +84,7 @@ bool CTeleinfoSerial::StartHardware()
 	//Try to open the Serial Port
 	try
 	{
-		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds, Parity:%i CharSize:%i", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate, m_iOptParity.value, m_iOptCsize.value);
+		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
 		open(m_szSerialPort, m_iBaudRate, m_iOptParity, m_iOptCsize);
 	}
 	catch (boost::exception & e)
