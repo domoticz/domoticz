@@ -54,6 +54,7 @@ private:
 	void GetMeterDetails();
 	void GetThermostatDetails();
 	bool ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType NetatmoType, const bool bIsThermostat);
+	bool ParseHomeData(const std::string &sResult);
 	bool ParseHomeStatus(const std::string &sResult);
 	bool SetAway(const int idx, const bool bIsAway);
 
@@ -65,9 +66,10 @@ private:
 	bool m_bForceLogin;
 	_eNetatmoType m_NetatmoType;
 
-	size_t m_ActHome;
+	int m_ActHome;
 	std::string m_Home_ID;
 	std::map<std::string, std::string> m_RoomNames;
+	std::map<std::string, std::string> m_ModuleNames;
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_percent);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);

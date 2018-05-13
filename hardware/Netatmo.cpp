@@ -801,51 +801,12 @@ bool CNetatmo::ParseNetatmoGetResponse(const std::string &sResult, const _eNetat
 	}
 	if (!bHaveDevices)
 	{
-		if (NetatmoType != NETYPE_ENERGY)
+		if ((!bIsThermostat) && (!m_bFirstTimeWeatherData) && (m_bPollWeatherData))
 		{
-			if ((!bIsThermostat) && (!m_bFirstTimeWeatherData) && (m_bPollWeatherData))
-			{
-				//Do not warn if we check if we have a Thermostat device
-				_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
-			}
-			return false;
+			//Do not warn if we check if we have a Thermostat device
+			_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
 		}
-		else
-		{
-			//Check if we have a home id
-			if (!root["body"]["homes"].empty())
-			{
-				//Lets assume we have only 1 home for now
-				if (root["body"]["homes"].size() <= m_ActHome)
-					return false;
-				if (!root["body"]["homes"][m_ActHome]["id"].empty())
-				{
-					m_Home_ID = root["body"]["homes"][m_ActHome]["id"].asString();
-
-					//Get the room names
-					m_RoomNames.clear();
-
-					if (!root["body"]["homes"][m_ActHome]["homes"].empty())
-						return false;
-					Json::Value mRoot = root["body"]["homes"][m_ActHome]["rooms"];
-					for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
-					{
-						Json::Value room = *itRoom;
-						if (!room["id"].empty())
-						{
-							m_RoomNames[room["id"].asString()] = room["name"].asString();
-						}
-					}
-					return true;
-				}
-			}
-			if ((!m_bFirstTimeWeatherData) && (m_bPollWeatherData))
-			{
-				//Do not warn if we check if we have a Thermostat device
-				_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
-			}
-			return false;
-		}
+		return false;
 	}
 
 	std::vector<_tNetatmoDevice> _netatmo_devices;
@@ -1192,7 +1153,7 @@ void CNetatmo::GetMeterDetails()
 #ifdef DEBUG_NetatmoWeatherStationW
 				SaveString2Disk(sResult, "E:\\homesdata.json");
 #endif
-				ret = ParseNetatmoGetResponse(sResult, NETYPE_ENERGY, true);
+				ret = ParseHomeData(sResult);
 				if (ret)
 				{
 					m_NetatmoType = NETYPE_ENERGY;
@@ -1268,6 +1229,62 @@ void CNetatmo::GetThermostatDetails()
 			m_bPollThermostat = false;
 		}
 	}
+}
+
+bool CNetatmo::ParseHomeData(const std::string &sResult)
+{
+	Json::Value root;
+	Json::Reader jReader;
+	bool ret = jReader.parse(sResult, root);
+	if ((!ret) || (!root.isObject()))
+	{
+		_log.Log(LOG_STATUS, "Netatmo: Invalid data received...");
+		return false;
+	}
+	//Check if we have a home id
+	if (!root["body"]["homes"].empty())
+	{
+		//Lets assume we have only 1 home for now
+		if ((int)root["body"]["homes"].size() <= m_ActHome)
+			return false;
+		if (!root["body"]["homes"][m_ActHome]["id"].empty())
+		{
+			m_Home_ID = root["body"]["homes"][m_ActHome]["id"].asString();
+
+			//Get the module names
+			if (root["body"]["homes"][m_ActHome]["modules"].empty())
+				return false;
+			Json::Value mRoot = root["body"]["homes"][m_ActHome]["modules"];
+			for (Json::Value::iterator itModule = mRoot.begin(); itModule != mRoot.end(); ++itModule)
+			{
+				Json::Value module = *itModule;
+				if (!module["id"].empty())
+				{
+					m_ModuleNames[module["id"].asString()] = module["name"].asString();
+				}
+			}
+
+			//Get the room names
+			if (root["body"]["homes"][m_ActHome]["rooms"].empty())
+				return false;
+			mRoot = root["body"]["homes"][m_ActHome]["rooms"];
+			for (Json::Value::iterator itRoom = mRoot.begin(); itRoom != mRoot.end(); ++itRoom)
+			{
+				Json::Value room = *itRoom;
+				if (!room["id"].empty())
+				{
+					m_RoomNames[room["id"].asString()] = room["name"].asString();
+				}
+			}
+			return true;
+		}
+	}
+	if ((!m_bFirstTimeWeatherData) && (m_bPollWeatherData))
+	{
+		//Do not warn if we check if we have a Thermostat device
+		_log.Log(LOG_STATUS, "Netatmo: No Weather Station devices found...");
+	}
+	return false;
 }
 
 bool CNetatmo::ParseHomeStatus(const std::string &sResult)
