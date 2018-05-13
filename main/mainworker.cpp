@@ -12994,7 +12994,8 @@ bool MainWorker::UpdateDevice(const int HardwareID, const std::string &DeviceID,
 	{
 		if (
 			(pHardware->HwdType == HTYPE_MySensorsUSB) ||
-			(pHardware->HwdType == HTYPE_MySensorsTCP)
+			(pHardware->HwdType == HTYPE_MySensorsTCP) ||
+			(pHardware->HwdType == HTYPE_MySensorsMQTT)
 			)
 		{
 			unsigned long ID;
