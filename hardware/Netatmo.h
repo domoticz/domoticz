@@ -17,6 +17,12 @@ public:
 	void SetSetpoint(const int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
+	enum _eNetatmoType
+	{
+		NETYPE_WEATHER_STATION=0,
+		NETYPE_HOMECOACH,
+		NETYPE_ENERGY
+	};
 	std::string m_clientId;
 	std::string m_clientSecret;
 	std::string m_username;
@@ -44,10 +50,11 @@ private:
 	bool StartHardware();
 	bool StopHardware();
 	void Do_Work();
-	std::string MakeRequestURL(const bool bIsHomeCoach);
+	std::string MakeRequestURL(const _eNetatmoType NetatmoType);
 	void GetMeterDetails();
 	void GetThermostatDetails();
-	bool ParseNetatmoGetResponse(const std::string &sResult, const bool bIsThermostat);
+	bool ParseNetatmoGetResponse(const std::string &sResult, const _eNetatmoType NetatmoType, const bool bIsThermostat);
+	bool ParseHomeStatus(const std::string &sResult);
 	bool SetAway(const int idx, const bool bIsAway);
 
 	bool Login();
@@ -56,7 +63,11 @@ private:
 	void StoreRefreshToken();
 	bool m_isLogged;
 	bool m_bForceLogin;
-	bool m_bIsHomeCoach;
+	_eNetatmoType m_NetatmoType;
+
+	size_t m_ActHome;
+	std::string m_Home_ID;
+	std::map<std::string, std::string> m_RoomNames;
 
 	int GetBatteryLevel(const std::string &ModuleType, const int battery_percent);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);
