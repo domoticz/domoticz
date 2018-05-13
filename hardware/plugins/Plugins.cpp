@@ -169,7 +169,6 @@ namespace Plugins {
 			char* msg;
 			if (!PyArg_ParseTuple(args, "s", &msg))
 			{
-				//TODO: Dump data to aid debugging
 				_log.Log(LOG_ERROR, "(%s) PyDomoticz_Log failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str());
 				LogPythonException(pModState->pPlugin, std::string(__func__));
 			}
@@ -177,6 +176,36 @@ namespace Plugins {
 			{
 				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
 				_log.Log((_eLogLevel)LOG_NORM, message);
+			}
+		}
+
+		Py_INCREF(Py_None);
+		return Py_None;
+	}
+
+	static PyObject*	PyDomoticz_Status(PyObject *self, PyObject *args)
+	{
+		module_state*	pModState = ((struct module_state*)PyModule_GetState(self));
+		if (!pModState)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", std::string(__func__).c_str());
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", std::string(__func__).c_str());
+		}
+		else
+		{
+			char* msg;
+			if (!PyArg_ParseTuple(args, "s", &msg))
+			{
+				_log.Log(LOG_ERROR, "(%s) %s failed to parse parameters: string expected.", pModState->pPlugin->Name.c_str(), std::string(__func__).c_str());
+				LogPythonException(pModState->pPlugin, std::string(__func__));
+			}
+			else
+			{
+				std::string	message = "(" + pModState->pPlugin->Name + ") " + msg;
+				_log.Log((_eLogLevel)LOG_STATUS, message);
 			}
 		}
 
@@ -326,9 +355,10 @@ namespace Plugins {
 	}
 
 	static PyMethodDef DomoticzMethods[] = {
-		{ "Debug", PyDomoticz_Debug, METH_VARARGS, "Write message to Domoticz log only if verbose logging is turned on." },
-		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write message to Domoticz log." },
-		{ "Error", PyDomoticz_Error, METH_VARARGS, "Write error message to Domoticz log." },
+		{ "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
+		{ "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
+		{ "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
+		{ "Error", PyDomoticz_Error, METH_VARARGS, "Write an error message to Domoticz log." },
 		{ "Debugging", PyDomoticz_Debugging, METH_VARARGS, "Set logging level. 1 set verbose logging, all other values use default level" },
 		{ "Heartbeat", PyDomoticz_Heartbeat, METH_VARARGS, "Set the heartbeat interval, default 10 seconds." },
 		{ "Notifier", PyDomoticz_Notifier, METH_VARARGS, "Enable notification handling with supplied name." },
