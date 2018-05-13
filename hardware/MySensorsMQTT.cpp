@@ -39,6 +39,8 @@ MySensorsMQTT::~MySensorsMQTT(void)
 
 bool MySensorsMQTT::StartHardware()
 {
+	m_LineReceived.clear();
+
 	LoadDevicesFromDatabase();
 
 	bool result = MQTT::StartHardware();
@@ -64,7 +66,7 @@ void MySensorsMQTT::on_message(const struct mosquitto_message *message)
 		return;
 
 	std::string sMessage = ConvertMessageToMySensorsLine(topic, qMessage);
-	ProcessMySensorsMessage(sMessage);
+	ParseLine(sMessage);
 }
 
 std::string MySensorsMQTT::ConvertMessageToMySensorsLine(const std::string &topic, const std::string &qMessage)
@@ -78,14 +80,6 @@ std::string MySensorsMQTT::ConvertMessageToMySensorsLine(const std::string &topi
 	}
 
 	return sMessage;
-}
-
-void MySensorsMQTT::ProcessMySensorsMessage(const std::string &MySensorsMessage)
-{
-	m_bufferpos = MySensorsMessage.size();
-	memcpy(&m_buffer, MySensorsMessage.c_str(), m_bufferpos);
-	m_buffer[m_bufferpos] = 0;
-	ParseLine();
 }
 
 void MySensorsMQTT::on_connect(int rc)
