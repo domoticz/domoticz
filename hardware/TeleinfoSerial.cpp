@@ -85,22 +85,26 @@ bool CTeleinfoSerial::StartHardware()
 	try
 	{
 		_log.Log(LOG_STATUS, "(%s) Teleinfo device uses serial port: %s at %i bauds", Name.c_str(), m_szSerialPort.c_str(), m_iBaudRate);
-		open(
-			m_szSerialPort,
-			m_iBaudRate,
-			m_iOptParity,
-			m_iOptCsize
-			);
+		open(m_szSerialPort, m_iBaudRate, m_iOptParity, m_iOptCsize);
 	}
 	catch (boost::exception & e)
 	{
-		_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port!");
-		#ifdef DEBUG_TeleinfoSerial
+		
+#ifdef DEBUG_TeleinfoSerial
 		_log.Log(LOG_ERROR, "-----------------\n%s\n-----------------", boost::diagnostic_information(e).c_str());
-		#else
+#else
 		(void)e;
-		#endif
-		return false;
+#endif
+		_log.Log(LOG_STATUS, "Teleinfo: Serial port open failed, let's retry with CharSize:8 ...");
+
+		try	{
+			open(m_szSerialPort,m_iBaudRate,m_iOptParity,boost::asio::serial_port_base::character_size(8));
+			_log.Log(LOG_STATUS, "Teleinfo: Serial port open successfully with CharSize:8 ...");
+		}
+		catch (...) {
+			_log.Log(LOG_ERROR, "Teleinfo: Error opening serial port, even with CharSize:8 !");
+			return false;
+		}
 	}
 	catch (...)
 	{
