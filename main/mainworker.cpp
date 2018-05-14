@@ -2608,29 +2608,39 @@ void MainWorker::decode_InterfaceMessage(const int HwdID, const _eHardwareTypes 
 			}
 			sprintf(szTmp, "Firmware version  = %d", FWVersion);
 			WriteMessage(szTmp);
-			WriteMessage("Firmware type     = ", false);
-			switch (FWType)
+
+			if (
+				(pResponse->IRESPONSE.msg1 == recType43392) ||
+				(pResponse->IRESPONSE.msg1 == trxType43392)
+				)
 			{
-			case 0:
-				strcpy(szTmp, "Type1 RX");
-				break;
-			case 1:
-				strcpy(szTmp, "Type1");
-				break;
-			case 2:
-				strcpy(szTmp, "Type2");
-				break;
-			case 3:
-				strcpy(szTmp, "Ext");
-				break;
-			case 4:
-				strcpy(szTmp, "Ext2");
-				break;
-			default:
-				strcpy(szTmp, "?");
-				break;
+				WriteMessage("Firmware type     = ", false);
+				switch (FWType)
+				{
+				case 0:
+					strcpy(szTmp, "Type1 RX");
+					break;
+				case 1:
+					strcpy(szTmp, "Type1");
+					break;
+				case 2:
+					strcpy(szTmp, "Type2");
+					break;
+				case 3:
+					strcpy(szTmp, "Ext");
+					break;
+				case 4:
+					strcpy(szTmp, "Ext2");
+					break;
+				case 5:
+					strcpy(szTmp, "Pro1");
+					break;
+				default:
+					strcpy(szTmp, "?");
+					break;
+				}
+				WriteMessage(szTmp);
 			}
-			WriteMessage(szTmp);
 
 			CRFXBase *pMyHardware = reinterpret_cast<CRFXBase*>(GetHardware(HwdID));
 			if (pMyHardware)
