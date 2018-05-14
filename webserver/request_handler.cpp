@@ -204,6 +204,60 @@ void request_handler::handle_request(const request& req, reply& rep)
 	handle_request(req, rep, mInfo);
 }
 
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+    return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
+
+static void validate_gzip(std::string full_path, std::string full_path_gzip)
+{
+	// Do nothing if browser requests a gzipped file
+	if (endsWith(full_path, ".gz"))
+		return;
+
+	struct stat result, resultgz;
+
+	bool gzip_valid = true;
+
+	if (stat(full_path.c_str(), &result) == 0)
+	{
+		if (stat(full_path_gzip.c_str(), &resultgz) == 0)
+		{
+			if (difftime(result.st_mtime, resultgz.st_mtime) > 0)
+			{
+				// gzipped version is old
+				gzip_valid = false;
+			}
+		}
+		else
+		{
+			// gzipped version does not exist
+			gzip_valid = false;
+		}
+	}
+
+	if (!gzip_valid)
+	{
+		std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+		gzFile gzf = gzopen(full_path_gzip.c_str(), "wb");
+		if (is.is_open() && gzf != NULL)
+		{
+			std::string content((std::istreambuf_iterator<char>(is)),
+				(std::istreambuf_iterator<char>()));
+
+			bool err = false;
+			if (gzwrite(gzf, content.c_str(), content.size()) != content.size()) err = true;
+			if (gzclose(gzf) != Z_OK) err = true;
+
+			if (err){
+				std::remove(full_path_gzip.c_str());
+				_log.Log(LOG_ERROR, "Webserver: Failed to compress '%s' to '%s'", full_path.c_str(), full_path_gzip.c_str());
+			}
+			else _log.Log(LOG_STATUS, "Webserver: Compressed '%s' to '%s'", full_path.c_str(), full_path_gzip.c_str());
+		}
+	}
+}
+
 void request_handler::handle_request(const request &req, reply &rep, modify_info &mInfo)
 {
   mInfo.mtime_support = false;
@@ -272,6 +326,8 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  //first try gzip version
 		  if (bHaveGZipSupport)
 		  {
+			  // Validate gzipped file
+			  validate_gzip(doc_root_ + request_path, doc_root_ + request_path + ".gz");
 			  std::string full_path = doc_root_ + request_path + ".gz";
 			  // Open the file to send back.
 			  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
