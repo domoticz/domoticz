@@ -286,21 +286,25 @@
         <h3 class="modal-title">{{:: 'Edit selector action' | translate }}</h3>
     </div>
     <div class="modal-body">
-        <form class="form-horizontal" name="modalForm">
-            <div class="control-group">
-                <label class="control-label" for="selectoraction">{{:: 'Action' | translate }}:</label>
-                <div class="controls">
-                    <input type="text"
-                           id="selectoraction"
-                           class="form-control"
-                           maxlength="500"
-                           pattern="^(http|https|script):\/\/.+"
-                           ng-model="action"
-                    />
-                    <span class="help-block">{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
-                </div>
-            </div>
-        </form>
+		<table class="display" id="paramstable2" border="0" cellpadding="0" cellspacing="20">
+			<tr valign="top">
+				<td align="right" style="width:120px">
+					<span class="help-block" for="selectoraction">{{:: 'Action' | translate }}: </label>
+				</td>
+				<td>
+					<input type="text"
+					   id="selectoraction"
+					   class="form-control"
+					   size="50"
+					   maxlength="500"
+					   pattern="^(http|https|script):\/\/.+"
+					   ng-model="action"
+					/>
+					<br>
+					<span class="help-block">{{ :: '(Should start with http://, https:// or script://)' | translate}}</span>
+				</td>
+			</tr>
+		</table>
     </div>
     <div class="modal-footer">
         <button class="btn btn-default" type="button" ng-click="$close(action)" ng-disabled="modalForm.$invalid">{{::

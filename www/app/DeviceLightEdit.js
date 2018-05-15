@@ -382,7 +382,7 @@ define(['app'], function (app) {
                     paging: false,
                     columns: [
                         {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Action'), data: 'action'},
+                        {title: $.t('Action'), data: 'action', render: actionRenderer},
                         {title: '', data: null, render: actionsRenderer}
                     ]
                 });
@@ -434,6 +434,24 @@ define(['app'], function (app) {
 
             function levelRenderer(level) {
                 return level * 10;
+            }
+            
+            var escapeHTML = function(unsafe) {
+				return unsafe.replace(/[&<"']/g, function(m) {
+					switch (m) {
+						case '&':
+							return '&amp;';
+						case '<':
+							return '&lt;';
+						case '"':
+							return '&quot;';
+						default:
+							return '&#039;';
+						}
+					});
+			};
+            function actionRenderer(action) {
+				return escapeHTML(action);
             }
 
             function actionsRenderer() {
