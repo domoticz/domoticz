@@ -13,7 +13,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
 #ifdef WIN32
@@ -26,6 +25,8 @@
 #include "request.hpp"
 #include "cWebem.h"
 #include "GZipHelper.h"
+
+#include "../main/Helper.h"
 
 // remove
 #include "../main/Logger.h"
@@ -240,14 +241,15 @@ static void validate_gzip(std::string full_path, std::string full_path_gzip)
 	if (!gzip_valid)
 	{
 		// Create directory
-		boost::filesystem::path p = full_path_gzip;
-		p.remove_filename();
-		try {
-			boost::filesystem::create_directories(p);
+		std::string dir = full_path_gzip;
+		std::string::size_type pos = dir.rfind('/');
+		if (pos != std::string::npos) {
+			dir.erase(pos);
 		}
-		catch (...)
+		int res = mkdir_deep(dir.c_str(), 0755);
+		if (res != 0 && errno != EEXIST)
 		{
-			_log.Log(LOG_ERROR, "Webserver: Failed to create directory '%s'", p.string().c_str());
+			_log.Log(LOG_ERROR, "Webserver: Failed to create directory '%s', errno: %d", dir.c_str(), errno);
 		}
 
 		// Compress
