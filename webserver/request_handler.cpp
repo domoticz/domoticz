@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
 #ifdef WIN32
@@ -238,6 +239,18 @@ static void validate_gzip(std::string full_path, std::string full_path_gzip)
 
 	if (!gzip_valid)
 	{
+		// Create directory
+		boost::filesystem::path p = full_path_gzip;
+		p.remove_filename();
+		try {
+			boost::filesystem::create_directories(p);
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "Webserver: Failed to create directory '%s'", p.string().c_str());
+		}
+
+		// Compress
 		std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
 		gzFile gzf = gzopen(full_path_gzip.c_str(), "wb");
 		if (is.is_open() && gzf != NULL)
@@ -326,12 +339,20 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  //first try gzip version
 		  if (bHaveGZipSupport)
 		  {
-			  // Validate gzipped file
-			  validate_gzip(doc_root_ + request_path, doc_root_ + request_path + ".gz");
-			  std::string full_path = doc_root_ + request_path + ".gz";
+			  // Validate cached gzipped file
+			  validate_gzip(doc_root_ + request_path, doc_root_ + "/.gz_cache" + request_path + ".gz");
 			  // Open the file to send back.
+			  // Try to open from gzip cache
+			  std::string full_path = doc_root_ + "/.gz_cache" + request_path + ".gz";
 			  std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
-			  if (is)
+			  if (!is)
+			  {
+				  // Try to open directly
+				  full_path = doc_root_ + request_path + ".gz";
+				  is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			  }
+
+			  if (is.is_open())
 			  {
 				  mInfo.delay_status = false;
 				  if (not_modified(full_path, req, rep, mInfo)) {
