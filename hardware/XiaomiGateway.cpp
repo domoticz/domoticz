@@ -873,7 +873,7 @@ void XiaomiGateway::xiaomi_udp_server::handle_receive(const boost::system::error
 					else if (model == "weather.v1") {
 						name = "Xiaomi Aqara Weather";
 					}
-					else if (model == "cube") {
+					else if (model == "cube" || model == "sensor_cube.aqgl01") {
 						name = "Xiaomi Cube";
 						type = STYPE_Selector;
 					}
