@@ -12,7 +12,7 @@
 #define round(a) ( int ) ( a + .5 )
 
 #ifdef _DEBUG
-#define DEBUG_NetatmoWeatherStationW
+#define DEBUG_NetatmoWeatherStationR
 #endif
 
 #ifdef DEBUG_NetatmoWeatherStationW
@@ -86,6 +86,11 @@ void CNetatmo::Init()
 	m_RainOffset.clear();
 	m_OldRainCounter.clear();
 	m_RoomNames.clear();
+	m_RoomIDs.clear();
+	m_ModuleNames.clear();
+	m_ModuleIDs.clear();
+	m_thermostatDeviceID.clear();
+	m_thermostatModuleID.clear();
 	m_bPollThermostat = true;
 	m_bPollWeatherData = true;
 	m_bFirstTimeThermostat = true;
@@ -378,23 +383,34 @@ void CNetatmo::StoreRefreshToken()
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID == %d)", m_refreshToken.c_str(), m_HwdID);
 }
 
-int CNetatmo::GetBatteryLevel(const std::string &ModuleType, const int battery_percent)
+int CNetatmo::GetBatteryLevel(const std::string &ModuleType, int battery_percent)
 {
 	int batValue = 255;
 
 	// Others are plugged
-	if ((ModuleType == "NAModule1") || (ModuleType == "NAModule2") || (ModuleType == "NAModule3") || (ModuleType == "NAModule4") || (ModuleType == "NATherm1") || (ModuleType == "NRV"))
+	if ((ModuleType == "NAModule1") || (ModuleType == "NAModule2") || (ModuleType == "NAModule3") || (ModuleType == "NAModule4"))
 		batValue = battery_percent;
 	else if (ModuleType == "NRV")
 	{
-		if (batValue > 3200)
-			batValue = 3200;
-		else if (batValue < 2200)
-			batValue = 2200;
+		if (battery_percent > 3200)
+			battery_percent = 3200;
+		else if (battery_percent < 2200)
+			battery_percent = 2200;
 
 		//range = 1000
-		batValue = 3200 - batValue;
-		batValue = int((100.0f / 1000.0f)*float(batValue));
+		batValue = 3200 - battery_percent;
+		batValue = 100 - int((100.0f / 1000.0f)*float(batValue));
+	}
+	else if (ModuleType == "NATherm1")
+	{
+		if (battery_percent > 4100)
+			battery_percent = 4100;
+		else if (battery_percent < 3000)
+			battery_percent = 3000;
+
+		//range = 1100
+		batValue = 4100 - battery_percent;
+		batValue = 100 - int((100.0f / 1100.0f)*float(batValue));
 	}
 
 	return batValue;
@@ -597,15 +613,23 @@ bool CNetatmo::WriteToHardware(const char *pdata, const unsigned char length)
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false; //later add RGB support, if someone can provide access
 
-	int node_id = pCmd->LIGHTING2.id4;
-	int therm_idx = pCmd->LIGHTING2.unitcode;
-
 	bool bIsOn = (pCmd->LIGHTING2.cmnd == light2_sOn);
 
-	if ((node_id == 3) && (therm_idx >= 0))
+	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		//Away
-		return SetAway(therm_idx - 1, bIsOn);
+		int node_id = pCmd->LIGHTING2.id4;
+		int therm_idx = pCmd->LIGHTING2.unitcode;
+		if ((node_id == 3) && (therm_idx >= 0))
+		{
+			//Away
+			return SetAway(therm_idx - 1, bIsOn);
+		}
+	}
+	else
+	{
+		//Not that the idx is used at the moment. With the current API it is only possible to set the mode for the complete home_id
+		unsigned long therm_idx = (pCmd->LIGHTING2.id1 << 24) + (pCmd->LIGHTING2.id2 << 16) + (pCmd->LIGHTING2.id3 << 8) + pCmd->LIGHTING2.id4;
+		return SetAway(therm_idx, bIsOn);
 	}
 
 	return false;
@@ -618,12 +642,15 @@ bool CNetatmo::SetAway(const int idx, const bool bIsAway)
 
 bool CNetatmo::SetProgramState(const int idx, const int newState)
 {
-	if (idx >= (int)m_thermostatDeviceID.size())
-		return false;
-	if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
+	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
-		return false;
+		if (idx >= (int)m_thermostatDeviceID.size())
+			return false;
+		if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
+		{
+			_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+			return false;
+		}
 	}
 	if (!m_isLogged == true)
 	{
@@ -705,14 +732,20 @@ bool CNetatmo::SetProgramState(const int idx, const int newState)
 	return true;
 }
 
-void CNetatmo::SetSetpoint(const int idx, const float temp)
+void CNetatmo::SetSetpoint(int idx, const float temp)
 {
-	if (idx >= (int)m_thermostatDeviceID.size())
-		return;
-	if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
+	if (m_NetatmoType != NETYPE_ENERGY)
 	{
-		_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
-		return;
+		idx = (idx & 0x00FF0000) >> 16;
+		if (idx >= (int)m_thermostatDeviceID.size())
+		{
+			return;
+		}
+		if ((m_thermostatDeviceID[idx].empty()) || (m_thermostatModuleID[idx].empty()))
+		{
+			_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+			return;
+		}
 	}
 	if (!m_isLogged == true)
 	{
@@ -770,7 +803,24 @@ void CNetatmo::SetSetpoint(const int idx, const float temp)
 	}
 	else
 	{
-		sstr << "access_token=" << m_accessToken << "&home_id=" << m_Home_ID << "&room_id=" << m_thermostatDeviceID[idx] << "&mode=manual&temp=" << tempDest << "&endtime=" << end_time;
+		//find roomid
+		std::string roomID;
+		std::map<int, std::string >::const_iterator ittTherm;
+		for (ittTherm = m_thermostatDeviceID.begin(); ittTherm != m_thermostatDeviceID.end(); ++ittTherm)
+		{
+			if (ittTherm->first == idx)
+			{
+				roomID = ittTherm->second;
+				break;
+			}
+		}
+		if (roomID.empty())
+		{
+			_log.Log(LOG_ERROR, "NetatmoThermostat: No thermostat found in online devices!");
+			return;
+		}
+
+		sstr << "access_token=" << m_accessToken << "&home_id=" << m_Home_ID << "&room_id=" << roomID << "&mode=manual&temp=" << tempDest << "&endtime=" << end_time;
 		std::string sPostData = sstr.str();
 
 		ret = HTTPClient::POST("https://api.netatmo.com/api/setroomthermpoint", sPostData, ExtraHeaders, sResult);
@@ -1109,9 +1159,15 @@ void CNetatmo::GetMeterDetails()
 		if (m_bFirstTimeWeatherData)
 		{
 			m_bFirstTimeWeatherData = false;
+#ifdef DEBUG_NetatmoWeatherStationR
+			//sResult = ReadFile("E:\\netatmo_mdetails.json");
+			sResult = ReadFile("E:\\gethomecoachsdata.json");
+			bool ret = true;
+#else
 			//Check if the user has an Home Coach device
 			httpUrl = MakeRequestURL(NETYPE_HOMECOACH);
 			bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+#endif
 			if (!ret)
 			{
 				_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
@@ -1141,8 +1197,14 @@ void CNetatmo::GetMeterDetails()
 			else if (!ret)
 			{
 				//Check if the user has an Enery device (thermostat)
+#ifdef DEBUG_NetatmoWeatherStationR
+				//sResult = ReadFile("E:\\netatmo_mdetails.json");
+				sResult = ReadFile("E:\\homesdata.json");
+				bool ret = true;
+#else
 				httpUrl = MakeRequestURL(NETYPE_ENERGY);
 				bool ret = HTTPClient::GET(httpUrl, ExtraHeaders, sResult);
+#endif
 				if (!ret)
 				{
 					_log.Log(LOG_ERROR, "Netatmo: Error connecting to Server...");
@@ -1271,7 +1333,10 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 				Json::Value module = *itModule;
 				if (!module["id"].empty())
 				{
-					m_ModuleNames[module["id"].asString()] = module["name"].asString();
+					std::string mID = module["id"].asString();
+					m_ModuleNames[mID] = module["name"].asString();
+					int crcId = Crc32(0, (const unsigned char *)mID.c_str(), mID.length());
+					m_ModuleIDs[mID] = crcId;
 				}
 			}
 
@@ -1284,7 +1349,10 @@ bool CNetatmo::ParseHomeData(const std::string &sResult)
 				Json::Value room = *itRoom;
 				if (!room["id"].empty())
 				{
-					m_RoomNames[room["id"].asString()] = room["name"].asString();
+					std::string rID = room["id"].asString();
+					m_RoomNames[rID] = room["name"].asString();
+					int crcId = Crc32(0, (const unsigned char *)rID.c_str(), rID.length());
+					m_RoomIDs[rID] = crcId;
 				}
 			}
 			return true;
@@ -1331,13 +1399,15 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				std::string id = module["id"].asString();
 
 				std::string moduleName = id;
+				int moduleID = iModuleIndex;
 
-				//Find the room name
+				//Find the module (name/id)
 				for (std::map<std::string, std::string>::const_iterator itt = m_ModuleNames.begin(); itt != m_ModuleNames.end(); ++itt)
 				{
 					if (itt->first == id)
 					{
 						moduleName = itt->second;
+						moduleID = m_ModuleIDs[id];
 						break;
 					}
 				}
@@ -1348,23 +1418,25 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				if (!module["battery_level"].empty())
 				{
 					batteryLevel = module["battery_level"].asInt();
+					batteryLevel = GetBatteryLevel(module["type"].asString(), batteryLevel);
 				}
 				if (!module["rf_strength"].empty())
 				{
 					float rf_strength = module["rf_strength"].asFloat();
+					// 90=low, 60=highest
 					if (rf_strength > 90.0f)
 						rf_strength = 90.0f;
 					if (rf_strength < 60.0f)
 						rf_strength = 60.0f;
-					// 90=low, 60=highest
-					mrf_status = (90.0f - rf_strength) / 3;
-					if (mrf_status > 10.0f) {
-						mrf_status = 10.0f;
-					}
+
+					//range is 30
+					rf_strength = 30 - (90 - rf_strength);
+					mrf_status = (100.0f / 30.0f)*float(rf_strength);
 				}
 				if (mrf_status != 255.0f)
 				{
-					SendPercentageSensor(iModuleIndex, 0, batteryLevel, mrf_status, moduleName);
+					std::string pName = moduleName + " RF (+Batt)";
+					SendPercentageSensor(moduleID, 0, batteryLevel, mrf_status, pName);
 				}
 			}
 			iModuleIndex++;
@@ -1385,10 +1457,8 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 			{
 				std::string id = room["id"].asString();
 
-				m_thermostatDeviceID[iDevIndex] = id;
-				m_thermostatModuleID[iDevIndex] = id;
-
 				std::string roomName = id;
+				int roomID = iDevIndex + 1;
 
 				//Find the room name
 				for (std::map<std::string, std::string>::const_iterator itt = m_RoomNames.begin(); itt != m_RoomNames.end(); ++itt)
@@ -1396,24 +1466,28 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 					if (itt->first == id)
 					{
 						roomName = itt->second;
+						roomID = m_RoomIDs[id];
 						break;
 					}
 				}
 
+				m_thermostatDeviceID[roomID & 0xFFFFFF] = id;
+				m_thermostatModuleID[roomID & 0xFFFFFF] = id;
+
 				if (!room["therm_measured_temperature"].empty())
 				{
-					SendTempSensor(iDevIndex, 255, room["therm_measured_temperature"].asFloat(), roomName);
+					SendTempSensor(roomID, 255, room["therm_measured_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_temperature"].empty())
 				{
-					SendSetPointSensor(iDevIndex, 0, iDevIndex & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
+					SendSetPointSensor((roomID & 0XFF0000) >> 16, (roomID & 0XFF00) >> 8, roomID & 0XFF, room["therm_setpoint_temperature"].asFloat(), roomName);
 				}
 				if (!room["therm_setpoint_mode"].empty())
 				{
 					std::string setpoint_mode = room["therm_setpoint_mode"].asString();
 					bool bIsAway = (setpoint_mode == "away");
 					std::string aName = "Away " + roomName;
-					SendSwitch(3, 1 + iDevIndex, 255, bIsAway, 0, aName);
+					SendSwitch(roomID & 0xFFFFFF, 1, 255, bIsAway, 0, aName);
 				}
 			}
 			iDevIndex++;

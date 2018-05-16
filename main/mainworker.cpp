@@ -12049,7 +12049,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string> &sd, const float 
 		else if (pHardware->HwdType == HTYPE_Netatmo)
 		{
 			CNetatmo *pGateway = reinterpret_cast<CNetatmo*>(pHardware);
-			pGateway->SetSetpoint(ID2, TempValue);
+			pGateway->SetSetpoint(ID, TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_NefitEastLAN)
 		{

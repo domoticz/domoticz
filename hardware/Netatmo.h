@@ -14,7 +14,7 @@ public:
 	~CNetatmo(void);
 
 	bool WriteToHardware(const char *, const unsigned char);
-	void SetSetpoint(const int idx, const float temp);
+	void SetSetpoint(int idx, const float temp);
 	bool SetProgramState(const int idx, const int newState);
 private:
 	enum _eNetatmoType
@@ -69,9 +69,11 @@ private:
 	int m_ActHome;
 	std::string m_Home_ID;
 	std::map<std::string, std::string> m_RoomNames;
+	std::map<std::string, int> m_RoomIDs;
 	std::map<std::string, std::string> m_ModuleNames;
+	std::map<std::string, int> m_ModuleIDs;
 
-	int GetBatteryLevel(const std::string &ModuleType, const int battery_percent);
+	int GetBatteryLevel(const std::string &ModuleType, int battery_percent);
 	bool ParseDashboard(const Json::Value &root, const int DevIdx, const int ID, const std::string &name, const std::string &ModuleType, const int battery_percent, const int rf_status);
 };
 
