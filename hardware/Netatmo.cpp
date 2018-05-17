@@ -1430,8 +1430,7 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 						rf_strength = 60.0f;
 
 					//range is 30
-					rf_strength = 30 - (90 - rf_strength);
-					mrf_status = (100.0f / 30.0f)*float(rf_strength);
+					mrf_status = (100.0f / 30.0f)*float((90 - rf_strength));
 				}
 				if (mrf_status != 255.0f)
 				{
