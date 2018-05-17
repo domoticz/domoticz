@@ -1413,7 +1413,6 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 				}
 
 				int batteryLevel = 255;
-				float mrf_status = 255.0f;
 
 				if (!module["battery_level"].empty())
 				{
@@ -1430,12 +1429,12 @@ bool CNetatmo::ParseHomeStatus(const std::string &sResult)
 						rf_strength = 60.0f;
 
 					//range is 30
-					mrf_status = (100.0f / 30.0f)*float((90 - rf_strength));
-				}
-				if (mrf_status != 255.0f)
-				{
-					std::string pName = moduleName + " RF (+Batt)";
-					SendPercentageSensor(moduleID, 0, batteryLevel, mrf_status, pName);
+					float mrf_percentage = (100.0f / 30.0f)*float((90 - rf_strength));
+					if (mrf_percentage != 0)
+					{
+						std::string pName = moduleName + " RF (+Batt)";
+						SendPercentageSensor(moduleID, 0, batteryLevel, mrf_percentage, pName);
+					}
 				}
 			}
 			iModuleIndex++;
