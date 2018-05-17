@@ -105,8 +105,6 @@ void MySensorsMQTT::SendHeartbeat()
 
 void MySensorsMQTT::WriteInt(const std::string &sendStr)
 {
-	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
-
 	std::string sTopic;
 	std::string sPayload;
 	ConvertMySensorsLineToMessage(sendStr, sTopic, sPayload);
