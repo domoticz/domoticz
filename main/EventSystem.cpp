@@ -41,6 +41,8 @@ extern http::server::CWebServerHelper m_webservers;
 static std::string m_printprefix;
 
 #ifdef ENABLE_PYTHON
+#include "../hardware/plugins/Plugins.h"
+#include "../hardware/plugins/PluginMessages.h"
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -1601,6 +1603,23 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		uservariablesMutexLock.unlock();
 #endif
 		EvaluateDatabaseEvents(*itt);
+
+		// Notify plugin system of security events if a plugin owns a Security Panel
+		if (itt->reason == REASON_SECURITY)
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)", 
+				pTypeSecurity1, sTypeDomoticzSecurity, HTYPE_PythonPlugin);
+
+			if (result.size() > 0)
+			{
+				std::vector<std::string> sd = result[0];
+				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
+				if (pPlugin)
+					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(pPlugin, atoi(sd[2].c_str()), itt->nValue, m_szSecStatus[itt->nValue]));
+			}
+		}
 	}
 }
 

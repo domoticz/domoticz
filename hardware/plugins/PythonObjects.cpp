@@ -9,6 +9,7 @@
 #include "../main/SQLHelper.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/localtime_r.h"
+#include "../main/mainstructs.h"
 #include "../main/mainworker.h"
 #include "../main/EventSystem.h"
 #include "../notifications/NotificationHelper.h"
@@ -481,6 +482,11 @@ namespace Plugins {
 				PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
 			}
 		}
+		else if (sTypeName == "Security Panel")
+		{
+			Type = pTypeSecurity1;
+			SubType = sTypeDomoticzSecurity;
+		}
 	}
 
 	int CDevice_init(CDevice *self, PyObject *args, PyObject *kwds)
@@ -833,6 +839,32 @@ namespace Plugins {
 			if (!SuppressTriggers)
 			{
 				DevRowIdx = m_sql.UpdateValue(self->HwdID, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)self->Type, (const unsigned char)self->SubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+
+				// if this is an internal Security Panel then there are some extra updates required if state has changed
+				if ((self->Type == pTypeSecurity1) && (self->SubType = sTypeDomoticzSecurity) && (self->nValue != nValue))
+				{
+					switch (nValue)
+					{
+					case sStatusArmHome:
+					case sStatusArmHomeDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDHOME);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDHOME);
+						break;
+					case sStatusArmAway:
+					case sStatusArmAwayDelayed:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_ARMEDAWAY);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_ARMEDAWAY);
+						break;
+					case sStatusDisarm:
+					case sStatusNormal:
+					case sStatusNormalDelayed:
+					case sStatusNormalTamper:
+					case sStatusNormalDelayedTamper:
+						m_sql.UpdatePreferencesVar("SecStatus", SECSTATUS_DISARMED);
+						m_mainworker.UpdateDomoticzSecurityStatus(SECSTATUS_DISARMED);
+						break;
+					}
+				}
 
 				// Trigger any associated scene / groups
 				m_mainworker.CheckSceneCode(DevRowIdx, (const unsigned char)self->Type, (const unsigned char)self->SubType, nValue, sValue);
