@@ -44,7 +44,6 @@ protected:
 	std::string m_CAFilename;
 	std::string m_TopicIn;
 	std::string m_TopicOut;
-	boost::mutex m_mqtt_mutex;
 	virtual bool StartHardware();
 	virtual bool StopHardware();
 	void StopMQTT();

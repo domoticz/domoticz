@@ -587,7 +587,6 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 
 void MQTT::WriteInt(const std::string &sendStr)
 {
-	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (sendStr.size() < 2)
 		return;
 	//string the return and the end
@@ -597,7 +596,6 @@ void MQTT::WriteInt(const std::string &sendStr)
 
 void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
