@@ -2,6 +2,8 @@
 
 #include "DomoticzHardware.h"
 #include "../main/concurrent_queue.h"
+#include <map>
+#include <vector>
 
 class MySensorsBase : public CDomoticzHardwareBase
 {
@@ -405,6 +407,27 @@ public:
 		}
 	} MySensorNode;
 
+	struct _tMySensorSmartSleepQueueItem
+	{
+		int _NodeID;
+		int _ChildID;
+		_eMessageType _messageType;
+		_eSetType _SubType;
+		std::string _Payload;
+		bool _bUseAck;
+		int _AckTimeout;
+		_tMySensorSmartSleepQueueItem(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
+		{
+			_NodeID = NodeID;
+			_ChildID = ChildID;
+			_messageType = messageType;
+			_SubType = SubType;
+			_Payload = Payload;
+			_bUseAck = bUseAck;
+			_AckTimeout = AckTimeout;
+		}
+	};
+
 	MySensorsBase(void);
 	~MySensorsBase(void);
 	std::string m_szSerialPort;
@@ -428,6 +451,7 @@ private:
 
 	void SendCommandInt(const int NodeID, const int ChildID, const _eMessageType messageType, const bool UseAck, const int SubType, const std::string &Payload);
 	bool SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
+	bool SendNodeSetCommandImpl(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout);
 	void SendNodeCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const int SubType, const std::string &Payload);
 
 
@@ -477,5 +501,9 @@ private:
 	_eSetType m_AckSetType;
 
 	std::string m_LineReceived;
+
+	std::map<int, bool> m_node_sleep_states;
+	std::map<int, std::vector<_tMySensorSmartSleepQueueItem> > m_node_sleep_queue;
+	boost::mutex m_node_sleep_mutex;
 };
 

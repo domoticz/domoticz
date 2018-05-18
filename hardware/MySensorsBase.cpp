@@ -1262,6 +1262,37 @@ std::string MySensorsBase::GetGatewayVersion()
 
 bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
 {
+	//Check if Node is asleep, and if so, add the command to it's message queue
+	boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+	bool bIsAsleep = false;
+	std::map<int, bool>::iterator itt = m_node_sleep_states.find(NodeID);
+	if (itt != m_node_sleep_states.end())
+	{
+		bIsAsleep = (itt->second == true);
+	}
+	if (bIsAsleep)
+	{
+		if (m_node_sleep_queue.find(NodeID) != m_node_sleep_queue.end())
+		{
+			if (m_node_sleep_queue[NodeID].size() >= 10)
+				return false;
+		}
+		m_node_sleep_queue[NodeID].push_back(
+			_tMySensorSmartSleepQueueItem(
+				NodeID,
+				ChildID,
+				messageType,
+				SubType,
+				Payload,
+				bUseAck,
+				AckTimeout)
+		);
+		return true;
+	}
+	return SendNodeSetCommandImpl(NodeID, ChildID, messageType, SubType, Payload, bUseAck, AckTimeout);
+}
+bool MySensorsBase::SendNodeSetCommandImpl(const int NodeID, const int ChildID, const _eMessageType messageType, const _eSetType SubType, const std::string &Payload, const bool bUseAck, const int AckTimeout)
+{
 	m_bAckReceived = false;
 	m_AckNodeID = NodeID;
 	m_AckChildID = ChildID;
@@ -1272,6 +1303,8 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 	//Resend failed command
 	while ((!m_bAckReceived) && (repeat < repeats))
 	{
+		if (repeat != 0)
+			_log.Log(LOG_ERROR, "MySensors: Repeating previous command (%d/%d)", repeat + 1, repeats);
 		SendCommandInt(NodeID, ChildID, messageType, bUseAck, SubType, Payload);
 		if (!bUseAck)
 			return true;
@@ -1287,6 +1320,9 @@ bool MySensorsBase::SendNodeSetCommand(const int NodeID, const int ChildID, cons
 		}
 		repeat++;
 	}
+	if (m_bAckReceived)
+		return true;
+	_log.Log(LOG_ERROR, "MySensors: Command not received by Node !! (node_id: %d, child_id: %d)", NodeID, ChildID);
 	return m_bAckReceived;
 }
 
@@ -1823,6 +1859,37 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 			_log.Log(LOG_NORM, "MySensors: Inclusion mode=%s", payload.c_str());
 			m_sql.m_bAcceptNewHardware = atoi(payload.c_str()) ? true : false;
 			break;
+		case I_PRE_SLEEP_NOTIFICATION:
+			//Node goes to sleep (we will buffer it's messages until it's awake again)
+			while (1 == 0);
+			if (node_id != 255)
+			{
+				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				m_node_sleep_states[node_id] = true;
+			}
+			break;
+		case I_POST_SLEEP_NOTIFICATION:
+			//Node recovered from sleep
+			while (1 == 0);
+			if (node_id != 255)
+			{
+				boost::lock_guard<boost::mutex> l(m_node_sleep_mutex);
+				m_node_sleep_states[node_id] = false;
+				std::map<int, std::vector<_tMySensorSmartSleepQueueItem> >::const_iterator itt = m_node_sleep_queue.find(node_id);
+				if (itt != m_node_sleep_queue.end())
+				{
+					//Send queues messages
+					std::vector<_tMySensorSmartSleepQueueItem>::const_iterator ittItem;
+					for (ittItem = itt->second.begin(); ittItem != itt->second.end(); ++ittItem)
+					{
+						SendNodeSetCommandImpl(ittItem->_NodeID, ittItem->_ChildID, ittItem->_messageType, ittItem->_SubType, ittItem->_Payload, ittItem->_bUseAck, ittItem->_AckTimeout);
+						//sleep_milliseconds(100); ??need to sleep
+					}
+					//empty node queue
+					m_node_sleep_queue.erase(node_id);
+				}
+			}
+			break;
 		case I_DEBUG:
 			//Debug message
 			while (1 == 0);
@@ -2280,10 +2347,26 @@ void MySensorsBase::ParseLine(const std::string &sLine)
 
 void MySensorsBase::SendTextSensorValue(const int nodeID, const int childID, const std::string &tvalue)
 {
-	std::string string2send = tvalue;
-	if (string2send.size() > MAX_PAYLOAD_LENGTH)
-		string2send.resize(MAX_PAYLOAD_LENGTH);
-	SendNodeCommand(nodeID, childID, MT_Set, V_TEXT, string2send);
+	if (_tMySensorNode *pNode = FindNode(nodeID))
+	{
+		_tMySensorChild *pChild = pNode->FindChild(childID);
+		if (pChild)
+		{
+			std::string string2send = tvalue;
+			if (string2send.size() > MAX_PAYLOAD_LENGTH)
+				string2send.resize(MAX_PAYLOAD_LENGTH);
+			SendNodeSetCommand(nodeID, childID, MT_Set, V_TEXT, string2send, pChild->useAck, pChild->ackTimeout);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "MySensors: Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
+		}
+	}
+	else
+	{
+		_log.Log(LOG_ERROR, "MySensors: Text update received for unknown node_id: %d, child_id: %d", nodeID, childID);
+	}
+
 }
 
 bool MySensorsBase::StartSendQueue()
