@@ -1572,8 +1572,8 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 					EvaluateLua(*itt, m_lua_Dir + filename, "");
 				}
 			}
+			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 		}
-		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 
 #ifdef ENABLE_PYTHON
 		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -1601,15 +1601,13 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		{
 		}
 		uservariablesMutexLock.unlock();
-#endif
-		EvaluateDatabaseEvents(*itt);
 
 		// Notify plugin system of security events if a plugin owns a Security Panel
 		if (itt->reason == REASON_SECURITY)
 		{
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query(
-				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)", 
+				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)",
 				pTypeSecurity1, sTypeDomoticzSecurity, HTYPE_PythonPlugin);
 
 			if (result.size() > 0)
@@ -1620,6 +1618,8 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(pPlugin, atoi(sd[2].c_str()), itt->nValue, m_szSecStatus[itt->nValue]));
 			}
 		}
+#endif
+		EvaluateDatabaseEvents(*itt);
 	}
 }
 
