@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 127
+#define DB_VERSION 128
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -2527,6 +2527,12 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 127)
 		{
 			safe_query("UPDATE Hardware SET Mode2 = 3 WHERE Type = %d", HTYPE_Philips_Hue);
+		}
+		if (dbversion < 128)
+		{
+			//Two more files to remove
+			std::remove(szWWWFolder + "/js/domoticzblocks.js.gz");
+			std::remove(szWWWFolder + "/js/domoticzblocks_messages_en.js.gz");
 		}
 	}
 	else if (bNewInstall)
