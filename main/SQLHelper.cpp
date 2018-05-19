@@ -2531,8 +2531,8 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 128)
 		{
 			//Two more files to remove
-			std::remove(szWWWFolder + "/js/domoticzblocks.js.gz");
-			std::remove(szWWWFolder + "/js/domoticzblocks_messages_en.js.gz");
+			std::remove(std::string(szWWWFolder + "/js/domoticzblocks.js.gz").c_str());
+			std::remove(std::string(szWWWFolder + "/js/domoticzblocks_messages_en.js.gz").c_str());
 		}
 	}
 	else if (bNewInstall)
