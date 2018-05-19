@@ -701,6 +701,15 @@ bool CSQLHelper::OpenDatabase()
 	if (!bNewInstall)
 	{
 		GetPreferencesVar("DB_Version", dbversion);
+		if (dbversion > DB_VERSION)
+		{
+			//User is using a newer database on a old Domoticz version
+			//This is very dangerous and should not be allowed
+			_log.Log(LOG_ERROR, "Database incompatible with this Domoticz version. (You cannot downgrade to an old Domoticz version!)");
+			sqlite3_close(m_dbase);
+			m_dbase = NULL;
+			return false;
+		}
 		//Pre-SQL Patches
 	}
 
