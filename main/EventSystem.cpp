@@ -119,6 +119,7 @@ const CEventSystem::_tJsonMap CEventSystem::JsonMap[] =
 	{ "UsageDeliv",			"usageDelivered",			JTYPE_STRING	},
 	{ "ValueQuantity",		"valueQuantity",			JTYPE_STRING	},
 	{ "ValueUnits",			"valueUnits",				JTYPE_STRING	},
+	{ "ExternallyManaged",		"externallyManaged",				JTYPE_BOOL	},
 	{ "Visibility",			"visibility",				JTYPE_FLOAT		},
 	{ "Voltage",			"voltage",					JTYPE_FLOAT		},
 	{ NULL,					NULL,						JTYPE_STRING	}

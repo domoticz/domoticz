@@ -9705,6 +9705,7 @@ namespace http {
 						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ExternallyManaged"] = options["ExternallyManaged"] == "true";
 
 						double meteroffset = AddjValue;
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
@@ -9823,6 +9824,7 @@ namespace http {
 						root["result"][ii]["TypeImg"] = "counter";
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ExternallyManaged"] = options["ExternallyManaged"] == "true";
 						double dvalue = static_cast<double>(atof(sValue.c_str()));
 						double meteroffset = AddjValue;
 
@@ -9998,6 +10000,7 @@ namespace http {
 						root["result"][ii]["Data"] = szTmp;
 						root["result"][ii]["ValueQuantity"] = "";
 						root["result"][ii]["ValueUnits"] = "";
+						root["result"][ii]["ExternallyManaged"] = options["ExternallyManaged"] == "true";
 						switch (metertype)
 						{
 						case MTYPE_ENERGY:
