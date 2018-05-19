@@ -804,9 +804,13 @@ namespace http {
 				while (!is.eof())
 				{
 					getline(is, sLine);
-					if (sLine != "")
+					if (!sLine.empty())
 					{
-						if (sLine.find("#ThemeFiles") != std::string::npos)
+						if (sLine.find("#BuildHash") != std::string::npos)
+						{
+							stdreplace(sLine, "#BuildHash", szAppHash);
+						}
+						else if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
 							response += "#Theme=" + sWebTheme + "\n";
 							//Add all theme files

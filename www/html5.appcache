@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# ref 1516
+# ref #BuildHash //forces a cache refresh on every new build
 
 CACHE:
 # CSS
