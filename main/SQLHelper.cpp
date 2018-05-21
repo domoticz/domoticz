@@ -2551,6 +2551,16 @@ bool CSQLHelper::OpenDatabase()
 			for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
 			{
 				std::string fname = (itt->first);
+				stdlower(fname);
+
+				if (
+					(fname.find(".jpg")==std::string::npos)
+					&&(fname.find(".jpeg") == std::string::npos)
+					&&(fname.find(".png") == std::string::npos)
+					&&(fname.find(".bmp") == std::string::npos)
+					)
+					continue; //not an image file
+
 				std::string sname = fname.substr(szWWWFolder.size()+1);
 				//Find the image file in our database
 				std::stringstream szQuery2;

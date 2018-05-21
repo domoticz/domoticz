@@ -10789,7 +10789,17 @@ namespace http {
 			if (result.empty())
 				return;
 			reply::set_content(&rep, result[0][0].begin(), result[0][0].end());
-			reply::add_header_attachment(&rep, "floorplan.jpg");
+			std::string oname = "floorplan";
+			if (result[0][0].size() > 10)
+			{
+				if (result[0][0][0] == 'P')
+					oname += ".png";
+				else if (result[0][0][0] == -1)
+					oname += ".jpg";
+				else if (result[0][0][0] == 'B')
+					oname += ".bmp";
+			}
+			reply::add_header_attachment(&rep, oname);
 		}
 
 		void CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep)

@@ -85,6 +85,12 @@ void stdupper(std::string &inoutstring)
 		inoutstring[i] = toupper(inoutstring[i]);
 }
 
+void stdlower(std::string &inoutstring)
+{
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
+}
+
+
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
