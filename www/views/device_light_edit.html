@@ -129,11 +129,10 @@
             </tr>
             <tr>
                 <td>
-                    <label for="protected">{{ :: 'Protected' | translate}}:</label>
+                    {{ :: 'Protected' | translate}}:
                 </td>
                 <td>
-                    <input type="checkbox" id="protected" ng-model="vm.device.Protected">
-                    <label for="protected"></label>
+                    <input type="checkbox" id="protected" ng-model="vm.device.Protected"/><label for="protected"></label>
                 </td>
             </tr>
             <tr ng-if="vm.isColorSettingsAvailable()">
@@ -159,13 +158,13 @@
             </tr>
             <tr ng-if="vm.isLevelsAvailable()">
                 <td>
-                    <label for="selectorHiddenOff">{{ :: 'Hide Off level' | translate}}:</label>
+                {{ :: 'Hide Off level' | translate}}:
                 </td>
                 <td>
                     <input type="checkbox"
                            id="selectorHiddenOff"
                            name="selectorHiddenOff"
-                           ng-model="vm.device.LevelOffHidden">
+                           ng-model="vm.device.LevelOffHidden"><label for="selectorHiddenOff"></label>
                 </td>
             </tr>
             <tr ng-if="vm.isLevelsAvailable()">

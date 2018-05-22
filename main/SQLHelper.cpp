@@ -4279,8 +4279,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				}
 				else if (switchtype == STYPE_Selector) {
 					bIsLightSwitchOn = (llevel > 0) ? true : false;
-					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
-					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
+					OnAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel);
+					OffAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0);
 				}
 				if (bIsLightSwitchOn) {
 					stdreplace(OnAction, "{level}", slevel);

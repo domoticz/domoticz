@@ -3886,7 +3886,7 @@ namespace http {
 									if (switchtype == STYPE_Selector) {
 										std::map<std::string, std::string> selectorStatuses;
 										GetSelectorSwitchStatuses(options, selectorStatuses);
-										bool levelOffHidden = options["LevelOffHidden"] == "true";
+										bool levelOffHidden = (options["LevelOffHidden"] == "true");
 										for (int i = 0; i < (int)selectorStatuses.size(); i++) {
 											if (levelOffHidden && (i == 0)) {
 												continue;
@@ -9207,9 +9207,9 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
-							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
-							root["result"][ii]["LevelNames"] = levelNames;
-							root["result"][ii]["LevelActions"] = levelActions;
+							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
+							root["result"][ii]["LevelNames"] = base64_encode((const unsigned char*)levelNames.c_str(), levelNames.size());
+							root["result"][ii]["LevelActions"] = base64_encode((const unsigned char*)levelActions.c_str(), levelActions.size());
 						}
 						//Rob: Dont know who did this, but this should be solved in GetLightCommand
 						//Now we had double Set Level/Level notations
@@ -12360,7 +12360,7 @@ namespace http {
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
+			std::string sOptions = base64_decode(request::findValue(&req, "options"));
 			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
 
 			char szTmp[200];
