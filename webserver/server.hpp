@@ -115,6 +115,12 @@ protected:
 	ssl_server_settings settings_;
 
 private:
+	/// Reload certificate and SSL params if they're changed
+	void reinit_connection();
+	time_t dhparam_tm_;
+	time_t cert_tm_;
+	time_t cert_chain_tm_;
+
 	/// callback for the certficiate passphrase
 	std::string get_passphrase() const;
 
