@@ -346,6 +346,12 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
 				  rep.content.append((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
+				  if (bHaveGZipSupport)
+				  {
+					  CA2GZIP compressed((char*)rep.content.c_str(), rep.content.size());
+					  rep.content = std::string((const char*)compressed.pgzip, compressed.Length);
+					  bHaveLoadedgzip = true;
+				  }
 				  // set delay_status to true, because it can possibly have
 				  // include codes in it.
 				  mInfo.delay_status = true;
