@@ -952,12 +952,12 @@
 	      	success: function(data) {
 		    	if (typeof data != 'undefined') {
 					if (data.status=="OK") {
-						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>sValues</th></tr></thead><tbody>";
+						var devicestates = "<div style='overflow:scroll; overflow-x: hidden; height: 400px;'><table><thead><tr><th align='left' style='padding-right: 80px;'>Idx</th><th align='left' style='padding-right: 80px;'>Name</th><th align='left' style='padding-right: 80px;'>Current state</th><th align='left' style='padding-right: 80px;'>Last updated</th><th align='left' style='padding-right: 10px;'>Values</th></tr></thead><tbody>";
 						if (typeof data.result != 'undefined') {
 
 							$.each(data.result, function(i,item){
 								if (item.name != "Unknown") {
-									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.svalues+'</td></tr>';
+									var oneitem = '<tr><td> '+item.id+' </td><td> '+item.name+' </td><td> '+item.value +' </td><td> '+item.lastupdate+' </td><td> '+item.values+'</td></tr>';
 									devicestates += oneitem;
 								}
 							});

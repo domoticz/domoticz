@@ -3966,6 +3966,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	{
 		lstatus = sValue;
 	}
+	else if (dType == pTypeHUM)
+	{
+		std::stringstream sstr; sstr << nValue;
+		lstatus = sstr.str();
+	}
 	else if (switchtype == STYPE_Selector)
 	{
 		std::map<std::string, std::string> statuses;
@@ -4647,7 +4652,11 @@ namespace http {
 					root["result"][ii]["id"] = itt->ID;
 					root["result"][ii]["name"] = itt->deviceName;
 					root["result"][ii]["value"] = itt->nValueWording;
-					root["result"][ii]["svalues"] = itt->sValue;
+					std::stringstream sstr;
+					sstr << itt->nValue;
+					if (!itt->sValue.empty())
+						sstr << "/" << itt->sValue;
+					root["result"][ii]["values"] = sstr.str();
 					root["result"][ii]["lastupdate"] = itt->lastUpdate;
 					ii++;
 				}
