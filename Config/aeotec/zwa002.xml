@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ZWA002 LED Bulb 6 Multi-Color
+https://products.z-wavealliance.org/products/2881
+-->
+<Product xmlns='http://code.google.com/p/open-zwave/'>
+	<!-- Configuration Parameters -->
+	<CommandClass id="112">
+		<Value type="list" index="1" genre="config" label="User custom mode LED animations" min="0" max="2" value="0" size="1">
+			<Help>User custom mode for LED animations</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Blink Colors in order mode" value="1" />
+			<Item label="Randomized blink color mode" value="2" />
+		</Value>
+		<Value type="list" index="2" genre="config" label="Strobe over Custom Color" min="0" max="1" value="0" size="1">
+			<Help>Enable/Disable Strobe over Custom Color.</Help>
+			<Item label="Disable" value="0" />
+			<Item label="Enable" value="1" />
+		</Value>
+		<Value type="int" index="3" genre="config" label="Set the rate of change to next color in Custom Mode" units="ms" min="5" max="8640000" value="50" >
+            <Help>
+                Set the rate of change to next color in Custom Mode.
+            </Help>
+        </Value>
+		<Value type="byte" index="4" genre="config" label="Set color that LED Bulb blinks" units="" min="1" max="255" value="1" >
+            <Help>
+                Set color that LED Bulb blinks in Blink Mode.
+            </Help>
+        </Value>
+		<Value type="byte" index="16" genre="config" label="Ramp rate when dimming using Multilevel Switch" units="100ms" min="0" max="100" value="20" >
+            <Help>
+                Specifying the ramp rate when dimming using Multilevel Switch V1 CC in 100ms.
+            </Help>
+        </Value>
+		<Value type="list" index="80" genre="config" label="Notification" min="0" max="1" value="1" size="1">
+			<Help>Enable to send notifications to associated devices (Group 1) when the state of LED Bulb is changed.</Help>
+			<Item label="Nothing" value="0" />
+			<Item label="Basic CC report" value="1" />
+		</Value>
+		<Value type="short" index="81" genre="config" label="Warm White temperature" min="2700" max="4999" units="k" value="2700" size="2">
+			<Help>
+				Adjusting the color temperature in warm white color component.
+				available value: 2700k to 4999k</Help>
+		</Value>
+		<Value type="short" index="82" genre="config" label="cold white temperature" min="5000" max="6500" units="k" value="6500" size="2">
+			<Help>
+				Adjusting the color temperature in cold white color component.
+				available value:5000k to 6500k
+			</Help>
+		</Value>
+    </CommandClass>    
+    <!-- Association Groups -->
+	<CommandClass id="133">
+	    <Associations num_groups="1">
+			<Group index="1" max_associations="1" label="Lifeline" />
+	    </Associations>
+  </CommandClass>
+</Product>
