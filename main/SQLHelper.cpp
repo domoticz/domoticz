@@ -2550,32 +2550,38 @@ bool CSQLHelper::OpenDatabase()
 			std::map<std::string, int>::const_iterator itt;
 			for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
 			{
-				std::string fname = (itt->first);
-				stdlower(fname);
+				std::string tname(itt->first);
+				stdlower(tname);
 
 				if (
-					(fname.find(".jpg")==std::string::npos)
-					&&(fname.find(".jpeg") == std::string::npos)
-					&&(fname.find(".png") == std::string::npos)
-					&&(fname.find(".bmp") == std::string::npos)
+					(tname.find(".jpg")==std::string::npos)
+					&&(tname.find(".jpeg") == std::string::npos)
+					&&(tname.find(".png") == std::string::npos)
+					&&(tname.find(".bmp") == std::string::npos)
 					)
 					continue; //not an image file
 
-				std::string sname = fname.substr(szWWWFolder.size()+1);
+				std::string sname = itt->first.substr(szWWWFolder.size()+1);
 				//Find the image file in our database
 				std::stringstream szQuery2;
 				std::vector<std::vector<std::string> > result;
-				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s')",sname.c_str());
+				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s') COLLATE NOCASE",sname.c_str());
 				if (result.empty())
 				{
-					//could be our example sketch, add it to the database
-					safe_query("INSERT INTO Floorplans ([Name],[ImageFile]) VALUES('%s','%s')", "Example", sname.c_str());
+					//could be our example sketch, or left over images, add it to the database
+					std::string vname = sname.substr(strlen("images/floorplans/"));
+					size_t tpos = vname.rfind('.');
+					if (tpos != std::string::npos)
+					{
+						vname = vname.substr(0, tpos);
+					}
+					safe_query("INSERT INTO Floorplans ([Name],[ImageFile]) VALUES('%s','%s')", vname.c_str(), sname.c_str());
 					result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s')", sname.c_str());
 				}
 				if (result.size() > 0)
 				{
 					std::string sID = result[0][0];
-					std::ifstream is(fname.c_str(), std::ios::in | std::ios::binary);
+					std::ifstream is(itt->first.c_str(), std::ios::in | std::ios::binary);
 					if (is)
 					{
 						std::string cfile;
@@ -2584,7 +2590,7 @@ bool CSQLHelper::OpenDatabase()
 						is.close();
 
 						if (safe_UpdateBlobInTableWithID("Floorplans", "Image", sID, cfile))
-							std::remove(fname.c_str());
+							std::remove(itt->first.c_str());
 						else
 							_log.Log(LOG_ERROR, "SQL: Problem converting floorplan image into database! ");
 					}
