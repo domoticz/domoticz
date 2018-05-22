@@ -312,7 +312,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
 					  rep.status = reply::ok;
 					  // Fill out the reply to be sent to the client.
-					  rep.content.append(decompress.psz, decompress.Length);
+					  rep.content.append(decompress.psz, decompress.length);
 				  }
 				  else
 				  {
@@ -344,13 +344,18 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				  // Fill out the reply to be sent to the client.
 				  rep.status = reply::ok;
 
-				  rep.content.append((std::istreambuf_iterator<char>(is)),
-					  (std::istreambuf_iterator<char>()));
 				  if (bHaveGZipSupport)
 				  {
-					  CA2GZIP compressed((char*)rep.content.c_str(), rep.content.size());
-					  rep.content = std::string((const char*)compressed.pgzip, compressed.Length);
+					  std::string szcontent((std::istreambuf_iterator<char>(is)),
+						  (std::istreambuf_iterator<char>()));
+					  CA2GZIP compressed((char*)szcontent.c_str(), szcontent.size());
+					  rep.content.append((const char*)compressed.pgzip, compressed.length);
 					  bHaveLoadedgzip = true;
+				  }
+				  else
+				  {
+					  rep.content.append((std::istreambuf_iterator<char>(is)),
+						  (std::istreambuf_iterator<char>()));
 				  }
 				  // set delay_status to true, because it can possibly have
 				  // include codes in it.
