@@ -2045,7 +2045,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			|| content_type == "application/javascript"
 			)
 		{
-				// check if content is not gzipped, include won´t work with non-text content
+			// check if content is not gzipped, include won´t work with non-text content
 			if (!rep.bIsGZIP)
 			{
 				// Find and include any special cWebem strings
@@ -2075,26 +2075,26 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			// tell browser that we are using UTF-8 encoding
 			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
-			else if (content_type.find("image/") != std::string::npos)
+		else if (content_type.find("image/") != std::string::npos)
+		{
+			if (mInfo.mtime_support && !mInfo.is_modified)
 			{
-				if (mInfo.mtime_support && !mInfo.is_modified)
-				{
-					rep = reply::stock_reply(reply::not_modified);
-					//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
-					return;
-				}
-				//Cache images
-				reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
-				reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+				rep = reply::stock_reply(reply::not_modified);
+				//_log.Log(LOG_STATUS, "%s not modified (2).", req.uri.c_str());
+				return;
 			}
-			else
+			//Cache images
+			reply::add_header(&rep, "Date", strftime_t("%a, %d %b %Y %H:%M:%S GMT", mytime(NULL)));
+			reply::add_header(&rep, "Expires", "Sat, 26 Dec 2099 11:40:31 GMT");
+		}
+		else
+		{
+			if (mInfo.mtime_support && !mInfo.is_modified)
 			{
-				if (mInfo.mtime_support && !mInfo.is_modified)
-				{
-					rep = reply::stock_reply(reply::not_modified);
-					//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
-					return;
-				}
+				rep = reply::stock_reply(reply::not_modified);
+				//_log.Log(LOG_STATUS, "%s not modified (3).", req.uri.c_str());
+				return;
+			}
 			// tell browser that we are using UTF-8 encoding
 			reply::add_header(&rep, "Content-Type", content_type + ";charset=UTF-8");
 		}
