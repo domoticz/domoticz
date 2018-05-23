@@ -587,7 +587,6 @@ void MQTT::SendMessage(const std::string &Topic, const std::string &Message)
 
 void MQTT::WriteInt(const std::string &sendStr)
 {
-	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (sendStr.size() < 2)
 		return;
 	//string the return and the end
@@ -597,7 +596,6 @@ void MQTT::WriteInt(const std::string &sendStr)
 
 void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
-	boost::lock_guard<boost::mutex> l(m_mqtt_mutex);
 	if (!m_IsConnected)
 		return;
 	std::vector<std::vector<std::string> > result;
@@ -632,7 +630,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 		if (IsLightOrSwitch(dType, dSubType) == true) {
 			root["switchType"] = Switch_Type_Desc(switchType);
 		}
-		else if ((dType = pTypeRFXMeter) || (dType = pTypeRFXSensor)) {
+		else if ((dType == pTypeRFXMeter) || (dType == pTypeRFXSensor)) {
 			root["meterType"] = Meter_Type_Desc((_eMeterType)switchType);
 		}
 		// Add device options
@@ -655,8 +653,7 @@ void MQTT::SendDeviceInfo(const int m_HwdID, const uint64_t DeviceRowIdx, const 
 			if (dType == pTypeColorSwitch)
 			{
 				_tColor color(sColor);
-				std::string jsonColor = color.toJSON();
-				root["Color"] = jsonColor;
+				root["Color"] = color.toJSONValue();
 			}
 		}
 

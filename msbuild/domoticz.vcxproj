@@ -276,10 +276,10 @@
     <None Include="..\www\js\d3.min.js.gz" />
     <None Include="..\www\js\dataTables.tableTools.min.js.gz" />
     <None Include="..\www\js\date.format.js.gz" />
-    <None Include="..\www\js\domoticz.js.gz" />
-    <None Include="..\www\js\domoticzblocks.js.gz" />
-    <None Include="..\www\js\domoticzblocks_messages_en.js.gz" />
-    <None Include="..\www\js\domoticzdevices.js.gz" />
+    <None Include="..\www\js\domoticz.js" />
+    <None Include="..\www\js\domoticzblocks.js" />
+    <None Include="..\www\js\domoticzblocks_messages_en.js" />
+    <None Include="..\www\js\domoticzdevices.js" />
     <None Include="..\www\js\en_compressed.js.gz" />
     <None Include="..\www\js\export-csv.js.gz" />
     <None Include="..\www\js\FileSaver.js.gz" />

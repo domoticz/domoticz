@@ -74,6 +74,8 @@ extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
 
+extern bool g_bUseUpdater;
+
 extern time_t m_StartTime;
 
 extern bool g_bDontCacheWWW;
@@ -356,7 +358,8 @@ namespace http {
 			m_pWebEm->RegisterPageCode("/camsnapshot.jpg", boost::bind(&CWebServer::GetCameraSnapshot, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/backupdatabase.php", boost::bind(&CWebServer::GetDatabaseBackup, this, _1, _2, _3));
 			m_pWebEm->RegisterPageCode("/raspberry.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
-			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3)); //TODO: fix me double
+			m_pWebEm->RegisterPageCode("/uvccapture.cgi", boost::bind(&CWebServer::GetInternalCameraSnapshot, this, _1, _2, _3));
+			m_pWebEm->RegisterPageCode("/images/floorplans/plan", boost::bind(&CWebServer::GetFloorplanImage, this, _1, _2, _3));
 
 			m_pWebEm->RegisterActionCode("storesettings", boost::bind(&CWebServer::PostSettings, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setrfxcommode", boost::bind(&CWebServer::SetRFXCOMMode, this, _1, _2, _3));
@@ -365,6 +368,9 @@ namespace http {
 			m_pWebEm->RegisterActionCode("setrego6xxtype", boost::bind(&CWebServer::SetRego6XXType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("sets0metertype", boost::bind(&CWebServer::SetS0MeterType, this, _1, _2, _3));
 			m_pWebEm->RegisterActionCode("setlimitlesstype", boost::bind(&CWebServer::SetLimitlessType, this, _1, _2, _3));
+
+			m_pWebEm->RegisterActionCode("uploadfloorplanimage", boost::bind(&CWebServer::UploadFloorplanImage, this, _1, _2, _3));
+
 
 			m_pWebEm->RegisterActionCode("setopenthermsettings", boost::bind(&CWebServer::SetOpenThermSettings, this, _1, _2, _3));
 			RegisterCommandCode("sendopenthermcommand", boost::bind(&CWebServer::Cmd_SendOpenThermCommand, this, _1, _2, _3), true);
@@ -744,37 +750,6 @@ namespace http {
 			}
 		}
 
-		int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
-		{
-			DIR* dir;
-			struct dirent *ent;
-			if ((dir = opendir(DirPath.c_str())) != NULL)
-			{
-				while ((ent = readdir(dir)) != NULL)
-				{
-					if (dirent_is_directory(DirPath, ent))
-					{
-						if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
-						{
-							std::string nextdir = DirPath + ent->d_name + "/";
-							if (GetDirFilesRecursive(nextdir.c_str(), _Files))
-							{
-								closedir(dir);
-								return 1;
-							}
-						}
-					}
-					else
-					{
-						std::string fname = DirPath + CURLEncode::URLEncode(ent->d_name);
-						_Files[fname] = 1;
-					}
-				}
-			}
-			closedir(dir);
-			return 0;
-		}
-
 		void CWebServer::GetAppCache(WebEmSession & session, const request& req, reply & rep)
 		{
 			std::string response = "";
@@ -782,7 +757,7 @@ namespace http {
 			{
 				return;
 			}
-			//Return the appcache file (dynamicly generated)
+			//Return the appcache file (dynamically generated)
 			std::string sLine;
 			std::string filename = szWWWFolder + "/html5.appcache";
 
@@ -794,9 +769,20 @@ namespace http {
 			std::map<std::string, int> _ThemeFiles;
 			GetDirFilesRecursive(szWWWFolder + "/styles/" + sWebTheme + "/", _ThemeFiles);
 
-			//Get Dynamic Floorplan Files
+			//Get Dynamic Floorplan Images from database
 			std::map<std::string, int> _FloorplanFiles;
-			GetDirFilesRecursive(szWWWFolder + "/images/floorplans/", _FloorplanFiles);
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query("SELECT ID FROM Floorplans ORDER BY [Order]");
+			if (result.size() > 0)
+			{
+				std::vector<std::vector<std::string> >::const_iterator itt;
+				for (itt = result.begin(); itt != result.end(); ++itt)
+				{
+					std::vector<std::string> sd = *itt;
+					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
+					_FloorplanFiles[ImageURL] = 1;
+				}
+			}
 
 			std::ifstream is(filename.c_str());
 			if (is)
@@ -804,16 +790,20 @@ namespace http {
 				while (!is.eof())
 				{
 					getline(is, sLine);
-					if (sLine != "")
+					if (!sLine.empty())
 					{
-						if (sLine.find("#ThemeFiles") != std::string::npos)
+						if (sLine.find("#BuildHash") != std::string::npos)
+						{
+							stdreplace(sLine, "#BuildHash", szAppHash);
+						}
+						else if (sLine.find("#ThemeFiles") != std::string::npos)
 						{
 							response += "#Theme=" + sWebTheme + "\n";
 							//Add all theme files
 							std::map<std::string, int>::const_iterator itt;
 							for (itt = _ThemeFiles.begin(); itt != _ThemeFiles.end(); ++itt)
 							{
-								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
+								std::string tfname = itt->first.substr(szWWWFolder.size() + 1);
 								stdreplace(tfname, "styles/" + sWebTheme, "acttheme");
 								response += tfname + "\n";
 							}
@@ -825,7 +815,7 @@ namespace http {
 							std::map<std::string, int>::const_iterator itt;
 							for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
 							{
-								std::string tfname = (itt->first).substr(szWWWFolder.size() + 1);
+								std::string tfname = itt->first;
 								response += tfname + "\n";
 							}
 							continue;
@@ -2544,10 +2534,12 @@ namespace http {
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
+				root["UseUpdate"] = false;
 				root["HaveUpdate"] = false;
 			}
 			else
 			{
+				root["UseUpdate"] = g_bUseUpdater;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;
@@ -3295,7 +3287,6 @@ namespace http {
 			}
 
 			std::vector<std::vector<std::string> > result;
-			std::vector<std::vector<std::string> > result2;
 			char szTmp[300];
 
 			bool bHaveUser = (session.username != "");
@@ -3389,7 +3380,7 @@ namespace http {
 				int level = -1;
 				if (request::hasValue(&req, "level"))
 					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSON(); //Parse the color to detect incorrectly formatted color data
+				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); //Parse the color to detect incorrectly formatted color data
 
 				unsigned char command = 0;
 				result = m_sql.safe_query("SELECT HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID=='%q')",
@@ -3510,7 +3501,7 @@ namespace http {
 				int level = -1;
 				if (request::hasValue(&req, "level"))
 					level = atoi(request::findValue(&req, "level").c_str());
-				std::string color = _tColor(request::findValue(&req, "color")).toJSON(); //Parse the color to detect incorrectly formatted color data
+				std::string color = _tColor(request::findValue(&req, "color")).toJSONString(); //Parse the color to detect incorrectly formatted color data
 				root["status"] = "OK";
 				root["title"] = "UpdateSceneDevice";
 				result = m_sql.safe_query(
@@ -3543,7 +3534,6 @@ namespace http {
 
 				root["status"] = "OK";
 				root["title"] = "GetSubDevices";
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT a.ID, b.Name FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID)",
 					idx.c_str());
 				if (result.size() > 0)
@@ -3574,7 +3564,6 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetSceneDevices";
 
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT a.ID, b.Name, a.DeviceRowID, b.Type, b.SubType, b.nValue, b.sValue, a.Cmd, a.Level, b.ID, a.[Order], a.Color, a.OnDelay, a.OffDelay, b.SwitchType FROM SceneDevices a, DeviceStatus b WHERE (a.SceneRowID=='%q') AND (b.ID == a.DeviceRowID) ORDER BY a.[Order]",
 					idx.c_str());
 				if (result.size() > 0)
@@ -3616,7 +3605,7 @@ namespace http {
 						GetLightStatus(devType, subType, switchtype, command, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
 						root["result"][ii]["Command"] = lstatus;
 						root["result"][ii]["Level"] = level;
-						root["result"][ii]["Color"] = _tColor(sd[11]).toJSON();
+						root["result"][ii]["Color"] = _tColor(sd[11]).toJSONString();
 						root["result"][ii]["Type"] = RFX_Type_Desc(devType, 1);
 						root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
 						ii++;
@@ -3642,7 +3631,6 @@ namespace http {
 				std::string aScene, aOrder, oID, oOrder;
 
 				//Get actual device order
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT SceneRowID, [Order] FROM SceneDevices WHERE (ID=='%q')",
 					idx.c_str());
 				if (result.size() < 1)
@@ -3800,7 +3788,6 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitches";
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name");
 				if (result.size() > 0)
 				{
@@ -3882,7 +3869,7 @@ namespace http {
 									if (switchtype == STYPE_Selector) {
 										std::map<std::string, std::string> selectorStatuses;
 										GetSelectorSwitchStatuses(options, selectorStatuses);
-										bool levelOffHidden = options["LevelOffHidden"] == "true";
+										bool levelOffHidden = (options["LevelOffHidden"] == "true");
 										for (int i = 0; i < (int)selectorStatuses.size(); i++) {
 											if (levelOffHidden && (i == 0)) {
 												continue;
@@ -3928,7 +3915,6 @@ namespace http {
 			{
 				root["status"] = "OK";
 				root["title"] = "GetLightSwitchesScenes";
-				std::vector<std::vector<std::string> > result;
 				int ii = 0;
 
 				//First List/Switch Devices
@@ -4016,7 +4002,6 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "GetCameraActiveDevices";
-				std::vector<std::vector<std::string> > result;
 				//First List/Switch Devices
 				result = m_sql.safe_query("SELECT ID, DevSceneType, DevSceneRowID, DevSceneWhen, DevSceneDelay FROM CamerasActiveDevices WHERE (CameraRowID=='%q') ORDER BY ID",
 					idx.c_str());
@@ -4756,7 +4741,6 @@ namespace http {
 #ifdef ENABLE_PYTHON
 				//check if HW is plugin
 				{
-					std::vector<std::vector<std::string> > result;
 					result = m_sql.safe_query("SELECT Type FROM Hardware WHERE (ID == '%q')", hwdid.c_str());
 					if (result.size() > 0)
 					{
@@ -5108,7 +5092,6 @@ namespace http {
 						subtype = sTypeSmartwares;
 
 						//check if switch is unique
-						std::vector<std::vector<std::string> > result;
 						result = m_sql.safe_query(
 							"SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
 							hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
@@ -5287,7 +5270,6 @@ namespace http {
 				}
 
 				//check if switch is unique
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query(
 					"SELECT Name FROM DeviceStatus WHERE (HardwareID=='%q' AND DeviceID=='%q' AND Unit=='%q' AND Type==%d AND SubType==%d)",
 					hwdid.c_str(), devid.c_str(), sunitcode.c_str(), dtype, subtype);
@@ -5422,7 +5404,6 @@ namespace http {
 					if (switchtype == STYPE_Media)
 					{
 						std::string idx = request::findValue(&req, "idx");
-						std::vector<std::vector<std::string> > result;
 
 						result = m_sql.safe_query("SELECT HardwareID FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 						if (!result.empty())
@@ -6214,7 +6195,6 @@ namespace http {
 				std::string sHashedUsername = base64_encode((const unsigned char*)username.c_str(), username.size()).c_str();
 
 				// Invalid user's sessions if username or password has changed
-				std::vector<std::vector<std::string> > result;
 				std::string sOldUsername;
 				std::string sOldPassword;
 				result = m_sql.safe_query("SELECT Username, Password FROM Users WHERE (ID == '%q')", idx.c_str());
@@ -6258,7 +6238,6 @@ namespace http {
 				root["title"] = "DeleteUser";
 
 				// Remove user's sessions
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT Username FROM Users WHERE (ID == '%q')", idx.c_str());
 				if (result.size() == 1)
 				{
@@ -7189,63 +7168,26 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanImages";
 
-				DIR *lDir;
-				struct dirent *ent;
-				std::string imagesFolder = szWWWFolder + "/images/floorplans";
-				int iFile = 0;
-				if ((lDir = opendir(imagesFolder.c_str())) != NULL)
+				bool bReturnUnused = atoi(request::findValue(&req, "unused").c_str()) != 0;
+
+				if (!bReturnUnused)
+					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans ORDER BY [Name]");
+				else
+					result = m_sql.safe_query("SELECT ID, Name, ScaleFactor FROM Floorplans WHERE ID NOT IN(SELECT FloorplanID FROM Plans)");
+				if (result.size() > 0)
 				{
-					while ((ent = readdir(lDir)) != NULL)
+					std::vector<std::vector<std::string> >::const_iterator itt;
+					int ii = 0;
+					for (itt = result.begin(); itt != result.end(); ++itt)
 					{
-						std::string filename = ent->d_name;
+						std::vector<std::string> sd = *itt;
 
-						std::string temp_filename = filename;
-						std::transform(temp_filename.begin(), temp_filename.end(), temp_filename.begin(), ::tolower);
-
-						size_t pos = temp_filename.find(".png");
-						if (pos == std::string::npos)
-						{
-							pos = temp_filename.find(".jpg");
-							if (pos == std::string::npos)
-							{
-								pos = temp_filename.find(".bmp");
-							}
-						}
-						if (pos != std::string::npos)
-						{
-							root["result"]["images"][iFile++] = filename;
-						}
+						root["result"][ii]["idx"] = sd[0];
+						root["result"][ii]["name"] = sd[1];
+						root["result"][ii]["scalefactor"] = sd[2];
+						ii++;
 					}
-					closedir(lDir);
 				}
-			}
-			else if (cparam == "addfloorplan")
-			{
-				if (session.rights < 2)
-				{
-					session.reply_status = reply::forbidden;
-					return; //Only admin user allowed
-				}
-
-				std::string name = request::findValue(&req, "name");
-				std::string imagefile = request::findValue(&req, "image");
-				std::string scalefactor = request::findValue(&req, "scalefactor");
-				if (
-					(name.empty()) ||
-					(imagefile.empty()) ||
-					(scalefactor.empty())
-					)
-					return;
-
-				root["status"] = "OK";
-				root["title"] = "AddFloorplan";
-				m_sql.safe_query(
-					"INSERT INTO Floorplans (Name,ImageFile,ScaleFactor) VALUES ('%q','%q',%q)",
-					name.c_str(),
-					imagefile.c_str(),
-					scalefactor.c_str()
-				);
-				_log.Log(LOG_STATUS, "(Floorplan) '%s' created with image file '%s', Scale Factor %s.", name.c_str(), imagefile.c_str(), scalefactor.c_str());
 			}
 			else if (cparam == "updatefloorplan")
 			{
@@ -7259,11 +7201,10 @@ namespace http {
 				if (idx.empty())
 					return;
 				std::string name = request::findValue(&req, "name");
-				std::string imagefile = request::findValue(&req, "image");
 				std::string scalefactor = request::findValue(&req, "scalefactor");
 				if (
-					(name.empty()) ||
-					(imagefile.empty())
+					(name.empty())
+					||(scalefactor.empty())
 					)
 					return;
 
@@ -7271,13 +7212,11 @@ namespace http {
 				root["title"] = "UpdateFloorplan";
 
 				m_sql.safe_query(
-					"UPDATE Floorplans SET Name='%q',ImageFile='%q', ScaleFactor='%q' WHERE (ID == '%q')",
+					"UPDATE Floorplans SET Name='%q',ScaleFactor='%q' WHERE (ID == '%q')",
 					name.c_str(),
-					imagefile.c_str(),
 					scalefactor.c_str(),
 					idx.c_str()
 				);
-				_log.Log(LOG_STATUS, "(Floorplan) '%s' updated with image file '%s', Scale Factor %s.", name.c_str(), imagefile.c_str(), scalefactor.c_str());
 			}
 			else if (cparam == "deletefloorplan")
 			{
@@ -7292,21 +7231,9 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "DeleteFloorplan";
-				m_sql.safe_query(
-					"UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))",
-					idx.c_str()
-				);
-				_log.Log(LOG_STATUS, "(Floorplan) Device coordinates reset for all plans on floorplan '%s'.", idx.c_str());
-				m_sql.safe_query(
-					"UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')",
-					idx.c_str()
-				);
-				_log.Log(LOG_STATUS, "(Floorplan) Plans for floorplan '%s' reset.", idx.c_str());
-				m_sql.safe_query(
-					"DELETE FROM Floorplans WHERE (ID == '%q')",
-					idx.c_str()
-				);
-				_log.Log(LOG_STATUS, "(Floorplan) Floorplan '%s' deleted.", idx.c_str());
+				m_sql.safe_query("UPDATE DeviceToPlansMap SET XOffset=0,YOffset=0 WHERE (PlanID IN (SELECT ID from Plans WHERE (FloorplanID == '%q')))", idx.c_str());
+				m_sql.safe_query("UPDATE Plans SET FloorplanID=0,Area='' WHERE (FloorplanID == '%q')", idx.c_str());
+				m_sql.safe_query("DELETE FROM Floorplans WHERE (ID == '%q')", idx.c_str());
 			}
 			else if (cparam == "changefloorplanorder")
 			{
@@ -7326,7 +7253,6 @@ namespace http {
 
 				std::string aOrder, oID, oOrder;
 
-				std::vector<std::vector<std::string> > result;
 				result = m_sql.safe_query("SELECT [Order] FROM Floorplans WHERE (ID=='%q')",
 					idx.c_str());
 				if (result.size() < 1)
@@ -7396,7 +7322,6 @@ namespace http {
 					return;
 				root["status"] = "OK";
 				root["title"] = "GetFloorplanPlans";
-				std::vector<std::vector<std::string> > result;
 				int ii = 0;
 				result = m_sql.safe_query("SELECT ID, Name, Area FROM Plans WHERE (FloorplanID=='%q') ORDER BY Name",
 					idx.c_str());
@@ -8996,7 +8921,7 @@ namespace http {
 							    (dType == pTypeGeneralSwitch && dSubType == sSwitchTypeTRC02_2))
 							{
 								_tColor color(sColor);
-								std::string jsonColor = color.toJSON();
+								std::string jsonColor = color.toJSONString();
 								root["result"][ii]["Color"] = jsonColor;
 								llevel = LastLevel;
 								if (lstatus == "Set Level" || lstatus == "Set Color")
@@ -9013,7 +8938,7 @@ namespace http {
 						}
 						root["result"][ii]["HaveDimmer"] = bHaveDimmer;
 						std::string DimmerType = "none";
-						if (bHaveDimmer)
+						if (switchtype == STYPE_Dimmer)
 						{
 							DimmerType = "abs";
 							if (_hardwareNames.find(hardwareID) != _hardwareNames.end())
@@ -9203,9 +9128,9 @@ namespace http {
 							}
 							root["result"][ii]["TypeImg"] = "Light";
 							root["result"][ii]["SelectorStyle"] = atoi(selectorStyle.c_str());
-							root["result"][ii]["LevelOffHidden"] = levelOffHidden == "true";
-							root["result"][ii]["LevelNames"] = levelNames;
-							root["result"][ii]["LevelActions"] = levelActions;
+							root["result"][ii]["LevelOffHidden"] = (levelOffHidden == "true");
+							root["result"][ii]["LevelNames"] = base64_encode((const unsigned char*)levelNames.c_str(), levelNames.size());
+							root["result"][ii]["LevelActions"] = base64_encode((const unsigned char*)levelActions.c_str(), levelActions.size());
 						}
 						//Rob: Dont know who did this, but this should be solved in GetLightCommand
 						//Now we had double Set Level/Level notations
@@ -10834,6 +10759,53 @@ namespace http {
 			}
 		}
 
+		void CWebServer::UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri)
+		{
+			redirect_uri = "/index.html";
+			if (session.rights != 2)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+
+			std::string planname = request::findValue(&req, "planname");
+			std::string scalefactor = request::findValue(&req, "scalefactor");
+			std::string imagefile = request::findValue(&req, "imagefile");
+
+			std::vector<std::vector<std::string> > result;
+			m_sql.safe_query("INSERT INTO Floorplans ([Name],[ScaleFactor]) VALUES('%s','%s')", planname.c_str(),scalefactor.c_str());
+			result = m_sql.safe_query("SELECT MAX(ID) FROM Floorplans");
+			if (!result.empty())
+			{
+				if (!m_sql.safe_UpdateBlobInTableWithID("Floorplans", "Image", result[0][0], imagefile))
+					_log.Log(LOG_ERROR, "SQL: Problem inserting floorplan image into database! ");
+			}
+		}
+
+		void CWebServer::GetFloorplanImage(WebEmSession & session, const request& req, reply & rep)
+		{
+			std::string idx = request::findValue(&req, "idx");
+			if (idx == "") {
+				return;
+			}
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_queryBlob("SELECT Image FROM Floorplans WHERE ID=%s", idx.c_str());
+			if (result.empty())
+				return;
+			reply::set_content(&rep, result[0][0].begin(), result[0][0].end());
+			std::string oname = "floorplan";
+			if (result[0][0].size() > 10)
+			{
+				if (result[0][0][0] == 'P')
+					oname += ".png";
+				else if (result[0][0][0] == -1)
+					oname += ".jpg";
+				else if (result[0][0][0] == 'B')
+					oname += ".bmp";
+			}
+			reply::add_header_attachment(&rep, oname);
+		}
+
 		void CWebServer::GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep)
 		{
 			if (session.rights != 2)
@@ -11114,7 +11086,7 @@ namespace http {
 				}
 			}
 
-			result2 = m_sql.safe_query("SELECT ID, Name, ImageFile, ScaleFactor, [Order] FROM Floorplans ORDER BY [Order]");
+			result2 = m_sql.safe_query("SELECT ID, Name, ScaleFactor, [Order] FROM Floorplans ORDER BY [Order]");
 			if (result2.size() > 0)
 			{
 				std::vector<std::vector<std::string> >::const_iterator itt;
@@ -11125,9 +11097,10 @@ namespace http {
 
 					root["result"][ii]["idx"] = sd[0];
 					root["result"][ii]["Name"] = sd[1];
-					root["result"][ii]["Image"] = sd[2];
-					root["result"][ii]["ScaleFactor"] = sd[3];
-					root["result"][ii]["Order"] = sd[4];
+					std::string ImageURL = "images/floorplans/plan?idx=" + sd[0];
+					root["result"][ii]["Image"] = ImageURL;
+					root["result"][ii]["ScaleFactor"] = sd[2];
+					root["result"][ii]["Order"] = sd[3];
 
 					unsigned int totPlans = 0;
 
@@ -12356,7 +12329,7 @@ namespace http {
 			bool bHasstrParam1 = request::hasValue(&req, "strparam1");
 			int iProtected = (tmpstr == "true") ? 1 : 0;
 
-			std::string sOptions = CURLEncode::URLDecode(base64_decode(request::findValue(&req, "options")));
+			std::string sOptions = base64_decode(request::findValue(&req, "options"));
 			std::string devoptions = CURLEncode::URLDecode(request::findValue(&req, "devoptions"));
 
 			char szTmp[200];

@@ -172,9 +172,9 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
 		std::vector<std::string> vHeaderData;
 
 		HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData, false);
-		if (!&sResult || sResult.size() == 0) {
+		if (sResult.empty()) {
 			std::string sErrorMsg = "Got empty response body while getting structures. ";
-			if (&vHeaderData && vHeaderData.size() > 0) {
+			if (!vHeaderData.empty()) {
 				sErrorMsg += "Response code: " + vHeaderData[0];
 			}
 			throw std::runtime_error(sErrorMsg.c_str());
@@ -195,7 +195,7 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to parse received JSON data.");
 		return false;
 	}
-	if (root.size() == 0)
+	if (root.empty())
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: JSON data parsed but resulted in no nodes.");
 		return false;
@@ -218,11 +218,11 @@ bool CNestOAuthAPI::ValidateNestApiAccessToken(const std::string &accesstoken) {
 bool CNestOAuthAPI::Login()
 {
 	// If we don't have an access token available
-	if (m_OAuthApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.empty())
 	{
 		_log.Log(LOG_NORM, "NestOAuthAPI: No API key available.");
 		// Check if we do have a productid, secret and pin code
-		if (m_ProductId.size() != 0 && m_ProductSecret.size() != 0 && m_PinCode.size() != 0) {
+		if (!m_ProductId.empty() && !m_ProductSecret.empty() && !m_PinCode.empty()) {
 			_log.Log(LOG_NORM, "NestOAuthAPI: Access token missing. Will request an API key based on Product Id, Product Secret and PIN code.");
 
 			std::string sTmpToken = "";
@@ -231,7 +231,7 @@ bool CNestOAuthAPI::Login()
 				// Request the token using the information that we already have.
 				sTmpToken = FetchNestApiAccessToken(m_ProductId, m_ProductSecret, m_PinCode);
 
-				if (sTmpToken.size() > 0) {
+				if (!sTmpToken.empty()) {
 					_log.Log(LOG_NORM, "NestOAuthAPI: Received an access token to use for future requests: " + sTmpToken);
 					
 					// Store the access token in the database and set the application to use it.
@@ -253,7 +253,7 @@ bool CNestOAuthAPI::Login()
 	}
 
 	// Check if we still don't have an access token available
-	if (m_OAuthApiAccessToken.empty() || m_OAuthApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.empty())
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Cannot login: access token was not supplied and failed to fetch one.");
 		Logout();
@@ -288,7 +288,7 @@ void CNestOAuthAPI::Logout()
 
 bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char length)
 {
-	if (m_OAuthApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.empty())
 		return false;
 	
 	const tRBUF *pCmd = reinterpret_cast<const tRBUF *>(pdata);
@@ -316,14 +316,14 @@ bool CNestOAuthAPI::WriteToHardware(const char *pdata, const unsigned char lengt
 
 void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, const std::string &defaultname)
 {
-	bool bDeviceExits = true;
+	bool bDeviceExists = true;
 	char szIdx[10];
 	sprintf(szIdx, "%X%02X%02X%02X", 0, 0, Idx, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT Name,nValue,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q')", m_HwdID, szIdx);
-	if (result.size() < 1)
+	if (result.empty())
 	{
-		bDeviceExits = false;
+		bDeviceExists = false;
 	}
 	else
 	{
@@ -375,7 +375,7 @@ void CNestOAuthAPI::UpdateSmokeSensor(const unsigned char Idx, const bool bOn, c
 	lcmd.LIGHTING2.filler = 0;
 	lcmd.LIGHTING2.rssi = 12;
 
-	if (!bDeviceExits)
+	if (!bDeviceExists)
 	{
 		m_mainworker.PushAndWaitRxMessage(this, (const unsigned char *)&lcmd.LIGHTING2, defaultname.c_str(), 255);
 		//Assign default name for device
@@ -455,14 +455,14 @@ void CNestOAuthAPI::GetMeterDetails()
 	//Protect
 	if (bHaveSmokeDetects)
 	{
-		if (deviceRoot["smoke_co_alarms"].size() < 1)
+		if (deviceRoot["smoke_co_alarms"].empty())
 		{
 			_log.Log(LOG_ERROR, "NestOAuthAPI: smoke detectors request not successful, restarting..!");
 			m_bDoLogin = true;
 			return;
 		}
 		Json::Value::Members members = deviceRoot["smoke_co_alarms"].getMemberNames();
-		if (members.size() < 1)
+		if (members.empty())
 		{
 			_log.Log(LOG_ERROR, "NestOAuthAPI: smoke detectors request not successful, restarting..!");
 			m_bDoLogin = true;
@@ -516,7 +516,7 @@ void CNestOAuthAPI::GetMeterDetails()
 	//Thermostat
 	if (!bHaveThermostats)
 		return;
-	if (deviceRoot["thermostats"].size()<1)
+	if (deviceRoot["thermostats"].empty())
 	{
 		// If we do have a protect then just return
 		if (bHaveSmokeDetects)
@@ -630,7 +630,7 @@ void CNestOAuthAPI::GetMeterDetails()
 
 void CNestOAuthAPI::SetSetpoint(const int idx, const float temp)
 {
-	if (m_OAuthApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.empty())
 		return;
 
 	if (m_bDoLogin)
@@ -687,9 +687,17 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 	// Grab a reference to that thermostat.
 	_tNestThemostat thermostat = m_thermostats[iThermostat];
 
-	if (!&thermostat || thermostat.Serial.empty())
+	try 
 	{
-		_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+		if (thermostat.Serial.empty())
+		{
+			_log.Log(LOG_ERROR, "NestOAuthAPI: Thermostat " + boost::to_string(iThermostat) + " has not been initialized yet. Try again later.");
+			return false;
+		}
+	}
+	catch (std::exception e)
+	{
+		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to get thermostat serial (for now). Try again later.");
 		return false;
 	}
 
@@ -718,7 +726,7 @@ bool CNestOAuthAPI::SetManualEcoMode(const unsigned char node_id, const bool bIs
 
 bool CNestOAuthAPI::PushToNestApi(const std::string sMethod, const std::string sUrl, const Json::Value jPostData, std::string &sResult)
 {
-	if (m_OAuthApiAccessToken.size() == 0) 
+	if (m_OAuthApiAccessToken.empty()) 
 	{
 		_log.Log(LOG_ERROR, "NestOAuthAPI: Failed to push information to Nest Api: No access token supplied.");
 		return false;
@@ -774,7 +782,7 @@ bool CNestOAuthAPI::SetAway(const unsigned char Idx, const bool bIsAway)
 
 void CNestOAuthAPI::SetProgramState(const int newState)
 {
-	if (m_OAuthApiAccessToken.size() == 0)
+	if (m_OAuthApiAccessToken.empty())
 		return;
 
 	if (m_bDoLogin)
@@ -786,13 +794,13 @@ void CNestOAuthAPI::SetProgramState(const int newState)
 
 std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid, const std::string &secret, const std::string &pincode) {
 	// Check if there isn't already an access token
-	if (m_OAuthApiAccessToken.size() != 0) {
+	if (!m_OAuthApiAccessToken.empty()) {
 		_log.Log(LOG_ERROR, "NestOAuthAPI: There is already an API access token configured for this hardware ID: no need to fetch a new token.");
 		return "";
 	}
 
 	// Check if we have a productid, secret and pin code
-	if (productid.size() == 0 || secret.size() == 0 || pincode.size() == 0) {
+	if (productid.empty() || secret.empty() || pincode.empty()) {
 		_log.Log(LOG_ERROR, "NestOAuthAPI: No access token supplied and no ProductId, Secret or PIN to obtain one either.");
 		return "";
 	}
@@ -827,14 +835,14 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 		if (!HTTPClient::POST(NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL, sPostData, ExtraHeaders, sResult, vResponseHeaders, true, false))
 		{
 			std::string sErrorMsg = "Failed to fetch token from API. ";
-			if (&vResponseHeaders && vResponseHeaders.size() > 0) {
+			if (!vResponseHeaders.empty()) {
 				sErrorMsg += "Response code: " + vResponseHeaders[0];
 			}
 			throw std::runtime_error(sErrorMsg.c_str());
 		}
 		_log.Log(LOG_NORM, "NestOAuthAPI: POST request completed. Result: " + sResult);
 
-		if (!&sResult || sResult.size() == 0) 
+		if (sResult.empty()) 
 		{
 			throw std::runtime_error("Received empty response from API.");
 		}
@@ -850,7 +858,7 @@ std::string CNestOAuthAPI::FetchNestApiAccessToken(const std::string &productid,
 			if ((!bRet) || (!root.isObject())) throw std::runtime_error("Failed to parse JSON data.");
 			_log.Log(LOG_NORM, "NestOAuthAPI: Parsing of JSON data apparently successful");
 
-			if (root.size() == 0) throw std::runtime_error("Parsed JSON data contains no elements.");
+			if (root.empty()) throw std::runtime_error("Parsed JSON data contains no elements.");
 			_log.Log(LOG_NORM, "NestOAuthAPI: parsed JSON data contains more than 0 elements");
 
 			_log.Log(LOG_NORM, "NestOAuthAPI: Fetching access_token from JSON object");

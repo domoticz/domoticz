@@ -9,6 +9,7 @@
 #include "../hardware/hardwaretypes.h"
 #include "../hardware/Kodi.h"
 #include "../hardware/LogitechMediaServer.h"
+#include "../hardware/MySensorsBase.h"
 #include <iostream>
 #include "../httpclient/UrlEncode.h"
 #include "localtime_r.h"
@@ -40,6 +41,8 @@ extern http::server::CWebServerHelper m_webservers;
 static std::string m_printprefix;
 
 #ifdef ENABLE_PYTHON
+#include "../hardware/plugins/Plugins.h"
+#include "../hardware/plugins/PluginMessages.h"
 #include "EventsPythonModule.h"
 #include "EventsPythonDevice.h"
 extern PyObject * PDevice_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -1569,8 +1572,8 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 					EvaluateLua(*itt, m_lua_Dir + filename, "");
 				}
 			}
+			// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 		}
-		// else _log.Log(LOG_STATUS,"EventSystem: ignore file not .lua or is demo file: %s", filename.c_str());
 
 #ifdef ENABLE_PYTHON
 		boost::unique_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
@@ -1598,6 +1601,23 @@ void CEventSystem::EvaluateEvent(const std::vector<_tEventQueue> &items)
 		{
 		}
 		uservariablesMutexLock.unlock();
+
+		// Notify plugin system of security events if a plugin owns a Security Panel
+		if (itt->reason == REASON_SECURITY)
+		{
+			std::vector<std::vector<std::string> > result;
+			result = m_sql.safe_query(
+				"SELECT DeviceStatus.HardwareID, DeviceStatus.ID, DeviceStatus.Unit FROM DeviceStatus INNER JOIN Hardware ON DeviceStatus.HardwareID=Hardware.ID WHERE (DeviceStatus.Type=%d AND DeviceStatus.SubType=%d  AND Hardware.Type=%d)",
+				pTypeSecurity1, sTypeDomoticzSecurity, HTYPE_PythonPlugin);
+
+			if (result.size() > 0)
+			{
+				std::vector<std::string> sd = result[0];
+				Plugins::CPlugin* pPlugin = (Plugins::CPlugin*)m_mainworker.GetHardware(atoi(sd[0].c_str()));
+				if (pPlugin)
+					pPlugin->MessagePlugin(new Plugins::onSecurityEventCallback(pPlugin, atoi(sd[2].c_str()), itt->nValue, m_szSecStatus[itt->nValue]));
+			}
+		}
 #endif
 		EvaluateDatabaseEvents(*itt);
 	}
@@ -2244,6 +2264,32 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			}
 			actionsDone = true;
 			continue;
+		}
+		else if (deviceName.find("Text:") == 0)
+		{
+			std::string variableName = deviceName.substr(5);
+			float afterTimerSeconds = 0;
+			size_t aFind = doWhat.find(" AFTER ");
+			if ((aFind > 0) && (aFind != std::string::npos)) {
+				std::string delayString = doWhat.substr(aFind + 7);
+				std::string newAction = doWhat.substr(0, aFind);
+				afterTimerSeconds = static_cast<float>(atof(delayString.c_str()));
+				doWhat = newAction;
+				StripQuotes(doWhat);
+			}
+
+			std::vector<std::vector<std::string> > result;
+
+			if (afterTimerSeconds < (1. / timer_resolution_hz / 2))
+			{
+				UpdateDevice(atoi(variableName.c_str()), 0, doWhat, false, false);
+			}
+			else
+			{
+				float DelayTime = afterTimerSeconds;
+				m_sql.AddTaskItem(_tTaskItem::UpdateDevice(DelayTime, (const uint64_t)atol(variableName.c_str()), 0,  doWhat, false, false));
+			}
+			actionsDone = true;
 		}
 		else if (deviceName.find("SendCamera:") == 0)
 		{
@@ -3484,7 +3530,7 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 {
 	//Get device parameters
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
+	result = m_sql.safe_query("SELECT Type, SubType, Name, SwitchType, LastLevel, Options, nValue, sValue, Protected, LastUpdate, HardwareID, DeviceID FROM DeviceStatus WHERE (ID=='%" PRIu64 "')",
 		idx);
 	if (result.size() > 0)
 	{
@@ -3500,6 +3546,8 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		std::string db_sValue = sd[7];
 		int db_Protected = atoi(sd[8].c_str());
 		std::string db_LastUpdate = sd[9];
+		int HardwareID = atoi(sd[10].c_str());
+		std::string DeviceID = sd[11];
 
 		std::string szLastUpdate = TimeToString(NULL, TF_DateTime);
 
@@ -3518,6 +3566,11 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 			db_Protected,
 			db_LastUpdate.c_str(),
 			idx);
+
+#ifdef ENABLE_PYTHON
+		// Notify plugin framework about the change
+		m_mainworker.m_pluginsystem.DeviceModified(idx);
+#endif
 
 		if ((nValue == -1) && (sValue.empty()))
 			return;
@@ -3592,6 +3645,30 @@ void CEventSystem::UpdateDevice(const uint64_t idx, const int nValue, const std:
 		{
 			_log.Log(LOG_NORM, "EventSystem: Sending Thermostat Fan Mode to device....");
 			m_mainworker.SetZWaveThermostatFanMode(sIdx.str(), nValue);
+		}
+		else if ((devType == pTypeGeneral) && (subType == sTypeTextStatus))
+		{
+			CDomoticzHardwareBase *pHardware = m_mainworker.GetHardware(HardwareID);
+			if (pHardware)
+			{
+				if (
+					(pHardware->HwdType == HTYPE_MySensorsUSB) ||
+					(pHardware->HwdType == HTYPE_MySensorsTCP) ||
+					(pHardware->HwdType == HTYPE_MySensorsMQTT)
+					)
+				{
+					unsigned long ID;
+					std::stringstream s_strid;
+					s_strid << std::hex << DeviceID;
+					s_strid >> ID;
+					unsigned char NodeID = (unsigned char)((ID & 0x0000FF00) >> 8);
+					unsigned char ChildID = (unsigned char)((ID & 0x000000FF));
+
+					MySensorsBase *pMySensorDevice = (MySensorsBase*)pHardware;
+					pMySensorDevice->SendTextSensorValue(NodeID, ChildID, sValue);
+				}
+			}
+
 		}
 		if (bEventTrigger)
 			ProcessDevice(0, idx, 0, devType, subType, 255, 255, nValue, sValue.c_str(), dname, 0);
@@ -3888,6 +3965,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		(dType == pTypeRFXMeter))
 	{
 		lstatus = sValue;
+	}
+	else if (dType == pTypeHUM)
+	{
+		std::stringstream sstr; sstr << nValue;
+		lstatus = sstr.str();
 	}
 	else if (switchtype == STYPE_Selector)
 	{
@@ -4570,7 +4652,11 @@ namespace http {
 					root["result"][ii]["id"] = itt->ID;
 					root["result"][ii]["name"] = itt->deviceName;
 					root["result"][ii]["value"] = itt->nValueWording;
-					root["result"][ii]["svalues"] = itt->sValue;
+					std::stringstream sstr;
+					sstr << itt->nValue;
+					if (!itt->sValue.empty())
+						sstr << "/" << itt->sValue;
+					root["result"][ii]["values"] = sstr.str();
 					root["result"][ii]["lastupdate"] = itt->lastUpdate;
 					ii++;
 				}

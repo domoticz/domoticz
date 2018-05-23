@@ -107,6 +107,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 		goto out;
 	}
 
+#ifndef __NetBSD__
 	/* Ensure that the device isn't claimed.  */
 	ret = usb_get_driver_np (devh, 0/*intrf*/, driver_name, sizeof (driver_name));
 	if (! ret) {
@@ -118,6 +119,7 @@ static int read_one_sensor (struct usb_device *dev, uint16_t &value)
 			goto out;
 		}
 	}
+#endif
 
 	/* Claim device.  */
 	ret = usb_claim_interface (devh, 0/*intrf*/);

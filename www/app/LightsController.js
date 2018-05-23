@@ -304,7 +304,7 @@ define(['app'], function (app) {
 				return EvoDisplayTextMode(item.Status);
 			}
 			else if (item.SwitchType === "Selector") {
-				return item.LevelNames.split('|')[(item.LevelInt / 10)];
+				return atob(item.LevelNames).split('|')[(item.LevelInt / 10)];
 			}
 			else
 				return item.Status;
@@ -398,10 +398,10 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Door Contact") {
 									if (item.InternalState == "Open") {
-										img = '<img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48">';
+                                        img = '<img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 									}
 									else {
-										img = '<img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48">';
+                                        img = '<img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 									}
 								}
 								else if (item.SwitchType == "Door Lock") {
@@ -734,7 +734,7 @@ define(['app'], function (app) {
 									if (typeof selector$ !== 'undefined') {
 										if (item.SelectorStyle === 0) {
 											var xhtm = '';
-											var levelNames = item.LevelNames.split('|');
+											var levelNames = atob(item.LevelNames).split('|');
 											$.each(levelNames, function (index, levelName) {
 												if ((index === 0) && (item.LevelOffHidden)) {
 													return;
@@ -964,10 +964,10 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Door Contact") {
 								if (item.InternalState == "Open") {
-									xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48"></td>\n';
+                                    xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48"></td>\n';
+                                    xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="48" width="48"></td>\n';
 								}
 								bAddTimer = false;
 							}
@@ -1308,8 +1308,8 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Selector") {
 								if (item.SelectorStyle === 0) {
-									xhtm += '<br/><div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
-									var levelNames = item.LevelNames.split('|');
+									xhtm += '<br/><div class="btn-group" style="margin-top: 4px;" id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+									var levelNames = atob(item.LevelNames).split('|');
 									$.each(levelNames, function (index, levelName) {
 										if ((index === 0) && (item.LevelOffHidden)) {
 											return;
@@ -1326,8 +1326,8 @@ define(['app'], function (app) {
 									xhtm += '</div>';
 								} else if (item.SelectorStyle === 1) {
 									xhtm += '<br><div class="selectorlevels" style="margin-top: 0.4em;">';
-									xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + escape(item.LevelNames) + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
-									var levelNames = item.LevelNames.split('|');
+									xhtm += '<select id="selector' + item.idx + '" data-idx="' + item.idx + '" data-isprotected="' + item.Protected + '" data-level="' + item.LevelInt + '" data-levelnames="' + item.LevelNames + '" data-selectorstyle="' + item.SelectorStyle + '" data-levelname="' + escape(GetLightStatusText(item)) + '" data-leveloffhidden="' + item.LevelOffHidden + '" data-levelactions="' + item.LevelActions + '">';
+									var levelNames = atob(item.LevelNames).split('|');
 									$.each(levelNames, function (index, levelName) {
 										if ((index === 0) && (item.LevelOffHidden)) {
 											return;

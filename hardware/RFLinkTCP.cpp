@@ -5,16 +5,13 @@
 #include <iostream>
 #include "../main/localtime_r.h"
 
-#define RFLINK_RETRY_DELAY 30
-
 CRFLinkTCP::CRFLinkTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort):
 	m_szIPAddress(IPAddress)
 {
-	m_HwdID=ID;
-	m_bDoRestart=false;
-	m_stoprequested=false;
-	m_usIPPort=usIPPort;
-	m_retrycntr = RFLINK_RETRY_DELAY;
+	m_HwdID = ID;
+	m_bDoRestart = false;
+	m_stoprequested = false;
+	m_usIPPort = usIPPort;
 }
 
 CRFLinkTCP::~CRFLinkTCP(void)
@@ -27,7 +24,7 @@ bool CRFLinkTCP::StartHardware()
 	m_bDoRestart=false;
 
 	//force connect the next first time
-	m_retrycntr=RFLINK_RETRY_DELAY;
+	m_retrycntr = RFLINK_RETRY_DELAY;
 	m_bIsStarted=true;
 
 	//Start worker thread

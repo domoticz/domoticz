@@ -85,6 +85,12 @@ void stdupper(std::string &inoutstring)
 		inoutstring[i] = toupper(inoutstring[i]);
 }
 
+void stdlower(std::string &inoutstring)
+{
+	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::tolower);
+}
+
+
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 {
 	bUseDirectPath=false;
@@ -231,7 +237,7 @@ std::vector<std::string> GetSerialPorts(bool &bUseDirectPath)
 				bUseDirectPath = true;
 				ret.push_back("/dev/" + fname);
 			}
-#if defined (__FreeBSD__) || defined (__OpenBSD__)
+#if defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
 			else if (fname.find("ttyU")!=std::string::npos)
 			{
 				bUseDirectPath=true;
@@ -617,13 +623,17 @@ std::string TimeToString(const time_t *ltime, const _eTimeFormat format)
 
 	if (format > TF_Time)
 	{
+		//Date
 		sstr << (timeinfo.tm_year + 1900) << "-"
 		<< std::setw(2)	<< std::setfill('0') << (timeinfo.tm_mon + 1) << "-"
-		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday << " ";
+		<< std::setw(2) << std::setfill('0') << timeinfo.tm_mday;
 	}
 
 	if (format != TF_Date)
 	{
+		//Time
+		if (format > TF_Time)
+			sstr << " ";
 		sstr
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_hour << ":"
 		<< std::setw(2) << std::setfill('0') << timeinfo.tm_min << ":"
@@ -1058,3 +1068,33 @@ int GenerateRandomNumber(const int range)
 	return (rand() / (RAND_MAX / range));
 }
 
+int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files)
+{
+	DIR* dir;
+	struct dirent *ent;
+	if ((dir = opendir(DirPath.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (dirent_is_directory(DirPath, ent))
+			{
+				if ((strcmp(ent->d_name, ".") != 0) && (strcmp(ent->d_name, "..") != 0) && (strcmp(ent->d_name, ".svn") != 0))
+				{
+					std::string nextdir = DirPath + ent->d_name + "/";
+					if (GetDirFilesRecursive(nextdir.c_str(), _Files))
+					{
+						closedir(dir);
+						return 1;
+					}
+				}
+			}
+			else
+			{
+				std::string fname = DirPath + ent->d_name;
+				_Files[fname] = 1;
+			}
+		}
+	}
+	closedir(dir);
+	return 0;
+}

@@ -365,7 +365,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
 						(szContentType.find("application/json") != std::string::npos) ||
 						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
-						(szContentType.find("Content-Type: text/x-hex") != std::string::npos)
+						(szContentType.find("Content-Type: text/x-hex") != std::string::npos) ||
+						(szContentType.find("Content-Type: image/") != std::string::npos)
 						)
 					{
 						//Its a file/stream, next line should be empty
@@ -491,6 +492,12 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 	}
 	
 	request_path = ExtractRequestPath(request_path);
+
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0, paramPos);
+	}
 
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(request_path);
@@ -1149,9 +1156,20 @@ int cWebemRequestHandler::authorize(WebEmSession & session, const request& req, 
 		{
 			return 0;
 		}
-		size_t ulen=strlen("username=");
-		std::string tmpuname=req.uri.substr(uPos+ulen,pPos-uPos-ulen-1);
-		std::string tmpupass=req.uri.substr(pPos+strlen("username="));
+		uPos += 9; //strlen("username=")
+		pPos += 9; //strlen("password=")
+		size_t uEnd = req.uri.find("&", uPos);
+		size_t pEnd = req.uri.find("&", pPos);
+		std::string tmpuname;
+		std::string tmpupass;
+		if (uEnd == std::string::npos)
+			tmpuname = req.uri.substr(uPos);
+		else
+			tmpuname = req.uri.substr(uPos, uEnd-uPos);
+		if (pEnd == std::string::npos)
+			tmpupass = req.uri.substr(pPos);
+		else
+			tmpupass = req.uri.substr(pPos, pEnd-pPos);
 		if (request_handler::url_decode(tmpuname,uname))
 		{
 			if (request_handler::url_decode(tmpupass,upass))
@@ -2113,7 +2131,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Set timeout to make session in use
 	session.timeout = mytime(NULL) + SHORT_SESSION_TIMEOUT;
 
-	if ((session.isnew == true) && (session.rights == 2) && (req.uri.find("json.htm") != std::string::npos))
+	if ((session.isnew == true) &&
+	    (session.rights == 2) && 
+	    (req.uri.find("json.htm") != std::string::npos) &&
+	    (req.uri.find("logincheck") == std::string::npos)
+	)
 	{
 		// client is possibly a script that does not send cookies - see if we have the IP address registered as a session ID
 		WebEmSession* memSession = myWebem->GetSession(session.remote_host);

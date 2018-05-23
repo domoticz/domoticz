@@ -234,10 +234,11 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
   bool bHaveGZipSupport=false;
 
-  //check gzip support (only for .js and .htm(l) files
+  //check gzip support (only for js/htm(l) and css files
   if (
-	  (request_path.find(".js")!=std::string::npos)||
-	  (request_path.find(".htm")!=std::string::npos)
+	  (request_path.find(".js")!=std::string::npos)
+	  || (request_path.find(".htm") != std::string::npos)
+	  || (request_path.find(".css") != std::string::npos)
 	  )
   {
 	  const char *encoding_header;
@@ -342,6 +343,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  {
 				  // Fill out the reply to be sent to the client.
 				  rep.status = reply::ok;
+
 				  rep.content.append((std::istreambuf_iterator<char>(is)),
 					  (std::istreambuf_iterator<char>()));
 				  // set delay_status to true, because it can possibly have

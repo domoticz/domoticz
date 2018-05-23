@@ -16,6 +16,7 @@ void stdreplace(
 	const std::string& replaceWhat,
 	const std::string& replaceWithWhat);
 void stdupper(std::string &inoutstring);
+void stdlower(std::string &inoutstring);
 bool file_exist (const char *filename);
 std::vector<std::string> GetSerialPorts(bool &bUseDirectPath);
 double CalculateAltitudeFromPressure(double pressure);
@@ -74,4 +75,4 @@ int timeval_subtract (struct timeval *result, struct timeval *x, struct timeval 
 bool IsArgumentSecure(const std::string &arg);
 uint32_t SystemUptime();
 int GenerateRandomNumber(const int range);
-
+int GetDirFilesRecursive(const std::string &DirPath, std::map<std::string, int> &_Files);

@@ -382,7 +382,7 @@ define(['app'], function (app) {
                     paging: false,
                     columns: [
                         {title: $.t('Level'), data: 'level', render: levelRenderer},
-                        {title: $.t('Action'), data: 'action'},
+                        {title: $.t('Action'), data: 'action', render: actionRenderer},
                         {title: '', data: null, render: actionsRenderer}
                     ]
                 });
@@ -435,6 +435,24 @@ define(['app'], function (app) {
             function levelRenderer(level) {
                 return level * 10;
             }
+            
+            var escapeHTML = function(unsafe) {
+				return unsafe.replace(/[&<"']/g, function(m) {
+					switch (m) {
+						case '&':
+							return '&amp;';
+						case '<':
+							return '&lt;';
+						case '"':
+							return '&quot;';
+						default:
+							return '&#039;';
+						}
+					});
+			};
+            function actionRenderer(action) {
+				return escapeHTML(action);
+            }
 
             function actionsRenderer() {
                 var actions = [];
@@ -477,20 +495,14 @@ define(['app'], function (app) {
                 vm.device.StrParam1 = atob(vm.device.StrParam1);
                 vm.device.StrParam2 = atob(vm.device.StrParam2);
 
-                var levelNames = device.LevelNames
-                    ? device.LevelNames.split('|')
-                    : ['Off', 'Level1', 'Level2', 'Level3'];
-                var levelActions = device.LevelActions
-                    ? device.LevelActions.split('|')
-                    : [];
+                var levelNames = device.LevelNames ? atob(device.LevelNames).split('|') : ['Off', 'Level1', 'Level2', 'Level3'];
+                var levelActions = device.LevelActions ? atob(device.LevelActions).split('|') : [];
 
                 vm.levels = levelNames.map(function (level, index) {
                     return {
                         level: index,
                         name: level,
-                        action: levelActions[index]
-                            ? unescape(levelActions[index])
-                            : ''
+                        action: levelActions[index] ? levelActions[index] : ''
                     };
                 });
             });
@@ -527,7 +539,7 @@ define(['app'], function (app) {
                 strparam1: btoa(vm.device.StrParam1),
                 strparam2: btoa(vm.device.StrParam2),
                 protected: vm.device.Protected,
-                options: btoa(encodeURIComponent(options.join(';'))),
+                options: btoa(options.join(';')),
                 addjvalue: vm.device.AddjValue,
                 addjvalue2: vm.device.AddjValue2,
                 customimage: vm.device.CustomImage,

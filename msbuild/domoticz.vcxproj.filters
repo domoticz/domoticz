@@ -806,18 +806,6 @@
     <None Include="..\www\js\date.format.js.gz">
       <Filter>www\js</Filter>
     </None>
-    <None Include="..\www\js\domoticz.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzblocks.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzblocks_messages_en.js.gz">
-      <Filter>www\js</Filter>
-    </None>
-    <None Include="..\www\js\domoticzdevices.js.gz">
-      <Filter>www\js</Filter>
-    </None>
     <None Include="..\www\js\en_compressed.js.gz">
       <Filter>www\js</Filter>
     </None>
@@ -1390,6 +1378,18 @@
     </None>
     <None Include="..\www\views\temperatures\temperatureWidget.html">
       <Filter>www\views\temperatures</Filter>
+    </None>
+    <None Include="..\www\js\domoticz.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzblocks_messages_en.js">
+      <Filter>www\js</Filter>
+    </None>
+    <None Include="..\www\js\domoticzdevices.js">
+      <Filter>www\js</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2359,7 +2359,7 @@
       <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ColorSwitch.cpp">
-      <Filter>Devices\hardwaretypes</Filter>
+      <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\TCPProxy\tcpproxy_server.cpp">
       <Filter>TCPProxy</Filter>
