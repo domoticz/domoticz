@@ -236,10 +236,10 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Door Contact") {
 											if (item.InternalState == "Open") {
-												status = '<button class="btn btn-mini btn-info" type="button">' + $.t("Open") + '</button>';
+                                                status = '<button class="btn btn-mini btn-info" type="button">' + $.t(item.InternalState) + '</button>';
 											}
 											else {
-												status = '<button class="btn btn-mini" type="button">' + $.t("Closed") + '</button>';
+                                                status = '<button class="btn btn-mini" type="button">' + $.t(item.InternalState) + '</button>';
 											}
 										}
 										else if (item.SwitchType == "Door Lock") {
@@ -605,10 +605,10 @@ define(['app'], function (app) {
 										}
 										else if (item.SwitchType == "Door Contact") {
 											if (item.InternalState == "Open") {
-												img = '<img src="images/door48open.png" height="40" width="40">';
+                                                img = '<img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="40" width="40">';
 											}
 											else {
-												img = '<img src="images/door48.png" height="40" width="40">';
+                                                img = '<img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="40" width="40">';
 											}
 										}
 										else if (item.SwitchType == "Door Lock") {
@@ -1967,10 +1967,10 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Door Contact") {
 										if (item.InternalState == "Open") {
-											status = '<button class="btn btn-mini btn-info" type="button">' + $.t("Open") + '</button>';
+                                            status = '<button class="btn btn-mini btn-info" type="button">' + $.t(item.InternalState) + '</button>';
 										}
 										else {
-											status = '<button class="btn btn-mini" type="button">' + $.t("Closed") + '</button>';
+                                            status = '<button class="btn btn-mini" type="button">' + $.t(item.InternalState) + '</button>';
 										}
 									}
 									else if (item.SwitchType == "Door Lock") {
@@ -2389,10 +2389,10 @@ define(['app'], function (app) {
 									}
 									else if (item.SwitchType == "Door Contact") {
 										if (item.InternalState == "Open") {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" height="40" width="40"></td>\n';
+                                            xhtm += '\t      <td id="img" class="img img1"><img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="40" width="40"></td>\n';
 										}
 										else {
-											xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" height="40" width="40"></td>\n';
+                                            xhtm += '\t      <td id="img" class="img img1"><img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="40" width="40"></td>\n';
 										}
 									}
 									else if (item.SwitchType == "Door Lock") {

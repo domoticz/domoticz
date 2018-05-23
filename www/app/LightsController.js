@@ -398,10 +398,10 @@ define(['app'], function (app) {
 								}
 								else if (item.SwitchType == "Door Contact") {
 									if (item.InternalState == "Open") {
-										img = '<img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48">';
+                                        img = '<img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 									}
 									else {
-										img = '<img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48">';
+                                        img = '<img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="48" width="48">';
 									}
 								}
 								else if (item.SwitchType == "Door Lock") {
@@ -964,10 +964,10 @@ define(['app'], function (app) {
 							}
 							else if (item.SwitchType == "Door Contact") {
 								if (item.InternalState == "Open") {
-									xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t("Close Door") + '" height="48" width="48"></td>\n';
+                                    xhtm += '\t      <td id="img"><img src="images/door48open.png" title="' + $.t(item.InternalState) + '" height="48" width="48"></td>\n';
 								}
 								else {
-									xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t("Open Door") + '" height="48" width="48"></td>\n';
+                                    xhtm += '\t      <td id="img"><img src="images/door48.png" title="' + $.t(item.InternalState) + '" height="48" width="48"></td>\n';
 								}
 								bAddTimer = false;
 							}
