@@ -2008,11 +2008,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
 			return;
 		}
-		if (rep.status != reply::ok) // bad request
+/*		if (rep.status != reply::ok) // bad request
 		{
 			return;
 		}
-
+*/
 		// do normal handling
 		try
 		{
