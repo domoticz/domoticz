@@ -74,6 +74,8 @@ extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
 
+extern bool g_bUseUpdater;
+
 extern time_t m_StartTime;
 
 extern bool g_bDontCacheWWW;
@@ -2532,10 +2534,12 @@ namespace http {
 			if (session.rights != 2)
 			{
 				//only admin users will receive the update notification
+				root["UseUpdate"] = false;
 				root["HaveUpdate"] = false;
 			}
 			else
 			{
+				root["UseUpdate"] = g_bUseUpdater;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
 				root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 				root["SystemName"] = m_mainworker.m_szSystemName;

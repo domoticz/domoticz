@@ -99,6 +99,7 @@ const char *szHelp =
 #if defined WIN32
 "\t-nobrowser (do not start web browser (Windows Only)\n"
 #endif
+"\t-noupdates do not use the internal update functionality\n"
 #if defined WIN32
 "\t-log file_path (for example D:\\domoticz.log)\n"
 #else
@@ -170,6 +171,8 @@ bool g_bStopApplication = false;
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
 bool g_bDontCacheWWW = false;
+bool g_bUseUpdater = true;
+
 int pidFilehandle = 0;
 
 #define DAEMON_NAME "domoticz"
@@ -528,6 +531,7 @@ int main(int argc, char**argv)
 	szStartupFolder = "";
 	szWWWFolder = "";
 	szWebRoot = "";
+	g_bUseUpdater = true;
 	
 	CCmdLine cmdLine;
 
@@ -930,6 +934,11 @@ int main(int argc, char**argv)
 		if (szroot.size() != 0)
 			szWebRoot = szroot;
 	}
+	if (cmdLine.HasSwitch("-noupdates"))
+	{
+		g_bUseUpdater = false;
+	}
+	
 
 #if defined WIN32
 	if (cmdLine.HasSwitch("-nobrowser"))

@@ -175,8 +175,10 @@ extern std::string szUserDataFolder;
 extern std::string szWWWFolder;
 extern std::string szAppVersion;
 extern std::string szWebRoot;
+extern bool g_bUseUpdater;
 
 extern http::server::CWebServerHelper m_webservers;
+
 
 CFibaroPush m_fibaropush;
 CGooglePubSubPush m_googlepubsubpush;
@@ -1145,6 +1147,13 @@ bool MainWorker::AddHardwareFromParams(
 
 bool MainWorker::Start()
 {
+	utsname my_uname;
+	if (uname(&my_uname) == 0)
+	{
+		m_szSystemName = my_uname.sysname;
+		std::transform(m_szSystemName.begin(), m_szSystemName.end(), m_szSystemName.begin(), ::tolower);
+	}
+
 	if (!m_sql.OpenDatabase())
 	{
 		return false;
@@ -1274,6 +1283,9 @@ bool MainWorker::StartThread()
 
 bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 {
+	if (!g_bUseUpdater)
+		return false;
+
 	if (!bIsForced)
 	{
 		int nValue = 0;
@@ -1288,10 +1300,7 @@ bool MainWorker::IsUpdateAvailable(const bool bIsForced)
 	if (uname(&my_uname) < 0)
 		return false;
 
-	m_szSystemName = my_uname.sysname;
 	std::string machine = my_uname.machine;
-	std::transform(m_szSystemName.begin(), m_szSystemName.end(), m_szSystemName.begin(), ::tolower);
-
 	if (machine == "armv6l")
 	{
 		//Seems like old arm systems can also use the new arm build
