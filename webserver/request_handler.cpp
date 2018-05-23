@@ -275,7 +275,102 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 	  }
 	  else
 	  {
-		  //first try gzip version
+//GB
+		
+		mInfo.delay_status = true;
+		std::string full_path = doc_root_ + request_path;
+		if (bHaveGZipSupport) // first try gzip version
+		{
+			full_path += ".gz";
+		}
+
+		std::ifstream is(full_path.c_str(), std::ios::in | std::ios::binary);
+		if (is)
+		{
+			mInfo.delay_status = (!bHaveGZipSupport);
+			bHaveLoadedgzip = bHaveGZipSupport;
+			rep.bIsGZIP = bHaveGZipSupport;
+		}
+		else if (bHaveGZipSupport) // try uncompressed version
+		{
+			full_path = doc_root_ + request_path;
+			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+		}
+
+		// maybe it is a folder, lets add the index file
+		if (!is.is_open() && (full_path.find('.') == std::string::npos))
+		{
+			full_path = doc_root_ + request_path + "/index.html";
+			if (bHaveGZipSupport) // first try gzip version
+			{
+				full_path += ".gz";
+			}
+
+			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			if (is.is_open())
+			{
+				mInfo.delay_status = (!bHaveGZipSupport);
+				bHaveLoadedgzip = bHaveGZipSupport;
+				rep.bIsGZIP = bHaveGZipSupport;
+			}
+			else if (bHaveGZipSupport) // try uncompressed version
+			{
+				full_path = doc_root_ + request_path + "/index.html";
+				is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			}
+
+			if (is.is_open())
+			{
+				extension = "html";
+			}
+		}
+
+		// maybe its a gz file (and clients browser does not support compression)
+		if (!is.is_open() && (!bHaveGZipSupport))
+		{
+			full_path += ".gz";
+			is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+			if (is.is_open())
+			{
+				bHaveLoadedgzip = true;
+			}			
+		}
+
+		if (!is.is_open())
+		{
+			rep = reply::stock_reply(reply::not_found);
+#ifdef _DEBUG
+			_log.Log(LOG_ERROR, "Webserver: File '%s': %s (%d)  (remote address: %s)", request_path.c_str(), strerror(errno), errno, req.host_address.c_str());
+#endif
+			return;
+		}
+		
+		if (not_modified(full_path, req, rep, mInfo))
+		{
+			return;
+		}
+
+		// fill out the reply to be sent to the client.
+		if (bHaveLoadedgzip && (!bHaveGZipSupport))
+		{
+			std::string gzcontent((std::istreambuf_iterator<char>(is)),
+				(std::istreambuf_iterator<char>()));
+
+			CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), gzcontent.size());
+
+			rep.content.append(decompress.psz, decompress.Length);
+		}
+		else
+		{
+			rep.content.append((std::istreambuf_iterator<char>(is)),
+				(std::istreambuf_iterator<char>()));
+		}
+		rep.status = reply::ok;
+
+
+
+//endGB
+/*		  //first try gzip version
 		  if (bHaveGZipSupport)
 		  {
 			  std::string full_path = doc_root_ + request_path + ".gz";
@@ -346,19 +441,21 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  }
 			  if (!bHaveLoadedgzip)
 			  {
-				  // Fill out the reply to be sent to the client.
-				  rep.status = reply::ok;
-				  rep.content.append((std::istreambuf_iterator<char>(is)),
-					  (std::istreambuf_iterator<char>()));
-
 				  // set delay_status to true, because it can possibly have
 				  // include codes in it.
 				  mInfo.delay_status = true;
 				  if (not_modified(full_path, req, rep, mInfo)) {
 					  return;
 				  }
+
+				  // Fill out the reply to be sent to the client.
+				  rep.status = reply::ok;
+				  rep.content.append((std::istreambuf_iterator<char>(is)),
+					  (std::istreambuf_iterator<char>()));
+
 			  }
 		  }
+*/
 	  }
   }
 #ifndef WEBSERVER_DONT_USE_ZIP
