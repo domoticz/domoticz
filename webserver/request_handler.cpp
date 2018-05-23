@@ -59,6 +59,8 @@ extern "C" const char* strptime(const char* s, const char* f, struct tm* tm)
 }
 #endif
 
+extern signed char g_wwwCompressMode;
+
 namespace http {
 namespace server {
 
@@ -234,19 +236,22 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
   bool bHaveGZipSupport=false;
 
-  //check gzip support (only for js/htm(l) and css files
-  if (
+  if (g_wwwCompressMode >= 0)
+  {
+	//check gzip support (only for js/htm(l) and css files
+	if (
 	  (request_path.find(".js")!=std::string::npos)
 	  || (request_path.find(".htm") != std::string::npos)
 	  || (request_path.find(".css") != std::string::npos)
 	  )
-  {
+	{
 	  const char *encoding_header;
 	  if ((encoding_header = request::get_req_header(&req, "Accept-Encoding")) != NULL)
 	  {
 		  //see if we support gzip
 		  bHaveGZipSupport=(strstr(encoding_header,"gzip")!=NULL);
 	  }
+	}
   }
 
   bool bHaveLoadedgzip=false;
@@ -259,7 +264,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 		  if (!myWebem->m_settings.is_php_enabled())
 		  {
 			  rep = reply::stock_reply(reply::not_implemented);
-			  return;
+ 			  return;
 		  }
 
 		  //
@@ -312,7 +317,7 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 
 					  rep.status = reply::ok;
 					  // Fill out the reply to be sent to the client.
-					  rep.content.append(decompress.psz, decompress.length);
+					  rep.content.append(decompress.psz, decompress.Length);
 				  }
 				  else
 				  {
@@ -344,12 +349,12 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 				  // Fill out the reply to be sent to the client.
 				  rep.status = reply::ok;
 
-				  if (bHaveGZipSupport)
+				  if (bHaveGZipSupport && (g_wwwCompressMode > 0))
 				  {
 					  std::string szcontent((std::istreambuf_iterator<char>(is)),
 						  (std::istreambuf_iterator<char>()));
 					  CA2GZIP compressed((char*)szcontent.c_str(), szcontent.size());
-					  rep.content.append((const char*)compressed.pgzip, compressed.length);
+					  rep.content.append((const char*)compressed.pgzip, compressed.Length);
 					  bHaveLoadedgzip = true;
 				  }
 				  else
