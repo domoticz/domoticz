@@ -11,30 +11,30 @@
 
 #define RETRY_DELAY 30
 
-typedef enum { 
+enum _eMochadMatchType {
 	ID=0, 
 	STD, 
 	LINE17, 
 	LINE18, 
 	EXCLMARK 
-} MatchType;
+};
 
-typedef enum {
+enum _eMochadType {
 	MOCHAD_STATUS=0,
 	MOCHAD_UNIT,
 	MOCHAD_ACTION,
 	MOCHAD_RFSEC
-} MochadType;
+};
 
-typedef struct _tMatch {
-	MatchType matchtype;
-	MochadType type;
+typedef struct {
+	_eMochadMatchType matchtype;
+	_eMochadType type;
 	const char* key;
 	int start;
 	int width;
-} Match;
+} MochadMatch;
 
-static Match matchlist[] = {
+static MochadMatch matchlist[] = {
 	{STD,	MOCHAD_STATUS,	"House ",	6, 255},
 	{STD,	MOCHAD_UNIT,	"Tx PL HouseUnit: ",	17, 9},
 	{STD,	MOCHAD_UNIT,	"Rx PL HouseUnit: ",	17, 9},
@@ -239,13 +239,13 @@ void MochadTCP::MatchLine()
 	uint8_t i;
 	int j,k;
 	uint8_t found=0;
-	Match t;
+	MochadMatch t;
 	char value[20]="";
 	std::string vString;
 
 
 
-	for(i=0;(i<sizeof(matchlist)/sizeof(Match))&(!found);i++)
+	for(i=0;(i<sizeof(matchlist)/sizeof(MochadMatch))&(!found);i++)
 	{
 		t = matchlist[i];
 		switch(t.matchtype)
