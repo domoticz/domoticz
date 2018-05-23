@@ -284,10 +284,10 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  if (is)
 			  {
 				  mInfo.delay_status = false;
+				  // check if file date is still the same since last request
 				  if (not_modified(full_path, req, rep, mInfo)) {
 					  return;
 				  }
-				  // check if file date is still the same since last request
 				  bHaveLoadedgzip = true;
 				  rep.bIsGZIP = true;
 				  // Fill out the reply to be sent to the client.
@@ -348,20 +348,9 @@ void request_handler::handle_request(const request &req, reply &rep, modify_info
 			  {
 				  // Fill out the reply to be sent to the client.
 				  rep.status = reply::ok;
+				  rep.content.append((std::istreambuf_iterator<char>(is)),
+					  (std::istreambuf_iterator<char>()));
 
-				  if (bHaveGZipSupport && (g_wwwCompressMode > 0))
-				  {
-					  std::string szcontent((std::istreambuf_iterator<char>(is)),
-						  (std::istreambuf_iterator<char>()));
-					  CA2GZIP compressed((char*)szcontent.c_str(), szcontent.size());
-					  rep.content.append((const char*)compressed.pgzip, compressed.Length);
-					  bHaveLoadedgzip = true;
-				  }
-				  else
-				  {
-					  rep.content.append((std::istreambuf_iterator<char>(is)),
-						  (std::istreambuf_iterator<char>()));
-				  }
 				  // set delay_status to true, because it can possibly have
 				  // include codes in it.
 				  mInfo.delay_status = true;
