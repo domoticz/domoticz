@@ -473,6 +473,9 @@ app/log/SceneLog.js
 app/log/TemperatureLog.js
 app/log/TemperatureReport.js
 app/log/TextLog.js
+app/notifications/constants.js
+app/notifications/DeviceNotifications.js
+app/notifications/factories.js
 app/scenes/factories.js
 app/timers/components.js
 app/timers/DeviceTimersController.js
@@ -614,6 +617,7 @@ views/history.html
 views/lights.html
 views/log.html
 views/notification.html
+views/notifications.html
 views/offline.html
 views/restoredatabase.html
 views/roomplan.html

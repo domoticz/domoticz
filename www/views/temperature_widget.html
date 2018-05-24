@@ -39,14 +39,15 @@
                     <img ng-show="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
                     <img ng-show="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
                     &nbsp;&nbsp;
-                    <a class="btnsmall" ng-href="#/Devices/{{ ::item.idx }}/TemperatureLog" data-i18n="Log">Log</a>
+                    <a class="btnsmall" ng-href="#/Devices/{{ ::item.idx }}/TemperatureLog">{{:: 'Log' | translate }}</a>
 
                     <span has-permission="Admin">
                         <a ng-show="item.Type=='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDeviceSmall()" data-i18n="Edit">Edit</a>
                         <a ng-show="item.Type!='Humidity'" class="btnsmall" ng-click="ctrl.EditTempDevice()" data-i18n="Edit">Edit</a>
 
-                        <a ng-show="item.Notifications=='true'" ng-click="ctrl.ShowNotifications()" class="btnsmall-sel" data-i18n="Notifications">Notifications</a>
-                        <a ng-show="item.Notifications!='true'" ng-click="ctrl.ShowNotifications()" class="btnsmall" data-i18n="Notifications">Notifications</a>
+                        <a ng-href="#/Devices/{{:: item.idx}}/Notifications"
+                           ng-class="::{'btnsmall-sel': item.Notifications=='true', 'btnsmall': item.Notifications!='true'}"
+                        >{{:: 'Notifications' | translate }}</a>
                     </span>
 
                     <a ng-show="item.forecast_url" class="btnsmall" ng-click="ctrl.ShowForecast('#tempcontent', 'ShowTemps')" data-i18n="Forecast">Forecast</a>

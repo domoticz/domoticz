@@ -1373,10 +1373,11 @@ define(['app'], function (app) {
 										xhtm += '<a id="resetbtn" class="btnsmall-dis" onclick="ResetSecurityStatus(' + item.idx + ',\'Normal\',ShowLights);" data-i18n="Reset">Reset</a> ';
 									}
 								}
+								var notificationLink = '#/Devices/'+item.idx+'/Notifications';
 								if (item.Notifications == "true")
-									xhtm += '<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#lightcontent\', \'ShowLights\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Notifications">Notifications</a>';
+									xhtm += '<a class="btnsmall-sel" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 								else
-									xhtm += '<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#lightcontent\', \'ShowLights\',' + bIsDimmer + ',\'' + item.Type + '\'' + ', \'' + item.SubType + '\');" data-i18n="Notifications">Notifications</a>';
+									xhtm += '<a class="btnsmall" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 							}
 							xhtm +=
 								'</td>\n' +

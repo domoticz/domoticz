@@ -703,12 +703,6 @@ define(['app'], function (app) {
 						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn);
 					};
 
-					ctrl.ShowNotifications = function () {
-						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
-						$('#temptophtm').hide();
-						return ShowNotifications(item.idx, escape(item.Name), '#tempcontent', 'ShowTemps');
-					};
-
 					$element.i18n();
 
 					if ($scope.ordering == true) {

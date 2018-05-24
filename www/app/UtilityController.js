@@ -918,10 +918,12 @@ define(['app'], function (app) {
 							}
 							if (item.ShowNotifications == true) {
 								if (permissions.hasPermission("Admin")) {
+                                    var notificationLink = '#/Devices/'+item.idx+'/Notifications';
+
 									if (item.Notifications == "true")
-										xhtm += '<a class="btnsmall-sel" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+										xhtm += '<a class="btnsmall-sel" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 									else
-										xhtm += '<a class="btnsmall" onclick="ShowNotifications(' + item.idx + ',\'' + escape(item.Name) + '\', \'#utilitycontent\', \'ShowUtilities\');" data-i18n="Notifications">Notifications</a>';
+										xhtm += '<a class="btnsmall" href="' + notificationLink + '" data-i18n="Notifications">Notifications</a>';
 								}
 							}
 							xhtm +=
