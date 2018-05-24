@@ -3687,10 +3687,9 @@ void CEventSystem::OpenURL(const std::string &URL)
 
 void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat)
 {
-
 	if (devNameNoQuotes == "WriteToLogText")
 	{
-		_log.Log(LOG_STATUS, "%s", doWhat.c_str());
+		_log.Log(LOG_STATUS, "%s", ParseBlocklyString(doWhat).c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{

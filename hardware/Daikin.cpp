@@ -806,16 +806,18 @@ void CDaikin::SetModeLevel(const int NewLevel)
 
 	szURL << "pow=" << m_pow;
 
-	if (NewLevel == 0)
-		szURL << "&mode=0";
-	else if (NewLevel == 10)
-		szURL << "&mode=2";
-	else if (NewLevel == 20)
-		szURL << "&mode=3";
-	else if (NewLevel == 30)
-		szURL << "&mode=4";
-	else if (NewLevel == 40)
-		szURL << "&mode=6";
+        if (NewLevel == 0)
+                szURL << "&mode=0";
+        else if (NewLevel == 10)
+                szURL << "&mode=1"; /* 10-AUTO  1 */
+        else if (NewLevel == 20)
+                szURL << "&mode=2"; /* 20-DEHUM 2 */
+        else if (NewLevel == 30)
+                szURL << "&mode=3"; /* 30-COLD  3 */
+        else if (NewLevel == 40)
+                szURL << "&mode=4"; /* 40-HOT   4 */
+        else if (NewLevel == 50)
+                szURL << "&mode=6"; /* 50-FAN   6 */
 
 	szURL << "&stemp=" << m_stemp;
 
