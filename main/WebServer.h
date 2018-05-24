@@ -44,12 +44,14 @@ public:
 	void GetAppCache(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
+	void GetFloorplanImage(WebEmSession & session, const request& req, reply & rep);
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
 	void Post_UploadCustomIcon(WebEmSession & session, const request& req, reply & rep);
 
 	void PostSettings(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void RFXComUpgradeFirmware(WebEmSession & session, const request& req, std::string & redirect_uri);
+	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetRego6XXType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetS0MeterType(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void SetLimitlessType(WebEmSession & session, const request& req, std::string & redirect_uri);

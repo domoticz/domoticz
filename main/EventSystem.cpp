@@ -3687,10 +3687,9 @@ void CEventSystem::OpenURL(const std::string &URL)
 
 void CEventSystem::WriteToLog(const std::string &devNameNoQuotes, const std::string &doWhat)
 {
-
 	if (devNameNoQuotes == "WriteToLogText")
 	{
-		_log.Log(LOG_STATUS, "%s", doWhat.c_str());
+		_log.Log(LOG_STATUS, "%s", ParseBlocklyString(doWhat).c_str());
 	}
 	else if (devNameNoQuotes == "WriteToLogUserVariable")
 	{
@@ -3965,6 +3964,11 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 		(dType == pTypeRFXMeter))
 	{
 		lstatus = sValue;
+	}
+	else if (dType == pTypeHUM)
+	{
+		std::stringstream sstr; sstr << nValue;
+		lstatus = sstr.str();
 	}
 	else if (switchtype == STYPE_Selector)
 	{
@@ -4647,7 +4651,11 @@ namespace http {
 					root["result"][ii]["id"] = itt->ID;
 					root["result"][ii]["name"] = itt->deviceName;
 					root["result"][ii]["value"] = itt->nValueWording;
-					root["result"][ii]["svalues"] = itt->sValue;
+					std::stringstream sstr;
+					sstr << itt->nValue;
+					if (!itt->sValue.empty())
+						sstr << "/" << itt->sValue;
+					root["result"][ii]["values"] = sstr.str();
 					root["result"][ii]["lastupdate"] = itt->lastUpdate;
 					ii++;
 				}

@@ -177,12 +177,16 @@
 		<Product type="1d03" id="008c" name="ZW140 Dual Nano Switch" config="aeotec/zw140.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0371" name="Aeotec">
+		<Product type="0003" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
+		<Product type="0103" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
+		<Product type="0003" id="0002" name="ZWA002 LED Bulb 6 Multi-Color" config="aeotec/zwa002.xml"/>
+		<Product type="0103" id="0002" name="ZWA002 LED Bulb 6 Multi-Color" config="aeotec/zwa002.xml"/>
 		<Product type="0002" id="0003" name="ZWA003 NanoMote Quad" config="aeotec/zwa003.xml"/>
 		<Product type="0102" id="0003" name="ZWA003 NanoMote Quad" config="aeotec/zwa003.xml"/>
 		<Product type="0002" id="0004" name="ZWA004 NanoMote One" config="aeotec/zwa004.xml"/>
 		<Product type="0102" id="0004" name="ZWA004 NanoMote One" config="aeotec/zwa004.xml"/>
-		<Product type="0003" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
-		<Product type="0103" id="0001" name="ZWA001 LED Bulb 6 Multi-White" config="aeotec/zwa001.xml"/>
+		<Product type="0002" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
+		<Product type="0102" id="0005" name="ZWA005 TriSensor" config="aeotec/zwa005.xml"/>
 	</Manufacturer>
 	<Manufacturer id="0111" name="Airline Mechanical">
 		<Product type="8200" id="0200" name="ZDS-100"/>
@@ -325,6 +329,7 @@
 		<Product type="0005" id="0175" name="Thermostats Danfoss Connect Z" config="devolo/connectz.xml"/>
 		<Product type="0100" id="0101" name="Scene Switch MT2652" config="devolo/mt2652.xml" />
 		<Product type="0100" id="0102" name="Key MT2653" config="devolo/mt2653.xml" />
+		<Product type="2004" id="2004" name="Smoke Detector MT2651" config="devolo/mt2651.xml" />
 	</Manufacturer>
 	<Manufacturer id="0103" name="DiehlControls">
 		<Product type="0002" id="0002" name="Dimmer Actuator"/>
@@ -571,6 +576,7 @@
 		<Product type="0453" id="0110" name="MIMOlite" config="fortrezz/mimolite.xml"/>
 		<Product type="0453" id="0111" name="MIMOlite" config="fortrezz/mimolite.xml"/>
 		<Product type="0463" id="0204" name="MIMO2+" config="fortrezz/mimo2plus.xml"/>
+		<Product type="0463" id="0208" name="MIMO2+" config="fortrezz/mimo2plus.xml"/>
 		<Product type="0473" id="0110" name="FMI Flow Meter" config="fortrezz/fmi.xml"/>
 		<Product type="0513" id="0111" name="GDC1 Siren/Strobe Light Alarm"/>
 	</Manufacturer>
@@ -847,9 +853,10 @@
 		<Product type="4102" id="0201" name="MH-S411 One-load" config="mcohome/mhs411.xml"/>
 		<Product type="4102" id="0202" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
 		<Product type="4121" id="1302" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
+		<Product type="4121" id="5102" name="MH-S412 Two-load" config="mcohome/mhs412.xml"/>
 		<Product type="0801" id="3102" name="MH8-FC-EU Thermostat" config="mcohome/mh8fceu.xml"/>
 		<Product type="0802" id="3102" name="MH8-FC4-EU Thermostat" config="mcohome/mh8fceu.xml"/>
-		<Product type="0905" id="0201 " name="MH9-CO2-WD CO2 Monitor" config="mcohome/mh9co2.xml"/>
+		<Product type="0905" id="0201" name="MH9-CO2-WD CO2 Monitor" config="mcohome/mh9co2.xml"/>
 		<!--US-->
 		<Product type="5102" id="0103" name="Touch Panel Switch MH-S513" config="mcohome/mhs513.xml"/>
 	</Manufacturer>
@@ -1288,6 +1295,7 @@
 	<Manufacturer id="004e" name="Zdata">
 	</Manufacturer>
 	<Manufacturer id="0131" name="Zipato">
+		<Product type="0001" id="0012" name="Micro Module Switch Double PAN04" config="zipato/pan04.xml" />
 		<Product type="0002" id="0002" name="RGBW LED Bulb" config="zipato/RGBBulb.xml" />
 		<Product type="0002" id="0003" name="Bulb 2" config="zipato/RGBBulb2.xml"/>
 		<Product type="0002" id="000c" name="PST02-A 4 in 1 Multi-Sensor" config="philio/pst02.xml"/>

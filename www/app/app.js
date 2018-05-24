@@ -898,6 +898,7 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 			WindSign: "km/h",
 			language: "en",
 			HaveUpdate: false,
+			UseUpdate: true,
 			appversion: 0,
 			apphash: 0,
 			appdate: 0,
@@ -1007,26 +1008,29 @@ define(['angularAMD', 'angular-route', 'angular-animate', 'ng-grid', 'ng-grid-fl
 		}
 
 		$rootScope.GetGlobalConfig();
-
 		$.ajax({
 			url: "json.htm?type=command&param=getversion",
 			async: false,
 			dataType: 'json',
 			success: function (data) {
-				isOnline = true;
+			    isOnline = true;
 				if (data.status == "OK") {
-					$rootScope.config.appversion = data.version;
+				    $rootScope.config.appversion = data.version;
 					$rootScope.config.apphash = data.hash;
 					$rootScope.config.appdate = data.build_time;
 					$rootScope.config.dzventsversion = data.dzvents_version;
 					$rootScope.config.pythonversion = data.python_version;
+					$rootScope.config.isproxied = data.isproxied;
 					$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 					$("#appversion").text("V" + data.version);
-					if (data.SystemName != "windows") {
-						$rootScope.config.HaveUpdate = data.HaveUpdate;
-					}
-					$rootScope.config.isproxied = data.isproxied;
-					if (data.HaveUpdate == true) {
+					//if (data.SystemName != "windows") {
+					    $rootScope.config.HaveUpdate = data.HaveUpdate;
+					    $rootScope.config.UseUpdate = data.UseUpdate;
+					//}
+					//else {
+					//    $rootScope.config.UseUpdate = false;
+					//}
+					if ((data.HaveUpdate == true) && (data.UseUpdate)) {
 						ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
 					}
 				}

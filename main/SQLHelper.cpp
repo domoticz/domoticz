@@ -35,7 +35,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 128
+#define DB_VERSION 129
 
 extern http::server::CWebServerHelper m_webservers;
 extern std::string szWWWFolder;
@@ -565,7 +565,7 @@ const char *sqlCreateFloorplans =
 "CREATE TABLE IF NOT EXISTS [Floorplans] ("
 "[ID] INTEGER PRIMARY KEY, "
 "[Name] VARCHAR(200) NOT NULL, "
-"[ImageFile] VARCHAR(100) NOT NULL, "
+"[Image] BLOB, "
 "[ScaleFactor] FLOAT DEFAULT 1.0, "
 "[Order] INTEGER BIGINT(10) default 0);";
 
@@ -2534,6 +2534,80 @@ bool CSQLHelper::OpenDatabase()
 			std::remove(std::string(szWWWFolder + "/js/domoticzblocks.js.gz").c_str());
 			std::remove(std::string(szWWWFolder + "/js/domoticzblocks_messages_en.js.gz").c_str());
 		}
+		if (dbversion < 129)
+		{
+			//Put floorplan images into the database
+			if (!DoesColumnExistsInTable("Image", "Floorplans"))
+			{
+				query("ALTER TABLE Floorplans ADD COLUMN [Image] BLOB");
+			}
+			
+			//Move image files into database
+			//Get Dynamic Theme Files
+			std::map<std::string, int> _FloorplanFiles;
+			GetDirFilesRecursive(szWWWFolder + "/images/floorplans/", _FloorplanFiles);
+
+			std::map<std::string, int>::const_iterator itt;
+			for (itt = _FloorplanFiles.begin(); itt != _FloorplanFiles.end(); ++itt)
+			{
+				std::string tname(itt->first);
+				stdlower(tname);
+
+				if (
+					(tname.find(".jpg")==std::string::npos)
+					&&(tname.find(".jpeg") == std::string::npos)
+					&&(tname.find(".png") == std::string::npos)
+					&&(tname.find(".bmp") == std::string::npos)
+					&&(tname.find(".gif") == std::string::npos)
+					)
+					continue; //not an image file
+
+				std::string sname = itt->first.substr(szWWWFolder.size()+1);
+				//Find the image file in our database
+				std::stringstream szQuery2;
+				std::vector<std::vector<std::string> > result;
+				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s') COLLATE NOCASE",sname.c_str());
+				if (result.empty())
+				{
+					//could be our example sketch, or left over images, add it to the database
+					std::string vname = sname.substr(strlen("images/floorplans/"));
+					size_t tpos = vname.rfind('.');
+					if (tpos != std::string::npos)
+					{
+						vname = vname.substr(0, tpos);
+					}
+					safe_query("INSERT INTO Floorplans ([Name],[ImageFile]) VALUES('%s','%s')", vname.c_str(), sname.c_str());
+					result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s')", sname.c_str());
+				}
+				if (result.size() > 0)
+				{
+					std::string sID = result[0][0];
+					std::ifstream is(itt->first.c_str(), std::ios::in | std::ios::binary);
+					if (is)
+					{
+						std::string cfile;
+						cfile.append((std::istreambuf_iterator<char>(is)),
+						(std::istreambuf_iterator<char>()));
+						is.close();
+
+						if (safe_UpdateBlobInTableWithID("Floorplans", "Image", sID, cfile))
+							std::remove(itt->first.c_str());
+						else
+							_log.Log(LOG_ERROR, "SQL: Problem converting floorplan image into database! ");
+					}
+				}
+			}
+			//Remove ImageFile column
+			query("ALTER TABLE Floorplans RENAME TO tmp_Floorplans;");
+			query("CREATE TABLE[Floorplans]([ID] INTEGER PRIMARY KEY, [Name] VARCHAR(200) NOT NULL, [Image] BLOB, [Order] INTEGER BIGINT(10) default 0, [ScaleFactor] Float default 1.0);");
+
+			query(
+				"INSERT INTO Floorplans ([ID],[Name],[Image],[Order],[ScaleFactor]) "
+				"SELECT [ID],[Name],[Image],[Order],[ScaleFactor] "
+				"FROM tmp_Floorplans");
+
+			query("DROP TABLE tmp_Floorplans;");
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3371,6 +3445,35 @@ void CSQLHelper::safe_exec_no_return(const char *fmt, ...)
 		return;
 	sqlite3_exec(m_dbase, zQuery, NULL, NULL, NULL);
 	sqlite3_free(zQuery);
+}
+
+bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData)
+{
+	if (!m_dbase)
+		return false;
+	sqlite3_stmt *stmt = NULL;
+	char *zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
+	if (!zQuery)
+	{
+		_log.Log(LOG_ERROR, "SQL: Out of memory, or invalid printf!....");
+		return false;
+	}
+	int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, NULL);
+	sqlite3_free(zQuery);
+	if (rc != SQLITE_OK) {
+		return false;
+	}
+	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), BlobData.size(), SQLITE_STATIC);
+	if (rc != SQLITE_OK) {
+		return false;
+	}
+	rc = sqlite3_step(stmt);
+	if (rc != SQLITE_DONE)
+	{
+		return false;
+	}
+	sqlite3_finalize(stmt);
+	return true;
 }
 
 std::vector<std::vector<std::string> > CSQLHelper::safe_query(const char *fmt, ...)
@@ -4279,8 +4382,8 @@ uint64_t CSQLHelper::UpdateValueInt(const int HardwareID, const char* ID, const 
 				}
 				else if (switchtype == STYPE_Selector) {
 					bIsLightSwitchOn = (llevel > 0) ? true : false;
-					OnAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel));
-					OffAction = CURLEncode::URLDecode(GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0));
+					OnAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), llevel);
+					OffAction = GetSelectorSwitchLevelAction(BuildDeviceOptions(Options, true), 0);
 				}
 				if (bIsLightSwitchOn) {
 					stdreplace(OnAction, "{level}", slevel);

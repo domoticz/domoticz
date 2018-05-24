@@ -368,7 +368,8 @@ bool cWebem::CheckForAction(WebEmSession & session, request& req )
 						(szContentType.find("application/octet-stream") != std::string::npos) ||
 						(szContentType.find("application/json") != std::string::npos) ||
 						(szContentType.find("Content-Type: text/xml") != std::string::npos) ||
-						(szContentType.find("Content-Type: text/x-hex") != std::string::npos)
+						(szContentType.find("Content-Type: text/x-hex") != std::string::npos) ||
+						(szContentType.find("Content-Type: image/") != std::string::npos)
 						)
 					{
 						//Its a file/stream, next line should be empty
@@ -494,6 +495,12 @@ bool cWebem::IsPageOverride(const request& req, reply& rep)
 	}
 	
 	request_path = ExtractRequestPath(request_path);
+
+	int paramPos = request_path.find_first_of('?');
+	if (paramPos != std::string::npos)
+	{
+		request_path = request_path.substr(0, paramPos);
+	}
 
 	std::map < std::string, webem_page_function >::iterator
 		pfun = myPages.find(request_path);

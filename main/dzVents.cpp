@@ -7,6 +7,7 @@
 #include "dzVents.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include "../webserver/Base64.h"
 
 extern std::string szUserDataFolder, szWebRoot;
 extern http::server::CWebServerHelper m_webservers;
@@ -646,7 +647,11 @@ void CdzVents::ExportDomoticzDataToLua(lua_State *lua_state, const std::vector<C
 			for (itt = sitem.JsonMapString.begin(); itt != sitem.JsonMapString.end(); ++itt)
 			{
 				lua_pushstring(lua_state, m_mainworker.m_eventsystem.JsonMap[itt->first].szNew);
-				lua_pushstring(lua_state, itt->second.c_str());
+				if (strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelNames") == 0 ||
+					strcmp(m_mainworker.m_eventsystem.JsonMap[itt->first].szOriginal, "LevelActions") == 0)
+					lua_pushstring(lua_state, base64_decode(itt->second).c_str());
+				else
+					lua_pushstring(lua_state, itt->second.c_str());
 				lua_rawset(lua_state, -3);
 			}
 		}
