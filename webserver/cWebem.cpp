@@ -1892,6 +1892,7 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	session.forcelogin = false;
 	session.rememberme = false;
 
+	rep.status = reply::ok;
 	rep.bIsGZIP = false;
 
 	bool isPage = myWebem->IsPageOverride(req, rep);
@@ -1900,7 +1901,6 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 	// Respond to CORS Preflight request (for JSON API)
 	if (req.method == "OPTIONS")
 	{
-		rep.status = reply::ok;
 		reply::add_header(&rep, "Content-Length", "0");
 		reply::add_header(&rep, "Content-Type", "text/plain");
 		reply::add_header(&rep, "Access-Control-Max-Age", "3600");
@@ -2010,11 +2010,11 @@ void cWebemRequestHandler::handle_request(const request& req, reply& rep)
 			rep = reply::stock_reply(static_cast<reply::status_type>(session.reply_status));
 			return;
 		}
-/*		if (rep.status != reply::ok) // bad request
+		if (rep.status != reply::ok) // bad request
 		{
 			return;
 		}
-*/
+
 		// do normal handling
 		try
 		{
