@@ -8731,6 +8731,7 @@ namespace http {
 								(dType != pTypeAirQuality) &&
 								(dType != pTypeLux) &&
 								(dType != pTypeUsage) &&
+								(!((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))) &&
 								(!((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXCounter))) &&
 								(!((dType == pTypeThermostat) && (dSubType == sTypeThermSetpoint))) &&
 								(dType != pTypeWEIGHT) &&
@@ -9624,7 +9625,10 @@ namespace http {
 							}
 						}
 					}
-					else if (dType == pTypeRFXMeter)
+					else if (
+						(dType == pTypeRFXMeter)
+						|| ((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
+					)
 					{
 						float EnergyDivider = 1000.0f;
 						float GasDivider = 100.0f;
@@ -9740,6 +9744,11 @@ namespace http {
 							root["result"][ii]["ValueQuantity"] = ValueQuantity;
 							root["result"][ii]["ValueUnits"] = ValueUnits;
 							break;
+						}
+						if (
+							((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
+						) {
+							root["result"][ii]["ShowNotifications"] = false;
 						}
 					}
 					else if (dType == pTypeGeneral && dSubType == sTypeCounterIncremental)
@@ -14154,6 +14163,152 @@ namespace http {
 							}
 						}
 					}
+					else if ((dType == pTypeManaged) && (dSubType == sTypeManagedCounter))
+					{
+						root["status"] = "OK";
+						root["title"] = "Graph " + sensor + " " + srange;
+						root["ValueQuantity"] = options["ValueQuantity"];
+						root["ValueUnits"] = options["ValueUnits"];
+
+						float EnergyDivider = 1000.0f;
+						float GasDivider = 100.0f;
+						float WaterDivider = 100.0f;
+						int tValue;
+						if (m_sql.GetPreferencesVar("MeterDividerEnergy", tValue))
+						{
+							EnergyDivider = float(tValue);
+						}
+						if (m_sql.GetPreferencesVar("MeterDividerGas", tValue))
+						{
+							GasDivider = float(tValue);
+						}
+						if (m_sql.GetPreferencesVar("MeterDividerWater", tValue))
+						{
+							WaterDivider = float(tValue);
+						}
+						if (dType == pTypeP1Gas)
+							GasDivider = 1000.0f;
+						else if ((dType == pTypeENERGY) || (dType == pTypePOWER))
+							EnergyDivider *= 100.0f;
+
+						int ii = 0;
+						result = m_sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+
+						int method = 0;
+						std::string sMethod = request::findValue(&req, "method");
+						if (sMethod.size() > 0)
+							method = atoi(sMethod.c_str());
+
+						std::string LastDateTime = "";
+						time_t lastTime = 0;
+
+						if (result.size() > 0)
+						{
+							std::vector<std::vector<std::string> >::const_iterator itt;
+							for (itt = result.begin(); itt != result.end(); ++itt)
+							{
+								std::vector<std::string> sd = *itt;
+
+								if (method == 0)
+								{
+									//bars / hour
+
+									std::stringstream s_str1(sd[0]);
+									unsigned long long actValue;
+									s_str1 >> actValue;
+
+									std::string actDateTimeHour = sd[1].substr(0, 13);
+									if (actDateTimeHour != LastDateTime)
+									{
+										struct tm ntime;
+										time_t atime;
+										if (actDateTimeHour.size() == 10)
+											actDateTimeHour += " 00";
+										constructTime(atime, ntime,
+											atoi(actDateTimeHour.substr(0, 4).c_str()),
+											atoi(actDateTimeHour.substr(5, 2).c_str()),
+											atoi(actDateTimeHour.substr(8, 2).c_str()),
+											atoi(actDateTimeHour.substr(11, 2).c_str()) - 1,
+											0, 0, -1);
+
+										char szTime[50];
+										sprintf(szTime, "%04d-%02d-%02d %02d:00", ntime.tm_year + 1900, ntime.tm_mon + 1, ntime.tm_mday, ntime.tm_hour);
+										root["result"][ii]["d"] = szTime;
+
+										float TotalValue = float(actValue);
+
+										switch (metertype)
+										{
+											case MTYPE_ENERGY:
+											case MTYPE_ENERGY_GENERATED:
+												sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+												break;
+											case MTYPE_GAS:
+												sprintf(szTmp, "%.3f", TotalValue / GasDivider);
+												break;
+											case MTYPE_WATER:
+												sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+												break;
+											case MTYPE_COUNTER:
+												sprintf(szTmp, "%.1f", TotalValue);
+												break;
+											default:
+												strcpy(szTmp, "0");
+												break;
+										}
+										root["result"][ii]["v"] = szTmp;
+										ii++;
+										LastDateTime = actDateTimeHour;
+									}
+								}
+								else
+								{
+									//realtime graph
+									std::stringstream s_str1(sd[0]);
+									unsigned long long actValue;
+									s_str1 >> actValue;
+
+									std::string stime = sd[1];
+									struct tm ntime;
+									time_t atime;
+									ParseSQLdatetime(atime, ntime, stime, -1);
+									long long curValue = actValue;
+
+									float tdiff = static_cast<float>(difftime(atime, lastTime));
+									if (tdiff == 0)
+										tdiff = 3600; // only reason for the same time to occur twice is a DST shift, meaning the actual time difference must be an hour
+									float tlaps = 3600.0f / tdiff;
+									curValue *= int(tlaps);
+
+									root["result"][ii]["d"] = sd[1].substr(0, 16);
+
+									float TotalValue = float(curValue);
+									switch (metertype)
+									{
+										case MTYPE_ENERGY:
+										case MTYPE_ENERGY_GENERATED:
+											sprintf(szTmp, "%.3f", (TotalValue / EnergyDivider)*1000.0f);	//from kWh -> Watt
+											break;
+										case MTYPE_GAS:
+											sprintf(szTmp, "%.2f", TotalValue / GasDivider);
+											break;
+										case MTYPE_WATER:
+											sprintf(szTmp, "%.3f", TotalValue / WaterDivider);
+											break;
+										case MTYPE_COUNTER:
+											sprintf(szTmp, "%.1f", TotalValue);
+											break;
+										default:
+											strcpy(szTmp, "0");
+											break;
+									}
+									root["result"][ii]["v"] = szTmp;
+									ii++;
+									lastTime = atime;
+								}
+							}
+						}
+					}
 					else
 					{
 						root["status"] = "OK";
@@ -14943,45 +15098,47 @@ namespace http {
 								ii++;
 							}
 						}
-						//add today (have to calculate it)
-						result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-							idx, szDateEnd);
-						if (result.size() > 0)
-						{
-							std::vector<std::string> sd = result[0];
-
-							unsigned long long total_min, total_max, total_real;
-
-							std::stringstream s_str1(sd[0]);
-							s_str1 >> total_min;
-							std::stringstream s_str2(sd[1]);
-							s_str2 >> total_max;
-							total_real = total_max - total_min;
-							sprintf(szTmp, "%llu", total_real);
-							std::string szValue = szTmp;
-							switch (metertype)
+						if (!(dType == pTypeManaged) && (dSubType == sTypeManagedCounter)) {
+							//add today (have to calculate it)
+							result = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+								idx, szDateEnd);
+							if (result.size() > 0)
 							{
-							case MTYPE_ENERGY:
-							case MTYPE_ENERGY_GENERATED:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
-								szValue = szTmp;
-								break;
-							case MTYPE_GAS:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
-								szValue = szTmp;
-								break;
-							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
-								szValue = szTmp;
-								break;
-							default:
-								szValue = "0";
-								break;
-							}
+								std::vector<std::string> sd = result[0];
 
-							root["result"][ii]["d"] = szDateEnd;
-							root["result"][ii]["v"] = szValue;
-							ii++;
+								unsigned long long total_min, total_max, total_real;
+
+								std::stringstream s_str1(sd[0]);
+								s_str1 >> total_min;
+								std::stringstream s_str2(sd[1]);
+								s_str2 >> total_max;
+								total_real = total_max - total_min;
+								sprintf(szTmp, "%llu", total_real);
+								std::string szValue = szTmp;
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / EnergyDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / GasDivider);
+									szValue = szTmp;
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.3f", atof(szValue.c_str()) / WaterDivider);
+									szValue = szTmp;
+									break;
+								default:
+									szValue = "0";
+									break;
+								}
+
+								root["result"][ii]["d"] = szDateEnd;
+								root["result"][ii]["v"] = szValue;
+								ii++;
+							}
 						}
 					} //if (dType != pTypeP1Power)
 				}

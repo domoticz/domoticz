@@ -29,6 +29,9 @@
 #define bmpbaroforecast_unknown			0x05
 #define bmpbaroforecast_rain			0x06 //when forecast was cloudy and pressure is below 1010 we have 50%+ change of rain
 
+#define pTypeManaged				0xEF
+#define sTypeManagedCounter			0x00
+
 #define pTypeThermostat			0xF2
 #define sTypeThermSetpoint		0x01
 #define sTypeThermTemperature	0x02

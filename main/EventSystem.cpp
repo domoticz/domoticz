@@ -1061,6 +1061,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 				}
 			}
 			break;
+		case pTypeManaged:
+			if (sitem.subType == sTypeManagedCounter)
+			{
+				utilityval = static_cast<float>(atof(sitem.sValue.c_str()));
+				isUtility = true;
+			}
+			break;
 		default:
 			//Unknown device
 			continue;

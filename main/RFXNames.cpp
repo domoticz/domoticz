@@ -496,6 +496,7 @@ const char *RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeWATER, "Water" , "counter" },
 		{ pTypeWEIGHT, "Weight" , "scale" },
 		{ pTypeRFXSensor, "RFXSensor" , "unknown" },
+		{ pTypeManaged, "Managed Device" , "counter" },
 		{ pTypeRFXMeter, "RFXMeter" , "counter" },
 		{ pTypeP1Power, "P1 Smart Meter" , "counter" },
 		{ pTypeP1Gas, "P1 Smart Meter" , "counter" },
@@ -712,6 +713,8 @@ const char *RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeRFXSensor, sTypeRFXSensorVolt, "Voltage" },
 
 		{ pTypeRFXMeter, sTypeRFXMeterCount, "RFXMeter counter" },
+
+		{ pTypeManaged, sTypeManagedCounter, "Managed Counter" },
 
 		{ pTypeP1Power, sTypeP1Power, "Energy" },
 		{ pTypeP1Gas, sTypeP1Gas, "Gas" },
