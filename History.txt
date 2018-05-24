@@ -4,6 +4,7 @@ Version 3.xxx (May xxth 2018)
 - Implemented: Catalan language support (Big thanks to "delfisastre")
 - Implemented: Counter sensors now have a working week chart
 - Implemented: Denkovi Smartden IP In (32) with LAN Interface
+- Implemented: Blockly, now possible to use expressions in debug messages like "My temperature is {{temperaturedevice[1234]}} degrees" (see http://www.domoticz.com/wiki/Events)
 - Implemented: Email, option to disable email
 - Implemented: Persian language support (Big tankgs to "foademadi", "maziar.hafezi" and "reza.hadipour2002")
 - Implemented: Pusher now supports Distance type
