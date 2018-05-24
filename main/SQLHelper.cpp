@@ -2558,6 +2558,7 @@ bool CSQLHelper::OpenDatabase()
 					&&(tname.find(".jpeg") == std::string::npos)
 					&&(tname.find(".png") == std::string::npos)
 					&&(tname.find(".bmp") == std::string::npos)
+					&&(tname.find(".gif") == std::string::npos)
 					)
 					continue; //not an image file
 
