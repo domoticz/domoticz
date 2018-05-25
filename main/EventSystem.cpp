@@ -35,7 +35,7 @@ extern "C" {
 }
 
 extern time_t m_StartTime;
-extern std::string szUserDataFolder;
+extern std::string szUserDataFolder, szStartupFolder;
 extern http::server::CWebServerHelper m_webservers;
 
 static std::string m_printprefix;
@@ -202,12 +202,12 @@ void CEventSystem::LoadEvents()
 	m_lua_Dir = szUserDataFolder + "scripts\\lua\\";
 	dzv_Dir = szUserDataFolder + "scripts\\dzVents\\generated_scripts\\";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts\\dzVents\\scripts\\";
-	dzvents->m_runtimeDir = szUserDataFolder + "dzVents\\runtime\\";
+	dzvents->m_runtimeDir = szStartupFolder + "dzVents\\runtime\\";
 #else
 	m_lua_Dir = szUserDataFolder + "scripts/lua/";
 	dzv_Dir = szUserDataFolder + "scripts/dzVents/generated_scripts/";
 	dzvents->m_scriptsDir = szUserDataFolder + "scripts/dzVents/scripts/";
-	dzvents->m_runtimeDir = szUserDataFolder + "dzVents/runtime/";
+	dzvents->m_runtimeDir = szStartupFolder + "dzVents/runtime/";
 #endif
 
 	boost::unique_lock<boost::shared_mutex> eventsMutexLock(m_eventsMutex);
